@@ -18,6 +18,9 @@
 
   -------------------------------------------------------------------
 */
+#ifndef VIRIAL_SOLVER_H
+#define VIRIAL_SOLVER_H
+
 #include <cmath>
 
 #include <boost/numeric/ublas/vector.hpp>
@@ -317,85 +320,7 @@ class virial_solver {
     }
     return 0;
   }
-    
-  /** \brief Here, a brief description of this function
-      derivative with respect to nn of mfn
-  */
-  /*int mfn2(size_t nv, const ubvector &x2, ubvector &y) {
-  // dmundnn=x2[0];
-  // dmupdnn=x2[1];
-
-  // mfn2_mu_n and mfn2_mu_p are just mu_n and mu_p solved by
-  // mfn resubstitued in equations here and below;
-  y[0]=1-2/pow(lambda,3)*
-  (exp(mfn2_mu_n/T)*x2[0]/T+4*exp(mfn2_mu_n/T)*exp(mfn2_mu_n/T)*b_n*x2[0]/T+
-  2*exp(mfn2_mu_p/T)*exp(mfn2_mu_n/T)*b_pn*x2[1]/T+
-  2*exp(mfn2_mu_p/T)*exp(mfn2_mu_n/T)*b_pn*x2[0]/T);
-    
-  y[1]=2/pow(lambda,3)*
-  (exp(mfn2_mu_p/T)*x2[1]/T+4*exp(mfn2_mu_p/T)*exp(mfn2_mu_p/T)*b_n*x2[1]/T+
-  2*exp(mfn2_mu_p/T)*exp(mfn2_mu_n/T)*b_pn*x2[1]/T+
-  2*exp(mfn2_mu_p/T)*exp(mfn2_mu_n/T)*b_pn*x2[0]/T);
-       
-  nf++;
-  return 0;
-  }*/
-
-  /** \brief Here, a brief description of this function
-      derivative with respect to nn of mfn
-  */
-  /*int mfn3(size_t nv, const ubvector &x3, ubvector &y) {
-  // dmundpn=x3[0];
-  // dmupdpn=x3[1];
-  y[0]=2/pow(lambda,3)*
-  (exp(mfn2_mu_n/T)*x3[0]/T+4*exp(mfn2_mu_n/T)*exp(mfn2_mu_n/T)*b_n*x3[0]/T+
-  2*exp(mfn2_mu_p/T)*exp(mfn2_mu_n/T)*b_pn*x3[1]/T+
-  2*exp(mfn2_mu_p/T)*exp(mfn2_mu_n/T)*b_pn*x3[0]/T);
-  y[1]=1-2/pow(lambda,3)*
-  (exp(mfn2_mu_p/T)*x3[1]/T+4*exp(mfn2_mu_p/T)*exp(mfn2_mu_p/T)*b_n*x3[1]/T+
-  2*exp(mfn2_mu_p/T)*exp(mfn2_mu_n/T)*b_pn*x3[1]/T+
-  2*exp(mfn2_mu_p/T)*exp(mfn2_mu_n/T)*b_pn*x3[0]/T);
-  nf++;
-  return 0;
-  }*/
-  
-  /** \brief Here, a brief description of this function
-      derivative with respect to T of mfn
-  */
-  /*int mfn4(size_t nv, const ubvector &x4, ubvector &y) {
-  // dmundT=x4[0];
-  // dmupdT=x4[1];
-  y[0]=2/pow(lambda,4)*(-3)*dlambdadT*
-  (exp(mfn2_mu_n/T)+2*exp(mfn2_mu_n/T)*exp(mfn2_mu_n/T)*b_n+
-  2*exp(mfn2_mu_p/T)*exp(mfn2_mu_n/T)*b_pn)+2/pow(lambda,3)*
-  (exp(mfn2_mu_n)*(-mfn2_mu_n/T/T)+exp(mfn2_mu_n)*x4[0]/T+
-  2*exp(mfn2_mu_n)*exp(mfn2_mu_n)*dbndT+
-  4*exp(mfn2_mu_n/T)*exp(mfn2_mu_n/T)*b_n*x4[0]/T-
-  4*exp(mfn2_mu_n/T)*exp(mfn2_mu_n/T)*b_n*mfn2_mu_n/T/T+
-  2*exp(mfn2_mu_p/T)*exp(mfn2_mu_n/T)*dbpndT+
-  2*exp(mfn2_mu_p/T)*exp(mfn2_mu_n/T)*b_pn*x4[1]/T-
-  2*exp(mfn2_mu_p/T)*exp(mfn2_mu_n/T)*b_pn*mfn2_mu_p/T/T+
-  2*exp(mfn2_mu_p/T)*exp(mfn2_mu_n/T)*b_pn*x4[0]/T-
-  2*exp(mfn2_mu_p/T)*exp(mfn2_mu_n/T)*b_pn*mfn2_mu_n/T/T);
-  y[1]=2/pow(lambda,4)*(-3)*dlambdadT*
-  (exp(mfn2_mu_p/T)+2*exp(mfn2_mu_p/T)*exp(mfn2_mu_p/T)*b_n+
-  2*exp(mfn2_mu_p/T)*exp(mfn2_mu_n/T)*b_pn)+2/pow(lambda,3)*
-  (exp(mfn2_mu_p)*(-mfn2_mu_p/T/T)+exp(mfn2_mu_p)*x4[1]/T+
-  2*exp(mfn2_mu_p)*exp(mfn2_mu_p)*dbndT+
-  4*exp(mfn2_mu_p/T)*exp(mfn2_mu_p/T)*b_n*x4[1]/T-
-  4*exp(mfn2_mu_p/T)*exp(mfn2_mu_p/T)*b_n*mfn2_mu_p/T/T+
-  2*exp(mfn2_mu_p/T)*exp(mfn2_mu_n/T)*dbpndT+
-  2*exp(mfn2_mu_p/T)*exp(mfn2_mu_n/T)*b_pn*x4[1]/T-
-  2*exp(mfn2_mu_p/T)*exp(mfn2_mu_n/T)*b_pn*mfn2_mu_p/T/T+
-  2*exp(mfn2_mu_p/T)*exp(mfn2_mu_n/T)*b_pn*x4[0]/T-
-  2*exp(mfn2_mu_p/T)*exp(mfn2_mu_n/T)*b_pn*mfn2_mu_n/T/T);
-    
-  nf++;
-  return 0;
-  }*/
 
 };
 
-
- 
-
+#endif
