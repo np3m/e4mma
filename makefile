@@ -93,12 +93,15 @@ doc: empty
 	cd sphinx; make html
 	cp -r sphinx/build/html/* $(HOME)/data/ecn
 
-eos: eos.o virial_solver.h
-	$(LCXX) $(LCFLAGS) -o eos eos.o $(LIBS) \
+eos: eos.o main.o
+	$(LCXX) $(LCFLAGS) -o eos eos.o main.o $(LIBS) \
 		-lreadline
 
-eos.o: eos.cpp virial_solver.h
+eos.o: eos.cpp virial_solver.h eos.h
 	$(LCXX) $(LCFLAGS) -o eos.o -c eos.cpp
+
+main.o: main.cpp virial_solver.h eos.h
+	$(LCXX) $(LCFLAGS) -o main.o -c main.cpp
 
 clean:
 	rm -f *.o eos
