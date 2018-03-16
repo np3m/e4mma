@@ -93,6 +93,9 @@ doc: empty
 	cd sphinx; make html
 #	cp -r sphinx/build/html/* $(HOME)/data/ecn
 
+sync-doc:
+	sudo cp -r sphinx/build/html/* $(STATIC_DOC_DIR)/eos
+
 eos: eos.o main.o
 	$(LCXX) $(LCFLAGS) -o eos eos.o main.o $(LIBS) \
 		-lreadline
