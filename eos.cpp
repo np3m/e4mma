@@ -1710,8 +1710,10 @@ int eos::table_full(std::vector<std::string> &sv, bool itive_com) {
   t_mun.set_grid(grid_arr);
   tensor_grid3<> t_mup(n_nB,n_Ye,n_T);
   t_mup.set_grid(grid_arr);
-  //tensor_grid3<> t_cs2(n_nB,n_Ye,n_T);
-  //t_cs2.set_grid(grid_arr);
+  tensor_grid3<> t_cs2(n_nB,n_Ye,n_T);
+  t_cs2.set_grid(grid_arr);
+  tensor_grid3<> t_mue(n_nB,n_Ye,n_T);
+  t_mue.set_grid(grid_arr);
 
   eos_sn_oo eso;
   eso.include_muons=include_muons;
@@ -1742,8 +1744,9 @@ int eos::table_full(std::vector<std::string> &sv, bool itive_com) {
 	t_mun.set(i,j,k,hc_mev_fm*neutron.mu);
 	t_mup.set(i,j,k,hc_mev_fm*proton.mu);
 
-	//double cs2=cs2_fixYe(neutron,proton,T_grid[k]/hc_mev_fm,th2);
-	//t_cs2.set(i,j,k,cs2);
+	double cs2=cs2_fixYe(neutron,proton,T_grid[k]/hc_mev_fm,th2);
+	t_cs2.set(i,j,k,cs2);
+	t_mue.set(i,j,k,eso.electron.mu);
 
 	if (!std::isfinite(th2.ed)) {
 	  cout << "Hadronic energy density not finite." << endl;
@@ -1826,7 +1829,8 @@ int eos::table_full(std::vector<std::string> &sv, bool itive_com) {
   hdf_output(hf,t_S,"S");
   hdf_output(hf,t_mun,"mun");
   hdf_output(hf,t_mup,"mup");
-  //hdf_output(hf,t_cs2,"cs2");
+  hdf_output(hf,t_cs2,"cs2");
+  hdf_output(hf,t_mue,"mue");
   hf.close();
   
   return 0;
