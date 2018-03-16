@@ -258,12 +258,12 @@ public:
   double dfdnn_total(o2scl::fermion &n, o2scl::fermion &p,
 		   double nn, double pn, double T, o2scl::thermo &th);
 
-  /** \brief compute dfdpn including photons and electons
+  /** \brief Compute dfdpn including photons and electons
   */
   double dfdpn_total(o2scl::fermion &n, o2scl::fermion &p,
 		   double nn, double pn, double T, o2scl::thermo &th);
 
-  /** \brief compute depsilondsonb including photons and electons
+  /** \brief Compute depsilondsonb including photons and electons
    */
   double depsilondsonb(double sonb, double nb, double Ye,
 		       double cssq);
