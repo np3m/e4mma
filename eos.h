@@ -127,27 +127,122 @@ class eos {
   
  protected:
   
-  /** \brief Compute the energy density (in \f$ \mathrm{fm}^{-4} \f$)
-      of neutron matter from quantum Monte Carlo (without the rest
-      mass contribution)
-  */
-  double energy_density_qmc(double nn, double pn);
+  /// \name Main EOS parameters
+  //@{
+  /// The first exponent for density in the QMC EOS (unitless)
+  double qmc_alpha;
 
-  /** \brief If true, a model has ben selected (default false)
+  /// The first coefficient for the QMC EOS (in MeV)
+  double qmc_a;
+  
+  /** \brief The speed of sound in neutron star matter at 
+      \f$ 2~\mathrm{fm}^{-3} \f$
+   */
+  double phi;
+
+  /// The symmetry energy
+  double eos_S;
+
+  /// The slope of the symmetry energy
+  double eos_L;
+
+  /// The index of the neutron star model
+  int i_ns;
+
+  /// The index of the Skyrme model
+  int i_skyrme;
+  //@}
+
+  /// \name Basic EOS functions
+  //@{
+  /** \brief Return the total free energy density of matter
+      (without the rest mass contribution)
+   */
+  double free_energy_density
+    (o2scl::fermion &n, o2scl::fermion &p, double T,
+     o2scl::thermo &th);
+
+  /** \brief Compute the free energy density using the virial 
+      expansion including derivative information
+  */
+  double free_energy_density_virial
+    (o2scl::fermion &n, o2scl::fermion &p, double T,
+     o2scl::thermo &th, double &dmundnn, double &dmundpn,
+     double &dmupdnn, double &dmupdpn, double &dmundT,
+     double &dmupdT);    
+
+  /** \brief Compute the free energy density using the virial 
+      expansion
+  */
+  double free_energy_density_virial
+    (o2scl::fermion &n, o2scl::fermion &p, double T,
+     o2scl::thermo &th) {
+    double x1, x2, x3, x4, x5, x6;
+    return free_energy_density_virial(n,p,T,th,x1,x2,x3,x4,x5,x6);
+  }
+  
+  /** \brief Alternate form of free_energy_density() for
+      computing derivatives
+
+      This function does not include electrons or photons.
+  */
+  double free_energy_density_alt(o2scl::fermion &n, o2scl::fermion &p,
+				 double nn, double np, double T,
+				 o2scl::thermo &th);
+
+  /** \brief Alternate form of free_energy_density() for
+      computing derivatives
+
+      This function does include electrons, positrons, and photons.
+  */
+  double free_energy_density_ep(double nn, double np, double T);
+  
+  /** \brief Compute the entropy density including photons and 
+      electons
+   */
+  double entropy(o2scl::fermion &n, o2scl::fermion &p,
+		 double nn, double np, double T, o2scl::thermo &th);
+
+  /** \brief Compute energy density including photons and electons
+      (without the rest mass energy density for the nucleons)
+  */
+  double ed(o2scl::fermion &n, o2scl::fermion &p,
+	    double nn, double np, double T, o2scl::thermo &th);
+
+  /** \brief Compute the squared speed of sound at fixed
+      \f$ \mu_L \f$
+  */
+  double cs2_fixmuL(o2scl::fermion &n, o2scl::fermion &p, double T,
+	     o2scl::thermo &th);
+  
+  /** \brief Compute the squared speed of sound at 
+      fixed \f$ Y_e \f$
+  */
+  double cs2_fixYe(o2scl::fermion &n, o2scl::fermion &p, double T,
+		   o2scl::thermo &th);
+  //@}
+
+  /// \name Internal variables
+  //@{
+  /// The table which stores the neutron star EOS results
+  o2scl::table_units<> nstar_tab;
+
+  /// The table which stores the Skyrme fits
+  o2scl::table_units<> UNEDF_tab;
+  
+  /** \brief If true, a model has been selected (default false)
    */
   bool model_selected;
-  
-  /** \brief Construct a new neutron star EOS which ensures
-      causality at high densities
+
+  /** \brief a1 a2 c1 c2 in new ns eos
   */
-  int new_ns_eos(double nb, o2scl::fermion &n, double &e_ns,
-		 double &densdnn);
+  double a1,a2,c1,c2;
 
-  /** \brief Object for computing electron/positron thermodynamic integrals
-   */
-  o2scl::fermion_rel relf;
-
-  /// \name Virial EOS outputs
+  /// Random number generator
+  o2scl::rng_gsl r;
+  //@}
+  
+  /// \name EOS outputs
   //@{
   /// The value of the virial modulation function
   double g_virial;
@@ -237,74 +332,19 @@ class eos {
   double mu_fit(double nb);
   //@}
 
-  /// \name Basic EOS functions
+  /// \name Other EOS functions
   //@{
-  /** \brief Alternate form of free_energy_density() for
-      computing derivatives
-
-      This function does not include electrons or photons.
+  /** \brief Compute the energy density (in \f$ \mathrm{fm}^{-4} \f$)
+      of neutron matter from quantum Monte Carlo (without the rest
+      mass contribution)
   */
-  double free_energy_density_alt(o2scl::fermion &n, o2scl::fermion &p,
-				 double nn, double np, double T,
-				 o2scl::thermo &th);
+  double energy_density_qmc(double nn, double pn);
 
-  /** \brief Alternate form of free_energy_density() for
-      computing derivatives
-
-      This function does include electrons, positrons, and photons.
+  /** \brief Construct a new neutron star EOS which ensures
+      causality at high densities
   */
-  double free_energy_density_ep(double nn, double np, double T);
-  
-  /** \brief Return the total free energy density of matter
-      (without the rest mass contribution)
-   */
-  double free_energy_density
-    (o2scl::fermion &n, o2scl::fermion &p, double T,
-     o2scl::thermo &th);
-
-  /** \brief Compute the free energy density using the virial 
-      expansion including derivative information
-  */
-  double free_energy_density_virial
-    (o2scl::fermion &n, o2scl::fermion &p, double T,
-     o2scl::thermo &th, double &dmundnn, double &dmundpn,
-     double &dmupdnn, double &dmupdpn, double &dmundT,
-     double &dmupdT);    
-
-  /** \brief Compute the free energy density using the virial 
-      expansion
-  */
-  double free_energy_density_virial
-    (o2scl::fermion &n, o2scl::fermion &p, double T,
-     o2scl::thermo &th) {
-    double x1, x2, x3, x4, x5, x6;
-    return free_energy_density_virial(n,p,T,th,x1,x2,x3,x4,x5,x6);
-  }
-  
-  /** \brief Compute the entropy density including photons and 
-      electons
-   */
-  double entropy(o2scl::fermion &n, o2scl::fermion &p,
-		 double nn, double np, double T, o2scl::thermo &th);
-
-  /** \brief Compute energy density including photons and electons
-      (without the rest mass energy density for the nucleons)
-  */
-  double ed(o2scl::fermion &n, o2scl::fermion &p,
-	    double nn, double np, double T, o2scl::thermo &th);
-
-  /** \brief Compute the squared speed of sound from the 
-      analytical expressions for fixed mul
-  */
-  double cs2(o2scl::fermion &n, o2scl::fermion &p, double T,
-	     o2scl::thermo &th);
-  
-  /** \brief Compute the squared speed of sound from the 
-      analytical expressions for fixed Ye
-  */
-  double cs2_fixYe(o2scl::fermion &n, o2scl::fermion &p, double T,
-		   o2scl::thermo &th);
-  //@}
+  int new_ns_eos(double nb, o2scl::fermion &n, double &e_ns,
+		 double &densdnn);
 
   /** \brief Compute dfdnn including photons and electons
   */
@@ -353,11 +393,33 @@ class eos {
   int solve_sonb(size_t nv, const ubvector &x,
 		ubvector &y, double nb, double Ye, double T);
 
-
   /** \brief find derivatives dPstardYe, dnbstardYe, dsstardYe, nb_star
              P_star, mul star
    */
   int find_deriv(ubvector &x, double Ye, double T);
+
+  /** \brief solve a1 a2, if cs_ns(2.0)>cs_ns(1.28)
+  */
+  int solve_coeff_big(size_t nv, const ubvector &x, ubvector &y, 
+        double nb_last, double cs_ns_2, double cs_ns_last);
+
+  /** \brief solve a1 a2, if cs_ns(2.0)<cs_ns(1.28)
+  */
+  int solve_coeff_small(size_t nv, const ubvector &x, ubvector &y, 
+         double nb_last, double cs_ns_2, double cs_ns_last);
+
+  /** \brief Desc
+   */
+  int test_cs2(double nb, double ye, double T);
+
+  /** \brief Internal select function
+   */
+  int select_internal(int i_ns_loc, int i_skyrme_loc,
+		      double qmc_alpha_loc, double qmc_a_loc,
+		      double eos_L_loc, double eos_S_loc,
+		      double phi_loc);
+
+  //@}
 
   /// \name Particle objects
   //@{
@@ -382,8 +444,15 @@ class eos {
   o2scl::fermion p_chiral;
   //@}
 
-  /// \name Base EOS objects
+  /// \name Base physics objects
   //@{
+  /// The virial equation solver
+  virial_solver acl;
+
+  /** \brief Object for computing electron/positron thermodynamic integrals
+   */
+  o2scl::fermion_rel relf;
+
   /// Thermodynamic quantities
   o2scl::thermo th2;
   
@@ -395,10 +464,10 @@ class eos {
 
   /// Skyrme interaction for finite temperature correction
   o2scl::eos_had_skyrme sk_chiral;
-  //@}
 
   /// The virial EOS
   eos_crust_virial_v2 ecv;
+  //@}
 
   /// \name The parameters for the QMC energy density
   //@{
@@ -412,35 +481,6 @@ class eos {
   double qmc_n0;
   //@}
   
-  /** \brief a1 a2 c1 c2 in new ns eos
-  */
-  double a1,a2,c1,c2;
-
-  /// \name Main EOS parameters
-  //@{
-  /// The first exponent for density in the QMC EOS (unitless)
-  double qmc_alpha;
-
-  /// The first coefficient for the QMC EOS (in MeV)
-  double qmc_a;
-  
-  /** \brief The speed of sound in neutron star matter at 2.0 fm^{-3}
-   */
-  double phi;
-
-  /// The symmetry energy
-  double eos_S;
-
-  /// The slope of the symmetry energy
-  double eos_L;
-
-  /// The index of the neutron star model
-  int i_ns;
-
-  /// The index of the Skyrme model
-  int i_skyrme;
-  //@}
-
   /// \name Output saturation properties
   //@{
   /// The binding energy per particle
@@ -452,40 +492,6 @@ class eos {
   /// The saturation density
   double eos_n0;
   //@}
-
-  /// The virial equation solver
-  virial_solver acl;
-
-  /// The table which stores the neutron star EOS results
-  o2scl::table_units<> nstar_tab;
-
-  /// The table which stores the Skyrme fits
-  o2scl::table_units<> UNEDF_tab;
-  
-  /// Random number generator
-  o2scl::rng_gsl r;
-  //@}
-  
-  /** \brief solve a1 a2, if cs_ns(2.0)>cs_ns(1.28)
-  */
-  int solve_coeff_big(size_t nv, const ubvector &x, ubvector &y, 
-        double nb_last, double cs_ns_2, double cs_ns_last);
-
-  /** \brief solve a1 a2, if cs_ns(2.0)<cs_ns(1.28)
-  */
-  int solve_coeff_small(size_t nv, const ubvector &x, ubvector &y, 
-         double nb_last, double cs_ns_2, double cs_ns_last);
-
-  /** \brief Desc
-   */
-  int test_cs2(double nb, double ye, double T);
-
-  /** \brief Internal select function
-   */
-  int select_internal(int i_ns_loc, int i_skyrme_loc,
-		      double qmc_alpha_loc, double qmc_a_loc,
-		      double eos_L_loc, double eos_S_loc,
-		      double phi_loc);
 
  public:
   

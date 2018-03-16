@@ -1409,7 +1409,7 @@ int eos::cs2_fixYe_mod(size_t nv, const ubvector &x,
   return 0;
 }
 
-double eos::cs2(fermion &n, fermion &p, double T, thermo &th) {
+double eos::cs2_fixmuL(fermion &n, fermion &p, double T, thermo &th) {
  
   double nn,pn;
   deriv_gsl<> gd;
