@@ -581,6 +581,9 @@ eos::eos() {
   electron.init(o2scl_settings.get_convert_units().convert
 		("kg","1/fm",o2scl_mks::mass_electron),2.0);
 
+  muon.init(o2scl_settings.get_convert_units().convert
+		("kg","1/fm",o2scl_mks::mass_muon),2.0);
+
   n_chiral.init(o2scl_settings.get_convert_units().convert
 		("kg","1/fm",o2scl_mks::mass_neutron),2.0);
   p_chiral.init(o2scl_settings.get_convert_units().convert
@@ -941,7 +944,7 @@ double eos::free_energy_density
   double nn=n.n;
   double pn=p.n;
   double nb=nn+pn;
-  double ye=pn/nb;
+  double yp=pn/nb;
 
   double n0=0.16;
 
@@ -1059,11 +1062,11 @@ double eos::free_energy_density
   double h=1.0/(1.0+exp(gamma*(nn+pn-n0*1.5)));
   double e_combine=e_qmc*h+e_ns*(1.0-h);
   double e_sym=e_combine-f_skyrme_eqdenT0;
-  double dyednn=-pn/nb/nb;
-  double dyedpn=nn/nb/nb;
-  double delta2=(1.0-2.0*ye)*(1.0-2.0*ye);
-  double ddelta2dnn=2.0*(1.0-2.0*ye)*(-2.0*dyednn);
-  double ddelta2dpn=2.0*(1.0-2.0*ye)*(-2.0*dyedpn);
+  double dypdnn=-pn/nb/nb;
+  double dypdpn=nn/nb/nb;
+  double delta2=(1.0-2.0*yp)*(1.0-2.0*yp);
+  double ddelta2dnn=2.0*(1.0-2.0*yp)*(-2.0*dypdnn);
+  double ddelta2dpn=2.0*(1.0-2.0*yp)*(-2.0*dypdpn);
   f_deg=f_skyrme_eqdenT0+delta2*e_sym+
     delta2*(f_skyrme_neut_T-f_skyrme_neut_T0)+
     (1.0-delta2)*(f_skyrme_eqden_T-f_skyrme_eqden_T0);
@@ -1098,15 +1101,15 @@ double eos::free_energy_density
     dfskyrme_eqden_T0dnn/2.0;
   double desymdpn=desymdnn;
   
-  double dfdegdnn=dfskyrme_eqden_T0dnn+(1.0-2.0*ye)
-    *(1.0-2.0*ye)*desymdnn+ddelta2dnn*e_sym
+  double dfdegdnn=dfskyrme_eqden_T0dnn+(1.0-2.0*yp)
+    *(1.0-2.0*yp)*desymdnn+ddelta2dnn*e_sym
     +delta2*(mu_n_neut_T-mu_n_neut_T0)
     +ddelta2dnn*(f_skyrme_neut_T-f_skyrme_neut_T0)
     +(1.0-delta2)*(mu_n_eqden_T/2.0+mu_p_eqden_T/2.0-
 		mu_n_eqden_T0/2.0-mu_p_eqden_T0/2.0)-
     ddelta2dnn*(f_skyrme_eqden_T-f_skyrme_eqden_T0);
   double dfdegdpn=dfskyrme_eqden_T0dpn+
-    (1.0-2.0*ye)*(1.0-2.0*ye)*desymdpn+
+    (1.0-2.0*yp)*(1.0-2.0*yp)*desymdpn+
     ddelta2dpn*e_sym
     +delta2*(mu_n_neut_T-mu_n_neut_T0)
     +ddelta2dpn*(f_skyrme_neut_T-f_skyrme_neut_T0)
@@ -1181,48 +1184,91 @@ double eos::free_energy_density_alt
   return free_energy_density(n,p,T,th);
 }
 
-double eos::free_energy_density_ep
-(double nn, double np, double T) {
-  neutron.n=nn;
-  proton.n=np;
-  electron.n=np;
-  electron.mu=electron.m;
-  relf.pair_density(electron,T);
+double eos::free_energy_density_ep(double nB, double Ye, double T) {
+
   photon.massless_calc(T);
+  
+  electron.n=Ye*nB;
+  relf.pair_density(electron,T);
+  
+  if (include_muons==false) {
+    muon.n=0.0;
+    muon.mu=0.0;
+    proton.n=electron.n;
+    neutron.n=nB-proton.n;
+  } else {
+    muon.mu=electron.mu;
+    relf.pair_mu(muon,T);
+    proton.n=electron.n+muon.n;
+    neutron.n=nB-proton.n;
+  }
   double frnp=free_energy_density(neutron,proton,T,th2);
+  if (include_muons) {
+    th2.ed+=electron.ed+photon.ed+muon.ed;
+    th2.pr+=electron.pr+photon.pr+muon.pr;
+    th2.en+=electron.en+photon.en+muon.en;
+    return frnp+muon.ed-muon.en*T+
+      electron.ed-electron.en*T+photon.ed-T*photon.en;
+  }
   th2.ed+=electron.ed+photon.ed;
   th2.pr+=electron.pr+photon.pr;
   th2.en+=electron.en+photon.en;
   return frnp+electron.ed-electron.en*T+photon.ed-T*photon.en;
 }
 
-double eos::entropy(fermion &n, fermion &p, double nn,
-			     double pn, double T, thermo &th) {
-
-  n.n=nn;
-  p.n=pn;
-  free_energy_density(n,p,T,th);
-  electron.n=pn;
-  electron.mu=electron.m;
-  relf.pair_density(electron,T);
+double eos::entropy(fermion &n, fermion &p, double nB,
+		    double Ye, double T, thermo &th) {
+  
   photon.massless_calc(T);
-  return th.en+electron.en+photon.en;
+  
+  electron.n=Ye*nB;
+  relf.pair_density(electron,T);
+  
+  if (include_muons==false) {
+    muon.n=0.0;
+    muon.mu=0.0;
+    p.n=electron.n;
+    n.n=nB-p.n;
+  } else {
+    muon.mu=electron.mu;
+    relf.pair_mu(muon,T);
+    p.n=electron.n+muon.n;
+    n.n=nB-p.n;
+  }
+  double frnp=free_energy_density(n,p,T,th2);
+  if (include_muons) {
+    return th2.en+electron.en+photon.en+muon.en;
+  }
+  return th2.en+electron.en+photon.en;
 }
 
-double eos::ed(fermion &n, fermion &p, double nn,
-			double pn, double T, thermo &th) {
-  n.n=nn;
-  p.n=pn;
-  free_energy_density(n,p,T,th);
-  electron.n=pn;
-  electron.mu=electron.m;
-  relf.pair_density(electron,T);
+double eos::ed(fermion &n, fermion &p, double nB,
+	       double Ye, double T, thermo &th) {
   photon.massless_calc(T);
-  return th.ed+electron.ed+photon.ed+n.m*nn+p.m*pn;
+  
+  electron.n=Ye*nB;
+  relf.pair_density(electron,T);
+  
+  if (include_muons==false) {
+    muon.n=0.0;
+    muon.mu=0.0;
+    p.n=electron.n;
+    n.n=nB-p.n;
+  } else {
+    muon.mu=electron.mu;
+    relf.pair_mu(muon,T);
+    p.n=electron.n+muon.n;
+    n.n=nB-p.n;
+  }
+  double frnp=free_energy_density(n,p,T,th2);
+  if (include_muons) {
+    return th2.ed+electron.ed+photon.ed+muon.ed+n.n*n.m+p.n*p.m;
+  }
+  return th2.ed+electron.ed+photon.ed+n.n*n.m+p.n*p.m;
 }
 
 double eos::dfdnn_total(fermion &n, fermion &p, double nn, 
-				 double pn, double T, thermo &th) {
+			double pn, double T, thermo &th) {
   
   n.n=nn;
   p.n=pn;
@@ -1600,8 +1646,22 @@ int eos::table_Ye(std::vector<std::string> &sv, bool itive_com) {
   for(int i=n_nB-1;i>=0;i--) {
     cout << i << "/" << n_nB << endl;
     for(size_t j=0;j<n_T;j++) {
-      neutron.n=nB_grid[i]*(1.0-Ye);
-      proton.n=nB_grid[i]*Ye;
+
+      electron.n=Ye*nB_grid[i];
+      relf.pair_density(electron,T_grid[j]);
+      
+      if (include_muons==false) {
+	muon.n=0.0;
+	muon.mu=0.0;
+	proton.n=electron.n;
+	neutron.n=nB_grid[i]-proton.n;
+      } else {
+	muon.mu=electron.mu;
+	relf.pair_mu(muon,T_grid[j]);
+	proton.n=electron.n+muon.n;
+	neutron.n=nB_grid[i]-proton.n;
+      }
+      
       double t1, t2, t3, t4, t5;
       free_energy_density(neutron,proton,T_grid[j]/hc_mev_fm,th2);
       double foa_hc=hc_mev_fm*(th2.ed-T_grid[j]/hc_mev_fm*th2.en)/
@@ -1723,9 +1783,22 @@ int eos::table_full(std::vector<std::string> &sv, bool itive_com) {
     for(size_t j=0;j<n_Ye;j++) {
       for(size_t k=0;k<n_T;k++) {
 
+	electron.n=Ye_grid[j]*nB_grid[i];
+	relf.pair_density(electron,T_grid[k]);
+	
+	if (include_muons==false) {
+	  muon.n=0.0;
+	  muon.mu=0.0;
+	  proton.n=electron.n;
+	  neutron.n=nB_grid[i]-proton.n;
+	} else {
+	  muon.mu=electron.mu;
+	  relf.pair_mu(muon,T_grid[k]);
+	  proton.n=electron.n+muon.n;
+	  neutron.n=nB_grid[i]-proton.n;
+	}
+	
 	// Hadronic part
-	neutron.n=nB_grid[i]*(1.0-Ye_grid[j]);
-	proton.n=nB_grid[i]*Ye_grid[j];
 	free_energy_density(neutron,proton,T_grid[k]/hc_mev_fm,th2);
 
 	thermo lep;

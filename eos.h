@@ -195,19 +195,19 @@ class eos {
 
       This function does include electrons, positrons, and photons.
   */
-  double free_energy_density_ep(double nn, double np, double T);
+  double free_energy_density_ep(double nB, double Ye, double T);
   
   /** \brief Compute the entropy density including photons and 
       electons
    */
   double entropy(o2scl::fermion &n, o2scl::fermion &p,
-		 double nn, double np, double T, o2scl::thermo &th);
+		 double nB, double Ye, double T, o2scl::thermo &th);
 
   /** \brief Compute energy density including photons and electons
       (without the rest mass energy density for the nucleons)
   */
   double ed(o2scl::fermion &n, o2scl::fermion &p,
-	    double nn, double np, double T, o2scl::thermo &th);
+	    double nB, double Ye, double T, o2scl::thermo &th);
 
   /** \brief Compute the squared speed of sound at fixed
       \f$ \mu_L \f$
@@ -426,6 +426,10 @@ class eos {
   /** \brief Electron/positron
    */
   o2scl::fermion electron;
+  
+  /** \brief Muon/antimuon
+   */
+  o2scl::fermion muon;
 
   /** \brief Photon
    */
