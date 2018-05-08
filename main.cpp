@@ -86,7 +86,7 @@ int main(int argc, char *argv[]) {
 
   o2scl::cli::parameter_bool p_include_muons;
   p_include_muons.b=&eph.include_muons;
-  p_include_muons.help="If true, include muons (default false)";
+  p_include_muons.help="If true, include muons (default true)";
   cl.par_list.insert(make_pair("include_muons",&p_include_muons));
 
   o2scl::cli::parameter_bool p_select_cs2_test;

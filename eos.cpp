@@ -564,7 +564,7 @@ void eos::ns_fit(int row) {
 eos::eos() {
 
   test_ns_cs2=false;
-  include_muons=false;
+  include_muons=true;
   
   // Ensure that this works without GNU units
   o2scl_settings.get_convert_units().use_gnu_units=false;
