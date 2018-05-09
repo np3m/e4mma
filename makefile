@@ -8,7 +8,7 @@
 # Various user-specific settings
 # ----------------------------------------------------------------
 
-ifeq ($(HOSTNAME),isospin.roam.utk.edu)
+ifeq ($(MACHINE),isospin)
 
 ifeq ($(USER),awsteiner)
 
@@ -37,7 +37,7 @@ LMPICXX = mpic++
 endif
 
 else
-ifeq ($(USER),x5a)
+ifeq ($(MACHINE),mimosa)
 
 # On mimosa
 LCXX = g++ 
@@ -50,7 +50,7 @@ LFFLAGS = -O3
 LMPICXX = mpic++
 
 else
-ifeq ($(USER),awsteiner)
+ifeq ($(MACHINE),hedgehog)
 
 # On Andrew's laptop
 LFC = mpif90
