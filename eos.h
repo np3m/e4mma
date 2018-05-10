@@ -193,30 +193,21 @@ class eos {
   /** \brief Alternate form of free_energy_density() for
       computing derivatives
 
-      This function does include electrons, positrons, muons and
-      antimuons (if include_muons is true), and photons.
+      This function does include electrons, positrons, and photons.
   */
-  double free_energy_density_emp(double nB, double Ye, double T);
+  double free_energy_density_ep(double nn, double np, double T);
   
   /** \brief Compute the entropy density including photons and 
       electons
    */
   double entropy(o2scl::fermion &n, o2scl::fermion &p,
-		 double nB, double Ye, double T, o2scl::thermo &th);
+		 double nn, double np, double T, o2scl::thermo &th);
 
   /** \brief Compute energy density including photons and electons
       (without the rest mass energy density for the nucleons)
   */
   double ed(o2scl::fermion &n, o2scl::fermion &p,
-	    double nB, double Ye, double T, o2scl::thermo &th);
-
-  double dfdnn_total_hadonly(double nn, double np, double T);
-  double dfdnp_total_hadonly(double nn, double np, double T);
-  double en_total_hadonly(double nn, double np, double T);
-
-  /** \brief
-   */
-  double cs2_new(double nB, double Ye, double T);
+	    double nn, double np, double T, o2scl::thermo &th);
 
   /** \brief Compute the squared speed of sound at fixed
       \f$ \mu_L \f$
@@ -435,18 +426,6 @@ class eos {
   /** \brief Electron/positron
    */
   o2scl::fermion electron;
-  
-  /** \brief Muon/antimuon
-   */
-  o2scl::fermion muon;
-
-  /** \brief Electron/positron
-   */
-  o2scl::fermion_deriv electron2;
-  
-  /** \brief Muon/antimuon
-   */
-  o2scl::fermion_deriv muon2;
 
   /** \brief Photon
    */
@@ -473,11 +452,6 @@ class eos {
   /** \brief Object for computing electron/positron thermodynamic integrals
    */
   o2scl::fermion_rel relf;
-
-  /** \brief Object for computing electron/positron thermodynamic integrals
-      with second derivatives
-   */
-  o2scl::fermion_deriv_rel fdr;
 
   /// Thermodynamic quantities
   o2scl::thermo th2;
