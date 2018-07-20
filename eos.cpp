@@ -563,6 +563,8 @@ void eos::ns_fit(int row) {
 
 eos::eos() {
 
+  neutrino.init(0.0,1.0);
+  
   test_ns_cs2=false;
   include_muons=false;
   
@@ -2643,6 +2645,44 @@ int eos::solve_Ye(size_t nv, const ubvector &x, ubvector &y,
   return 0;
 }
 
+int eos::solve_fixed_sonb_YL(size_t nv, const ubvector &x, ubvector &y,
+			     double nB, double sonb, double YL) {
+
+  double Ye=x[0];
+  double T=x[1];
+  
+  cout << "sfsy: " << Ye << " " << T*hc_mev_fm << endl;
+  
+  if (x[0]<0.01 || x[0]>0.6) return 1;
+  if (x[1]<1.0e-5 || x[1]>1.0) return 2;
+
+  // The temperature here is in 1/fm
+  neutron.n=nB*(1.0-Ye);
+  proton.n=nB*Ye;
+
+  sk.eff_mass(neutron,proton);
+  if (neutron.ms<0.0 || proton.ms<0.0) return 1;
+  
+  free_energy_density(neutron,proton,T,th2);
+  
+  photon.massless_calc(T);
+
+  electron.n=proton.n;
+  electron.mu=electron.m; 
+  relf.pair_density(electron,T);
+
+  double en=th2.en+electron.en+photon.en;
+  
+  neutrino.mu=proton.mu+electron.mu-neutron.mu;
+  fzt.calc_mu_zerot(neutrino);
+  double YL2=(neutrino.n+electron.n)/nB;
+  
+  y[0]=YL2-YL;
+  y[1]=en/nB-sonb;
+
+  return 0;
+}
+
 int eos::solve_T(size_t nv, const ubvector &x, ubvector &y,
 			  double nb, double Ye,double sonb) {
   
@@ -2762,6 +2802,35 @@ int eos::vir_comp(std::vector<std::string> &sv, bool itive_com) {
   hdf_output(hf,t,"vir_comp");
   hdf_output(hf,t2,"vir_comp2");
   hf.close();
+  
+  return 0;
+}
+
+int eos::pns_eos(std::vector<std::string> &sv, bool itive_com) {
+
+  table<> t;
+  t.line_of_names("nB Ye T");
+
+  ubvector x(2);
+  x[0]=0.1;
+  x[1]=10.0/hc_mev_fm;
+
+  for(double nB=0.08;nB<1.5;nB+=0.01) {
+    
+    mroot_hybrids<> mh;
+    mm_funct pns=std::bind
+      (std::mem_fn<int(size_t,const ubvector &,
+		       ubvector &, double, double, double)>
+       (&eos::solve_fixed_sonb_YL),
+       this,std::placeholders::_1,
+       std::placeholders::_2,
+       std::placeholders::_3,nB,1.0,0.4);
+    mh.verbose=2;
+    mh.msolve(2,x,pns);
+
+    cout << nB << " " << x[0] << " " << x[1] << endl;
+    
+  }
   
   return 0;
 }

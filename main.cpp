@@ -30,7 +30,7 @@ int main(int argc, char *argv[]) {
   eos eph;
   cli cl;
   
-  static const int nopt=11;
+  static const int nopt=12;
   o2scl::comm_option_s options[nopt]={
     {0,"test_deriv","Desc.",0,0,"","",
      new o2scl::comm_option_mfptr<eos>
@@ -56,6 +56,9 @@ int main(int argc, char *argv[]) {
     {0,"random","Desc.",0,0,"","",
      new o2scl::comm_option_mfptr<eos>
      (&eph,&eos::random),o2scl::cli::comm_option_both},
+    {0,"pns-eos","Desc.",0,0,"","",
+     new o2scl::comm_option_mfptr<eos>
+     (&eph,&eos::pns_eos),o2scl::cli::comm_option_both},
     {0,"select_model","Desc.",7,7,"","",
      new o2scl::comm_option_mfptr<eos>
      (&eph,&eos::select_model),o2scl::cli::comm_option_both},
