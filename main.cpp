@@ -56,7 +56,7 @@ int main(int argc, char *argv[]) {
     {0,"random","Desc.",0,0,"","",
      new o2scl::comm_option_mfptr<eos>
      (&eph,&eos::random),o2scl::cli::comm_option_both},
-    {0,"pns-eos","Desc.",0,0,"","",
+    {0,"pns-eos","Desc.",3,3,"","",
      new o2scl::comm_option_mfptr<eos>
      (&eph,&eos::pns_eos),o2scl::cli::comm_option_both},
     {0,"select_model","Desc.",7,7,"","",

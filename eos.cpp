@@ -2651,8 +2651,6 @@ int eos::solve_fixed_sonb_YL(size_t nv, const ubvector &x, ubvector &y,
   double Ye=x[0];
   double T=x[1];
   
-  cout << "sfsy: " << Ye << " " << T*hc_mev_fm << endl;
-  
   if (x[0]<0.01 || x[0]>0.6) return 1;
   if (x[1]<1.0e-5 || x[1]>1.0) return 2;
 
@@ -2673,11 +2671,19 @@ int eos::solve_fixed_sonb_YL(size_t nv, const ubvector &x, ubvector &y,
 
   double en=th2.en+electron.en+photon.en;
   
-  neutrino.mu=proton.mu+electron.mu-neutron.mu;
-  fzt.calc_mu_zerot(neutrino);
-  double YL2=(neutrino.n+electron.n)/nB;
+  if (YL<1.0e-4) {
+    
+    y[0]=proton.mu+electron.mu-neutron.mu;
+    
+  } else {
+    
+    neutrino.mu=proton.mu+electron.mu-neutron.mu;
+    fzt.calc_mu_zerot(neutrino);
+    double YL2=(neutrino.n+electron.n)/nB;
+
+    y[0]=YL2-YL;
+  }
   
-  y[0]=YL2-YL;
   y[1]=en/nB-sonb;
 
   return 0;
@@ -2808,9 +2814,14 @@ int eos::vir_comp(std::vector<std::string> &sv, bool itive_com) {
 
 int eos::pns_eos(std::vector<std::string> &sv, bool itive_com) {
 
-  table<> t;
-  t.line_of_names("nB Ye T");
+  table_units<> eost;
+  eost.line_of_names("nB Ye T ed pr nn np mun mup ne mue");
+  eost.line_of_units(((std::string)"1/fm^3 . 1/fm 1/fm^4 1/fm^4 1/fm^3 ")+
+		  "1/fm^3 1/fm 1/fm 1/fm^3 1/fm");
 
+  double sonb=o2scl::stod(sv[1]);
+  double YL=o2scl::stod(sv[2]);
+  
   ubvector x(2);
   x[0]=0.1;
   x[1]=10.0/hc_mev_fm;
@@ -2824,14 +2835,40 @@ int eos::pns_eos(std::vector<std::string> &sv, bool itive_com) {
        (&eos::solve_fixed_sonb_YL),
        this,std::placeholders::_1,
        std::placeholders::_2,
-       std::placeholders::_3,nB,1.0,0.4);
-    mh.verbose=2;
+       std::placeholders::_3,nB,sonb,YL);
+    mh.verbose=0;
     mh.msolve(2,x,pns);
 
     cout << nB << " " << x[0] << " " << x[1] << endl;
     
+    vector<double> line={nB,x[0],x[1],th2.ed+electron.ed+photon.ed+
+			 neutron.m*neutron.n+proton.m*proton.n,
+			 th2.pr+electron.pr+photon.pr,neutron.n,
+			 proton.n,neutron.mu,proton.mu,electron.n,
+			 electron.mu};
+    eost.line_of_data(line);
+    
   }
-  
+
+  tov_solve ts;
+  eos_tov_interp eti;
+  eti.read_table(eost,"ed","pr","nB");
+  ts.set_eos(eti);
+  ts.mvsr();
+
+  shared_ptr<table_units<> > mvsrt=ts.get_results();
+  cout << mvsrt->get_unit("ed") << endl;
+
+  //for(size_t j=0;j<mvsrt->get_nlines();j++) {
+  //cout << mvsrt->get("r",j) << " " << mvsrt->get("gm",j) << endl;
+  //}
+
+  hdf_file hf;
+  hf.open_or_create(sv[3]);
+  hdf_output(hf,eost,"eos");
+  hdf_output(hf,*mvsrt,"mvsr");
+  hf.close();
+
   return 0;
 }
 
