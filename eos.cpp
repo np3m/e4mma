@@ -2826,6 +2826,8 @@ int eos::pns_eos(std::vector<std::string> &sv, bool itive_com) {
   x[0]=0.1;
   x[1]=10.0/hc_mev_fm;
 
+  double Ye0, T0;
+  
   for(double nB=0.08;nB<1.5;nB+=0.01) {
     
     mroot_hybrids<> mh;
@@ -2840,6 +2842,10 @@ int eos::pns_eos(std::vector<std::string> &sv, bool itive_com) {
     mh.msolve(2,x,pns);
 
     cout << nB << " " << x[0] << " " << x[1] << endl;
+    if (nB<0.08*1.001) {
+      Ye0=x[0];
+      T0=x[1];
+    }
     
     vector<double> line={nB,x[0],x[1],th2.ed+electron.ed+photon.ed+
 			 neutron.m*neutron.n+proton.m*proton.n,
@@ -2850,8 +2856,49 @@ int eos::pns_eos(std::vector<std::string> &sv, bool itive_com) {
     
   }
 
-  tov_solve ts;
+  x[0]=Ye0;
+  x[1]=T0;
+  
   eos_tov_interp eti;
+
+  bool cold_crust=false;
+  
+  if (cold_crust && sonb>0.5) {
+    
+    eti.default_low_dens_eos();
+    
+  } else {
+  
+    for(double nB=0.07;nB>=1.0e-6;nB/=1.3) {
+      
+      mroot_hybrids<> mh;
+      mm_funct pns=std::bind
+	(std::mem_fn<int(size_t,const ubvector &,
+			 ubvector &, double, double, double)>
+	 (&eos::solve_fixed_sonb_YL),
+	 this,std::placeholders::_1,
+	 std::placeholders::_2,
+	 std::placeholders::_3,nB,sonb,YL);
+      mh.verbose=0;
+      mh.msolve(2,x,pns);
+      
+      cout << nB << " " << x[0] << " " << x[1] << endl;
+      
+      vector<double> line={nB,x[0],x[1],th2.ed+electron.ed+photon.ed+
+			   neutron.m*neutron.n+proton.m*proton.n,
+			   th2.pr+electron.pr+photon.pr,neutron.n,
+			   proton.n,neutron.mu,proton.mu,electron.n,
+			   electron.mu};
+      eost.line_of_data(line);
+    }
+    
+    eost.sort_table("nB");
+    
+    exit(-1);
+    
+  }
+
+  tov_solve ts;
   eti.read_table(eost,"ed","pr","nB");
   ts.set_eos(eti);
   ts.mvsr();
