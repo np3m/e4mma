@@ -8,11 +8,6 @@
 # Various user-specific settings
 # ----------------------------------------------------------------
 
-temp:
-	./eos -set select_cs2_test 0 -select-model 1276 474 \
-		5.175927e-01 1.336252e+01 6.134627e+01 3.326343e+01 \
-		8.880628e-01 -pns-eos 1.0 0.4 temp.o2
-
 ifeq ($(MACHINE),isospin)
 
 ifeq ($(USER),awsteiner)

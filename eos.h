@@ -376,11 +376,6 @@ class eos {
   int solve_Ye(size_t nv,const ubvector &x, ubvector &y,
 		double nb, double T, double muL);
 
-  /** \brief
-   */
-  int solve_fixed_sonb_YL(size_t nv, const ubvector &x, ubvector &y,
-			  double nB, double sonb, double YL);
-
   /** \brief Solve for T to ensure a specified value of sonb at fixed Ye
    */
   int solve_T(size_t nv,const ubvector &x, ubvector &y,
@@ -505,6 +500,11 @@ class eos {
  public:
   
   eos();
+
+  /** \brief
+   */
+  int solve_fixed_sonb_YL(size_t nv, const ubvector &x, ubvector &y,
+			  double nB, double sonb, double YL);
 
   /// \name Settings
   //@{
