@@ -25,56 +25,6 @@ using namespace o2scl;
 using namespace o2scl_const;
 using namespace o2scl_hdf;
 
-double eos_sn_oo1::compute_eg_point(double nb1, double ye1, double T1) {
-
-  double deg=nb1/pow(T1/hc_mev_fm,3.0);
-  photon.massless_calc(T1/hc_mev_fm);
-  electron.n=nb1*ye1;
-  
-  electron.mu=electron.m;
-  if (ye1==0.0 || electron.n==0.0) {
-    electron.ed=0.0;
-    electron.mu=0.0;
-    electron.en=0.0;
-    electron.pr=0.0;
-  } else {
-    relf.pair_density(electron,T1/hc_mev_fm);
-  }
-  
-  if (include_muons) {
-    muon.mu=electron.mu;
-    if (ye1==0.0 || muon.mu==0.0) { 
-      muon.ed=0.0;
-      muon.n=0.0;
-      muon.en=0.0;
-      muon.pr=0.0;
-    } else {
-      relf.pair_mu(muon,T1/hc_mev_fm);
-    }
-  }
-  
-  double E_eg=(electron.ed+photon.ed)/nb1*hc_mev_fm;
-  double P_eg=(electron.pr+photon.pr)*hc_mev_fm;
-  double S_eg=(electron.en+photon.en)/nb1;
-  double F_eg=E_eg-T1*S_eg;
-  
-  if (include_muons) {
-    E_eg+=muon.ed/nb1*hc_mev_fm;
-    P_eg+=muon.pr*hc_mev_fm;
-    S_eg+=muon.en/nb1;
-    F_eg+=muon.ed/nb1*hc_mev_fm-T1*muon.en/nb1;
-  }
-
-  if (false) {
-    double F_eg_electron=electron.ed/nb1*hc_mev_fm-T1*electron.en/nb1;
-    double F_eg_photon=photon.ed/nb1*hc_mev_fm-T1*photon.en/nb1;
-    cout << "F_eg: " << F_eg << " " << F_eg_electron << " "
-	 << F_eg_photon << endl;
-  }
-  
-  return F_eg;
-}
-
 eos_crust_virial_v2::eos_crust_virial_v2() {
   bn_params.resize(10);
   bn_params[0]=2.874487202922e-01;
@@ -421,7 +371,7 @@ void eos::min_max_cs2(double &cs2_min, double &cs2_max) {
 
 void eos::ns_fit(int row) {
 
-  if (row>=nstar_tab.get_nlines()) {
+  if (row>=((int)(nstar_tab.get_nlines()))) {
     O2SCL_ERR("Row not allowed in ns_fit().",
 	      exc_efailed);
   }
@@ -1377,29 +1327,16 @@ double eos::cs2_fixYe(fermion &n, fermion &p, double T, thermo &th) {
   // Compute dPdT
   double dPdT=dfdnbdT*nb+dfdnedT*ne+s;
 
-  // Compute dPdVstYeNb*V
-
-  //double dPdVstYeNb=(-nb*dPdnb*dfdTdT-ne*dPdne*dfdTdT+dPdT*(dfdnbdT*nb+dfdnedT*ne+s))/(dfdTdT);
-  
-  // Compute depsilondVstYeNb*V
-
-  //double depsilondVstYeNb=-((-mub*nb-mul*ne-n.m*nb+dfdnbdT*T*nb+dfdnedT*T*ne)*(-dfdTdT)-(-T*dfdTdT)*(dfdnbdT*nb+dfdnedT*ne+s))/dfdTdT;
- 
-  //or double depsilondVstYeNb=-(mub*nb+mul*ne+T*s+n.m*nb);
-
   double pr=mul*ne+mub*nb+T*s-ed1;
   
-  double cs_sq=(-nb*dPdnb*dfdTdT-ne*dPdne*dfdTdT+dPdT*(dfdnbdT*nb+dfdnedT*ne+s))/((pr+ed1)*(-dfdTdT));
-
-  //cs_sq=dPdVstYeNb/depsilondVstYeNb;
-  //cout<<pr+ed1<<" "<<dfdTdT<<" ";
+  double cs_sq=(-nb*dPdnb*dfdTdT-ne*dPdne*dfdTdT+dPdT*
+		(dfdnbdT*nb+dfdnedT*ne+s))/((pr+ed1)*(-dfdTdT));
 
   return cs_sq;
 }
 
-
 int eos::cs2_fixYe_mod(size_t nv, const ubvector &x,
-				ubvector &y,double Ye) {
+		       ubvector &y, double Ye) {
   double nb=x[0];
   double T=x[1];
   neutron.n=nb*(1.0-Ye);
@@ -2357,12 +2294,12 @@ int eos::test_deriv(std::vector<std::string> &sv, bool itive_com) {
 
 int eos::eos_sn(std::vector<std::string> &sv, bool itive_com) {
 
-  eos_sn_oo1 eso;
+  eos_sn_oo eso;
   eos_had_rmf rmf;
   eso.verbose=0;
   hdf_file hf;
 
-  /* Attempt to download the EOS file from isospin if necessary
+  /* Attempt to download the EOS file
    */
   cloud_file cf;
   cf.verbose=2;
@@ -2409,7 +2346,9 @@ int eos::eos_sn(std::vector<std::string> &sv, bool itive_com) {
     cout << "nB: " << lnB << " Ye: " << lYe
 	 << " T: " << lT << endl;
     f=eso.F.interp_linear(lnB,lYe,lT);
-    F_eg=eso.compute_eg_point(lnB,lYe,lT);
+    thermo lep;
+    eso.compute_eg_point(lnB,lYe,lT,lep);
+    F_eg=(lep.ed-lep.en*lT)/lnB;
     cout << "F_full,F_eg,Xn,Xa: " 
 	 << f << " " << F_eg << " "
 	 << eso.Xn.interp_linear(lnB,lYe,lT) << " "
@@ -2439,7 +2378,9 @@ int eos::eos_sn(std::vector<std::string> &sv, bool itive_com) {
       proton.n=lnB*lYe;
       rmf.calc_temp_e(neutron,proton,lT/hc_mev_fm,th2);
       f=(th2.ed-lT/hc_mev_fm*th2.en)*hc_mev_fm/lnB;
-      F_eg=eso.compute_eg_point(lnB,lYe,lT);
+    thermo lep;
+    eso.compute_eg_point(lnB,lYe,lT,lep);
+    F_eg=(lep.ed-lep.en*lT)/lnB;
       cout << "F_full,F_eg,Xn,Xa: " 
 	   << f+F_eg << " " << F_eg << " " << 0.0 << " "
 	   << 0.0 << endl;
@@ -2466,7 +2407,9 @@ int eos::eos_sn(std::vector<std::string> &sv, bool itive_com) {
     cout << "nB: " << lnB << " Ye: " << lYe
 	 << " T: " << lT << endl;
     f=eso.F.interp_linear(lnB,lYe,lT);
-    F_eg=eso.compute_eg_point(lnB,lYe,lT);
+    thermo lep;
+    eso.compute_eg_point(lnB,lYe,lT,lep);
+    F_eg=(lep.ed-lep.en*lT)/lnB;
     cout << "F_full,F_eg,Xn,Xa: " 
 	 << f << " " << F_eg << " "
 	 << eso.Xn.interp_linear(lnB,lYe,lT) << " "
@@ -2494,7 +2437,9 @@ int eos::eos_sn(std::vector<std::string> &sv, bool itive_com) {
     cout << "nB: " << lnB << " Ye: " << lYe
 	 << " T: " << lT << endl;
     fint=eso.Fint.interp_linear(lnB,lYe,lT);
-    F_eg=eso.compute_eg_point(lnB,lYe,lT);
+    thermo lep;
+    eso.compute_eg_point(lnB,lYe,lT,lep);
+    F_eg=(lep.ed-lep.en*lT)/lnB;
     cout << "F_full,F_eg,Xn,Xa: " 
 	 << fint+F_eg << " " << F_eg << " "
 	 << eso.Xn.interp_linear(lnB,lYe,lT) << " "
@@ -2524,7 +2469,9 @@ int eos::eos_sn(std::vector<std::string> &sv, bool itive_com) {
       proton.n=lnB*lYe;
       rmf.calc_temp_e(neutron,proton,lT/hc_mev_fm,th2);
       f=(th2.ed-lT/hc_mev_fm*th2.en)*hc_mev_fm/lnB;
-      F_eg=eso.compute_eg_point(lnB,lYe,lT);
+    thermo lep;
+    eso.compute_eg_point(lnB,lYe,lT,lep);
+    F_eg=(lep.ed-lep.en*lT)/lnB;
       cout << "F_full,F_eg,Xn,Xa: " 
 	   << f+F_eg << " " << F_eg << " " << 0.0 << " "
 	   << 0.0 << endl;
@@ -2552,7 +2499,9 @@ int eos::eos_sn(std::vector<std::string> &sv, bool itive_com) {
       cout << "nB: " << lnB << " Ye: " << lYe
 	   << " T: " << lT << endl;
       fint=eso.Fint.interp_linear(lnB,lYe,lT);
-      F_eg=eso.compute_eg_point(lnB,lYe,lT);
+    thermo lep;
+    eso.compute_eg_point(lnB,lYe,lT,lep);
+    F_eg=(lep.ed-lep.en*lT)/lnB;
       cout << "F_full,F_eg,Xn,Xa: " 
 	   << fint+F_eg << " " << F_eg << " "
 	   << eso.Xn.interp_linear(lnB,lYe,lT) << " "
@@ -2583,7 +2532,9 @@ int eos::eos_sn(std::vector<std::string> &sv, bool itive_com) {
       proton.n=lnB*lYe;
       rmf.calc_temp_e(neutron,proton,lT/hc_mev_fm,th2);
       f=(th2.ed-lT/hc_mev_fm*th2.en)*hc_mev_fm/lnB;
-      F_eg=eso.compute_eg_point(lnB,lYe,lT);
+    thermo lep;
+    eso.compute_eg_point(lnB,lYe,lT,lep);
+    F_eg=(lep.ed-lep.en*lT)/lnB;
       cout << "F_full,F_eg,Xn,Xa: " 
 	   << f+F_eg << " " << F_eg << " " << 0.0 << " "
 	   << 0.0 << endl;
@@ -2610,7 +2561,9 @@ int eos::eos_sn(std::vector<std::string> &sv, bool itive_com) {
     cout << "nB: " << lnB << " Ye: " << lYe
 	 << " T: " << lT << endl;
     fint=eso.Fint.interp_linear(lnB,lYe,lT);
-    F_eg=eso.compute_eg_point(lnB,lYe,lT);
+    thermo lep;
+    eso.compute_eg_point(lnB,lYe,lT,lep);
+    F_eg=(lep.ed-lep.en*lT)/lnB;
     cout << "F_full,F_eg,Xn,Xa: " 
 	 << fint+F_eg << " " << F_eg << " "
 	 << eso.Xn.interp_linear(lnB,lYe,lT) << " "
@@ -2651,7 +2604,7 @@ int eos::solve_fixed_sonb_YL(size_t nv, const ubvector &x, ubvector &y,
   double Ye=x[0];
   double T=x[1];
   
-  if (x[0]<0.01 || x[0]>0.6) return 1;
+  if (x[0]<1.0e-5 || x[0]>0.6) return 1;
   if (x[1]<1.0e-5 || x[1]>1.0) return 2;
 
   // The temperature here is in 1/fm
@@ -2673,11 +2626,11 @@ int eos::solve_fixed_sonb_YL(size_t nv, const ubvector &x, ubvector &y,
   
   if (YL<1.0e-4) {
     
-    y[0]=proton.mu+electron.mu-neutron.mu;
+    y[0]=proton.mu+proton.m+electron.mu-neutron.mu-neutron.m;
     
   } else {
     
-    neutrino.mu=proton.mu+electron.mu-neutron.mu;
+    neutrino.mu=proton.mu+proton.m+electron.mu-neutron.mu-neutron.m;
     fzt.calc_mu_zerot(neutrino);
     double YL2=(neutrino.n+electron.n)/nB;
 
@@ -2690,7 +2643,7 @@ int eos::solve_fixed_sonb_YL(size_t nv, const ubvector &x, ubvector &y,
 }
 
 int eos::solve_T(size_t nv, const ubvector &x, ubvector &y,
-			  double nb, double Ye,double sonb) {
+			  double nb, double Ye, double sonb) {
   
   double T=x[0];
   // The temperature here is in 1/fm
@@ -2826,7 +2779,7 @@ int eos::pns_eos(std::vector<std::string> &sv, bool itive_com) {
   x[0]=0.1;
   x[1]=10.0/hc_mev_fm;
 
-  double Ye0, T0;
+  double Ye0=0.0, T0=0.0;
   
   for(double nB=0.08;nB<1.5;nB+=0.01) {
     
@@ -3214,7 +3167,7 @@ int eos::test_eg(std::vector<std::string> &sv,
   int n_Ye_init=60;
   int n_T_init=80;
   
-  eos_sn_oo1 eso;
+  eos_sn_oo eso;
   eso.include_muons=true;
   
   for(int i=0;i<326;i++) {
@@ -3228,7 +3181,8 @@ int eos::test_eg(std::vector<std::string> &sv,
 	double T_MeV;
 	if (k==0) T_MeV=0.0;
 	else T_MeV=pow(10.0,(k-1)*0.04-1.0);
-	eso.compute_eg_point(nB,Ye,T_MeV);
+	thermo lep;
+	eso.compute_eg_point(nB,Ye,T_MeV,lep);
       }
     }
   }

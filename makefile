@@ -18,7 +18,7 @@ LIBS = -L/usr/lib/x86_64-linux-gnu/hdf5/serial \
 LCXX = g++ 
 LCFLAGS = -I/usr/lib/x86_64-linux-gnu/hdf5/serial/include \
 	-I/usr/include/eigen3 -Wno-deprecated-declarations \
-	-O3 -std=c++11 -DNO_MPI -Wshadow -DO2SCL_HDF5_COMP 
+	-O3 -std=c++11 -DNO_MPI -Wall -Wno-unused -Wshadow -DO2SCL_HDF5_COMP 
 LFFLAGS = -O3 
 LMPICXX = mpic++
 

@@ -49,19 +49,6 @@
 #include <o2scl/deriv_gsl.h>
 #include <o2scl/deriv_cern.h>
 
-/** \brief O'Connor and Ott EOS with a modified electron-photon EOS
-*/
-class eos_sn_oo1: public o2scl::eos_sn_oo {
-
-public:
-
-  /** \brief Compute the electron-photon EOS at the
-      specified density, electron fraction, and temperature
-   */
-  double compute_eg_point(double nB, double Ye, double T);
-
-};
-
 /** \brief An updated version of \ref o2scl::eos_crust_virial
     with a better fit for the virial coefficients
 */
@@ -360,11 +347,6 @@ class eos {
   double dfdpn_total(o2scl::fermion &n, o2scl::fermion &p,
 		   double nn, double pn, double T, o2scl::thermo &th);
 
-  /** \brief Compute depsilondsonb including photons and electons
-   */
-  double depsilondsonb(double sonb, double nb, double Ye,
-		       double cssq);
-
   /** \brief Compute the smoothed squared speed of sound from the 
       analytical expressions for fixed Ye 
   */
@@ -411,10 +393,6 @@ class eos {
   */
   int solve_coeff_small(size_t nv, const ubvector &x, ubvector &y, 
          double nb_last, double cs_ns_2, double cs_ns_last);
-
-  /** \brief Desc
-   */
-  int test_cs2(double nb, double ye, double T);
 
   /** \brief Internal select function
    */
