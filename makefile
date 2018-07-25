@@ -91,7 +91,6 @@ doc: empty
 	cd doc; cp ~/o2scl/doc/o2scl/eos/o2scl_eos.tag .
 	cd doc; doxygen doxyfile
 	cd sphinx; make html
-#	cp -r sphinx/build/html/* $(HOME)/data/ecn
 
 sync-doc:
 	sudo cp -r sphinx/build/html/* $(STATIC_DOC_DIR)/eos

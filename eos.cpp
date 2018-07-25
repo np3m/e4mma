@@ -87,7 +87,7 @@ void eos_crust_virial_v2::fit(bool show_fit) {
 
   // Fitter class
   fit_nonlin<chi_fit_funct<vector<double>,ubmatrix,std::function<
-						     double(size_t,const std::vector<double> &, double)> >,
+    double(size_t,const std::vector<double> &, double)> >,
 	     vector<double>,ubmatrix> fitter;
 
   // --------------------------------------------
@@ -167,7 +167,7 @@ void eos_crust_virial_v2::fit(bool show_fit) {
   
   // Chi-squared and fitting data
   chi_fit_funct<vector<double>,ubmatrix,std::function<
-					  double(size_t,const std::vector<double> &, double)> > 
+    double(size_t,const std::vector<double> &, double)> > 
     cff(neut_data,Tv_neut,bnv,bn_err,ff_neutron);
   
   cout << "Neutron virial coefficient:\n" << endl;
@@ -277,9 +277,9 @@ void eos_crust_virial_v2::fit(bool show_fit) {
   
   // Chi-squared and fitting data
   chi_fit_funct<vector<double>,ubmatrix,std::function<
-					  double(size_t,const std::vector<double> &, double)> > 
+    double(size_t,const std::vector<double> &, double)> > 
     cff_nuc(nuc_data,Tv_nuc,bpnv,bpn_err,ff_nuc);
-
+  
   cout << "Initial chi-squared: " << cff_nuc.chi2(bpn_np,bpn_params) << endl;
 
   fitter.fit(bpn_np,bpn_params,covar2,chi2,cff_nuc);
@@ -603,6 +603,7 @@ eos::eos() {
   a_virial=3.0;
   b_virial=0.0;
 
+  // Seed the random number generator with the clock time
   r.clock_seed();
 }
 
@@ -3241,8 +3242,8 @@ int eos::test_eg(std::vector<std::string> &sv,
   
   eos_sn_oo eso;
   eso.include_muons=true;
-  
-  for(int i=0;i<326;i++) {
+
+  for(int i=325;i>=0;i--) {
     double nB=pow(10.0,i*0.04-12.0);
     if (i%10==0) {
       cout << "i,nB: " << i << " " << nB << endl;
@@ -3271,16 +3272,16 @@ void eos::setup_cli(o2scl::cli &cl) {
  
   static const int nopt=12;
   o2scl::comm_option_s options[nopt]={
-    {0,"test_deriv","Test the first derivatives of the free energy.",
+    {0,"test-deriv","Test the first derivatives of the free energy.",
      0,0,"","",new o2scl::comm_option_mfptr<eos>
      (this,&eos::test_deriv),o2scl::cli::comm_option_both},
-    {0,"table_Ye","Construct a 2D table at fixed Y_e.",2,2,"<fname> <Ye>","",
+    {0,"table-Ye","Construct a 2D table at fixed Y_e.",2,2,"<fname> <Ye>","",
      new o2scl::comm_option_mfptr<eos>
      (this,&eos::table_Ye),o2scl::cli::comm_option_both},
-    {0,"table_full","Construct a full 3D EOS table.",1,1,"<fname>","",
+    {0,"table-full","Construct a full 3D EOS table.",1,1,"<fname>","",
      new o2scl::comm_option_mfptr<eos>
      (this,&eos::table_full),o2scl::cli::comm_option_both},
-    {0,"vir_fit","Fit the virial EOS",0,0,"","",
+    {0,"vir-fit","Fit the virial EOS",0,0,"","",
      new o2scl::comm_option_mfptr<eos>
      (this,&eos::vir_fit),o2scl::cli::comm_option_both},
     {0,"eos_sn","Compare with other EOS tables.",0,0,"","",
@@ -3298,19 +3299,18 @@ void eos::setup_cli(o2scl::cli &cl) {
     {0,"pns-eos","Compute the PNS EOS.",3,3,"","",
      new o2scl::comm_option_mfptr<eos>
      (this,&eos::pns_eos),o2scl::cli::comm_option_both},
-    {0,"select_model","Specify a parameter set.",7,7,
+    {0,"select-model","Specify a parameter set.",7,7,
      "<i_ns> <i_skyrme> <alpha> <a> <L> <S> <phi>","",
      new o2scl::comm_option_mfptr<eos>
      (this,&eos::select_model),o2scl::cli::comm_option_both},
-    {0,"teg","Test the electron-photon EOS.",0,0,"","",
+    {0,"test-eg","Test the electron-photon EOS.",0,0,"","",
      new o2scl::comm_option_mfptr<eos>
      (this,&eos::test_eg),o2scl::cli::comm_option_both},
-    {0,"vir_comp","Compare the virial and full EOS.",0,0,"","",
+    {0,"vir-comp","Compare the virial and full EOS.",0,0,"","",
      new o2scl::comm_option_mfptr<eos>
      (this,&eos::vir_comp),o2scl::cli::comm_option_both}
   };
   cl.set_comm_option_vec(nopt,options);
-  cl.gnu_intro=false;
 
   o2scl::cli::parameter_int p_verbose;
   p_verbose.i=&verbose;
@@ -3319,12 +3319,12 @@ void eos::setup_cli(o2scl::cli &cl) {
 
   o2scl::cli::parameter_bool p_old_ns_fit;
   p_old_ns_fit.b=&old_ns_fit;
-  p_old_ns_fit.help="Old NS fit (default 0)";
+  p_old_ns_fit.help="If true, use the old NS fit (default true)";
   cl.par_list.insert(make_pair("old_ns_fit",&p_old_ns_fit));
 
   o2scl::cli::parameter_bool p_ns_record;
   p_ns_record.b=&ns_record;
-  p_ns_record.help="Record NS fit (default 0)";
+  p_ns_record.help="If true, record the NS fit results (default false)";
   cl.par_list.insert(make_pair("ns_record",&p_ns_record));
 
   o2scl::cli::parameter_bool p_include_muons;
@@ -3334,12 +3334,13 @@ void eos::setup_cli(o2scl::cli &cl) {
 
   o2scl::cli::parameter_bool p_select_cs2_test;
   p_select_cs2_test.b=&select_cs2_test;
-  p_select_cs2_test.help="Test cs2 in select_internal() (default 1)";
+  p_select_cs2_test.help="Test cs2 in select_internal() (default true)";
   cl.par_list.insert(make_pair("select_cs2_test",&p_select_cs2_test));
 
   o2scl::cli::parameter_bool p_test_ns_cs2;
   p_test_ns_cs2.b=&test_ns_cs2;
-  p_test_ns_cs2.help="Test neutron star cs2 (default 0)";
+  p_test_ns_cs2.help=((std::string)"If true, then test the neutron star ")+
+    "speed of sound (default false)";
   cl.par_list.insert(make_pair("test_ns_cs2",&p_test_ns_cs2));
 
   o2scl::cli::parameter_double p_a_virial;
