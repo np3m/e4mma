@@ -114,10 +114,6 @@ class eos {
   
  protected:
   
-  o2scl::fermion_zerot fzt;
-
-  o2scl::fermion neutrino;
-  
   /// \name Main EOS parameters
   //@{
   /// The first exponent for density in the QMC EOS (unitless)
@@ -211,6 +207,12 @@ class eos {
   */
   double cs2_fixYe(o2scl::fermion &n, o2scl::fermion &p, double T,
 		   o2scl::thermo &th);
+
+  /** \brief Compute the squared speed of sound at 
+      fixed \f$ Y_e \f$, alternate version
+  */
+  double cs2_fixYe_alt(o2scl::fermion &n, o2scl::fermion &p, double T,
+		       o2scl::thermo &th);
   //@}
 
   /// \name Internal variables
@@ -379,28 +381,22 @@ class eos {
   int solve_sonb(size_t nv, const ubvector &x,
 		ubvector &y, double nb, double Ye, double T);
 
-  /** \brief find derivatives dPstardYe, dnbstardYe, dsstardYe, nb_star
-             P_star, mul star
-   */
-  int find_deriv(ubvector &x, double Ye, double T);
-
-  /** \brief solve a1 a2, if cs_ns(2.0)>cs_ns(1.28)
+  /** \brief solve for a1 and a2 when cs_ns(2.0)>cs_ns(1.28)
   */
   int solve_coeff_big(size_t nv, const ubvector &x, ubvector &y, 
         double nb_last, double cs_ns_2, double cs_ns_last);
 
-  /** \brief solve a1 a2, if cs_ns(2.0)<cs_ns(1.28)
-  */
+  /** \brief solve for a1 and a2 when cs_ns(2.0)<cs_ns(1.28)
+   */
   int solve_coeff_small(size_t nv, const ubvector &x, ubvector &y, 
-         double nb_last, double cs_ns_2, double cs_ns_last);
-
+			double nb_last, double cs_ns_2, double cs_ns_last);
+  
   /** \brief Internal select function
    */
   int select_internal(int i_ns_loc, int i_skyrme_loc,
 		      double qmc_alpha_loc, double qmc_a_loc,
 		      double eos_L_loc, double eos_S_loc,
 		      double phi_loc);
-
   //@}
 
   /// \name Particle objects
@@ -424,6 +420,9 @@ class eos {
 
   /// Proton for chiral part
   o2scl::fermion p_chiral;
+
+  /// Neutrino for PNS EOS
+  o2scl::fermion neutrino;  
   //@}
 
   /// \name Base physics objects
@@ -434,6 +433,9 @@ class eos {
   /** \brief Object for computing electron/positron thermodynamic integrals
    */
   o2scl::fermion_rel relf;
+
+  /// Object for zero-temperature thermodynamics
+  o2scl::fermion_zerot fzt;
 
   /// Thermodynamic quantities
   o2scl::thermo th2;
@@ -479,7 +481,8 @@ class eos {
   
   eos();
 
-  /** \brief
+  /** \brief Solve for fixed entropy per baryon and fixed
+      lepton fraction
    */
   int solve_fixed_sonb_YL(size_t nv, const ubvector &x, ubvector &y,
 			  double nB, double sonb, double YL);
@@ -495,7 +498,10 @@ class eos {
    */
   bool ns_record;
 
-  /** \brief If true, use the old neutron star fit
+  /** \brief If true, use the old neutron star fit (default true)
+
+      This defaults to true because the old fit performs a bit
+      better than the new one.
    */
   bool old_ns_fit;
 
@@ -531,7 +537,7 @@ class eos {
   int table_Ye(std::vector<std::string> &sv,
 		  bool itive_com);
 
-  /** \brief
+  /** \brief Construct the EOS for a proto-neutron star
    */
   int pns_eos(std::vector<std::string> &sv, bool itive_com);
   

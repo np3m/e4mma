@@ -1335,6 +1335,89 @@ double eos::cs2_fixYe(fermion &n, fermion &p, double T, thermo &th) {
   return cs_sq;
 }
 
+double eos::cs2_fixYe_alt(fermion &n, fermion &p, double T,
+				   thermo &th) {
+ 
+  deriv_gsl<> gd;
+  double nn=n.n;
+  double np=p.n;
+  double nb=n.n+p.n;
+  free_energy_density_ep(nn,np,T);
+  
+  double den=th2.en*T+(n.mu+n.m)*n.n+(p.mu+p.m)*p.n+electron.mu*electron.n;
+  double en=th2.en;
+
+  // Numerically compute required second derivatives
+  double fac=1.0e3;
+  
+  // d^2f/dnn^2
+  std::function<double(double)> f_nnnn_func=
+    std::bind(std::mem_fn<double(fermion &, fermion &, double,
+				 double, double, thermo &)>
+	      (&eos::dfdnn_total),
+	      this,std::ref(n),std::ref(p),std::placeholders::_1,
+	      np,T,std::ref(th));
+  gd.h=fabs(nn)/fac;
+  double f_nnnn=gd.deriv(nn,f_nnnn_func);
+  
+  // d^2f/dnn/dT
+  std::function<double(double)> f_nnT_func=
+    std::bind(std::mem_fn<double(fermion &, fermion &, double,
+				 double, double, thermo &)>
+	      (&eos::dfdnn_total),
+	      this,std::ref(n),std::ref(p),nn,np,std::placeholders::_1,
+	      std::ref(th));
+  gd.h=fabs(T)/fac;
+  double f_nnT=gd.deriv(T,f_nnT_func);
+
+  // d^2f/dnp^2
+  std::function<double(double)> f_npnp_func=
+    std::bind(std::mem_fn<double(fermion &, fermion &, double,
+				 double, double, thermo &)>
+	      (&eos::dfdpn_total),
+	      this,std::ref(n),std::ref(p),nn,std::placeholders::_1,
+	      T,std::ref(th));
+  gd.h=fabs(np)/fac;
+  double f_npnp=gd.deriv(np,f_npnp_func);
+  
+  // d^2f/dnnnp
+  std::function<double(double)> f_nnnp_func=
+    std::bind(std::mem_fn<double(fermion &, fermion &, double,
+				 double, double, thermo &)>
+	      (&eos::dfdnn_total),
+	      this,std::ref(n),std::ref(p),nn,std::placeholders::_1,
+	      T,std::ref(th));
+  gd.h=fabs(np)/fac;
+  double f_nnnp=gd.deriv(np,f_nnnp_func);
+  
+  // d^2f/dnp/dT
+  std::function<double(double)> f_npT_func=
+    std::bind(std::mem_fn<double(fermion &, fermion &, double,
+				 double, double, thermo &)>
+	      (&eos::dfdpn_total),
+	      this,std::ref(n),std::ref(p),nn,np,std::placeholders::_1,
+	      std::ref(th));
+  gd.h=fabs(T)/fac;
+  double f_npT=gd.deriv(T,f_npT_func);
+
+  // d^2f/dT^2
+  std::function<double(double)> f_TT_func=
+    std::bind(std::mem_fn<double(fermion &, fermion &, double,
+				 double, double, thermo &)>
+	      (&eos::entropy),
+	      this,std::ref(n),std::ref(p),nn,np,std::placeholders::_1,
+	      std::ref(th));
+  gd.h=fabs(T)/fac;
+  double f_TT=-gd.deriv(T,f_TT_func);
+
+  double cs_sq=(nn*nn*(f_nnnn-f_nnT*f_nnT/f_TT)+
+		2.0*nn*np*(f_nnnp-f_nnT*f_npT/f_TT)+
+		np*np*(f_npnp-f_npT*f_npT/f_TT)-
+		2.0*en*(nn*f_nnT/f_TT+np*f_npT/f_TT)-en*en/f_TT)/den;
+
+  return cs_sq;
+}
+
 int eos::cs2_fixYe_mod(size_t nv, const ubvector &x,
 		       ubvector &y, double Ye) {
   double nb=x[0];
