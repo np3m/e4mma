@@ -114,7 +114,7 @@ class eos {
   
  protected:
   
-  /// \name Main EOS parameters
+  /// \name Main EOS parameters [protected]
   //@{
   /// The first exponent for density in the QMC EOS (unitless)
   double qmc_alpha;
@@ -123,7 +123,7 @@ class eos {
   double qmc_a;
   
   /** \brief The speed of sound in neutron star matter at 
-      \f$ 2~\mathrm{fm}^{-3} \f$
+      \f$ n_B=2~\mathrm{fm}^{-3} \f$
    */
   double phi;
 
@@ -140,7 +140,7 @@ class eos {
   int i_skyrme;
   //@}
 
-  /// \name Basic EOS functions
+  /// \name Basic EOS functions [protected]
   //@{
   /** \brief Return the total free energy density of matter
       (without the rest mass contribution for the nucleons)
@@ -213,7 +213,7 @@ class eos {
 		    o2scl::thermo &th);
   //@}
 
-  /// \name Internal variables
+  /// \name Internal variables [protected]
   //@{
   /// The table which stores the neutron star EOS results
   o2scl::table_units<> nstar_tab;
@@ -247,7 +247,7 @@ class eos {
   double s_virial;
   //@}
   
-  /// \name The fit to the neutron star EOS
+  /// \name The fit to the neutron star EOS [protected]
   //@{
   /** \brief Compute the energy density (in \f$ \mathrm{fm}^{-4} \f$)
       of neutron matter at high density from the neutron star data
@@ -319,7 +319,7 @@ class eos {
   double mu_fit(double nb);
   //@}
 
-  /// \name Other EOS functions
+  /// \name Other EOS functions [protected]
   //@{
   /** \brief Compute the energy density (in \f$ \mathrm{fm}^{-4} \f$)
       of neutron matter from quantum Monte Carlo (without the rest
@@ -370,7 +370,7 @@ class eos {
 		      double eos_L_loc, double eos_S_loc, double phi_loc);
   //@}
 
-  /// \name Particle objects
+  /// \name Particle objects [protected]
   //@{
   /** \brief Electron/positron
    */
@@ -396,7 +396,7 @@ class eos {
   o2scl::fermion neutrino;  
   //@}
 
-  /// \name Base physics objects
+  /// \name Base physics objects [protected]
   //@{
   /// The virial equation solver
   virial_solver acl;
@@ -404,9 +404,6 @@ class eos {
   /** \brief Object for computing electron/positron thermodynamic integrals
    */
   o2scl::fermion_rel relf;
-
-  /// Object for zero-temperature thermodynamics
-  o2scl::fermion_zerot fzt;
 
   /// Thermodynamic quantities
   o2scl::thermo th2;
@@ -424,7 +421,7 @@ class eos {
   eos_crust_virial_v2 ecv;
   //@}
 
-  /// \name The parameters for the QMC energy density
+  /// \name The parameters for the QMC energy density [protected]
   //@{
   /// The second exponent for density in the QMC EOS (unitless)
   double qmc_beta;
@@ -436,7 +433,7 @@ class eos {
   double qmc_n0;
   //@}
   
-  /// \name Output saturation properties
+  /// \name Output saturation properties [protected]
   //@{
   /// The binding energy per particle
   double eos_EoA;
@@ -452,13 +449,10 @@ class eos {
   
   eos();
 
-  /** \brief Solve for fixed entropy per baryon and fixed
-      lepton fraction
-   */
-  int solve_fixed_sonb_YL(size_t nv, const ubvector &x, ubvector &y,
-			  double nB, double sonb, double YL);
+  virtual ~eos() {
+  }
 
-  /// \name Settings
+  /// \name Settings [public]
   //@{
   /** \brief If true, test the neutron star speed of sound
    */
@@ -501,7 +495,7 @@ class eos {
   bool select_cs2_test;
   //@}
 
-  /// \name Command-line interface functions
+  /// \name Command-line interface functions [public]
   //@{
   /** \brief Construct a table at fixed electron fraction
    */
@@ -559,5 +553,19 @@ class eos {
   int eos_sn(std::vector<std::string> &sv, bool itive_com);
   //@}
 
+  /// \name Miscellaneous functions [public]
+  //@{
+  /** \brief Solve for fixed entropy per baryon and fixed
+      lepton fraction
+   */
+  int solve_fixed_sonb_YL(size_t nv, const ubvector &x, ubvector &y,
+			  double nB, double sonb, double YL);
+
+  /** \brief Setup the command-line interface with commands and
+      parameters
+   */
+  virtual void setup_cli(o2scl::cli &cl);
+  //@}
+  
 };
 

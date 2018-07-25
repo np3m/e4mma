@@ -2703,7 +2703,7 @@ int eos::solve_fixed_sonb_YL(size_t nv, const ubvector &x, ubvector &y,
   } else {
     
     neutrino.mu=proton.mu+proton.m+electron.mu-neutron.mu-neutron.m;
-    fzt.calc_mu_zerot(neutrino);
+    relf.massless_pair_mu(neutrino,T);
     double YL2=(neutrino.n+electron.n)/nB;
 
     y[0]=YL2-YL;
@@ -3267,3 +3267,90 @@ int eos::vir_fit(std::vector<std::string> &sv,
   return 0;
 }
 
+void eos::setup_cli(o2scl::cli &cl) {
+ 
+  static const int nopt=12;
+  o2scl::comm_option_s options[nopt]={
+    {0,"test_deriv","Test the first derivatives of the free energy.",
+     0,0,"","",new o2scl::comm_option_mfptr<eos>
+     (this,&eos::test_deriv),o2scl::cli::comm_option_both},
+    {0,"table_Ye","Construct a 2D table at fixed Y_e.",2,2,"<fname> <Ye>","",
+     new o2scl::comm_option_mfptr<eos>
+     (this,&eos::table_Ye),o2scl::cli::comm_option_both},
+    {0,"table_full","Construct a full 3D EOS table.",1,1,"<fname>","",
+     new o2scl::comm_option_mfptr<eos>
+     (this,&eos::table_full),o2scl::cli::comm_option_both},
+    {0,"vir_fit","Fit the virial EOS",0,0,"","",
+     new o2scl::comm_option_mfptr<eos>
+     (this,&eos::vir_fit),o2scl::cli::comm_option_both},
+    {0,"eos_sn","Compare with other EOS tables.",0,0,"","",
+     new o2scl::comm_option_mfptr<eos>
+     (this,&eos::eos_sn),o2scl::cli::comm_option_both},
+    {0,"mcarlo_data","Compute Monte Carlo data.",0,1,"","",
+     new o2scl::comm_option_mfptr<eos>
+     (this,&eos::mcarlo_data),o2scl::cli::comm_option_both},
+    {0,"point","Compute the EOS at one (n_B,Y_e,T) point.",0,3,"","",
+     new o2scl::comm_option_mfptr<eos>
+     (this,&eos::point),o2scl::cli::comm_option_both},
+    {0,"random","Generate a random EOS model.",0,0,"","",
+     new o2scl::comm_option_mfptr<eos>
+     (this,&eos::random),o2scl::cli::comm_option_both},
+    {0,"pns-eos","Compute the PNS EOS.",3,3,"","",
+     new o2scl::comm_option_mfptr<eos>
+     (this,&eos::pns_eos),o2scl::cli::comm_option_both},
+    {0,"select_model","Specify a parameter set.",7,7,
+     "<i_ns> <i_skyrme> <alpha> <a> <L> <S> <phi>","",
+     new o2scl::comm_option_mfptr<eos>
+     (this,&eos::select_model),o2scl::cli::comm_option_both},
+    {0,"teg","Test the electron-photon EOS.",0,0,"","",
+     new o2scl::comm_option_mfptr<eos>
+     (this,&eos::test_eg),o2scl::cli::comm_option_both},
+    {0,"vir_comp","Compare the virial and full EOS.",0,0,"","",
+     new o2scl::comm_option_mfptr<eos>
+     (this,&eos::vir_comp),o2scl::cli::comm_option_both}
+  };
+  cl.set_comm_option_vec(nopt,options);
+  cl.gnu_intro=false;
+
+  o2scl::cli::parameter_int p_verbose;
+  p_verbose.i=&verbose;
+  p_verbose.help="Verbose parameter (default 1)";
+  cl.par_list.insert(make_pair("verbose",&p_verbose));
+
+  o2scl::cli::parameter_bool p_old_ns_fit;
+  p_old_ns_fit.b=&old_ns_fit;
+  p_old_ns_fit.help="Old NS fit (default 0)";
+  cl.par_list.insert(make_pair("old_ns_fit",&p_old_ns_fit));
+
+  o2scl::cli::parameter_bool p_ns_record;
+  p_ns_record.b=&ns_record;
+  p_ns_record.help="Record NS fit (default 0)";
+  cl.par_list.insert(make_pair("ns_record",&p_ns_record));
+
+  o2scl::cli::parameter_bool p_include_muons;
+  p_include_muons.b=&include_muons;
+  p_include_muons.help="If true, include muons (default false)";
+  cl.par_list.insert(make_pair("include_muons",&p_include_muons));
+
+  o2scl::cli::parameter_bool p_select_cs2_test;
+  p_select_cs2_test.b=&select_cs2_test;
+  p_select_cs2_test.help="Test cs2 in select_internal() (default 1)";
+  cl.par_list.insert(make_pair("select_cs2_test",&p_select_cs2_test));
+
+  o2scl::cli::parameter_bool p_test_ns_cs2;
+  p_test_ns_cs2.b=&test_ns_cs2;
+  p_test_ns_cs2.help="Test neutron star cs2 (default 0)";
+  cl.par_list.insert(make_pair("test_ns_cs2",&p_test_ns_cs2));
+
+  o2scl::cli::parameter_double p_a_virial;
+  p_a_virial.d=&a_virial;
+  p_a_virial.help="Virial coefficient a (default 3.0)";
+  cl.par_list.insert(make_pair("a_virial",&p_a_virial));
+
+  o2scl::cli::parameter_double p_b_virial;
+  p_b_virial.d=&b_virial;
+  p_b_virial.help="Virial coefficient b (default 0.0)";
+  cl.par_list.insert(make_pair("b_virial",&p_b_virial));
+
+  return;
+}
