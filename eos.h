@@ -52,7 +52,7 @@
 /** \brief An updated version of \ref o2scl::eos_crust_virial
     with a better fit for the virial coefficients
 */
-class eos_crust_virial_v2: public o2scl::eos_crust_virial {
+class eos_crust_virial_v2 : public o2scl::eos_crust_virial {
   
  public:
   
@@ -143,7 +143,7 @@ class eos {
   /// \name Basic EOS functions
   //@{
   /** \brief Return the total free energy density of matter
-      (without the rest mass contribution)
+      (without the rest mass contribution for the nucleons)
    */
   double free_energy_density
     (o2scl::fermion &n, o2scl::fermion &p, double T,
@@ -168,7 +168,7 @@ class eos {
     return free_energy_density_virial(n,p,T,th,x1,x2,x3,x4,x5,x6);
   }
   
-  /** \brief Alternate form of free_energy_density() for
+  /** \brief Alternate form of \ref free_energy_density() for
       computing derivatives
 
       This function does not include electrons or photons.
@@ -177,16 +177,14 @@ class eos {
 				 double nn, double np, double T,
 				 o2scl::thermo &th);
 
-  /** \brief Alternate form of free_energy_density() for
-      computing derivatives
-
-      This function does include electrons, positrons, and photons.
+  /** \brief Alternate form of \ref free_energy_density() 
+      which includes electrons, positrons, and photons.
   */
   double free_energy_density_ep(double nn, double np, double T);
   
-  /** \brief Compute the entropy density including photons and 
-      electons
-   */
+  /** \brief Compute the entropy density including photons,
+      electrons, and positrons
+  */
   double entropy(o2scl::fermion &n, o2scl::fermion &p,
 		 double nn, double np, double T, o2scl::thermo &th);
 
@@ -196,12 +194,6 @@ class eos {
   double ed(o2scl::fermion &n, o2scl::fermion &p,
 	    double nn, double np, double T, o2scl::thermo &th);
 
-  /** \brief Compute the squared speed of sound at fixed
-      \f$ \mu_L \f$
-  */
-  double cs2_fixmuL(o2scl::fermion &n, o2scl::fermion &p, double T,
-	     o2scl::thermo &th);
-  
   /** \brief Compute the squared speed of sound at 
       fixed \f$ Y_e \f$
   */
@@ -213,6 +205,12 @@ class eos {
   */
   double cs2_fixYe_alt(o2scl::fermion &n, o2scl::fermion &p, double T,
 		       o2scl::thermo &th);
+  
+  /** \brief Compute the squared speed of sound at fixed
+      \f$ \mu_L \f$
+  */
+  double cs2_fixmuL(o2scl::fermion &n, o2scl::fermion &p, double T,
+		    o2scl::thermo &th);
   //@}
 
   /// \name Internal variables
@@ -226,11 +224,7 @@ class eos {
   /** \brief If true, a model has been selected (default false)
    */
   bool model_selected;
-
-  /** \brief a1 a2 c1 c2 in new ns eos
-  */
-  double a1,a2,c1,c2;
-
+  
   /// Random number generator
   o2scl::rng_gsl r;
   //@}
@@ -340,47 +334,25 @@ class eos {
 		 double &densdnn);
 
   /** \brief Compute dfdnn including photons and electons
-  */
+   */
   double dfdnn_total(o2scl::fermion &n, o2scl::fermion &p,
-		   double nn, double pn, double T, o2scl::thermo &th);
-
+		     double nn, double pn, double T, o2scl::thermo &th);
+  
   /** \brief Compute dfdpn including photons and electons
-  */
+   */
   double dfdpn_total(o2scl::fermion &n, o2scl::fermion &p,
-		   double nn, double pn, double T, o2scl::thermo &th);
-
-  /** \brief Compute the smoothed squared speed of sound from the 
-      analytical expressions for fixed Ye 
-  */
-  int cs2_fixYe_mod(size_t nv,const ubvector &x, ubvector &y,
-		    double Ye);
-
+		     double nn, double pn, double T, o2scl::thermo &th);
+  
   /** \brief Solve for Ye to ensure a specified value of muL at fixed T
    */
-  int solve_Ye(size_t nv,const ubvector &x, ubvector &y,
+  int solve_Ye(size_t nv, const ubvector &x, ubvector &y,
 		double nb, double T, double muL);
-
+  
   /** \brief Solve for T to ensure a specified value of sonb at fixed Ye
    */
-  int solve_T(size_t nv,const ubvector &x, ubvector &y,
-		double nb, double Ye, double sonb);
-
-  /** \brief solve nb_star, given T, Ye, cs2
-   */
-  int solve_nbstar(size_t nv, const ubvector &x,
-		ubvector &y, double T, double Ye, double cs2);
-
-
-  /** \brief solve T_star nb_star, given sonb, Ye, cs2
-   */
-  int solve_nbstarTstar(size_t nv, const ubvector &x,
-		ubvector &y, double T, double Ye, double cs2);
-
-  /** \brief solve sonb, given nb, Ye, T at high density
-   */
-  int solve_sonb(size_t nv, const ubvector &x,
-		ubvector &y, double nb, double Ye, double T);
-
+  int solve_T(size_t nv, const ubvector &x, ubvector &y,
+	      double nb, double Ye, double sonb);
+  
   /** \brief solve for a1 and a2 when cs_ns(2.0)>cs_ns(1.28)
   */
   int solve_coeff_big(size_t nv, const ubvector &x, ubvector &y, 
@@ -395,8 +367,7 @@ class eos {
    */
   int select_internal(int i_ns_loc, int i_skyrme_loc,
 		      double qmc_alpha_loc, double qmc_a_loc,
-		      double eos_L_loc, double eos_S_loc,
-		      double phi_loc);
+		      double eos_L_loc, double eos_S_loc, double phi_loc);
   //@}
 
   /// \name Particle objects
@@ -421,7 +392,7 @@ class eos {
   /// Proton for chiral part
   o2scl::fermion p_chiral;
 
-  /// Neutrino for PNS EOS
+  /// Neutrino
   o2scl::fermion neutrino;  
   //@}
 

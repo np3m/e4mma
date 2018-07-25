@@ -87,7 +87,7 @@ void eos_crust_virial_v2::fit(bool show_fit) {
 
   // Fitter class
   fit_nonlin<chi_fit_funct<vector<double>,ubmatrix,std::function<
-    double(size_t,const std::vector<double> &, double)> >,
+						     double(size_t,const std::vector<double> &, double)> >,
 	     vector<double>,ubmatrix> fitter;
 
   // --------------------------------------------
@@ -167,7 +167,7 @@ void eos_crust_virial_v2::fit(bool show_fit) {
   
   // Chi-squared and fitting data
   chi_fit_funct<vector<double>,ubmatrix,std::function<
-    double(size_t,const std::vector<double> &, double)> > 
+					  double(size_t,const std::vector<double> &, double)> > 
     cff(neut_data,Tv_neut,bnv,bn_err,ff_neutron);
   
   cout << "Neutron virial coefficient:\n" << endl;
@@ -277,7 +277,7 @@ void eos_crust_virial_v2::fit(bool show_fit) {
   
   // Chi-squared and fitting data
   chi_fit_funct<vector<double>,ubmatrix,std::function<
-    double(size_t,const std::vector<double> &, double)> > 
+					  double(size_t,const std::vector<double> &, double)> > 
     cff_nuc(nuc_data,Tv_nuc,bpnv,bpn_err,ff_nuc);
 
   cout << "Initial chi-squared: " << cff_nuc.chi2(bpn_np,bpn_params) << endl;
@@ -314,7 +314,7 @@ void eos_crust_virial_v2::fit(bool show_fit) {
 }
 
 double eos::fit_fun(size_t np, const std::vector<double> &parms,
-			     double nb) {
+		    double nb) {
   if (old_ns_fit) {
     return (sqrt(nb)*parms[0]+nb*parms[1]+
 	    nb*sqrt(nb)*parms[2]+nb*nb*parms[3]+
@@ -602,6 +602,8 @@ eos::eos() {
 
   a_virial=3.0;
   b_virial=0.0;
+
+  r.clock_seed();
 }
 
 double eos::energy_density_qmc
@@ -746,8 +748,8 @@ double eos::free_energy_density_virial
 }
 
 int eos::solve_coeff_big(size_t nv, const ubvector &x, ubvector &y, 
-                                  double ns_nb_max_l, double cs_ns_2,
-                                  double cs_ns_last) {
+			 double ns_nb_max_l, double cs_ns_2,
+			 double cs_ns_last) {
   double a1l=x[0];
   double a2l=x[1];
   y[0]=1.0-a1l+(a1l*a2l*pow(ns_nb_max_l,a1l))/
@@ -758,8 +760,8 @@ int eos::solve_coeff_big(size_t nv, const ubvector &x, ubvector &y,
 }
 
 int eos::solve_coeff_small(size_t nv, const ubvector &x,
-                                    ubvector &y, double ns_nb_max_l,
-                                    double cs_ns_2, double cs_ns_last) {
+			   ubvector &y, double ns_nb_max_l,
+			   double cs_ns_2, double cs_ns_last) {
                                     
   double a1l=x[0];
   double a2l=x[1];
@@ -771,7 +773,7 @@ int eos::solve_coeff_small(size_t nv, const ubvector &x,
 }
 
 int eos::new_ns_eos(double nb, fermion &n,
-			     double &e_ns, double &densdnn) {
+		    double &e_ns, double &densdnn) {
   
   double cs_ns_last;
   double cs_ns_2;
@@ -857,11 +859,11 @@ int eos::new_ns_eos(double nb, fermion &n,
 
       // solve for c1l, c2l
       c1l=pow(ns_nb_max,-a1l-1.0)*(a2l*pow(ns_nb_max,a1l)+1.0)*
-	        (e_ns_last+n.m*ns_nb_max+p_ns_last);
+	(e_ns_last+n.m*ns_nb_max+p_ns_last);
       c2l=pow(ns_nb_max,-a1l)*
-	        (a2l*pow(ns_nb_max,a1l)*(e_ns_last+n.m*ns_nb_max)-
-         	(a2l*pow(ns_nb_max,a1l)+1.0)
-	        *hyperg_max_new*(e_ns_last+n.m*ns_nb_max+p_ns_last))/a2l;
+	(a2l*pow(ns_nb_max,a1l)*(e_ns_last+n.m*ns_nb_max)-
+	 (a2l*pow(ns_nb_max,a1l)+1.0)
+	 *hyperg_max_new*(e_ns_last+n.m*ns_nb_max+p_ns_last))/a2l;
       e_ns=(c1l*nb*hyperg_new)/a2l+c2l-n.m*nb;
       densdnn=-(a2l*n.m*pow(nb,a1l)-c1l*pow(nb,a1l)+n.m)/(a2l*pow(nb,a1l)+1.0);
 
@@ -871,11 +873,11 @@ int eos::new_ns_eos(double nb, fermion &n,
       // high densities
       
       e_ns=-n.m*nb+(e_ns_last+n.m*ns_nb_max+p_ns_last)
-	          /(1.0+cs_ns_last)*pow((nb/ns_nb_max),cs_ns_last+1.0)
-	          +(cs_ns_last*(e_ns_last+n.m*ns_nb_max)-p_ns_last)
-	          /(1.0+cs_ns_last);
+	/(1.0+cs_ns_last)*pow((nb/ns_nb_max),cs_ns_last+1.0)
+	+(cs_ns_last*(e_ns_last+n.m*ns_nb_max)-p_ns_last)
+	/(1.0+cs_ns_last);
       densdnn=-n.m+(e_ns_last+n.m*ns_nb_max+p_ns_last)
-	             *pow((nb/ns_nb_max),cs_ns_last)/ns_nb_max;
+	*pow((nb/ns_nb_max),cs_ns_last)/ns_nb_max;
     }
   }
 
@@ -1026,13 +1028,13 @@ double eos::free_energy_density
  
 
   double dgvirialdnn=-(1.0/pow(a_virial*zn*zn+a_virial*zp*zp
-    +b_virial*zn*zp+1.0,2.0))*(2.0*a_virial*zn*zn/T*dmundnn
-    +2.0*a_virial*zp*zp/T*dmupdnn+b_virial*zn*zp/T*dmundnn
-    +b_virial*zn*zp/T*dmupdnn);
+			       +b_virial*zn*zp+1.0,2.0))*(2.0*a_virial*zn*zn/T*dmundnn
+							  +2.0*a_virial*zp*zp/T*dmupdnn+b_virial*zn*zp/T*dmundnn
+							  +b_virial*zn*zp/T*dmupdnn);
   double dgvirialdpn=-(1.0/pow(a_virial*zn*zn+a_virial*zp*zp
-    +b_virial*zn*zp+1.0,2.0))*(2.0*a_virial*zn*zn/T*dmundpn
-    +2.0*a_virial*zp*zp/T*dmupdpn+b_virial*zn*zp/T*dmundpn
-    +b_virial*zn*zp/T*dmupdpn);
+			       +b_virial*zn*zp+1.0,2.0))*(2.0*a_virial*zn*zn/T*dmundpn
+							  +2.0*a_virial*zp*zp/T*dmupdpn+b_virial*zn*zp/T*dmundpn
+							  +b_virial*zn*zp/T*dmupdpn);
       
   double dfvirialdnn=mu_n_virial;
   double dfvirialdpn=mu_p_virial;
@@ -1044,8 +1046,8 @@ double eos::free_energy_density
     (1.0+exp(gamma*(nn+pn-1.5*n0)));
   
   double desymdnn=((qmc_a*pow((nn+pn)/qmc_n0,qmc_alpha)*(qmc_alpha+1.0)+
-		qmc_b*pow((nn+pn)/qmc_n0,qmc_beta)*(qmc_beta+1.0))/
-		hc_mev_fm)*h+e_qmc*dhdnn+
+		    qmc_b*pow((nn+pn)/qmc_n0,qmc_beta)*(qmc_beta+1.0))/
+		   hc_mev_fm)*h+e_qmc*dhdnn+
     densdnn*(1.0-h)-e_ns*dhdnn-dfskyrme_eqden_T0dpn/2.0-
     dfskyrme_eqden_T0dnn/2.0;
   double desymdpn=desymdnn;
@@ -1055,7 +1057,7 @@ double eos::free_energy_density
     +delta2*(mu_n_neut_T-mu_n_neut_T0)
     +ddelta2dnn*(f_skyrme_neut_T-f_skyrme_neut_T0)
     +(1.0-delta2)*(mu_n_eqden_T/2.0+mu_p_eqden_T/2.0-
-		mu_n_eqden_T0/2.0-mu_p_eqden_T0/2.0)-
+		   mu_n_eqden_T0/2.0-mu_p_eqden_T0/2.0)-
     ddelta2dnn*(f_skyrme_eqden_T-f_skyrme_eqden_T0);
   double dfdegdpn=dfskyrme_eqden_T0dpn+
     (1.0-2.0*ye)*(1.0-2.0*ye)*desymdpn+
@@ -1063,13 +1065,13 @@ double eos::free_energy_density
     +delta2*(mu_n_neut_T-mu_n_neut_T0)
     +ddelta2dpn*(f_skyrme_neut_T-f_skyrme_neut_T0)
     +(1.0-delta2)*(mu_p_eqden_T/2.0+mu_n_eqden_T/2.0-
-		mu_p_eqden_T0/2.0-mu_n_eqden_T0/2.0)-
+		   mu_p_eqden_T0/2.0-mu_n_eqden_T0/2.0)-
     ddelta2dpn*(f_skyrme_eqden_T-f_skyrme_eqden_T0);
 
   n.mu=dfvirialdnn*g_virial+f_virial*dgvirialdnn+dfdegdnn*(1-g_virial)
-         +f_deg*(-dgvirialdnn);
+    +f_deg*(-dgvirialdnn);
   p.mu=dfvirialdpn*g_virial+f_virial*dgvirialdpn+dfdegdpn*(1-g_virial)
-         +f_deg*(-dgvirialdpn);
+    +f_deg*(-dgvirialdpn);
 
 
   // -------------------------------------------------------------
@@ -1101,7 +1103,7 @@ double eos::free_energy_density
     cout << "F_virial " << f_virial/nb*hc_mev_fm << " MeV" << endl;
     cout << "f_skyrme_eqdenT0= " << f_skyrme_eqdenT0 << " 1/fm^4" << endl;
     cout << "F_skyrme_eqdenT0= " << f_skyrme_eqdenT0/nb*hc_mev_fm
-	       << " MeV" << endl;
+	 << " MeV" << endl;
     cout << "e_qmc= " << e_qmc << " 1/fm^4" << endl;
     cout << "E_qmc= " << e_qmc/nb*hc_mev_fm << " MeV" << endl;
     cout << "e_ns= " << e_ns << " " << e_ns/nb*hc_mev_fm << endl;
@@ -1149,7 +1151,7 @@ double eos::free_energy_density_ep
 }
 
 double eos::entropy(fermion &n, fermion &p, double nn,
-			     double pn, double T, thermo &th) {
+		    double pn, double T, thermo &th) {
 
   n.n=nn;
   p.n=pn;
@@ -1162,7 +1164,7 @@ double eos::entropy(fermion &n, fermion &p, double nn,
 }
 
 double eos::ed(fermion &n, fermion &p, double nn,
-			double pn, double T, thermo &th) {
+	       double pn, double T, thermo &th) {
   n.n=nn;
   p.n=pn;
   free_energy_density(n,p,T,th);
@@ -1174,7 +1176,7 @@ double eos::ed(fermion &n, fermion &p, double nn,
 }
 
 double eos::dfdnn_total(fermion &n, fermion &p, double nn, 
-				 double pn, double T, thermo &th) {
+			double pn, double T, thermo &th) {
   
   n.n=nn;
   p.n=pn;
@@ -1186,7 +1188,7 @@ double eos::dfdnn_total(fermion &n, fermion &p, double nn,
 }
 
 double eos::dfdpn_total(fermion &n, fermion &p, double nn, 
-				 double pn, double T, thermo &th) {
+			double pn, double T, thermo &th) {
 
   n.n=nn;
   p.n=pn;
@@ -1336,7 +1338,7 @@ double eos::cs2_fixYe(fermion &n, fermion &p, double T, thermo &th) {
 }
 
 double eos::cs2_fixYe_alt(fermion &n, fermion &p, double T,
-				   thermo &th) {
+			  thermo &th) {
  
   deriv_gsl<> gd;
   double nn=n.n;
@@ -1416,19 +1418,6 @@ double eos::cs2_fixYe_alt(fermion &n, fermion &p, double T,
 		2.0*en*(nn*f_nnT/f_TT+np*f_npT/f_TT)-en*en/f_TT)/den;
 
   return cs_sq;
-}
-
-int eos::cs2_fixYe_mod(size_t nv, const ubvector &x,
-		       ubvector &y, double Ye) {
-  double nb=x[0];
-  double T=x[1];
-  neutron.n=nb*(1.0-Ye);
-  proton.n=nb*Ye;
-  double cs_sq=cs2_fixYe(neutron,proton,T,th2);
-  y[0]=cs_sq;
-  y[1]=0.0;
-
-  return 0;
 }
 
 double eos::cs2_fixmuL(fermion &n, fermion &p, double T, thermo &th) {
@@ -2461,9 +2450,9 @@ int eos::eos_sn(std::vector<std::string> &sv, bool itive_com) {
       proton.n=lnB*lYe;
       rmf.calc_temp_e(neutron,proton,lT/hc_mev_fm,th2);
       f=(th2.ed-lT/hc_mev_fm*th2.en)*hc_mev_fm/lnB;
-    thermo lep;
-    eso.compute_eg_point(lnB,lYe,lT,lep);
-    F_eg=(lep.ed-lep.en*lT)/lnB;
+      thermo lep;
+      eso.compute_eg_point(lnB,lYe,lT,lep);
+      F_eg=(lep.ed-lep.en*lT)/lnB;
       cout << "F_full,F_eg,Xn,Xa: " 
 	   << f+F_eg << " " << F_eg << " " << 0.0 << " "
 	   << 0.0 << endl;
@@ -2552,9 +2541,9 @@ int eos::eos_sn(std::vector<std::string> &sv, bool itive_com) {
       proton.n=lnB*lYe;
       rmf.calc_temp_e(neutron,proton,lT/hc_mev_fm,th2);
       f=(th2.ed-lT/hc_mev_fm*th2.en)*hc_mev_fm/lnB;
-    thermo lep;
-    eso.compute_eg_point(lnB,lYe,lT,lep);
-    F_eg=(lep.ed-lep.en*lT)/lnB;
+      thermo lep;
+      eso.compute_eg_point(lnB,lYe,lT,lep);
+      F_eg=(lep.ed-lep.en*lT)/lnB;
       cout << "F_full,F_eg,Xn,Xa: " 
 	   << f+F_eg << " " << F_eg << " " << 0.0 << " "
 	   << 0.0 << endl;
@@ -2582,9 +2571,9 @@ int eos::eos_sn(std::vector<std::string> &sv, bool itive_com) {
       cout << "nB: " << lnB << " Ye: " << lYe
 	   << " T: " << lT << endl;
       fint=eso.Fint.interp_linear(lnB,lYe,lT);
-    thermo lep;
-    eso.compute_eg_point(lnB,lYe,lT,lep);
-    F_eg=(lep.ed-lep.en*lT)/lnB;
+      thermo lep;
+      eso.compute_eg_point(lnB,lYe,lT,lep);
+      F_eg=(lep.ed-lep.en*lT)/lnB;
       cout << "F_full,F_eg,Xn,Xa: " 
 	   << fint+F_eg << " " << F_eg << " "
 	   << eso.Xn.interp_linear(lnB,lYe,lT) << " "
@@ -2615,9 +2604,9 @@ int eos::eos_sn(std::vector<std::string> &sv, bool itive_com) {
       proton.n=lnB*lYe;
       rmf.calc_temp_e(neutron,proton,lT/hc_mev_fm,th2);
       f=(th2.ed-lT/hc_mev_fm*th2.en)*hc_mev_fm/lnB;
-    thermo lep;
-    eso.compute_eg_point(lnB,lYe,lT,lep);
-    F_eg=(lep.ed-lep.en*lT)/lnB;
+      thermo lep;
+      eso.compute_eg_point(lnB,lYe,lT,lep);
+      F_eg=(lep.ed-lep.en*lT)/lnB;
       cout << "F_full,F_eg,Xn,Xa: " 
 	   << f+F_eg << " " << F_eg << " " << 0.0 << " "
 	   << 0.0 << endl;
@@ -2659,7 +2648,7 @@ int eos::eos_sn(std::vector<std::string> &sv, bool itive_com) {
 }
 
 int eos::solve_Ye(size_t nv, const ubvector &x, ubvector &y,
-			   double nb, double T, double muL) {
+		  double nb, double T, double muL) {
 
   double Ye=x[0];
   // The temperature here is in 1/fm
@@ -2726,7 +2715,7 @@ int eos::solve_fixed_sonb_YL(size_t nv, const ubvector &x, ubvector &y,
 }
 
 int eos::solve_T(size_t nv, const ubvector &x, ubvector &y,
-			  double nb, double Ye, double sonb) {
+		 double nb, double Ye, double sonb) {
   
   double T=x[0];
   // The temperature here is in 1/fm
@@ -2853,7 +2842,7 @@ int eos::pns_eos(std::vector<std::string> &sv, bool itive_com) {
   table_units<> eost;
   eost.line_of_names("nB Ye T ed pr nn np mun mup ne mue");
   eost.line_of_units(((std::string)"1/fm^3 . 1/fm 1/fm^4 1/fm^4 1/fm^3 ")+
-		  "1/fm^3 1/fm 1/fm 1/fm^3 1/fm");
+		     "1/fm^3 1/fm 1/fm 1/fm^3 1/fm");
 
   double sonb=o2scl::stod(sv[1]);
   double YL=o2scl::stod(sv[2]);
@@ -2975,9 +2964,9 @@ int eos::select_model(std::vector<std::string> &sv, bool itive_com) {
 }
 
 int eos::select_internal(int i_ns_loc, int i_skyrme_loc,
-				  double qmc_alpha_loc, double qmc_a_loc,
-				  double eos_L_loc, double eos_S_loc,
-				  double phi_loc) {
+			 double qmc_alpha_loc, double qmc_a_loc,
+			 double eos_L_loc, double eos_S_loc,
+			 double phi_loc) {
   
   i_ns=i_ns_loc;
   i_skyrme=i_skyrme_loc;
@@ -3245,7 +3234,7 @@ int eos::point(std::vector<std::string> &sv, bool itive_com) {
 }
 
 int eos::test_eg(std::vector<std::string> &sv,
-			  bool itive_com) {
+		 bool itive_com) {
   int n_nB_init=326;
   int n_Ye_init=60;
   int n_T_init=80;
@@ -3273,7 +3262,7 @@ int eos::test_eg(std::vector<std::string> &sv,
 }
 
 int eos::vir_fit(std::vector<std::string> &sv,
-			  bool itive_com) {
+		 bool itive_com) {
   ecv.fit(true);
   return 0;
 }

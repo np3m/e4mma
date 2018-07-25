@@ -58,9 +58,9 @@ LCXX = $(MPI_CXX)
 LIBS = -L$(O2SCL_LIB) -L$(GSL_LIB) -L$(HDF5_LIB) \
 	-lo2scl_hdf -lo2scl_eos -lo2scl_part -lo2scl -lhdf5 -lgsl
 LCFLAGS = -O3 -std=c++11 -I$(O2SCL_INC) \
-	-I$(EIGEN_INC) -I$(GSL_INC) -Wno-ignored-attributes \
-	-Wno-deprecated-declarations -I$(HDF5_INC) \
-	-Wshadow
+	-I$(EIGEN_INC) -I$(GSL_INC) -I$(HDF5_INC) -Wall \
+	-Wno-ignored-attributes -Wno-deprecated-declarations \
+	-Wno-unused -Wshadow
 LFFLAGS = -O3
 LMPICXX = mpic++
 
