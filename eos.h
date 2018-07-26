@@ -105,10 +105,12 @@ class eos_crust_virial_v2 : public o2scl::eos_crust_virial {
   virtual void fit(bool show_fit=false);
 
   eos_crust_virial_v2();
+
+  virtual ~eos_crust_virial_v2() {}
   
 }; 
 
-/** \brief Phenomenological EOS for homeogeneous nucleonic matter
+/** \brief Phenomenological EOS for homogeneous nucleonic matter
  */
 class eos {
   
@@ -319,6 +321,18 @@ class eos {
   double mu_fit(double nb);
   //@}
 
+  /// \name Parameter objects
+  //@{
+  o2scl::cli::parameter_int p_verbose;
+  o2scl::cli::parameter_bool p_old_ns_fit;
+  o2scl::cli::parameter_bool p_ns_record;
+  o2scl::cli::parameter_bool p_include_muons;
+  o2scl::cli::parameter_bool p_select_cs2_test;
+  o2scl::cli::parameter_bool p_test_ns_cs2;
+  o2scl::cli::parameter_double p_a_virial;
+  o2scl::cli::parameter_double p_b_virial;
+  //@}
+  
   /// \name Other EOS functions [protected]
   //@{
   /** \brief Compute the energy density (in \f$ \mathrm{fm}^{-4} \f$)

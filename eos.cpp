@@ -1722,7 +1722,8 @@ int eos::table_full(std::vector<std::string> &sv, bool itive_com) {
   eso.include_muons=include_muons;
   
   for(int i=n_nB-1;i>=0;i--) {
-    cout << "i_nB,n_nB: " << n_nB-1-i << " " << n_nB << endl;
+    cout << "i_nB,n_nB,nB[i]: " << n_nB-1-i << " " << n_nB << " "
+	 << nB_grid[i] << endl;
     for(size_t j=0;j<n_Ye;j++) {
       for(size_t k=0;k<n_T;k++) {
 
@@ -2940,7 +2941,7 @@ int eos::pns_eos(std::vector<std::string> &sv, bool itive_com) {
 }
 
 int eos::select_model(std::vector<std::string> &sv, bool itive_com) {
- 
+
   i_ns=o2scl::stod(sv[1]);
   i_skyrme=o2scl::stod(sv[2]);
   qmc_alpha=o2scl::stod(sv[3]);
@@ -3305,43 +3306,35 @@ void eos::setup_cli(o2scl::cli &cl) {
   };
   cl.set_comm_option_vec(nopt,options);
 
-  o2scl::cli::parameter_int p_verbose;
   p_verbose.i=&verbose;
   p_verbose.help="Verbose parameter (default 1)";
   cl.par_list.insert(make_pair("verbose",&p_verbose));
 
-  o2scl::cli::parameter_bool p_old_ns_fit;
   p_old_ns_fit.b=&old_ns_fit;
   p_old_ns_fit.help="If true, use the old NS fit (default true)";
   cl.par_list.insert(make_pair("old_ns_fit",&p_old_ns_fit));
 
-  o2scl::cli::parameter_bool p_ns_record;
   p_ns_record.b=&ns_record;
   p_ns_record.help="If true, record the NS fit results (default false)";
   cl.par_list.insert(make_pair("ns_record",&p_ns_record));
 
-  o2scl::cli::parameter_bool p_include_muons;
   p_include_muons.b=&include_muons;
   p_include_muons.help="If true, include muons (default false)";
   cl.par_list.insert(make_pair("include_muons",&p_include_muons));
 
-  o2scl::cli::parameter_bool p_select_cs2_test;
   p_select_cs2_test.b=&select_cs2_test;
   p_select_cs2_test.help="Test cs2 in select_internal() (default true)";
   cl.par_list.insert(make_pair("select_cs2_test",&p_select_cs2_test));
 
-  o2scl::cli::parameter_bool p_test_ns_cs2;
   p_test_ns_cs2.b=&test_ns_cs2;
   p_test_ns_cs2.help=((std::string)"If true, then test the neutron star ")+
     "speed of sound (default false)";
   cl.par_list.insert(make_pair("test_ns_cs2",&p_test_ns_cs2));
 
-  o2scl::cli::parameter_double p_a_virial;
   p_a_virial.d=&a_virial;
   p_a_virial.help="Virial coefficient a (default 3.0)";
   cl.par_list.insert(make_pair("a_virial",&p_a_virial));
 
-  o2scl::cli::parameter_double p_b_virial;
   p_b_virial.d=&b_virial;
   p_b_virial.help="Virial coefficient b (default 0.0)";
   cl.par_list.insert(make_pair("b_virial",&p_b_virial));
