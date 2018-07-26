@@ -376,6 +376,10 @@ class eos {
    */
   o2scl::fermion electron;
 
+  /** \brief Muon/anti-muon
+   */
+  o2scl::fermion muon;
+
   /** \brief Photon
    */
   o2scl::boson photon;

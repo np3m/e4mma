@@ -533,6 +533,9 @@ eos::eos() {
   electron.init(o2scl_settings.get_convert_units().convert
 		("kg","1/fm",o2scl_mks::mass_electron),2.0);
 
+  muon.init(o2scl_settings.get_convert_units().convert
+	    ("kg","1/fm",o2scl_mks::mass_muon),2.0);
+
   n_chiral.init(o2scl_settings.get_convert_units().convert
 		("kg","1/fm",o2scl_mks::mass_neutron),2.0);
   p_chiral.init(o2scl_settings.get_convert_units().convert
@@ -3236,6 +3239,7 @@ int eos::point(std::vector<std::string> &sv, bool itive_com) {
 
 int eos::test_eg(std::vector<std::string> &sv,
 		 bool itive_com) {
+
   int n_nB_init=326;
   int n_Ye_init=60;
   int n_T_init=80;
@@ -3243,9 +3247,9 @@ int eos::test_eg(std::vector<std::string> &sv,
   eos_sn_oo eso;
   eso.include_muons=true;
 
-  for(int i=325;i>=0;i--) {
+  for(int i=0;i<326;i++) {
     double nB=pow(10.0,i*0.04-12.0);
-    if (i%10==0) {
+    if (true || i%10==0) {
       cout << "i,nB: " << i << " " << nB << endl;
     }
     for(int j=0;j<61;j++) {
