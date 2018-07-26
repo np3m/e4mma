@@ -480,9 +480,6 @@ class eos {
   /// If true, create output files for individual EOSs
   bool output_files;
 
-  /// Prefix for output files
-  std::string file_prefix;
-
   /// Coefficient for modulation of virial EOS
   double a_virial;
 

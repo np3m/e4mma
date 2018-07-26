@@ -513,14 +513,10 @@ void eos::ns_fit(int row) {
 
 eos::eos() {
 
-  neutrino.init(0.0,1.0);
-  
-  test_ns_cs2=false;
-  include_muons=false;
-  
   // Ensure that this works without GNU units
   o2scl_settings.get_convert_units().use_gnu_units=false;
 
+  // Nucleon init
   neutron.init(o2scl_settings.get_convert_units().convert
 	       ("kg","1/fm",o2scl_mks::mass_neutron),2.0);
   proton.init(o2scl_settings.get_convert_units().convert
@@ -530,12 +526,7 @@ eos::eos() {
   neutron.inc_rest_mass=false;
   proton.inc_rest_mass=false; 
 
-  electron.init(o2scl_settings.get_convert_units().convert
-		("kg","1/fm",o2scl_mks::mass_electron),2.0);
-
-  muon.init(o2scl_settings.get_convert_units().convert
-	    ("kg","1/fm",o2scl_mks::mass_muon),2.0);
-
+  // Nucleon init (take 2)
   n_chiral.init(o2scl_settings.get_convert_units().convert
 		("kg","1/fm",o2scl_mks::mass_neutron),2.0);
   p_chiral.init(o2scl_settings.get_convert_units().convert
@@ -544,12 +535,27 @@ eos::eos() {
   p_chiral.non_interacting=false;
   n_chiral.inc_rest_mass=false;
   p_chiral.inc_rest_mass=false;
-  
+
+  // Lepton inits
+  electron.init(o2scl_settings.get_convert_units().convert
+		("kg","1/fm",o2scl_mks::mass_electron),2.0);
+  muon.init(o2scl_settings.get_convert_units().convert
+	    ("kg","1/fm",o2scl_mks::mass_muon),2.0);
+  neutrino.init(0.0,1.0);
+
+  // Default settings
   verbose=0;
-
+  test_ns_cs2=false;
+  include_muons=false;
   output_files=true; 
-  file_prefix="skyrme_";
+  old_ns_fit=true;
+  ns_record=false;
+  model_selected=false;
+  select_cs2_test=true;
+  a_virial=3.0;
+  b_virial=0.0;
 
+  // Initial parameter values
   i_ns=-1;
   i_skyrme=-1;
   qmc_alpha=0.48;
@@ -558,6 +564,7 @@ eos::eos() {
   qmc_b=2.12;
   qmc_n0=0.16;
 
+  // Temporary string for object names
   string name;
 
   // Open the neutron star data file
@@ -567,17 +574,13 @@ eos::eos() {
   o2scl_hdf::hdf_input(hf,nstar_tab,name);
   hf.close();
 
-  // Skyrme data file
+  // Open the Skyrme data file
   std::string UNEDF_file="data/thetaANL-1002x12.o2";
   hf.open(UNEDF_file);
   o2scl_hdf::hdf_input(hf,UNEDF_tab,name);
   hf.close();
 
-  r.clock_seed();
-
-  old_ns_fit=true;
-  ns_record=false;
-
+  // Skyrme couplings
   sk_chiral.t0=5.067286719233e+03;
   sk_chiral.t1=1.749251370992e+00;
   sk_chiral.t2=-4.721193938990e-01;
@@ -586,38 +589,18 @@ eos::eos() {
   sk_chiral.x1=-6.947915483747e-02;
   sk_chiral.x2=4.192016722695e-01;
   sk_chiral.x3=-2.877974634128e+01;
-
-  if (false) {
-    sk_chiral.t0=4.963340606238e+03;
-    sk_chiral.t1=1.743504113657e+00;
-    sk_chiral.t2=-4.753127626586e-01;
-    sk_chiral.t3=-1.111074832977e+05;
-    sk_chiral.x0=3.532141718900e+01;
-    sk_chiral.x1=-6.276020465331e-02;
-    sk_chiral.x2=4.224427559993e-01;
-    sk_chiral.x3=-3.025925006559e+01;    
-  }
-  
   sk_chiral.alpha=0.144165;
-
-  model_selected=false;
-  select_cs2_test=true;
-
-  a_virial=3.0;
-  b_virial=0.0;
 
   // Seed the random number generator with the clock time
   r.clock_seed();
 }
 
-double eos::energy_density_qmc
-(double nn, double np) {
-
+double eos::energy_density_qmc(double nn, double np) {
+  
   double e_qmc=(qmc_a*pow((nn+np)/qmc_n0,qmc_alpha)+
 		qmc_b*pow((nn+np)/qmc_n0,qmc_beta))*
     (nn+np)/hc_mev_fm;
   
-  // This is the energy density in fm^{-4}
   return e_qmc;
 }
   
@@ -787,7 +770,9 @@ int eos::new_ns_eos(double nb, fermion &n,
   double e_ns_last=ed_fit(ns_nb_max);
   double p_ns_last=mu_fit(ns_nb_max)*ns_nb_max-e_ns_last;
 
-  //solve a1l,a2l 
+  // -----------------------------------------------------
+  // Solve for a1l and a2l
+  
   mroot_hybrids<> mh;
 
   // Initial guess for a1l and a2l
@@ -1030,16 +1015,18 @@ double eos::free_energy_density
   // -------------------------------------------------------------
   // Compute derivatives for chemical potentials
  
-
+  
   double dgvirialdnn=-(1.0/pow(a_virial*zn*zn+a_virial*zp*zp
-			       +b_virial*zn*zp+1.0,2.0))*(2.0*a_virial*zn*zn/T*dmundnn
-							  +2.0*a_virial*zp*zp/T*dmupdnn+b_virial*zn*zp/T*dmundnn
-							  +b_virial*zn*zp/T*dmupdnn);
+			       +b_virial*zn*zp+1.0,2.0))*
+    (2.0*a_virial*zn*zn/T*dmundnn
+     +2.0*a_virial*zp*zp/T*dmupdnn+b_virial*zn*zp/T*dmundnn
+     +b_virial*zn*zp/T*dmupdnn);
   double dgvirialdpn=-(1.0/pow(a_virial*zn*zn+a_virial*zp*zp
-			       +b_virial*zn*zp+1.0,2.0))*(2.0*a_virial*zn*zn/T*dmundpn
-							  +2.0*a_virial*zp*zp/T*dmupdpn+b_virial*zn*zp/T*dmundpn
-							  +b_virial*zn*zp/T*dmupdpn);
-      
+			       +b_virial*zn*zp+1.0,2.0))*
+    (2.0*a_virial*zn*zn/T*dmundpn
+     +2.0*a_virial*zp*zp/T*dmupdpn+b_virial*zn*zp/T*dmundpn
+     +b_virial*zn*zp/T*dmupdpn);
+  
   double dfvirialdnn=mu_n_virial;
   double dfvirialdpn=mu_p_virial;
   double dfskyrme_eqden_T0dnn=(mu_n_skyrme_eqdenT0+mu_p_skyrme_eqdenT0)/2.0;
@@ -1097,6 +1084,7 @@ double eos::free_energy_density
           +f_deg*(-dgvirialdT));
   th.pr=-f_total+n.n*n.mu+p.n*p.mu;
   th.ed=f_total+T*th.en;
+  
   if (verbose>=1) {
     cout << "i_ns=" << i_ns << endl;
     cout << "i_skyrme=" << i_skyrme << endl;
@@ -2654,8 +2642,9 @@ int eos::eos_sn(std::vector<std::string> &sv, bool itive_com) {
 int eos::solve_Ye(size_t nv, const ubvector &x, ubvector &y,
 		  double nb, double T, double muL) {
 
+  // The temperature T should be in 1/fm
+
   double Ye=x[0];
-  // The temperature here is in 1/fm
   neutron.n=nb*(1.0-Ye);
   proton.n=nb*Ye;
 
@@ -2677,13 +2666,14 @@ int eos::solve_Ye(size_t nv, const ubvector &x, ubvector &y,
 int eos::solve_fixed_sonb_YL(size_t nv, const ubvector &x, ubvector &y,
 			     double nB, double sonb, double YL) {
 
+  // The temperature T should be in 1/fm
+
   double Ye=x[0];
   double T=x[1];
   
   if (x[0]<1.0e-5 || x[0]>0.6) return 1;
   if (x[1]<1.0e-5 || x[1]>1.0) return 2;
 
-  // The temperature here is in 1/fm
   neutron.n=nB*(1.0-Ye);
   proton.n=nB*Ye;
 
@@ -2721,8 +2711,9 @@ int eos::solve_fixed_sonb_YL(size_t nv, const ubvector &x, ubvector &y,
 int eos::solve_T(size_t nv, const ubvector &x, ubvector &y,
 		 double nb, double Ye, double sonb) {
   
+  // The temperature T should be in 1/fm
   double T=x[0];
-  // The temperature here is in 1/fm
+  
   neutron.n=nb*(1.0-Ye);
   proton.n=nb*Ye;
 
@@ -3156,8 +3147,6 @@ int eos::random(std::vector<std::string> &sv, bool itive_com) {
   // free_energy_density(), so we set this to true
   model_selected=true;
 
-  r.clock_seed();
-  
   bool done=false;
   while (done==false) {
 
