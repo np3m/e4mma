@@ -1098,23 +1098,29 @@ double eos::free_energy_density
 	 << " MeV" << endl;
     cout << "e_qmc= " << e_qmc << " 1/fm^4" << endl;
     cout << "E_qmc= " << e_qmc/nb*hc_mev_fm << " MeV" << endl;
-    cout << "e_ns= " << e_ns << " " << e_ns/nb*hc_mev_fm << endl;
-    cout << "f_deg= " << f_deg << " " << f_deg/nb*hc_mev_fm << endl;
-    cout << "f_total= " << f_total << " " << f_total/nb*hc_mev_fm << endl;
+    cout << "e_ns,E_ns= " << e_ns << " 1/fm^4 "
+	 << e_ns/nb*hc_mev_fm << " MeV" << endl;
+    cout << "f_deg,F_deg= " << f_deg << " 1/fm^4 "
+	 << f_deg/nb*hc_mev_fm << " MeV" << endl;
+    cout << "f_total,F_total= " << f_total << " 1/fm^4 "
+	 << f_total/nb*hc_mev_fm << " MeV" << endl;
+    cout << "ed,pr= " << th.ed << " 1/fm^4 " << th.pr << " 1/fm^4" << endl;
     cout << "zn= " << zn << endl;
     cout << "zp= " << zp << endl;
-    cout << "temp= " << s_neut_T << " " << s_eqden_T << endl;
+    cout << "entropy from sk_chiral= " << s_neut_T << " " << s_eqden_T << endl;
     cout << "entropy= " << th.en << endl;
     cout << "s_virial= " << s_virial << endl;
     cout << "dg_virial_dT= " << dgvirialdT << endl;
-    cout << -dfvirialdT*g_virial-f_virial*dgvirialdT << " "
-	 << -dfdegdT*(1-g_virial)+f_deg*(dgvirialdT) << endl;
-    cout << -dfdegdT << " " << (1-g_virial) << endl;
-    cout << f_skyrme_eqdenT0+delta2*e_sym << " "
-	 << delta2 << " " << (f_skyrme_neut_T-f_skyrme_neut_T0) << " "
-	 << (1.0-delta2) << " "
-	 << (f_skyrme_eqden_T-f_skyrme_eqden_T0) << endl;
-    cout << endl;
+    if (false) {
+      cout << -dfvirialdT*g_virial-f_virial*dgvirialdT << " "
+	   << -dfdegdT*(1-g_virial)+f_deg*(dgvirialdT) << endl;
+      cout << -dfdegdT << " " << (1-g_virial) << endl;
+      cout << f_skyrme_eqdenT0+delta2*e_sym << " "
+	   << delta2 << " " << (f_skyrme_neut_T-f_skyrme_neut_T0) << " "
+	   << (1.0-delta2) << " "
+	   << (f_skyrme_eqden_T-f_skyrme_eqden_T0) << endl;
+      cout << endl;
+    }
   }
 
   return f_total;
@@ -3242,8 +3248,9 @@ int eos::test_eg(std::vector<std::string> &sv,
     
   std::string nB_grid_spec="10^(i*0.04-12)";
   std::string Ye_grid_spec="0.01*i";
-  // This temperature grid includes zero
-  std::string T_grid_spec="i*10^(i*0.02-3.2)";
+  // This temperature grid includes zero, but is otherwise
+  // similar to Hempel's logarithmic temperature grid
+  std::string T_grid_spec="i*5^(i*0.02-3.2)";
 
   vector<double> nB_grid, T_grid, Ye_grid;
   

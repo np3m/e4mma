@@ -362,11 +362,6 @@ class eos {
   int solve_Ye(size_t nv, const ubvector &x, ubvector &y,
 		double nb, double T, double muL);
   
-  /** \brief Solve for T to ensure a specified value of sonb at fixed Ye
-   */
-  int solve_T(size_t nv, const ubvector &x, ubvector &y,
-	      double nb, double Ye, double sonb);
-  
   /** \brief solve for a1 and a2 when cs_ns(2.0)>cs_ns(1.28)
   */
   int solve_coeff_big(size_t nv, const ubvector &x, ubvector &y, 
@@ -576,6 +571,11 @@ class eos {
   int solve_fixed_sonb_YL(size_t nv, const ubvector &x, ubvector &y,
 			  double nB, double sonb, double YL);
 
+  /** \brief Solve for T to ensure a specified value of sonb at fixed Ye
+   */
+  int solve_T(size_t nv, const ubvector &x, ubvector &y,
+	      double nb, double Ye, double sonb);
+  
   /** \brief Setup the command-line interface with commands and
       parameters
    */
