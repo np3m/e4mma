@@ -3230,29 +3230,101 @@ int eos::point(std::vector<std::string> &sv, bool itive_com) {
 int eos::test_eg(std::vector<std::string> &sv,
 		 bool itive_com) {
 
-  int n_nB_init=326;
-  int n_Ye_init=60;
-  int n_T_init=80;
+  string fname;
+  if (sv.size()>2) {
+    fname=sv[1];
+  }
+  
+  // Choose a larger grid for a more complete test
+  size_t n_nB=326;
+  size_t n_Ye=101;
+  size_t n_T=161;
+    
+  std::string nB_grid_spec="10^(i*0.04-12)";
+  std::string Ye_grid_spec="0.01*i";
+  // This temperature grid includes zero
+  std::string T_grid_spec="i*10^(i*0.02-3.2)";
+
+  vector<double> nB_grid, T_grid, Ye_grid;
+  
+  calculator calc;
+  std::map<std::string,double> vars;
+  
+  calc.compile(nB_grid_spec.c_str());
+  for(size_t i=0;i<n_nB;i++) {
+    vars["i"]=((double)i);
+    nB_grid.push_back(calc.eval(&vars));
+  }
+  
+  calc.compile(Ye_grid_spec.c_str());
+  for(size_t i=0;i<n_Ye;i++) {
+    vars["i"]=((double)i);
+    Ye_grid.push_back(calc.eval(&vars));
+  }
+  
+  calc.compile(T_grid_spec.c_str());
+  for(size_t i=0;i<n_T;i++) {
+    vars["i"]=((double)i);
+    T_grid.push_back(calc.eval(&vars));
+  }
+
+  size_t size_arr[3]={n_nB,n_Ye,n_T};
+  vector<vector<double> > grid_arr={nB_grid,Ye_grid,T_grid};
+
+  tensor_grid3<> t_F(n_nB,n_Ye,n_T);
+  t_F.set_grid(grid_arr);
+  tensor_grid3<> t_E(n_nB,n_Ye,n_T);
+  t_E.set_grid(grid_arr);
+  tensor_grid3<> t_P(n_nB,n_Ye,n_T);
+  t_P.set_grid(grid_arr);
+  tensor_grid3<> t_S(n_nB,n_Ye,n_T);
+  t_S.set_grid(grid_arr);
+  tensor_grid3<> t_mue(n_nB,n_Ye,n_T);
+  t_mue.set_grid(grid_arr);
   
   eos_sn_oo eso;
-  eso.include_muons=true;
+  eso.include_muons=include_muons;
 
-  for(int i=0;i<326;i++) {
-    double nB=pow(10.0,i*0.04-12.0);
+  for(size_t i=0;i<n_nB;i++) {
+    double nB=nB_grid[i];
     if (true || i%10==0) {
       cout << "i,nB: " << i << " " << nB << endl;
     }
-    for(int j=0;j<61;j++) {
-      double Ye=0.01*j;
-      for(int k=0;k<81;k++) {
-	double T_MeV;
-	if (k==0) T_MeV=0.0;
-	else T_MeV=pow(10.0,(k-1)*0.04-1.0);
+    for(size_t j=1;j<n_Ye-1;j++) {
+      double Ye=Ye_grid[j];
+      for(size_t k=0;k<n_T;k++) {
+	double T_MeV=T_grid[k];
 	thermo lep;
 	eso.compute_eg_point(nB,Ye,T_MeV,lep);
+	
+	t_F.set(i,j,k,(hc_mev_fm*lep.ed-T_grid[k]*lep.en)/nB);
+	t_E.set(i,j,k,hc_mev_fm*lep.ed/nB);
+	t_P.set(i,j,k,hc_mev_fm*lep.pr);
+	t_S.set(i,j,k,hc_mev_fm*lep.en/nB);
+	t_mue.set(i,j,k,hc_mev_fm*electron.mu);
+
       }
     }
   }
+
+  if (fname.length()>0) {
+    hdf_file hf;
+    hf.open_or_create(fname);
+    hf.seti("include_muons",include_muons);
+    hf.set_szt("n_nB",n_nB);
+    hf.set_szt("n_Ye",n_Ye);
+    hf.set_szt("n_T",n_T);
+    hf.setd_vec("nB_grid",nB_grid);
+    hf.setd_vec("Ye_grid",Ye_grid);
+    hf.setd_vec("T_grid",T_grid);
+    hdf_output(hf,t_F,"F_eg");
+    hdf_output(hf,t_E,"E_eg");
+    hdf_output(hf,t_P,"P_eg");
+    hdf_output(hf,t_S,"S_eg");
+    hdf_output(hf,t_mue,"mue");
+    hf.close();
+  }
+  
   return 0;
 }
 
@@ -3297,7 +3369,7 @@ void eos::setup_cli(o2scl::cli &cl) {
      "<i_ns> <i_skyrme> <alpha> <a> <L> <S> <phi>","",
      new o2scl::comm_option_mfptr<eos>
      (this,&eos::select_model),o2scl::cli::comm_option_both},
-    {0,"test-eg","Test the electron-photon EOS.",0,0,"","",
+    {0,"test-eg","Test the electron-photon EOS.",0,1,"[fname]","",
      new o2scl::comm_option_mfptr<eos>
      (this,&eos::test_eg),o2scl::cli::comm_option_both},
     {0,"vir-comp","Compare the virial and full EOS.",0,0,"","",

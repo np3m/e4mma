@@ -71,7 +71,7 @@ LFC = $(FC)
 LCXX = $(CXX)
 LIBS = -L/usr/local/lib -lo2scl_hdf -lo2scl_eos -lo2scl_part -lo2scl \
 	-lhdf5 -lgsl
-LCFLAGS = -O3 -std=c++11 
+LCFLAGS = -O3 -std=c++11
 LFFLAGS = -O3
 LMPICXX = mpic++
 
