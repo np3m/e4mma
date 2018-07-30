@@ -1,8 +1,6 @@
 # LIBS is the list of libraries
-# LFC is the local fortran compiler
 # LCXX is the local C++ compiler
 # LCFLAGS are the local C++ compiler flags
-# LFFLAGS are the local fortran compiler flags
 
 # ----------------------------------------------------------------
 # Various user-specific settings
@@ -16,7 +14,6 @@ include $(UTKNA_MAKEFILE)
 LIBS = $(UTKNA_O2SCL_LIBS)
 LCXX = $(UTKNA_CXX) 
 LCFLAGS = $(UTKNA_O2SCL_INCS) $(UTKNA_CFLAGS) -DNO_MPI
-LFFLAGS = $(UTKNA_FFLAGS)
 LMPICXX = $(UTKNA_MPI_CXX)
 
 else
@@ -30,18 +27,15 @@ LCXX = g++
 LCFLAGS = -I/usr/lib/x86_64-linux-gnu/hdf5/serial/include \
 	-I/usr/include/eigen3 -Wno-deprecated-declarations \
 	-O3 -std=c++11 -DNO_MPI -Wshadow -DO2SCL_HDF5_COMP
-LFFLAGS = -O3 
 LMPICXX = mpic++
 
 else
 
 # Default settings
-LFC = $(FC)
 LCXX = $(CXX)
 LIBS = -L/usr/local/lib -lo2scl_hdf -lo2scl_eos -lo2scl_part -lo2scl \
 	-lhdf5 -lgsl
 LCFLAGS = -O3 -std=c++11
-LFFLAGS = -O3
 LMPICXX = mpic++
 
 endif
