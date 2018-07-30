@@ -649,7 +649,7 @@ double eos::free_energy_density_virial
     acl.zp=exp(p.mu/T);
   }
   double zn=exp(n.mu/T), zp=exp(p.mu/T);
-  
+
   if (nn*pow(lambda,3.0)>1.0e-5 || pn*pow(lambda,3.0)>1.0e-5) {
   
     th.pr=2.0*T/pow(lambda,3.0)*(zn+zp+(zn*zn+zp*zp)*b_n+
@@ -1090,6 +1090,7 @@ double eos::free_energy_density
     cout << "i_ns,i_skyrme= " << i_ns << " " << i_skyrme << endl;
     cout << endl;
     
+    cout << "zn,zp= " << zn << " " << zp << endl;
     cout << "g_virial= " << g_virial << " (g=1 means full virial EOS) dgdT= "
 	 << dgvirialdT << endl;
     cout << "h=        " << h
@@ -1099,14 +1100,14 @@ double eos::free_energy_density
     cout.setf(ios::showpos);
     
     // Three contributions to the symmetry energy
-    cout << "d2*e_qmc,d2*E_qmc         = " << delta2*e_qmc << " 1/fm^4 "
-	 << delta2*e_qmc/nb*hc_mev_fm << endl;
+    cout << "d2*e_qmc*h,d2*E_qmc*h     = " << delta2*e_qmc*h << " 1/fm^4 "
+	 << delta2*e_qmc/nb*h*hc_mev_fm << " MeV" << endl;
     cout << "d2*e_ns(1-h),d2*E_ns(1-h) = "
 	 << delta2*e_ns*(1.0-h) << " 1/fm^4 "
-	 << delta2*e_ns*(1.0-h)/nb*hc_mev_fm << endl;
+	 << delta2*e_ns*(1.0-h)/nb*hc_mev_fm << " MeV" << endl;
     cout << "d2*(-f_sk_nuc_T0)         = "
 	 << -delta2*f_skyrme_eqdenT0 << " 1/fm^4 "
-	 << -delta2*f_skyrme_eqdenT0/nb*hc_mev_fm << endl;
+	 << -delta2*f_skyrme_eqdenT0/nb*hc_mev_fm << " MeV" << endl;
     cout << endl;
 
     // The four contributions to the free energy density of degenerate
@@ -1115,7 +1116,8 @@ double eos::free_energy_density
 	 << f_skyrme_eqdenT0/nb*hc_mev_fm << " MeV" << endl;
     cout << "d2*f_symT0, d2*F_symT0 = " << delta2*e_sym << " 1/fm^4 "
 	 << delta2*e_sym/nb*hc_mev_fm << " MeV" << endl;
-    cout << "f_nucT, F_nucT         = " << f_skyrme_eqden_T-f_skyrme_eqden_T0
+    cout << "f_nucT, F_nucT         = "
+	 << f_skyrme_eqden_T-f_skyrme_eqden_T0
 	 << " 1/fm^4 "
 	 << (f_skyrme_eqden_T-f_skyrme_eqden_T0)/nb*hc_mev_fm
 	 << " MeV" << endl;
@@ -1138,12 +1140,18 @@ double eos::free_energy_density
 	 << f_total/nb*hc_mev_fm << " MeV" << endl;
     cout << endl;
 
-    cout << "ed,pr= " << th.ed << " 1/fm^4 " << th.pr << " 1/fm^4" << endl;
-    cout << "zn,zp= " << zn << " " << zp << endl;
-    cout << "entropy from sk_chiral= " << s_neut_T << " " << s_eqden_T << endl;
-    cout << "entropy= " << th.en << endl;
-    cout << "s_virial= " << s_virial << endl;
-    cout << "dg_virial_dT= " << dgvirialdT << endl;
+    cout << "ed (w/rm), pr= "
+	 << th.ed+neutron.n*neutron.m+proton.n*proton.m
+	 << " 1/fm^4 " << th.pr << " 1/fm^4" << endl;
+    cout << "entropy, s per baryon= " << th.en << " 1/fm^3 "
+	 << th.en/nb << endl;
+    //cout << "entropy from sk_chiral= " << s_neut_T << " "
+    //<< s_eqden_T << endl;
+    //cout << "s_virial= " << s_virial << endl;
+    //cout << "dg_virial_dT= " << dgvirialdT << endl;
+    cout << "mu_n, mu_p = " << n.mu*hc_mev_fm << " MeV "
+	 << p.mu*hc_mev_fm << " MeV" << endl;
+    cout << endl;
     if (false) {
       cout << -dfvirialdT*g_virial-f_virial*dgvirialdT << " "
 	   << -dfdegdT*(1-g_virial)+f_deg*(dgvirialdT) << endl;
