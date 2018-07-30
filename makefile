@@ -8,21 +8,20 @@
 # Various user-specific settings
 # ----------------------------------------------------------------
 
-ifeq ($(MACHINE),isospin)
+ifdef UTKNA_MAKEFILE
 
-ifeq ($(USER),awsteiner)
+include $(UTKNA_MAKEFILE)
 
-# On isospin for Andrew
-LIBS = -L/usr/lib/x86_64-linux-gnu/hdf5/serial \
-	-lo2scl_eos -lo2scl_part -lo2scl_hdf -lo2scl -lhdf5 -lgsl
-LCXX = g++ 
-LCFLAGS = -I/usr/lib/x86_64-linux-gnu/hdf5/serial/include \
-	-I/usr/include/eigen3 -Wno-deprecated-declarations \
-	-O3 -std=c++11 -DNO_MPI -Wall -Wno-unused -Wshadow -DO2SCL_HDF5_COMP 
-LFFLAGS = -O3 
-LMPICXX = mpic++
+# UTK configuration
+LIBS = $(UTKNA_O2SCL_LIBS)
+LCXX = $(UTKNA_CXX) 
+LCFLAGS = $(UTKNA_O2SCL_INCS) $(UTKNA_CFLAGS) -DNO_MPI
+LFFLAGS = $(UTKNA_FFLAGS)
+LMPICXX = $(UTKNA_MPI_CXX)
 
 else
+
+ifeq ($(MACHINE),isospin)
 
 # On isospin for Xingfu
 LIBS = -L/usr/lib/x86_64-linux-gnu/hdf5/serial \
@@ -32,36 +31,6 @@ LCFLAGS = -I/usr/lib/x86_64-linux-gnu/hdf5/serial/include \
 	-I/usr/include/eigen3 -Wno-deprecated-declarations \
 	-O3 -std=c++11 -DNO_MPI -Wshadow -DO2SCL_HDF5_COMP
 LFFLAGS = -O3 
-LMPICXX = mpic++
-
-endif
-
-else
-ifeq ($(MACHINE),mimosa)
-
-# On mimosa
-LCXX = g++ 
-LIBS = -L$(O2SCL_LIB) -L$(GSL_LIB) -L$(HDF5_LIB) \
-	-lo2scl_hdf -lo2scl_eos -lo2scl_part -lo2scl -lhdf5 -lgsl
-LCFLAGS = -O3 -std=c++11 -I$(O2SCL_INC) -I$(EIGEN_INC) -I$(GSL_INC) \
-	-Wno-deprecated-declarations -I$(HDF5_INC) \
-	-DO2SCL_HDF5_COMP
-LFFLAGS = -O3
-LMPICXX = mpic++
-
-else
-ifeq ($(MACHINE),hedgehog)
-
-# On Andrew's laptop
-LFC = mpif90
-LCXX = $(MPI_CXX)
-LIBS = -L$(O2SCL_LIB) -L$(GSL_LIB) -L$(HDF5_LIB) \
-	-lo2scl_hdf -lo2scl_eos -lo2scl_part -lo2scl -lhdf5 -lgsl
-LCFLAGS = -O3 -std=c++11 -I$(O2SCL_INC) \
-	-I$(EIGEN_INC) -I$(GSL_INC) -I$(HDF5_INC) -Wall \
-	-Wno-ignored-attributes -Wno-deprecated-declarations \
-	-Wno-unused -Wshadow
-LFFLAGS = -O3
 LMPICXX = mpic++
 
 else
@@ -75,7 +44,6 @@ LCFLAGS = -O3 -std=c++11
 LFFLAGS = -O3
 LMPICXX = mpic++
 
-endif
 endif
 endif
 
