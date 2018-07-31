@@ -1667,13 +1667,12 @@ int eos::table_Ye(std::vector<std::string> &sv, bool itive_com) {
 
   table3d t;
   t.set_xy("nB",n_nB,nB_grid,"T",n_T,T_grid);
-  t.new_slice("F");
-  t.new_slice("s");
+  t.new_slice("Fint");
+  t.new_slice("Pint");
+  t.new_slice("Sint");
   t.new_slice("g");
   t.new_slice("msn");
   t.new_slice("msp");
-  t.new_slice("pr");
-  t.new_slice("f_total");
   for(int i=n_nB-1;i>=0;i--) {
     cout << i << "/" << n_nB << endl;
     for(size_t j=0;j<n_T;j++) {
@@ -1685,14 +1684,13 @@ int eos::table_Ye(std::vector<std::string> &sv, bool itive_com) {
       } else {
 	free_energy_density(neutron,proton,T_grid[j]/hc_mev_fm,th2);
       }
-      double foa_hc=hc_mev_fm*(th2.ed-T_grid[j]/hc_mev_fm*th2.en)/
-	(neutron.n+proton.n);
-      t.set(i,j,"F",foa_hc);
-      t.set(i,j,"f_total",th2.ed-T_grid[j]/hc_mev_fm*th2.en);
-      t.set(i,j,"s",th2.en);
-      t.set(i,j,"pr",th2.pr);
-      t.set(i,j,"msn",neutron.ms);
-      t.set(i,j,"msp",proton.ms);
+      double foa_hc=(hc_mev_fm*th2.ed-T_grid[j]*th2.en)/nB_grid[i];
+      t.set(i,j,"Fint",foa_hc);
+      t.set(i,j,"Sint",th2.en/nB_grid[i]);
+      t.set(i,j,"Pint",th2.pr*hc_mev_fm);
+      t.set(i,j,"g",g_virial);
+      t.set(i,j,"msn",neutron.ms/neutron.m);
+      t.set(i,j,"msp",proton.ms/proton.m);
     }
   }
 
@@ -1734,14 +1732,9 @@ int eos::table_nB(std::vector<std::string> &sv, bool itive_com) {
 
   table3d t;
   t.set_xy("Ye",n_Ye,Ye_grid,"T",n_T,T_grid);
-  t.new_slice("F");
-  t.new_slice("s");
-  t.new_slice("g");
-  t.new_slice("msn");
-  t.new_slice("msp");
-  t.new_slice("pr");
-  t.new_slice("f_total");
-  for(int i=n_Ye-1;i>=0;i--) {
+  t.line_of_names("Fint Sint Pint g msn msp cs2");
+
+  for(size_t i=0;i<n_Ye;i++) {
     cout << i << "/" << n_Ye << endl;
     for(size_t j=0;j<n_T;j++) {
       neutron.n=nB*(1.0-Ye_grid[i]);
@@ -1754,12 +1747,14 @@ int eos::table_nB(std::vector<std::string> &sv, bool itive_com) {
       }
       double foa_hc=hc_mev_fm*(th2.ed-T_grid[j]/hc_mev_fm*th2.en)/
 	(neutron.n+proton.n);
-      t.set(i,j,"F",foa_hc);
-      t.set(i,j,"f_total",th2.ed-T_grid[j]/hc_mev_fm*th2.en);
-      t.set(i,j,"s",th2.en);
-      t.set(i,j,"pr",th2.pr);
-      t.set(i,j,"msn",neutron.ms);
-      t.set(i,j,"msp",proton.ms);
+      t.set(i,j,"Fint",foa_hc);
+      t.set(i,j,"Sint",th2.en/nB);
+      t.set(i,j,"Pint",th2.pr*hc_mev_fm);
+      t.set(i,j,"g",g_virial);
+      t.set(i,j,"msn",neutron.ms/neutron.m);
+      t.set(i,j,"msp",proton.ms/proton.m);
+      double cs2=cs2_fixYe(neutron,proton,T_grid[j]/hc_mev_fm,th2);
+      t.set(i,j,"cs2",cs2);
     }
   }
 
@@ -3529,7 +3524,7 @@ int eos::vir_fit(std::vector<std::string> &sv,
 
 void eos::setup_cli(o2scl::cli &cl) {
  
-  static const int nopt=12;
+  static const int nopt=13;
   o2scl::comm_option_s options[nopt]={
     {0,"test-deriv","Test the first derivatives of the free energy.",
      0,0,"","",new o2scl::comm_option_mfptr<eos>
@@ -3537,6 +3532,9 @@ void eos::setup_cli(o2scl::cli &cl) {
     {0,"table-Ye","Construct a 2D table at fixed Y_e.",2,2,"<fname> <Ye>","",
      new o2scl::comm_option_mfptr<eos>
      (this,&eos::table_Ye),o2scl::cli::comm_option_both},
+    {0,"table-nB","Construct a 2D table at fixed n_B.",2,2,"<fname> <nB>","",
+     new o2scl::comm_option_mfptr<eos>
+     (this,&eos::table_nB),o2scl::cli::comm_option_both},
     {0,"table-full","Construct a full 3D EOS table.",1,1,"<fname>","",
      new o2scl::comm_option_mfptr<eos>
      (this,&eos::table_full),o2scl::cli::comm_option_both},
