@@ -115,6 +115,8 @@ class eos_crust_virial_v2 : public o2scl::eos_crust_virial {
 class eos {
   
  protected:
+
+  bool use_nrapr;
   
   /// \name Main EOS parameters [protected]
   //@{
@@ -329,6 +331,7 @@ class eos {
   o2scl::cli::parameter_bool p_include_muons;
   o2scl::cli::parameter_bool p_select_cs2_test;
   o2scl::cli::parameter_bool p_test_ns_cs2;
+  o2scl::cli::parameter_bool p_use_nrapr;
   o2scl::cli::parameter_double p_a_virial;
   o2scl::cli::parameter_double p_b_virial;
   //@}
@@ -459,6 +462,8 @@ class eos {
   //@}
 
  public:
+  
+  o2scl::eos_had_skyrme sk_nrapr;
   
   eos();
 
