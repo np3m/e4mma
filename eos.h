@@ -515,7 +515,12 @@ class eos {
   /** \brief Construct a table at fixed electron fraction
    */
   int table_Ye(std::vector<std::string> &sv,
-		  bool itive_com);
+	       bool itive_com);
+
+  /** \brief Construct a table at fixed baryon density
+   */
+  int table_nB(std::vector<std::string> &sv,
+	       bool itive_com);
 
   /** \brief Construct the EOS for a proto-neutron star
    */

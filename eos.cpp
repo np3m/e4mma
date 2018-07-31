@@ -1643,11 +1643,9 @@ int eos::table_Ye(std::vector<std::string> &sv, bool itive_com) {
   double Ye=o2scl::stod(sv[2]);
 
   size_t n_nB=301;
-  size_t n_Ye=60;
   size_t n_T=160;
     
   std::string nB_grid_spec="10^(i*0.04-12)*2.0";
-  std::string Ye_grid_spec="0.01*(i+1)";
   std::string T_grid_spec="0.2+0.81*i";
 
   vector<double> nB_grid, T_grid;
@@ -1672,16 +1670,10 @@ int eos::table_Ye(std::vector<std::string> &sv, bool itive_com) {
   t.new_slice("F");
   t.new_slice("s");
   t.new_slice("g");
-  t.new_slice("dgdT");
   t.new_slice("msn");
   t.new_slice("msp");
   t.new_slice("pr");
-  t.new_slice("f_deg");
-  t.new_slice("f_virial");
-  t.new_slice("s_virial");
   t.new_slice("f_total");
-  t.new_slice("s_sign");
-  t.new_slice("pr_sign");
   for(int i=n_nB-1;i>=0;i--) {
     cout << i << "/" << n_nB << endl;
     for(size_t j=0;j<n_T;j++) {
@@ -1698,44 +1690,82 @@ int eos::table_Ye(std::vector<std::string> &sv, bool itive_com) {
       t.set(i,j,"F",foa_hc);
       t.set(i,j,"f_total",th2.ed-T_grid[j]/hc_mev_fm*th2.en);
       t.set(i,j,"s",th2.en);
-      t.set(i,j,"g",g_virial);
-      t.set(i,j,"f_virial",f_virial);
-      t.set(i,j,"s_virial",s_virial);
-      t.set(i,j,"f_deg",f_deg);
-      t.set(i,j,"dgdT",dgvirialdT);
       t.set(i,j,"pr",th2.pr);
-      if (th2.pr>0.0) {
-	t.set(i,j,"pr_sign",1.0);
-      } else if (th2.pr<0.0) {
-	t.set(i,j,"pr_sign",-1.0);
-      }
-      if (th2.en>0.0) {
-	t.set(i,j,"s_sign",1.0);
-      } else if (th2.en<0.0) {
-	t.set(i,j,"s_sign",-1.0);
-      }
-      sk.calc_e(neutron,proton,th2);
       t.set(i,j,"msn",neutron.ms);
       t.set(i,j,"msp",proton.ms);
-    }
-  }
-
-  for(size_t k=0;k<t.get_nslices();k++) {
-    string sl_name=t.get_slice_name(k);
-    for(size_t i=0;i<t.get_nx();i++) {
-      for(size_t j=0;j<t.get_ny();j++) {
-	if (!std::isfinite(t.get(i,j,sl_name))) {
-	  cout << sl_name << " not finite at " << nB_grid[i] << " "
-	       << T_grid[j] << endl;
-	  exit(-1);
-	}
-      }
     }
   }
 
   hdf_file hf;
   hf.open_or_create(fname);
   hdf_output(hf,t,"table_Ye");
+  hf.close();
+  
+  return 0;
+}
+
+int eos::table_nB(std::vector<std::string> &sv, bool itive_com) {
+
+  std::string fname=sv[1];
+  double nB=o2scl::stod(sv[2]);
+
+  size_t n_Ye=99;
+  size_t n_T=160;
+    
+  std::string Ye_grid_spec="0.01*(i+1)";
+  std::string T_grid_spec="0.2+0.81*i";
+
+  vector<double> Ye_grid, T_grid;
+  
+  calculator calc;
+  std::map<std::string,double> vars;
+  
+  calc.compile(Ye_grid_spec.c_str());
+  for(size_t i=0;i<n_Ye;i++) {
+    vars["i"]=((double)i);
+    Ye_grid.push_back(calc.eval(&vars));
+  }
+  
+  calc.compile(T_grid_spec.c_str());
+  for(size_t i=0;i<n_T;i++) {
+    vars["i"]=((double)i);
+    T_grid.push_back(calc.eval(&vars));
+  }
+
+  table3d t;
+  t.set_xy("Ye",n_Ye,Ye_grid,"T",n_T,T_grid);
+  t.new_slice("F");
+  t.new_slice("s");
+  t.new_slice("g");
+  t.new_slice("msn");
+  t.new_slice("msp");
+  t.new_slice("pr");
+  t.new_slice("f_total");
+  for(int i=n_Ye-1;i>=0;i--) {
+    cout << i << "/" << n_Ye << endl;
+    for(size_t j=0;j<n_T;j++) {
+      neutron.n=nB*(1.0-Ye_grid[i]);
+      proton.n=nB*Ye_grid[i];
+      double t1, t2, t3, t4, t5;
+      if (use_nrapr) {
+	sk_nrapr.calc_temp_e(neutron,proton,T_grid[j]/hc_mev_fm,th2);
+      } else {
+	free_energy_density(neutron,proton,T_grid[j]/hc_mev_fm,th2);
+      }
+      double foa_hc=hc_mev_fm*(th2.ed-T_grid[j]/hc_mev_fm*th2.en)/
+	(neutron.n+proton.n);
+      t.set(i,j,"F",foa_hc);
+      t.set(i,j,"f_total",th2.ed-T_grid[j]/hc_mev_fm*th2.en);
+      t.set(i,j,"s",th2.en);
+      t.set(i,j,"pr",th2.pr);
+      t.set(i,j,"msn",neutron.ms);
+      t.set(i,j,"msp",proton.ms);
+    }
+  }
+
+  hdf_file hf;
+  hf.open_or_create(fname);
+  hdf_output(hf,t,"table_nB");
   hf.close();
   
   return 0;
