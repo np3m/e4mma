@@ -3407,9 +3407,6 @@ int eos::point(std::vector<std::string> &sv, bool itive_com) {
   } else {
     free_energy_density(neutron,proton,T,th2);
   }
-  this->verbose=0;
-  cout << "cs2: " << cs2_fixYe(neutron,proton,T,th2) << endl;
-  cout << endl;
 
   return 0;
 }
