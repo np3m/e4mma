@@ -156,7 +156,7 @@ class eos {
   /** \brief Compute the free energy density using the virial 
       expansion including derivative information
   */
-  double free_energy_density_virial
+  virtual double free_energy_density_virial
     (o2scl::fermion &n, o2scl::fermion &p, double T,
      o2scl::thermo &th, double &dmundnn, double &dmundpn,
      double &dmupdnn, double &dmupdpn, double &dmundT,
@@ -165,7 +165,7 @@ class eos {
   /** \brief Compute the free energy density using the virial 
       expansion
   */
-  double free_energy_density_virial
+  virtual double free_energy_density_virial
     (o2scl::fermion &n, o2scl::fermion &p, double T,
      o2scl::thermo &th) {
     double x1, x2, x3, x4, x5, x6;
