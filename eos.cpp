@@ -893,11 +893,22 @@ double eos::free_energy_density
 
   // ----------------------------------------------------------------
   // Compute the virial EOS
-  
+
   double dmundT, dmupdT, dmundnn, dmupdnn, dmundpn, dmupdpn;
-  f_virial=free_energy_density_virial
-    (n,p,T,th,dmundnn,dmundpn,dmupdnn,dmupdpn,dmundT,dmupdT);
-  s_virial=th.en;
+  if (T==0.0) {
+    f_virial=0.0;
+    s_virial=0.0;
+    dmundT=0.0;
+    dmupdT=0.0;
+    dmundnn=0.0;
+    dmupdnn=0.0;
+    dmundpn=0.0;
+    dmupdpn=0.0;
+  } else {
+    f_virial=free_energy_density_virial
+      (n,p,T,th,dmundnn,dmundpn,dmupdnn,dmupdpn,dmundT,dmupdT);
+    s_virial=th.en;
+  }
 
   double dfvirialdT=-th.en;
   double P_virial=th.pr;
@@ -906,6 +917,15 @@ double eos::free_energy_density
   double zn=exp(mu_n_virial/T);
   double zp=exp(mu_p_virial/T);
   g_virial=1.0/(a_virial*zn*zn+a_virial*zp*zp+b_virial*zn*zp+1.0);
+  if (T==0.0) {
+    dfvirialdT=0.0;
+    P_virial=0.0;
+    mu_n_virial=0.0;
+    mu_p_virial=0.0;
+    zn=0.0;
+    zp=0.0;
+    g_virial=0.0;
+  }
 
   // ----------------------------------------------------------------
   // Compute the Skyrme EOS in nuclear matter at T=0
@@ -1032,6 +1052,13 @@ double eos::free_energy_density
   
   double dfvirialdnn=mu_n_virial;
   double dfvirialdpn=mu_p_virial;
+  if (T==0.0) {
+    dgvirialdnn=0.0;
+    dgvirialdpn=0.0;
+    dfvirialdnn=0.0;
+    dfvirialdpn=0.0;
+  }
+  
   double dfskyrme_eqden_T0dnn=(mu_n_skyrme_eqdenT0+mu_p_skyrme_eqdenT0)/2.0;
   double dfskyrme_eqden_T0dpn=dfskyrme_eqden_T0dnn;
 	
@@ -1076,6 +1103,7 @@ double eos::free_energy_density
      +2.0*a_virial*zp*zp*dmupdT/T-2.0*a_virial*zp*zp*mu_p_virial/T/T
      +b_virial*zn*zp*dmundT/T+b_virial*zn*zp*dmupdT/T-
      b_virial*zn*zp*mu_n_virial/T/T-b_virial*zn*zp*mu_p_virial/T/T);
+  if (T==0.0) dgvirialdT=0.0;
   
   // Restore p.n and n.n 
   n.n=nn;
@@ -1087,6 +1115,9 @@ double eos::free_energy_density
           +f_deg*(-dgvirialdT));
   th.pr=-f_total+n.n*n.mu+p.n*p.mu;
   th.ed=f_total+T*th.en;
+
+  // Ensure the entropy is exactly zero at T=0 
+  if (T==0.0) th.en=0.0;
   
   if (verbose>=1) {
     cout << endl;
@@ -2821,24 +2852,29 @@ int eos::solve_fixed_sonb_YL(size_t nv, const ubvector &x, ubvector &y,
   neutron.n=nB*(1.0-Ye);
   proton.n=nB*Ye;
 
+  // This is an additional temporary temperature variable we use
+  // to make sure the results are exact for s=0
+  double T2=T;
+  if (sonb==0.0) T2=0.0;
+
   if (use_nrapr) {
     
-    sk_nrapr.calc_temp_e(neutron,proton,T,th2);
+    sk_nrapr.calc_temp_e(neutron,proton,T2,th2);
     
   } else {
     
     sk.eff_mass(neutron,proton);
     if (neutron.ms<0.0 || proton.ms<0.0) return 1;
     
-    free_energy_density(neutron,proton,T,th2);
+    free_energy_density(neutron,proton,T2,th2);
     
   }
   
-  photon.massless_calc(T);
+  photon.massless_calc(T2);
 
   electron.n=proton.n;
   electron.mu=electron.m; 
-  relf.pair_density(electron,T);
+  relf.pair_density(electron,T2);
 
   double en=th2.en+electron.en+photon.en;
   
@@ -2849,13 +2885,17 @@ int eos::solve_fixed_sonb_YL(size_t nv, const ubvector &x, ubvector &y,
   } else {
     
     neutrino.mu=proton.mu+proton.m+electron.mu-neutron.mu-neutron.m;
-    relf.massless_pair_mu(neutrino,T);
+    relf.massless_pair_mu(neutrino,T2);
     double YL2=(neutrino.n+electron.n)/nB;
 
     y[0]=YL2-YL;
   }
-  
-  y[1]=en/nB-sonb;
+
+  if (sonb==0.0) {
+    y[1]=T;
+  } else {
+    y[1]=en/nB-sonb;
+  }
 
   return 0;
 }
