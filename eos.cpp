@@ -2847,7 +2847,7 @@ int eos::solve_fixed_sonb_YL(size_t nv, const ubvector &x, ubvector &y,
   double T=x[1];
   
   if (x[0]<1.0e-5 || x[0]>0.6) return 1;
-  if (x[1]<1.0e-5 || x[1]>1.0) return 2;
+  if (sonb>0.0 && (x[1]<1.0e-5 || x[1]>1.0)) return 2;
 
   neutron.n=nB*(1.0-Ye);
   proton.n=nB*Ye;
