@@ -2542,9 +2542,9 @@ int eos::eos_sn(std::vector<std::string> &sv, bool itive_com) {
     "87f283e0ed552c8141d1ddba34c19";
   cf.hash_type=cloud_file::sha256;
   cf.hdf5_open_hash(hf,"LS220_234r_136t_50y_analmu_20091212_SVNr26.h5",
-		    sha,((string)"https://isospin.roam.utk.edu/")+
+		    ((string)"https://isospin.roam.utk.edu/")+
 		    "public/eos_tables/scollapse/LS220_234r_136t_50y_"+
-		    "analmu_20091212_SVNr26.h5","data");
+		    "analmu_20091212_SVNr26.h5",sha,"data");
   
   vector<vector<double> > pts={{0.16,0.01,0.1},
 			       {0.16,0.01,10.0},
