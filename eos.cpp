@@ -1727,7 +1727,7 @@ int eos::table_Ye(std::vector<std::string> &sv, bool itive_com) {
 
   hdf_file hf;
   hf.open_or_create(fname);
-  hdf_output(hf,t,"table_Ye");
+  hdf_output(hf,(const table3d &)t,"table_Ye");
   hf.close();
   
   return 0;
@@ -1791,7 +1791,7 @@ int eos::table_nB(std::vector<std::string> &sv, bool itive_com) {
 
   hdf_file hf;
   hf.open_or_create(fname);
-  hdf_output(hf,t,"table_nB");
+  hdf_output(hf,(const table3d &)t,"table_nB");
   hf.close();
   
   return 0;
