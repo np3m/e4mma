@@ -2822,7 +2822,8 @@ int eos::solve_Ye(size_t nv, const ubvector &x, ubvector &y,
   if (use_nrapr) {
     sk_nrapr.calc_temp_e(neutron,proton,T,th2);
   } else {
-    sk.eff_mass(neutron,proton);
+    double t1, t2;
+    sk.eff_mass(neutron,proton,t1,t2);
     if (neutron.ms<0.0 || proton.ms<0.0) return 1;
     
     free_energy_density(neutron,proton,T,th2);
@@ -2863,7 +2864,8 @@ int eos::solve_fixed_sonb_YL(size_t nv, const ubvector &x, ubvector &y,
     
   } else {
     
-    sk.eff_mass(neutron,proton);
+    double t1, t2;
+    sk.eff_mass(neutron,proton,t1,t2);
     if (neutron.ms<0.0 || proton.ms<0.0) return 1;
     
     free_energy_density(neutron,proton,T2,th2);
@@ -2915,7 +2917,8 @@ int eos::solve_T(size_t nv, const ubvector &x, ubvector &y,
     
   } else {
     
-    sk.eff_mass(neutron,proton);
+    double t1, t2;
+    sk.eff_mass(neutron,proton,t1,t2);
     if (neutron.ms<0.0 || proton.ms<0.0) return 1;
     
     free_energy_density(neutron,proton,T,th2);
