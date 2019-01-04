@@ -54,7 +54,10 @@ doc: empty
 	cd sphinx; make html
 
 sync-doc:
-	sudo cp -r sphinx/build/html/* $(STATIC_DOC_DIR)/eos
+	rsync -Cavzu sphinx/build/html/* $(STATIC_DOC_DIR)/eos
+
+test-sync:
+	rsync -Cavzun sphinx/build/html/* $(STATIC_DOC_DIR)/eos
 
 eos: eos.o main.o
 	$(LCXX) $(LCFLAGS) -o eos eos.o main.o $(LIBS) \
