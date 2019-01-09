@@ -726,8 +726,8 @@ double eos::free_energy_density_virial
     dmundT=x4[0];
     dmupdT=x4[1];
   } else {
-    dmundT=n.mu/T;
-    dmupdT=p.mu/T;
+    dmundT=n.mu/T-1.5;
+    dmupdT=p.mu/T-1.5;
   }
   if (false && verbose>=2) {
     cout << "bn= " << b_n << endl;
