@@ -379,6 +379,8 @@ void eos::ns_fit(int row) {
   // Set the class data member to the appropriate row
   i_ns=row;
   
+  Lambda_bar_14=nstar_tab.get("lambda_bar14",row);
+  
   // Initial values of the parameters
   ns_fit_parms.resize(5);
   ns_fit_parms[0]=-6.102748e3;
@@ -2943,7 +2945,7 @@ int eos::mcarlo_data(std::vector<std::string> &sv, bool itive_com) {
 		  "ns_fit0 ns_fit1 ns_fit2 ns_fit3 ns_fit4 "+
 		  "F_0004_50_10 F_016_01_01 F_016_01_10 "+
 		  "F_048_01_01 F_048_50_01 F_100_50_10 "+
-		  "ns_min_cs2 ns_max_cs2");
+		  "ns_min_cs2 ns_max_cs2 Lambda_bar_14");
 
   vector<double> nB_arr={0.004,0.16,0.16,0.48,0.48,1.0};
   vector<double> Ye_arr={0.5,0.01,0.01,0.01,0.5,0.5};
@@ -2978,6 +2980,8 @@ int eos::mcarlo_data(std::vector<std::string> &sv, bool itive_com) {
     min_max_cs2(ns_min_cs2,ns_max_cs2);
     line.push_back(ns_min_cs2);
     line.push_back(ns_max_cs2);
+
+    line.push_back(Lambda_bar_14);
 
     cout << "Line: ";
     for(size_t i=0;i<line.size();i++) {

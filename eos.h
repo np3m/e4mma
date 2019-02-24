@@ -116,7 +116,14 @@ class eos {
   
  protected:
 
+  /** \brief Use NRAPR (for testing and comparison)
+   */
   bool use_nrapr;
+
+  /** \brief Store Lambda bar for a 1.4 solar mass neutron
+      star
+  */
+  double Lambda_bar_14;
   
   /// \name Main EOS parameters [protected]
   //@{
