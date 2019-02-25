@@ -2994,7 +2994,7 @@ int eos::mcarlo_data(std::vector<std::string> &sv, bool itive_com) {
       O2SCL_ERR("Table sync error in mcarlo_data().",exc_esanity);
     }
 
-    if (j%100==0 || j==N-1) {
+    if (j%10==0 || j==N-1) {
       hdf_file hf1;
       std::string fname="mcarlo_data";
       if (sv.size()>1) fname+="_"+sv[1];
@@ -3341,9 +3341,13 @@ int eos::select_internal(int i_ns_loc, int i_skyrme_loc,
 	  proton.n=nbx*yex;
 	  double cs2x=cs2_fixYe(neutron,proton,Tx,th2);
 	  if (cs2x<0.0) {
-	    cout << "Negative speed of sound." << endl;
-	    cout << nbx << " " << yex << " " << Tx*hc_mev_fm << endl;
-	    exit(-1);
+	    model_selected=false;
+	    return 10;
+	    if (false) {
+	      cout << "Negative speed of sound." << endl;
+	      cout << nbx << " " << yex << " " << Tx*hc_mev_fm << endl;
+	      exit(-1);
+	    }
 	  }
 	}
       }
