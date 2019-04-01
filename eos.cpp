@@ -2126,14 +2126,15 @@ int eos::test_deriv(std::vector<std::string> &sv, bool itive_com) {
   double err_fac;
     
   deriv_gsl<> gd;
-  double mun_num, mup_num, en_num, mun_err, mup_err, en_err;
+  double mun_num, mup_num, en_num=0.0, mun_err, mup_err, en_err=0.0;
   double T, nn, np, nb, avg1, avg2, avg3, avg_sum=0.0;
   size_t count;
 
   // ---------------------------------------------------------------------
 
   cout << "T=0.1 MeV, Ye=0.01" << endl;
-
+  cout << "n_B         mu_n        mup_p       s" << endl;
+  
   err_fac=1.0e4;
   avg1=0.0;
   avg2=0.0;
@@ -2209,7 +2210,7 @@ int eos::test_deriv(std::vector<std::string> &sv, bool itive_com) {
     t.test_abs(proton.mu,mup_num,mup_err*err_fac,"mup, T=0.1, Ye=0.01");
     t.test_abs(th2.en,en_num,en_err*err_fac,"en, T=0.1, Ye=0.01");
   }
-  cout << avg1/((double)count) << " ";
+  cout << "            " << avg1/((double)count) << " ";
   cout << avg2/((double)count) << " ";
   cout << avg3/((double)count) << endl;
   cout << endl;
@@ -2217,6 +2218,7 @@ int eos::test_deriv(std::vector<std::string> &sv, bool itive_com) {
   // ---------------------------------------------------------------------
   
   cout << "T=0.1 MeV, Ye=0.49" << endl;
+  cout << "n_B         mu_n        mup_p       s" << endl;
 
   err_fac=1.0e4;
   avg1=0.0;
@@ -2293,7 +2295,7 @@ int eos::test_deriv(std::vector<std::string> &sv, bool itive_com) {
     t.test_abs(proton.mu,mup_num,mup_err*err_fac,"mup, T=0.1, Ye=0.49");
     t.test_abs(th2.en,en_num,en_err*err_fac,"en, T=0.1, Ye=0.49");
   }
-  cout << avg1/((double)count) << " ";
+  cout << "            " << avg1/((double)count) << " ";
   cout << avg2/((double)count) << " ";
   cout << avg3/((double)count) << endl;
   cout << endl;
@@ -2301,6 +2303,7 @@ int eos::test_deriv(std::vector<std::string> &sv, bool itive_com) {
   // ---------------------------------------------------------------------
 
   cout << "T=1 MeV, Ye=0.01" << endl;
+  cout << "n_B         mu_n        mup_p       s" << endl;
 
   err_fac=1.0e4;
   avg1=0.0;
@@ -2377,7 +2380,7 @@ int eos::test_deriv(std::vector<std::string> &sv, bool itive_com) {
     t.test_abs(proton.mu,mup_num,mup_err*err_fac,"mup, T=1, Ye=0.01");
     t.test_abs(th2.en,en_num,en_err*err_fac,"en, T=1, Ye=0.01");
   }
-  cout << avg1/((double)count) << " ";
+  cout << "            " << avg1/((double)count) << " ";
   cout << avg2/((double)count) << " ";
   cout << avg3/((double)count) << endl;
   cout << endl;
@@ -2385,6 +2388,7 @@ int eos::test_deriv(std::vector<std::string> &sv, bool itive_com) {
   // ---------------------------------------------------------------------
 
   cout << "T=1 MeV, Ye=0.49" << endl;
+  cout << "n_B         mu_n        mup_p       s" << endl;
 
   err_fac=1.0e4;
   avg1=0.0;
@@ -2461,7 +2465,7 @@ int eos::test_deriv(std::vector<std::string> &sv, bool itive_com) {
     t.test_abs(proton.mu,mup_num,mup_err*err_fac,"mup, T=1, Ye=0.49");
     t.test_abs(th2.en,en_num,en_err*err_fac,"en, T=1, Ye=0.49");
   }
-  cout << avg1/((double)count) << " ";
+  cout << "            " << avg1/((double)count) << " ";
   cout << avg2/((double)count) << " ";
   cout << avg3/((double)count) << endl;
   cout << endl;
@@ -2469,6 +2473,7 @@ int eos::test_deriv(std::vector<std::string> &sv, bool itive_com) {
   // ---------------------------------------------------------------------
 
   cout << "T=30 MeV, Ye=0.01" << endl;
+  cout << "n_B         mu_n        mup_p       s" << endl;
 
   err_fac=1.0e4;
   avg1=0.0;
@@ -2545,7 +2550,7 @@ int eos::test_deriv(std::vector<std::string> &sv, bool itive_com) {
     t.test_abs(proton.mu,mup_num,mup_err*err_fac,"mup, T=30, Ye=0.01");
     t.test_abs(th2.en,en_num,en_err*err_fac,"en, T=30, Ye=0.01");
   }
-  cout << avg1/((double)count) << " ";
+  cout << "            " << avg1/((double)count) << " ";
   cout << avg2/((double)count) << " ";
   cout << avg3/((double)count) << endl;
   cout << endl;
@@ -2553,6 +2558,7 @@ int eos::test_deriv(std::vector<std::string> &sv, bool itive_com) {
   // ---------------------------------------------------------------------
 
   cout << "T=30 MeV, Ye=0.49" << endl;
+  cout << "n_B         mu_n        mup_p       s" << endl;
   
   err_fac=1.0e4;
   avg1=0.0;
@@ -2629,7 +2635,7 @@ int eos::test_deriv(std::vector<std::string> &sv, bool itive_com) {
     t.test_abs(proton.mu,mup_num,mup_err*err_fac,"mup, T=30, Ye=0.49");
     t.test_abs(th2.en,en_num,en_err*err_fac,"en, T=30, Ye=0.49");
   }
-  cout << avg1/((double)count) << " ";
+  cout << "            " << avg1/((double)count) << " ";
   cout << avg2/((double)count) << " ";
   cout << avg3/((double)count) << endl;
   cout << endl;
