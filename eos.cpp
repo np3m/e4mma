@@ -601,7 +601,7 @@ eos::eos() {
 #ifdef TEMP_UPDATES
   temp_updates=true;
 #else
-  temp_udpates=false;
+  temp_updates=false;
 #endif
 }
 
