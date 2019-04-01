@@ -36,7 +36,7 @@ typedef boost::numeric::ublas::vector<double> ubvector;
 typedef boost::numeric::ublas::matrix<double> ubmatrix;
 
 /** \brief Compute the virial EOS
-*/
+ */
 class virial_solver {
 
  public:
@@ -71,122 +71,126 @@ class virial_solver {
     npt=pow(lambda,3)/2.0*pn;
     nnt=pow(lambda,3)/2.0*nn;
     
-    // coefficients for quartic equation of zn in descending order
-    a=pow(b_n,3)*2.0/b_pn/b_pn-2.0*b_n;
-    b=-1+b_n*b_n*2.0/b_pn/b_pn-b_n/b_pn;
-    c=b_n/(2.0*b_pn*b_pn)-0.5/b_pn-nnt+npt-b_n*b_n*npt*2.0/b_pn/b_pn;
-    d=-b_n*npt/b_pn/b_pn+npt/2.0/b_pn;
-    e=b_n*npt*npt/2.0/b_pn/b_pn;
-       
-    quart2.solve_rc(a,b,c,d,e,res[0],res[1],res[2],res[3]);
-    int root_count=0;
-    std::complex<double> eval[4];
+    if(npt>nnt) {
+      
+      // Coefficients for quartic equation of zp in descending order
+      
+      a=pow(b_n,3)*2.0/b_pn/b_pn-2.0*b_n;
+      b=-1+b_n*b_n*2.0/b_pn/b_pn-b_n/b_pn;
+      c=b_n/(2.0*b_pn*b_pn)-0.5/b_pn-nnt+npt-b_n*b_n*npt*2.0/b_pn/b_pn;
+      d=-b_n*npt/b_pn/b_pn+npt/2.0/b_pn;
+      e=b_n*npt*npt/2.0/b_pn/b_pn;
+      
+      quart2.solve_rc(a,b,c,d,e,res[0],res[1],res[2],res[3]);
+      int root_count=0;
+      std::complex<double> eval[4];
 
-    /*
-      AWS: Changed on 1/9/18 to select largest fugacity instead
-      of exiting when multiple roots are found
-    */
+      /*
+        AWS: Changed on 1/9/18 to select largest fugacity instead
+        of exiting when multiple roots are found
+      */
     
-    for (int i=0;i<4;i++) {
+      for (int i=0;i<4;i++) {
 
-      // Check that the root is positive and that the imaginary
-      // part is sufficiently small. Note I use fabs() rather
-      // than abs().
-      if(res[i].real()>0 &&
-	 fabs(res[i].imag()/res[i].real())<pow(10.0,-6.0)) {
+        // Check that the root is positive and that the imaginary
+        // part is sufficiently small. Note I use fabs() rather
+        // than abs().
+        if(res[i].real()>0 && fabs(res[i].imag()/res[i].real())<1.0e-6) {
 
-	// Make sure that the specified root is really a solution
-	// of the original polynomial
-	eval[i]=(a*pow(res[i],4.0)+b*pow(res[i],3.0)+
-		 c*pow(res[i],2.0)+d*res[i]+e)/e;
-	//change from 1e-8 to 1e-6 because at zero temperature no solutions
-
+	  // Make sure that the specified root is really a solution
+	  // of the original polynomial
+	  eval[i]=(a*pow(res[i],4.0)+b*pow(res[i],3.0)+
+		   c*pow(res[i],2.0)+d*res[i]+e)/e;
+	   
+	  // Changed from 1e-8 to 1e-6 because at zero temperature no
+	  // solutions
+	   
 	  if (fabs(eval[i].real())<2.0e-6 && fabs(eval[i].imag())<1.0e-8) {
-	  if (root_count==0) {
-	    zp=res[i].real();
-	    x[1]=log(zp)*T;
-	  } else if (zp>res[i].real() && b_n>b_pn) {
-	    zp=res[i].real();
-	    x[1]=log(zp)*T;
-	  } else if (zp<res[i].real() && b_n<b_pn) {
-            zp=res[i].real();
-	    x[1]=log(zp)*T;    
-          }                  
-	  root_count++;
-	}
+	    if (root_count==0) {
+	      zp=res[i].real();
+	      x[1]=log(zp)*T;
+	    } else if (zp>res[i].real()) {
+	      zp=res[i].real();
+	      x[1]=log(zp)*T;
+	    }                  
+	    root_count++;
+	  }
+	  
+        }
       }
-    }
-
-    if (root_count!=1 && false) {
-      std::cout << "Zp Multiple or zero roots: " << root_count << std::endl;
-      std::cout.setf(std::ios::showpos);
-      std::cout << res[0].real() << " " << res[0].imag() << " ";
-      std::cout << eval[0].real() << " " << eval[0].imag() << std::endl;
-      std::cout << res[1].real() << " " << res[1].imag() << " ";
-      std::cout << eval[1].real() << " " << eval[1].imag() << std::endl;
-      std::cout << res[2].real() << " " << res[2].imag() << " ";
-      std::cout << eval[2].real() << " " << eval[2].imag() << std::endl;
-      std::cout << res[3].real() << " " << res[3].imag() << " ";
-      std::cout << eval[3].real() << " " << eval[3].imag() << std::endl;
-      std::cout.unsetf(std::ios::showpos);
-      std::cout << "bn= " <<b_n<<" bpn= "<<b_pn<<" nnt= "<<nnt<<" npt= "
-                <<npt<< " T= "<<T<< std::endl;
-      O2SCL_ERR("Zero or more than one root in solve_fugacity().",
-		o2scl::exc_efailed);
-    }
-
-    //changed for better accuracy in 11/19/2016
-    if (T<1.0/o2scl_const::hc_mev_fm || true) {
-
-      // Compute neutron fugacity directly from proton fugacity
-      // Eq. (6a)
-
-      zn=(-(2.0*zp*b_pn+1.0)+sqrt(pow(2.0*zp*b_pn+1.0,2.0)+
-				  8.0*b_n*nnt))/4.0/b_n;
-
-      if (true) {
-	double r0, r1;
-	gsl_poly_solve_quadratic(2.0*b_n,2.0*zp*b_pn+1.0,-nnt,&r0,&r1);
-	if (r0>r1) zn=r0;
-	else zn=r1;
+      
+      if (root_count!=1 && false) {
+        std::cout << "Zp Multiple or zero roots: " << root_count << std::endl;
+        std::cout.setf(std::ios::showpos);
+        std::cout << res[0].real() << " " << res[0].imag() << " ";
+        std::cout << eval[0].real() << " " << eval[0].imag() << std::endl;
+        std::cout << res[1].real() << " " << res[1].imag() << " ";
+        std::cout << eval[1].real() << " " << eval[1].imag() << std::endl;
+        std::cout << res[2].real() << " " << res[2].imag() << " ";
+        std::cout << eval[2].real() << " " << eval[2].imag() << std::endl;
+        std::cout << res[3].real() << " " << res[3].imag() << " ";
+        std::cout << eval[3].real() << " " << eval[3].imag() << std::endl;
+        std::cout.unsetf(std::ios::showpos);
+        std::cout << "bn= " <<b_n<<" bpn= "<<b_pn<<" nnt= "<<nnt<<" npt= "
+                  <<npt<< " T= "<<T<< std::endl;
+        O2SCL_ERR("Zero or more than one root in solve_fugacity().",
+		  o2scl::exc_efailed);
       }
 
-      x[0]=log(zn)*T; 
+      // Changed for better accuracy in 11/19/2016
+      if (T<1.0/o2scl_const::hc_mev_fm || true) {
+  
+        // Compute neutron fugacity directly from proton fugacity
+        // Eq. (6a)
+
+        zn=(-(2.0*zp*b_pn+1.0)+sqrt(pow(2.0*zp*b_pn+1.0,2.0)+
+				    8.0*b_n*nnt))/4.0/b_n;
+
+        if (true) {
+	  double r0, r1;
+	  gsl_poly_solve_quadratic(2.0*b_n,2.0*zp*b_pn+1.0,-nnt,&r0,&r1);
+	  if (r0>r1) zn=r0;
+	  else zn=r1;
+        }
+	
+        x[0]=log(zn)*T; 
+
+      }
       
     } else {
       
+      // The case nnt>npt:
+
       a=pow(b_n,3)*2.0/b_pn/b_pn-2.0*b_n;
       b=-1.0+b_n*b_n*2.0/b_pn/b_pn-b_n/b_pn;
       c=b_n/(2.0*b_pn*b_pn)-0.5/b_pn-npt+nnt-b_n*b_n*nnt*2.0/b_pn/b_pn;
       d=-b_n*nnt/b_pn/b_pn+nnt/2.0/b_pn;
       e=b_n*nnt*nnt/2.0/b_pn/b_pn;
-       
+         
       quart2.solve_rc(a,b,c,d,e,res[0],res[1],res[2],res[3]);
-      root_count=0;
-      //std::complex<double> eval[4];
-      for(int i=0;i<4;i++){
-
-        // Check that the root is positive and that the imaginary
-        // part is sufficiently small. Note I use fabs() rather
-        // than abs().
-        //std::cout<<"xingfu is here "<<std::endl;
-        if(res[i].real()>0 &&
-	  fabs(res[i].imag()/res[i].real())<pow(10.0,-6.0)) {
-
+      int root_count=0;
+      std::complex<double> eval[4];
+      
+      for(int i=0;i<4;i++) {
+	
+        if(res[i].real()>0 && fabs(res[i].imag()/res[i].real())<1.0e-6) {
+	  
 	  // Make sure that the specified root is really a solution
 	  // of the original polynomial
 	  eval[i]=(a*pow(res[i],4.0)+b*pow(res[i],3.0)+
-		 c*pow(res[i],2.0)+d*res[i]+e)/e;
-	  //change from 1e-8 to 1e-6 because at zero temperature no solutions
-	  if (fabs(eval[i].real())<1e-6 && fabs(eval[i].imag())<1.0e-8) { 
-	    x[0]=log(res[i].real())*T;
+	           c*pow(res[i],2.0)+d*res[i]+e)/e;
+	  
+	  // Changed from 1e-8 to 1e-6 because at zero temperature no
+	  // solutions
+	  if (fabs(eval[i].real())<2.0e-6 && fabs(eval[i].imag())<1.0e-8) { 
 	    zn=res[i].real();
+	    x[0]=log(res[i].real())*T;
 	    root_count++;
 	  }
-       }
+        }
       }
       
-      if (root_count!=1) {
+      if (root_count!=1 || false) {
         std::cout << "Zn Multiple or zero roots: " << root_count << std::endl;
         std::cout.setf(std::ios::showpos);
         std::cout << res[0].real() << " " << res[0].imag() << " ";
@@ -199,8 +203,23 @@ class virial_solver {
         std::cout << eval[3].real() << " " << eval[3].imag() << std::endl;
         std::cout.unsetf(std::ios::showpos);
         O2SCL_ERR("Zero or more than one root in solve_fugacity().",
-		o2scl::exc_efailed);
+                  o2scl::exc_efailed);
       }
+      
+      // Compute proton fugacity directly from neutron fugacity
+      // Eq. (6a)
+
+      zp=(-(2.0*zn*b_pn+1.0)+sqrt(pow(2.0*zn*b_pn+1.0,2.0)+
+				  8.0*b_n*npt))/4.0/b_n;
+
+      if (true) {
+	double r0, r1;
+	gsl_poly_solve_quadratic(2.0*b_n,2.0*zn*b_pn+1.0,-npt,&r0,&r1);
+	if (r0>r1) zp=r0;
+	else zp=r1;
+      }
+      
+      x[1]=log(zp)*T; 
     }
 
     //-----------------------------------------------------------
@@ -240,9 +259,9 @@ class virial_solver {
     A(1,0)=2/pow(lambda,3)*2*zp*zn*b_pn/T;
     A(1,1)=2/pow(lambda,3)*(zp/T+4*zp*zp*b_n/T+2*zp*zn*b_pn/T);
     /*std::cout<<"mfn21 start: "<<std::endl;
-    std::cout<<mfn2_mu_n<<" "<<mfn2_mu_p<<std::endl;
-    std::cout<<zn<<" "<<zp<<" "<<T<<std::endl;
-    std::cout<<"mfn21 end: "<<std::endl;*/
+      std::cout<<mfn2_mu_n<<" "<<mfn2_mu_p<<std::endl;
+      std::cout<<zn<<" "<<zp<<" "<<T<<std::endl;
+      std::cout<<"mfn21 end: "<<std::endl;*/
     /*std::cout<<A(0,0)<<" "<<A(0,1)<<" "<<A(1,0)<<" "
       <<A(1,1)<<std::endl;*/
     B(0)=1;
