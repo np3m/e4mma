@@ -116,15 +116,19 @@ class eos {
   
  protected:
 
+  /** \brief For debugging the two versions (default true)
+   */
+  bool temp_updates;
+  
   /** \brief Use NRAPR (for testing and comparison)
    */
   bool use_nrapr;
-
+  
   /** \brief Store Lambda bar for a 1.4 solar mass neutron
       star
   */
   double Lambda_bar_14;
-  
+
   /// \name Main EOS parameters [protected]
   //@{
   /// The first exponent for density in the QMC EOS (unitless)
@@ -592,6 +596,7 @@ class eos {
    */
   int solve_T(size_t nv, const ubvector &x, ubvector &y,
 	      double nb, double Ye, double sonb);
+  
   
   /** \brief Setup the command-line interface with commands and
       parameters

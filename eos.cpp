@@ -44,7 +44,6 @@ eos_crust_virial_v2::eos_crust_virial_v2() {
   bpn_params[3]=4.510380054238e-01;
   bpn_params[4]=2.751333759925e-01;
   bpn_params[5]=-1.125035495140e+00;
-
 }
 
 double eos_crust_virial_v2::bn_func(size_t np, const vector<double> &par,
@@ -598,6 +597,12 @@ eos::eos() {
 
   use_nrapr=false;
   o2scl_hdf::skyrme_load(sk_nrapr,"NRAPR");
+
+#ifdef TEMP_UPDATES
+  temp_updates=true;
+#else
+  temp_udpates=false;
+#endif
 }
 
 double eos::energy_density_qmc(double nn, double np) {
@@ -686,6 +691,7 @@ double eos::free_energy_density_virial
   acl.mfn2_mu_p=p.mu;
   acl.mfn2_mu_n=n.mu;
 
+  
   if (nn*pow(lambda,3.0)>1.0e-5 || pn*pow(lambda,3.0)>1.0e-5){
 
     ubvector x2(2);
@@ -731,6 +737,7 @@ double eos::free_energy_density_virial
     dmundT=n.mu/T-1.5;
     dmupdT=p.mu/T-1.5;
   }
+  
   if (false && verbose>=2) {
     cout << "bn= " << b_n << endl;
     cout << "bpn= " << b_pn << endl;
@@ -932,6 +939,11 @@ double eos::free_energy_density
   // ----------------------------------------------------------------
   // Compute the Skyrme EOS in nuclear matter at T=0
 
+  if (temp_updates) {
+    sk.err_nonconv=false;
+    sk_chiral.err_nonconv=false;
+  }
+        
   n.n=(nn+pn)/2.0;
   p.n=(nn+pn)/2.0;
   
@@ -943,42 +955,125 @@ double eos::free_energy_density
     mu_p_skyrme_eqdenT0*p.n;
   double f_skyrme_eqdenT0=th.ed;
 
-  // ----------------------------------------------------------------
-  // Next, compute the Skyrme EOS at the specified density, proton
-  // fraction, and temperature
-
-  n_chiral.n=(nn+pn)/2.0;
-  p_chiral.n=(nn+pn)/2.0;
-
-  sk_chiral.calc_temp_e(n_chiral,p_chiral,T,th_chiral);
-
-  double f_skyrme_eqden_T=th_chiral.ed-T*th_chiral.en; 
-  double mu_p_eqden_T=p_chiral.mu;
-  double mu_n_eqden_T=n_chiral.mu;
-  double s_eqden_T=th_chiral.en;
-
-  sk_chiral.calc_e(n_chiral,p_chiral,th_chiral);
-
-  double f_skyrme_eqden_T0=th_chiral.ed;
-  double mu_p_eqden_T0=p_chiral.mu;
-  double mu_n_eqden_T0=n_chiral.mu;
+  double f_skyrme_T=0.0, f_skyrme_T0=0.0;
+  double f_skyrme_neut_T, f_skyrme_neut_T0;
+  double f_skyrme_eqden_T, f_skyrme_eqden_T0;
+  double mu_n_skyrme_T=0.0, mu_n_skyrme_T0=0.0; 
+  double mu_p_skyrme_T=0.0, mu_p_skyrme_T0=0.0; 
+  double mu_n_neut_T, mu_n_neut_T0; 
+  double mu_p_neut_T, mu_p_neut_T0; 
+  double mu_n_eqden_T, mu_n_eqden_T0; 
+  double mu_p_eqden_T, mu_p_eqden_T0; 
+  double s_skyrme_T=0.0, s_eqden_T, s_neut_T;
   
-  n_chiral.n=nn+pn;
-  p_chiral.n=0.0;
+  if (temp_updates) {
+    
+    // ----------------------------------------------------------------
+    // Compute the Skyrme EOS in nuclear matter at T=0 for chiral fit
+    
+    n.n=nn;
+    p.n=pn;
+    
+    sk_chiral.calc_e(n,p,th);
+    
+    mu_n_skyrme_T0=n.mu;
+    mu_p_skyrme_T0=p.mu;
+    double P_skyrme_T0=-th.ed+mu_n_skyrme_T0*n.n+mu_p_skyrme_T0*p.n;
+    f_skyrme_T0=th.ed;
+    
+    // ----------------------------------------------------------------
+    // Compute the Skyrme EOS in nuclear matter at finite T for chiral fit
+    
+    n.n=nn;
+    p.n=pn;
 
-  sk_chiral.calc_temp_e(n_chiral,p_chiral,T,th_chiral);
+    sk_chiral.calc_temp_e(n,p,T,th);
+    
+    mu_n_skyrme_T=n.mu;
+    mu_p_skyrme_T=p.mu;
+    double P_skyrme_T=-th.ed+mu_n_skyrme_T0*n.n+mu_p_skyrme_T0*p.n;
+    f_skyrme_T=th.ed-T*th.en;
+    s_skyrme_T=th.en;
+    
+    sk_chiral.calc_temp_e(n,p,T,th);
+    
+    // ----------------------------------------------------------------
+    // Next, compute the Skyrme EOS at the specified density, proton
+    // fraction, and temperature
+    
+    n_chiral.n=(nn+pn)/2.0;
+    p_chiral.n=(nn+pn)/2.0;
+    
+    sk_chiral.calc_temp_e(n_chiral,p_chiral,T,th_chiral);
+    
+    f_skyrme_eqden_T=th_chiral.ed-T*th_chiral.en; 
+    mu_p_eqden_T=p_chiral.mu;
+    mu_n_eqden_T=n_chiral.mu;
+    s_eqden_T=th_chiral.en;
+    
+    sk_chiral.calc_e(n_chiral,p_chiral,th_chiral);
+    
+    f_skyrme_eqden_T0=th_chiral.ed;
+    mu_p_eqden_T0=p_chiral.mu;
+    mu_n_eqden_T0=n_chiral.mu;
+    
+    n_chiral.n=nn+pn;
+    p_chiral.n=0.0;
+    p_chiral.n=1.0e-10;
+    
+    sk_chiral.calc_temp_e(n_chiral,p_chiral,T,th_chiral);
+    
+    f_skyrme_neut_T=th_chiral.ed-T*th_chiral.en; 
+    mu_p_neut_T=p_chiral.mu;
+    mu_n_neut_T=n_chiral.mu;
+    s_neut_T=th_chiral.en;
+    
+    sk_chiral.calc_e(n_chiral,p_chiral,th_chiral);
+    
+    f_skyrme_neut_T0=th_chiral.ed;
+    mu_p_neut_T0=p_chiral.mu;
+    mu_n_neut_T0=n_chiral.mu;
+    
+  } else {
 
-  double f_skyrme_neut_T=th_chiral.ed-T*th_chiral.en; 
-  double mu_p_neut_T=p_chiral.mu;
-  double mu_n_neut_T=n_chiral.mu;
-  double s_neut_T=th_chiral.en;
+    // ----------------------------------------------------------------
+    // Next, compute the Skyrme EOS at the specified density, proton
+    // fraction, and temperature
+    
+    n_chiral.n=(nn+pn)/2.0;
+    p_chiral.n=(nn+pn)/2.0;
+    
+    sk_chiral.calc_temp_e(n_chiral,p_chiral,T,th_chiral);
+    
+    f_skyrme_eqden_T=th_chiral.ed-T*th_chiral.en; 
+    mu_p_eqden_T=p_chiral.mu;
+    mu_n_eqden_T=n_chiral.mu;
+    s_eqden_T=th_chiral.en;
+    
+    sk_chiral.calc_e(n_chiral,p_chiral,th_chiral);
+    
+    f_skyrme_eqden_T0=th_chiral.ed;
+    mu_p_eqden_T0=p_chiral.mu;
+    mu_n_eqden_T0=n_chiral.mu;
+    
+    n_chiral.n=nn+pn;
+    p_chiral.n=0.0;
+    
+    sk_chiral.calc_temp_e(n_chiral,p_chiral,T,th_chiral);
+    
+    f_skyrme_neut_T=th_chiral.ed-T*th_chiral.en; 
+    mu_p_neut_T=p_chiral.mu;
+    mu_n_neut_T=n_chiral.mu;
+    s_neut_T=th_chiral.en;
+    
+    sk_chiral.calc_e(n_chiral,p_chiral,th_chiral);
+    
+    f_skyrme_neut_T0=th_chiral.ed;
+    mu_p_neut_T0=p_chiral.mu;
+    mu_n_neut_T0=n_chiral.mu;
+
+  }
   
-  sk_chiral.calc_e(n_chiral,p_chiral,th_chiral);
-
-  double f_skyrme_neut_T0=th_chiral.ed;
-  double mu_p_neut_T0=p_chiral.mu;
-  double mu_n_neut_T0=n_chiral.mu;
-
   // ----------------------------------------------------------------
   // QMC EOS
   
@@ -1032,9 +1127,14 @@ double eos::free_energy_density
   double delta2=(1.0-2.0*ye)*(1.0-2.0*ye);
   double ddelta2dnn=2.0*(1.0-2.0*ye)*(-2.0*dyednn);
   double ddelta2dpn=2.0*(1.0-2.0*ye)*(-2.0*dyedpn);
-  f_deg=f_skyrme_eqdenT0+delta2*e_sym+
-    delta2*(f_skyrme_neut_T-f_skyrme_neut_T0)+
-    (1.0-delta2)*(f_skyrme_eqden_T-f_skyrme_eqden_T0);
+  if (temp_updates) {
+    f_deg=f_skyrme_eqdenT0+delta2*e_sym+
+      f_skyrme_T-f_skyrme_T0;
+  } else {
+    f_deg=f_skyrme_eqdenT0+delta2*e_sym+
+      delta2*(f_skyrme_neut_T-f_skyrme_neut_T0)+
+      (1.0-delta2)*(f_skyrme_eqden_T-f_skyrme_eqden_T0);    
+  }
   double f_total=f_virial*g_virial+f_deg*(1.0-g_virial);
     
   // -------------------------------------------------------------
@@ -1074,29 +1174,39 @@ double eos::free_energy_density
     densdnn*(1.0-h)-e_ns*dhdnn-dfskyrme_eqden_T0dpn/2.0-
     dfskyrme_eqden_T0dnn/2.0;
   double desymdpn=desymdnn;
-  
-  double dfdegdnn=dfskyrme_eqden_T0dnn+(1.0-2.0*ye)
-    *(1.0-2.0*ye)*desymdnn+ddelta2dnn*e_sym
-    +delta2*(mu_n_neut_T-mu_n_neut_T0)
-    +ddelta2dnn*(f_skyrme_neut_T-f_skyrme_neut_T0)
-    +(1.0-delta2)*(mu_n_eqden_T/2.0+mu_p_eqden_T/2.0-
-		   mu_n_eqden_T0/2.0-mu_p_eqden_T0/2.0)-
-    ddelta2dnn*(f_skyrme_eqden_T-f_skyrme_eqden_T0);
-  double dfdegdpn=dfskyrme_eqden_T0dpn+
-    (1.0-2.0*ye)*(1.0-2.0*ye)*desymdpn+
-    ddelta2dpn*e_sym
-    +delta2*(mu_n_neut_T-mu_n_neut_T0)
-    +ddelta2dpn*(f_skyrme_neut_T-f_skyrme_neut_T0)
-    +(1.0-delta2)*(mu_p_eqden_T/2.0+mu_n_eqden_T/2.0-
-		   mu_p_eqden_T0/2.0-mu_n_eqden_T0/2.0)-
-    ddelta2dpn*(f_skyrme_eqden_T-f_skyrme_eqden_T0);
 
-  n.mu=dfvirialdnn*g_virial+f_virial*dgvirialdnn+dfdegdnn*(1-g_virial)
+  double dfdegdnn, dfdegdpn;
+  if (temp_updates) {
+    dfdegdnn=dfskyrme_eqden_T0dnn+(1.0-2.0*ye)
+      *(1.0-2.0*ye)*desymdnn+ddelta2dnn*e_sym
+      +mu_n_skyrme_T-mu_n_skyrme_T0;
+    dfdegdpn=dfskyrme_eqden_T0dpn+(1.0-2.0*ye)
+      *(1.0-2.0*ye)*desymdpn+ddelta2dpn*e_sym
+      +mu_p_skyrme_T-mu_p_skyrme_T0;
+  } else {
+    dfdegdnn=dfskyrme_eqden_T0dnn+(1.0-2.0*ye)
+      *(1.0-2.0*ye)*desymdnn+ddelta2dnn*e_sym
+      +delta2*(mu_n_neut_T-mu_n_neut_T0)
+      +ddelta2dnn*(f_skyrme_neut_T-f_skyrme_neut_T0)
+      +(1.0-delta2)*(mu_n_eqden_T/2.0+mu_p_eqden_T/2.0-
+		     mu_n_eqden_T0/2.0-mu_p_eqden_T0/2.0)-
+      ddelta2dnn*(f_skyrme_eqden_T-f_skyrme_eqden_T0);
+    dfdegdpn=dfskyrme_eqden_T0dpn+
+      (1.0-2.0*ye)*(1.0-2.0*ye)*desymdpn+
+      ddelta2dpn*e_sym
+      +delta2*(mu_n_neut_T-mu_n_neut_T0)
+      +ddelta2dpn*(f_skyrme_neut_T-f_skyrme_neut_T0)
+      +(1.0-delta2)*(mu_p_eqden_T/2.0+mu_n_eqden_T/2.0-
+		     mu_p_eqden_T0/2.0-mu_n_eqden_T0/2.0)-
+      ddelta2dpn*(f_skyrme_eqden_T-f_skyrme_eqden_T0);    
+  }
+
+  n.mu=dfvirialdnn*g_virial+f_virial*dgvirialdnn+dfdegdnn*(1.0-g_virial)
     +f_deg*(-dgvirialdnn);
-  p.mu=dfvirialdpn*g_virial+f_virial*dgvirialdpn+dfdegdpn*(1-g_virial)
+  p.mu=dfvirialdpn*g_virial+f_virial*dgvirialdpn+dfdegdpn*(1.0-g_virial)
     +f_deg*(-dgvirialdpn);
 
-
+  
   // -------------------------------------------------------------
   // Compute derivatives for entropy
 
@@ -1111,7 +1221,12 @@ double eos::free_energy_density
   n.n=nn;
   p.n=pn;
  
-  double dfdegdT=delta2*(-s_neut_T)+(1.0-delta2)*(-s_eqden_T);
+  double dfdegdT;
+  if (temp_updates) {
+    dfdegdT=-s_skyrme_T;
+  } else {
+    dfdegdT=delta2*(-s_neut_T)+(1.0-delta2)*(-s_eqden_T);
+  }
   
   th.en=-(dfvirialdT*g_virial+f_virial*dgvirialdT+dfdegdT*(1-g_virial)
           +f_deg*(-dgvirialdT));
@@ -2982,7 +3097,7 @@ int eos::mcarlo_data(std::vector<std::string> &sv, bool itive_com) {
     line.push_back(ns_max_cs2);
 
     line.push_back(Lambda_bar_14);
-
+    
     cout << "Line: ";
     for(size_t i=0;i<line.size();i++) {
       cout << line[i] << " ";
@@ -3347,7 +3462,7 @@ int eos::select_internal(int i_ns_loc, int i_skyrme_loc,
 	      cout << "Negative speed of sound." << endl;
 	      cout << nbx << " " << yex << " " << Tx*hc_mev_fm << endl;
 	      exit(-1);
-	    }
+	    }	    
 	  }
 	}
       }
