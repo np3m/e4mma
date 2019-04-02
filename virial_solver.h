@@ -71,7 +71,7 @@ class virial_solver {
     npt=pow(lambda,3)/2.0*pn;
     nnt=pow(lambda,3)/2.0*nn;
     
-    if(npt>nnt) {
+    if (npt>nnt) {
       
       // Coefficients for quartic equation of zp in descending order
       
@@ -182,15 +182,20 @@ class virial_solver {
 	  
 	  // Changed from 1e-8 to 1e-6 because at zero temperature no
 	  // solutions
-	  if (fabs(eval[i].real())<2.0e-6 && fabs(eval[i].imag())<1.0e-8) { 
-	    zn=res[i].real();
-	    x[0]=log(res[i].real())*T;
+	  if (fabs(eval[i].real())<2.0e-6 && fabs(eval[i].imag())<1.0e-8) {
+	    if (root_count==0) {
+	      zn=res[i].real();
+	      x[1]=log(zp)*T;
+	    } else if (zp>res[i].real()) {
+	      zn=res[i].real();
+	      x[1]=log(zp)*T;
+	    }                  
 	    root_count++;
 	  }
         }
       }
       
-      if (root_count!=1 || false) {
+      if (root_count!=1 && false) {
         std::cout << "Zn Multiple or zero roots: " << root_count << std::endl;
         std::cout.setf(std::ios::showpos);
         std::cout << res[0].real() << " " << res[0].imag() << " ";
