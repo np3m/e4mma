@@ -137,26 +137,13 @@ class virial_solver {
 		  o2scl::exc_efailed);
       }
 
-      // Changed for better accuracy in 11/19/2016
-      if (T<1.0/o2scl_const::hc_mev_fm || true) {
-  
-        // Compute neutron fugacity directly from proton fugacity
-        // Eq. (6a)
+      double r0, r1;
+      gsl_poly_solve_quadratic(2.0*b_n,2.0*zp*b_pn+1.0,-nnt,&r0,&r1);
+      if (r0>r1) zn=r0;
+      else zn=r1;
 
-        zn=(-(2.0*zp*b_pn+1.0)+sqrt(pow(2.0*zp*b_pn+1.0,2.0)+
-				    8.0*b_n*nnt))/4.0/b_n;
+      x[0]=log(zn)*T; 
 
-        if (true) {
-	  double r0, r1;
-	  gsl_poly_solve_quadratic(2.0*b_n,2.0*zp*b_pn+1.0,-nnt,&r0,&r1);
-	  if (r0>r1) zn=r0;
-	  else zn=r1;
-        }
-	
-        x[0]=log(zn)*T; 
-
-      }
-      
     } else {
       
       // The case nnt>npt:
@@ -185,10 +172,10 @@ class virial_solver {
 	  if (fabs(eval[i].real())<2.0e-6 && fabs(eval[i].imag())<1.0e-8) {
 	    if (root_count==0) {
 	      zn=res[i].real();
-	      x[1]=log(zp)*T;
+	      x[0]=log(zn)*T;
 	    } else if (zp>res[i].real()) {
 	      zn=res[i].real();
-	      x[1]=log(zp)*T;
+	      x[0]=log(zn)*T;
 	    }                  
 	    root_count++;
 	  }
@@ -211,18 +198,10 @@ class virial_solver {
                   o2scl::exc_efailed);
       }
       
-      // Compute proton fugacity directly from neutron fugacity
-      // Eq. (6a)
-
-      zp=(-(2.0*zn*b_pn+1.0)+sqrt(pow(2.0*zn*b_pn+1.0,2.0)+
-				  8.0*b_n*npt))/4.0/b_n;
-
-      if (true) {
-	double r0, r1;
-	gsl_poly_solve_quadratic(2.0*b_n,2.0*zn*b_pn+1.0,-npt,&r0,&r1);
-	if (r0>r1) zp=r0;
-	else zp=r1;
-      }
+      double r0, r1;
+      gsl_poly_solve_quadratic(2.0*b_n,2.0*zn*b_pn+1.0,-npt,&r0,&r1);
+      if (r0>r1) zp=r0;
+      else zp=r1;
       
       x[1]=log(zp)*T; 
     }
