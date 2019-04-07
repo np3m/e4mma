@@ -86,7 +86,7 @@ void eos_crust_virial_v2::fit(bool show_fit) {
 
   // Fitter class
   fit_nonlin<chi_fit_funct<vector<double>,ubmatrix,std::function<
-    double(size_t,const std::vector<double> &, double)> >,
+						     double(size_t,const std::vector<double> &, double)> >,
 	     vector<double>,ubmatrix> fitter;
 
   // --------------------------------------------
@@ -166,7 +166,7 @@ void eos_crust_virial_v2::fit(bool show_fit) {
   
   // Chi-squared and fitting data
   chi_fit_funct<vector<double>,ubmatrix,std::function<
-    double(size_t,const std::vector<double> &, double)> > 
+					  double(size_t,const std::vector<double> &, double)> > 
     cff(neut_data,Tv_neut,bnv,bn_err,ff_neutron);
   
   cout << "Neutron virial coefficient:\n" << endl;
@@ -276,7 +276,7 @@ void eos_crust_virial_v2::fit(bool show_fit) {
   
   // Chi-squared and fitting data
   chi_fit_funct<vector<double>,ubmatrix,std::function<
-    double(size_t,const std::vector<double> &, double)> > 
+					  double(size_t,const std::vector<double> &, double)> > 
     cff_nuc(nuc_data,Tv_nuc,bpnv,bpn_err,ff_nuc);
   
   cout << "Initial chi-squared: " << cff_nuc.chi2(bpn_np,bpn_params) << endl;
@@ -946,6 +946,8 @@ double eos::free_energy_density
         
   n.n=(nn+pn)/2.0;
   p.n=(nn+pn)/2.0;
+  n.mu=n.m;
+  p.mu=p.m;
   
   sk.calc_e(n,p,th);
   
@@ -973,7 +975,9 @@ double eos::free_energy_density
     
     n.n=nn;
     p.n=pn;
-    
+    n.mu=n.m;
+    p.mu=p.m;
+  
     sk_chiral.calc_e(n,p,th);
     
     mu_n_skyrme_T0=n.mu;
@@ -986,6 +990,8 @@ double eos::free_energy_density
     
     n.n=nn;
     p.n=pn;
+    n.mu=n.m;
+    p.mu=p.m;
 
     sk_chiral.calc_temp_e(n,p,T,th);
     
@@ -994,6 +1000,9 @@ double eos::free_energy_density
     double P_skyrme_T=-th.ed+mu_n_skyrme_T0*n.n+mu_p_skyrme_T0*p.n;
     f_skyrme_T=th.ed-T*th.en;
     s_skyrme_T=th.en;
+    
+    n.mu=n.m;
+    p.mu=p.m;
     
     sk_chiral.calc_temp_e(n,p,T,th);
     
@@ -1353,6 +1362,8 @@ double eos::entropy(fermion &n, fermion &p, double nn,
 
   n.n=nn;
   p.n=pn;
+  n.mu=n.m;
+  p.mu=p.m;
   if (use_nrapr) {
     sk_nrapr.calc_temp_e(n,p,T,th);
   } else {
@@ -1369,6 +1380,8 @@ double eos::ed(fermion &n, fermion &p, double nn,
 	       double pn, double T, thermo &th) {
   n.n=nn;
   p.n=pn;
+  n.mu=n.m;
+  p.mu=p.m;
   if (use_nrapr) {
     sk_nrapr.calc_temp_e(n,p,T,th);
   } else {
@@ -1386,6 +1399,8 @@ double eos::dfdnn_total(fermion &n, fermion &p, double nn,
   
   n.n=nn;
   p.n=pn;
+  n.mu=n.m;
+  p.mu=p.m;
   if (use_nrapr) {
     sk_nrapr.calc_temp_e(n,p,T,th);
   } else {
@@ -1402,6 +1417,8 @@ double eos::dfdpn_total(fermion &n, fermion &p, double nn,
 
   n.n=nn;
   p.n=pn;
+  n.mu=n.m;
+  p.mu=p.m;
   if (use_nrapr) {
     sk_nrapr.calc_temp_e(n,p,T,th);
   } else {
@@ -1419,6 +1436,8 @@ double eos::cs2_fixYe(fermion &n, fermion &p, double T, thermo &th) {
   deriv_gsl<> gd;
   nn=n.n;
   pn=p.n;
+  n.mu=n.m;
+  p.mu=p.m;
   if (use_nrapr) {
     sk_nrapr.calc_temp_e(n,p,T,th);
   } else {
@@ -1644,6 +1663,8 @@ double eos::cs2_fixmuL(fermion &n, fermion &p, double T, thermo &th) {
   deriv_gsl<> gd;
   nn=n.n;
   pn=p.n;
+  n.mu=n.m;
+  p.mu=p.m;
   if (use_nrapr) {
     sk_nrapr.calc_temp_e(n,p,T,th);
   } else {
