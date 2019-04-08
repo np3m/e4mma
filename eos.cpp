@@ -3235,14 +3235,17 @@ int eos::pns_eos(std::vector<std::string> &sv, bool itive_com) {
   
   eos_tov_interp eti;
 
-  bool cold_crust=false;
+  bool cold_crust=true;
   
-  if (cold_crust && sonb>0.5) {
+  if (cold_crust) {
     
     eti.default_low_dens_eos();
     
   } else {
-  
+
+    /* 
+       This section is currently unused
+    */
     for(double nB=0.07;nB>=1.0e-6;nB/=1.3) {
       
       mroot_hybrids<> mh;
@@ -3743,7 +3746,9 @@ void eos::setup_cli(o2scl::cli &cl) {
     {0,"random","Generate a random EOS model.",0,0,"","",
      new o2scl::comm_option_mfptr<eos>
      (this,&eos::random),o2scl::cli::comm_option_both},
-    {0,"pns-eos","Compute the PNS EOS.",3,3,"","",
+    {0,"pns-eos","Compute the PNS EOS and M-R curve.",3,3,
+     "<entropy per baryon> <lepton fraction> <output filename>",
+     "Use YL=0 for beta equilibrium. Currently always uses a cold crust.",
      new o2scl::comm_option_mfptr<eos>
      (this,&eos::pns_eos),o2scl::cli::comm_option_both},
     {0,"select-model","Specify a parameter set.",7,7,
