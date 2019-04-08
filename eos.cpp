@@ -1001,9 +1001,6 @@ double eos::free_energy_density
     f_skyrme_T=th.ed-T*th.en;
     s_skyrme_T=th.en;
     
-    n.mu=n.m;
-    p.mu=p.m;
-    
     sk_chiral.calc_temp_e(n,p,T,th);
     
     // ----------------------------------------------------------------
@@ -1012,6 +1009,9 @@ double eos::free_energy_density
     
     n_chiral.n=(nn+pn)/2.0;
     p_chiral.n=(nn+pn)/2.0;
+    
+    n_chiral.mu=n_chiral.m;
+    p_chiral.mu=p_chiral.m;
     
     sk_chiral.calc_temp_e(n_chiral,p_chiral,T,th_chiral);
     
