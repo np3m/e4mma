@@ -582,15 +582,15 @@ eos::eos() {
   hf.close();
 
   // Skyrme couplings
-  sk_chiral.t0=5.067286719233e+03;
-  sk_chiral.t1=1.749251370992e+00;
-  sk_chiral.t2=-4.721193938990e-01;
-  sk_chiral.t3=-1.945964529505e+05;
-  sk_chiral.x0=4.197555064408e+01;
-  sk_chiral.x1=-6.947915483747e-02;
-  sk_chiral.x2=4.192016722695e-01;
-  sk_chiral.x3=-2.877974634128e+01;
-  sk_chiral.alpha=0.144165;
+  sk_Tcorr.t0=5.067286719233e+03;
+  sk_Tcorr.t1=1.749251370992e+00;
+  sk_Tcorr.t2=-4.721193938990e-01;
+  sk_Tcorr.t3=-1.945964529505e+05;
+  sk_Tcorr.x0=4.197555064408e+01;
+  sk_Tcorr.x1=-6.947915483747e-02;
+  sk_Tcorr.x2=4.192016722695e-01;
+  sk_Tcorr.x3=-2.877974634128e+01;
+  sk_Tcorr.alpha=0.144165;
 
   // Seed the random number generator with the clock time
   r.clock_seed();
@@ -603,6 +603,8 @@ eos::eos() {
 #else
   temp_updates=false;
 #endif
+
+  eos_Tcorr=&sk_Tcorr;
 }
 
 double eos::energy_density_qmc(double nn, double np) {
@@ -941,7 +943,7 @@ double eos::free_energy_density
 
   if (temp_updates) {
     sk.err_nonconv=false;
-    sk_chiral.err_nonconv=false;
+    sk_Tcorr.err_nonconv=false;
   }
         
   n.n=(nn+pn)/2.0;
@@ -978,7 +980,7 @@ double eos::free_energy_density
     n.mu=n.m;
     p.mu=p.m;
   
-    sk_chiral.calc_e(n,p,th);
+    sk_Tcorr.calc_e(n,p,th);
     
     mu_n_skyrme_T0=n.mu;
     mu_p_skyrme_T0=p.mu;
@@ -993,7 +995,7 @@ double eos::free_energy_density
     n.mu=n.m;
     p.mu=p.m;
 
-    sk_chiral.calc_temp_e(n,p,T,th);
+    sk_Tcorr.calc_temp_e(n,p,T,th);
     
     mu_n_skyrme_T=n.mu;
     mu_p_skyrme_T=p.mu;
@@ -1001,7 +1003,7 @@ double eos::free_energy_density
     f_skyrme_T=th.ed-T*th.en;
     s_skyrme_T=th.en;
     
-    sk_chiral.calc_temp_e(n,p,T,th);
+    sk_Tcorr.calc_temp_e(n,p,T,th);
     
     // ----------------------------------------------------------------
     // Next, compute the Skyrme EOS at the specified density, proton
@@ -1013,14 +1015,14 @@ double eos::free_energy_density
     n_chiral.mu=n_chiral.m;
     p_chiral.mu=p_chiral.m;
     
-    sk_chiral.calc_temp_e(n_chiral,p_chiral,T,th_chiral);
+    sk_Tcorr.calc_temp_e(n_chiral,p_chiral,T,th_chiral);
     
     f_skyrme_eqden_T=th_chiral.ed-T*th_chiral.en; 
     mu_p_eqden_T=p_chiral.mu;
     mu_n_eqden_T=n_chiral.mu;
     s_eqden_T=th_chiral.en;
     
-    sk_chiral.calc_e(n_chiral,p_chiral,th_chiral);
+    sk_Tcorr.calc_e(n_chiral,p_chiral,th_chiral);
     
     f_skyrme_eqden_T0=th_chiral.ed;
     mu_p_eqden_T0=p_chiral.mu;
@@ -1030,14 +1032,14 @@ double eos::free_energy_density
     p_chiral.n=0.0;
     p_chiral.n=1.0e-10;
     
-    sk_chiral.calc_temp_e(n_chiral,p_chiral,T,th_chiral);
+    sk_Tcorr.calc_temp_e(n_chiral,p_chiral,T,th_chiral);
     
     f_skyrme_neut_T=th_chiral.ed-T*th_chiral.en; 
     mu_p_neut_T=p_chiral.mu;
     mu_n_neut_T=n_chiral.mu;
     s_neut_T=th_chiral.en;
     
-    sk_chiral.calc_e(n_chiral,p_chiral,th_chiral);
+    sk_Tcorr.calc_e(n_chiral,p_chiral,th_chiral);
     
     f_skyrme_neut_T0=th_chiral.ed;
     mu_p_neut_T0=p_chiral.mu;
@@ -1052,14 +1054,14 @@ double eos::free_energy_density
     n_chiral.n=(nn+pn)/2.0;
     p_chiral.n=(nn+pn)/2.0;
     
-    sk_chiral.calc_temp_e(n_chiral,p_chiral,T,th_chiral);
+    sk_Tcorr.calc_temp_e(n_chiral,p_chiral,T,th_chiral);
     
     f_skyrme_eqden_T=th_chiral.ed-T*th_chiral.en; 
     mu_p_eqden_T=p_chiral.mu;
     mu_n_eqden_T=n_chiral.mu;
     s_eqden_T=th_chiral.en;
     
-    sk_chiral.calc_e(n_chiral,p_chiral,th_chiral);
+    sk_Tcorr.calc_e(n_chiral,p_chiral,th_chiral);
     
     f_skyrme_eqden_T0=th_chiral.ed;
     mu_p_eqden_T0=p_chiral.mu;
@@ -1068,14 +1070,14 @@ double eos::free_energy_density
     n_chiral.n=nn+pn;
     p_chiral.n=0.0;
     
-    sk_chiral.calc_temp_e(n_chiral,p_chiral,T,th_chiral);
+    sk_Tcorr.calc_temp_e(n_chiral,p_chiral,T,th_chiral);
     
     f_skyrme_neut_T=th_chiral.ed-T*th_chiral.en; 
     mu_p_neut_T=p_chiral.mu;
     mu_n_neut_T=n_chiral.mu;
     s_neut_T=th_chiral.en;
     
-    sk_chiral.calc_e(n_chiral,p_chiral,th_chiral);
+    sk_Tcorr.calc_e(n_chiral,p_chiral,th_chiral);
     
     f_skyrme_neut_T0=th_chiral.ed;
     mu_p_neut_T0=p_chiral.mu;
@@ -1305,7 +1307,7 @@ double eos::free_energy_density
 	 << " 1/fm^4 " << th.pr << " 1/fm^4" << endl;
     cout << "entropy, s per baryon= " << th.en << " 1/fm^3 "
 	 << th.en/nb << endl;
-    //cout << "entropy from sk_chiral= " << s_neut_T << " "
+    //cout << "entropy from sk_Tcorr= " << s_neut_T << " "
     //<< s_eqden_T << endl;
     //cout << "s_virial= " << s_virial << endl;
     //cout << "dg_virial_dT= " << dgvirialdT << endl;
@@ -2130,8 +2132,8 @@ int eos::test_deriv(std::vector<std::string> &sv, bool itive_com) {
     // Make the Skyrme EOSs more accurate
     sk.nrf.def_density_root.tol_rel/=1.0e2;
     sk.nrf.def_density_root.tol_abs/=1.0e2;
-    sk_chiral.nrf.def_density_root.tol_rel/=1.0e2;
-    sk_chiral.nrf.def_density_root.tol_abs/=1.0e2;
+    sk_Tcorr.nrf.def_density_root.tol_rel/=1.0e2;
+    sk_Tcorr.nrf.def_density_root.tol_abs/=1.0e2;
   }
 
   cout.precision(5);

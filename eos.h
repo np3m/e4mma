@@ -441,8 +441,11 @@ class eos {
   /// Base EOS model
   o2scl::eos_had_skyrme sk;
 
-  /// Skyrme interaction for finite temperature correction
-  o2scl::eos_had_skyrme sk_chiral;
+  /// Skyrme model for finite-temperature correction
+  o2scl::eos_had_skyrme sk_Tcorr;
+
+  /// Pointer to EOS for finite-temperature corrections
+  o2scl::eos_had_base *eos_Tcorr;
 
   /// The virial EOS
   eos_crust_virial_v2 ecv;
