@@ -86,7 +86,7 @@ void eos_crust_virial_v2::fit(bool show_fit) {
 
   // Fitter class
   fit_nonlin<chi_fit_funct<vector<double>,ubmatrix,std::function<
-						     double(size_t,const std::vector<double> &, double)> >,
+    double(size_t,const std::vector<double> &, double)> >,
 	     vector<double>,ubmatrix> fitter;
 
   // --------------------------------------------
@@ -980,7 +980,7 @@ double eos::free_energy_density
     n.mu=n.m;
     p.mu=p.m;
   
-    sk_Tcorr.calc_e(n,p,th);
+    eos_Tcorr->calc_e(n,p,th);
     
     mu_n_skyrme_T0=n.mu;
     mu_p_skyrme_T0=p.mu;
@@ -995,7 +995,7 @@ double eos::free_energy_density
     n.mu=n.m;
     p.mu=p.m;
 
-    sk_Tcorr.calc_temp_e(n,p,T,th);
+    eos_Tcorr->calc_temp_e(n,p,T,th);
     
     mu_n_skyrme_T=n.mu;
     mu_p_skyrme_T=p.mu;
@@ -1003,7 +1003,7 @@ double eos::free_energy_density
     f_skyrme_T=th.ed-T*th.en;
     s_skyrme_T=th.en;
     
-    sk_Tcorr.calc_temp_e(n,p,T,th);
+    eos_Tcorr->calc_temp_e(n,p,T,th);
     
     // ----------------------------------------------------------------
     // Next, compute the Skyrme EOS at the specified density, proton
@@ -1015,14 +1015,14 @@ double eos::free_energy_density
     n_chiral.mu=n_chiral.m;
     p_chiral.mu=p_chiral.m;
     
-    sk_Tcorr.calc_temp_e(n_chiral,p_chiral,T,th_chiral);
+    eos_Tcorr->calc_temp_e(n_chiral,p_chiral,T,th_chiral);
     
     f_skyrme_eqden_T=th_chiral.ed-T*th_chiral.en; 
     mu_p_eqden_T=p_chiral.mu;
     mu_n_eqden_T=n_chiral.mu;
     s_eqden_T=th_chiral.en;
     
-    sk_Tcorr.calc_e(n_chiral,p_chiral,th_chiral);
+    eos_Tcorr->calc_e(n_chiral,p_chiral,th_chiral);
     
     f_skyrme_eqden_T0=th_chiral.ed;
     mu_p_eqden_T0=p_chiral.mu;
@@ -1032,14 +1032,14 @@ double eos::free_energy_density
     p_chiral.n=0.0;
     p_chiral.n=1.0e-10;
     
-    sk_Tcorr.calc_temp_e(n_chiral,p_chiral,T,th_chiral);
+    eos_Tcorr->calc_temp_e(n_chiral,p_chiral,T,th_chiral);
     
     f_skyrme_neut_T=th_chiral.ed-T*th_chiral.en; 
     mu_p_neut_T=p_chiral.mu;
     mu_n_neut_T=n_chiral.mu;
     s_neut_T=th_chiral.en;
     
-    sk_Tcorr.calc_e(n_chiral,p_chiral,th_chiral);
+    eos_Tcorr->calc_e(n_chiral,p_chiral,th_chiral);
     
     f_skyrme_neut_T0=th_chiral.ed;
     mu_p_neut_T0=p_chiral.mu;
@@ -1054,14 +1054,14 @@ double eos::free_energy_density
     n_chiral.n=(nn+pn)/2.0;
     p_chiral.n=(nn+pn)/2.0;
     
-    sk_Tcorr.calc_temp_e(n_chiral,p_chiral,T,th_chiral);
+    eos_Tcorr->calc_temp_e(n_chiral,p_chiral,T,th_chiral);
     
     f_skyrme_eqden_T=th_chiral.ed-T*th_chiral.en; 
     mu_p_eqden_T=p_chiral.mu;
     mu_n_eqden_T=n_chiral.mu;
     s_eqden_T=th_chiral.en;
     
-    sk_Tcorr.calc_e(n_chiral,p_chiral,th_chiral);
+    eos_Tcorr->calc_e(n_chiral,p_chiral,th_chiral);
     
     f_skyrme_eqden_T0=th_chiral.ed;
     mu_p_eqden_T0=p_chiral.mu;
@@ -1070,14 +1070,14 @@ double eos::free_energy_density
     n_chiral.n=nn+pn;
     p_chiral.n=0.0;
     
-    sk_Tcorr.calc_temp_e(n_chiral,p_chiral,T,th_chiral);
+    eos_Tcorr->calc_temp_e(n_chiral,p_chiral,T,th_chiral);
     
     f_skyrme_neut_T=th_chiral.ed-T*th_chiral.en; 
     mu_p_neut_T=p_chiral.mu;
     mu_n_neut_T=n_chiral.mu;
     s_neut_T=th_chiral.en;
     
-    sk_Tcorr.calc_e(n_chiral,p_chiral,th_chiral);
+    eos_Tcorr->calc_e(n_chiral,p_chiral,th_chiral);
     
     f_skyrme_neut_T0=th_chiral.ed;
     mu_p_neut_T0=p_chiral.mu;
