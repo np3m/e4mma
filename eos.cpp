@@ -613,7 +613,7 @@ eos::eos() {
 
   use_nrapr=false;
 #ifdef O2SCL_CORI
-  o2scl_hdf::skyrme_load(sk_nrapr,true,"/project/projectdirs/m3389/o2scl-0.924.cori.haswell/share/o2scl/skdata/NRAPR.o2");
+  o2scl_hdf::skyrme_load(sk_nrapr,"/project/projectdirs/m3389/o2scl-0.924.cori.haswell/share/o2scl/skdata/NRAPR.o2",true);
 #else
   o2scl_hdf::skyrme_load(sk_nrapr,"NRAPR");
 #endif
