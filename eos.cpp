@@ -514,12 +514,8 @@ void eos::ns_fit(int row) {
 
 eos::eos() {
 
-  cout << "atest 1." << endl;
-
   // Ensure that this works without GNU units
   o2scl_settings.get_convert_units().use_gnu_units=false;
-
-  cout << "atest 2." << endl;
 
   // Nucleon init
   neutron.init(o2scl_settings.get_convert_units().convert
@@ -548,8 +544,6 @@ eos::eos() {
 	    ("kg","1/fm",o2scl_mks::mass_muon),2.0);
   neutrino.init(0.0,1.0);
 
-  cout << "atest 3." << endl;
-
   // Default settings
   verbose=0;
   test_ns_cs2=false;
@@ -574,8 +568,6 @@ eos::eos() {
   // Temporary string for object names
   string name;
 
-  cout << "atest 4." << endl;
-
   int mpi_rank=0, mpi_size=1;
 
 #ifdef O2SCL_MPI
@@ -592,8 +584,6 @@ eos::eos() {
   }
 #endif
 
-  cout << "atest 4a." << endl;
-
   // Open the neutron star data file
   std::string ns_file="data/qmc_twop_10_0_out";
   o2scl_hdf::hdf_file hf;
@@ -601,15 +591,11 @@ eos::eos() {
   o2scl_hdf::hdf_input(hf,nstar_tab,name);
   hf.close();
 
-  cout << "atest 4b." << endl;
-
   // Open the Skyrme data file
   std::string UNEDF_file="data/thetaANL-1002x12.o2";
   hf.open(UNEDF_file);
   o2scl_hdf::hdf_input(hf,UNEDF_tab,name);
   hf.close();
-
-  cout << "atest 4c." << endl;
 
   use_nrapr=false;
 #ifdef O2SCL_CORI
@@ -618,8 +604,6 @@ eos::eos() {
   o2scl_hdf::skyrme_load(sk_nrapr,"NRAPR");
 #endif
 
-  cout << "atest 4d." << endl;
-
 #ifdef O2SCL_MPI
   // Send a message to the next MPI rank
   if (mpi_size>1 && mpi_rank<mpi_size-1) {
@@ -627,8 +611,6 @@ eos::eos() {
 	     tag,MPI_COMM_WORLD);
   }
 #endif
-
-  cout << "atest 5." << endl;
 
   // Skyrme couplings
   sk_Tcorr.t0=5.067286719233e+03;
@@ -651,7 +633,6 @@ eos::eos() {
 #endif
 
   eos_Tcorr=&sk_Tcorr;
-  cout << "atest 6." << endl;
 }
 
 double eos::energy_density_qmc(double nn, double np) {
