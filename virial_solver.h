@@ -1,7 +1,7 @@
 /*
   -------------------------------------------------------------------
   
-  Copyright (C) 2018, Xingfu Du and Andrew W. Steiner
+  Copyright (C) 2018-2019, Xingfu Du and Andrew W. Steiner
   
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -66,7 +66,7 @@ class virial_solver {
       This function computes zn and zp from pn and nn
       presuming that lambda, b_n and b_pn have already been specified.
   */
-  void solve_fugacity(ubvector &x) {
+  virtual void solve_fugacity(ubvector &x) {
 
     npt=pow(lambda,3)/2.0*pn;
     nnt=pow(lambda,3)/2.0*nn;
@@ -324,6 +324,131 @@ class virial_solver {
     return 0;
   }
 
+};
+
+/** \brief A new virial solver which fixes some problems at
+    high temperatures just below saturation
+*/
+class virial_solver_new : public virial_solver {
+  
+ public:
+
+  virtual void solve_fugacity(ubvector &x) {
+    
+    npt=pow(lambda,3)/2.0*pn;
+    nnt=pow(lambda,3)/2.0*nn;
+    ubvector res_zn;
+      
+    // Coefficients for quartic equation of zp in descending order
+      
+    a=pow(b_n,3)*2.0/b_pn/b_pn-2.0*b_n;
+    b=-1+b_n*b_n*2.0/b_pn/b_pn-b_n/b_pn;
+    c=b_n/(2.0*b_pn*b_pn)-0.5/b_pn-nnt+npt-b_n*b_n*npt*2.0/b_pn/b_pn;
+    d=-b_n*npt/b_pn/b_pn+npt/2.0/b_pn;
+    e=b_n*npt*npt/2.0/b_pn/b_pn;
+      
+    quart2.solve_rc(a,b,c,d,e,this->res[0],this->res[1],
+		    this->res[2],this->res[3]);
+    
+    int root_count=0;
+    std::complex<double> eval_zp[4];
+    ubvector eval_zn;
+    res_zn.resize(4);
+    eval_zn.resize(4);
+
+    for (int i=0;i<4;i++) {
+
+      // Check that the root is positive and that the imaginary
+      // part is sufficiently small. Note I use fabs() rather
+      // than abs().
+      if(this->res[i].real()>0 && 
+	 fabs(this->res[i].imag()/this->res[i].real())<1.0e-6) {
+
+	// Make sure that the specified root is really a solution
+	// of the original polynomial
+	eval_zp[i]=(a*pow(this->res[i],4.0)+b*pow(this->res[i],3.0)+
+		    c*pow(this->res[i],2.0)+d*this->res[i]+e)/e;
+	   
+	if (fabs(eval_zp[i].real())<2.0e-6 &&
+	    fabs(eval_zp[i].imag())<1.0e-8) {
+	  
+	  A.resize(1,1);
+	  B.resize(1);
+	  A(0,0)=2.0*this->res[i].real()*b_pn;
+	  B(0)=npt-this->res[i].real()
+	    -2.0*this->res[i].real()*this->res[i].real()*b_n;
+	  
+	  ubvector reszn;
+	  reszn.resize(1);
+	  lsol.solve(1,A,B,reszn);
+	  res_zn[i]=reszn(0);
+            	                       
+	  if (res_zn[i]>0.0) { 
+	    root_count++; 
+	  }
+	} else {
+	  res_zn[i]=1.0e10;
+	} 
+      } else {
+	res_zn[i]=1.0e10;
+      }
+    }
+      
+    if (root_count==0) {
+      std::cout << "Zn/Zp Multiple or zero roots: " << root_count 
+		<< std::endl;
+      std::cout << "nn: " << nn << " pn: " << pn << " T: " 
+		<< T << std::endl;
+      std::cout.setf(std::ios::showpos);
+      std::cout << "zn: " <<res_zn[0] << " "  << eval_zn[0]
+		<< std::endl;
+      std::cout << "zp: " <<this->res[0].real() << " " << this->res[0].imag() 
+		<< " ";
+      std::cout << eval_zp[0].real() << " " << eval_zp[0].imag() 
+		<< std::endl;
+      std::cout << "zn: " <<res_zn[1] << " "<< eval_zn[1]
+		<< std::endl;
+      std::cout << "zp: " <<this->res[1].real() << " " << this->res[1].imag() 
+		<< " ";
+      std::cout << eval_zp[1].real() << " " << eval_zp[1].imag() 
+		<< std::endl;
+      std::cout << "zn: " <<res_zn[2] << " " << eval_zn[2]
+		<< std::endl;
+      std::cout << "zp: " <<this->res[2].real() << " " << this->res[2].imag() 
+		<< " ";
+      std::cout << eval_zp[2].real() << " " << eval_zp[2].imag() 
+		<< std::endl;
+      std::cout << "zn: " <<res_zn[3] << " " << eval_zn[3] 
+		<< std::endl;
+      std::cout << "zp: " <<this->res[0].real() << " " << this->res[3].imag() 
+		<< " ";
+      std::cout << eval_zp[3].real() << " " << eval_zp[3].imag() 
+		<< std::endl;          
+      std::cout.unsetf(std::ios::showpos);
+      O2SCL_ERR("Zero or more than one root in solve_fugacity().",
+		o2scl::exc_efailed);
+    }
+    int res_index=0;
+    double minsq=1.0e10, temp;
+    for (int i=0;i<4;i++) {
+      if (res_zn[i]>0.0 && this->res[i].real()>0.0) {
+	temp = res_zn[i]*res_zn[i] + this->res[i].real()
+	  *this->res[i].real();
+	if (temp<minsq) {
+	  minsq=temp;
+	  res_index=i;
+	}
+      }
+    }
+    zn=res_zn[res_index];
+    zp=this->res[res_index].real();  
+    x[1]=log(zp)*T;
+    x[0]=log(zn)*T; 
+
+    return;
+  }
+  
+  
 };
 
 #endif

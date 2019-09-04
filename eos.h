@@ -1,7 +1,7 @@
 /*
   -------------------------------------------------------------------
   
-  Copyright (C) 2018, Xingfu Du and Andrew W. Steiner
+  Copyright (C) 2018-2019, Xingfu Du and Andrew W. Steiner
   
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -426,7 +426,7 @@ class eos {
   /// \name Base physics objects [protected]
   //@{
   /// The virial equation solver
-  virial_solver acl;
+  virial_solver_new acl;
 
   /** \brief Object for computing electron/positron thermodynamic integrals
    */
