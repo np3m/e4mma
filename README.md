@@ -1,5 +1,5 @@
-eos
+EOS
 ===
 
-Equation of state from Du, Steiner, and Holt, Phys. Rev. C (2019).
+Equation of State from Du, Steiner, and Holt, Phys. Rev. C (2019).
 
