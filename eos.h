@@ -1,7 +1,7 @@
 /*
   -------------------------------------------------------------------
   
-  Copyright (C) 2018-2019, Xingfu Du and Andrew W. Steiner
+  Copyright (C) 2018-2020, Xingfu Du and Andrew W. Steiner
   
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -24,6 +24,10 @@
 #include <mpi.h>
 #endif
 
+#include <time.h>
+
+#include <gsl/gsl_sf_hyperg.h>
+
 #include <o2scl/test_mgr.h>
 #include <o2scl/eos_had_skyrme.h>
 #include <o2scl/fermion_nonrel.h>
@@ -40,14 +44,13 @@
 #include <o2scl/eos_sn.h>
 #include <o2scl/cloud_file.h>
 #include <o2scl/rng_gsl.h>
-#include <gsl/gsl_sf_hyperg.h>
 #include <o2scl/root_brent_gsl.h>
 #include <o2scl/smooth_func.h>
-#include <time.h>
-
-#include "virial_solver.h" 
 #include <o2scl/deriv_gsl.h>
 #include <o2scl/deriv_cern.h>
+
+#include "virial_solver.h" 
+#include "virial_solver_deriv.h" 
 
 /** \brief An updated version of \ref o2scl::eos_crust_virial
     with a better fit for the virial coefficients
@@ -116,9 +119,9 @@ class eos {
   
  protected:
 
-  /** \brief For debugging the two versions (default true)
+  /** \brief (default false)
    */
-  bool temp_updates;
+  bool old_version;
   
   /** \brief Use NRAPR (for testing and comparison)
    */
@@ -169,8 +172,8 @@ class eos {
   */
   virtual double free_energy_density_virial
     (o2scl::fermion &n, o2scl::fermion &p, double T,
-     o2scl::thermo &th, double &dmundnn, double &dmundpn,
-     double &dmupdnn, double &dmupdpn, double &dmundT,
+     o2scl::thermo &th, double &dmundnn, double &dmundnp,
+     double &dmupdnn, double &dmupdnp, double &dmundT,
      double &dmupdT);    
 
   /** \brief Compute the free energy density using the virial 
@@ -366,9 +369,9 @@ class eos {
   double dfdnn_total(o2scl::fermion &n, o2scl::fermion &p,
 		     double nn, double pn, double T, o2scl::thermo &th);
   
-  /** \brief Compute dfdpn including photons and electons
+  /** \brief Compute dfdnp including photons and electons
    */
-  double dfdpn_total(o2scl::fermion &n, o2scl::fermion &p,
+  double dfdnp_total(o2scl::fermion &n, o2scl::fermion &p,
 		     double nn, double pn, double T, o2scl::thermo &th);
   
   /** \brief Solve for Ye to ensure a specified value of muL at fixed T
@@ -426,7 +429,10 @@ class eos {
   /// \name Base physics objects [protected]
   //@{
   /// The virial equation solver
-  virial_solver_new acl;
+  virial_solver_deriv vsd;
+
+  /// Old virial solver
+  virial_solver vs;
 
   /** \brief Object for computing electron/positron thermodynamic integrals
    */

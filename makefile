@@ -8,9 +8,12 @@
 
 # Default settings
 LCXX = $(CXX)
+LMPI_CXX = $(MPI_CXX)
 LIBS = -L/usr/local/lib -lo2scl_hdf -lo2scl_eos -lo2scl_part -lo2scl \
-	-lhdf5 -lgsl
-LCFLAGS = -O3 -std=c++11 -DNO_MPI
+        -lhdf5 -lgsl -lreadline
+LMPI_CFLAGS = -O3 -std=c++11 -DTEMP_UPDATES -DO2SCL_MPI
+LCFLAGS = -O3 -std=c++11 -DNO_MPI -DTEMP_UPDATES 
+SCRATCH_COPY = 
 
 # ----------------------------------------------------------------
 # UTK-specific settings
@@ -23,25 +26,112 @@ include $(UTKNA_MAKEFILE)
 # UTK configuration
 LIBS = $(UTKNA_O2SCL_LIBS)
 LCXX = $(UTKNA_CXX) 
-LCFLAGS = $(UTKNA_O2SCL_INCS) $(UTKNA_CFLAGS) -DNO_MPI
+LMPI_CXX = $(UTKNA_MPI_CXX)
+EOS_DIR = $(UTKNA_EOS_DIR)
+LCFLAGS = -ggdb $(UTKNA_O2SCL_INCS) $(UTKNA_CFLAGS) -DNO_MPI -DTEMP_UPDATES \
+        -I$(EOS_DIR)
+LMPI_CFLAGS = -ggdb $(UTKNA_O2SCL_INCS) $(UTKNA_MPI_CFLAGS) -DTEMP_UPDATES \
+        -I$(EOS_DIR) -DO2SCL_MPI
 
 else
 
-ifeq ($(MACHINE),isospin)
+ifeq ($(NERSC_HOST),cori)
 
-# On isospin for Xingfu
-LIBS = -L/usr/lib/x86_64-linux-gnu/hdf5/serial \
-	-lo2scl_eos -lo2scl_part -lo2scl_hdf -lo2scl -lhdf5 -lgsl
-LCXX = g++ 
-LCFLAGS = -I/usr/lib/x86_64-linux-gnu/hdf5/serial/include \
-	-I/usr/include/eigen3 -Wno-deprecated-declarations \
-	-O3 -std=c++11 -DNO_MPI -Wshadow -DO2SCL_HDF5_COMP
+ifeq ($(NODE_TYPE),haswell)
 
+# On NERSC cori
+LCXX = CC
+LMPI_CXX = CC
+LIBS = -static -L/global/common/cori_cle6/software/gsl/2.1/intel/lib \
+        -L/global/common/cori_cle6/software/boost/1.67.0/intel/haswell/lib \
+        -L/project/projectdirs/m3389/hdf5-1.10.5.cori.haswell/lib \
+        -L/project/projectdirs/m3389/o2scl-0.924.cori.haswell/lib \
+        -lo2scl_hdf -lo2scl_eos -lo2scl_part -lo2scl \
+        -lhdf5_hl -lhdf5 -lgsl
+LMPI_CFLAGS = -O3 -DTEMP_UPDATES -std=c++11 \
+        -I/global/common/cori_cle6/software/gsl/2.1/intel/include -static \
+        -I/global/common/cori_cle6/software/boost/1.67.0/intel/haswell/include \
+        -I/project/projectdirs/m3389/hdf5-1.10.5.cori.haswell/include \
+        -I/project/projectdirs/m3389/o2scl-0.924.cori.haswell/include \
+        -I/project/projectdirs/m3389/eos -DO2SCL_MPI -DO2SCL_CORI
+LCFLAGS = -O3 -DTEMP_UPDATES 
+EOS_DIR = /project/projectdirs/m3389/eos
+SCRATCH_COPY = cp -r eos_nuclei_mpi script data $(SCRATCH)
+
+else
+
+# On NERSC cori
+LCXX = CC
+LMPI_CXX = CC
+LIBS = -L/usr/common/software/gsl/2.1/intel/lib \
+        -L/usr/common/software/hdf5/1.10.2/intel/lib \
+        -L/usr/common/software/boost/1.67.0/intel/mic-knl/lib \
+        -L/project/projectdirs/m3389/o2scl-0.924.cori.knl/lib \
+        -lo2scl_hdf -lo2scl_eos -lo2scl_part -lo2scl \
+        -lhdf5_hl -lhdf5 -lgsl
+LMPI_CFLAGS = -O3 -DTEMP_UPDATES -std=c++11 \
+        -I/usr/common/software/gsl/2.1/intel/include -static \
+        -I/usr/common/software/hdf5/1.10.2/intel/include \
+        -I/usr/common/software/boost/1.67.0/intel/mic-knl/include \
+        -I/project/projectdirs/m3389/o2scl-0.924.cori.knl/include \
+        -I/project/projectdirs/m3389/eos -DO2SCL_MPI -DO2SCL_CORI
+LCFLAGS = -O3 -DTEMP_UPDATES 
+EOS_DIR = /project/projectdirs/m3389/eos
+
+endif
 endif
 endif
 
 # ----------------------------------------------------------------
-# Main targets
+# Main
+# ----------------------------------------------------------------
+
+eos.o: eos.cpp virial_solver.h eos.h
+	$(LMPI_CXX) $(LMPI_CFLAGS) -o eos.o -c eos.cpp
+
+eos_nuclei.o: eos_nuclei.cpp virial_solver.h eos_nuclei.h
+	$(LMPI_CXX) $(LMPI_CFLAGS) -o eos_nuclei.o -c eos_nuclei.cpp
+
+eos_had_skyrme_ext.o: eos_had_skyrme_ext.cpp virial_solver.h \
+		eos_had_skyrme_ext.h
+	$(LMPI_CXX) $(LMPI_CFLAGS) -o eos_had_skyrme_ext.o \
+		-c eos_had_skyrme_ext.cpp
+
+main.o: main.cpp virial_solver.h eos.h 
+	$(LMPI_CXX) $(LMPI_CFLAGS) -o main.o -c main.cpp 
+
+eos_nuclei: eos.o main.o eos_nuclei.o eos_had_skyrme_ext.o \
+		virial_solver_deriv.h
+	$(LMPI_CXX) $(LMPI_CFLAGS) -o eos_nuclei eos.o main.o \
+		 eos_nuclei.o eos_had_skyrme_ext.o $(LIBS) \
+		-lreadline
+
+# ----------------------------------------------------------------
+# Version without MPI
+# ----------------------------------------------------------------
+
+eos_nompi.o: eos.cpp virial_solver.h eos.h
+	$(LCXX) $(LCFLAGS) -o eos_nompi.o -c eos.cpp
+
+eos_nuclei_nompi.o: eos_nuclei.cpp virial_solver.h eos_nuclei.h
+	$(LCXX) $(LCFLAGS) -o eos_nuclei_nompi.o -c eos_nuclei.cpp
+
+eos_had_skyrme_ext_nompi.o: eos_had_skyrme_ext.cpp virial_solver.h \
+		eos_had_skyrme_ext.h
+	$(LCXX) $(LCFLAGS) -o eos_had_skyrme_ext_nompi.o \
+		-c eos_had_skyrme_ext.cpp
+
+main_nompi.o: main.cpp virial_solver.h eos.h 
+	$(LCXX) $(LCFLAGS) -o main_nompi.o -c main.cpp 
+
+eos_nuclei_nompi: eos_nompi.o main_nompi.o eos_nuclei_nompi.o \
+		eos_had_skyrme_ext_nompi.o virial_solver_deriv.h
+	$(LCXX) $(LCFLAGS) -o eos_nuclei_nompi eos_nompi.o main_nompi.o \
+		 eos_nuclei_nompi.o eos_had_skyrme_ext_nompi.o $(LIBS) \
+		-lreadline
+
+# ----------------------------------------------------------------
+# Other targets
 # ----------------------------------------------------------------
 
 empty:
@@ -59,15 +149,102 @@ sync-doc:
 test-sync:
 	rsync -Cavzun sphinx/build/html/* $(STATIC_DOC_DIR)/eos
 
-eos: eos.o main.o
-	$(LCXX) $(LCFLAGS) -o eos eos.o main.o $(LIBS) \
-		-lreadline
-
-eos.o: eos.cpp virial_solver.h eos.h
-	$(LCXX) $(LCFLAGS) -o eos.o -c eos.cpp
-
-main.o: main.cpp virial_solver.h eos.h
-	$(LCXX) $(LCFLAGS) -o main.o -c main.cpp
-
 clean:
-	rm -f *.o eos
+	rm -f *.o eos_nuclei eos_nuclei_nompi
+
+# ----------------------------------------------------------------
+# New EOS parameter sets
+# ----------------------------------------------------------------
+
+P_FIDUCIAL = 470 738 0.5 13.0 62.4 32.8 0.9
+P_LARGE_MMAX = 783 738 0.5 13.0 62.4 32.8 0.9
+P_SMALL_R = 214 738 0.5 13.0 62.4 32.8 0.9
+P_SMALLER_R = 256 738 0.5 13.0 62.4 32.8 0.9
+P_LARGE_R = 0 738 0.5 13.0 62.4 32.8 0.9
+P_SMALL_SL = 470 738 0.5 13.0 23.7 29.5 0.9
+P_LARGE_SL = 470 738 0.5 13.0 100.0 36.0 0.9
+
+# ----------------------------------------------------------------
+
+cv0:
+	eos_nuclei_nompi -select-model $(P_FIDUCIAL) -check-virial
+
+md0:
+	eos_nuclei -select-model $(P_FIDUCIAL) -mcarlo-data
+
+# ----------------------------------------------------------------
+# Test XD's tables
+# ----------------------------------------------------------------
+
+testx:
+	eos_nuclei -set full_results 1 -select-model $(P_FIDUCIAL) \
+		-point-nuclei-aws 0.05 0.5 0.1 \
+		~/data/eos/dsh_eos_fiducial.o2
+
+# ----------------------------------------------------------------
+# Recompute XD's tables
+# ----------------------------------------------------------------
+
+restart:
+	cp ~/data/eos/dsh_eos_fiducial.o2 data/check_fiducial.o2
+	eos_nuclei_nompi -set full_results 1 -select-model $(P_FIDUCIAL) \
+		-edit-data data/check_fiducial.o2 \
+		"inB%13==0 && iYe%13==0 && iT%13==0" flag 5 \
+		data/check_fiducial.o2
+
+# 35141 is just a random prime number which gives 8144 matches
+restart2:
+	cp ~/data/eos/dsh_eos_fiducial.o2 data/check_fiducial.o2
+	eos_nuclei_nompi -set full_results 1 -select-model $(P_FIDUCIAL) \
+		-edit-data data/check_fiducial.o2 \
+		"floor(sin(inB*nYe*nT+iYe*nT+iT)*35141)%35141==0" flag 5 \
+		data/check_fiducial.o2
+
+restart3:
+	cp ~/data/eos/dsh_eos_fiducial.o2 data/check_fiducial.o2
+	eos_nuclei_nompi -set full_results 1 -select-model $(P_FIDUCIAL) \
+		-edit-data data/check_fiducial.o2 \
+		"abs(Ye-0.1)<0.001 && nB>0.04 && nB<0.07" flag 5 \
+		data/check_fiducial.o2
+
+recompute:
+	eos_nuclei_nompi -set full_results 1 -select-model $(P_FIDUCIAL) \
+		-set function_verbose 12211 \
+		-generate-table data/check_fiducial.o2 \
+		data/check_fiducial.o2
+
+recompute2:
+	eos_nuclei_nompi -set full_results 1 -select-model $(P_FIDUCIAL) \
+		-set six_neighbors 1 \
+		-generate-table data/check_fiducial.o2 \
+		data/check_fiducial.o2
+
+testx2:
+	eos_nuclei_nompi -set full_results 1 -select-model $(P_FIDUCIAL) \
+		-point-nuclei-aws 0.050237 0.19 12.86536 \
+		~/data/eos/dsh_eos_fiducial.o2
+
+testx3:
+	eos_nuclei_nompi -set full_results 1 -select-model $(P_FIDUCIAL) \
+		-point-nuclei-aws 0.00289088 0.5 0.9910964 \
+		~/data/eos/dsh_eos_fiducial.o2
+
+testx4:
+	eos_nuclei_nompi -set full_results 1 -select-model $(P_FIDUCIAL) \
+		-point-nuclei-aws 0.03 0.1 3.0 \
+		~/data/eos/dsh_eos_fiducial.o2
+
+mn1:
+	eos_nuclei_nompi -set full_results 1 \
+		-mcarlo-nuclei
+
+# -set function_verbose 12211 
+
+# ----------------------------------------------------------------
+# Recompute derivatives
+# ----------------------------------------------------------------
+
+fid_deriv:
+	eos_nuclei_nompi -set full_results 1 -select-model $(P_FIDUCIAL) \
+		-eos-deriv ~/data/eos/dsh_eos_fiducial.o2 \
+		~/data/eos/dsh_fid_deriv.o2 

@@ -1,7 +1,7 @@
 /*
   -------------------------------------------------------------------
   
-  Copyright (C) 2018-2019, Xingfu Du and Andrew W. Steiner
+  Copyright (C) 2018-2020, Xingfu Du and Andrew W. Steiner
   
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
   -------------------------------------------------------------------
 */
-#include "eos.h"
+#include "eos_nuclei.h"
 
 using namespace std;
 using namespace o2scl;
@@ -27,12 +27,21 @@ int main(int argc, char *argv[]) {
 
   cout.setf(ios::scientific);
 
-  eos eph;
+#ifndef NO_MPI
+  // Init MPI
+  MPI_Init(&argc,&argv);
+#endif
+  eos_nuclei eph;
   cli cl;
   
   eph.setup_cli(cl);
 
   cl.run_auto(argc,argv);
+
+#ifndef NO_MPI
+  // Finalize MPI
+  MPI_Finalize();
+#endif
   
   return 0;
 }

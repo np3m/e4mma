@@ -1,7 +1,7 @@
 /*
   -------------------------------------------------------------------
   
-  Copyright (C) 2018-2019, Xingfu Du and Andrew W. Steiner
+  Copyright (C) 2018, Xingfu Du and Andrew W. Steiner
   
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -39,7 +39,7 @@ typedef boost::numeric::ublas::matrix<double> ubmatrix;
  */
 class virial_solver {
 
-public:
+ public:
 
   // Store the number of function and derivative evaluations
   int nf, nd;
@@ -59,155 +59,291 @@ public:
   o2scl::poly_real_coeff_gsl quart2;
   
   /// Storage for the four roots
-  std::complex<double> res[4]; 
-
+  std::complex<double> res_zp[4],res_zn[4]; 
   /** \brief Solve for the fugacities given the densities
 
       This function computes zn and zp from pn and nn
       presuming that lambda, b_n and b_pn have already been specified.
   */
-  virtual void solve_fugacity(ubvector &x) {
+  void solve_fugacity(ubvector &x) {
 
     npt=pow(lambda,3)/2.0*pn;
     nnt=pow(lambda,3)/2.0*nn;
-    
-    if (npt>nnt) {
+
+    if (npt>=nnt) {
       
       // Coefficients for quartic equation of zp in descending order
       
       a=pow(b_n,3)*2.0/b_pn/b_pn-2.0*b_n;
-      b=-1+b_n*b_n*2.0/b_pn/b_pn-b_n/b_pn;
+      b=-1.0+b_n*b_n*2.0/b_pn/b_pn-b_n/b_pn;
       c=b_n/(2.0*b_pn*b_pn)-0.5/b_pn-nnt+npt-b_n*b_n*npt*2.0/b_pn/b_pn;
       d=-b_n*npt/b_pn/b_pn+npt/2.0/b_pn;
       e=b_n*npt*npt/2.0/b_pn/b_pn;
       
-      quart2.solve_rc(a,b,c,d,e,res[0],res[1],res[2],res[3]);
+      quart2.solve_rc(a,b,c,d,e,res_zp[0],res_zp[1],res_zp[2],res_zp[3]);
+      //std::cout << "Here1: " << a << " " << b << " " << c << " "
+      //<< d << " " << e << std::endl;
       int root_count=0;
-      std::complex<double> eval[4];
-
+      std::complex<double> eval_zp[4];
+      ubvector res_zn_real;
+      std::complex<double>  eval_zn[4];
+      res_zn_real.resize(4);
       /*
         AWS: Changed on 1/9/18 to select largest fugacity instead
         of exiting when multiple roots are found
       */
-    
+
       for (int i=0;i<4;i++) {
 
         // Check that the root is positive and that the imaginary
         // part is sufficiently small. Note I use fabs() rather
         // than abs().
-        if(res[i].real()>0 && fabs(res[i].imag()/res[i].real())<1.0e-6) {
+        if(res_zp[i].real()>0 && 
+                        fabs(res_zp[i].imag()/res_zp[i].real())<1.0e-6) {
 
 	  // Make sure that the specified root is really a solution
 	  // of the original polynomial
-	  eval[i]=(a*pow(res[i],4.0)+b*pow(res[i],3.0)+
-		   c*pow(res[i],2.0)+d*res[i]+e)/e;
+	  eval_zp[i]=(a*pow(res_zp[i],4.0)+b*pow(res_zp[i],3.0)+
+		   c*pow(res_zp[i],2.0)+d*res_zp[i]+e)/e;
 	   
 	  // Changed from 1e-8 to 1e-6 because at zero temperature no
 	  // solutions
 	   
-	  if (fabs(eval[i].real())<2.0e-6 && fabs(eval[i].imag())<1.0e-8) {
-	    if (root_count==0) {
-	      zp=res[i].real();
-	      x[1]=log(zp)*T;
-	    } else if (zp>res[i].real()) {
-	      zp=res[i].real();
-	      x[1]=log(zp)*T;
-	    }                  
-	    root_count++;
-	  }
-	  
+	  if (fabs(eval_zp[i].real())<2.0e-6 &&
+	                                 fabs(eval_zp[i].imag())<1.0e-8) {
+            double r0, r1;
+            gsl_poly_solve_quadratic(2.0*b_n,2.0*res_zp[i].real()*b_pn+1.0,-nnt,&r0,&r1);
+            std::complex<double> eval_r0=(res_zp[i].real()+2.0
+			    *res_zp[i].real()*res_zp[i].real()*b_n
+			   +2.0*res_zp[i].real()*r0*b_pn-npt)/npt;
+            std::complex<double> eval_r1=(res_zp[i].real()+2.0
+			    *res_zp[i].real()*res_zp[i].real()*b_n
+			   +2.0*res_zp[i].real()*r1*b_pn-npt)/npt;
+            if (fabs(eval_r0.real())<2.0e-6 && r0>0.0) {
+	      res_zn_real[i]=r0;
+              eval_zn[i]=eval_r0;
+	    }
+            else if (fabs(eval_r1.real())<2.0e-6 && r1>0.0) {
+	      res_zn_real[i]=r1;
+              eval_zn[i]=eval_r1;
+   	    } else {
+              res_zn_real[i]=-1.0;
+              //std::cout << "r0,r1:  "<< r0 << " " << r1 << std::endl;
+              //std::cout << "eval_r0,r1: " << eval_r0.real() << " " 
+	      //			  << eval_r1.real() << std::endl;
+            }
+
+
+            	                       
+            if (res_zn_real[i]>0.0) { 
+	      root_count++; 
+	    }
+	  } else {
+	    res_zn_real[i]=1.0e10;
+	  } 
+        } else {
+            res_zn_real[i]=1.0e10;
         }
       }
       
-      if (root_count!=1 && false) {
-        std::cout << "Zp Multiple or zero roots: " << root_count << std::endl;
+      if (root_count==0&&false) {
+        std::cout << "Zn/Zp zero roots: " << root_count 
+                                                      << std::endl;
+        std::cout << "nn: " << nn << " pn: " << pn << " T: " 
+                  << T << std::endl;
         std::cout.setf(std::ios::showpos);
-        std::cout << res[0].real() << " " << res[0].imag() << " ";
-        std::cout << eval[0].real() << " " << eval[0].imag() << std::endl;
-        std::cout << res[1].real() << " " << res[1].imag() << " ";
-        std::cout << eval[1].real() << " " << eval[1].imag() << std::endl;
-        std::cout << res[2].real() << " " << res[2].imag() << " ";
-        std::cout << eval[2].real() << " " << eval[2].imag() << std::endl;
-        std::cout << res[3].real() << " " << res[3].imag() << " ";
-        std::cout << eval[3].real() << " " << eval[3].imag() << std::endl;
+        std::cout << "zn: " <<res_zn_real[0] << " " << " ";
+        std::cout << eval_zn[0].real() << " " << eval_zn[0].imag() 
+                  << std::endl;
+        std::cout << "zp: " <<res_zp[0].real() << " " << res_zp[0].imag() 
+                  << " ";
+        std::cout << eval_zp[0].real() << " " << eval_zp[0].imag() 
+                  << std::endl;
+        std::cout << "zn: " <<res_zn_real[1] << " ";
+        std::cout << eval_zn[1].real() << " " << eval_zn[1].imag() 
+                  << std::endl;
+        std::cout << "zp: " <<res_zp[1].real() << " " << res_zp[1].imag() 
+                  << " ";
+        std::cout << eval_zp[1].real() << " " << eval_zp[1].imag() 
+                  << std::endl;
+        std::cout << "zn: " <<res_zn_real[2] << " ";
+        std::cout << eval_zn[2].real() << " " << eval_zn[2].imag() 
+                  << std::endl;
+        std::cout << "zp: " <<res_zp[2].real() << " " << res_zp[2].imag() 
+                  << " ";
+        std::cout << eval_zp[2].real() << " " << eval_zp[2].imag() 
+                  << std::endl;
+        std::cout << "zn: " <<res_zn_real[3] << " ";
+        std::cout << eval_zn[3].real() << " " << eval_zn[3].imag() 
+                  << std::endl;    
+        std::cout << "zp: " <<res_zp[3].real() << " " << res_zp[3].imag() 
+                  << " ";
+        std::cout << eval_zp[3].real() << " " << eval_zp[3].imag() 
+                  << std::endl;          
         std::cout.unsetf(std::ios::showpos);
-        std::cout << "bn= " <<b_n<<" bpn= "<<b_pn<<" nnt= "<<nnt<<" npt= "
-                  <<npt<< " T= "<<T<< std::endl;
         O2SCL_ERR("Zero or more than one root in solve_fugacity().",
 		  o2scl::exc_efailed);
       }
-
-      double r0, r1;
-      gsl_poly_solve_quadratic(2.0*b_n,2.0*zp*b_pn+1.0,-nnt,&r0,&r1);
-      if (r0>r1) zn=r0;
-      else zn=r1;
-
+      int res_index=0;
+      double minsq=1.0e100, temp;
+      for (int i=0;i<4;i++) {
+        if (res_zn_real[i]>0.0 && res_zp[i].real()>0.0) {
+          temp = res_zn_real[i]*res_zn_real[i] + res_zp[i].real()
+                        *res_zp[i].real();
+          if (temp<minsq) {
+            minsq=temp;
+            res_index=i;
+          }
+        }
+      }
+      zn=res_zn_real[res_index];
+      zp=res_zp[res_index].real();  
+      x[1]=log(zp)*T;
       x[0]=log(zn)*T; 
 
     } else {
+    
+     
+      // Coefficients for quartic equation of zp in descending order
       
-      // The case nnt>npt:
-
       a=pow(b_n,3)*2.0/b_pn/b_pn-2.0*b_n;
       b=-1.0+b_n*b_n*2.0/b_pn/b_pn-b_n/b_pn;
       c=b_n/(2.0*b_pn*b_pn)-0.5/b_pn-npt+nnt-b_n*b_n*nnt*2.0/b_pn/b_pn;
       d=-b_n*nnt/b_pn/b_pn+nnt/2.0/b_pn;
       e=b_n*nnt*nnt/2.0/b_pn/b_pn;
-         
-      quart2.solve_rc(a,b,c,d,e,res[0],res[1],res[2],res[3]);
-      int root_count=0;
-      std::complex<double> eval[4];
       
-      for(int i=0;i<4;i++) {
-	
-        if(res[i].real()>0 && fabs(res[i].imag()/res[i].real())<1.0e-6) {
-	  
+      quart2.solve_rc(a,b,c,d,e,res_zn[0],res_zn[1],res_zn[2],res_zn[3]);
+      /*
+	std::cout << "Here2: " << a << " " << b << " " << c << " "
+	<< d << " " << e << std::endl;
+	std::cout << res_zn[0] << " " << res_zn[1] << " " << res_zn[2] << " "
+	<< res_zn[3] << std::endl;
+      */
+      int root_count=0;
+      std::complex<double> eval_zn[4];
+      ubvector res_zp_real;
+      std::complex<double> eval_zp[4];
+      res_zp_real.resize(4);
+      /*
+        AWS: Changed on 1/9/18 to select largest fugacity instead
+        of exiting when multiple roots are found
+      */
+
+      for (int i=0;i<4;i++) {
+
+        // Check that the root is positive and that the imaginary
+        // part is sufficiently small. Note I use fabs() rather
+        // than abs().
+        if(res_zn[i].real()>0 && 
+                        fabs(res_zn[i].imag()/res_zn[i].real())<1.0e-6) {
+
 	  // Make sure that the specified root is really a solution
 	  // of the original polynomial
-	  eval[i]=(a*pow(res[i],4.0)+b*pow(res[i],3.0)+
-	           c*pow(res[i],2.0)+d*res[i]+e)/e;
-	  
+	  eval_zn[i]=(a*pow(res_zn[i],4.0)+b*pow(res_zn[i],3.0)+
+		   c*pow(res_zn[i],2.0)+d*res_zn[i]+e)/e;
+	   
 	  // Changed from 1e-8 to 1e-6 because at zero temperature no
 	  // solutions
-	  if (fabs(eval[i].real())<2.0e-6 && fabs(eval[i].imag())<1.0e-8) {
-	    if (root_count==0) {
-	      zn=res[i].real();
-	      x[0]=log(zn)*T;
-	    } else if (zp>res[i].real()) {
-	      zn=res[i].real();
-	      x[0]=log(zn)*T;
-	    }                  
-	    root_count++;
-	  }
+	   
+	  if (fabs(eval_zn[i].real())<2.0e-6 &&
+	                                 fabs(eval_zn[i].imag())<1.0e-8) {
+
+            double r0, r1;
+            gsl_poly_solve_quadratic(2.0*b_n,2.0*res_zn[i].real()*b_pn+1.0,-npt,&r0,&r1);
+            std::complex<double> eval_r0=(res_zn[i].real()+2.0
+			   *res_zn[i].real()*res_zn[i].real()*b_n
+			   +2.0*res_zn[i].real()*r0*b_pn-nnt)/nnt;
+            std::complex<double> eval_r1=(res_zn[i].real()+2.0
+			     *res_zn[i].real()*res_zn[i].real()*b_n
+			   +2.0*res_zn[i].real()*r1*b_pn-nnt)/nnt;
+            if (fabs(eval_r0.real())<2.0e-6 && r0>0.0) {
+	      res_zp_real[i]=r0;
+              eval_zp[i]=eval_r0;
+	    } else if (fabs(eval_r1.real())<2.0e-6 && r1>0.0) {
+	      res_zp_real[i]=r1;
+	      eval_zp[i]=eval_r1;
+	    } else {
+	      res_zp_real[i]=-1.0;
+	      //std::cout << "r0,r1:  "<< r0 << " " << r1 << std::endl;
+              //std::cout << "eval_r0,r1: " << eval_r0.real() << " "
+              //                            << eval_r1.real() << std::endl;
+            }
+  
+            if (res_zp_real[i]>0.0) { 
+	      root_count++; 
+	    }
+	  } else {
+	    res_zp_real[i]=1.0e10;
+	  } 
+        } else {
+            res_zp_real[i]=1.0e10;
         }
       }
       
-      if (root_count!=1 && false) {
-        std::cout << "Zn Multiple or zero roots: " << root_count << std::endl;
+      if (root_count==0&&false) {
+        std::cout << "Zn/Zp zero roots: " << root_count 
+                                                      << std::endl;
+        std::cout << "nn: " << nn << " pn: " << pn << " T: " 
+                  << T << std::endl;
         std::cout.setf(std::ios::showpos);
-        std::cout << res[0].real() << " " << res[0].imag() << " ";
-        std::cout << eval[0].real() << " " << eval[0].imag() << std::endl;
-        std::cout << res[1].real() << " " << res[1].imag() << " ";
-        std::cout << eval[1].real() << " " << eval[1].imag() << std::endl;
-        std::cout << res[2].real() << " " << res[2].imag() << " ";
-        std::cout << eval[2].real() << " " << eval[2].imag() << std::endl;
-        std::cout << res[3].real() << " " << res[3].imag() << " ";
-        std::cout << eval[3].real() << " " << eval[3].imag() << std::endl;
+        std::cout << "zp: " <<res_zp_real[0] << " ";
+        std::cout << eval_zp[0].real() << " " << eval_zp[0].imag() 
+                  << std::endl;
+        std::cout << "zn: " <<res_zn[0].real() << " " << res_zn[0].imag() 
+                  << " ";
+        std::cout << eval_zn[0].real() << " " << eval_zn[0].imag() 
+                  << std::endl;
+        std::cout << "zp: " <<res_zp_real[1] << " ";
+        std::cout << eval_zp[1].real() << " " << eval_zp[1].imag() 
+                  << std::endl;
+        std::cout << "zn: " <<res_zn[1].real() << " " << res_zn[1].imag() 
+                  << " ";
+        std::cout << eval_zn[1].real() << " " << eval_zn[1].imag() 
+                  << std::endl;
+        std::cout << "zp: " <<res_zp_real[2] << " ";
+        std::cout << eval_zp[2].real() << " " << eval_zp[2].imag() 
+                  << std::endl;
+        std::cout << "zn: " <<res_zn[2].real() << " " << res_zn[2].imag() 
+                  << " ";
+        std::cout << eval_zn[2].real() << " " << eval_zn[2].imag() 
+                  << std::endl;
+        std::cout << "zp: " <<res_zp_real[3] << " ";
+        std::cout << eval_zp[3].real() << " " << eval_zp[3].imag() 
+                  << std::endl;       
+        std::cout << "zn: " <<res_zn[3].real() << " " << res_zn[3].imag() 
+                  << " ";
+        std::cout << eval_zn[3].real() << " " << eval_zn[3].imag() 
+                  << std::endl;          
         std::cout.unsetf(std::ios::showpos);
         O2SCL_ERR("Zero or more than one root in solve_fugacity().",
-                  o2scl::exc_efailed);
+		  o2scl::exc_efailed);
       }
-      
-      double r0, r1;
-      gsl_poly_solve_quadratic(2.0*b_n,2.0*zn*b_pn+1.0,-npt,&r0,&r1);
-      if (r0>r1) zp=r0;
-      else zp=r1;
-      
-      x[1]=log(zp)*T; 
+      int res_index=0;
+      double minsq=1.0e100, temp;
+      for (int i=0;i<4;i++) {
+        if (res_zp_real[i]>0.0 && res_zn[i].real()>0.0) {
+          temp = res_zp_real[i]*res_zp_real[i] + res_zn[i].real()
+                        *res_zn[i].real();
+          if (temp<minsq) {
+            minsq=temp;
+            res_index=i;
+          }
+        }
+      }
+      zp=res_zp_real[res_index];
+      zn=res_zn[res_index].real();  
+      x[1]=log(zp)*T;
+      x[0]=log(zn)*T; 
+    
+    
+    
+    
+    
+    
     }
 
-    //-----------------------------------------------------------
-
+    //std::cout << "zn,zp: " << zn << " " << zp << std::endl;
+    
     return;
   }
    
@@ -324,264 +460,6 @@ public:
     return 0;
   }
 
-};
-
-/** \brief A new virial solver which fixes some problems at
-    high temperatures just below saturation
-*/
-class virial_solver_new : public virial_solver {
-
-protected:
-  
-  /// Storage for the four roots
-  std::complex<double> res_zp[4],res_zn[4]; 
-  
-public:
-
-  virtual void solve_fugacity(ubvector &x) {
-
-
-    npt=pow(lambda,3)/2.0*pn;
-    nnt=pow(lambda,3)/2.0*nn;
-
-    if (npt>=nnt) {
-      
-      // Coefficients for quartic equation of zp in descending order
-      
-      a=pow(b_n,3)*2.0/b_pn/b_pn-2.0*b_n;
-      b=-1+b_n*b_n*2.0/b_pn/b_pn-b_n/b_pn;
-      c=b_n/(2.0*b_pn*b_pn)-0.5/b_pn-nnt+npt-b_n*b_n*npt*2.0/b_pn/b_pn;
-      d=-b_n*npt/b_pn/b_pn+npt/2.0/b_pn;
-      e=b_n*npt*npt/2.0/b_pn/b_pn;
-      
-      quart2.solve_rc(a,b,c,d,e,res_zp[0],res_zp[1],res_zp[2],res_zp[3]);
-      int root_count=0;
-      std::complex<double> eval_zp[4];
-      ubvector res_zn_real;
-      ubvector eval_zn_real;
-      res_zn_real.resize(4);
-      eval_zn_real.resize(4);
-      /*
-        AWS: Changed on 1/9/18 to select largest fugacity instead
-        of exiting when multiple roots are found
-      */
-
-      for (int i=0;i<4;i++) {
-
-        // Check that the root is positive and that the imaginary
-        // part is sufficiently small. Note I use fabs() rather
-        // than abs().
-        if(res_zp[i].real()>0 && 
-	   fabs(res_zp[i].imag()/res_zp[i].real())<1.0e-6) {
-
-	  // Make sure that the specified root is really a solution
-	  // of the original polynomial
-	  eval_zp[i]=(a*pow(res_zp[i],4.0)+b*pow(res_zp[i],3.0)+
-		      c*pow(res_zp[i],2.0)+d*res_zp[i]+e)/e;
-	   
-	  // Changed from 1e-8 to 1e-6 because at zero temperature no
-	  // solutions
-	   
-	  if (fabs(eval_zp[i].real())<2.0e-6 &&
-	      fabs(eval_zp[i].imag())<1.0e-8) {
-            double r0, r1;
-            gsl_poly_solve_quadratic(2.0*b_n,2.0*res_zp[i].real()*
-				     b_pn+1.0,-nnt,&r0,&r1);
-            if (r0>r1) res_zn_real[i]=r0;
-            else res_zn_real[i]=r1;
-
-
-            	                       
-            if (res_zn_real[i]>0.0) { 
-              // Make sure that the specified root is really a solution
-	      // of the original polynomial
-	      /*eval_zn_real[i]=(2.0*b_n*pow(res_zn_real[i],2.0)
-		+(2.0*res_zp[i].real*b_pn+1.0)
-		*res_zn_real[i]-nnt)/nnt;*/
-              //if (fabs(eval_zn[i])<2.0e-6) {
-	      root_count++; 
-	      //}
-	    }
-	  } else {
-	    res_zn_real[i]=1.0e10;
-	  } 
-        } else {
-	  res_zn_real[i]=1.0e10;
-        }
-      }
-      
-      if (root_count==0) {
-        std::cout << "Zn/Zp zero roots: " << root_count 
-		  << std::endl;
-        std::cout << "nn: " << nn << " pn: " << pn << " T: " 
-                  << T << std::endl;
-        std::cout.setf(std::ios::showpos);
-        std::cout << "zn: " <<res_zn_real[0] << " "  << eval_zn_real[0]
-                  << std::endl;
-        std::cout << "zp: " <<res_zp[0].real() << " " << res_zp[0].imag() 
-                  << " ";
-        std::cout << eval_zp[0].real() << " " << eval_zp[0].imag() 
-                  << std::endl;
-        std::cout << "zn: " <<res_zn_real[1] << " "<< eval_zn_real[1]
-                  << std::endl;
-        std::cout << "zp: " <<res_zp[1].real() << " " << res_zp[1].imag() 
-                  << " ";
-        std::cout << eval_zp[1].real() << " " << eval_zp[1].imag() 
-                  << std::endl;
-        std::cout << "zn: " <<res_zn_real[2] << " " << eval_zn_real[2]
-                  << std::endl;
-        std::cout << "zp: " <<res_zp[2].real() << " " << res_zp[2].imag() 
-                  << " ";
-        std::cout << eval_zp[2].real() << " " << eval_zp[2].imag() 
-                  << std::endl;
-        std::cout << "zn: " <<res_zn_real[3] << " " << eval_zn_real[3] 
-                  << std::endl;
-        std::cout << "zp: " <<res_zp[3].real() << " " << res_zp[3].imag() 
-                  << " ";
-        std::cout << eval_zp[3].real() << " " << eval_zp[3].imag() 
-                  << std::endl;          
-        std::cout.unsetf(std::ios::showpos);
-        O2SCL_ERR("Zero or more than one root in solve_fugacity().",
-		  o2scl::exc_efailed);
-      }
-      int res_index=0;
-      double minsq=1.0e100, temp;
-      for (int i=0;i<4;i++) {
-        if (res_zn_real[i]>0.0 && res_zp[i].real()>0.0) {
-          temp = res_zn_real[i]*res_zn_real[i] + res_zp[i].real()
-	    *res_zp[i].real();
-          if (temp<minsq) {
-            minsq=temp;
-            res_index=i;
-          }
-        }
-      }
-      zn=res_zn_real[res_index];
-      zp=res_zp[res_index].real();  
-      x[1]=log(zp)*T;
-      x[0]=log(zn)*T; 
-
-    } else {
-    
-     
-      // Coefficients for quartic equation of zp in descending order
-      
-      a=pow(b_n,3)*2.0/b_pn/b_pn-2.0*b_n;
-      b=-1.0+b_n*b_n*2.0/b_pn/b_pn-b_n/b_pn;
-      c=b_n/(2.0*b_pn*b_pn)-0.5/b_pn-npt+nnt-b_n*b_n*nnt*2.0/b_pn/b_pn;
-      d=-b_n*nnt/b_pn/b_pn+nnt/2.0/b_pn;
-      e=b_n*nnt*nnt/2.0/b_pn/b_pn;
-      
-      quart2.solve_rc(a,b,c,d,e,res_zn[0],res_zn[1],res_zn[2],res_zn[3]);
-      int root_count=0;
-      std::complex<double> eval_zn[4];
-      ubvector res_zp_real;
-      ubvector eval_zp_real;
-      res_zp_real.resize(4);
-      eval_zp_real.resize(4);
-      /*
-        AWS: Changed on 1/9/18 to select largest fugacity instead
-        of exiting when multiple roots are found
-      */
-
-      for (int i=0;i<4;i++) {
-
-        // Check that the root is positive and that the imaginary
-        // part is sufficiently small. Note I use fabs() rather
-        // than abs().
-        if(res_zn[i].real()>0 && 
-	   fabs(res_zn[i].imag()/res_zn[i].real())<1.0e-6) {
-
-	  // Make sure that the specified root is really a solution
-	  // of the original polynomial
-	  eval_zn[i]=(a*pow(res_zn[i],4.0)+b*pow(res_zn[i],3.0)+
-		      c*pow(res_zn[i],2.0)+d*res_zn[i]+e)/e;
-	   
-	  // Changed from 1e-8 to 1e-6 because at zero temperature no
-	  // solutions
-	   
-	  if (fabs(eval_zn[i].real())<2.0e-6 &&
-	      fabs(eval_zn[i].imag())<1.0e-8) {
-
-            double r0, r1;
-            gsl_poly_solve_quadratic(2.0*b_n,2.0*res_zn[i].real()*
-				     b_pn+1.0,-npt,&r0,&r1);
-            if (r0>r1) res_zp_real[i]=r0;
-            else res_zp_real[i]=r1;
-            	                       
-            if (res_zp_real[i]>0.0) { 
-              // Make sure that the specified root is really a solution
-	      // of the original polynomial
-	      /*eval_zn[i]=(2.0*b_n*pow(res_zn[i],2.0)+(2.0*zp*b_pn+1.0)
-	       *res_zn[i]-nnt)/nnt;*/
-              //if (fabs(eval_zn[i])<2.0e-6) {
-	      root_count++; 
-	      //}
-	    }
-	  } else {
-	    res_zp_real[i]=1.0e10;
-	  } 
-        } else {
-	  res_zp_real[i]=1.0e10;
-        }
-      }
-      
-      if (root_count==0) {
-        std::cout << "Zn/Zp zero roots: " << root_count 
-		  << std::endl;
-        std::cout << "nn: " << nn << " pn: " << pn << " T: " 
-                  << T << std::endl;
-        std::cout.setf(std::ios::showpos);
-        std::cout << "zp: " <<res_zp_real[0] << " "  << eval_zp_real[0]
-                  << std::endl;
-        std::cout << "zn: " <<res_zn[0].real() << " " << res_zn[0].imag() 
-                  << " ";
-        std::cout << eval_zn[0].real() << " " << eval_zn[0].imag() 
-                  << std::endl;
-        std::cout << "zp: " <<res_zp_real[1] << " "<< eval_zp_real[1]
-                  << std::endl;
-        std::cout << "zn: " <<res_zn[1].real() << " " << res_zn[1].imag() 
-                  << " ";
-        std::cout << eval_zn[1].real() << " " << eval_zn[1].imag() 
-                  << std::endl;
-        std::cout << "zp: " <<res_zp_real[2] << " " << eval_zp_real[2]
-                  << std::endl;
-        std::cout << "zn: " <<res_zn[2].real() << " " << res_zn[2].imag() 
-                  << " ";
-        std::cout << eval_zn[2].real() << " " << eval_zn[2].imag() 
-                  << std::endl;
-        std::cout << "zp: " <<res_zp_real[3] << " " << eval_zp_real[3] 
-                  << std::endl;
-        std::cout << "zn: " <<res_zn[3].real() << " " << res_zn[3].imag() 
-                  << " ";
-        std::cout << eval_zn[3].real() << " " << eval_zn[3].imag() 
-                  << std::endl;          
-        std::cout.unsetf(std::ios::showpos);
-        //O2SCL_ERR("Zero or more than one root in solve_fugacity().",
-	//	  o2scl::exc_efailed);
-      }
-      int res_index=0;
-      double minsq=1.0e100, temp;
-      for (int i=0;i<4;i++) {
-        if (res_zp_real[i]>0.0 && res_zn[i].real()>0.0) {
-          temp = res_zp_real[i]*res_zp_real[i] + res_zn[i].real()
-	    *res_zn[i].real();
-          if (temp<minsq) {
-            minsq=temp;
-            res_index=i;
-          }
-        }
-      }
-      zp=res_zp_real[res_index];
-      zn=res_zn[res_index].real();  
-      x[1]=log(zp)*T;
-      x[0]=log(zn)*T; 
-    
-    }
-    
-    return;
-  }
-  
 };
 
 #endif

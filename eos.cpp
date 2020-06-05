@@ -1,7 +1,7 @@
 /*
   -------------------------------------------------------------------
   
-  Copyright (C) 2018-2019, Xingfu Du and Andrew W. Steiner
+  Copyright (C) 2018-2020, Xingfu Du and Andrew W. Steiner
   
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -166,7 +166,7 @@ void eos_crust_virial_v2::fit(bool show_fit) {
   
   // Chi-squared and fitting data
   chi_fit_funct<vector<double>,ubmatrix,std::function<
-					  double(size_t,const std::vector<double> &, double)> > 
+    double(size_t,const std::vector<double> &, double)> > 
     cff(neut_data,Tv_neut,bnv,bn_err,ff_neutron);
   
   cout << "Neutron virial coefficient:\n" << endl;
@@ -276,7 +276,7 @@ void eos_crust_virial_v2::fit(bool show_fit) {
   
   // Chi-squared and fitting data
   chi_fit_funct<vector<double>,ubmatrix,std::function<
-					  double(size_t,const std::vector<double> &, double)> > 
+    double(size_t,const std::vector<double> &, double)> > 
     cff_nuc(nuc_data,Tv_nuc,bpnv,bpn_err,ff_nuc);
   
   cout << "Initial chi-squared: " << cff_nuc.chi2(bpn_np,bpn_params) << endl;
@@ -626,11 +626,7 @@ eos::eos() {
   // Seed the random number generator with the clock time
   r.clock_seed();
 
-#ifdef TEMP_UPDATES
-  temp_updates=true;
-#else
-  temp_updates=false;
-#endif
+  old_version=false;
 
   eos_Tcorr=&sk_Tcorr;
 }
@@ -650,11 +646,11 @@ double eos::energy_density_ns(double nn) {
 
 double eos::free_energy_density_virial
 (fermion &n, fermion &p, double T, thermo &th, double &dmundnn,
- double &dmundpn, double &dmupdnn, double &dmupdpn, double &dmundT,
+ double &dmundnp, double &dmupdnn, double &dmupdnp, double &dmundT,
  double &dmupdT) {
  
   double nn=n.n;
-  double pn=p.n;
+  double np=p.n;
     
   double T_MeV=T*hc_mev_fm;
   
@@ -666,112 +662,163 @@ double eos::free_energy_density_virial
   double lambda=sqrt(4.0*o2scl_const::pi/(n.m+p.m)/T);
   double dlambdadT=-sqrt(o2scl_const::pi/(n.m+p.m))/pow(sqrt(T),3.0);
 
-  acl.nn=nn;
-  acl.pn=pn;
-  acl.T=T;
-  acl.b_n=b_n;
-  acl.b_pn=b_pn; 
-  acl.lambda=lambda;
+  double zn, zp;
 
-  // If the densities are large enough, then compute the
-  // virial result
-  if (nn*pow(lambda,3.0)>1.0e-5 || pn*pow(lambda,3.0)>1.0e-5) {
-    ubvector x(2);
-    acl.solve_fugacity(x);
-    n.mu=x[0];
-    p.mu=x[1];
+  if (nn*pow(lambda,3.0)>1.0e-5 || np*pow(lambda,3.0)>1.0e-5) {
+
+    if (false) {
+      
+      vs.nn=nn;
+      vs.pn=np;
+      vs.T=T;
+      vs.b_n=b_n;
+      vs.b_pn=b_pn; 
+      vs.lambda=lambda;
+      ubvector x(2);
+      vs.solve_fugacity(x);
+      n.mu=x[0];
+      p.mu=x[1];
+      zn=exp(n.mu/T);
+      zp=exp(p.mu/T);
+    
+      // Use linear solver to obtain derivative of mu_n_vir and
+      // mu_p_vir with respect to neutron number density
+    
+      vs.mfn2_mu_p=p.mu;
+      vs.mfn2_mu_n=n.mu;
+    
+      ubvector x2(2);
+      vs.mfn21(x2);
+      dmundnn=x2[0];
+      dmupdnn=x2[1];
+      
+      ubvector x3(2);
+      vs.mfn31(x3);
+      dmundnp=x3[0]; 
+      dmupdnp=x3[1];
+
+      // Use linear solver to obtain derivative of mu_n_virial and
+      // mu_p_virial with respect to temperature
+    
+      vs.dbndT=dbndT;
+      vs.dbpndT=dbpndT;
+      vs.dlambdadT=dlambdadT;
+    
+      ubvector x4(2);
+      vs.mfn41(x4);
+      dmundT=x4[0];
+      dmupdT=x4[1];
+
+      cout << zn << " " << zp << " " << dmundnn << " " << dmupdnn << endl;
+      cout << dmundnp << " " << dmupdnp << " " << dmundT << " "
+	   << dmupdT << endl;
+    }
+    
+    // If the densities are large enough, then compute the
+    // virial result
+    vsd.solve_fugacity(nn,np,lambda,lambda,b_n,b_pn,zn,zp);
+    
+    vsd.calc_deriv(nn,np,lambda,lambda,
+		   b_n,b_pn,zn,zp,
+		   dbndT,dbpndT,dlambdadT,dlambdadT);
+    
+    dmundnn=T/zn*vsd.dzndnn;
+    dmundnp=T/zn*vsd.dzndnp;
+    dmupdnn=T/zp*vsd.dzpdnn;
+    dmupdnp=T/zp*vsd.dzpdnp;
+    dmundT=log(zn)+T/zn*vsd.dzndT;
+    dmupdT=log(zp)+T/zp*vsd.dzpdT;
+    
+    double zn_old=zn, zp_old=zp;
+    double dmundnn_old=dmundnn;
+    double dmundnp_old=dmundnp;
+    double dmupdnn_old=dmupdnn;
+    double dmupdnp_old=dmupdnp;
+    double dmundT_old=dmundT;
+    double dmupdT_old=dmupdT;
+
+    if (false) {
+    
+      if (fabs(zn-zn_old)/fabs(zn_old)>1.0e-5 ||
+	  fabs(zp-zp_old)/fabs(zp_old)>1.0e-5) {
+	cout << "Disagreement." << endl;
+	cout << "nn,np,TMeV: " << n.n << " " << p.n << " "
+	     << T*hc_mev_fm << endl;
+	cout << "zn,zp(old): " << zn_old << " " << zp_old << endl;
+	cout << "zn,zp(new): " << zn << " " << zp << endl;
+	exit(-1);
+      }
+    
+      if (fabs(dmundnn-dmundnn_old)/fabs(dmundnn_old)>1.0e-5 ||
+	  fabs(dmundnp-dmundnp_old)/fabs(dmundnp_old)>1.0e-5) {
+	cout << "Disagreement 2." << endl;
+	cout << "nn,np,TMeV: " << n.n << " " << p.n << " "
+	     << T*hc_mev_fm << endl;
+	cout << "dmundnn,dmundnp(old): " << dmundnn_old << " "
+	     << dmundnp_old << endl;
+	cout << "dmundnn,dmundnp(new): " << dmundnn << " "
+	     << dmundnp << endl;
+	exit(-1);
+      }
+    
+      if (fabs(dmupdnn-dmupdnn_old)/fabs(dmupdnn_old)>1.0e-5 ||
+	  fabs(dmupdnp-dmupdnp_old)/fabs(dmupdnp_old)>1.0e-5) {
+	cout << "Disagreement 3." << endl;
+	cout << "nn,np,TMeV: " << n.n << " " << p.n << " "
+	     << T*hc_mev_fm << endl;
+	cout << "zn,zp(old): " << zn_old << " " << zp_old << endl;
+	cout << "zn,zp(new): " << zn << " " << zp << endl;
+	exit(-1);
+      }
+    
+      if (fabs(dmupdT-dmupdT_old)/fabs(dmupdT_old)>1.0e-5 ||
+	  fabs(dmupdT-dmupdT_old)/fabs(dmupdT_old)>1.0e-5) {
+	cout << "Disagreement 4." << endl;
+	cout << "nn,np,TMeV: " << n.n << " " << p.n << " "
+	     << T*hc_mev_fm << endl;
+	cout << "zn,zp(old): " << zn_old << " " << zp_old << endl;
+	cout << "zn,zp(new): " << zn << " " << zp << endl;
+	exit(-1);
+      }
+
+    }
+    
   } else {
+    
     // Otherwise, the virial correction is negligable, so
     // just use the classical result
-    n.mu=log(nn*pow(lambda,3.0)/2.0)*T;
-    p.mu=log(pn*pow(lambda,3.0)/2.0)*T;
-    acl.zn=exp(n.mu/T);
-    acl.zp=exp(p.mu/T);
+    zn=nn*pow(lambda,3.0)/2.0;
+    zp=np*pow(lambda,3.0)/2.0;
+    
+    dmundnn=T*pow(lambda,3.0)/2.0/zn;
+    dmundnp=0.0;
+    dmupdnn=0.0;
+    dmupdnp=T*pow(lambda,3.0)/2.0/zp;
+    dmundT=n.mu/T-1.5;
+    dmupdT=p.mu/T-1.5;
+    
   }
-  double zn=exp(n.mu/T), zp=exp(p.mu/T);
 
-  if (nn*pow(lambda,3.0)>1.0e-5 || pn*pow(lambda,3.0)>1.0e-5) {
+  n.mu=log(zn)*T;
+  p.mu=log(zp)*T;
+  
+  if (nn*pow(lambda,3.0)>1.0e-5 || np*pow(lambda,3.0)>1.0e-5) {
   
     th.pr=2.0*T/pow(lambda,3.0)*(zn+zp+(zn*zn+zp*zp)*b_n+
 				 2.0*zp*zn*b_pn);
-  } else {
-
-    th.pr=2.0*T/pow(lambda,3.0)*(zn+zp);
-
-  }
-
-  double f_vir=n.mu*nn+p.mu*pn-th.pr;
-  
-  if (nn*pow(lambda,3.0)>1.0e-5 || pn*pow(lambda,3.0)>1.0e-5) {
-    
-    th.en=5.0*th.pr/2.0/T-nn*log(zn)-pn*log(zp)+
+    th.en=5.0*th.pr/2.0/T-nn*log(zn)-np*log(zp)+
       2.0*T/pow(lambda,3.0)*((zn*zn+zp*zp)*dbndT
 			     +2.0*zp*zn*dbpndT);
   } else {
 
-    th.en=5.0*th.pr/2.0/T-nn*log(zn)-pn*log(zp);
+    th.pr=2.0*T/pow(lambda,3.0)*(zn+zp);
+    th.en=5.0*th.pr/2.0/T-nn*log(zn)-np*log(zp);
 
   }
 
+  double f_vir=n.mu*nn+p.mu*np-th.pr;
+  
   th.ed=f_vir+T*th.en;
-
-  // Use linear solver to obtain derivative of mu_n_vir and
-  // mu_p_vir with respect to neutron number density
-
-  acl.mfn2_mu_p=p.mu;
-  acl.mfn2_mu_n=n.mu;
-
-  
-  if (nn*pow(lambda,3.0)>1.0e-5 || pn*pow(lambda,3.0)>1.0e-5){
-
-    ubvector x2(2);
-    acl.mfn21(x2);
-    dmundnn=x2[0];
-    dmupdnn=x2[1];
-    
-  } else {
-  
-    dmundnn=T*pow(lambda,3.0)/2.0/zn;
-    dmupdnn=0;
-  }
-	
-  // Use linear solver to obtain derivative of mu_n_virial and
-  // mu_p_virial with respect to proton number density
-
-  if (nn*pow(lambda,3.0)>1.0e-5 || pn*pow(lambda,3.0)>1.0e-5){
-
-    ubvector x3(2);
-    acl.mfn31(x3);
-    dmundpn=x3[0]; 
-    dmupdpn=x3[1];
-
-  } else {
-  
-    dmupdpn=T*pow(lambda,3.0)/2.0/zp;
-    dmundpn=0;
-  }
-    	  
-  // Use linear solver to obtain derivative of mu_n_virial and
-  // mu_p_virial with respect to temperature
-
-  acl.dbndT=dbndT;
-  acl.dbpndT=dbpndT;
-  acl.dlambdadT=dlambdadT;
-
-  if (nn*pow(lambda,3.0)>1.0e-5 || pn*pow(lambda,3.0)>1.0e-5) {
-    ubvector x4(2);
-    acl.mfn41(x4);
-    dmundT=x4[0];
-    dmupdT=x4[1];
-  } else {
-    dmundT=n.mu/T-1.5;
-    dmupdT=p.mu/T-1.5;
-  }
-  
-  if (false && verbose>=2) {
-    cout << "bn= " << b_n << endl;
-    cout << "bpn= " << b_pn << endl;
-  } 
 
   return f_vir;
 }
@@ -851,8 +898,8 @@ int eos::new_ns_eos(double nb, fermion &n,
       a2l=mx[1];
       
       // solve for c1, c2
-      c1l=(e_ns_last+n.m*ns_nb_max+p_ns_last)/((ns_nb_max*ns_nb_max)
-					       *(a2l+pow(ns_nb_max,-a1l)));
+      c1l=(e_ns_last+n.m*ns_nb_max+p_ns_last)/((ns_nb_max*ns_nb_max)*
+					       (a2l+pow(ns_nb_max,-a1l)));
       c2l=0.5*(e_ns_last+n.m*ns_nb_max-p_ns_last+
 	       a1l*(e_ns_last+n.m*ns_nb_max+p_ns_last)
 	       /((a1l-2.0)*(1.0+a2l*pow(ns_nb_max,a1l))));
@@ -933,7 +980,7 @@ double eos::free_energy_density
   // ----------------------------------------------------------------
   // Compute the virial EOS
 
-  double dmundT, dmupdT, dmundnn, dmupdnn, dmundpn, dmupdpn;
+  double dmundT, dmupdT, dmundnn, dmupdnn, dmundnp, dmupdnp;
   if (T==0.0) {
     f_virial=0.0;
     s_virial=0.0;
@@ -941,11 +988,11 @@ double eos::free_energy_density
     dmupdT=0.0;
     dmundnn=0.0;
     dmupdnn=0.0;
-    dmundpn=0.0;
-    dmupdpn=0.0;
+    dmundnp=0.0;
+    dmupdnp=0.0;
   } else {
     f_virial=free_energy_density_virial
-      (n,p,T,th,dmundnn,dmundpn,dmupdnn,dmupdpn,dmundT,dmupdT);
+      (n,p,T,th,dmundnn,dmundnp,dmupdnn,dmupdnp,dmundT,dmupdT);
     s_virial=th.en;
   }
 
@@ -969,7 +1016,8 @@ double eos::free_energy_density
   // ----------------------------------------------------------------
   // Compute the Skyrme EOS in nuclear matter at T=0
 
-  if (temp_updates) {
+  // AWS: 2/3/20: Why is this here?
+  if (false && old_version==false) {
     sk.err_nonconv=false;
     sk_Tcorr.err_nonconv=false;
   }
@@ -998,7 +1046,7 @@ double eos::free_energy_density
   double mu_p_eqden_T, mu_p_eqden_T0; 
   double s_skyrme_T=0.0, s_eqden_T, s_neut_T;
   
-  if (temp_updates) {
+  if (old_version==false) {
     
     // ----------------------------------------------------------------
     // Compute the Skyrme EOS in nuclear matter at T=0 for chiral fit
@@ -1162,11 +1210,11 @@ double eos::free_energy_density
   double e_combine=e_qmc*h+e_ns*(1.0-h);
   double e_sym=e_combine-f_skyrme_eqdenT0;
   double dyednn=-pn/nb/nb;
-  double dyedpn=nn/nb/nb;
+  double dyednp=nn/nb/nb;
   double delta2=(1.0-2.0*ye)*(1.0-2.0*ye);
   double ddelta2dnn=2.0*(1.0-2.0*ye)*(-2.0*dyednn);
-  double ddelta2dpn=2.0*(1.0-2.0*ye)*(-2.0*dyedpn);
-  if (temp_updates) {
+  double ddelta2dnp=2.0*(1.0-2.0*ye)*(-2.0*dyednp);
+  if (old_version==false) {
     f_deg=f_skyrme_eqdenT0+delta2*e_sym+
       f_skyrme_T-f_skyrme_T0;
   } else {
@@ -1185,23 +1233,23 @@ double eos::free_energy_density
     (2.0*a_virial*zn*zn/T*dmundnn
      +2.0*a_virial*zp*zp/T*dmupdnn+b_virial*zn*zp/T*dmundnn
      +b_virial*zn*zp/T*dmupdnn);
-  double dgvirialdpn=-(1.0/pow(a_virial*zn*zn+a_virial*zp*zp
+  double dgvirialdnp=-(1.0/pow(a_virial*zn*zn+a_virial*zp*zp
 			       +b_virial*zn*zp+1.0,2.0))*
-    (2.0*a_virial*zn*zn/T*dmundpn
-     +2.0*a_virial*zp*zp/T*dmupdpn+b_virial*zn*zp/T*dmundpn
-     +b_virial*zn*zp/T*dmupdpn);
+    (2.0*a_virial*zn*zn/T*dmundnp
+     +2.0*a_virial*zp*zp/T*dmupdnp+b_virial*zn*zp/T*dmundnp
+     +b_virial*zn*zp/T*dmupdnp);
   
   double dfvirialdnn=mu_n_virial;
-  double dfvirialdpn=mu_p_virial;
+  double dfvirialdnp=mu_p_virial;
   if (T==0.0) {
     dgvirialdnn=0.0;
-    dgvirialdpn=0.0;
+    dgvirialdnp=0.0;
     dfvirialdnn=0.0;
-    dfvirialdpn=0.0;
+    dfvirialdnp=0.0;
   }
   
   double dfskyrme_eqden_T0dnn=(mu_n_skyrme_eqdenT0+mu_p_skyrme_eqdenT0)/2.0;
-  double dfskyrme_eqden_T0dpn=dfskyrme_eqden_T0dnn;
+  double dfskyrme_eqden_T0dnp=dfskyrme_eqden_T0dnn;
 	
   double dhdnn=-gamma*exp(gamma*(nn+pn-1.5*n0))/
     (1.0+exp(gamma*(nn+pn-1.5*n0)))/
@@ -1210,17 +1258,17 @@ double eos::free_energy_density
   double desymdnn=((qmc_a*pow((nn+pn)/qmc_n0,qmc_alpha)*(qmc_alpha+1.0)+
 		    qmc_b*pow((nn+pn)/qmc_n0,qmc_beta)*(qmc_beta+1.0))/
 		   hc_mev_fm)*h+e_qmc*dhdnn+
-    densdnn*(1.0-h)-e_ns*dhdnn-dfskyrme_eqden_T0dpn/2.0-
+    densdnn*(1.0-h)-e_ns*dhdnn-dfskyrme_eqden_T0dnp/2.0-
     dfskyrme_eqden_T0dnn/2.0;
-  double desymdpn=desymdnn;
+  double desymdnp=desymdnn;
 
-  double dfdegdnn, dfdegdpn;
-  if (temp_updates) {
+  double dfdegdnn, dfdegdnp;
+  if (old_version==false) {
     dfdegdnn=dfskyrme_eqden_T0dnn+(1.0-2.0*ye)
       *(1.0-2.0*ye)*desymdnn+ddelta2dnn*e_sym
       +mu_n_skyrme_T-mu_n_skyrme_T0;
-    dfdegdpn=dfskyrme_eqden_T0dpn+(1.0-2.0*ye)
-      *(1.0-2.0*ye)*desymdpn+ddelta2dpn*e_sym
+    dfdegdnp=dfskyrme_eqden_T0dnp+(1.0-2.0*ye)
+      *(1.0-2.0*ye)*desymdnp+ddelta2dnp*e_sym
       +mu_p_skyrme_T-mu_p_skyrme_T0;
   } else {
     dfdegdnn=dfskyrme_eqden_T0dnn+(1.0-2.0*ye)
@@ -1230,20 +1278,20 @@ double eos::free_energy_density
       +(1.0-delta2)*(mu_n_eqden_T/2.0+mu_p_eqden_T/2.0-
 		     mu_n_eqden_T0/2.0-mu_p_eqden_T0/2.0)-
       ddelta2dnn*(f_skyrme_eqden_T-f_skyrme_eqden_T0);
-    dfdegdpn=dfskyrme_eqden_T0dpn+
-      (1.0-2.0*ye)*(1.0-2.0*ye)*desymdpn+
-      ddelta2dpn*e_sym
+    dfdegdnp=dfskyrme_eqden_T0dnp+
+      (1.0-2.0*ye)*(1.0-2.0*ye)*desymdnp+
+      ddelta2dnp*e_sym
       +delta2*(mu_n_neut_T-mu_n_neut_T0)
-      +ddelta2dpn*(f_skyrme_neut_T-f_skyrme_neut_T0)
+      +ddelta2dnp*(f_skyrme_neut_T-f_skyrme_neut_T0)
       +(1.0-delta2)*(mu_p_eqden_T/2.0+mu_n_eqden_T/2.0-
 		     mu_p_eqden_T0/2.0-mu_n_eqden_T0/2.0)-
-      ddelta2dpn*(f_skyrme_eqden_T-f_skyrme_eqden_T0);    
+      ddelta2dnp*(f_skyrme_eqden_T-f_skyrme_eqden_T0);    
   }
 
   n.mu=dfvirialdnn*g_virial+f_virial*dgvirialdnn+dfdegdnn*(1.0-g_virial)
     +f_deg*(-dgvirialdnn);
-  p.mu=dfvirialdpn*g_virial+f_virial*dgvirialdpn+dfdegdpn*(1.0-g_virial)
-    +f_deg*(-dgvirialdpn);
+  p.mu=dfvirialdnp*g_virial+f_virial*dgvirialdnp+dfdegdnp*(1.0-g_virial)
+    +f_deg*(-dgvirialdnp);
 
   
   // -------------------------------------------------------------
@@ -1261,7 +1309,7 @@ double eos::free_energy_density
   p.n=pn;
  
   double dfdegdT;
-  if (temp_updates) {
+  if (old_version==false) {
     dfdegdT=-s_skyrme_T;
   } else {
     dfdegdT=delta2*(-s_neut_T)+(1.0-delta2)*(-s_eqden_T);
@@ -1442,7 +1490,7 @@ double eos::dfdnn_total(fermion &n, fermion &p, double nn,
   return n.mu+n.m;
 }
 
-double eos::dfdpn_total(fermion &n, fermion &p, double nn, 
+double eos::dfdnp_total(fermion &n, fermion &p, double nn, 
 			double pn, double T, thermo &th) {
 
   n.n=nn;
@@ -1489,14 +1537,14 @@ double eos::cs2_fixYe(fermion &n, fermion &p, double T, thermo &th) {
   double dfdnn_totaldnn=gd.deriv(nn,dfdnn_totaldnnfunc);
   
   // d^2f/dnn/dnp
-  std::function<double(double)> dfdnn_totaldpnfunc=
+  std::function<double(double)> dfdnn_totaldnpfunc=
     std::bind(std::mem_fn<double(fermion &, fermion &, double,
 				 double, double, thermo &)>
 	      (&eos::dfdnn_total),
 	      this,std::ref(n),std::ref(p),nn,std::placeholders::_1,T,
 	      std::ref(th));
   //gd.h=pn/scale;
-  double dfdnn_totaldpn=gd.deriv(pn,dfdnn_totaldpnfunc);
+  double dfdnn_totaldnp=gd.deriv(pn,dfdnn_totaldnpfunc);
 
   // d^2f/dnn/dT
   std::function<double(double)> dfdnn_totaldTfunc=
@@ -1509,34 +1557,34 @@ double eos::cs2_fixYe(fermion &n, fermion &p, double T, thermo &th) {
   double dfdnn_totaldT=gd.deriv(T,dfdnn_totaldTfunc);
 
   // d^2f/dnp/dnn
-  std::function<double(double)> dfdpn_totaldnnfunc=
+  std::function<double(double)> dfdnp_totaldnnfunc=
     std::bind(std::mem_fn<double(fermion &, fermion &, double,
 				 double, double, thermo &)>
-	      (&eos::dfdpn_total),
+	      (&eos::dfdnp_total),
 	      this,std::ref(n),std::ref(p),std::placeholders::_1,pn,T,
 	      std::ref(th));
   //gd.h=nn/scale;
-  double dfdpn_totaldnn=gd.deriv(nn,dfdpn_totaldnnfunc);
+  double dfdnp_totaldnn=gd.deriv(nn,dfdnp_totaldnnfunc);
 
   // d^2f/dnp^2
-  std::function<double(double)> dfdpn_totaldpnfunc=
+  std::function<double(double)> dfdnp_totaldnpfunc=
     std::bind(std::mem_fn<double(fermion &, fermion &, double,
 				 double, double, thermo &)>
-	      (&eos::dfdpn_total),
+	      (&eos::dfdnp_total),
 	      this,std::ref(n),std::ref(p),nn,std::placeholders::_1,T,
 	      std::ref(th));
   //gd.h=pn/scale;
-  double dfdpn_totaldpn=gd.deriv(pn,dfdpn_totaldpnfunc);
+  double dfdnp_totaldnp=gd.deriv(pn,dfdnp_totaldnpfunc);
 
   // d^2f/dnp/dT
-  std::function<double(double)> dfdpn_totaldTfunc=
+  std::function<double(double)> dfdnp_totaldTfunc=
     std::bind(std::mem_fn<double(fermion &, fermion &, double,
 				 double, double, thermo &)>
-	      (&eos::dfdpn_total),
+	      (&eos::dfdnp_total),
 	      this,std::ref(n),std::ref(p),nn,pn,std::placeholders::_1,
 	      std::ref(th));
   //gd.h=T/scale;
-  double dfdpn_totaldT=gd.deriv(T,dfdpn_totaldTfunc);
+  double dfdnp_totaldT=gd.deriv(T,dfdnp_totaldTfunc);
 
   // d^2f/dT^2
   std::function<double(double)> dsdTfunc=
@@ -1559,29 +1607,29 @@ double eos::cs2_fixYe(fermion &n, fermion &p, double T, thermo &th) {
   double dsdnn=gd.deriv(nn,dsdnnfunc);
   
   // d^2f/dT/dnp
-  std::function<double(double)> dsdpnfunc=
+  std::function<double(double)> dsdnpfunc=
     std::bind(std::mem_fn<double(fermion &, fermion &, double,
 				 double, double, thermo &)>
 	      (&eos::entropy),
 	      this,std::ref(n),std::ref(p),nn,std::placeholders::_1,T,
 	      std::ref(th));
   //gd.h=pn/scale;
-  double dsdpn=gd.deriv(pn,dsdpnfunc);
+  double dsdnp=gd.deriv(pn,dsdnpfunc);
 
   double dfdnbdT, dfdnedT, dfdnbdne, dfdTdT, dfdnbdnb, dfdnedne;
   dfdnbdT=dfdnn_totaldT;
-  dfdnedT=dfdpn_totaldT-dfdnn_totaldT;
-  dfdnbdne=dfdnn_totaldpn-dfdnn_totaldnn;
+  dfdnedT=dfdnp_totaldT-dfdnn_totaldT;
+  dfdnbdne=dfdnn_totaldnp-dfdnn_totaldnn;
   dfdTdT=-dsdT;
   dfdnbdnb=dfdnn_totaldnn;
-  dfdnedne=dfdpn_totaldpn+dfdnn_totaldnn-dfdpn_totaldnn-dfdnn_totaldpn;
+  dfdnedne=dfdnp_totaldnp+dfdnn_totaldnn-dfdnp_totaldnn-dfdnn_totaldnp;
 
-  double dfdpn_total1=dfdpn_total(n,p,nn,pn,T,th);
+  double dfdnp_total1=dfdnp_total(n,p,nn,pn,T,th);
   double dfdnn_total1=dfdnn_total(n,p,nn,pn,T,th);
   double mul,mub,s,ed1,nb;
   nb=n1.n+p1.n;
   mub=dfdnn_total1;
-  mul=dfdpn_total1-dfdnn_total1;
+  mul=dfdnp_total1-dfdnn_total1;
   s=entropy(n1,p1,n1.n,p1.n,T,th1);
   ed1=ed(n1,p1,n1.n,p1.n,T,th1);
 
@@ -1643,7 +1691,7 @@ double eos::cs2_fixYe_alt(fermion &n, fermion &p, double T,
   std::function<double(double)> f_npnp_func=
     std::bind(std::mem_fn<double(fermion &, fermion &, double,
 				 double, double, thermo &)>
-	      (&eos::dfdpn_total),
+	      (&eos::dfdnp_total),
 	      this,std::ref(n),std::ref(p),nn,std::placeholders::_1,
 	      T,std::ref(th));
   gd.h=fabs(np)/fac;
@@ -1663,7 +1711,7 @@ double eos::cs2_fixYe_alt(fermion &n, fermion &p, double T,
   std::function<double(double)> f_npT_func=
     std::bind(std::mem_fn<double(fermion &, fermion &, double,
 				 double, double, thermo &)>
-	      (&eos::dfdpn_total),
+	      (&eos::dfdnp_total),
 	      this,std::ref(n),std::ref(p),nn,np,std::placeholders::_1,
 	      std::ref(th));
   gd.h=fabs(T)/fac;
@@ -1715,13 +1763,13 @@ double eos::cs2_fixmuL(fermion &n, fermion &p, double T, thermo &th) {
   double dfdnn_totaldnn=gd.deriv(nn,dfdnn_totaldnnfunc);
   
   // d^2f/dnn/dnp
-  std::function<double(double)> dfdnn_totaldpnfunc=
+  std::function<double(double)> dfdnn_totaldnpfunc=
     std::bind(std::mem_fn<double(fermion &, fermion &, double,
 				 double, double, thermo &)>
 	      (&eos::dfdnn_total),
 	      this,std::ref(n),std::ref(p),nn,std::placeholders::_1,T,
 	      std::ref(th));
-  double dfdnn_totaldpn=gd.deriv(pn,dfdnn_totaldpnfunc);
+  double dfdnn_totaldnp=gd.deriv(pn,dfdnn_totaldnpfunc);
 
   // d^2f/dnn/dT
   std::function<double(double)> dfdnn_totaldTfunc=
@@ -1733,31 +1781,31 @@ double eos::cs2_fixmuL(fermion &n, fermion &p, double T, thermo &th) {
   double dfdnn_totaldT=gd.deriv(T,dfdnn_totaldTfunc);
 
   // d^2f/dnp/dnn
-  std::function<double(double)> dfdpn_totaldnnfunc=
+  std::function<double(double)> dfdnp_totaldnnfunc=
     std::bind(std::mem_fn<double(fermion &, fermion &, double,
 				 double, double, thermo &)>
-	      (&eos::dfdpn_total),
+	      (&eos::dfdnp_total),
 	      this,std::ref(n),std::ref(p),std::placeholders::_1,pn,T,
 	      std::ref(th));
-  double dfdpn_totaldnn=gd.deriv(nn,dfdpn_totaldnnfunc);
+  double dfdnp_totaldnn=gd.deriv(nn,dfdnp_totaldnnfunc);
 
   // d^2f/dnp^2
-  std::function<double(double)> dfdpn_totaldpnfunc=
+  std::function<double(double)> dfdnp_totaldnpfunc=
     std::bind(std::mem_fn<double(fermion &, fermion &, double,
 				 double, double, thermo &)>
-	      (&eos::dfdpn_total),
+	      (&eos::dfdnp_total),
 	      this,std::ref(n),std::ref(p),nn,std::placeholders::_1,T,
 	      std::ref(th));
-  double dfdpn_totaldpn=gd.deriv(pn,dfdpn_totaldpnfunc);
+  double dfdnp_totaldnp=gd.deriv(pn,dfdnp_totaldnpfunc);
 
   // d^2f/dnp/dT
-  std::function<double(double)> dfdpn_totaldTfunc=
+  std::function<double(double)> dfdnp_totaldTfunc=
     std::bind(std::mem_fn<double(fermion &, fermion &, double,
 				 double, double, thermo &)>
-	      (&eos::dfdpn_total),
+	      (&eos::dfdnp_total),
 	      this,std::ref(n),std::ref(p),nn,pn,std::placeholders::_1,
 	      std::ref(th));
-  double dfdpn_totaldT=gd.deriv(T,dfdpn_totaldTfunc);
+  double dfdnp_totaldT=gd.deriv(T,dfdnp_totaldTfunc);
 
   // d^2f/dT^2
   std::function<double(double)> dsdTfunc=
@@ -1778,28 +1826,28 @@ double eos::cs2_fixmuL(fermion &n, fermion &p, double T, thermo &th) {
   double dsdnn=gd.deriv(nn,dsdnnfunc);
   
   // d^2f/dT/dnp
-  std::function<double(double)> dsdpnfunc=
+  std::function<double(double)> dsdnpfunc=
     std::bind(std::mem_fn<double(fermion &, fermion &, double,
 				 double, double, thermo &)>
 	      (&eos::entropy),
 	      this,std::ref(n),std::ref(p),nn,std::placeholders::_1,T,
 	      std::ref(th));
-  double dsdpn=gd.deriv(pn,dsdpnfunc);
+  double dsdnp=gd.deriv(pn,dsdnpfunc);
 
   double dfdnbdT, dfdnedT, dfdnbdne, dfdTdT, dfdnbdnb, dfdnedne;
   dfdnbdT=dfdnn_totaldT;
-  dfdnedT=dfdpn_totaldT-dfdnn_totaldT;
-  dfdnbdne=dfdnn_totaldpn-dfdnn_totaldnn;
+  dfdnedT=dfdnp_totaldT-dfdnn_totaldT;
+  dfdnbdne=dfdnn_totaldnp-dfdnn_totaldnn;
   dfdTdT=-dsdT;
   dfdnbdnb=dfdnn_totaldnn;
-  dfdnedne=dfdpn_totaldpn+dfdnn_totaldnn-dfdpn_totaldnn-dfdnn_totaldpn;
+  dfdnedne=dfdnp_totaldnp+dfdnn_totaldnn-dfdnp_totaldnn-dfdnn_totaldnp;
 
-  double dfdpn_total1=dfdpn_total(n,p,nn,pn,T,th);
+  double dfdnp_total1=dfdnp_total(n,p,nn,pn,T,th);
   double dfdnn_total1=dfdnn_total(n,p,nn,pn,T,th);
   double mul,mub,s,ed1,nb;
   nb=n1.n+p1.n;
   mub=dfdnn_total1;
-  mul=dfdpn_total1-dfdnn_total1;
+  mul=dfdnp_total1-dfdnn_total1;
   s=entropy(n1,p1,n1.n,p1.n,T,th1);
   ed1=ed(n1,p1,n1.n,p1.n,T,th1);
   
@@ -2999,8 +3047,11 @@ int eos::solve_Ye(size_t nv, const ubvector &x, ubvector &y,
     double t1, t2;
     sk.eff_mass(neutron,proton,t1,t2);
     if (neutron.ms<0.0 || proton.ms<0.0) return 1;
-    
+    if (neutron.n<0.0 || proton.n<0.0) return 2;
+
+    //cout << "H1 " << neutron.n << " " << proton.n << endl;
     free_energy_density(neutron,proton,T,th2);
+    //cout << "H2." << endl;
   }
   
   photon.massless_calc(T);
@@ -3517,12 +3568,13 @@ int eos::select_internal(int i_ns_loc, int i_skyrme_loc,
 	  double cs2x=cs2_fixYe(neutron,proton,Tx,th2);
 	  if (cs2x<0.0) {
 	    model_selected=false;
-	    return 10;
-	    if (false) {
+	    if (true) {
 	      cout << "Negative speed of sound." << endl;
-	      cout << nbx << " " << yex << " " << Tx*hc_mev_fm << endl;
+	      cout << nbx << " " << yex << " " << Tx*hc_mev_fm << " "
+		   << cs2x << endl;
 	      exit(-1);
 	    }	    
+	    return 10;
 	  }
 	}
       }
@@ -3748,52 +3800,52 @@ int eos::vir_fit(std::vector<std::string> &sv,
 void eos::setup_cli(o2scl::cli &cl) {
  
   static const int nopt=13;
-  o2scl::comm_option_s options[nopt]={
-    {0,"test-deriv","Test the first derivatives of the free energy.",
-     0,0,"","",new o2scl::comm_option_mfptr<eos>
-     (this,&eos::test_deriv),o2scl::cli::comm_option_both},
-    {0,"table-Ye","Construct a 2D table at fixed Y_e.",2,2,"<fname> <Ye>","",
-     new o2scl::comm_option_mfptr<eos>
-     (this,&eos::table_Ye),o2scl::cli::comm_option_both},
-    {0,"table-nB","Construct a 2D table at fixed n_B.",2,2,"<fname> <nB>","",
-     new o2scl::comm_option_mfptr<eos>
-     (this,&eos::table_nB),o2scl::cli::comm_option_both},
-    {0,"table-full","Construct a full 3D EOS table.",1,1,"<fname>","",
-     new o2scl::comm_option_mfptr<eos>
-     (this,&eos::table_full),o2scl::cli::comm_option_both},
-    {0,"vir-fit","Fit the virial EOS",0,0,"","",
-     new o2scl::comm_option_mfptr<eos>
-     (this,&eos::vir_fit),o2scl::cli::comm_option_both},
-    {0,"eos_sn","Compare with other EOS tables.",0,0,"","",
-     new o2scl::comm_option_mfptr<eos>
-     (this,&eos::eos_sn),o2scl::cli::comm_option_both},
-    {0,"mcarlo_data","Compute Monte Carlo data.",0,1,"","",
-     new o2scl::comm_option_mfptr<eos>
-     (this,&eos::mcarlo_data),o2scl::cli::comm_option_both},
-    {0,"point","Compute the EOS at one (n_B,Y_e,T) point.",0,3,"","",
-     new o2scl::comm_option_mfptr<eos>
-     (this,&eos::point),o2scl::cli::comm_option_both},
-    {0,"random","Generate a random EOS model.",0,0,"","",
-     new o2scl::comm_option_mfptr<eos>
-     (this,&eos::random),o2scl::cli::comm_option_both},
-    {0,"pns-eos","Compute the PNS EOS and M-R curve.",3,3,
-     "<entropy per baryon> <lepton fraction> <output filename>",
-     "Use YL=0 for beta equilibrium. Currently always uses a cold crust.",
-     new o2scl::comm_option_mfptr<eos>
-     (this,&eos::pns_eos),o2scl::cli::comm_option_both},
-    {0,"select-model","Specify a parameter set.",7,7,
-     "<i_ns> <i_skyrme> <alpha> <a> <L> <S> <phi>","",
-     new o2scl::comm_option_mfptr<eos>
-     (this,&eos::select_model),o2scl::cli::comm_option_both},
-    {0,"test-eg","Test the electron-photon EOS.",0,1,"[fname]","",
-     new o2scl::comm_option_mfptr<eos>
-     (this,&eos::test_eg),o2scl::cli::comm_option_both},
-    {0,"vir-comp","Compare the virial and full EOS.",0,0,"","",
-     new o2scl::comm_option_mfptr<eos>
-     (this,&eos::vir_comp),o2scl::cli::comm_option_both}
-  };
+  o2scl::comm_option_s options[nopt]=
+    {{0,"test-deriv","Test the first derivatives of the free energy.",
+      0,0,"","",new o2scl::comm_option_mfptr<eos>
+      (this,&eos::test_deriv),o2scl::cli::comm_option_both},
+     {0,"table-Ye","Construct a 2D table at fixed Y_e.",2,2,"<fname> <Ye>","",
+      new o2scl::comm_option_mfptr<eos>
+      (this,&eos::table_Ye),o2scl::cli::comm_option_both},
+     {0,"table-nB","Construct a 2D table at fixed n_B.",2,2,"<fname> <nB>","",
+      new o2scl::comm_option_mfptr<eos>
+      (this,&eos::table_nB),o2scl::cli::comm_option_both},
+     {0,"table-full","Construct a full 3D EOS table.",1,1,"<fname>","",
+      new o2scl::comm_option_mfptr<eos>
+      (this,&eos::table_full),o2scl::cli::comm_option_both},
+     {0,"vir-fit","Fit the virial EOS",0,0,"","",
+      new o2scl::comm_option_mfptr<eos>
+      (this,&eos::vir_fit),o2scl::cli::comm_option_both},
+     {0,"eos_sn","Compare with other EOS tables.",0,0,"","",
+      new o2scl::comm_option_mfptr<eos>
+      (this,&eos::eos_sn),o2scl::cli::comm_option_both},
+     {0,"mcarlo-data","Compute Monte Carlo data.",0,1,"","",
+      new o2scl::comm_option_mfptr<eos>
+      (this,&eos::mcarlo_data),o2scl::cli::comm_option_both},
+     {0,"point","Compute the EOS at one (n_B,Y_e,T) point.",0,3,"","",
+      new o2scl::comm_option_mfptr<eos>
+      (this,&eos::point),o2scl::cli::comm_option_both},
+     {0,"random","Generate a random EOS model.",0,0,"","",
+      new o2scl::comm_option_mfptr<eos>
+      (this,&eos::random),o2scl::cli::comm_option_both},
+     {0,"pns-eos","Compute the PNS EOS and M-R curve.",3,3,
+      "<entropy per baryon> <lepton fraction> <output filename>",
+      "Use YL=0 for beta equilibrium. Currently always uses a cold crust.",
+      new o2scl::comm_option_mfptr<eos>
+      (this,&eos::pns_eos),o2scl::cli::comm_option_both},
+     {0,"select-model","Specify a parameter set.",7,7,
+      "<i_ns> <i_skyrme> <alpha> <a> <L> <S> <phi>","",
+      new o2scl::comm_option_mfptr<eos>
+      (this,&eos::select_model),o2scl::cli::comm_option_both},
+     {0,"test-eg","Test the electron-photon EOS.",0,1,"[fname]","",
+      new o2scl::comm_option_mfptr<eos>
+      (this,&eos::test_eg),o2scl::cli::comm_option_both},
+     {0,"vir-comp","Compare the virial and full EOS.",0,0,"","",
+      new o2scl::comm_option_mfptr<eos>
+      (this,&eos::vir_comp),o2scl::cli::comm_option_both}
+    };
   cl.set_comm_option_vec(nopt,options);
-
+  
   p_verbose.i=&verbose;
   p_verbose.help="Verbose parameter (default 1)";
   cl.par_list.insert(make_pair("verbose",&p_verbose));
