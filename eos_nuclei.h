@@ -265,6 +265,7 @@ class eos_nuclei : public eos {
   /** \brief Desc
    */
   int add_eg(std::vector<std::string> &sv, bool itive_com);
+  int maxwell_test(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Check the virial solver by using it to compute
       the EOS over a wide range of densities and temperatures

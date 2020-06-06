@@ -248,3 +248,16 @@ fid_deriv:
 	eos_nuclei_nompi -set full_results 1 -select-model $(P_FIDUCIAL) \
 		-eos-deriv ~/data/eos/dsh_eos_fiducial.o2 \
 		~/data/eos/dsh_fid_deriv.o2 
+
+fid_eg:
+	eos_nuclei_nompi -set full_results 1 -select-model $(P_FIDUCIAL) \
+		-add-eg ~/data/eos/dsh_fid_deriv.o2 \
+		~/data/eos/dsh_fid_eg.o2 
+
+fid_mt:
+	eos_nuclei_nompi  -set full_results 1 -select-model $(P_FIDUCIAL) \
+		-maxwell-test ~/data/eos/dsh_fid_eg.o2 0.4 1.0 mt.o2
+
+fid_mt2:
+	eos_nuclei_nompi  -set full_results 1 -select-model $(P_FIDUCIAL) \
+		-maxwell-test ~/data/eos/dsh_fid_eg.o2 0.4 0.2 mt2.o2

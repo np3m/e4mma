@@ -327,6 +327,42 @@ int eos_nuclei::init_function(size_t dim, const ubvector &x, ubvector &y) {
   return 0;
 }
 
+int eos_nuclei::maxwell_test(std::vector<std::string> &sv,
+			     bool itive_com) {
+
+  if (sv.size()<5) {
+    cerr << "Need input, Ye, T, and output files for \"maxwell-test\"" << endl;
+    return 1;
+  }
+  
+  include_eg=true;
+  full_results=true;
+  size_t n_nB, n_Ye, n_T;
+  vector<double> nB_grid, Ye_grid, T_grid;
+  read_results(sv[1],n_nB,n_Ye,n_T,nB_grid,Ye_grid,T_grid);
+
+  size_t iYe=vector_lookup(Ye_grid,o2scl::function_to_double(sv[2]));
+  size_t iT=vector_lookup(T_grid,o2scl::function_to_double(sv[3]));
+  cout << "iYe, iT: " << iYe << " " << iT << endl;
+  cout << Ye_grid[iYe] << " " << T_grid[iT] << endl;
+
+  table_units<> tu;
+  tu.line_of_names("nB P mun");
+  for(size_t i=0;i<n_nB;i++) {
+    double line[3]={nB_grid[i],tg3_P.get(i,iYe,iT),
+		    tg3_mun.get(i,iYe,iT)};
+    tu.line_of_data(3,line);
+  }
+
+  cout << "Writing file: " << sv[4] << endl;
+  hdf_file hf;
+  hf.open_or_create(sv[4]);
+  hdf_output(hf,tu,"mt");
+  hf.close();
+  
+  return 0;
+}
+
 int eos_nuclei::add_eg(std::vector<std::string> &sv,
 		       bool itive_com) {
   
@@ -352,6 +388,8 @@ int eos_nuclei::add_eg(std::vector<std::string> &sv,
 
   read_results(sv[1],n_nB,n_Ye,n_T,nB_grid,Ye_grid,T_grid);
   
+  size_t st[3]={n_nB,n_Ye,n_T};
+    
   calculator calc;
   std::map<std::string,double> vars;
     
@@ -410,6 +448,7 @@ int eos_nuclei::add_eg(std::vector<std::string> &sv,
 	tg3_mup.set(i,j,k,tg3_mup.get(i,j,k)+hc_mev_fm*mue);
       }
     }
+    cout << i+1 << "/" << n_nB << endl;
   }
 
   include_eg=true;
@@ -5770,7 +5809,7 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
   
   eos::setup_cli(cl);
   
-  static const int nopt=13;
+  static const int nopt=14;
   
   o2scl::comm_option_s options[nopt]=
     {{0,"eos-deriv","compute derivatives",
@@ -5780,6 +5819,10 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
      {0,"add-eg","Add electrons and photons.",
       2,2,"<file in> <file out>","",new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::add_eg),
+      o2scl::cli::comm_option_both},
+     {0,"maxwell-test","",
+      4,4,"<file in> <file out>","",new o2scl::comm_option_mfptr<eos_nuclei>
+      (this,&eos_nuclei::maxwell_test),
       o2scl::cli::comm_option_both},
      {0,"fit-frdm","mass fit",
       0,0,"","",new o2scl::comm_option_mfptr<eos_nuclei>
