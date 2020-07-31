@@ -86,7 +86,7 @@ void eos_crust_virial_v2::fit(bool show_fit) {
 
   // Fitter class
   fit_nonlin<chi_fit_funct<vector<double>,ubmatrix,std::function<
-						     double(size_t,const std::vector<double> &, double)> >,
+    double(size_t,const std::vector<double> &, double)> >,
 	     vector<double>,ubmatrix> fitter;
 
   // --------------------------------------------
@@ -3826,7 +3826,7 @@ void eos::setup_cli(o2scl::cli &cl) {
      {0,"vir-fit","Fit the virial EOS",0,0,"","",
       new o2scl::comm_option_mfptr<eos>
       (this,&eos::vir_fit),o2scl::cli::comm_option_both},
-     {0,"eos_sn","Compare with other EOS tables.",0,0,"","",
+     {0,"eos-sn-compare","Compare with other EOS tables.",0,0,"","",
       new o2scl::comm_option_mfptr<eos>
       (this,&eos::eos_sn),o2scl::cli::comm_option_both},
      {0,"mcarlo-data","Compute Monte Carlo data.",0,1,"","",

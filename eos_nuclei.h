@@ -28,12 +28,22 @@ typedef boost::numeric::ublas::vector<double> ubvector;
 typedef boost::numeric::ublas::matrix<double> ubmatrix;
 
 /** \brief Solve for the EOS including nuclei
- */
+
+    \todo Rename n_nB2 to n_nB, etc.
+    \todo Make child of eos_sn_base
+*/
 class eos_nuclei : public eos {
 
  public:
 
   eos_nuclei();
+
+  size_t n_nB2;
+  size_t n_Ye2;
+  size_t n_T2;
+  std::vector<double> nB_grid2;
+  std::vector<double> Ye_grid2;
+  std::vector<double> T_grid2;
 
   /** \brief Object for sending slack messages
    */
@@ -297,18 +307,16 @@ class eos_nuclei : public eos {
 			      o2scl::thermo &th_gas);
 
   /** \brief Write results to an HDF5 file
+
+      \todo Eventually replace this with eos_sn_base::output()
    */
-  int write_results(std::string fname, size_t n_nB, size_t n_Ye, size_t n_T,
-		    std::vector<double> &nB_grid,
-		    std::vector<double> &Ye_grid,
-		    std::vector<double> &T_grid);
+  int write_results(std::string fname);
   
   /** \brief Read results from an HDF5 file
+
+      \todo Eventually replace this with eos_sn_base::load()
    */
-  int read_results(std::string fname, size_t &n_nB, size_t &n_Ye, size_t &n_T,
-		   std::vector<double> &nB_grid,
-		   std::vector<double> &Ye_grid,
-		   std::vector<double> &T_grid);
+  int read_results(std::string fname);
   
   /** \brief Construct equations to solve for a fixed baryon
       density and electron fraction (AWS version)
@@ -382,6 +390,10 @@ class eos_nuclei : public eos {
    */
   int generate_table(std::vector<std::string> &sv, bool itive_com);
 
+  /** \brief Desc
+   */
+  int load(std::vector<std::string> &sv, bool itive_com);
+
   /** \brief Edit an EOS table
    */
   int edit_data(std::vector<std::string> &sv, bool itive_com);
@@ -408,10 +420,6 @@ class eos_nuclei : public eos {
    */
   int compare_tables_aws(std::vector<std::string> &sv, bool itive_com);
 
-  /** \brief Desc
-   */
-  int merge2_aws(std::vector<std::string> &sv, bool itive_com);
-
   /** \brief Output the statistics on flag values for a table
    */
   int table_stats(std::vector<std::string> &sv, bool itive_com);
@@ -420,6 +428,8 @@ class eos_nuclei : public eos {
    */
   int point_nuclei_aws(std::vector<std::string> &sv, bool itive_com);
 
+  /** \brief Desc
+   */
   int mcarlo_nuclei(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Setup the command-line interface

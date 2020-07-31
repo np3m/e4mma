@@ -124,10 +124,19 @@ eos_had_skyrme_ext_nompi.o: eos_had_skyrme_ext.cpp virial_solver.h \
 main_nompi.o: main.cpp virial_solver.h eos.h 
 	$(LCXX) $(LCFLAGS) -o main_nompi.o -c main.cpp 
 
+main_eos_nompi.o: main_eos.cpp virial_solver.h eos.h 
+	$(LCXX) $(LCFLAGS) -o main_eos_nompi.o -c main_eos.cpp 
+
 eos_nuclei_nompi: eos_nompi.o main_nompi.o eos_nuclei_nompi.o \
 		eos_had_skyrme_ext_nompi.o virial_solver_deriv.h
 	$(LCXX) $(LCFLAGS) -o eos_nuclei_nompi eos_nompi.o main_nompi.o \
 		 eos_nuclei_nompi.o eos_had_skyrme_ext_nompi.o $(LIBS) \
+		-lreadline
+
+eos_nompi: eos_nompi.o main_eos_nompi.o \
+		eos_had_skyrme_ext_nompi.o virial_solver_deriv.h
+	$(LCXX) $(LCFLAGS) -o eos_nompi eos_nompi.o \
+		main_eos_nompi.o eos_had_skyrme_ext_nompi.o $(LIBS) \
 		-lreadline
 
 # ----------------------------------------------------------------
@@ -150,7 +159,7 @@ test-sync:
 	rsync -Cavzun sphinx/build/html/* $(STATIC_DOC_DIR)/eos
 
 clean:
-	rm -f *.o eos_nuclei eos_nuclei_nompi
+	rm -f *.o eos_nuclei eos_nuclei_nompi eos eos_nompi
 
 # ----------------------------------------------------------------
 # New EOS parameter sets

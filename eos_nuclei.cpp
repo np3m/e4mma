@@ -327,6 +327,12 @@ int eos_nuclei::init_function(size_t dim, const ubvector &x, ubvector &y) {
   return 0;
 }
 
+int eos_nuclei::load(std::vector<std::string> &sv,
+		     bool itive_com) {
+  read_results(sv[1]);
+  return 0;
+}
+
 int eos_nuclei::maxwell_test(std::vector<std::string> &sv,
 			     bool itive_com) {
 
@@ -339,7 +345,13 @@ int eos_nuclei::maxwell_test(std::vector<std::string> &sv,
   full_results=true;
   size_t n_nB, n_Ye, n_T;
   vector<double> nB_grid, Ye_grid, T_grid;
-  read_results(sv[1],n_nB,n_Ye,n_T,nB_grid,Ye_grid,T_grid);
+  read_results(sv[1]);
+  n_nB=n_nB2;
+  n_Ye=n_Ye2;
+  n_T=n_T2;
+  nB_grid=nB_grid2;
+  Ye_grid=Ye_grid2;
+  T_grid=T_grid2;
 
   size_t iYe=vector_lookup(Ye_grid,o2scl::function_to_double(sv[2]));
   size_t iT=vector_lookup(T_grid,o2scl::function_to_double(sv[3]));
@@ -386,7 +398,13 @@ int eos_nuclei::add_eg(std::vector<std::string> &sv,
   size_t n_nB, n_Ye, n_T;
   vector<double> nB_grid, Ye_grid, T_grid;
 
-  read_results(sv[1],n_nB,n_Ye,n_T,nB_grid,Ye_grid,T_grid);
+  read_results(sv[1]);
+  n_nB=n_nB2;
+  n_Ye=n_Ye2;
+  n_T=n_T2;
+  nB_grid=nB_grid2;
+  Ye_grid=Ye_grid2;
+  T_grid=T_grid2;
   
   size_t st[3]={n_nB,n_Ye,n_T};
     
@@ -453,7 +471,13 @@ int eos_nuclei::add_eg(std::vector<std::string> &sv,
 
   include_eg=true;
 
-  write_results(sv[2],n_nB,n_Ye,n_T,nB_grid,Ye_grid,T_grid);
+  n_nB2=n_nB;
+  n_Ye2=n_Ye;
+  n_T2=n_T;
+  nB_grid2=nB_grid;
+  Ye_grid2=Ye_grid;
+  T_grid2=T_grid;
+  write_results(sv[2]);
   
   return 0;
 }
@@ -475,7 +499,13 @@ int eos_nuclei::eos_deriv(std::vector<std::string> &sv,
     
   size_t n_nB, n_Ye, n_T;
   vector<double> nB_grid, Ye_grid, T_grid;
-  read_results(sv[1],n_nB,n_Ye,n_T,nB_grid,Ye_grid,T_grid);
+  read_results(sv[1]);
+  n_nB=n_nB2;
+  n_Ye=n_Ye2;
+  n_T=n_T2;
+  nB_grid=nB_grid2;
+  Ye_grid=Ye_grid2;
+  T_grid=T_grid2;
 
   if (full_results==false) {
     
@@ -615,7 +645,13 @@ int eos_nuclei::eos_deriv(std::vector<std::string> &sv,
     }
   }
   
-  write_results(sv[2],n_nB,n_Ye,n_T,nB_grid,Ye_grid,T_grid);
+  n_nB2=n_nB;
+  n_Ye2=n_Ye;
+  n_T2=n_T;
+  nB_grid2=nB_grid;
+  Ye_grid2=Ye_grid;
+  T_grid2=T_grid;
+  write_results(sv[2]);
   
   return 0;
     
@@ -635,7 +671,13 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
   size_t n_nB=0, n_Ye=0, n_T=0;
   vector<double> nB_grid, Ye_grid, T_grid;
   std::string in_file;
-  read_results(in_file,n_nB,n_Ye,n_T,nB_grid,Ye_grid,T_grid);
+  read_results(in_file);
+  n_nB=n_nB2;
+  n_Ye=n_Ye2;
+  n_T=n_T2;
+  nB_grid=nB_grid2;
+  Ye_grid=Ye_grid2;
+  T_grid=T_grid2;
 
   vector<double> packed;
   for(size_t i=0;i<n_nB;i++) {
@@ -2953,9 +2995,7 @@ int eos_nuclei::fit_frdm(std::vector<std::string> &sv,
   return 0;
 }
 
-int eos_nuclei::write_results
-(std::string fname, size_t n_nB, size_t n_Ye, size_t n_T,
- vector<double> &nB_grid, vector<double> &Ye_grid, vector<double> &T_grid) {
+int eos_nuclei::write_results(std::string fname) {
 
   cout << "Function write_results() file " << fname << endl;
   
@@ -2963,12 +3003,13 @@ int eos_nuclei::write_results
   
   hf.open_or_create(fname);
   
-  hf.set_szt("n_nB",n_nB);
-  hf.set_szt("n_Ye",n_Ye);
-  hf.set_szt("n_T",n_T);
-  hf.setd_vec("nB_grid",nB_grid);
-  hf.setd_vec("Ye_grid",Ye_grid);
-  hf.setd_vec("T_grid",T_grid);
+  hf.set_szt("n_nB",n_nB2);
+  hf.set_szt("n_Ye",n_Ye2);
+  hf.set_szt("n_T",n_T2);
+  hf.setd_vec("nB_grid",nB_grid2);
+  hf.setd_vec("Ye_grid",Ye_grid2);
+  hf.setd_vec("T_grid",T_grid2);
+
   hdf_output(hf,tg3_log_xn,"log_xn");
   hdf_output(hf,tg3_log_xp,"log_xp");
   hdf_output(hf,tg3_Z,"Z");
@@ -2992,6 +3033,14 @@ int eos_nuclei::write_results
     hdf_output(hf,tg3_NmZ_max,"NmZ_max");
   }
   
+  hf.seti("baryons_only",1);
+  // The parent class has an include_muons bool but this
+  // child class doesn't support muons yet
+  hf.seti("include_muons",0);
+
+  hf.setd("m_neut",neutron.m*o2scl_const::hc_mev_fm);
+  hf.setd("m_prot",proton.m*o2scl_const::hc_mev_fm);
+  
   if (full_results) {
     hdf_output(hf,tg3_Eint,"Eint");
     hdf_output(hf,tg3_Pint,"Pint");
@@ -2999,12 +3048,35 @@ int eos_nuclei::write_results
     hdf_output(hf,tg3_mun,"mun");
     hdf_output(hf,tg3_mup,"mup");
     if (include_eg) {
+      hf.seti("with_leptons",1);
       hdf_output(hf,tg3_F,"F");
       hdf_output(hf,tg3_E,"E");
       hdf_output(hf,tg3_P,"P");
       hdf_output(hf,tg3_S,"S");
-    }
+    } else {
+      hf.seti("with_leptons",0);
+    }      
   }
+
+  vector<string> oth_names={"Xd","Xt","XHe3","XLi4","flag",
+			    "log_xn","log_xp"};
+  if (alg_mode==2 || alg_mode==3 || alg_mode==4) {
+    oth_names.push_back("A_min");
+    oth_names.push_back("A_max");
+    oth_names.push_back("NmZ_min");
+    oth_names.push_back("NmZ_max");
+  }
+  vector<string> oth_units={"","","","","","",""};
+  if (alg_mode==2 || alg_mode==3 || alg_mode==4) {
+    oth_units.push_back("");
+    oth_units.push_back("");
+    oth_units.push_back("");
+    oth_units.push_back("");
+  }
+  size_t n_oth=oth_names.size();
+  hf.set_szt("n_oth",n_oth);
+  hf.sets_vec("oth_names",oth_names);
+  hf.sets_vec("oth_units",oth_units);
   
   hf.close();
   
@@ -3013,9 +3085,7 @@ int eos_nuclei::write_results
   return 0;
 }
 
-int eos_nuclei::read_results
-(std::string fname, size_t &n_nB, size_t &n_Ye, size_t &n_T,
- vector<double> &nB_grid, vector<double> &Ye_grid, vector<double> &T_grid) {
+int eos_nuclei::read_results(std::string fname) {
 
   cout << "Function read_results() file " << fname << endl;
 
@@ -3024,12 +3094,15 @@ int eos_nuclei::read_results
 
   hf.open_or_create(fname);
   
-  hf.get_szt("n_nB",n_nB);
-  hf.get_szt("n_Ye",n_Ye);
-  hf.get_szt("n_T",n_T);
-  hf.getd_vec("nB_grid",nB_grid);
-  hf.getd_vec("Ye_grid",Ye_grid);
-  hf.getd_vec("T_grid",T_grid);
+  hf.get_szt("n_nB",n_nB2);
+  hf.get_szt("n_Ye",n_Ye2);
+  hf.get_szt("n_T",n_T2);
+  if (n_nB2==0 || n_Ye2==0 || n_T2==0) {
+    O2SCL_ERR("No data in file.",o2scl::exc_efailed);
+  }
+  hf.getd_vec("nB_grid",nB_grid2);
+  hf.getd_vec("Ye_grid",Ye_grid2);
+  hf.getd_vec("T_grid",T_grid2);
   if (hf.find_object_by_name("log_xn",type)!=0 || type!="tensor_grid") {
     O2SCL_ERR("Couldn't find tensor log_xn in file.",
 	      o2scl::exc_enotfound);
@@ -3181,7 +3254,13 @@ int eos_nuclei::point_nuclei_aws(std::vector<std::string> &sv,
     // Presume if the file exists then assume it has EOS results
     if (o2scl::file_exists(fname)) {
       cout << "Reading file: " << fname << endl;
-      read_results(fname,n_nB,n_Ye,n_T,nB_grid,Ye_grid,T_grid);
+      read_results(fname);
+      n_nB=n_nB2;
+      n_Ye=n_Ye2;
+      n_T=n_T2;
+      nB_grid=nB_grid2;
+      Ye_grid=Ye_grid2;
+      T_grid=T_grid2;
     } else {
       cout << "File " << fname << " does not exist. Making new table." << endl;
       new_table(nB_grid,Ye_grid,T_grid);
@@ -3345,7 +3424,13 @@ int eos_nuclei::point_nuclei_aws(std::vector<std::string> &sv,
 	store_point(inB,iYe,iT,nB,Ye,T,thx,log_xn,log_xp,Zbar,Nbar,
 		    mun_full,mup_full,X,A_min,A_max,NmZ_min,NmZ_max,10.0);
 	cout << "Writing results to file " << fname << endl;
-	write_results(fname,n_nB,n_Ye,n_T,nB_grid,Ye_grid,T_grid);
+	n_nB2=n_nB;
+	n_Ye2=n_Ye;
+	n_T2=n_T;
+	nB_grid2=nB_grid;
+	Ye_grid2=Ye_grid;
+	T_grid2=T_grid;
+	write_results(fname);
       }
     }
     
@@ -3520,7 +3605,13 @@ int eos_nuclei::merge_tables_aws(std::vector<std::string> &sv,
   size_t n_nB=0, n_Ye=0, n_T=0;
   vector<double> nB_grid, Ye_grid, T_grid;
 
-  read_results(in1,n_nB,n_Ye,n_T,nB_grid,Ye_grid,T_grid);
+  read_results(in1);
+  n_nB=n_nB2;
+  n_Ye=n_Ye2;
+  n_T=n_T2;
+  nB_grid=nB_grid2;
+  Ye_grid=Ye_grid2;
+  T_grid=T_grid2;
 
   const vector<double> &d=tg3_flag.get_data();
   for(size_t i=0;i<tg3_flag.total_size();i++) {
@@ -3695,7 +3786,13 @@ int eos_nuclei::merge_tables_aws(std::vector<std::string> &sv,
   vector_out(cout,counts,true);
   
   cout << "Writing merged results." << endl;
-  write_results(out,n_nB,n_Ye,n_T,nB_grid,Ye_grid,T_grid);
+  n_nB2=n_nB;
+  n_Ye2=n_Ye;
+  n_T2=n_T;
+  nB_grid2=nB_grid;
+  Ye_grid2=Ye_grid;
+  T_grid2=T_grid;
+  write_results(out);
   cout << "Done." << endl;
   
   return 0;
@@ -3719,14 +3816,18 @@ int eos_nuclei::compare_tables_aws(std::vector<std::string> &sv,
 
   size_t n_nB=0, n_Ye=0, n_T=0;
   vector<double> nB_grid, Ye_grid, T_grid;
-  read_results(in1,n_nB,n_Ye,n_T,nB_grid,Ye_grid,T_grid);
+  read_results(in1);
+  n_nB=n_nB2;
+  n_Ye=n_Ye2;
+  n_T=n_T2;
+  nB_grid=nB_grid2;
+  Ye_grid=Ye_grid2;
+  T_grid=T_grid2;
 
   eos_nuclei en2;
-  size_t n_nB2, n_Ye2, n_T2;
-  std::vector<double> nB_grid2, Ye_grid2, T_grid2;
   en2.alg_mode=alg_mode;
   en2.full_results=full_results;
-  en2.read_results(in2,n_nB2,n_Ye2,n_T2,nB_grid2,Ye_grid2,T_grid2);
+  en2.read_results(in2);
 
   bool grids_same=true;
   if (n_nB!=n_nB2 || n_Ye!=n_Ye2 || n_T!=n_T2) {
@@ -3885,100 +3986,6 @@ int eos_nuclei::compare_tables_aws(std::vector<std::string> &sv,
     }
   } else {
     cout << "Compare tables doesn't yet support different grids." << endl;
-  }
-  
-  return 0;
-}
-
-int eos_nuclei::merge2_aws(std::vector<std::string> &sv,
-			   bool itive_com) {
-
-  if (sv.size()<3) {
-    cerr << "Command 'merge2-aws' needs 3 arguments." << endl;
-    cerr << "<file 1> <file 2> <file 3>" << endl;
-    return 1;
-  }
-
-  string in1=sv[1];
-  string in2=sv[2];
-  string out1=sv[3];
-
-  size_t n_nB=0, n_Ye=0, n_T=0;
-  vector<double> nB_grid, Ye_grid, T_grid;
-  read_results(in1,n_nB,n_Ye,n_T,nB_grid,Ye_grid,T_grid);
-
-  eos_nuclei en2;
-  size_t n_nB2, n_Ye2, n_T2;
-  std::vector<double> nB_grid2, Ye_grid2, T_grid2;
-  //en2.alg_mode=alg_mode;
-  en2.alg_mode=1;
-  en2.full_results=full_results;
-  en2.read_results(in2,n_nB2,n_Ye2,n_T2,nB_grid2,Ye_grid2,T_grid2);
-
-  bool grids_same=true;
-  if (n_nB!=n_nB2 || n_Ye!=n_Ye2 || n_T!=n_T2) {
-    cout << "Grids have different size." << endl;
-    grids_same=false;
-  } else {
-    for(size_t i=0;i<n_nB;i++) {
-      if (fabs(nB_grid[i]-nB_grid2[i])/nB_grid[i]>1.0e-8) {
-	grids_same=false;
-      }
-    }
-    for(size_t i=0;i<n_Ye;i++) {
-      if (fabs(Ye_grid[i]-Ye_grid2[i])/Ye_grid[i]>1.0e-8) {
-	grids_same=false;
-      }
-    }
-    for(size_t i=0;i<n_T;i++) {
-      if (fabs(T_grid[i]-T_grid2[i])/T_grid[i]>1.0e-8) {
-	grids_same=false;
-      }
-    }
-    if (grids_same==false) {
-      cout << "Grids have same size but different values." << endl;
-    }
-  }
-  if (grids_same) {
-    cout << "The grids match to within 1.0e-8." << endl;
-  } else {
-    O2SCL_ERR("Unimplemented.",o2scl::exc_eunimpl);
-  }
-
-  size_t cnt=0;
-  for(size_t i=0;i<n_nB;i++) {
-    for(size_t j=0;j<n_Ye;j++) {
-      for(size_t k=0;k<n_T;k++) {
-	if (tg3_flag.get(i,j,k)>9.9 && en2.tg3_flag.get(i,j,k)>9.9) {
-	  double Fint1=tg3_Fint.get(i,j,k);
-	  double Fint2=en2.tg3_Fint.get(i,j,k);
-	  if (Fint2<Fint1+1.0e-4) {
-	    double nB=nB_grid[i];
-	    double Ye=Ye_grid[j];
-	    double T=T_grid[k]/hc_mev_fm;
-	    double log_xn=en2.tg3_log_xn.get(i,j,k);
-	    double log_xp=en2.tg3_log_xp.get(i,j,k);
-	    double munfull, mupfull, Zbar, Nbar;
-	    int A_min=5;
-	    int A_max=200;
-	    int NmZ_min=-200;
-	    int NmZ_max=200;
-	    int ret=eos_vary_dist_aws(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,
-				      th2,munfull,mupfull,
-				      A_min,A_max,NmZ_min,NmZ_max,true,false);
-	    if (ret==0) {
-	      double Fint_new=(th2.ed-T*th2.en)/nB*hc_mev_fm;
-	      cout << i << " " << j << " " << k << " "
-		   << Fint1 << " " << Fint2 << " " << Fint1-Fint2 << " "
-		   << Fint_new << endl;
-	      cnt++;
-	      if (cnt%500==499) {
-	      }
-	    }
-	  }
-	}
-      }
-    }
   }
   
   return 0;
@@ -4147,7 +4154,7 @@ int eos_nuclei::edit_data(std::vector<std::string> &sv,
   size_t count=0;
   
   // Read input file
-  read_results(in_file,n_nB,n_Ye,n_T,nB_grid,Ye_grid,T_grid);
+  read_results(in_file);
 
   calculator calc, calc2;
   std::map<std::string,double> vars;
@@ -4259,7 +4266,13 @@ int eos_nuclei::edit_data(std::vector<std::string> &sv,
   cout << "Matched " << count << "/" << n_nB*n_Ye*n_T
        << " entries." << endl;
   if (sv.size()>3) {
-    write_results(out_file,n_nB,n_Ye,n_T,nB_grid,Ye_grid,T_grid);
+    n_nB2=n_nB;
+    n_Ye2=n_Ye;
+    n_T2=n_T;
+    nB_grid2=nB_grid;
+    Ye_grid2=Ye_grid;
+    T_grid2=T_grid;
+    write_results(out_file);
   }
   
   return 0;
@@ -4342,7 +4355,13 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
       }
       
       // Read input file
-      read_results(in_file,n_nB,n_Ye,n_T,nB_grid,Ye_grid,T_grid);
+      read_results(in_file);
+      n_nB=n_nB2;
+      n_Ye=n_Ye2;
+      n_T=n_T2;
+      nB_grid=nB_grid2;
+      Ye_grid=Ye_grid2;
+      T_grid=T_grid2;
       
     } else {
       
@@ -4520,7 +4539,13 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	
       }
       
-      write_results("temp.o2",n_nB,n_Ye,n_T,nB_grid,Ye_grid,T_grid);
+      n_nB2=n_nB;
+      n_Ye2=n_Ye;
+      n_T2=n_T;
+      nB_grid2=nB_grid;
+      Ye_grid2=Ye_grid;
+      T_grid2=T_grid;
+      write_results("temp.o2");
 
       // End of 'if (edge_list.length()>0)'
     }
@@ -5123,7 +5148,13 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	  // Update file if necessary
 	  if (i%1000==999 && MPI_Wtime()-file_update_time>1800.0) {
 	    cout << "Updating file." << endl;
-	    write_results(out_file,n_nB,n_Ye,n_T,nB_grid,Ye_grid,T_grid);
+	    n_nB2=n_nB;
+	    n_Ye2=n_Ye;
+	    n_T2=n_T;
+	    nB_grid2=nB_grid;
+	    Ye_grid2=Ye_grid;
+	    T_grid2=T_grid;
+	    write_results(out_file);
 	    file_update_time=MPI_Wtime();
 	    
 	    size_t tc=0,conv2_count=0;
@@ -5285,7 +5316,13 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	done=true;
       } else if (write_elapsed>1800.0) {
 	cout << "Updating file." << endl;
-	write_results(out_file,n_nB,n_Ye,n_T,nB_grid,Ye_grid,T_grid);
+	n_nB2=n_nB;
+	n_Ye2=n_Ye;
+	n_T2=n_T;
+	nB_grid2=nB_grid;
+	Ye_grid2=Ye_grid;
+	T_grid2=T_grid;
+	write_results(out_file);
 #ifdef NO_MPI	
 	file_update_time=time(0);
 #else
@@ -5347,7 +5384,13 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
     // -----------------------------------------------------
     // Output file
     
-    write_results(out_file,n_nB,n_Ye,n_T,nB_grid,Ye_grid,T_grid);
+    n_nB2=n_nB;
+    n_Ye2=n_Ye;
+    n_T2=n_T;
+    nB_grid2=nB_grid;
+    Ye_grid2=Ye_grid;
+    T_grid2=T_grid;
+    write_results(out_file);
     
     if (mpi_verbose>0) {
       cout << "Rank " << mpi_rank << " sending exit to children." << endl;
@@ -5836,6 +5879,10 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
       1,2,"<input file or \"none\"> [out file]",
       "",new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::generate_table),o2scl::cli::comm_option_both},
+     {0,"load","Load an EOS table.",
+      1,1,"<filename>",
+      "",new o2scl::comm_option_mfptr<eos_nuclei>
+      (this,&eos_nuclei::load),o2scl::cli::comm_option_both},
      {0,"edit-data","Edit data in the EOS tables.",2,5,
       "<in file> <select func.> [tensor to modify] [value func.] [out file]",
       ((string)"The \"edit-data\" command counts entries matching the ")+
@@ -5853,10 +5900,6 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
       2,3,"<input file 1> <input file 2> [quantity]",
       "",new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::compare_tables_aws),o2scl::cli::comm_option_both},
-     {0,"merge2-aws","",
-      3,3,"<input file 1> <input file 2> <output file>",
-      "",new o2scl::comm_option_mfptr<eos_nuclei>
-      (this,&eos_nuclei::merge2_aws),o2scl::cli::comm_option_both},
      {0,"table-stats","",
       1,1,"<file>",
       "",new o2scl::comm_option_mfptr<eos_nuclei>
@@ -5878,15 +5921,15 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
   cl.set_comm_option_vec(nopt,options);
 
   p_nB_grid_spec.str=&nB_grid_spec;
-  p_nB_grid_spec.help="Function for baryon density grid.";
+  p_nB_grid_spec.help="Function for default baryon density grid.";
   cl.par_list.insert(make_pair("nB_grid_spec",&p_nB_grid_spec));
 
   p_Ye_grid_spec.str=&Ye_grid_spec;
-  p_Ye_grid_spec.help="Function for electron fraction grid.";
+  p_Ye_grid_spec.help="Function for default electron fraction grid.";
   cl.par_list.insert(make_pair("Ye_grid_spec",&p_Ye_grid_spec));
 
   p_T_grid_spec.str=&T_grid_spec;
-  p_T_grid_spec.help="Function for temperature grid.";
+  p_T_grid_spec.help="Function for default temperature grid.";
   cl.par_list.insert(make_pair("T_grid_spec",&p_T_grid_spec));
   
   p_show_all_nuclei.b=&show_all_nuclei;
