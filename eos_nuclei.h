@@ -131,11 +131,11 @@ class eos_nuclei : public eos {
 
   /** \brief Solver 
    */
-  o2scl::mroot_hybrids<> mh_aws;
+  o2scl::mroot_hybrids<> mh;
 
   /** \brief Bracketing solver
    */
-  o2scl::root_brent_gsl<> rbg_aws;
+  o2scl::root_brent_gsl<> rbg;
   
   /** \brief Neutron separation energies (in MeV)
    */
@@ -221,7 +221,7 @@ class eos_nuclei : public eos {
   */
   int alg_mode;
 
-  /** \brief Algorithm for \ref eos_fixed_dist_aws()
+  /** \brief Algorithm for \ref eos_fixed_dist()
    */
   int fixed_dist_alg;
   
@@ -300,14 +300,14 @@ class eos_nuclei : public eos {
   /** \brief Construct an equation to solve for matter at low 
       densities
   */
-  double solve_nuclei_ld_aws(double x2, size_t nv, const ubvector &x, 
+  double solve_nuclei_ld(double x2, size_t nv, const ubvector &x, 
 			     double nb, double ye, double T,
 			     int ix, double &mun_gas, double &mup_gas,
 			     o2scl::thermo &th_gas);
 
   /** \brief Desc
    */
-  double solve_nuclei_min_aws(size_t nv, const ubvector &x, 
+  double solve_nuclei_min(size_t nv, const ubvector &x, 
 			      double nb, double ye, double T,
 			      double &mun_gas, double &mup_gas,
 			      o2scl::thermo &th_gas);
@@ -327,7 +327,7 @@ class eos_nuclei : public eos {
   /** \brief Construct equations to solve for a fixed baryon
       density and electron fraction (AWS version)
   */
-  int solve_nuclei_aws(size_t nv, const ubvector &x, ubvector &y, double nb,
+  int solve_nuclei(size_t nv, const ubvector &x, ubvector &y, double nb,
 		       double ye, double T, 
 		       int loc_verbose, double &mun_gas, double &mup_gas,
 		       o2scl::thermo &th_gas);
@@ -336,7 +336,7 @@ class eos_nuclei : public eos {
       and solving for the log (base 10) of the
       free neutron and proton abundances (AWS version)
   */
-  int eos_fixed_ZN_aws(double nb, double ye, double T,
+  int eos_fixed_ZN(double nb, double ye, double T,
 		       double &log_xn, double &log_xp,
 		       size_t nuc_Z1, size_t nuc_N1,
 		       o2scl::thermo &thx,
@@ -356,7 +356,7 @@ class eos_nuclei : public eos {
   /** \brief Determine the EOS allowing the Z and N of the nucleus
       to vary
   */
-  int eos_vary_ZN_aws(double nb, double ye, double T,
+  int eos_vary_ZN(double nb, double ye, double T,
 		      double &log_xn, double &log_xp,
 		      size_t &nuc_Z1, size_t &nuc_N1,
 		      o2scl::thermo &thx,
@@ -366,7 +366,7 @@ class eos_nuclei : public eos {
   /** \brief Determine the EOS presuming a distribution of nuclei
       with fixed limits in A and \f$ N-Z \f$
   */
-  int eos_fixed_dist_aws
+  int eos_fixed_dist
     (double nB, double Ye, double T, double &log_xn, double &log_xp,
      o2scl::thermo &thx, double &mun_full, double &mup_full, int &A_min,
      int &A_max, int &NmZ_min, int &NmZ_max, bool dist_changed,
@@ -376,7 +376,7 @@ class eos_nuclei : public eos {
   /** \brief Determine the EOS presuming a distribution of nuclei
       with fixed limits in A and \f$ N-Z \f$ but used to fix table only
   */
-  int eos_fixed_dist_aws_fix_table
+  int eos_fixed_dist_fix_table
     (double nB, double Ye, double T, double &log_xn, double &log_xp,
      o2scl::thermo &thx, double &mun_full, double &mup_full, int &A_min,
      int &A_max, int &NmZ_min, int &NmZ_max, bool dist_changed,
@@ -385,7 +385,7 @@ class eos_nuclei : public eos {
   /** \brief Determine the EOS presuming a distribution of nuclei
       and optimizing the limits in A and \f$ N-Z \f$
   */
-  int eos_vary_dist_aws
+  int eos_vary_dist
     (double nB, double Ye, double T, double &log_xn, double &log_xp,
      double &Zbar, double &Nbar, 
      o2scl::thermo &thx, double &mun_full, double &mup_full, int &A_min,
@@ -400,6 +400,8 @@ class eos_nuclei : public eos {
    */
   int load(std::vector<std::string> &sv, bool itive_com);
   
+  /** \brief Desc
+   */
   int output(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Edit an EOS table
@@ -422,19 +424,19 @@ class eos_nuclei : public eos {
   
   /** \brief Merge two tables
    */
-  int merge_tables_aws(std::vector<std::string> &sv, bool itive_com);
+  int merge_tables(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Compare two tables
    */
-  int compare_tables_aws(std::vector<std::string> &sv, bool itive_com);
+  int compare_tables(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Output the statistics on flag values for a table
    */
-  int table_stats(std::vector<std::string> &sv, bool itive_com);
+  int stats(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Compute the EOS at one point
    */
-  int point_nuclei_aws(std::vector<std::string> &sv, bool itive_com);
+  int point_nuclei(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Desc
    */
@@ -446,9 +448,7 @@ class eos_nuclei : public eos {
 
   /** \brief Initialize tensors for a new EOS table
    */
-  void new_table(std::vector<double> &nB_grid,
-		 std::vector<double> &Ye_grid,
-		 std::vector<double> &T_grid);
+  void new_table();
   
   /// \name Tensors for full output
   //@{

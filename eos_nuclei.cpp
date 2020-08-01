@@ -120,11 +120,11 @@ eos_nuclei::eos_nuclei() {
   six_neighbors=false;
   propagate_points=true;
   
-  mh_aws.ntrial=10000;
-  mh_aws.err_nonconv=false;
-  mh_aws.def_jac.err_nonconv=false;
-  mh_aws.tol_rel=1.0e-6;
-  rbg_aws.err_nonconv=false;
+  mh.ntrial=10000;
+  mh.err_nonconv=false;
+  mh.def_jac.err_nonconv=false;
+  mh.tol_rel=1.0e-6;
+  rbg.err_nonconv=false;
 
   full_results=false;
   include_eg=false;
@@ -841,7 +841,7 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
   return 0;
 }
 
-double eos_nuclei::solve_nuclei_ld_aws
+double eos_nuclei::solve_nuclei_ld
 (double x2, size_t nv, const ubvector &x, double nb, double ye, double T,
  int ix, double &mun_gas, double &mup_gas, thermo &th_gas) {
 				       
@@ -849,18 +849,18 @@ double eos_nuclei::solve_nuclei_ld_aws
   xp[0]=x[0];
   xp[1]=x[1];
   xp[ix]=x2;
-  int ret=solve_nuclei_aws(nv,xp,yp,nb,ye,T,0,mun_gas,mup_gas,th_gas);
+  int ret=solve_nuclei(nv,xp,yp,nb,ye,T,0,mun_gas,mup_gas,th_gas);
   if (ret!=0) return pow(10.0,80.0+((double(ret))));
   return yp[ix];
 }
 
-double eos_nuclei::solve_nuclei_min_aws
+double eos_nuclei::solve_nuclei_min
 (size_t nv, const ubvector &x, double nb, double ye, double T,
  double &mun_gas, double &mup_gas, thermo &th_gas) {
 
   double retval;
   ubvector yp(2);
-  int ret=solve_nuclei_aws(nv,x,yp,nb,ye,T,0,mun_gas,mup_gas,th_gas);
+  int ret=solve_nuclei(nv,x,yp,nb,ye,T,0,mun_gas,mup_gas,th_gas);
   retval=yp[0]*yp[0]+yp[1]*yp[1];
   if (ret!=0) retval=pow(10.0,80.0+((double(ret))));
   if (!std::isfinite(yp[0]) || !std::isfinite(yp[1]) ||
@@ -870,7 +870,7 @@ double eos_nuclei::solve_nuclei_min_aws
   return retval;
 }
 
-int eos_nuclei::solve_nuclei_aws(size_t nv, const ubvector &x, ubvector &y,
+int eos_nuclei::solve_nuclei(size_t nv, const ubvector &x, ubvector &y,
 				 double nB, double Ye, double T,
 				 int loc_verbose, double &mun_gas,
 				 double &mup_gas, thermo &th_gas) {
@@ -1133,8 +1133,7 @@ int eos_nuclei::solve_nuclei_aws(size_t nv, const ubvector &x, ubvector &y,
   return 0;
 }
 
-int eos_nuclei::eos_fixed_ZN_aws
-(double nB, double Ye, double T, double &log_xn, double &log_xp,
+int eos_nuclei::eos_fixed_ZN(double nB, double Ye, double T, double &log_xn, double &log_xp,
  size_t nucZ1, size_t nucN1, thermo &thx, double &mun_full,
  double &mup_full) {
 
@@ -1319,25 +1318,25 @@ int eos_nuclei::eos_fixed_ZN_aws
   mm_funct sn_func=std::bind
     (std::mem_fn<int(size_t,const ubvector &,ubvector&,double,double,
 		     double,int,double &,double &,thermo &)>
-     (&eos_nuclei::solve_nuclei_aws),this,std::placeholders::_1,
+     (&eos_nuclei::solve_nuclei),this,std::placeholders::_1,
      std::placeholders::_2,std::placeholders::_3,nB,Ye,T,0,
      std::ref(mun_gas),std::ref(mup_gas),std::ref(th_gas));
 
     x1[0]=log_xn;
     x1[1]=log_xp;
     
-  mh_aws.tol_abs=mh_aws.tol_rel/1.0e4;
-  if (debug) mh_aws.verbose=1;
-  if (function_verbose%10>2) mh_aws.verbose=2;
+  mh.tol_abs=mh.tol_rel/1.0e4;
+  if (debug) mh.verbose=1;
+  if (function_verbose%10>2) mh.verbose=2;
   
-  int mh_ret=mh_aws.msolve(2,x1,sn_func);
+  int mh_ret=mh.msolve(2,x1,sn_func);
   
   if (mh_ret!=0) {
-    mh_ret=mh_aws.msolve(2,x1,sn_func);
+    mh_ret=mh.msolve(2,x1,sn_func);
   }
 
   if (mh_ret!=0) {
-    mh_ret=mh_aws.msolve(2,x1,sn_func);
+    mh_ret=mh.msolve(2,x1,sn_func);
   }
   
   if (mh_ret!=0) {
@@ -1354,7 +1353,7 @@ int eos_nuclei::eos_fixed_ZN_aws
 	  (std::mem_fn<double(double,size_t,const ubvector &,
 			      double,double,double,int,double &,double &,
 			      thermo &)>
-	   (&eos_nuclei::solve_nuclei_ld_aws),this,
+	   (&eos_nuclei::solve_nuclei_ld),this,
 	   std::placeholders::_1,2,std::ref(x1),nB,Ye,T,j,
 	   std::ref(mun_gas),std::ref(mup_gas),std::ref(th_gas));
 	
@@ -1375,9 +1374,9 @@ int eos_nuclei::eos_fixed_ZN_aws
 	}
 	
 	if ((yhigh<0.0 && ylow>0.0) || (yhigh>0.0 && ylow<0.0)) {
-	  if (debug) rbg_aws.verbose=1;
-	  if (function_verbose%10>2) rbg_aws.verbose=2;
-	  int rbg_ret=rbg_aws.solve_bkt(blow,bhigh,ld_func);
+	  if (debug) rbg.verbose=1;
+	  if (function_verbose%10>2) rbg.verbose=2;
+	  int rbg_ret=rbg.solve_bkt(blow,bhigh,ld_func);
 	  if (rbg_ret!=0) {
 	    return 2;
 	  }
@@ -1413,13 +1412,13 @@ int eos_nuclei::eos_fixed_ZN_aws
     
   }
 
-  // Perform a final call to solve_nuclei_aws() to ensure
+  // Perform a final call to solve_nuclei() to ensure
   // the chemical potentials are updated
   sn_func(2,x1,y1);
   
   if (debug) {
     sn_func(2,x1,y1);
-    cout << "Success in eos_fixed_ZN_aws():\n\t" << nucZ1 << " "
+    cout << "Success in eos_fixed_ZN():\n\t" << nucZ1 << " "
 	 << nucN1 << " " << x1[0] << " " << x1[1] << " " << y1[0] << " "
 	 << y1[1] << endl;
   }
@@ -1505,7 +1504,7 @@ int eos_nuclei::eos_fixed_ZN_aws
   return 0;
 }
 
-int eos_nuclei::eos_vary_dist_aws
+int eos_nuclei::eos_vary_dist
 (double nB, double Ye, double T, double &log_xn, double &log_xp,
  double &Zbar, double &Nbar, thermo &thx, double &mun_full,
  double &mup_full, int &A_min, int &A_max, int &NmZ_min, int &NmZ_max,
@@ -1570,12 +1569,12 @@ int eos_nuclei::eos_vary_dist_aws
     //<< NmZ_min << " " << NmZ_max << endl;
 
     if (A_min<4.5) {
-      O2SCL_ERR2("Function eos_vary_dist_aws() does not support ",
+      O2SCL_ERR2("Function eos_vary_dist() does not support ",
 		 "A_min less than 4.5.",o2scl::exc_esanity);
     }
 
     // Compute the EOS with the current nuclear distribution
-    int ret=eos_fixed_dist_aws
+    int ret=eos_fixed_dist
       (nB,Ye,T,log_xn,log_xp,thx,mun_full,mup_full,
        A_min,A_max,NmZ_min,NmZ_max,dist_changed,no_nuclei);
     if (ret!=0) {
@@ -1755,7 +1754,7 @@ int eos_nuclei::eos_vary_dist_aws
   return 0;
 }
 
-int eos_nuclei::eos_fixed_dist_aws
+int eos_nuclei::eos_fixed_dist
 (double nB, double Ye, double T, double &log_xn, double &log_xp,
  thermo &thx, double &mun_full, double &mup_full, int &A_min,
  int &A_max, int &NmZ_min, int &NmZ_max, bool dist_changed,
@@ -1799,7 +1798,7 @@ int eos_nuclei::eos_fixed_dist_aws
 
     if (count<5) {
       O2SCL_ERR2("Size of nuclei vector less than 5 in ",
-		 "eos_nuclei::eos_fixed_dist_aws().",o2scl::exc_esanity);
+		 "eos_nuclei::eos_fixed_dist().",o2scl::exc_esanity);
     }
     
     // Resize nuclei array
@@ -1852,7 +1851,7 @@ int eos_nuclei::eos_fixed_dist_aws
 
 	  if (index>=count) {
 	    O2SCL_ERR2("Indexing problem in ",
-		       "eos_nuclei::eos_fixed_dist_aws().",o2scl::exc_esanity);
+		       "eos_nuclei::eos_fixed_dist().",o2scl::exc_esanity);
 	  }
 	  
 	  // Obtain heavy nucleus and neutron and proton separation
@@ -1965,7 +1964,7 @@ int eos_nuclei::eos_fixed_dist_aws
 	cout << nuclei[i].N << " " << nuclei[i].Z << " " << delta_p << " "
 	     << part_func.a << endl;
 	O2SCL_ERR2("Variable a not finite in ",
-		   " eos_nuclei::eos_fixed_dist_aws()",
+		   " eos_nuclei::eos_fixed_dist()",
 		   o2scl::exc_esanity);
       }
       if (!std::isfinite(part_func.delta)) {
@@ -1975,7 +1974,7 @@ int eos_nuclei::eos_fixed_dist_aws
         cout << delta_p << endl;
         cout << endl;
 	O2SCL_ERR2("Variable delta not finite",
-		   " eos_nuclei::eos_fixed_dist_aws()",
+		   " eos_nuclei::eos_fixed_dist()",
 		   o2scl::exc_esanity);
       }
       
@@ -1996,12 +1995,12 @@ int eos_nuclei::eos_fixed_dist_aws
 	  if(2.0*zEd<zEt) {
 	    if (!std::isfinite(zEd)) {
 	      O2SCL_ERR2("Variable zEd not finite",
-			 "eos_nuclei::eos_fixed_dist_aws()",
+			 "eos_nuclei::eos_fixed_dist()",
 			 o2scl::exc_esanity);
 	    }
 	    if (!std::isfinite(zEt)) {
 	      O2SCL_ERR2("Variable zEt not finite",
-			 "eos_nuclei::eos_fixed_dist_aws()",
+			 "eos_nuclei::eos_fixed_dist()",
 			 o2scl::exc_esanity);
 	    }
 	    ret=iqg.integ_err(f1,2.0*zEd,zEt,res,err)+
@@ -2015,12 +2014,12 @@ int eos_nuclei::eos_fixed_dist_aws
 	} else {
 	  if (!std::isfinite(zEd)) {
 	    O2SCL_ERR2("Variable zEd not finite",
-		       "eos_nuclei::eos_fixed_dist_aws()",
+		       "eos_nuclei::eos_fixed_dist()",
 		       o2scl::exc_esanity);
 	  }
 	  if (!std::isfinite(zEt)) {
 	    O2SCL_ERR2("Variable zEt not finite",
-		       "eos_nuclei::eos_fixed_dist_aws()",
+		       "eos_nuclei::eos_fixed_dist()",
 		       o2scl::exc_esanity);
 	  }
 	  ret=iqg.integ_err(f1,zEd,zEt,res,err);
@@ -2038,7 +2037,7 @@ int eos_nuclei::eos_fixed_dist_aws
   mm_funct sn_func=std::bind
     (std::mem_fn<int(size_t,const ubvector &,ubvector&,double,double,
 		     double,int,double &,double &,thermo &)>
-     (&eos_nuclei::solve_nuclei_aws),this,std::placeholders::_1,
+     (&eos_nuclei::solve_nuclei),this,std::placeholders::_1,
      std::placeholders::_2,std::placeholders::_3,nB,Ye,T,0,
      std::ref(mun_gas),std::ref(mup_gas),std::ref(th_gas));
 
@@ -2046,24 +2045,24 @@ int eos_nuclei::eos_fixed_dist_aws
     x1[1]=log_xp;
 
   if ((alg_mode==2 || alg_mode==4) && nB<1.0e-11) {
-    mh_aws.tol_rel=1.0e-8;
+    mh.tol_rel=1.0e-8;
   } else {
-    mh_aws.tol_rel=1.0e-6;
+    mh.tol_rel=1.0e-6;
   }
 
   // 8/27: updated
   if (alg_mode==2 || alg_mode==4 || nB<1.0e-09) {
-    mh_aws.tol_abs=mh_aws.tol_rel/1.0e4;
+    mh.tol_abs=mh.tol_rel/1.0e4;
   }
   
-  if (loc_verbose>1) mh_aws.verbose=1;
+  if (loc_verbose>1) mh.verbose=1;
 
-  int mh_ret=mh_aws.msolve(2,x1,sn_func);
+  int mh_ret=mh.msolve(2,x1,sn_func);
 
   if (alg_mode==2 || alg_mode==4) {
 
     for(int k=0;k<n_solves && mh_ret!=0;k++) {
-      mh_ret=mh_aws.msolve(2,x1,sn_func);
+      mh_ret=mh.msolve(2,x1,sn_func);
     }
     
   } else {
@@ -2076,19 +2075,19 @@ int eos_nuclei::eos_fixed_dist_aws
       while((mh_ret!=0||((x1[0]>log_xn*0.9||x1[1]>log_xp*0.9)&& 
 			 pow(10.0,x1[0])+pow(10.0,x1[1])>0.50))
 	    && count<count_total) {
-        mh_aws.tol_abs=mh_aws.tol_rel/1.0e4;
+        mh.tol_abs=mh.tol_rel/1.0e4;
         x1[0]=log_xn*(1.0+1.0*r.random_int(100)*0.01);
         x1[1]=log_xp*(1.0+1.0*r.random_int(100)*0.01);
-        mh_ret=mh_aws.msolve(2,x1,sn_func);
+        mh_ret=mh.msolve(2,x1,sn_func);
         count++;
       }
     } else {
       while(mh_ret!=0 && count<count_total) {
 
-        mh_aws.tol_abs=mh_aws.tol_rel/1.0e4;
+        mh.tol_abs=mh.tol_rel/1.0e4;
         x1[0]=log_xn*(1.0+0.5*r.random_int(100)*0.01);
         x1[1]=log_xp*(1.0+0.5*r.random_int(100)*0.01);
-        mh_ret=mh_aws.msolve(2,x1,sn_func);
+        mh_ret=mh.msolve(2,x1,sn_func);
         count++;
       }
     }
@@ -2116,7 +2115,7 @@ int eos_nuclei::eos_fixed_dist_aws
 	  (std::mem_fn<double(double,size_t,const ubvector &,
 			      double,double,double,int,double &,double &,
 			      thermo &)>
-	   (&eos_nuclei::solve_nuclei_ld_aws),this,
+	   (&eos_nuclei::solve_nuclei_ld),this,
 	   std::placeholders::_1,2,std::ref(x1),nB,Ye,T,j,
 	   std::ref(mun_gas),std::ref(mup_gas),std::ref(th_gas));
 	
@@ -2145,8 +2144,8 @@ int eos_nuclei::eos_fixed_dist_aws
 	if ((yhigh<0.0 && ylow>0.0) || (yhigh>0.0 && ylow<0.0)) {
 	  // If we've found a good bracket, then use
 	  // Brent's method.
-	  if (loc_verbose>1) rbg_aws.verbose=1;
-	  int rbg_ret=rbg_aws.solve_bkt(blow,bhigh,ld_func);
+	  if (loc_verbose>1) rbg.verbose=1;
+	  int rbg_ret=rbg.solve_bkt(blow,bhigh,ld_func);
 	  if (rbg_ret!=0) {
 	    // If the bracketing solver failed, then stop
 	    j=2;
@@ -2171,11 +2170,11 @@ int eos_nuclei::eos_fixed_dist_aws
 	
 	double qual=sqrt(y1[0]*y1[0]+y1[1]*y1[1]);
 	if (loc_verbose>1) {
-	  cout << "qual: " << qual << " mh_aws.tol_rel: "
-	       << mh_aws.tol_rel << endl;
+	  cout << "qual: " << qual << " mh.tol_rel: "
+	       << mh.tol_rel << endl;
 	}
 	
-	if (qual<mh_aws.tol_rel) {
+	if (qual<mh.tol_rel) {
 	  // Stop, and set mh_ret to zero to indicate that we're done
 	  k=n_brackets;
 	  mh_ret=0;
@@ -2210,7 +2209,7 @@ int eos_nuclei::eos_fixed_dist_aws
 	(std::mem_fn<double(size_t,const ubvector &,
 			    double,double,double,double &,double &,
 			    thermo &)>
-	 (&eos_nuclei::solve_nuclei_min_aws),this,
+	 (&eos_nuclei::solve_nuclei_min),this,
 	 std::placeholders::_1,std::placeholders::_2,nB,Ye,T,
 	 std::ref(mun_gas),std::ref(mup_gas),std::ref(th_gas));
       
@@ -2238,7 +2237,7 @@ int eos_nuclei::eos_fixed_dist_aws
 	     << mret << endl;
       }
       
-      if (qual<mh_aws.tol_rel) {
+      if (qual<mh.tol_rel) {
 	// Set mh_ret to zero to indicate that we're done
 	mh_ret=0;
       }
@@ -2269,7 +2268,7 @@ int eos_nuclei::eos_fixed_dist_aws
       for(int kk=0;kk<n_randoms && mh_ret!=0;kk++) {
 	x1[0]=ranges[0]+r.random()*(ranges[1]-ranges[0]);
 	x1[1]=ranges[2]+r.random()*(ranges[3]-ranges[2]);
-	mh_ret=mh_aws.msolve(2,x1,sn_func);
+	mh_ret=mh.msolve(2,x1,sn_func);
 	if (loc_verbose>1) {
 	  cout << kk << " " << x1[0] << " " << x1[1] << " "
 	       << mh_ret << endl;
@@ -2283,7 +2282,7 @@ int eos_nuclei::eos_fixed_dist_aws
 
     if (mh_ret!=0) {
       if (loc_verbose>1) {
-	cout << "Failed in eos_fixed_dist_aws(), "
+	cout << "Failed in eos_fixed_dist(), "
 	     << "x1[0], x1[1], y1[0], y1[1]:\n  " 
 	     << x1[0] << " " << x1[1] << " " << y1[0] << " "
 	     << y1[1] << endl;
@@ -2300,13 +2299,13 @@ int eos_nuclei::eos_fixed_dist_aws
     
   }
 
-  // Perform a final call to solve_nuclei_aws() to ensure
+  // Perform a final call to solve_nuclei() to ensure
   // the chemical potentials are updated
   sn_func(2,x1,y1);
   
   if (loc_verbose>1) {
     sn_func(2,x1,y1);
-    cout << "Success in eos_fixed_dist_aws(), "
+    cout << "Success in eos_fixed_dist(), "
 	 << "x1[0], x1[1], y1[0], y1[1]:\n  " 
 	 << x1[0] << " " << x1[1] << " " << y1[0] << " "
 	 << y1[1] << endl;
@@ -2419,7 +2418,7 @@ int eos_nuclei::eos_fixed_dist_aws
 }
 
 
-int eos_nuclei::eos_vary_ZN_aws
+int eos_nuclei::eos_vary_ZN
 (double nB, double Ye, double T, double &log_xn, double &log_xp,
  size_t &nuc_Z1, size_t &nuc_N1, 
  thermo &thx, double &mun_full, double &mup_full, bool no_nuclei) {
@@ -2428,7 +2427,7 @@ int eos_nuclei::eos_vary_ZN_aws
   if (function_verbose/10%10>1) debug=true;
   
   if (debug) {
-    cout << "vary_ZN_aws() computing nB, Ye, T(1/fm): " << nB << " "
+    cout << "vary_ZN() computing nB, Ye, T(1/fm): " << nB << " "
 	 << Ye << " " << T << endl;
     cout << "  log_xn, log_xp, Z, N: "
 	 << log_xn << " " << log_xp << " " << nuc_Z1 << " "
@@ -2495,7 +2494,7 @@ int eos_nuclei::eos_vary_ZN_aws
 	// choice.
 	log_xn=log_xn_guess;
 	log_xp=log_xp_guess;
-	int eret=eos_fixed_ZN_aws(nB,Ye,T,log_xn,log_xp,iZ,iN,thx,
+	int eret=eos_fixed_ZN(nB,Ye,T,log_xn,log_xp,iZ,iN,thx,
 				  mun_full,mup_full);
 	double f=thx.ed-T*thx.en;
 	if (show_all_nuclei) {
@@ -2542,7 +2541,7 @@ int eos_nuclei::eos_vary_ZN_aws
     return 1;
   }
   
-  // After the loop, do a final call of eos_fixed_ZN_aws() to make
+  // After the loop, do a final call of eos_fixed_ZN() to make
   // sure the heavy nucleus, thx, and chemical potentials are set
   // properly
   log_xn=log_xn_min;
@@ -2550,7 +2549,7 @@ int eos_nuclei::eos_vary_ZN_aws
   nuc_Z1=Z_min;
   nuc_N1=N_min;
   
-  int lret=eos_fixed_ZN_aws(nB,Ye,T,log_xn,log_xp,nuc_Z1,nuc_N1,thx,
+  int lret=eos_fixed_ZN(nB,Ye,T,log_xn,log_xp,nuc_Z1,nuc_N1,thx,
 			    mun_full,mup_full);
   
   if (lret!=0) {
@@ -2565,7 +2564,7 @@ int eos_nuclei::eos_vary_ZN_aws
   log_xp=log_xp_min;
 
   if (debug) {
-    cout << "vary_ZN_aws() success, nB, Ye, T(1/fm), f_min: "
+    cout << "vary_ZN() success, nB, Ye, T(1/fm), f_min: "
 	 << nB << " " << Ye << " " << T << " "
 	 << f_min << endl;
   }
@@ -3156,7 +3155,7 @@ int eos_nuclei::read_results(std::string fname) {
   return 0;
 }
 
-int eos_nuclei::point_nuclei_aws(std::vector<std::string> &sv,
+int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
 				 bool itive_com) {
 
   if (sv.size()<4) {
@@ -3175,7 +3174,7 @@ int eos_nuclei::point_nuclei_aws(std::vector<std::string> &sv,
   bool guess_provided=false;
 
   if ((alg_mode==2 || alg_mode==3 || alg_mode==4) && sv.size()>=10) {
-    cout << "Function point_nuclei_aws(): "
+    cout << "Function point_nuclei(): "
 	 << "Reading guess (A_min,A_max,NmZ_min,NmZ_max) "
 	 << "from command line" << endl;
     log_xn=o2scl::function_to_double(sv[4]);
@@ -3187,7 +3186,7 @@ int eos_nuclei::point_nuclei_aws(std::vector<std::string> &sv,
     guess_provided=true;
     if (sv.size()>=11) fname=sv[10];
   } else if ((alg_mode==0 || alg_mode==1) && sv.size()>=8) {
-    cout << "Function point_nuclei_aws(): "
+    cout << "Function point_nuclei(): "
 	 << "Reading guess (N,Z) from command line" << endl;
     log_xn=o2scl::function_to_double(sv[4]);
     log_xp=o2scl::function_to_double(sv[5]);
@@ -3196,7 +3195,7 @@ int eos_nuclei::point_nuclei_aws(std::vector<std::string> &sv,
     guess_provided=true;
     if (sv.size()>=9) fname=sv[8];
   } else {
-    cout << "Function point_nuclei_aws(): "
+    cout << "Function point_nuclei(): "
 	 << "Using hard-coded initial guess." << endl;
     log_xn=-1.0;
     log_xp=-1.0;
@@ -3232,7 +3231,10 @@ int eos_nuclei::point_nuclei_aws(std::vector<std::string> &sv,
       T_grid=T_grid2;
     } else {
       cout << "File " << fname << " does not exist. Making new table." << endl;
-      new_table(nB_grid,Ye_grid,T_grid);
+      new_table();
+      nB_grid=nB_grid2;
+      Ye_grid=Ye_grid2;
+      T_grid=T_grid2;
       n_nB=nB_grid.size();
       n_Ye=Ye_grid.size();
       n_T=T_grid.size();
@@ -3317,12 +3319,12 @@ int eos_nuclei::point_nuclei_aws(std::vector<std::string> &sv,
 
   double Zbar, Nbar;
   if (alg_mode==2 || alg_mode==3 || alg_mode==4) {
-    ret=eos_vary_dist_aws(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,
+    ret=eos_vary_dist(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,
 			  thx,mun_full,mup_full,
 			  A_min,A_max,NmZ_min,NmZ_max,
 			  true,false);
   } else {
-    ret=eos_vary_ZN_aws(nB,Ye,T,log_xn,log_xp,nuc_Z1,nuc_N1,
+    ret=eos_vary_ZN(nB,Ye,T,log_xn,log_xp,nuc_Z1,nuc_N1,
 			thx,mun_full,mup_full,false);
     Nbar=nuc_N1;
     Zbar=nuc_Z1;
@@ -3380,7 +3382,7 @@ int eos_nuclei::point_nuclei_aws(std::vector<std::string> &sv,
 
       if (nuclei.size()<6) {
 	O2SCL_ERR2("Nuclei array not properly sized ",
-		   "in eos_nuclei::point_nuclei_aws().",o2scl::exc_einval);
+		   "in eos_nuclei::point_nuclei().",o2scl::exc_einval);
       }
 
       cout << "Store point to file? " << flush;
@@ -3455,37 +3457,17 @@ int eos_nuclei::point_nuclei_aws(std::vector<std::string> &sv,
       hfx.close();
     }
   } else {
-    cout << "Failed in point_nuclei_aws()." << endl;
+    cout << "Failed in point_nuclei()." << endl;
   }
   
   return 0;
 }
 
-int eos_nuclei::table_stats(std::vector<std::string> &sv,
+int eos_nuclei::stats(std::vector<std::string> &sv,
 			    bool itive_com) {
   
-  string file=sv[1];
-  vector<size_t> flags(22);
-  vector<double> nB_grid, Ye_grid, T_grid;
-  hdf_file hf;
-  hf.open(sv[1]);
-  hdf_input(hf,tg3_flag,"flag");
-  hdf_input(hf,tg3_Xn,"Xn");
-  hdf_input(hf,tg3_Xp,"Xp");
-  hdf_input(hf,tg3_Xalpha,"Xalpha");
-  hdf_input(hf,tg3_Xnuclei,"Xnuclei");
-  hdf_input(hf,tg3_Xd,"Xd");
-  hdf_input(hf,tg3_Xt,"Xt");
-  hdf_input(hf,tg3_XHe3,"XHe3");
-  hdf_input(hf,tg3_XLi4,"XLi4");
-  if (full_results) {
-    hdf_input(hf,tg3_Sint,"Sint");
-  }
-  hf.getd_vec("nB_grid",nB_grid);
-  hf.getd_vec("Ye_grid",Ye_grid);
-  hf.getd_vec("T_grid",T_grid);
-  hf.close();
   const vector<double> &data=tg3_flag.get_data();
+  vector<size_t> flags(22);
   size_t nb_frac_count=0, S_neg_count=0;
   for(size_t i=0;i<data.size();i++) {
     int iflag=((int)(data[i]*(1.0+1.0e-12)));
@@ -3500,14 +3482,14 @@ int eos_nuclei::table_stats(std::vector<std::string> &sv,
 	tg3_XHe3.get_data()[i]+tg3_XLi4.get_data()[i];
       size_t ix[3];
       tg3_Xn.unpack_index(i,ix);
-      double nB=nB_grid[ix[0]];
+      double nB=nB_grid2[ix[0]];
       if (nb_frac_count<1000 && fabs(check_X-1.0)>1.0e-6) {
 	cout << "Nuclear fractions do not add up to 1 (i,nB,Ye,T,X_total): "
-	     << i << " " << nB_grid[ix[0]] << " "
-	     << Ye_grid[ix[1]] << " " << T_grid[ix[2]] << " " 
+	     << i << " " << nB_grid2[ix[0]] << " "
+	     << Ye_grid2[ix[1]] << " " << T_grid2[ix[2]] << " " 
 	     << check_X << endl;
 	nb_frac_count++;
-	if (nb_frac_count==100000) {
+	if (nb_frac_count==1000) {
 	  cout << "Further nuclear fractions warnings suppressed."
 	       << endl;
 	}
@@ -3515,8 +3497,8 @@ int eos_nuclei::table_stats(std::vector<std::string> &sv,
       if (full_results && S_neg_count<1000 &&
 	  tg3_Sint.get_data()[i]<0.0) {
 	cout << "Entropy per baryon negative (i,nB,Ye,T,X_total): "
-	     << i << " " << nB_grid[ix[0]] << " "
-	     << Ye_grid[ix[1]] << " " << T_grid[ix[2]]*hc_mev_fm << " " 
+	     << i << " " << nB_grid2[ix[0]] << " "
+	     << Ye_grid2[ix[1]] << " " << T_grid2[ix[2]]*hc_mev_fm << " " 
 	     << tg3_Sint.get_data()[i] << endl;
 	S_neg_count++;
 	if (S_neg_count==1000) {
@@ -3535,7 +3517,7 @@ int eos_nuclei::table_stats(std::vector<std::string> &sv,
   return 0;
 }
 
-int eos_nuclei::merge_tables_aws(std::vector<std::string> &sv,
+int eos_nuclei::merge_tables(std::vector<std::string> &sv,
 				 bool itive_com) {
 
   if (sv.size()<4) {
@@ -3767,7 +3749,7 @@ int eos_nuclei::merge_tables_aws(std::vector<std::string> &sv,
   return 0;
 }
 
-int eos_nuclei::compare_tables_aws(std::vector<std::string> &sv,
+int eos_nuclei::compare_tables(std::vector<std::string> &sv,
 				   bool itive_com) {
 
   if (sv.size()<2) {
@@ -3960,13 +3942,11 @@ int eos_nuclei::compare_tables_aws(std::vector<std::string> &sv,
   return 0;
 }
 
-void eos_nuclei::new_table(std::vector<double> &nB_grid,
-			   std::vector<double> &Ye_grid,
-			   std::vector<double> &T_grid) {
+void eos_nuclei::new_table() {
 
-  size_t n_nB=301;
-  size_t n_Ye=70;
-  size_t n_T=160;
+  n_nB2=301;
+  n_Ye2=70;
+  n_T2=160;
   cout << "Beginning new table." << endl;
 
   calculator calc;
@@ -3975,27 +3955,27 @@ void eos_nuclei::new_table(std::vector<double> &nB_grid,
   vector<double> packed;
     
   calc.compile(nB_grid_spec.c_str());
-  for(size_t i=0;i<n_nB;i++) {
+  for(size_t i=0;i<n_nB2;i++) {
     vars["i"]=((double)i);
-    nB_grid.push_back(calc.eval(&vars));
-    packed.push_back(nB_grid[i]);
+    nB_grid2.push_back(calc.eval(&vars));
+    packed.push_back(nB_grid2[i]);
   }
     
   calc.compile(Ye_grid_spec.c_str());
-  for(size_t i=0;i<n_Ye;i++) {
+  for(size_t i=0;i<n_Ye2;i++) {
     vars["i"]=((double)i);
-    Ye_grid.push_back(calc.eval(&vars));
-    packed.push_back(Ye_grid[i]);
+    Ye_grid2.push_back(calc.eval(&vars));
+    packed.push_back(Ye_grid2[i]);
   }
     
   calc.compile(T_grid_spec.c_str());
-  for(size_t i=0;i<n_T;i++) {
+  for(size_t i=0;i<n_T2;i++) {
     vars["i"]=((double)i);
-    T_grid.push_back(calc.eval(&vars));
-    packed.push_back(T_grid[i]);
+    T_grid2.push_back(calc.eval(&vars));
+    packed.push_back(T_grid2[i]);
   }
 
-  size_t st[3]={n_nB,n_Ye,n_T};
+  size_t st[3]={n_nB2,n_Ye2,n_T2};
   tg3_log_xn.resize(3,st);
   tg3_log_xp.resize(3,st);
   tg3_Z.resize(3,st);
@@ -4270,26 +4250,20 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 #endif
 
   static const size_t buf_size=100;
-  
   int mpi_verbose=2;
-  
+
   // -----------------------------------------------------
   // All processors read input file in turn
 
-  if (sv.size()<2) {
-    cerr << "Need input filename." << endl;
-    return 1;
-  }
-  string in_file=sv[1];
   string out_file;
-  if (sv.size()>=3) {
-    out_file=sv[2];
+  if (sv.size()>=2) {
+    out_file=sv[1];
   } else {
     cout << "Automatically setting output file to \"eos_nuclei.o2\"."
 	 << endl;
     out_file="eos_nuclei.o2";
   }
-
+  
   if (mpi_rank==0) {
 
     // -----------------------------------------------------
@@ -4303,46 +4277,21 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 #endif
 
     // -----------------------------------------------------
-    // Grid in nB, Ye, and T
-    
-    size_t n_nB=0, n_Ye=0, n_T=0;
-    vector<double> nB_grid, Ye_grid, T_grid;
-    
-    // -----------------------------------------------------
     // Read the input file
     
-    if (in_file.length()==0) {
-      cerr << "No input file specified in generate-table-mpi." << endl;
-      return 3;
-    }
-    
-    if (in_file!="none") {
+    if (n_nB2==0) {
+
+      cout << "No data. Creating new table." << endl;
       
-      if (mpi_verbose>0) {
-	cout << "Rank " << mpi_rank << " reading file '" << in_file 
-	     << "'." << endl;
-      }
+      n_nB2=301;
+      n_Ye2=70;
+      n_T2=160;
       
-      // Read input file
-      read_results(in_file);
-      n_nB=n_nB2;
-      n_Ye=n_Ye2;
-      n_T=n_T2;
-      nB_grid=nB_grid2;
-      Ye_grid=Ye_grid2;
-      T_grid=T_grid2;
+      new_table();
       
-    } else {
-      
-      n_nB=301;
-      n_Ye=70;
-      n_T=160;
-      
-      new_table(nB_grid,Ye_grid,T_grid);
-      
-      double nB=nB_grid[250];
-      double Ye=Ye_grid[50];
-      double T=T_grid[80]/hc_mev_fm;
+      double nB=nB_grid2[250];
+      double Ye=Ye_grid2[50];
+      double T=T_grid2[80]/hc_mev_fm;
       double log_xn=-2.46;
       double log_xp=-1.64;
       if (alg_mode==2 || alg_mode==4) {
@@ -4368,16 +4317,16 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	Zbar=nuc_Z1;
 	Nbar=nuc_N1;
       } else if (alg_mode==0) {
-	first_ret=eos_vary_ZN_aws(nB,Ye,T,log_xn,log_xp,nuc_Z1,nuc_N1,
+	first_ret=eos_vary_ZN(nB,Ye,T,log_xn,log_xp,nuc_Z1,nuc_N1,
 				  thx,mun_full,mup_full,false);
 	Zbar=nuc_Z1;
 	Nbar=nuc_N1;
       } else if (alg_mode==2 || alg_mode==4) {
-	first_ret=eos_vary_dist_aws(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,thx,
-				    mun_full,mup_full,A_min,A_max,
-				    NmZ_min,NmZ_max,true,false);
+	first_ret=eos_vary_dist(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,thx,
+				mun_full,mup_full,A_min,A_max,
+				NmZ_min,NmZ_max,true,false);
       } else if (alg_mode==3) {
-	first_ret=eos_vary_dist_aws(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,thx,
+	first_ret=eos_vary_dist(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,thx,
 				    mun_full,mup_full,A_min,A_max,
 				    NmZ_min,NmZ_max,true,false);
       }
@@ -4419,9 +4368,9 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
     }
 
     // Adjust flags in input file if necessary
-    for(int inB=0;inB<((int)n_nB);inB++) {
-      for(int iYe=0;iYe<((int)n_Ye);iYe++) {
-	for(int iT=0;iT<((int)n_T);iT++) {
+    for(int inB=0;inB<((int)n_nB2);inB++) {
+      for(int iYe=0;iYe<((int)n_Ye2);iYe++) {
+	for(int iT=0;iT<((int)n_T2);iT++) {
 	  int iflag=((int)(tg3_flag.get(inB,iYe,iT)*(1.0+1.0e-12)));
 	  // If recompute is true, set all finished points to "guess"
 	  if (recompute==true) {
@@ -4455,9 +4404,9 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	  cerr << "Invalid name in edge_list." << endl;
 	  return 5;
 	}
-	for(int inB=1;inB<((int)n_nB-1);inB++) {
-	  for(int iYe=1;iYe<((int)n_Ye-1);iYe++) {
-	    for(int iT=1;iT<((int)n_T-1);iT++) {
+	for(int inB=1;inB<((int)n_nB2-1);inB++) {
+	  for(int iYe=1;iYe<((int)n_Ye2-1);iYe++) {
+	    for(int iT=1;iT<((int)n_T2-1);iT++) {
 	      int iflag=((int)(tg3_flag.get(inB,iYe,iT)*(1.0+1.0e-12)));
 	      if (iflag==iflag_done) {
 		double X0=ptr->get(inB,iYe,iT);
@@ -4508,19 +4457,13 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	
       }
       
-      n_nB2=n_nB;
-      n_Ye2=n_Ye;
-      n_T2=n_T;
-      nB_grid2=nB_grid;
-      Ye_grid2=Ye_grid;
-      T_grid2=T_grid;
       write_results("temp.o2");
 
       // End of 'if (edge_list.length()>0)'
     }
     
     // Task counters
-    size_t total_tasks=n_nB*n_Ye*n_T;
+    size_t total_tasks=n_nB2*n_Ye2*n_T2;
     size_t current_tasks=0;
 
     // -----------------------------------------------------
@@ -4547,7 +4490,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
       // Interpret variable Ye_list as an array of type size_t
       vector<size_t> Ye_list_sizet;
       if (Ye_list.length()==0) {
-	for(size_t i=0;i<n_Ye;i++) {
+	for(size_t i=0;i<n_Ye2;i++) {
 	  Ye_list_sizet.push_back(i);
 	}
       } else {
@@ -4570,11 +4513,11 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
       }
 
       // Loop over all points to compute task list
-      for(int inB=0;inB<((int)n_nB);inB++) {
+      for(int inB=0;inB<((int)n_nB2);inB++) {
 	for(int iYe_list=0;iYe_list<((int)Ye_list_sizet.size());
 	    iYe_list++) {
 	  int iYe=Ye_list_sizet[iYe_list];
-	  for(int iT=0;iT<((int)n_T);iT++) {
+	  for(int iT=0;iT<((int)n_T2);iT++) {
 	    
 	    int iflag=((int)(tg3_flag.get(inB,iYe,iT)*(1.0+1.0e-12)));
 	    bool guess_found=false;
@@ -4630,7 +4573,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 		  tasks.push_back(iT);
 
 		  if (alg_mode>=2) {
-		    if (nB_grid[inB]<1.0e-3 && inB<((int)n_nB)-1 &&
+		    if (nB_grid2[inB]<1.0e-3 && inB<((int)n_nB2)-1 &&
 			tg3_flag.get(inB+1,iYe,iT)>9.9) {
 		      double line[8]={(tg3_log_xn.get(inB-1,iYe,iT)+
 				       tg3_log_xn.get(inB+1,iYe,iT))/2.0,
@@ -4734,7 +4677,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 		  guess_found=true;
 		}
 	      }
-	      if (inB<((int)n_nB)-1) {
+	      if (inB<((int)n_nB2)-1) {
 		int iflag2=((int)(tg3_flag.get(inB+1,iYe,iT)*
 				  (1.0+1.0e-12)));
 		if (iflag2==iflag_in_progress_with_guess ||
@@ -4747,7 +4690,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 		  tasks.push_back(iT);
 
 		  if (alg_mode>=2) {
-		    if (nB_grid[inB]<1.0e-3 && inB>0 &&
+		    if (nB_grid2[inB]<1.0e-3 && inB>0 &&
 			tg3_flag.get(inB-1,iYe,iT)>9.9) {
 		      double line[8]={(tg3_log_xn.get(inB-1,iYe,iT)+
 				       tg3_log_xn.get(inB+1,iYe,iT))/2.0,
@@ -4785,7 +4728,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 		  guess_found=true;
 		}
 	      }
-	      if (iYe<((int)n_Ye)-1) {
+	      if (iYe<((int)n_Ye2)-1) {
 		int iflag2=((int)(tg3_flag.get(inB,iYe+1,iT)*
 				  (1.0+1.0e-12)));
 		if (iflag2==iflag_in_progress_with_guess ||
@@ -4818,7 +4761,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 		  guess_found=true;
 		}
 	      }
-	      if (iT<((int)n_T)-1) {
+	      if (iT<((int)n_T2)-1) {
 		int iflag2=((int)(tg3_flag.get(inB,iYe,iT+1)*
 				  (1.0+1.0e-12)));
 		if (iflag2==iflag_in_progress_with_guess ||
@@ -4872,8 +4815,8 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 
 		    // Ensure that the j indices are in bounds
 		    if ((jnB!=inB || jYe!=iYe || jT!=iT) && jnB>=0 &&
-			jYe>=0 && jT>=0 && jnB<((int)n_nB) &&
-			jYe<((int)n_Ye) && jT<((int)n_T)) {
+			jYe>=0 && jT>=0 && jnB<((int)n_nB2) &&
+			jYe<((int)n_Ye2) && jT<((int)n_T2)) {
 
 		      int jflag=((int)(tg3_flag.get(jnB,jYe,jT)*
 				       (1.0+1.0e-12)));
@@ -5062,9 +5005,9 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	    output_buffers[proc_index][vi["inB"]]=tasks[i*6+3];
 	    output_buffers[proc_index][vi["iYe"]]=tasks[i*6+4];
 	    output_buffers[proc_index][vi["iT"]]=tasks[i*6+5];
-	    output_buffers[proc_index][vi["nB"]]=nB_grid[tasks[i*6+3]];
-	    output_buffers[proc_index][vi["Ye"]]=Ye_grid[tasks[i*6+4]];
-	    output_buffers[proc_index][vi["T"]]=T_grid[tasks[i*6+5]];
+	    output_buffers[proc_index][vi["nB"]]=nB_grid2[tasks[i*6+3]];
+	    output_buffers[proc_index][vi["Ye"]]=Ye_grid2[tasks[i*6+4]];
+	    output_buffers[proc_index][vi["T"]]=T_grid2[tasks[i*6+5]];
 	    output_buffers[proc_index][vi["log_xn"]]=gtab.get("log_xn",i);
 	    output_buffers[proc_index][vi["log_xp"]]=gtab.get("log_xp",i);
 	    output_buffers[proc_index][vi["Z"]]=gtab.get("Z",i);
@@ -5096,9 +5039,9 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 		  X_all_nuclei+=tg3_Xt.get(inB_dest,iYe_dest,iT_dest-1);
 		  X_all_nuclei+=tg3_XHe3.get(inB_dest,iYe_dest,iT_dest-1);
 		  X_all_nuclei+=tg3_XLi4.get(inB_dest,iYe_dest,iT_dest-1);
-		  if (X_all_nuclei<1.0e-20 && nB_grid[tasks[i*6+3]]<0.02) {
+		  if (X_all_nuclei<1.0e-20 && nB_grid2[tasks[i*6+3]]<0.02) {
 		    cout << "X_all_nuclei small: " << X_all_nuclei << " "
-			 << T_grid[iT_dest] << endl;
+			 << T_grid2[iT_dest] << endl;
 		    output_buffers[proc_index][vi["no_nuclei"]]=1.0;
 		  }
 		}
@@ -5117,19 +5060,13 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	  // Update file if necessary
 	  if (i%1000==999 && MPI_Wtime()-file_update_time>1800.0) {
 	    cout << "Updating file." << endl;
-	    n_nB2=n_nB;
-	    n_Ye2=n_Ye;
-	    n_T2=n_T;
-	    nB_grid2=nB_grid;
-	    Ye_grid2=Ye_grid;
-	    T_grid2=T_grid;
 	    write_results(out_file);
 	    file_update_time=MPI_Wtime();
 	    
 	    size_t tc=0,conv2_count=0;
-	    for(size_t ii=0;ii<n_nB;ii++) {
-	      for(size_t j=0;j<n_Ye;j++) {
-		for(size_t k=0;k<n_T;k++) {
+	    for(size_t ii=0;ii<n_nB2;ii++) {
+	      for(size_t j=0;j<n_Ye2;j++) {
+		for(size_t k=0;k<n_T2;k++) {
 		  if (tg3_flag.get(ii,j,k)>=10.0) conv2_count++;
 		  tc++;
 		}
@@ -5169,9 +5106,9 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	       << tasks[i*6+4] << ","
 	       << tasks[i*6+5] << ")" << endl;
 
-	  double nB=nB_grid[inB];
-	  double Ye=Ye_grid[iYe];
-	  double T=T_grid[iT]/hc_mev_fm;
+	  double nB=nB_grid2[inB];
+	  double Ye=Ye_grid2[iYe];
+	  double T=T_grid2[iT]/hc_mev_fm;
 	  double log_xn=gtab.get("log_xn",i);
 	  double log_xp=gtab.get("log_xp",i);
 	  size_t nuc_Z1=((size_t)(gtab.get("Z",i)+1.0e-12));
@@ -5190,7 +5127,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 		X_all_nuclei+=tg3_XLi4.get(inB,iYe,iT-1);
 		if (X_all_nuclei<1.0e-20) {
 		  cout << "X_all_nuclei small: " << X_all_nuclei << " "
-		       << T_grid[iT] << endl;
+		       << T_grid2[iT] << endl;
 		  no_nuclei=true;
 		}
 	      }
@@ -5205,7 +5142,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	  if (alg_mode==1) {
 	    // Xingfu's function here
 	  } else if (alg_mode==0) {
-	    ret=eos_vary_ZN_aws(nB,Ye,T,log_xn,log_xp,nuc_Z1,nuc_N1,
+	    ret=eos_vary_ZN(nB,Ye,T,log_xn,log_xp,nuc_Z1,nuc_N1,
 				thx,mun_full,mup_full,no_nuclei);
 	    Zbar=nuc_Z1;
 	    Nbar=nuc_N1;
@@ -5214,7 +5151,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	    A_max=gtab.get("A_max",i);
 	    NmZ_min=gtab.get("NmZ_min",i);
 	    NmZ_max=gtab.get("NmZ_max",i);
-	    ret=eos_vary_dist_aws
+	    ret=eos_vary_dist
 	      (nB,Ye,T,log_xn,log_xp,Zbar,Nbar,thx,mun_full,mup_full,
 	       A_min,A_max,NmZ_min,NmZ_max,true,no_nuclei);    
 	  }
@@ -5285,12 +5222,6 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	done=true;
       } else if (write_elapsed>1800.0) {
 	cout << "Updating file." << endl;
-	n_nB2=n_nB;
-	n_Ye2=n_Ye;
-	n_T2=n_T;
-	nB_grid2=nB_grid;
-	Ye_grid2=Ye_grid;
-	T_grid2=T_grid;
 	write_results(out_file);
 #ifdef NO_MPI	
 	file_update_time=time(0);
@@ -5302,9 +5233,9 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	// finished
 	
 	size_t tc=0, conv2_count=0;
-	for(size_t i=0;i<n_nB;i++) {
-	  for(size_t j=0;j<n_Ye;j++) {
-	    for(size_t k=0;k<n_T;k++) {
+	for(size_t i=0;i<n_nB2;i++) {
+	  for(size_t j=0;j<n_Ye2;j++) {
+	    for(size_t k=0;k<n_T2;k++) {
 	      if (tg3_flag.get(i,j,k)>=10.0) conv2_count++;
 	      tc++;
 	    }
@@ -5340,9 +5271,9 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
     // Count number of points finished
 
     size_t conv2_count=0;
-    for(size_t i=0;i<n_nB;i++) {
-      for(size_t j=0;j<n_Ye;j++) {
-	for(size_t k=0;k<n_T;k++) {
+    for(size_t i=0;i<n_nB2;i++) {
+      for(size_t j=0;j<n_Ye2;j++) {
+	for(size_t k=0;k<n_T2;k++) {
 	  if (tg3_flag.get(i,j,k)>=10.0) conv2_count++;
 	}
       }
@@ -5353,12 +5284,6 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
     // -----------------------------------------------------
     // Output file
     
-    n_nB2=n_nB;
-    n_Ye2=n_Ye;
-    n_T2=n_T;
-    nB_grid2=nB_grid;
-    Ye_grid2=Ye_grid;
-    T_grid2=T_grid;
     write_results(out_file);
     
     if (mpi_verbose>0) {
@@ -5431,10 +5356,10 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	if (alg_mode==1) {
 	  // Xingfu's function here
 	} else if (alg_mode==0) {
-	  ret=eos_vary_ZN_aws(nB,Ye,T,log_xn,log_xp,nuc_Z1,nuc_N1,
+	  ret=eos_vary_ZN(nB,Ye,T,log_xn,log_xp,nuc_Z1,nuc_N1,
 			      thx,mun_full,mup_full,no_nuclei);
 	} else if (alg_mode==2 || alg_mode==3 || alg_mode==4) {
-	  ret=eos_vary_dist_aws(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,
+	  ret=eos_vary_dist(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,
 				thx,mun_full,mup_full,
 				A_min,A_max,NmZ_min,NmZ_max,true,no_nuclei);
 	}
@@ -5761,7 +5686,7 @@ int eos_nuclei::mcarlo_nuclei(std::vector<std::string> &sv, bool itive_com) {
       bool dist_changed=true;
       bool no_nuclei=false;
       alg_mode=4;
-      int ret=eos_vary_dist_aws(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,
+      int ret=eos_vary_dist(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,
 				thx,mun_full,mup_full,
 				A_min,A_max,NmZ_min,NmZ_max,
 				true,false);
@@ -5783,7 +5708,7 @@ int eos_nuclei::mcarlo_nuclei(std::vector<std::string> &sv, bool itive_com) {
       bool dist_changed=true;
       bool no_nuclei=false;
       alg_mode=4;
-      int ret=eos_vary_dist_aws(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,
+      int ret=eos_vary_dist(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,
 				thx,mun_full,mup_full,
 				A_min,A_max,NmZ_min,NmZ_max,
 				true,false);
@@ -5845,7 +5770,7 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
       (this,&eos_nuclei::check_virial),
       o2scl::cli::comm_option_both},
      {0,"generate-table","Generate an EOS table.",
-      1,2,"<input file or \"none\"> [out file]",
+      0,1,"[out file]",
       "",new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::generate_table),o2scl::cli::comm_option_both},
      {0,"load","Load an EOS table.",
@@ -5868,15 +5793,14 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
      {0,"merge-tables-aws","Merge two output tables to create a third.",
       3,3,"<input file 1> <input file 2> <output file>",
       "",new o2scl::comm_option_mfptr<eos_nuclei>
-      (this,&eos_nuclei::merge_tables_aws),o2scl::cli::comm_option_both},
+      (this,&eos_nuclei::merge_tables),o2scl::cli::comm_option_both},
      {0,"compare-tables-aws","Compare two output tables.",
       2,3,"<input file 1> <input file 2> [quantity]",
       "",new o2scl::comm_option_mfptr<eos_nuclei>
-      (this,&eos_nuclei::compare_tables_aws),o2scl::cli::comm_option_both},
-     {0,"table-stats","",
-      1,1,"<file>",
+      (this,&eos_nuclei::compare_tables),o2scl::cli::comm_option_both},
+     {0,"stats","",0,0,"",
       "",new o2scl::comm_option_mfptr<eos_nuclei>
-      (this,&eos_nuclei::table_stats),o2scl::cli::comm_option_both},
+      (this,&eos_nuclei::stats),o2scl::cli::comm_option_both},
      {0,"mcarlo-nuclei","",
       0,0,"<file>",
       "",new o2scl::comm_option_mfptr<eos_nuclei>
@@ -5886,7 +5810,7 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
       -1,-1,((string)"<n_B> <Y_e> <T (MeV)> [log(xn) log(xp) Z N] ")+
       "[alg_mode 2-3: log(xn) log(xp) A_min A_max NmZ_min NmZ_max] [fname]",
       "",new o2scl::comm_option_mfptr<eos_nuclei>
-      (this,&eos_nuclei::point_nuclei_aws),o2scl::cli::comm_option_both},
+      (this,&eos_nuclei::point_nuclei),o2scl::cli::comm_option_both},
      {0,"select-high-T","",
       1,1,"<>","",new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::select_high_T_cl),o2scl::cli::comm_option_both}
@@ -5942,7 +5866,7 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
     "If true, use previously computed points as guesses for neighbors";
   cl.par_list.insert(make_pair("propagate_points",&p_propagate_points));
   
-  p_mh_tol_rel.d=&mh_aws.tol_rel;
+  p_mh_tol_rel.d=&mh.tol_rel;
   p_mh_tol_rel.help="Relative tolerance for the solver (default 10^(-6)).";
   cl.par_list.insert(make_pair("mh_tol_rel",&p_mh_tol_rel));
   
@@ -5966,7 +5890,7 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
   
   p_fixed_dist_alg.i=&fixed_dist_alg;
   p_fixed_dist_alg.help=((string)"Modify the algorithm for the ")+
-    "eos_fixed_dist_aws() function. The 1s digit is the number "+
+    "eos_fixed_dist() function. The 1s digit is the number "+
     "of solves minus 1, the 10s digit is the number of brackets "+
     "divided by 10, the "+
     "100s digit is the number of minimizes, and the 1000s digit "+
@@ -5976,9 +5900,9 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
   
   p_function_verbose.i=&function_verbose;
   p_function_verbose.help=((string)"Verbose for individual functions ")+
-    "(default value 11111).\n\t1s digit: fixed_ZN_aws()\n\t10s digit: "+
-    "vary_ZN_aws()\n\t100s digit: "+
-    "fixed_dist_aws()\n\t1000s digit: vary_dist_aws()\n\t10000s digit: "+
+    "(default value 11111).\n\t1s digit: fixed_ZN()\n\t10s digit: "+
+    "vary_ZN()\n\t100s digit: "+
+    "fixed_dist()\n\t1000s digit: vary_dist()\n\t10000s digit: "+
     "store_point().";
   cl.par_list.insert(make_pair("function_verbose",&p_function_verbose));
   
