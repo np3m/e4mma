@@ -160,6 +160,10 @@ eos_nuclei::eos_nuclei() {
 
   function_verbose=11111;
   max_ratio=2.25;
+  loaded=false;
+}
+
+eos_nuclei::~eos_nuclei() {
 }
 
 // Integrand for eq.(25) & (27)
@@ -329,7 +333,20 @@ int eos_nuclei::init_function(size_t dim, const ubvector &x, ubvector &y) {
 
 int eos_nuclei::load(std::vector<std::string> &sv,
 		     bool itive_com) {
+  if (sv.size()<2) {
+    cout << "No filename in load." << endl;
+  }
+  cout << "Loading: " << sv[1] << endl;
   read_results(sv[1]);
+  return 0;
+}
+
+int eos_nuclei::output(std::vector<std::string> &sv,
+		     bool itive_com) {
+  if (sv.size()<2) {
+    cout << "No filename in output." << endl;
+  }
+  write_results(sv[1]);	
   return 0;
 }
 
@@ -377,141 +394,93 @@ int eos_nuclei::maxwell_test(std::vector<std::string> &sv,
 
 int eos_nuclei::add_eg(std::vector<std::string> &sv,
 		       bool itive_com) {
-  
-  if (sv.size()<3) {
-    cerr << "Need input and output file for \"eos-deriv\"" << endl;
-    return 1;
-  }
-  if (sv[1]==sv[2]) {
-    cerr << "Input and output filenames the same in eos-deriv." << endl;
+
+  if (loaded==false || n_nB2==0 || n_Ye2==0 || n_T2==0) {
+    cerr << "No EOS loaded." << endl;
     return 2;
   }
-
+  
   if (full_results==false) {
-    cerr << "add_eg requires full_results=true." << endl;
+    cerr << "add_eg requires full_results==true." << endl;
     return 3;
   }
 
-  // -----------------------------------------------------
-  // Read table
-    
-  size_t n_nB, n_Ye, n_T;
-  vector<double> nB_grid, Ye_grid, T_grid;
-
-  read_results(sv[1]);
-  n_nB=n_nB2;
-  n_Ye=n_Ye2;
-  n_T=n_T2;
-  nB_grid=nB_grid2;
-  Ye_grid=Ye_grid2;
-  T_grid=T_grid2;
-  
-  size_t st[3]={n_nB,n_Ye,n_T};
-    
-  calculator calc;
-  std::map<std::string,double> vars;
-    
+  size_t st[3]={n_nB2,n_Ye2,n_T2};
   vector<double> packed;
-  
-  calc.compile(nB_grid_spec.c_str());
-  for(size_t i=0;i<n_nB;i++) {
-    vars["i"]=((double)i);
-    packed.push_back(nB_grid[i]);
+  for(size_t i=0;i<n_nB2;i++) {
+    packed.push_back(nB_grid2[i]);
   }
-  
-  calc.compile(Ye_grid_spec.c_str());
-  for(size_t i=0;i<n_Ye;i++) {
-    vars["i"]=((double)i);
-    packed.push_back(Ye_grid[i]);
+  for(size_t i=0;i<n_Ye2;i++) {
+    packed.push_back(Ye_grid2[i]);
   }
-  
-  calc.compile(T_grid_spec.c_str());
-  for(size_t i=0;i<n_T;i++) {
-    vars["i"]=((double)i);
-    packed.push_back(T_grid[i]);
+  for(size_t i=0;i<n_T2;i++) {
+    packed.push_back(T_grid2[i]);
   }
-  
-  tg3_E.resize(3,st);
-  tg3_E.set_grid_packed(packed);
-  tg3_E.set_all(0.0);
-  tg3_P.resize(3,st);
-  tg3_P.set_grid_packed(packed);
-  tg3_P.set_all(0.0);
-  tg3_S.resize(3,st);
-  tg3_S.set_grid_packed(packed);
-  tg3_S.set_all(0.0);
-  tg3_F.resize(3,st);
-  tg3_F.set_grid_packed(packed);
-  tg3_F.set_all(0.0);
+
+  if (tg3_E.total_size()==0) {
+    tg3_E.resize(3,st);
+    tg3_E.set_grid_packed(packed);
+    tg3_E.set_all(0.0);
+  }
+  if (tg3_P.total_size()==0) {
+    tg3_P.resize(3,st);
+    tg3_P.set_grid_packed(packed);
+    tg3_P.set_all(0.0);
+  }
+  if (tg3_S.total_size()==0) {
+    tg3_S.resize(3,st);
+    tg3_S.set_grid_packed(packed);
+    tg3_S.set_all(0.0);
+  }
+  if (tg3_F.total_size()==0) {
+    tg3_F.resize(3,st);
+    tg3_F.set_grid_packed(packed);
+    tg3_F.set_all(0.0);
+  }
   
   eos_sn_oo eso;
   eso.include_muons=false;
   
-  for (size_t i=0;i<n_nB;i++) {
-    for (size_t j=0;j<n_Ye;j++) {
-      for (size_t k=0;k<n_T;k++) {
+  for (size_t i=0;i<n_nB2;i++) {
+    for (size_t j=0;j<n_Ye2;j++) {
+      for (size_t k=0;k<n_T2;k++) {
 	
 	thermo lep;
 	double mue;
-	eso.compute_eg_point(nB_grid[i],Ye_grid[j],T_grid[k],lep,mue);
-	
+	eso.compute_eg_point(nB_grid2[i],Ye_grid2[j],T_grid2[k],lep,mue);
+
 	tg3_F.set(i,j,k,tg3_Fint.get(i,j,k)+
-		  (hc_mev_fm*lep.ed-T_grid[k]*lep.en)/nB_grid[i]);
+		  (hc_mev_fm*lep.ed-T_grid2[k]*lep.en)/nB_grid2[i]);
 	tg3_E.set(i,j,k,tg3_Eint.get(i,j,k)+
-		  hc_mev_fm*lep.ed/nB_grid[i]);
+		  hc_mev_fm*lep.ed/nB_grid2[i]);
 	tg3_P.set(i,j,k,tg3_Pint.get(i,j,k)+
 		  hc_mev_fm*lep.pr);
 	tg3_S.set(i,j,k,tg3_Sint.get(i,j,k)+
-		  hc_mev_fm*lep.en/nB_grid[i]);
-	tg3_mup.set(i,j,k,tg3_mup.get(i,j,k)+hc_mev_fm*mue);
+		  hc_mev_fm*lep.en/nB_grid2[i]);
+	//tg3_mup.set(i,j,k,tg3_mup.get(i,j,k)+hc_mev_fm*mue);
       }
     }
-    cout << i+1 << "/" << n_nB << endl;
+    cout << "add_eg(): " << i+1 << "/" << n_nB2 << endl;
   }
 
   include_eg=true;
 
-  n_nB2=n_nB;
-  n_Ye2=n_Ye;
-  n_T2=n_T;
-  nB_grid2=nB_grid;
-  Ye_grid2=Ye_grid;
-  T_grid2=T_grid;
-  write_results(sv[2]);
-  
   return 0;
 }
 
 int eos_nuclei::eos_deriv(std::vector<std::string> &sv,
                           bool itive_com) {
 
-  if (sv.size()<3) {
-    cerr << "Need input and output file for \"eos-deriv\"" << endl;
-    return 1;
-  }
-  if (sv[1]==sv[2]) {
-    cerr << "Input and output filenames the same in eos-deriv." << endl;
-    return 2;
-  }
+  std::cout << "Computing derivatives." << endl;
   
   // -----------------------------------------------------
   // Read table
     
-  size_t n_nB, n_Ye, n_T;
-  vector<double> nB_grid, Ye_grid, T_grid;
-  read_results(sv[1]);
-  n_nB=n_nB2;
-  n_Ye=n_Ye2;
-  n_T=n_T2;
-  nB_grid=nB_grid2;
-  Ye_grid=Ye_grid2;
-  T_grid=T_grid2;
-
   if (full_results==false) {
     
     full_results=true;
     
-    size_t st[3]={n_nB,n_Ye,n_T};
+    size_t st[3]={n_nB2,n_Ye2,n_T2};
     
     calculator calc;
     std::map<std::string,double> vars;
@@ -519,21 +488,21 @@ int eos_nuclei::eos_deriv(std::vector<std::string> &sv,
     vector<double> packed;
     
     calc.compile(nB_grid_spec.c_str());
-    for(size_t i=0;i<n_nB;i++) {
+    for(size_t i=0;i<n_nB2;i++) {
       vars["i"]=((double)i);
-      packed.push_back(nB_grid[i]);
+      packed.push_back(nB_grid2[i]);
     }
     
     calc.compile(Ye_grid_spec.c_str());
-    for(size_t i=0;i<n_Ye;i++) {
+    for(size_t i=0;i<n_Ye2;i++) {
       vars["i"]=((double)i);
-      packed.push_back(Ye_grid[i]);
+      packed.push_back(Ye_grid2[i]);
     }
     
     calc.compile(T_grid_spec.c_str());
-    for(size_t i=0;i<n_T;i++) {
+    for(size_t i=0;i<n_T2;i++) {
       vars["i"]=((double)i);
-      packed.push_back(T_grid[i]);
+      packed.push_back(T_grid2[i]);
     }
     
     tg3_Eint.resize(3,st);
@@ -557,77 +526,77 @@ int eos_nuclei::eos_deriv(std::vector<std::string> &sv,
 
   // Temporary vectors which store the free energy density in
   // MeV/fm^3
-  ubvector fint_vec_nB(n_nB), fint_vec_Ye(n_Ye), fint_vec_T(n_T);
+  ubvector fint_vec_nB(n_nB2), fint_vec_Ye(n_Ye2), fint_vec_T(n_T2);
 
   // The interpolator
   interp_steffen<vector<double>,ubvector> itp_stf;
 
   // Temporary vectors for derivatives in the nB, Ye, and T directions
-  fint_vec_nB.resize(n_nB);
-  fint_vec_Ye.resize(n_Ye);
-  fint_vec_T.resize(n_T);
+  fint_vec_nB.resize(n_nB2);
+  fint_vec_Ye.resize(n_Ye2);
+  fint_vec_T.resize(n_T2);
 
   // First, compute the temperature derivative, which is just the
   // entropy times minus one
-  for (size_t i=0;i<n_nB;i++) {
-    for (size_t j=0;j<n_Ye;j++) {
-      for(size_t k=0;k<n_T;k++) {
-	fint_vec_T[k]=tg3_Fint.get(i,j,k)*nB_grid[i];
+  for (size_t i=0;i<n_nB2;i++) {
+    for (size_t j=0;j<n_Ye2;j++) {
+      for(size_t k=0;k<n_T2;k++) {
+	fint_vec_T[k]=tg3_Fint.get(i,j,k)*nB_grid2[i];
       }
-      itp_stf.set(n_T,T_grid,fint_vec_T);
-      for(size_t k=0;k<n_T;k++) {
-	tg3_Sint.set(i,j,k,-itp_stf.deriv(T_grid[k])/nB_grid[i]);
+      itp_stf.set(n_T2,T_grid2,fint_vec_T);
+      for(size_t k=0;k<n_T2;k++) {
+	tg3_Sint.set(i,j,k,-itp_stf.deriv(T_grid2[k])/nB_grid2[i]);
       }
     }
   }
 
   // Second, compute the electron fraction derivative, which we
   // temporarily store in tg3_mup
-  for (size_t i=0;i<n_nB;i++) {
-    for(size_t k=0;k<n_T;k++) {
-      for (size_t j=0;j<n_Ye;j++) {
-	fint_vec_Ye[j]=tg3_Fint.get(i,j,k)*nB_grid[i];
+  for (size_t i=0;i<n_nB2;i++) {
+    for(size_t k=0;k<n_T2;k++) {
+      for (size_t j=0;j<n_Ye2;j++) {
+	fint_vec_Ye[j]=tg3_Fint.get(i,j,k)*nB_grid2[i];
       }
-      itp_stf.set(n_Ye,Ye_grid,fint_vec_Ye);
-      for (size_t j=0;j<n_Ye;j++) {
-	tg3_mup.set(i,j,k,itp_stf.deriv(Ye_grid[j]));
+      itp_stf.set(n_Ye2,Ye_grid2,fint_vec_Ye);
+      for (size_t j=0;j<n_Ye2;j++) {
+	tg3_mup.set(i,j,k,itp_stf.deriv(Ye_grid2[j]));
       }
     }
   }
 
   // Third, compute the baryon density derivative, which we
   // temporarily store in tg3_mun
-  for (size_t j=0;j<n_Ye;j++) {
-    for(size_t k=0;k<n_T;k++) {
-      for (size_t i=0;i<n_nB;i++) {
-	fint_vec_nB[i]=tg3_Fint.get(i,j,k)*nB_grid[i];
+  for (size_t j=0;j<n_Ye2;j++) {
+    for(size_t k=0;k<n_T2;k++) {
+      for (size_t i=0;i<n_nB2;i++) {
+	fint_vec_nB[i]=tg3_Fint.get(i,j,k)*nB_grid2[i];
       }
-      itp_stf.set(n_nB,nB_grid,fint_vec_nB);
-      for (size_t i=0;i<n_nB;i++) {
-	tg3_mun.set(i,j,k,itp_stf.deriv(nB_grid[i]));
+      itp_stf.set(n_nB2,nB_grid2,fint_vec_nB);
+      for (size_t i=0;i<n_nB2;i++) {
+	tg3_mun.set(i,j,k,itp_stf.deriv(nB_grid2[i]));
       }
     }
   }
 
   // Now go through every point and compute the remaining
   // quantities
-  for (size_t i=0;i<n_nB;i++) {
-    for (size_t j=0;j<n_Ye;j++) {
-      for (size_t k=0;k<n_T;k++) {
+  for (size_t i=0;i<n_nB2;i++) {
+    for (size_t j=0;j<n_Ye2;j++) {
+      for (size_t k=0;k<n_T2;k++) {
 	
-	double en=tg3_Sint.get(i,j,k)*nB_grid[i];
+	double en=tg3_Sint.get(i,j,k)*nB_grid2[i];
 	double dfdnB=tg3_mun.get(i,j,k);
 	double dfdYe=tg3_mup.get(i,j,k);
 
-	if (false && nB_grid[i]>0.3) {
+	if (false && nB_grid2[i]>0.3) {
 	  cout << tg3_mun.get(i,j,k) << endl;
 	  cout << tg3_mup.get(i,j,k) << endl;
 	}
 	
-	tg3_mun.get(i,j,k)=dfdnB-dfdYe*Ye_grid[j]/nB_grid[i];
-	tg3_mup.get(i,j,k)=dfdnB-dfdYe*(Ye_grid[j]-1.0)/nB_grid[i];
+	tg3_mun.get(i,j,k)=dfdnB-dfdYe*Ye_grid2[j]/nB_grid2[i];
+	tg3_mup.get(i,j,k)=dfdnB-dfdYe*(Ye_grid2[j]-1.0)/nB_grid2[i];
 
-	if (false && nB_grid[i]>0.3) {
+	if (false && nB_grid2[i]>0.3) {
 	  cout << tg3_mun.get(i,j,k) << endl;
 	  cout << tg3_mup.get(i,j,k) << endl;
 	  exit(-1);
@@ -635,24 +604,18 @@ int eos_nuclei::eos_deriv(std::vector<std::string> &sv,
 	
 	// E = F + T S
 	tg3_Eint.get(i,j,k)=tg3_Fint.get(i,j,k)+
-	  T_grid[k]*tg3_Sint.get(i,j,k);
+	  T_grid2[k]*tg3_Sint.get(i,j,k);
 	
 	// P = - F + mun * nn + mup * np
-	tg3_Pint.get(i,j,k)=-tg3_Fint.get(i,j,k)*nB_grid[i]+
-	  nB_grid[i]*(1.0-Ye_grid[j])*tg3_mun.get(i,j,k)+
-	  nB_grid[i]*Ye_grid[j]*tg3_mup.get(i,j,k);
+	tg3_Pint.get(i,j,k)=-tg3_Fint.get(i,j,k)*nB_grid2[i]+
+	  nB_grid2[i]*(1.0-Ye_grid2[j])*tg3_mun.get(i,j,k)+
+	  nB_grid2[i]*Ye_grid2[j]*tg3_mup.get(i,j,k);
       }
     }
   }
   
-  n_nB2=n_nB;
-  n_Ye2=n_Ye;
-  n_T2=n_T;
-  nB_grid2=nB_grid;
-  Ye_grid2=Ye_grid;
-  T_grid2=T_grid;
-  write_results(sv[2]);
-  
+  std::cout << "Finished computing derivatives." << endl;
+
   return 0;
     
 }
@@ -3001,6 +2964,8 @@ int eos_nuclei::write_results(std::string fname) {
   
   hdf_file hf;
   
+  wordexp_single_file(fname);
+  
   hf.open_or_create(fname);
   
   hf.set_szt("n_nB",n_nB2);
@@ -3092,6 +3057,8 @@ int eos_nuclei::read_results(std::string fname) {
   hdf_file hf;
   string type;
 
+  wordexp_single_file(fname);
+
   hf.open_or_create(fname);
   
   hf.get_szt("n_nB",n_nB2);
@@ -3181,6 +3148,8 @@ int eos_nuclei::read_results(std::string fname) {
   }
   
   hf.close();
+
+  loaded=true;
   
   cout << "Function read_results() done. " << endl;
 
@@ -5852,15 +5821,15 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
   
   eos::setup_cli(cl);
   
-  static const int nopt=14;
+  static const int nopt=15;
   
   o2scl::comm_option_s options[nopt]=
     {{0,"eos-deriv","compute derivatives",
-      2,2,"<file in> <file out>","",new o2scl::comm_option_mfptr<eos_nuclei>
+      0,0,"<file in> <file out>","",new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::eos_deriv),
       o2scl::cli::comm_option_both},
      {0,"add-eg","Add electrons and photons.",
-      2,2,"<file in> <file out>","",new o2scl::comm_option_mfptr<eos_nuclei>
+      0,0,"<file in> <file out>","",new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::add_eg),
       o2scl::cli::comm_option_both},
      {0,"maxwell-test","",
@@ -5880,9 +5849,13 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
       "",new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::generate_table),o2scl::cli::comm_option_both},
      {0,"load","Load an EOS table.",
-      1,1,"<filename>",
+      0,1,"<filename>",
       "",new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::load),o2scl::cli::comm_option_both},
+     {0,"output","Output an EOS table.",
+      0,1,"<filename>",
+      "",new o2scl::comm_option_mfptr<eos_nuclei>
+      (this,&eos_nuclei::output),o2scl::cli::comm_option_both},
      {0,"edit-data","Edit data in the EOS tables.",2,5,
       "<in file> <select func.> [tensor to modify] [value func.] [out file]",
       ((string)"The \"edit-data\" command counts entries matching the ")+
@@ -6012,5 +5985,5 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
   p_max_ratio.d=&max_ratio;
   p_max_ratio.help="The maximum of N/Z or Z/N.";
   cl.par_list.insert(make_pair("max_ratio",&p_max_ratio));
-  
+
 }

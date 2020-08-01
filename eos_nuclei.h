@@ -38,12 +38,15 @@ class eos_nuclei : public eos {
 
   eos_nuclei();
 
+  virtual ~eos_nuclei();
+  
   size_t n_nB2;
   size_t n_Ye2;
   size_t n_T2;
   std::vector<double> nB_grid2;
   std::vector<double> Ye_grid2;
   std::vector<double> T_grid2;
+  bool loaded;
 
   /** \brief Object for sending slack messages
    */
@@ -275,6 +278,9 @@ class eos_nuclei : public eos {
   /** \brief Desc
    */
   int add_eg(std::vector<std::string> &sv, bool itive_com);
+
+  /** \brief Desc
+   */
   int maxwell_test(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Check the virial solver by using it to compute
@@ -393,6 +399,8 @@ class eos_nuclei : public eos {
   /** \brief Desc
    */
   int load(std::vector<std::string> &sv, bool itive_com);
+  
+  int output(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Edit an EOS table
    */
