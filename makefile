@@ -11,9 +11,10 @@ LCXX = $(CXX)
 LMPI_CXX = $(MPI_CXX)
 LIBS = -L/usr/local/lib -lo2scl_hdf -lo2scl_eos -lo2scl_part -lo2scl \
         -lhdf5 -lgsl -lreadline
-LMPI_CFLAGS = -O3 -std=c++11 -DTEMP_UPDATES -DO2SCL_MPI
-LCFLAGS = -O3 -std=c++11 -DNO_MPI -DTEMP_UPDATES 
-SCRATCH_COPY = 
+LMPI_CFLAGS = -O3 -std=c++11 -DTEMP_UPDATES -DO2SCL_MPI \
+	-DO2SCL_OPENMP -fopenmp
+LCFLAGS = -O3 -std=c++11 -DNO_MPI -DTEMP_UPDATES \
+	-DO2SCL_OPENMP -fopenmp
 
 # ----------------------------------------------------------------
 # UTK-specific settings
@@ -29,57 +30,10 @@ LCXX = $(UTKNA_CXX)
 LMPI_CXX = $(UTKNA_MPI_CXX)
 EOS_DIR = $(UTKNA_EOS_DIR)
 LCFLAGS = -ggdb $(UTKNA_O2SCL_INCS) $(UTKNA_CFLAGS) -DNO_MPI -DTEMP_UPDATES \
-        -I$(EOS_DIR)
+        -I$(EOS_DIR) $(UTKNA_OPENMP_FLAGS)
 LMPI_CFLAGS = -ggdb $(UTKNA_O2SCL_INCS) $(UTKNA_MPI_CFLAGS) -DTEMP_UPDATES \
-        -I$(EOS_DIR) -DO2SCL_MPI
+        -I$(EOS_DIR) -DO2SCL_MPI $(UTKNA_OPENMP_FLAGS)
 
-else
-
-ifeq ($(NERSC_HOST),cori)
-
-ifeq ($(NODE_TYPE),haswell)
-
-# On NERSC cori
-LCXX = CC
-LMPI_CXX = CC
-LIBS = -static -L/global/common/cori_cle6/software/gsl/2.1/intel/lib \
-        -L/global/common/cori_cle6/software/boost/1.67.0/intel/haswell/lib \
-        -L/project/projectdirs/m3389/hdf5-1.10.5.cori.haswell/lib \
-        -L/project/projectdirs/m3389/o2scl-0.924.cori.haswell/lib \
-        -lo2scl_hdf -lo2scl_eos -lo2scl_part -lo2scl \
-        -lhdf5_hl -lhdf5 -lgsl
-LMPI_CFLAGS = -O3 -DTEMP_UPDATES -std=c++11 \
-        -I/global/common/cori_cle6/software/gsl/2.1/intel/include -static \
-        -I/global/common/cori_cle6/software/boost/1.67.0/intel/haswell/include \
-        -I/project/projectdirs/m3389/hdf5-1.10.5.cori.haswell/include \
-        -I/project/projectdirs/m3389/o2scl-0.924.cori.haswell/include \
-        -I/project/projectdirs/m3389/eos -DO2SCL_MPI -DO2SCL_CORI
-LCFLAGS = -O3 -DTEMP_UPDATES 
-EOS_DIR = /project/projectdirs/m3389/eos
-SCRATCH_COPY = cp -r eos_nuclei_mpi script data $(SCRATCH)
-
-else
-
-# On NERSC cori
-LCXX = CC
-LMPI_CXX = CC
-LIBS = -L/usr/common/software/gsl/2.1/intel/lib \
-        -L/usr/common/software/hdf5/1.10.2/intel/lib \
-        -L/usr/common/software/boost/1.67.0/intel/mic-knl/lib \
-        -L/project/projectdirs/m3389/o2scl-0.924.cori.knl/lib \
-        -lo2scl_hdf -lo2scl_eos -lo2scl_part -lo2scl \
-        -lhdf5_hl -lhdf5 -lgsl
-LMPI_CFLAGS = -O3 -DTEMP_UPDATES -std=c++11 \
-        -I/usr/common/software/gsl/2.1/intel/include -static \
-        -I/usr/common/software/hdf5/1.10.2/intel/include \
-        -I/usr/common/software/boost/1.67.0/intel/mic-knl/include \
-        -I/project/projectdirs/m3389/o2scl-0.924.cori.knl/include \
-        -I/project/projectdirs/m3389/eos -DO2SCL_MPI -DO2SCL_CORI
-LCFLAGS = -O3 -DTEMP_UPDATES 
-EOS_DIR = /project/projectdirs/m3389/eos
-
-endif
-endif
 endif
 
 # ----------------------------------------------------------------
