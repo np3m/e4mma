@@ -4081,50 +4081,43 @@ void eos_nuclei::new_table() {
 int eos_nuclei::edit_data(std::vector<std::string> &sv,
 			  bool itive_com) {
 
-  string in_file=sv[1];
-  string select_func=sv[2];
+  string select_func=sv[1];
   string tensor_to_change, value_func, out_file;
   
-  if (sv.size()>3) {
-    if (sv.size()<6) {
+  if (sv.size()>2) {
+    if (sv.size()<4) {
       cerr << "Not enough arguments to edit-data." << endl;
       return 2;
     }
-    tensor_to_change=sv[3];
-    value_func=sv[4];
-    out_file=sv[5];
-  } else if (sv.size()<3) {
+    tensor_to_change=sv[2];
+    value_func=sv[3];
+  } else if (sv.size()<2) {
     cerr << "Not enough arguments to edit-data." << endl;
     return 1;
   }
   
-  size_t n_nB=0, n_Ye=0, n_T=0;
-  vector<double> nB_grid, Ye_grid, T_grid;
   size_t count=0;
   
-  // Read input file
-  read_results(in_file);
-
   calculator calc, calc2;
   std::map<std::string,double> vars;
   calc.compile(select_func.c_str());
-  if (sv.size()>3) {
+  if (sv.size()>2) {
     calc2.compile(value_func.c_str());
   }
 
-  for(int inB=0;inB<((int)n_nB);inB++) {
-    for(int iYe=0;iYe<((int)n_Ye);iYe++) {
-      for(int iT=0;iT<((int)n_T);iT++) {
+  for(int inB=0;inB<((int)n_nB2);inB++) {
+    for(int iYe=0;iYe<((int)n_Ye2);iYe++) {
+      for(int iT=0;iT<((int)n_T2);iT++) {
 	
 	vars["inB"]=inB;
 	vars["iYe"]=iYe;
 	vars["iT"]=iT;
-	vars["nnB"]=nB_grid.size();
-	vars["nYe"]=Ye_grid.size();
-	vars["nT"]=T_grid.size();
-	vars["nB"]=nB_grid[inB];
-	vars["Ye"]=Ye_grid[iYe];
-	vars["T"]=T_grid[iT];
+	vars["nnB"]=nB_grid2.size();
+	vars["nYe"]=Ye_grid2.size();
+	vars["nT"]=T_grid2.size();
+	vars["nB"]=nB_grid2[inB];
+	vars["Ye"]=Ye_grid2[iYe];
+	vars["T"]=T_grid2[iT];
 	
 	vars["flag"]=tg3_flag.get(inB,iYe,iT);
 	vars["Fint"]=tg3_Fint.get(inB,iYe,iT);
@@ -4212,17 +4205,8 @@ int eos_nuclei::edit_data(std::vector<std::string> &sv,
     }
   }
   
-  cout << "Matched " << count << "/" << n_nB*n_Ye*n_T
+  cout << "Matched " << count << "/" << n_nB2*n_Ye2*n_T2
        << " entries." << endl;
-  if (sv.size()>3) {
-    n_nB2=n_nB;
-    n_Ye2=n_Ye;
-    n_T2=n_T;
-    nB_grid2=nB_grid;
-    Ye_grid2=Ye_grid;
-    T_grid2=T_grid;
-    write_results(out_file);
-  }
   
   return 0;
 }
@@ -5781,13 +5765,12 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
       0,1,"<filename>",
       "",new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::output),o2scl::cli::comm_option_both},
-     {0,"edit-data","Edit data in the EOS tables.",2,5,
-      "<in file> <select func.> [tensor to modify] [value func.] [out file]",
+     {0,"edit-data","Edit data in the EOS tables.",1,4,
+      "<select func.> [tensor to modify] [value func.]",
       ((string)"The \"edit-data\" command counts entries matching the ")+
-      "criteria specified in <select func.>. If the remaining three "+
+      "criteria specified in <select func.>. If the remaining two "+
       "arguments are given, then the selected values of [tensor to modify] "+
-      "are changed to the result of the function [value func.] and the "+
-      "results are output to [out file].",
+      "are changed to the result of the function [value func.].",
       new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::edit_data),o2scl::cli::comm_option_both},
      {0,"merge-tables-aws","Merge two output tables to create a third.",
