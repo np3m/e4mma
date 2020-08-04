@@ -27,6 +27,49 @@
 typedef boost::numeric::ublas::vector<double> ubvector;
 typedef boost::numeric::ublas::matrix<double> ubmatrix;
 
+/** \brief Compute partition functions using Fowler prescription
+ */
+class partition_func {
+  
+public:
+
+  /// Temperature in MeV
+  double T_MeV;
+    
+  /// Nuclear level spacing (units?)
+  double a;
+    
+  /// Backshift parameter (units?)
+  double delta;
+    
+  /// Coefficient for large \f$ \delta \f$
+  double C;
+    
+  /// Critical temperature connecting low and high energies
+  double Tc;
+    
+  /** \brief Integrand for partition function when \f$ \delta \f$
+      is small
+  */
+  double delta_small_iand(double x);
+    
+  /** \brief Integrand for derivative of partition function
+      with respect to temperature when \f$ \delta \f$
+      is small
+  */
+  double delta_small_iand_prime(double x);
+    
+  /** \brief Integrand when \f$ \delta \f$ is large
+   */
+  double delta_large_iand(double x);
+    
+  /** \brief Integrand for temperature derivative when \f$ \delta
+      \f$ is large
+  */
+  double delta_large_iand_prime(double x);
+    
+};
+
 /** \brief Solve for the EOS including nuclei
 
     \todo Rename n_nB2 to n_nB, etc.
@@ -34,7 +77,7 @@ typedef boost::numeric::ublas::matrix<double> ubmatrix;
 */
 class eos_nuclei : public eos {
 
- public:
+public:
 
   eos_nuclei();
 
@@ -249,7 +292,7 @@ class eos_nuclei : public eos {
 
       If true, include Eint, Pint, Sint, mun, and mup. If include_eg
       is additionally true, then add F, E, P, and S.
-   */
+  */
   bool full_results;
 
   /** \brief If true, include electrons and photons
@@ -306,46 +349,46 @@ class eos_nuclei : public eos {
       densities
   */
   double solve_nuclei_ld(double x2, size_t nv, const ubvector &x, 
-			     double nb, double ye, double T,
-			     int ix, double &mun_gas, double &mup_gas,
-			     o2scl::thermo &th_gas);
+			 double nb, double ye, double T,
+			 int ix, double &mun_gas, double &mup_gas,
+			 o2scl::thermo &th_gas);
 
   /** \brief Desc
    */
   double solve_nuclei_min(size_t nv, const ubvector &x, 
-			      double nb, double ye, double T,
-			      double &mun_gas, double &mup_gas,
-			      o2scl::thermo &th_gas);
+			  double nb, double ye, double T,
+			  double &mun_gas, double &mup_gas,
+			  o2scl::thermo &th_gas);
 
   /** \brief Write results to an HDF5 file
 
       \todo Eventually replace this with eos_sn_base::output()
-   */
+  */
   int write_results(std::string fname);
   
   /** \brief Read results from an HDF5 file
 
       \todo Eventually replace this with eos_sn_base::load()
-   */
+  */
   int read_results(std::string fname);
   
   /** \brief Construct equations to solve for a fixed baryon
       density and electron fraction (AWS version)
   */
   int solve_nuclei(size_t nv, const ubvector &x, ubvector &y, double nb,
-		       double ye, double T, 
-		       int loc_verbose, double &mun_gas, double &mup_gas,
-		       o2scl::thermo &th_gas);
+		   double ye, double T, 
+		   int loc_verbose, double &mun_gas, double &mup_gas,
+		   o2scl::thermo &th_gas);
   
   /** \brief Determine the EOS presuming a fixed single heavy nucleus
       and solving for the log (base 10) of the
       free neutron and proton abundances (AWS version)
   */
   int eos_fixed_ZN(double nb, double ye, double T,
-		       double &log_xn, double &log_xp,
-		       size_t nuc_Z1, size_t nuc_N1,
-		       o2scl::thermo &thx,
-		       double &mun_full, double &mup_full);
+		   double &log_xn, double &log_xp,
+		   size_t nuc_Z1, size_t nuc_N1,
+		   o2scl::thermo &thx,
+		   double &mun_full, double &mup_full);
 
   /** \brief Store data in the tensor objects
    */
@@ -362,40 +405,40 @@ class eos_nuclei : public eos {
       to vary
   */
   int eos_vary_ZN(double nb, double ye, double T,
-		      double &log_xn, double &log_xp,
-		      size_t &nuc_Z1, size_t &nuc_N1,
-		      o2scl::thermo &thx,
-		      double &mun_full, double &mup_full,
-		      bool nu_nuclei=false);
+		  double &log_xn, double &log_xp,
+		  size_t &nuc_Z1, size_t &nuc_N1,
+		  o2scl::thermo &thx,
+		  double &mun_full, double &mup_full,
+		  bool nu_nuclei=false);
 
   /** \brief Determine the EOS presuming a distribution of nuclei
       with fixed limits in A and \f$ N-Z \f$
   */
   int eos_fixed_dist
-    (double nB, double Ye, double T, double &log_xn, double &log_xp,
-     o2scl::thermo &thx, double &mun_full, double &mup_full, int &A_min,
-     int &A_max, int &NmZ_min, int &NmZ_max, bool dist_changed,
-     bool no_nuclei);
+  (double nB, double Ye, double T, double &log_xn, double &log_xp,
+   o2scl::thermo &thx, double &mun_full, double &mup_full, int &A_min,
+   int &A_max, int &NmZ_min, int &NmZ_max, bool dist_changed,
+   bool no_nuclei);
 
 
   /** \brief Determine the EOS presuming a distribution of nuclei
       with fixed limits in A and \f$ N-Z \f$ but used to fix table only
   */
   int eos_fixed_dist_fix_table
-    (double nB, double Ye, double T, double &log_xn, double &log_xp,
-     o2scl::thermo &thx, double &mun_full, double &mup_full, int &A_min,
-     int &A_max, int &NmZ_min, int &NmZ_max, bool dist_changed,
-     bool no_nuclei);
+  (double nB, double Ye, double T, double &log_xn, double &log_xp,
+   o2scl::thermo &thx, double &mun_full, double &mup_full, int &A_min,
+   int &A_max, int &NmZ_min, int &NmZ_max, bool dist_changed,
+   bool no_nuclei);
   
   /** \brief Determine the EOS presuming a distribution of nuclei
       and optimizing the limits in A and \f$ N-Z \f$
   */
   int eos_vary_dist
-    (double nB, double Ye, double T, double &log_xn, double &log_xp,
-     double &Zbar, double &Nbar, 
-     o2scl::thermo &thx, double &mun_full, double &mup_full, int &A_min,
-     int &A_max, int &NmZ_min, int &NmZ_max, bool dist_changed,
-     bool no_nuclei);
+  (double nB, double Ye, double T, double &log_xn, double &log_xp,
+   double &Zbar, double &Nbar, 
+   o2scl::thermo &thx, double &mun_full, double &mup_full, int &A_min,
+   int &A_max, int &NmZ_min, int &NmZ_max, bool dist_changed,
+   bool no_nuclei);
    
   /** \brief Generate a table (MPI version)
    */
@@ -486,49 +529,6 @@ class eos_nuclei : public eos {
   o2scl::tensor_grid3<> tg3_NmZ_max;
   //@}
 
-  /** \brief Compute partition functions using Fowler prescription
-   */
-  class partition_func {
-  
-  public:
-
-    /// Temperature in MeV
-    double T_MeV;
-    
-    /// Nuclear level spacing (units?)
-    double a;
-    
-    /// Backshift parameter (units?)
-    double delta;
-    
-    /// Coefficient for large \f$ \delta \f$
-    double C;
-    
-    /// Critical temperature connecting low and high energies
-    double Tc;
-    
-    /** \brief Integrand for partition function when \f$ \delta \f$
-	is small
-     */
-    double delta_small_iand(double x);
-    
-    /** \brief Integrand for derivative of partition function
-	with respect to temperature when \f$ \delta \f$
-	is small
-    */
-    double delta_small_iand_prime(double x);
-    
-    /** \brief Integrand when \f$ \delta \f$ is large
-     */
-    double delta_large_iand(double x);
-    
-    /** \brief Integrand for temperature derivative when \f$ \delta
-	\f$ is large
-    */
-    double delta_large_iand_prime(double x);
-    
-  };
-
   /// Object which integrates partition functions
   partition_func part_func;
   
@@ -542,3 +542,4 @@ class eos_nuclei : public eos {
   int init_function(size_t dim, const ubvector &x, ubvector &y);
   
 };
+

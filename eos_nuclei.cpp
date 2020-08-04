@@ -20,9 +20,6 @@
 */
 #include "eos_nuclei.h"
 
-// For stat()
-#include <sys/stat.h>
-
 #include <o2scl/root_brent_gsl.h>
 #include <o2scl/classical.h>
 #include <o2scl/interp.h>
@@ -50,6 +47,7 @@ eos_nuclei::eos_nuclei() {
 	     tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
   }
 #endif
+  
 #ifdef O2SCL_CORI
   // Load the nuclear masses
   cout << "Rank " << mpi_rank << " loading nuclear masses." << endl;  
@@ -64,6 +62,7 @@ eos_nuclei::eos_nuclei() {
   o2scl_hdf::mnmsk_load(m95);
   o2scl_hdf::hfb_sp_load(hfb,27);
 #endif
+  
 #ifndef NO_MPI
   // Send a message to the next MPI rank
   if (mpi_size>1 && mpi_rank<mpi_size-1) {
@@ -172,7 +171,7 @@ eos_nuclei::~eos_nuclei() {
 }
 
 // Integrand for eq.(25) & (27)
-double eos_nuclei::partition_func::delta_small_iand(double x) {
+double partition_func::delta_small_iand(double x) {
   if (x<1.0e-200) return 0.0;
   double ret=sqrt(pi)/12.0*exp(2.0*sqrt(a*(x-delta)))/
     pow(a,1.0/4.0)/pow((x-delta),5.0/4.0)*exp(-x/T_MeV);
@@ -188,7 +187,7 @@ double eos_nuclei::partition_func::delta_small_iand(double x) {
 }
 
 // Integrand for eq. (26) & (27)  
-double eos_nuclei::partition_func::delta_small_iand_prime(double x) {
+double partition_func::delta_small_iand_prime(double x) {
   if (x<1.0e-200) return 0.0;
   double ret=x/T_MeV*sqrt(pi)/12.0*exp(2.0*sqrt(a*(x-delta)))/
     pow(a,1.0/4.0)/pow((x-delta),5.0/4.0)*exp(-x/T_MeV);
@@ -203,7 +202,7 @@ double eos_nuclei::partition_func::delta_small_iand_prime(double x) {
 }
   
 // Integrand for eq.(25) & (30) 
-double eos_nuclei::partition_func::delta_large_iand(double x) {
+double partition_func::delta_large_iand(double x) {
   if (x<1.0e-200) return 0.0;
   double ret=C*exp((x-delta)/Tc)*exp(-x/T_MeV); 
   if (!std::isfinite(ret)) {
@@ -216,7 +215,7 @@ double eos_nuclei::partition_func::delta_large_iand(double x) {
 } 
 
 // Integrand for eq. (26) & (30) 
-double eos_nuclei::partition_func::delta_large_iand_prime(double x) {
+double partition_func::delta_large_iand_prime(double x) {
   if (x<1.0e-200) return 0.0;
   double ret=x/T_MeV*C*exp((x-delta)/Tc)*exp(-x/T_MeV); 
   if (!std::isfinite(ret)) {
