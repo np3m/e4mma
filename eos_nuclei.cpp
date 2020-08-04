@@ -161,6 +161,8 @@ eos_nuclei::eos_nuclei() {
   function_verbose=11111;
   max_ratio=2.25;
   loaded=false;
+  file_update_time=1800;
+  file_update_iters=1000;
 }
 
 eos_nuclei::~eos_nuclei() {
@@ -4234,7 +4236,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 #endif
 
   static const size_t buf_size=100;
-  int mpi_verbose=2;
+  int gt_verbose=2;
 
   // -----------------------------------------------------
   // All processors read input file in turn
@@ -4242,6 +4244,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
   string out_file;
   if (sv.size()>=2) {
     out_file=sv[1];
+    wordexp_single_file(out_file);
   } else {
     cout << "Automatically setting output file to \"eos_nuclei.o2\"."
 	 << endl;
@@ -4253,11 +4256,11 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
     // -----------------------------------------------------
     // Parent MPI process or sole process for non-MPI version
 
-    double file_update_time;
+    double last_file_time;
 #ifdef NO_MPI
-    file_update_time=time(0);
+    last_file_time=time(0);
 #else
-    file_update_time=MPI_Wtime();
+    last_file_time=MPI_Wtime();
 #endif
 
     // -----------------------------------------------------
@@ -4445,7 +4448,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 
       // End of 'if (edge_list.length()>0)'
     }
-    
+
     // Task counters
     size_t total_tasks=n_nB2*n_Ye2*n_T2;
     size_t current_tasks=0;
@@ -4457,7 +4460,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
     while (done==false) {
       
       // -----------------------------------------------------
-      // Compute tasks
+      // Compute tasks (either w/o MPI or w/MPI on rank 0)
     
       // Setup task list as a two sets of triplets, source first,
       // destination second
@@ -4858,7 +4861,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
       }
 
       size_t ntasks=tasks.size()/6;
-      if (mpi_verbose>1) {
+      if (gt_verbose>1) {
 	if (ntasks>0) {
 	  cout << "Rank " << mpi_rank 
 	       << " tasks " << ntasks << endl;
@@ -4871,6 +4874,10 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
       }
 
 #ifndef NO_MPI
+
+      // -------------------------------------------------------------
+      // If we're running MPI with more than one rank, then send tasks
+      // to the child MPI ranks until we run out of tasks.
       
       if (mpi_size>1) {
 	
@@ -4919,7 +4926,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	      thy.ed=input_buffers[proc_index][vi["ed"]];
 	      thy.pr=input_buffers[proc_index][vi["pr"]];
 	      thy.en=input_buffers[proc_index][vi["en"]];
-	      if (false && mpi_verbose>1) {
+	      if (false && gt_verbose>1) {
 		double nBt=input_buffers[proc_index][vi["nB"]];
 		double Tt=input_buffers[proc_index][vi["T"]]/hc_mev_fm;
 		cout << mpi_rank << " storing point "
@@ -4951,7 +4958,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 			  input_buffers[proc_index][vi["NmZ_max"]],
 			  input_buffers[proc_index][vi["flag"]]);
 	    } else {
-	      if (mpi_verbose>1) {
+	      if (gt_verbose>1) {
 		cout << "Rank " << mpi_rank
 		     << " point at (" << tasks[i2] << "," << tasks[j2]
 		     << "," << tasks[k2] << ") (nB,Ye,T)=(";
@@ -4973,7 +4980,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	    // Index of the point which contains the initial guess
 	    size_t i2=i*6, j2=i*6+1, k2=i*6+2;
 	    
-	    if (mpi_verbose>1) {
+	    if (gt_verbose>1) {
 	      cout << "Rank " << mpi_rank << " sending " 
 		   << i << "/" << ntasks << " (" << tasks[i*6] << ","
 		   << tasks[i*6+1] << "," 
@@ -5042,10 +5049,12 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	  }
 
 	  // Update file if necessary
-	  if (i%1000==999 && MPI_Wtime()-file_update_time>1800.0) {
+	  if (i%(file_update_iters)==file_update_iters-1 &&
+	      MPI_Wtime()-last_file_time>file_update_time) {
+	    
 	    cout << "Updating file." << endl;
 	    write_results(out_file);
-	    file_update_time=MPI_Wtime();
+	    last_file_time=MPI_Wtime();
 	    
 	    size_t tc=0,conv2_count=0;
 	    for(size_t ii=0;ii<n_nB2;ii++) {
@@ -5071,6 +5080,9 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
       }
 
 #endif
+
+      // If we're running without MPI, or if we're running MPI with
+      // only one rank, then complete the tasks on this MPI rank
       
       if (mpi_size==1) {
 
@@ -5139,7 +5151,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	      (nB,Ye,T,log_xn,log_xp,Zbar,Nbar,thx,mun_full,mup_full,
 	       A_min,A_max,NmZ_min,NmZ_max,true,no_nuclei);    
 	  }
-	  if (mpi_verbose>1) {
+	  if (gt_verbose>1) {
 	    cout << "Point at (nB,Ye,T)=("
 		 << nB << "," << Ye << "," << T*hc_mev_fm << "), ret="
 		 << ret << ", " << i << "/" << ntasks << endl;
@@ -5176,14 +5188,52 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 			NmZ_min,NmZ_max,10.0);
 	  }
 
+	  
+#ifdef NO_MPI
+	  double curr_time=time(0);
+#else
+	  double curr_time=MPI_Wtime();
+#endif
+	  if (((int)i)%(file_update_iters)==file_update_iters-1 &&
+	      curr_time-last_file_time>file_update_time) {
+	    
+	    cout << "Updating file." << endl;
+            write_results(out_file);
+#ifdef NO_MPI
+	    last_file_time=time(0);
+#else
+	    last_file_time=MPI_Wtime();
+#endif
+            
+            size_t tc=0,conv2_count=0;
+            for(size_t ii=0;ii<n_nB2;ii++) {
+              for(size_t j=0;j<n_Ye2;j++) {
+                for(size_t k=0;k<n_T2;k++) {
+                  if (tg3_flag.get(ii,j,k)>=10.0) conv2_count++;
+                  tc++;
+                }
+              }
+            }
+            
+            string msg="Table "+out_file+" is "+
+              o2scl::dtos(((double)conv2_count)/((double)tc)*100.0)+
+              " percent completed.";
+            slack.send(msg);
+            
+
+	  }
+	    
 	  // End of loop over tasks
 	}
 
 	// End of 'if (mpi_size==1)'
       }
-	
+
+      // -------------------------------------------------------
+      // The end of the main loop for mpi_rank = 0
+      
       current_tasks+=ntasks;
-      if (mpi_verbose>0) {
+      if (gt_verbose>0) {
 	cout << "Rank " << mpi_rank << " computed " << current_tasks
 	     << " out of " << total_tasks << ". "
 	     << ((int)(((double)current_tasks)/
@@ -5194,23 +5244,26 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
       double elapsed, write_elapsed;
 #ifdef NO_MPI
       elapsed=time(0)-mpi_start_time;
-      write_elapsed=time(0)-file_update_time;
+      write_elapsed=time(0)-last_file_time;
 #else
       elapsed=MPI_Wtime()-mpi_start_time;
-      write_elapsed=MPI_Wtime()-file_update_time;
+      write_elapsed=MPI_Wtime()-last_file_time;
 #endif
       
       if (ntasks==0 || (max_time>0.0 && elapsed>max_time)) {
+	
 	cout << "Finished. " << ntasks << " " << max_time << " "
 	     << elapsed << endl;
 	done=true;
-      } else if (write_elapsed>1800.0) {
+	
+      } else if (write_elapsed>file_update_time) {
+	
 	cout << "Updating file." << endl;
 	write_results(out_file);
 #ifdef NO_MPI	
-	file_update_time=time(0);
+	last_file_time=time(0);
 #else
-	file_update_time=MPI_Wtime();
+	last_file_time=MPI_Wtime();
 #endif
 
 	// Go through the entire table and count how many points have
@@ -5235,6 +5288,8 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
       // For debugging
       // done=true;
 
+      // Go back to see if we have any remaining tasks
+      
       // End of 'while (done==false)'
     }
 
@@ -5270,7 +5325,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
     
     write_results(out_file);
     
-    if (mpi_verbose>0) {
+    if (gt_verbose>0) {
       cout << "Rank " << mpi_rank << " sending exit to children." << endl;
     }
       
@@ -5295,7 +5350,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
       
     int message=((int)(input_buffer[vi["msg"]]+1.0e-6));
 
-    if (false && mpi_verbose>1) {
+    if (false && gt_verbose>1) {
       cout << "Rank " << mpi_rank << " got message "
 	   << message << endl;
     }
@@ -5331,7 +5386,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
       double elapsed=MPI_Wtime()-mpi_start_time;
       if (max_time==0.0 || elapsed<max_time) {
 
-	if (mpi_verbose>1) {
+	if (gt_verbose>1) {
 	  cout << "Rank " << mpi_rank
 	       << " computing point at nB,Ye,T(MeV): " << nB << " " 
 	       << Ye << " " << T*hc_mev_fm << endl;
@@ -5348,7 +5403,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 				A_min,A_max,NmZ_min,NmZ_max,true,no_nuclei);
 	}
 
-	if (mpi_verbose>1) {
+	if (gt_verbose>1) {
 	  cout.precision(4);
 	  if (ret==0) {
 	    cout << "Rank " << mpi_rank
@@ -5438,7 +5493,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
       message=((int)(input_buffer[vi["msg"]]+1.0e-6));
     }
 
-    if (mpi_verbose>0) {
+    if (gt_verbose>0) {
       cout << "Rank " << mpi_rank << " received done message." << endl;
     }
     
@@ -5767,9 +5822,11 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
       (this,&eos_nuclei::output),o2scl::cli::comm_option_both},
      {0,"edit-data","Edit data in the EOS tables.",1,4,
       "<select func.> [tensor to modify] [value func.]",
-      ((string)"The \"edit-data\" command counts entries matching the ")+
+      ((string)"The \"edit-data\" command counts the number of ")+
+      "(nB,Ye,T) points matching the "+
       "criteria specified in <select func.>. If the remaining two "+
-      "arguments are given, then the selected values of [tensor to modify] "+
+      "arguments are given, then the values of [tensor to modify] "+
+      "for the selected points "+
       "are changed to the result of the function [value func.].",
       new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::edit_data),o2scl::cli::comm_option_both},
@@ -5892,5 +5949,13 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
   p_max_ratio.d=&max_ratio;
   p_max_ratio.help="The maximum of N/Z or Z/N.";
   cl.par_list.insert(make_pair("max_ratio",&p_max_ratio));
+
+  p_file_update_time.d=&file_update_time;
+  p_file_update_time.help="";
+  cl.par_list.insert(make_pair("file_update_time",&p_file_update_time));
+
+  p_file_update_iters.i=&file_update_iters;
+  p_file_update_iters.help="";
+  cl.par_list.insert(make_pair("file_update_iters",&p_file_update_iters));
 
 }

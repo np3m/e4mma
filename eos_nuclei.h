@@ -167,6 +167,11 @@ class eos_nuclei : public eos {
   double flag;
   bool heavy;
 
+  double file_update_time;
+  int file_update_iters;
+  o2scl::cli::parameter_double p_file_update_time;
+  o2scl::cli::parameter_int p_file_update_iters;
+  
   /// \name MPI message values
   //@{
   static const int message_continue=0;
