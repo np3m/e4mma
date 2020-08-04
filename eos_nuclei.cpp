@@ -163,6 +163,9 @@ eos_nuclei::eos_nuclei() {
   loaded=false;
   file_update_time=1800;
   file_update_iters=1000;
+  
+  slack.set_channel_from_env("O2SCL_SLACK_CHANNEL");
+  slack.set_username_from_env("O2SCL_SLACK_USERNAME");
 }
 
 eos_nuclei::~eos_nuclei() {
