@@ -301,11 +301,17 @@ public:
       If true, include Eint, Pint, Sint, mun, and mup. If include_eg
       is additionally true, then add F, E, P, and S.
   */
-  bool full_results;
+  bool derivs_computed;
 
-  /** \brief If true, include electrons and photons
+  /** \brief Always true, for consistency with o2scl::eos_sn_base
    */
-  bool include_eg;
+  bool baryons_only_loaded;
+  
+  /** \brief If true, include electrons and photons
+
+      Requires that derivs_computed is also true
+   */
+  bool with_leptons_loaded;
 
   /// \name Other parameter objects
   //@{
