@@ -3054,7 +3054,22 @@ int eos_nuclei::write_results(std::string fname) {
 int eos_nuclei::read_results(std::string fname) {
 
   cout << "Function read_results() file " << fname << endl;
-
+  
+  int mpi_rank, mpi_size;
+#ifndef NO_MPI
+  // Get MPI rank, etc.
+  MPI_Comm_rank(MPI_COMM_WORLD,&mpi_rank);
+  MPI_Comm_size(MPI_COMM_WORLD,&mpi_size);
+  
+  // Ensure that multiple MPI ranks aren't reading from the
+  // filesystem at the same time
+  int tag=0, buffer=0;
+  if (mpi_size>1 && mpi_rank>=1) {
+    MPI_Recv(&buffer,1,MPI_INT,mpi_rank-1,
+	     tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
+  }
+#endif
+  
   hdf_file hf;
   string type;
 
@@ -3152,6 +3167,14 @@ int eos_nuclei::read_results(std::string fname) {
 
   loaded=true;
   
+#ifndef NO_MPI
+  // Send a message to the next MPI rank
+  if (mpi_size>1 && mpi_rank<mpi_size-1) {
+    MPI_Send(&buffer,1,MPI_INT,mpi_rank+1,
+	     tag,MPI_COMM_WORLD);
+  }
+#endif
+
   cout << "Function read_results() done. " << endl;
 
   return 0;
