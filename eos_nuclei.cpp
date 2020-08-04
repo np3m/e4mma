@@ -3223,9 +3223,7 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
     if (sv.size()>=5) fname=sv[4];
   }
 
-  size_t n_nB=0, n_Ye=0, n_T=0;
   size_t inB=0, iYe=0, iT=0;
-  vector<double> nB_grid, Ye_grid, T_grid;
 
   // If a filename is provided, then either it has an initial
   // guess, or it is only an output file
@@ -3235,29 +3233,17 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
     if (o2scl::file_exists(fname)) {
       cout << "Reading file: " << fname << endl;
       read_results(fname);
-      n_nB=n_nB2;
-      n_Ye=n_Ye2;
-      n_T=n_T2;
-      nB_grid=nB_grid2;
-      Ye_grid=Ye_grid2;
-      T_grid=T_grid2;
     } else {
       cout << "File " << fname << " does not exist. Making new table." << endl;
       new_table();
-      nB_grid=nB_grid2;
-      Ye_grid=Ye_grid2;
-      T_grid=T_grid2;
-      n_nB=nB_grid.size();
-      n_Ye=Ye_grid.size();
-      n_T=T_grid.size();
     }
 
-    inB=vector_lookup(n_nB,nB_grid,nB);
-    nB=nB_grid[inB];
-    iYe=vector_lookup(n_Ye,Ye_grid,Ye);
-    Ye=Ye_grid[iYe];
-    iT=vector_lookup(n_T,T_grid,T*hc_mev_fm);
-    T=T_grid[iT]/hc_mev_fm;
+    inB=vector_lookup(n_nB2,nB_grid2,nB);
+    nB=nB_grid2[inB];
+    iYe=vector_lookup(n_Ye2,Ye_grid2,Ye);
+    Ye=Ye_grid2[iYe];
+    iT=vector_lookup(n_T2,T_grid2,T*hc_mev_fm);
+    T=T_grid2[iT]/hc_mev_fm;
     
     cout << "Found grid point (inB,iYe,iT)=(" << inB << ","
 	 << iYe << "," << iT << ")\n\t(nB,Ye,T)=("
@@ -3294,11 +3280,11 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
 	cout << "\tP (MeV/fm^3): " << tg3_Pint.get(inB,iYe,iT) << endl;
 	cout << "\tmun (MeV): " << tg3_mun.get(inB,iYe,iT) << endl;
 	cout << "\tmup (MeV): " << tg3_mup.get(inB,iYe,iT) << endl;
-	cout << "\tTI: " << tg3_Eint.get(inB,iYe,iT)*nB_grid[inB]+
+	cout << "\tTI: " << tg3_Eint.get(inB,iYe,iT)*nB_grid2[inB]+
 	  tg3_Pint.get(inB,iYe,iT) << " "
-	     << tg3_Sint.get(inB,iYe,iT)*nB_grid[inB]*T_grid[iT]+
-	  nB_grid[inB]*(1.0-Ye_grid[iYe])*tg3_mun.get(inB,iYe,iT)+
-	  nB_grid[inB]*Ye_grid[iYe]*tg3_mup.get(inB,iYe,iT) << endl;
+	     << tg3_Sint.get(inB,iYe,iT)*nB_grid2[inB]*T_grid2[iT]+
+	  nB_grid2[inB]*(1.0-Ye_grid2[iYe])*tg3_mun.get(inB,iYe,iT)+
+	  nB_grid2[inB]*Ye_grid2[iYe]*tg3_mup.get(inB,iYe,iT) << endl;
       }
     }
     
@@ -3349,15 +3335,15 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
 	 << Zbar << " " << Nbar << " " << thx.ed-T*thx.en << endl;
     cout << "\tF: " << (thx.ed-T*thx.en)/nB*hc_mev_fm << endl;
     cout.precision(6);
-    cout << "\tS/nB: " << thx.en/nB_grid[inB] << endl;
-    cout << "\tE/nB (MeV): " << thx.ed/nB_grid[inB]*hc_mev_fm << endl;
+    cout << "\tS/nB: " << thx.en/nB_grid2[inB] << endl;
+    cout << "\tE/nB (MeV): " << thx.ed/nB_grid2[inB]*hc_mev_fm << endl;
     cout << "\tP (MeV/fm^3): " << thx.pr*hc_mev_fm << endl;
     cout << "\tmun (MeV): " << mun_full*hc_mev_fm << endl;
     cout << "\tmup (MeV): " << mup_full*hc_mev_fm << endl;
     cout << "\tTI: " << thx.ed*hc_mev_fm+thx.pr*hc_mev_fm << " " 
-	 << thx.en*T_grid[iT]+
-      nB_grid[inB]*(1.0-Ye_grid[iYe])*mun_full*hc_mev_fm+
-      nB_grid[inB]*Ye_grid[iYe]*mup_full*hc_mev_fm << endl;
+	 << thx.en*T_grid2[iT]+
+      nB_grid2[inB]*(1.0-Ye_grid2[iYe])*mun_full*hc_mev_fm+
+      nB_grid2[inB]*Ye_grid2[iYe]*mup_full*hc_mev_fm << endl;
     if (alg_mode==2 || alg_mode==3 || alg_mode==4) {
       cout << "\tA_min,A_max,NmZ_min,NmZ_max: " << A_min << " "
 	   << A_max << " " << NmZ_min << " " << NmZ_max << endl;
@@ -3407,12 +3393,6 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
 	store_point(inB,iYe,iT,nB,Ye,T,thx,log_xn,log_xp,Zbar,Nbar,
 		    mun_full,mup_full,X,A_min,A_max,NmZ_min,NmZ_max,10.0);
 	cout << "Writing results to file " << fname << endl;
-	n_nB2=n_nB;
-	n_Ye2=n_Ye;
-	n_T2=n_T;
-	nB_grid2=nB_grid;
-	Ye_grid2=Ye_grid;
-	T_grid2=T_grid;
 	write_results(fname);
       }
     }
