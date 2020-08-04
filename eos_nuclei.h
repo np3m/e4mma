@@ -36,35 +36,43 @@ public:
   /// Temperature in MeV
   double T_MeV;
     
-  /// Nuclear level spacing (units?)
+  /// Nuclear level spacing in 1/MeV
   double a;
     
-  /// Backshift parameter (units?)
+  /// Backshift parameter in MeV
   double delta;
     
-  /// Coefficient for large \f$ \delta \f$
+  /// Coefficient for large \f$ \delta \f$ in 1/MeV
   double C;
     
-  /// Critical temperature connecting low and high energies
+  /// Critical temperature connecting low and high energies in MeV
   double Tc;
     
   /** \brief Integrand for partition function when \f$ \delta \f$
       is small
+
+      From eq. (25) & (27) in Shen 10.
   */
   double delta_small_iand(double x);
     
   /** \brief Integrand for derivative of partition function
       with respect to temperature when \f$ \delta \f$
       is small
+
+      From eq. (26) & (27) in Shen 10.
   */
   double delta_small_iand_prime(double x);
     
   /** \brief Integrand when \f$ \delta \f$ is large
+
+      From eq. (25) and (30) in Shen 10.
    */
   double delta_large_iand(double x);
     
   /** \brief Integrand for temperature derivative when \f$ \delta
       \f$ is large
+
+      From eq. (26) and (30) in Shen 10.
   */
   double delta_large_iand_prime(double x);
     

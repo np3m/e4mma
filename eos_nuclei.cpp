@@ -90,10 +90,10 @@ eos_nuclei::eos_nuclei() {
   nuc_li4->g=5.0;
   nuc_he3->g=2.0;
  
-  // Compute neutron and proton separation energies. Note that Shen et
-  // al. (2010) defines Sn and Sp to be positive for stable nuclei. We
-  // only compute the light nuclei here, the heavy nuclei will be
-  // added later.
+  // Compute neutron and proton separation energies in MeV. Note that
+  // Shen et al. (2010) defines Sn and Sp to be positive for stable
+  // nuclei. We only compute the light nuclei here, the heavy nuclei
+  // will be added later.
   o2scl::nucleus nuc_temp;
   Sneut.resize(6);
   Sprot.resize(6);
@@ -162,7 +162,9 @@ eos_nuclei::eos_nuclei() {
   loaded=false;
   file_update_time=1800;
   file_update_iters=1000;
-  
+
+  // These function calls do nothing if these environment variables
+  // are not defined
   slack.set_channel_from_env("O2SCL_SLACK_CHANNEL");
   slack.set_username_from_env("O2SCL_SLACK_USERNAME");
 }
@@ -170,9 +172,9 @@ eos_nuclei::eos_nuclei() {
 eos_nuclei::~eos_nuclei() {
 }
 
-// Integrand for eq.(25) & (27)
 double partition_func::delta_small_iand(double x) {
   if (x<1.0e-200) return 0.0;
+  // This integrand is in units of 1/MeV? Check this.
   double ret=sqrt(pi)/12.0*exp(2.0*sqrt(a*(x-delta)))/
     pow(a,1.0/4.0)/pow((x-delta),5.0/4.0)*exp(-x/T_MeV);
   if (!std::isfinite(ret)) {
@@ -186,7 +188,6 @@ double partition_func::delta_small_iand(double x) {
   return ret;
 }
 
-// Integrand for eq. (26) & (27)  
 double partition_func::delta_small_iand_prime(double x) {
   if (x<1.0e-200) return 0.0;
   double ret=x/T_MeV*sqrt(pi)/12.0*exp(2.0*sqrt(a*(x-delta)))/
@@ -201,7 +202,6 @@ double partition_func::delta_small_iand_prime(double x) {
   return ret;
 }
   
-// Integrand for eq.(25) & (30) 
 double partition_func::delta_large_iand(double x) {
   if (x<1.0e-200) return 0.0;
   double ret=C*exp((x-delta)/Tc)*exp(-x/T_MeV); 
@@ -214,7 +214,6 @@ double partition_func::delta_large_iand(double x) {
   return ret;
 } 
 
-// Integrand for eq. (26) & (30) 
 double partition_func::delta_large_iand_prime(double x) {
   if (x<1.0e-200) return 0.0;
   double ret=x/T_MeV*C*exp((x-delta)/Tc)*exp(-x/T_MeV); 
@@ -1121,9 +1120,11 @@ int eos_nuclei::solve_nuclei(size_t nv, const ubvector &x, ubvector &y,
   return 0;
 }
 
-int eos_nuclei::eos_fixed_ZN(double nB, double Ye, double T, double &log_xn, double &log_xp,
- size_t nucZ1, size_t nucN1, thermo &thx, double &mun_full,
- double &mup_full) {
+int eos_nuclei::eos_fixed_ZN(double nB, double Ye, double T,
+			     double &log_xn, double &log_xp,
+			     size_t nucZ1, size_t nucN1,
+			     thermo &thx, double &mun_full,
+			     double &mup_full) {
 
   bool debug=false;
   if (function_verbose%10>1) {
@@ -1222,20 +1223,30 @@ int eos_nuclei::eos_fixed_ZN(double nB, double Ye, double T, double &log_xn, dou
       vomega_prime[i]=0.0;
       
     } else {
-      
+
+      // MeV
       double zEd=min(Sneut[i],Sprot[i])/2.0;
       double zR=1.25*cbrt(nuclei[i].Z+nuclei[i].N-1.0);
+      // MeV
       double zER=0.5/nuclei[i].m/zR/zR*hc_mev_fm;
+      // MeV
       double zEc=(nuclei[i].Z-1.0)*fine_structure/zR*hc_mev_fm;
+      // MeV
       double zEt=min(Sneut[i]+zER,Sprot[i]+zER+zEc/2.0);
+      // fm
       double zrA=cbrt(3.0*(nuclei[i].N+nuclei[i].Z)/4.0/pi/n0);
+      // MeV
       double delta_p=11.0/sqrt(nuclei[i].Z+nuclei[i].N)*
 	(1.0+pow(-1.0,nuclei[i].Z)/2.0+pow(-1.0,nuclei[i].N)/2.0);
       if (nuclei[i].Z<=30) {
+	// 1/MeV
 	part_func.a=0.052*pow(nuclei[i].N+nuclei[i].Z,1.2);
+	// MeV
 	part_func.delta=delta_p-80.0/(nuclei[i].Z+nuclei[i].N);
       } else {
+	// 1/MeV
 	part_func.a=0.125*(nuclei[i].N+nuclei[i].Z);
+	// MeV
 	part_func.delta=delta_p-80.0/(nuclei[i].Z+nuclei[i].N)-0.5;
       }
       if (!std::isfinite(part_func.a)) {
@@ -1259,12 +1270,16 @@ int eos_nuclei::eos_fixed_ZN(double nB, double Ye, double T, double &log_xn, dou
       } else {
 	
 	if (part_func.delta>zEd) {
+	  // MeV
 	  part_func.delta=zEd;
+	  // MeV
 	  part_func.Tc=1.0/(-1.25/part_func.delta+sqrt(part_func.a)/
-			   sqrt(part_func.delta));
+			    sqrt(part_func.delta));
+	  // 1/MeV
 	  part_func.C=sqrt(pi)/12.0*pow(part_func.a,-0.25)*
 	    pow(part_func.delta,-1.25)*
 	    exp(1.25+sqrt(part_func.a*part_func.delta));
+	  
 	  if(2.0*zEd<zEt) {
 	    if (!std::isfinite(zEd)) {
 	      cout << "zEd not finite (1)." << endl;
@@ -1278,9 +1293,12 @@ int eos_nuclei::eos_fixed_ZN(double nB, double Ye, double T, double &log_xn, dou
 	      iqg.integ_err(f2,zEd,2.0*zEd,res,err);
 	    ret_prime=iqg.integ_err(f1_prime,2.0*zEd,zEt,res_prime,err_prime)+
 	      iqg.integ_err(f2_prime,zEd,2.0*zEd,res_prime,err_prime);
+	    
 	  } else {
+	    
 	    ret=iqg.integ_err(f2,zEd,zEt,res,err);
 	    ret_prime=iqg.integ_err(f2_prime,zEd,zEt,res_prime,err_prime);
+	    
 	  }
 	} else {
 	  if (!std::isfinite(zEd)) {
