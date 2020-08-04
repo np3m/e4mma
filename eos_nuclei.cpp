@@ -365,25 +365,17 @@ int eos_nuclei::maxwell_test(std::vector<std::string> &sv,
   
   include_eg=true;
   full_results=true;
-  size_t n_nB, n_Ye, n_T;
-  vector<double> nB_grid, Ye_grid, T_grid;
   read_results(sv[1]);
-  n_nB=n_nB2;
-  n_Ye=n_Ye2;
-  n_T=n_T2;
-  nB_grid=nB_grid2;
-  Ye_grid=Ye_grid2;
-  T_grid=T_grid2;
 
-  size_t iYe=vector_lookup(Ye_grid,o2scl::function_to_double(sv[2]));
-  size_t iT=vector_lookup(T_grid,o2scl::function_to_double(sv[3]));
+  size_t iYe=vector_lookup(Ye_grid2,o2scl::function_to_double(sv[2]));
+  size_t iT=vector_lookup(T_grid2,o2scl::function_to_double(sv[3]));
   cout << "iYe, iT: " << iYe << " " << iT << endl;
-  cout << Ye_grid[iYe] << " " << T_grid[iT] << endl;
+  cout << Ye_grid2[iYe] << " " << T_grid2[iT] << endl;
 
   table_units<> tu;
   tu.line_of_names("nB P mun");
-  for(size_t i=0;i<n_nB;i++) {
-    double line[3]={nB_grid[i],tg3_P.get(i,iYe,iT),
+  for(size_t i=0;i<n_nB2;i++) {
+    double line[3]={nB_grid2[i],tg3_P.get(i,iYe,iT),
 		    tg3_mun.get(i,iYe,iT)};
     tu.line_of_data(3,line);
   }
@@ -636,28 +628,20 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
 
   interp_vec<vector<double> > itp_sta_a, itp_sta_b, itp_sta_c;
 
-  size_t n_nB=0, n_Ye=0, n_T=0;
-  vector<double> nB_grid, Ye_grid, T_grid;
   std::string in_file;
   read_results(in_file);
-  n_nB=n_nB2;
-  n_Ye=n_Ye2;
-  n_T=n_T2;
-  nB_grid=nB_grid2;
-  Ye_grid=Ye_grid2;
-  T_grid=T_grid2;
 
   vector<double> packed;
-  for(size_t i=0;i<n_nB;i++) {
-    packed.push_back(nB_grid[i]);
+  for(size_t i=0;i<n_nB2;i++) {
+    packed.push_back(nB_grid2[i]);
   }
-  for(size_t i=0;i<n_Ye;i++) {
-    packed.push_back(Ye_grid[i]);
+  for(size_t i=0;i<n_Ye2;i++) {
+    packed.push_back(Ye_grid2[i]);
   }
-  for(size_t i=0;i<n_T;i++) {
-    packed.push_back(T_grid[i]);
+  for(size_t i=0;i<n_T2;i++) {
+    packed.push_back(T_grid2[i]);
   }
-  size_t st[3]={n_nB,n_Ye,n_T};
+  size_t st[3]={n_nB2,n_Ye2,n_T2};
   
   dmundYe.resize(3,st);
   dmundYe.resize(3,st);
@@ -682,54 +666,54 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
   cs2.set_grid_packed(packed);
 
   // The baryon density derivatives
-  for (size_t j=0;j<n_Ye;j++) {
-    for (size_t k=0;k<n_T;k++) {
+  for (size_t j=0;j<n_Ye2;j++) {
+    for (size_t k=0;k<n_T2;k++) {
       vector<double> mun_of_nB, s_of_nB;
-      for (size_t i=0;i<n_nB;i++) {
+      for (size_t i=0;i<n_nB2;i++) {
 	mun_of_nB.push_back(tg3_mun.get(i,j,k)/o2scl_const::hc_mev_fm);
-	s_of_nB.push_back(tg3_Sint.get(i,j,k)*nB_grid[i]);
+	s_of_nB.push_back(tg3_Sint.get(i,j,k)*nB_grid2[i]);
       }
-      itp_sta_a.set(n_nB,nB_grid,mun_of_nB,itp_steffen);
-      itp_sta_b.set(n_nB,nB_grid,s_of_nB,itp_steffen);
-      for (size_t i=0;i<n_nB;i++) {
-	dmundnB.get(i,j,k)=itp_sta_a.eval(nB_grid[i]);
-	dsdnB.get(i,j,k)=itp_sta_b.eval(nB_grid[i]);
+      itp_sta_a.set(n_nB2,nB_grid2,mun_of_nB,itp_steffen);
+      itp_sta_b.set(n_nB2,nB_grid2,s_of_nB,itp_steffen);
+      for (size_t i=0;i<n_nB2;i++) {
+	dmundnB.get(i,j,k)=itp_sta_a.eval(nB_grid2[i]);
+	dsdnB.get(i,j,k)=itp_sta_b.eval(nB_grid2[i]);
       }
     }
   }
   
   // The electron fraction derivatives
-  for (size_t i=0;i<n_nB;i++) {
-    double nB=nB_grid[i];
-    for (size_t k=0;k<n_T;k++) {
+  for (size_t i=0;i<n_nB2;i++) {
+    double nB=nB_grid2[i];
+    for (size_t k=0;k<n_T2;k++) {
       vector<double> mun_of_Ye, mup_of_Ye, s_of_Ye;
-      for (size_t j=0;j<n_Ye;j++) {
+      for (size_t j=0;j<n_Ye2;j++) {
 	mun_of_Ye.push_back(tg3_mun.get(i,j,k)/o2scl_const::hc_mev_fm);
 	mup_of_Ye.push_back(tg3_mup.get(i,j,k)/o2scl_const::hc_mev_fm);
 	s_of_Ye.push_back(tg3_Sint.get(i,j,k)*nB);
       }
-      itp_sta_a.set(n_Ye,Ye_grid,mun_of_Ye,itp_steffen);
-      itp_sta_b.set(n_Ye,Ye_grid,mup_of_Ye,itp_steffen);
-      itp_sta_c.set(n_Ye,Ye_grid,s_of_Ye,itp_steffen);
-      for (size_t j=0;j<n_Ye;j++) {
-	dmundYe.get(i,j,k)=itp_sta_a.eval(Ye_grid[j]);
-	dmupdYe.get(i,j,k)=itp_sta_b.eval(Ye_grid[j]);
-	dsdYe.get(i,j,k)=itp_sta_b.eval(Ye_grid[j]);
+      itp_sta_a.set(n_Ye2,Ye_grid2,mun_of_Ye,itp_steffen);
+      itp_sta_b.set(n_Ye2,Ye_grid2,mup_of_Ye,itp_steffen);
+      itp_sta_c.set(n_Ye2,Ye_grid2,s_of_Ye,itp_steffen);
+      for (size_t j=0;j<n_Ye2;j++) {
+	dmundYe.get(i,j,k)=itp_sta_a.eval(Ye_grid2[j]);
+	dmupdYe.get(i,j,k)=itp_sta_b.eval(Ye_grid2[j]);
+	dsdYe.get(i,j,k)=itp_sta_b.eval(Ye_grid2[j]);
       }
     }
   }
   
   // The temperature derivative
-  for (size_t i=0;i<n_nB;i++) {
-    double nB=nB_grid[i];
-    for (size_t j=0;j<n_Ye;j++) {
+  for (size_t i=0;i<n_nB2;i++) {
+    double nB=nB_grid2[i];
+    for (size_t j=0;j<n_Ye2;j++) {
       vector<double> s_of_T;
-      for (size_t k=0;k<n_T;k++) {
+      for (size_t k=0;k<n_T2;k++) {
 	s_of_T.push_back(tg3_Sint.get(i,j,k)*nB);
       }
-      itp_sta_a.set(n_T,T_grid,s_of_T,itp_steffen);
-      for (size_t k=0;k<n_T;k++) {
-	dsdT.get(i,j,k)=itp_sta_a.eval(T_grid[k]);
+      itp_sta_a.set(n_T2,T_grid2,s_of_T,itp_steffen);
+      for (size_t k=0;k<n_T2;k++) {
+	dsdT.get(i,j,k)=itp_sta_a.eval(T_grid2[k]);
       }
     }
   }
@@ -739,12 +723,12 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
   ubvector sing(4), work(4);
   
   /// Compute the stability matrix and its eigenvalues at each point
-  for (size_t i=0;i<n_nB;i++) {
-    double nB=nB_grid[i];
-    for (size_t j=0;j<n_Ye;j++) {
-      double Ye=Ye_grid[j];
-      for (size_t k=0;k<n_T;k++) {
-	double T=T_grid[k];
+  for (size_t i=0;i<n_nB2;i++) {
+    double nB=nB_grid2[i];
+    for (size_t j=0;j<n_Ye2;j++) {
+      double Ye=Ye_grid2[j];
+      for (size_t k=0;k<n_T2;k++) {
+	double T=T_grid2[k];
 
 	// Entropy and densities
 	double en=tg3_S.get(i,j,k)*nB;
@@ -3549,7 +3533,7 @@ int eos_nuclei::merge_tables(std::vector<std::string> &sv,
 				 bool itive_com) {
 
   if (sv.size()<4) {
-    cerr << "Command 'merge-tables-aws' needs at least 3 arguments." << endl;
+    cerr << "Command 'merge-tables' needs at least 3 arguments." << endl;
     cerr << "<filename> <N> <nB func> <Ye func> <T func> "
 	 << "[log_xn_0 log_xp_0 Z_0 N_0]" << endl;
     return 1;
@@ -3559,38 +3543,15 @@ int eos_nuclei::merge_tables(std::vector<std::string> &sv,
   string in2=sv[2];
   string out=sv[3];
 
-  tensor_grid3<> tg3_log_xn2, tg3_log_xp2, tg3_Z2; 
-  tensor_grid3<> tg3_A2, tg3_flag2, tg3_Fint2;
-  tensor_grid3<> tg3_Xn2;
-  tensor_grid3<> tg3_Xp2;
-  tensor_grid3<> tg3_Xnuclei2;
-  tensor_grid3<> tg3_Xalpha2;
-  tensor_grid3<> tg3_Xd2;
-  tensor_grid3<> tg3_Xt2;
-  tensor_grid3<> tg3_XHe32;
-  tensor_grid3<> tg3_XLi42;
-  tensor_grid3<> tg3_Pint2;
-  tensor_grid3<> tg3_Eint2;
-  tensor_grid3<> tg3_Sint2;
-  tensor_grid3<> tg3_mun2;
-  tensor_grid3<> tg3_mup2;
-  tensor_grid3<> tg3_E2;
-  tensor_grid3<> tg3_P2;
-  tensor_grid3<> tg3_S2;
-  tensor_grid3<> tg3_F2;
+  eos_nuclei en2;
+  en2.alg_mode=alg_mode;
+  en2.full_results=full_results;
   
   vector<size_t> counts(22);
 
-  size_t n_nB=0, n_Ye=0, n_T=0;
-  vector<double> nB_grid, Ye_grid, T_grid;
-
+  // Read the first file
+  
   read_results(in1);
-  n_nB=n_nB2;
-  n_Ye=n_Ye2;
-  n_T=n_T2;
-  nB_grid=nB_grid2;
-  Ye_grid=Ye_grid2;
-  T_grid=T_grid2;
 
   const vector<double> &d=tg3_flag.get_data();
   for(size_t i=0;i<tg3_flag.total_size();i++) {
@@ -3601,50 +3562,21 @@ int eos_nuclei::merge_tables(std::vector<std::string> &sv,
   cout << "Counts for file 1: ";
   vector_out(cout,counts,true);
 
-  hdf_file hf;
-  hf.open(in2);
-  
-  hdf_input(hf,tg3_log_xn2,"log_xn");
-  hdf_input(hf,tg3_log_xp2,"log_xp");
-  hdf_input(hf,tg3_Z2,"Z");
-  hdf_input(hf,tg3_A2,"A");
-  hdf_input(hf,tg3_flag2,"flag");
-  hdf_input(hf,tg3_Fint2,"Fint");
-  
-  hdf_input(hf,tg3_Xn2,"Xn");
-  hdf_input(hf,tg3_Xp2,"Xp");
-  hdf_input(hf,tg3_Xalpha2,"Xalpha");
-  hdf_input(hf,tg3_Xnuclei2,"Xnuclei");
-  hdf_input(hf,tg3_Xd2,"Xd");
-  hdf_input(hf,tg3_Xt2,"Xt");
-  hdf_input(hf,tg3_XHe32,"XHe3");
-  hdf_input(hf,tg3_XLi42,"XLi4");
+  // Read the second file
 
-  if (full_results) {
-    hdf_input(hf,tg3_Eint2,"Eint");
-    hdf_input(hf,tg3_Sint2,"Sint");
-    hdf_input(hf,tg3_Pint2,"Pint");
-    hdf_input(hf,tg3_mun2,"mun");
-    hdf_input(hf,tg3_mup2,"mup");
-    if (include_eg) {
-      hdf_input(hf,tg3_E2,"E");
-      hdf_input(hf,tg3_S2,"S");
-      hdf_input(hf,tg3_P2,"P");
-      hdf_input(hf,tg3_F2,"F");
-    }
-  }
-  
-  hf.close();
+  en2.read_results(in2);
 
   for(size_t i=0;i<22;i++) counts[i]=0;
-  const vector<double> &d2=tg3_flag2.get_data();
-  for(size_t i=0;i<tg3_flag2.total_size();i++) {
+  const vector<double> &d2=en2.tg3_flag.get_data();
+  for(size_t i=0;i<en2.tg3_flag.total_size();i++) {
     size_t szt_tmp=((size_t)((d2[i]+10.0)*(1.0+1.0e-12)));
     if (szt_tmp>20) szt_tmp=21;
     counts[szt_tmp]++;
   }
   cout << "Counts for file 2: ";
   vector_out(cout,counts,true);
+
+  // Now perform the merge
   
   size_t nx=tg3_flag.get_size(0);
   size_t ny=tg3_flag.get_size(1);
@@ -3659,9 +3591,9 @@ int eos_nuclei::merge_tables(std::vector<std::string> &sv,
     for(size_t j=0;j<ny;j++) {
       for(size_t k=0;k<nz;k++) {
 	double flag1=tg3_flag.get(i,j,k);
-	double flag2=tg3_flag2.get(i,j,k);
+	double flag2=en2.tg3_flag.get(i,j,k);
 	double Fint1=tg3_Fint.get(i,j,k);
-	double Fint2=tg3_Fint2.get(i,j,k);
+	double Fint2=en2.tg3_Fint.get(i,j,k);
 	/*
 	  if (i==99 && j==39) {
 	  cout << i << " " << j << " " << k << " "
@@ -3683,12 +3615,12 @@ int eos_nuclei::merge_tables(std::vector<std::string> &sv,
 	}
 	if (Fint2>1.0e90 || !std::isfinite(Fint2)|| Fint2<(-1.0e10)) {
 	  flag2=0.0;
-	  tg3_flag2.set(i,j,k,0.0);
-	  tg3_Fint2.set(i,j,k,0.0);
-	  tg3_Z2.set(i,j,k,0.0);
-	  tg3_A2.set(i,j,k,0.0);
-	  tg3_log_xn2.set(i,j,k,0.0);
-	  tg3_log_xp2.set(i,j,k,0.0);
+	  en2.tg3_flag.set(i,j,k,0.0);
+	  en2.tg3_Fint.set(i,j,k,0.0);
+	  en2.tg3_Z.set(i,j,k,0.0);
+	  en2.tg3_A.set(i,j,k,0.0);
+	  en2.tg3_log_xn.set(i,j,k,0.0);
+	  en2.tg3_log_xp.set(i,j,k,0.0);
 	} else if ((flag1>=10.0 && flag2>=10.0 && Fint2<Fint1) ||
 		   (flag1<10.0 && flag2>=10.0) ||
 		   (flag1>0.0 && flag2>0.0 && flag1<10.0 && flag2<0.0 &&
@@ -3703,33 +3635,33 @@ int eos_nuclei::merge_tables(std::vector<std::string> &sv,
 	    4: "2" has a non-zero flag but "1" does not
 	  */
 	  
-	  tg3_log_xn.set(i,j,k,tg3_log_xn2.get(i,j,k));
-	  tg3_log_xp.set(i,j,k,tg3_log_xp2.get(i,j,k));
-	  tg3_Z.set(i,j,k,tg3_Z2.get(i,j,k));
-	  tg3_A.set(i,j,k,tg3_A2.get(i,j,k));
-	  tg3_flag.set(i,j,k,tg3_flag2.get(i,j,k));
-	  tg3_Fint.set(i,j,k,tg3_Fint2.get(i,j,k));
+	  tg3_log_xn.set(i,j,k,en2.tg3_log_xn.get(i,j,k));
+	  tg3_log_xp.set(i,j,k,en2.tg3_log_xp.get(i,j,k));
+	  tg3_Z.set(i,j,k,en2.tg3_Z.get(i,j,k));
+	  tg3_A.set(i,j,k,en2.tg3_A.get(i,j,k));
+	  tg3_flag.set(i,j,k,en2.tg3_flag.get(i,j,k));
+	  tg3_Fint.set(i,j,k,en2.tg3_Fint.get(i,j,k));
 
-	  tg3_Xn.set(i,j,k,tg3_Xn2.get(i,j,k));
-	  tg3_Xp.set(i,j,k,tg3_Xp2.get(i,j,k));
-	  tg3_Xalpha.set(i,j,k,tg3_Xalpha2.get(i,j,k));
-	  tg3_Xnuclei.set(i,j,k,tg3_Xnuclei2.get(i,j,k));
-	  tg3_Xd.set(i,j,k,tg3_Xd2.get(i,j,k));
-	  tg3_Xt.set(i,j,k,tg3_Xt2.get(i,j,k));
-	  tg3_XHe3.set(i,j,k,tg3_XHe32.get(i,j,k));
-	  tg3_XLi4.set(i,j,k,tg3_XLi42.get(i,j,k));
+	  tg3_Xn.set(i,j,k,en2.tg3_Xn.get(i,j,k));
+	  tg3_Xp.set(i,j,k,en2.tg3_Xp.get(i,j,k));
+	  tg3_Xalpha.set(i,j,k,en2.tg3_Xalpha.get(i,j,k));
+	  tg3_Xnuclei.set(i,j,k,en2.tg3_Xnuclei.get(i,j,k));
+	  tg3_Xd.set(i,j,k,en2.tg3_Xd.get(i,j,k));
+	  tg3_Xt.set(i,j,k,en2.tg3_Xt.get(i,j,k));
+	  tg3_XHe3.set(i,j,k,en2.tg3_XHe3.get(i,j,k));
+	  tg3_XLi4.set(i,j,k,en2.tg3_XLi4.get(i,j,k));
 
 	  if (full_results) {
-	    tg3_Eint.set(i,j,k,tg3_Eint2.get(i,j,k));
-	    tg3_Pint.set(i,j,k,tg3_Pint2.get(i,j,k));
-	    tg3_Sint.set(i,j,k,tg3_Sint2.get(i,j,k));
-	    tg3_mun.set(i,j,k,tg3_mun2.get(i,j,k));
-	    tg3_mup.set(i,j,k,tg3_mup2.get(i,j,k));
+	    tg3_Eint.set(i,j,k,en2.tg3_Eint.get(i,j,k));
+	    tg3_Pint.set(i,j,k,en2.tg3_Pint.get(i,j,k));
+	    tg3_Sint.set(i,j,k,en2.tg3_Sint.get(i,j,k));
+	    tg3_mun.set(i,j,k,en2.tg3_mun.get(i,j,k));
+	    tg3_mup.set(i,j,k,en2.tg3_mup.get(i,j,k));
 	    if (include_eg) {
-	      tg3_F.set(i,j,k,tg3_F2.get(i,j,k));
-	      tg3_E.set(i,j,k,tg3_E2.get(i,j,k));
-	      tg3_P.set(i,j,k,tg3_P2.get(i,j,k));
-	      tg3_S.set(i,j,k,tg3_S2.get(i,j,k));
+	      tg3_F.set(i,j,k,en2.tg3_F.get(i,j,k));
+	      tg3_E.set(i,j,k,en2.tg3_E.get(i,j,k));
+	      tg3_P.set(i,j,k,en2.tg3_P.get(i,j,k));
+	      tg3_S.set(i,j,k,en2.tg3_S.get(i,j,k));
 	    }
 	  }
 
@@ -3737,9 +3669,9 @@ int eos_nuclei::merge_tables(std::vector<std::string> &sv,
 	}
 	/*
 	  flag1=tg3_flag1.get(i,j,k);
-	  flag2=tg3_flag2.get(i,j,k);
+	  flag2=en2.tg3_flag.get(i,j,k);
 	  Fint1=tg3_Fint1.get(i,j,k);
-	  Fint2=tg3_Fint2.get(i,j,k);
+	  Fint2=en2.tg3_Fint.get(i,j,k);
 	  if (i==99 && j==39) {
 	  cout << i << " " << j << " " << k << " "
 	  << flag1 << " " << flag2 << " " << Fint1 << " "
@@ -3765,12 +3697,6 @@ int eos_nuclei::merge_tables(std::vector<std::string> &sv,
   vector_out(cout,counts,true);
   
   cout << "Writing merged results." << endl;
-  n_nB2=n_nB;
-  n_Ye2=n_Ye;
-  n_T2=n_T;
-  nB_grid2=nB_grid;
-  Ye_grid2=Ye_grid;
-  T_grid2=T_grid;
   write_results(out);
   cout << "Done." << endl;
   
@@ -3781,7 +3707,7 @@ int eos_nuclei::compare_tables(std::vector<std::string> &sv,
 				   bool itive_com) {
 
   if (sv.size()<2) {
-    cerr << "Command 'compare-tables-aws' needs 2 arguments." << endl;
+    cerr << "Command 'compare-tables' needs 2 arguments." << endl;
     cerr << "<file 1> <file 2> [quantity]" << endl;
     return 1;
   }
@@ -3793,38 +3719,34 @@ int eos_nuclei::compare_tables(std::vector<std::string> &sv,
     quantity=sv[3];
   }
 
-  size_t n_nB=0, n_Ye=0, n_T=0;
-  vector<double> nB_grid, Ye_grid, T_grid;
+  // Read the first file
+  
   read_results(in1);
-  n_nB=n_nB2;
-  n_Ye=n_Ye2;
-  n_T=n_T2;
-  nB_grid=nB_grid2;
-  Ye_grid=Ye_grid2;
-  T_grid=T_grid2;
 
+  // Read the second file
+  
   eos_nuclei en2;
   en2.alg_mode=alg_mode;
   en2.full_results=full_results;
   en2.read_results(in2);
 
   bool grids_same=true;
-  if (n_nB!=n_nB2 || n_Ye!=n_Ye2 || n_T!=n_T2) {
+  if (en2.n_nB2!=n_nB2 || en2.n_Ye2!=n_Ye2 || en2.n_T2!=n_T2) {
     cout << "Grids have different size." << endl;
     grids_same=false;
   } else {
-    for(size_t i=0;i<n_nB;i++) {
-      if (fabs(nB_grid[i]-nB_grid2[i])/nB_grid[i]>1.0e-8) {
+    for(size_t i=0;i<n_nB2;i++) {
+      if (fabs(en2.nB_grid2[i]-nB_grid2[i])/en2.nB_grid2[i]>1.0e-8) {
 	grids_same=false;
       }
     }
-    for(size_t i=0;i<n_Ye;i++) {
-      if (fabs(Ye_grid[i]-Ye_grid2[i])/Ye_grid[i]>1.0e-8) {
+    for(size_t i=0;i<n_Ye2;i++) {
+      if (fabs(en2.Ye_grid2[i]-Ye_grid2[i])/en2.Ye_grid2[i]>1.0e-8) {
 	grids_same=false;
       }
     }
-    for(size_t i=0;i<n_T;i++) {
-      if (fabs(T_grid[i]-T_grid2[i])/T_grid[i]>1.0e-8) {
+    for(size_t i=0;i<n_T2;i++) {
+      if (fabs(en2.T_grid2[i]-T_grid2[i])/en2.T_grid2[i]>1.0e-8) {
 	grids_same=false;
       }
     }
@@ -3927,9 +3849,9 @@ int eos_nuclei::compare_tables(std::vector<std::string> &sv,
 	double max_dev=0.0;
 	size_t imax=0, jmax=0, kmax=0;
 	bool found=false;
-	for(size_t i=0;i<n_nB;i++) {
-	  for(size_t j=0;j<n_Ye;j++) {
-	    for(size_t k=0;k<n_T;k++) {
+	for(size_t i=0;i<n_nB2;i++) {
+	  for(size_t j=0;j<n_Ye2;j++) {
+	    for(size_t k=0;k<n_T2;k++) {
 	      if (tg3_flag.get(i,j,k)>9.9 && en2.tg3_flag.get(i,j,k)>9.9) {
 		found=true;
 		double v1=ptrs[ell]->get(i,j,k);
@@ -3949,8 +3871,8 @@ int eos_nuclei::compare_tables(std::vector<std::string> &sv,
 	       << " is at (" << imax << "," << jmax << ","
 	       << kmax << ") (";
 	  cout.precision(5);
-	  cout << nB_grid[imax] << ","
-	       << Ye_grid[jmax] << "," << T_grid[kmax] << ")\n\t"
+	  cout << en2.nB_grid2[imax] << ","
+	       << en2.Ye_grid2[jmax] << "," << en2.T_grid2[kmax] << ")\n\t"
 	       << "with deviation " << max_dev << endl;
 	  cout.precision(6);
 	  cout << "Value in file " << in1 << " is "
@@ -5856,15 +5778,15 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
       "are changed to the result of the function [value func.].",
       new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::edit_data),o2scl::cli::comm_option_both},
-     {0,"merge-tables-aws","Merge two output tables to create a third.",
+     {0,"merge-tables","Merge two output tables to create a third.",
       3,3,"<input file 1> <input file 2> <output file>",
       "",new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::merge_tables),o2scl::cli::comm_option_both},
-     {0,"compare-tables-aws","Compare two output tables.",
+     {0,"compare-tables","Compare two output tables.",
       2,3,"<input file 1> <input file 2> [quantity]",
       "",new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::compare_tables),o2scl::cli::comm_option_both},
-     {0,"stats","",0,0,"",
+     {0,"stats","Output convergence statistics and simple checks.",0,0,"",
       "",new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::stats),o2scl::cli::comm_option_both},
      {0,"mcarlo-nuclei","",
