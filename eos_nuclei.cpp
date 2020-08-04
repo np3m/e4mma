@@ -3120,11 +3120,11 @@ int eos_nuclei::read_results(std::string fname) {
   // Flags
 
   int itmp;
-  hf.geti("baryons_only",itmp);
+  hf.geti_def("baryons_only",1,itmp);
   if (itmp==1) baryons_only_loaded=true;
   else baryons_only_loaded=false;
   
-  hf.geti("with_leptons",itmp);
+  hf.geti_def("with_leptons",0,itmp);
   if (itmp==1) with_leptons_loaded=true;
   else with_leptons_loaded=false;
   
@@ -3320,7 +3320,8 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
       cout << "Reading file: " << fname << endl;
       read_results(fname);
     } else {
-      cout << "File " << fname << " does not exist. Making new table." << endl;
+      cout << "File " << fname << " does not exist. "
+	   << "Making new table." << endl;
       new_table();
     }
 
@@ -3543,6 +3544,12 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
 
 int eos_nuclei::stats(std::vector<std::string> &sv,
 			    bool itive_com) {
+
+  cout << endl;
+  cout << "derivs_computed: " << derivs_computed << endl;
+  cout << "with_leptons: " << with_leptons_loaded << endl;
+  cout << "alg_mode: " << alg_mode << endl;
+  cout << endl;
   
   const vector<double> &data=tg3_flag.get_data();
   vector<size_t> flags(22);
@@ -3586,8 +3593,10 @@ int eos_nuclei::stats(std::vector<std::string> &sv,
       }
     }
   }
-  cout << "nb_frac_count= " << nb_frac_count << endl;
-  cout << "S_neg_count= " << S_neg_count << endl;
+  cout << "nb_frac_count: " << nb_frac_count << endl;
+  cout << "S_neg_count: " << S_neg_count << endl;
+  cout << endl;
+  cout << "flag counts:" << endl;
   for(int j=0;j<22;j++) {
     cout << j-10 << ": " << flags[j] << endl;
   }
