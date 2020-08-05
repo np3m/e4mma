@@ -3598,6 +3598,7 @@ int eos_nuclei::stats(std::vector<std::string> &sv,
   cout << endl;
   cout << "flag counts:" << endl;
   for(int j=0;j<22;j++) {
+    cout.width(3);
     cout << j-10 << ": " << flags[j] << endl;
   }
   
