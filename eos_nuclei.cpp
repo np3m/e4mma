@@ -3685,21 +3685,28 @@ int eos_nuclei::create_ZoA(std::vector<std::string> &sv,
     cerr << "Not enough arguments for create_ZoA." << endl;
     return 1;
   }
-    
-  vector<vector<double> > grid={nB_grid2,Ye_grid2,T_grid2};
+  
+  vector<vector<double> > grid={nB_grid2,Ye_grid2,
+				T_grid2};
   tensor_grid3<vector<double>,vector<size_t> > ZoA;
+  vector<size_t> sz={n_nB2,n_Ye2,n_T2};
+  ZoA.resize(3,sz);
   ZoA.set_grid(grid);
   
   for(size_t iT=0;iT<n_T2;iT++) {
     for(size_t iYe=0;iYe<n_Ye2;iYe++) {
       for(size_t inB=0;inB<n_nB2;inB++) {
-	ZoA.get(inB,iYe,iT)=tg3_Z.get(inB,iYe,iT)/tg3_A.get(inB,iYe,iT);
+	if (tg3_Xnuclei.get(inB,iYe,iT)>0.1) {
+	  ZoA.get(inB,iYe,iT)=tg3_Z.get(inB,iYe,iT)/tg3_A.get(inB,iYe,iT);
+	} else {
+	  ZoA.get(inB,iYe,iT)=0.0;
+	}
       }
     }
   }
   
   hdf_file hf;
-  hf.open(sv[1]);
+  hf.open_or_create(sv[1]);
   hdf_output(hf,ZoA,"ZoA");
   hf.close();
   return 0;
