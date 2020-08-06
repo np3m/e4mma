@@ -107,8 +107,6 @@ eos_nuclei::eos_nuclei() {
   vomega_prime.resize(6);
   Ec.resize(6);
   
-  flag=0.0;
-
   nB_grid_spec="10^(i*0.04-12)*2.0";
   Ye_grid_spec="0.01*(i+1)";
   T_grid_spec="0.1*1.046^i";
@@ -170,6 +168,10 @@ eos_nuclei::eos_nuclei() {
   slack.set_username_from_env("O2SCL_SLACK_USERNAME");
 
   baryons_only_loaded=true;
+
+  n_nB2=0;
+  n_Ye2=0;
+  n_T2=0;
 }
 
 eos_nuclei::~eos_nuclei() {
@@ -2719,13 +2721,14 @@ int eos_nuclei::store_point
     }
   }
 
+  tg3_Sint.set(i_nB,i_Ye,i_T,th.en/nB);
+  
   // AWS 8/4/2020: This section is commented out because the code does
-  // not correctly analytically compute Eint, Pint, and Sint
+  // not correctly analytically compute mun, mup, Eint and Pint
   if (false && derivs_computed) {
     
     tg3_Eint.set(i_nB,i_Ye,i_T,th.ed/nB*hc_mev_fm);
     tg3_Pint.set(i_nB,i_Ye,i_T,th.pr*hc_mev_fm);
-    tg3_Sint.set(i_nB,i_Ye,i_T,th.en/nB);
 
     if (loc_verbose>1) {
       cout << "  Eint, Pint, Sint: " << th.ed/nB*hc_mev_fm << " "
@@ -2998,6 +3001,7 @@ int eos_nuclei::write_results(std::string fname) {
   hdf_output(hf,tg3_A,"A");
   hdf_output(hf,tg3_flag,"flag");
   hdf_output(hf,tg3_Fint,"Fint");
+  hdf_output(hf,tg3_Sint,"Sint");
   
   hdf_output(hf,tg3_Xn,"Xn");
   hdf_output(hf,tg3_Xp,"Xp");
@@ -3037,7 +3041,6 @@ int eos_nuclei::write_results(std::string fname) {
   if (derivs_computed) {
     hdf_output(hf,tg3_Eint,"Eint");
     hdf_output(hf,tg3_Pint,"Pint");
-    hdf_output(hf,tg3_Sint,"Sint");
     hdf_output(hf,tg3_mun,"mun");
     hdf_output(hf,tg3_mup,"mup");
     if (with_leptons_loaded) {
@@ -3144,6 +3147,7 @@ int eos_nuclei::read_results(std::string fname) {
   hdf_input(hf,tg3_A,"A");
   hdf_input(hf,tg3_flag,"flag");
   hdf_input(hf,tg3_Fint,"Fint");
+  hdf_input(hf,tg3_Sint,"Sint");
   
   hdf_input(hf,tg3_Xn,"Xn");
   hdf_input(hf,tg3_Xp,"Xp");
@@ -3197,11 +3201,6 @@ int eos_nuclei::read_results(std::string fname) {
 		o2scl::exc_enotfound);
     }
     hdf_input(hf,tg3_Pint,"Pint");
-    if (hf.find_object_by_name("Sint",type)!=0 || type!="tensor_grid") {
-      O2SCL_ERR("Couldn't find tensor Sint in file.",
-		o2scl::exc_enotfound);
-    }
-    hdf_input(hf,tg3_Sint,"Sint");
     if (hf.find_object_by_name("mun",type)!=0 || type!="tensor_grid") {
       O2SCL_ERR("Couldn't find tensor mun in file.",
 		o2scl::exc_enotfound);
@@ -3227,7 +3226,6 @@ int eos_nuclei::read_results(std::string fname) {
   } else {
     tg3_Eint.clear();
     tg3_Pint.clear();
-    tg3_Sint.clear();
     tg3_mun.clear();
     tg3_mup.clear();
     tg3_F.clear();
@@ -3268,31 +3266,80 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
   double log_xn, log_xp;
   size_t nuc_Z1, nuc_N1;
   int A_min, A_max, NmZ_min, NmZ_max;
-  std::string fname;
   bool guess_provided=false;
+  int flag=0;
+  size_t inB=0, iYe=0, iT=0;
 
+  // Adjust to put the user-specified point on the grid
+  if (n_nB2>0) {
+
+    inB=vector_lookup(n_nB2,nB_grid2,nB);
+    nB=nB_grid2[inB];
+    iYe=vector_lookup(n_Ye2,Ye_grid2,Ye);
+    Ye=Ye_grid2[iYe];
+    iT=vector_lookup(n_T2,T_grid2,T*hc_mev_fm);
+    T=T_grid2[iT]/hc_mev_fm;
+    
+    cout << "Found grid point (inB,iYe,iT)=(" << inB << ","
+	 << iYe << "," << iT << ")\n\t(nB,Ye,T)=("
+	 << nB << "," << Ye << "," << T*hc_mev_fm << ")." << endl;
+
+  }
+  
   if ((alg_mode==2 || alg_mode==3 || alg_mode==4) && sv.size()>=10) {
     cout << "Function point_nuclei(): "
-	 << "Reading guess (A_min,A_max,NmZ_min,NmZ_max) "
-	 << "from command line" << endl;
+	 << "Reading guess (log_xn,log_xp,A_min,A_max,NmZ_min,NmZ_max) "
+	 << "from command line." << endl;
     log_xn=o2scl::function_to_double(sv[4]);
     log_xp=o2scl::function_to_double(sv[5]);
     A_min=((size_t)(o2scl::function_to_double(sv[6])*(1.0+1.0e-12)));
     A_max=((size_t)(o2scl::function_to_double(sv[7])*(1.0+1.0e-12)));
     NmZ_min=((size_t)(o2scl::function_to_double(sv[8])*(1.0+1.0e-12)));
     NmZ_max=((size_t)(o2scl::function_to_double(sv[9])*(1.0+1.0e-12)));
+    cout << log_xn << " " << log_xp << " " << A_min << " "
+	 << A_max << " " << NmZ_min << " " << NmZ_max << endl;
     guess_provided=true;
-    if (sv.size()>=11) fname=sv[10];
   } else if ((alg_mode==0 || alg_mode==1) && sv.size()>=8) {
     cout << "Function point_nuclei(): "
-	 << "Reading guess (N,Z) from command line" << endl;
+	 << "Reading guess (log_xn,log_xp,N,Z) from command line." << endl;
     log_xn=o2scl::function_to_double(sv[4]);
     log_xp=o2scl::function_to_double(sv[5]);
     nuc_Z1=((size_t)(o2scl::function_to_double(sv[6])*(1.0+1.0e-12)));
     nuc_N1=((size_t)(o2scl::function_to_double(sv[7])*(1.0+1.0e-12)));
+    cout << log_xn << " "
+	 << log_xp << " " << nuc_Z1 << " " << nuc_N1 << endl;
     guess_provided=true;
-    if (sv.size()>=9) fname=sv[8];
-  } else {
+  } else if (n_nB2>0) {
+    flag=tg3_flag.get(inB,iYe,iT);
+    if (flag>4.9) {
+      if (alg_mode==0 || alg_mode==1) {
+	cout << "Function point_nuclei(): "
+	     << "Reading guess (N,Z) from current table." << endl;
+	log_xn=tg3_log_xn.get(inB,iYe,iT);
+	log_xp=tg3_log_xp.get(inB,iYe,iT);
+	nuc_Z1=((size_t)(tg3_Z.get(inB,iYe,iT)));
+	nuc_N1=((size_t)(tg3_A.get(inB,iYe,iT)))-nuc_Z1;
+	cout << log_xn << " "
+	     << log_xp << " " << nuc_Z1 << " " << nuc_N1 << endl;
+	guess_provided=true;
+      } else {
+	cout << "Function point_nuclei(): "
+	     << "Reading guess (log_xn,log_xp,A_min,A_max,NmZ_min,NmZ_max) "
+	     << "from current table." << endl;
+	log_xn=tg3_log_xn.get(inB,iYe,iT);
+	log_xp=tg3_log_xp.get(inB,iYe,iT);
+	A_min=((int)(tg3_A_min.get(inB,iYe,iT)));
+	A_max=((int)(tg3_A_max.get(inB,iYe,iT)));
+	NmZ_min=((int)(tg3_NmZ_min.get(inB,iYe,iT)));
+	NmZ_max=((int)(tg3_NmZ_max.get(inB,iYe,iT)));
+	cout << log_xn << " " << log_xp << " " << A_min << " "
+	     << A_max << " " << NmZ_min << " " << NmZ_max << endl;
+	guess_provided=true;
+      }
+    }
+  }
+  
+  if (guess_provided==false) {
     cout << "Function point_nuclei(): "
 	 << "Using hard-coded initial guess." << endl;
     log_xn=-1.0;
@@ -3306,120 +3353,92 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
       nuc_Z1=28;
       nuc_N1=28;
     }
-    if (sv.size()>=5) fname=sv[4];
   }
 
-  size_t inB=0, iYe=0, iT=0;
-
-  // If a filename is provided, then either it has an initial
-  // guess, or it is only an output file
-  if (fname.length()>0) {
-
-    // Presume if the file exists then assume it has EOS results
-    if (o2scl::file_exists(fname)) {
-      cout << "Reading file: " << fname << endl;
-      read_results(fname);
+  int ret=0;
+  
+  // If necessary, compute the point
+  if (flag<10 || recompute==true) {
+    cout << "Computing point." << endl;
+    
+    thermo thx;
+    double mun_full, mup_full;
+    
+    double Zbar, Nbar;
+    if (alg_mode==2 || alg_mode==3 || alg_mode==4) {
+      ret=eos_vary_dist(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,
+			thx,mun_full,mup_full,
+			A_min,A_max,NmZ_min,NmZ_max,
+			true,false);
     } else {
-      cout << "File " << fname << " does not exist. "
-	   << "Making new table." << endl;
-      new_table();
+      ret=eos_vary_ZN(nB,Ye,T,log_xn,log_xp,nuc_Z1,nuc_N1,
+		      thx,mun_full,mup_full,false);
+      Nbar=nuc_N1;
+      Zbar=nuc_Z1;
     }
 
-    inB=vector_lookup(n_nB2,nB_grid2,nB);
-    nB=nB_grid2[inB];
-    iYe=vector_lookup(n_Ye2,Ye_grid2,Ye);
-    Ye=Ye_grid2[iYe];
-    iT=vector_lookup(n_T2,T_grid2,T*hc_mev_fm);
-    T=T_grid2[iT]/hc_mev_fm;
-    
-    cout << "Found grid point (inB,iYe,iT)=(" << inB << ","
-	 << iYe << "," << iT << ")\n\t(nB,Ye,T)=("
-	 << nB << "," << Ye << "," << T*hc_mev_fm << ")." << endl;
-
-    // If the point has already been computed, just print
-    // out the results
-    if (tg3_flag.get(inB,iYe,iT)>9.9) {
-      cout << "Point already computed." << endl;
-      log_xn=tg3_log_xn.get(inB,iYe,iT);
-      log_xp=tg3_log_xp.get(inB,iYe,iT);
-      if (alg_mode==2 || alg_mode==3 || alg_mode==4) {
-	A_min=((size_t)(tg3_A_min.get(inB,iYe,iT)*(1.0+1.0e-12)));
-	A_max=((size_t)(tg3_A_max.get(inB,iYe,iT)*(1.0+1.0e-12)));
-	NmZ_min=((size_t)(tg3_NmZ_min.get(inB,iYe,iT)*(1.0+1.0e-12)));
-	NmZ_max=((size_t)(tg3_NmZ_max.get(inB,iYe,iT)*(1.0+1.0e-12)));
-	cout << "Read result:\n\tlog_xn, log_xp, A_min, A_max, NmZ_min, "
-	     << "NmZ_max:\n\t"
-	     << log_xn << " " << log_xp << " " << A_min << " "
-	     << A_max << " " << NmZ_min << " " << NmZ_max << endl;
-	cout << "\tAbar, Zbar: " << tg3_A.get(inB,iYe,iT) << " "
-	     << tg3_Z.get(inB,iYe,iT) << endl;
-      } else {
-	nuc_Z1=((size_t)(tg3_Z.get(inB,iYe,iT)*(1.0+1.0e-12)));
-	nuc_N1=((size_t)(tg3_A.get(inB,iYe,iT)*(1.0+1.0e-12)))-nuc_Z1;
-	cout << "Read result: log_xn, log_xp, Z, N: "
-	     << log_xn << " "
-	     << log_xp << " " << nuc_Z1 << " " << nuc_N1 << endl;
-      }	
-      cout << "\tFint: " << tg3_Fint.get(inB,iYe,iT) << endl;
-      if (derivs_computed==1) {
-	cout << "\tS/nB: " << tg3_Sint.get(inB,iYe,iT) << endl;
-	cout << "\tE/nB (MeV): " << tg3_Eint.get(inB,iYe,iT) << endl;
-	cout << "\tP (MeV/fm^3): " << tg3_Pint.get(inB,iYe,iT) << endl;
-	cout << "\tmun (MeV): " << tg3_mun.get(inB,iYe,iT) << endl;
-	cout << "\tmup (MeV): " << tg3_mup.get(inB,iYe,iT) << endl;
-	cout << "\tTI: " << tg3_Eint.get(inB,iYe,iT)*nB_grid2[inB]+
-	  tg3_Pint.get(inB,iYe,iT) << " "
-	     << tg3_Sint.get(inB,iYe,iT)*nB_grid2[inB]*T_grid2[iT]+
-	  nB_grid2[inB]*(1.0-Ye_grid2[iYe])*tg3_mun.get(inB,iYe,iT)+
-	  nB_grid2[inB]*Ye_grid2[iYe]*tg3_mup.get(inB,iYe,iT) << endl;
+    if (ret!=0) {
+      cout << "Point failed." << endl;
+    } else {
+      cout << "Point succeeded." << endl;
+      
+      ubvector X(6);
+      
+      if (nuclei.size()<6) {
+	O2SCL_ERR("Nuclei array not properly sized.",o2scl::exc_einval);
       }
-    }
-    
-    if (guess_provided==false && tg3_flag.get(inB,iYe,iT)>4.9) {
-      log_xn=tg3_log_xn.get(inB,iYe,iT);
-      log_xp=tg3_log_xp.get(inB,iYe,iT);
+      
+      nuc_alpha=&nuclei[0];
+      nuc_deut=&nuclei[1];
+      nuc_trit=&nuclei[2];
+      nuc_he3=&nuclei[3];
+      nuc_li4=&nuclei[4];
+      nuc_heavy=&nuclei[5];
+      
+      X[0]=nuc_alpha->n*4.0/nB;
+      X[1]=nuc_deut->n*2.0/nB;
+      X[2]=nuc_trit->n*3.0/nB;
+      X[3]=nuc_he3->n*3.0/nB;
+      X[4]=nuc_li4->n*4.0/nB;
       if (alg_mode==2 || alg_mode==3 || alg_mode==4) {
-	A_min=((size_t)(tg3_A_min.get(inB,iYe,iT)*(1.0+1.0e-12)));
-	A_max=((size_t)(tg3_A_max.get(inB,iYe,iT)*(1.0+1.0e-12)));
-	NmZ_min=((size_t)(tg3_NmZ_min.get(inB,iYe,iT)*(1.0+1.0e-12)));
-	NmZ_max=((size_t)(tg3_NmZ_max.get(inB,iYe,iT)*(1.0+1.0e-12)));
-	cout << "Read guess from " << fname << ":\n\tlog_xn, log_xp, "
-	     << "A_min, A_max, NmZ_min, NmZ_max:\n\t"
-	     << log_xn << " " << log_xp << " " << A_min << " "
-	     << A_max << " " << NmZ_min << " " << NmZ_max << endl;
+	X[5]=0.0;
+	for(size_t i=5;i<nuclei.size();i++) {
+	  X[5]+=nuclei[i].n*(nuclei[i].Z+nuclei[i].N)/nB;
+	}
       } else {
-	nuc_Z1=((size_t)(tg3_Z.get(inB,iYe,iT)*(1.0+1.0e-12)));
-	nuc_N1=((size_t)(tg3_A.get(inB,iYe,iT)*(1.0+1.0e-12)))-nuc_Z1;
-	cout << "Read guess from " << fname << ":\n\tlog_xn, log_xp, Z, A: "
-	     << log_xn << " "
-	     << log_xp << " " << nuc_Z1 << " " << nuc_N1 << endl;
+	X[5]=nuc_heavy->n*(nuc_heavy->Z+nuc_heavy->N)/nB;
       }
-    }
-  }
-  
-  thermo thx;
-  double mun_full, mup_full;
-  
-  int ret;
 
-  double Zbar, Nbar;
-  if (alg_mode==2 || alg_mode==3 || alg_mode==4) {
-    ret=eos_vary_dist(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,
-			  thx,mun_full,mup_full,
-			  A_min,A_max,NmZ_min,NmZ_max,
-			  true,false);
+      store_point(inB,iYe,iT,nB,Ye,T,thx,log_xn,log_xp,Zbar,Nbar,
+		  mun_full,mup_full,X,A_min,A_max,NmZ_min,NmZ_max,10.0);
+    }
+  
   } else {
-    ret=eos_vary_ZN(nB,Ye,T,log_xn,log_xp,nuc_Z1,nuc_N1,
-			thx,mun_full,mup_full,false);
-    Nbar=nuc_N1;
-    Zbar=nuc_Z1;
+    cout << "Point already computed and recompute is false." << endl;
   }
+
+  // Print out the results
+  if (n_nB2>0 && ret==0) {
+    cout << "log_xn: " << log_xn << endl;
+    cout << "log_xp: " << log_xp << endl;
+    cout << "Z: " << tg3_Z.get(inB,iYe,iT) << endl;
+    cout << "A: " << tg3_A.get(inB,iYe,iT) << endl;
+    cout << "Fint: " << tg3_Fint.get(inB,iYe,iT) << endl;
+    cout << "Sint: " << tg3_Sint.get(inB,iYe,iT) << endl;
+    cout << "A_min: " << tg3_A_min.get(inB,iYe,iT) << endl;
+    cout << "A_max: " << tg3_A_max.get(inB,iYe,iT) << endl;
+    cout << "NmZ_min: " << tg3_NmZ_min.get(inB,iYe,iT) << endl;
+    cout << "NmZ_max: " << tg3_NmZ_max.get(inB,iYe,iT) << endl;
+  }
+
+#ifdef O2SCL_NEVER_DEFINED
   
-  if (ret==0) {
-    cout << "Success in point_nuclei_aws (log_xn,log_xp,Z,N,f):\n  ";
+  // Print out the results
+  if (n_nB2>0 && ret==0) {
+    cout << "point_nuclei (log_xn,log_xp,Z,N,f):\n  ";
     cout.precision(5);
-    cout << "\t" << log_xn << " " << log_xp << " "
-	 << Zbar << " " << Nbar << " " << thx.ed-T*thx.en << endl;
+    cout << "\t" << log_xn << " " << log_xp << endl;
+	 << thx.ed-T*thx.en << endl;
     cout << "\tF: " << (thx.ed-T*thx.en)/nB*hc_mev_fm << endl;
     cout.precision(6);
     cout << "\tS/nB: " << thx.en/nB_grid2[inB] << endl;
@@ -3536,8 +3555,10 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
       hfx.close();
     }
   } else {
-    cout << "Failed in point_nuclei()." << endl;
+    cout << "No results to show." << endl;
   }
+  
+#endif
   
   return 0;
 }
@@ -3581,7 +3602,7 @@ int eos_nuclei::stats(std::vector<std::string> &sv,
       }
       if (derivs_computed && S_neg_count<1000 &&
 	  tg3_Sint.get_data()[i]<0.0) {
-	cout << "Entropy per baryon negative (i,nB,Ye,T,X_total): "
+	cout << "Entropy per baryon negative (i,nB,Ye,T,Sint): "
 	     << i << " " << nB_grid2[ix[0]] << " "
 	     << Ye_grid2[ix[1]] << " " << T_grid2[ix[2]]*hc_mev_fm << " " 
 	     << tg3_Sint.get_data()[i] << endl;
@@ -3850,10 +3871,10 @@ int eos_nuclei::compare_tables(std::vector<std::string> &sv,
   names.push_back("Xt");
   names.push_back("XHe3");
   names.push_back("XLi4");
+  names.push_back("Sint");
   if (derivs_computed) {
     names.push_back("Eint");
     names.push_back("Pint");
-    names.push_back("Sint");
     names.push_back("mun");
     names.push_back("mup");
     if (with_leptons_loaded) {
@@ -3878,10 +3899,10 @@ int eos_nuclei::compare_tables(std::vector<std::string> &sv,
   ptrs.push_back(&tg3_Xt);
   ptrs.push_back(&tg3_XHe3);
   ptrs.push_back(&tg3_XLi4);
+  ptrs.push_back(&tg3_Sint);
   if (derivs_computed) {
     ptrs.push_back(&tg3_Eint);
     ptrs.push_back(&tg3_Pint);
-    ptrs.push_back(&tg3_Sint);
     ptrs.push_back(&tg3_mun);
     ptrs.push_back(&tg3_mup);
     if (with_leptons_loaded) {
@@ -3906,10 +3927,10 @@ int eos_nuclei::compare_tables(std::vector<std::string> &sv,
   ptrs2.push_back(&en2.tg3_Xt);
   ptrs2.push_back(&en2.tg3_XHe3);
   ptrs2.push_back(&en2.tg3_XLi4);
+  ptrs2.push_back(&en2.tg3_Sint);
   if (derivs_computed) {
     ptrs2.push_back(&en2.tg3_Eint);
     ptrs2.push_back(&en2.tg3_Pint);
-    ptrs2.push_back(&en2.tg3_Sint);
     ptrs2.push_back(&en2.tg3_mun);
     ptrs2.push_back(&en2.tg3_mup);
     if (with_leptons_loaded) {
@@ -4016,6 +4037,7 @@ void eos_nuclei::new_table() {
   tg3_A.resize(3,st);
   tg3_flag.resize(3,st);
   tg3_Fint.resize(3,st);
+    tg3_Sint.resize(3,st);
 
   tg3_Xn.resize(3,st);
   tg3_Xp.resize(3,st);
@@ -4032,6 +4054,7 @@ void eos_nuclei::new_table() {
   tg3_A.set_grid_packed(packed);
   tg3_flag.set_grid_packed(packed);
   tg3_Fint.set_grid_packed(packed);
+    tg3_Sint.set_grid_packed(packed);
   
   tg3_Xn.set_grid_packed(packed);
   tg3_Xp.set_grid_packed(packed);
@@ -4048,6 +4071,7 @@ void eos_nuclei::new_table() {
   tg3_A.set_all(0.0);
   tg3_flag.set_all(0.0);
   tg3_Fint.set_all(0.0);
+  tg3_Sint.set_all(0.0);
 
   tg3_Xn.set_all(0.0);
   tg3_Xp.set_all(0.0);
@@ -4084,9 +4108,6 @@ void eos_nuclei::new_table() {
     tg3_Pint.resize(3,st);
     tg3_Pint.set_grid_packed(packed);
     tg3_Pint.set_all(0.0);
-    tg3_Sint.resize(3,st);
-    tg3_Sint.set_grid_packed(packed);
-    tg3_Sint.set_all(0.0);
     tg3_mun.resize(3,st);
     tg3_mun.set_grid_packed(packed);
     tg3_mun.set_all(0.0);
@@ -4155,6 +4176,7 @@ int eos_nuclei::edit_data(std::vector<std::string> &sv,
 	
 	vars["flag"]=tg3_flag.get(inB,iYe,iT);
 	vars["Fint"]=tg3_Fint.get(inB,iYe,iT);
+	vars["Sint"]=tg3_Sint.get(inB,iYe,iT);
 	vars["Z"]=tg3_Z.get(inB,iYe,iT);
 	vars["A"]=tg3_A.get(inB,iYe,iT);
 	vars["log_xn"]=tg3_log_xn.get(inB,iYe,iT);
@@ -4177,9 +4199,10 @@ int eos_nuclei::edit_data(std::vector<std::string> &sv,
 	}
 
 	if (derivs_computed) {
-	  vars["Sint"]=tg3_Sint.get(inB,iYe,iT);
 	  vars["Eint"]=tg3_Eint.get(inB,iYe,iT);
 	  vars["Pint"]=tg3_Pint.get(inB,iYe,iT);
+	  vars["mun"]=tg3_mun.get(inB,iYe,iT);
+	  vars["mup"]=tg3_mup.get(inB,iYe,iT);
 	}
 	
 	double val=calc.eval(&vars);
@@ -5897,7 +5920,7 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
       0,0,"<file>",
       "",new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::mcarlo_nuclei),o2scl::cli::comm_option_both},
-     {0,"point-nuclei-aws",
+     {0,"point-nuclei",
       "Compute EOS w/nuclei at a (n_B,Y_e,T) point.",
       -1,-1,((string)"<n_B> <Y_e> <T (MeV)> [log(xn) log(xp) Z N] ")+
       "[alg_mode 2-3: log(xn) log(xp) A_min A_max NmZ_min NmZ_max] [fname]",

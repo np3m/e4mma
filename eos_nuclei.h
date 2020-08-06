@@ -215,7 +215,6 @@ public:
   double p_c, p_c_test;
   double f0_nuc, p0_nuc, ed0_nuc, en0_nuc;
   double f_total, Pr_total, en_total, ed_total;
-  double flag;
   bool heavy;
 
   double file_update_time;
