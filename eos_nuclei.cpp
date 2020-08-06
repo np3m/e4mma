@@ -2608,10 +2608,16 @@ int eos_nuclei::store_point
     if (fr>=fr_old) {
       cout << "Old point has smaller free energy. Old: " << fr_old
 	   << " New: " << fr << endl;
+      
       // If a good point is already stored, and the current free
       // energy is smaller than the new free energy, then just return
       // without storing anything.
-      //return 0;
+      
+      // AWS: 08/05/20: This return statement was commented out,
+      // I'm not sure why, but I'm pretty sure it needs to be here,
+      // so I'm uncommenting it for now.
+      return 0;
+      
     } else {
       cout << "New point has smaller free energy. Old: " << fr_old
          << " New: " << fr << endl;
@@ -3559,6 +3565,214 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
   }
   
 #endif
+  
+  return 0;
+}
+
+int eos_nuclei::increase_density(std::vector<std::string> &sv,
+				 bool itive_com) {
+
+  double nB_start=o2scl::function_to_double(sv[1]);
+  double nB_end=o2scl::function_to_double(sv[2]);
+  double Ye=o2scl::function_to_double(sv[3]);
+  double T=o2scl::function_to_double(sv[4])/hc_mev_fm;
+
+  size_t inB_start=0, inB_end=0, iYe=0, iT=0;
+
+  // Adjust to put the user-specified point on the grid
+
+  inB_start=vector_lookup(n_nB2,nB_grid2,nB_start);
+  inB_end=vector_lookup(n_nB2,nB_grid2,nB_end);
+  iYe=vector_lookup(n_Ye2,Ye_grid2,Ye);
+  iT=vector_lookup(n_T2,T_grid2,T*hc_mev_fm);
+  
+  cout << "From grid point (inB,iYe,iT)=(" << inB_start << ","
+       << iYe << "," << iT << ") to (inB,iYe,iT)=("
+       << inB_end << " " << iYe << " " << iT << ")" << endl;
+
+  double log_xn, log_xp;
+  size_t nuc_Z1, nuc_N1;
+  int A_min, A_max, NmZ_min, NmZ_max;
+
+  log_xn=tg3_log_xn.get(inB_start,iYe,iT);
+  log_xp=tg3_log_xp.get(inB_start,iYe,iT);
+  A_min=tg3_A_min.get(inB_start,iYe,iT);
+  A_max=tg3_A_max.get(inB_start,iYe,iT);
+  NmZ_min=tg3_NmZ_min.get(inB_start,iYe,iT);
+  NmZ_max=tg3_NmZ_max.get(inB_start,iYe,iT);
+  
+  derivs_computed=false;
+  with_leptons_loaded=false;
+  
+  for(size_t inB=inB_start;inB<=inB_end;inB++) {
+  
+    double nB=nB_grid2[inB];
+    Ye=Ye_grid2[iYe];
+    T=T_grid2[iT]/hc_mev_fm;
+
+    thermo thx;
+    double mun_full, mup_full;
+
+    if (alg_mode!=4) {
+      cout << "Only works for alg_mode=4." << endl;
+      return 1;
+    }
+    
+    double Zbar, Nbar;
+    int ret=eos_vary_dist(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,
+			  thx,mun_full,mup_full,
+			  A_min,A_max,NmZ_min,NmZ_max,
+			  true,false);
+    cout << ret << " " << nB << " " << Ye << " " << T << " "
+	 << Zbar << " " << Nbar << endl;
+
+    if (ret!=0) exit(-1);
+
+    ubvector X(6);
+    
+    if (nuclei.size()<6) {
+      O2SCL_ERR("Nuclei array not properly sized.",o2scl::exc_einval);
+    }
+    
+    nuc_alpha=&nuclei[0];
+    nuc_deut=&nuclei[1];
+    nuc_trit=&nuclei[2];
+    nuc_he3=&nuclei[3];
+    nuc_li4=&nuclei[4];
+    nuc_heavy=&nuclei[5];
+    
+    X[0]=nuc_alpha->n*4.0/nB;
+    X[1]=nuc_deut->n*2.0/nB;
+    X[2]=nuc_trit->n*3.0/nB;
+    X[3]=nuc_he3->n*3.0/nB;
+    X[4]=nuc_li4->n*4.0/nB;
+    if (alg_mode==2 || alg_mode==3 || alg_mode==4) {
+      X[5]=0.0;
+      for(size_t i=5;i<nuclei.size();i++) {
+	X[5]+=nuclei[i].n*(nuclei[i].Z+nuclei[i].N)/nB;
+      }
+    } else {
+      X[5]=nuc_heavy->n*(nuc_heavy->Z+nuc_heavy->N)/nB;
+    }
+
+    cout << "before: " << tg3_Z.get(inB,iYe,iT) << " "
+	 << tg3_Z.get(inB,iYe,iT) << endl;
+    store_point(inB,iYe,iT,nB,Ye,T,thx,log_xn,log_xp,Zbar,Nbar,
+		mun_full,mup_full,X,A_min,A_max,NmZ_min,NmZ_max,10.0);
+    cout << "after: " << tg3_Z.get(inB,iYe,iT) << " "
+	 << tg3_Z.get(inB,iYe,iT) << endl;
+    cout << endl;
+
+  }
+  
+  return 0;
+}
+
+int eos_nuclei::increase_density2(std::vector<std::string> &sv,
+				 bool itive_com) {
+
+  double nB_start=o2scl::function_to_double(sv[1]);
+  double nB_end=o2scl::function_to_double(sv[2]);
+  double Ye_start=o2scl::function_to_double(sv[3]);
+  double Ye_end=o2scl::function_to_double(sv[4]);
+  double T_start=o2scl::function_to_double(sv[5])/hc_mev_fm;
+  double T_end=o2scl::function_to_double(sv[6])/hc_mev_fm;
+
+  size_t inB_start=vector_lookup(n_nB2,nB_grid2,nB_start);
+  size_t iYe_start=vector_lookup(n_Ye2,Ye_grid2,Ye_start);
+  size_t iT_start=vector_lookup(n_T2,T_grid2,T_start*hc_mev_fm);
+
+  size_t inB_end=vector_lookup(n_nB2,nB_grid2,nB_end);
+  size_t iYe_end=vector_lookup(n_Ye2,Ye_grid2,Ye_end);
+  size_t iT_end=vector_lookup(n_T2,T_grid2,T_end*hc_mev_fm);
+
+  double log_xn, log_xp;
+  size_t nuc_Z1, nuc_N1;
+  int A_min, A_max, NmZ_min, NmZ_max;
+
+  derivs_computed=false;
+  with_leptons_loaded=false;
+  
+  for(size_t iT=iT_start;iT<=iT_end;iT++) {
+    
+    for(size_t iYe=iYe_start;iYe<=iYe_end;iYe++) {
+  
+      log_xn=tg3_log_xn.get(inB_start,iYe,iT);
+      log_xp=tg3_log_xp.get(inB_start,iYe,iT);
+      A_min=tg3_A_min.get(inB_start,iYe,iT);
+      A_max=tg3_A_max.get(inB_start,iYe,iT);
+      NmZ_min=tg3_NmZ_min.get(inB_start,iYe,iT);
+      NmZ_max=tg3_NmZ_max.get(inB_start,iYe,iT);
+      
+      for(size_t inB=inB_start;inB<=inB_end;inB++) {
+	
+	double nB=nB_grid2[inB];
+	double Ye=Ye_grid2[iYe];
+	double T=T_grid2[iT]/hc_mev_fm;
+	
+	thermo thx;
+	double mun_full, mup_full;
+	
+	if (alg_mode!=4) {
+	  cout << "Only works for alg_mode=4." << endl;
+	  return 1;
+	}
+	
+	double Zbar, Nbar;
+	int ret=eos_vary_dist(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,
+			      thx,mun_full,mup_full,
+			      A_min,A_max,NmZ_min,NmZ_max,
+			      true,false);
+	cout << ret << " " << nB << " " << Ye << " " << T*hc_mev_fm << " "
+	     << Zbar << " " << Nbar << endl;
+	
+	if (ret==0) {
+	  
+	  ubvector X(6);
+	  
+	  if (nuclei.size()<6) {
+	    O2SCL_ERR("Nuclei array not properly sized.",o2scl::exc_einval);
+	  }
+	  
+	  nuc_alpha=&nuclei[0];
+	  nuc_deut=&nuclei[1];
+	  nuc_trit=&nuclei[2];
+	  nuc_he3=&nuclei[3];
+	  nuc_li4=&nuclei[4];
+	  nuc_heavy=&nuclei[5];
+	  
+	  X[0]=nuc_alpha->n*4.0/nB;
+	  X[1]=nuc_deut->n*2.0/nB;
+	  X[2]=nuc_trit->n*3.0/nB;
+	  X[3]=nuc_he3->n*3.0/nB;
+	  X[4]=nuc_li4->n*4.0/nB;
+	  if (alg_mode==2 || alg_mode==3 || alg_mode==4) {
+	    X[5]=0.0;
+	    for(size_t i=5;i<nuclei.size();i++) {
+	      X[5]+=nuclei[i].n*(nuclei[i].Z+nuclei[i].N)/nB;
+	    }
+	  } else {
+	    X[5]=nuc_heavy->n*(nuc_heavy->Z+nuc_heavy->N)/nB;
+	  }
+	  
+	  cout << "before: " << tg3_Z.get(inB,iYe,iT) << " "
+	       << tg3_Z.get(inB,iYe,iT) << endl;
+	  store_point(inB,iYe,iT,nB,Ye,T,thx,log_xn,log_xp,Zbar,Nbar,
+		      mun_full,mup_full,X,A_min,A_max,NmZ_min,NmZ_max,10.0);
+	  cout << "after: " << tg3_Z.get(inB,iYe,iT) << " "
+	       << tg3_Z.get(inB,iYe,iT) << endl;
+	  cout << endl;
+	  
+	} else {
+	  inB=inB_end;
+	}
+	
+      }
+    }
+
+    write_results("id2.o2");
+    
+  }
   
   return 0;
 }
@@ -5850,7 +6064,7 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
   
   eos::setup_cli(cl);
   
-  static const int nopt=15;
+  static const int nopt=17;
   
   o2scl::comm_option_s options[nopt]=
     {{0,"eos-deriv","compute derivatives",
@@ -5926,6 +6140,12 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
       "[alg_mode 2-3: log(xn) log(xp) A_min A_max NmZ_min NmZ_max] [fname]",
       "",new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::point_nuclei),o2scl::cli::comm_option_both},
+     {0,"increase-density","",
+      -1,-1,"","",new o2scl::comm_option_mfptr<eos_nuclei>
+      (this,&eos_nuclei::increase_density),o2scl::cli::comm_option_both},
+     {0,"increase-density2","",
+      -1,-1,"","",new o2scl::comm_option_mfptr<eos_nuclei>
+      (this,&eos_nuclei::increase_density2),o2scl::cli::comm_option_both},
      {0,"select-high-T","",
       1,1,"<>","",new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::select_high_T_cl),o2scl::cli::comm_option_both}

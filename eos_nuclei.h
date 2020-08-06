@@ -499,6 +499,9 @@ public:
    */
   int point_nuclei(std::vector<std::string> &sv, bool itive_com);
 
+  int increase_density(std::vector<std::string> &sv, bool itive_com);
+  int increase_density2(std::vector<std::string> &sv, bool itive_com);
+
   /** \brief Desc
    */
   int mcarlo_nuclei(std::vector<std::string> &sv, bool itive_com);
