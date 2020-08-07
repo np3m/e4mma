@@ -4340,6 +4340,17 @@ int eos_nuclei::edit_data(std::vector<std::string> &sv,
 	vars["Xt"]=tg3_Xt.get(inB,iYe,iT);
 	vars["XHe3"]=tg3_XHe3.get(inB,iYe,iT);
 	vars["XLi4"]=tg3_XLi4.get(inB,iYe,iT);
+	vars["dAdnB"]=0.0;
+	if (inB>0 && inB<((int)n_nB2)-1) {
+	  double a_low=tg3_A.get(inB-1,iYe,iT);
+	  double a_mid=tg3_A.get(inB,iYe,iT);
+	  double a_high=tg3_A.get(inB+1,iYe,iT);
+	  if (fabs(a_mid-a_low)>fabs(a_mid-a_high)) {
+	    vars["dAdnB"]=fabs(a_mid-a_low);
+	  } else {
+	    vars["dAdnB"]=fabs(a_mid-a_high);
+	  }
+	}
 
 	if (alg_mode==2 || alg_mode==3 || alg_mode==4) {
 	  vars["A_min"]=tg3_A_min.get(inB,iYe,iT);
