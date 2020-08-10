@@ -33,44 +33,6 @@ using namespace o2scl_hdf;
 
 eos_nuclei::eos_nuclei() {
 
-  int mpi_rank, mpi_size;
-#ifndef NO_MPI
-  // Get MPI rank, etc.
-  MPI_Comm_rank(MPI_COMM_WORLD,&mpi_rank);
-  MPI_Comm_size(MPI_COMM_WORLD,&mpi_size);
-  
-  // Ensure that multiple MPI ranks aren't reading from the
-  // filesystem at the same time
-  int tag=0, buffer=0;
-  if (mpi_size>1 && mpi_rank>=1) {
-    MPI_Recv(&buffer,1,MPI_INT,mpi_rank-1,
-	     tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
-  }
-#endif
-  
-#ifdef O2SCL_CORI
-  // Load the nuclear masses
-  cout << "Rank " << mpi_rank << " loading nuclear masses." << endl;  
-  o2scl_hdf::ame_load_ext(ame,"data/ame16.o2","ame16.o2");
-  o2scl_hdf::mnmsk_load(m95,"data/mnmsk.o2");
-  o2scl_hdf::hfb_sp_load(hfb,27,"data");
-  cout << "Rank " << mpi_rank << " finished loading nuclear masses."
-       << endl;  
-#else
-  // Load the nuclear masses
-  o2scl_hdf::ame_load(ame);
-  o2scl_hdf::mnmsk_load(m95);
-  o2scl_hdf::hfb_sp_load(hfb,27);
-#endif
-  
-#ifndef NO_MPI
-  // Send a message to the next MPI rank
-  if (mpi_size>1 && mpi_rank<mpi_size-1) {
-    MPI_Send(&buffer,1,MPI_INT,mpi_rank+1,
-	     tag,MPI_COMM_WORLD);
-  }
-#endif
-
   nuclei.resize(6);
   nuc_alpha=&nuclei[0];
   nuc_deut=&nuclei[1];
@@ -78,35 +40,7 @@ eos_nuclei::eos_nuclei() {
   nuc_he3=&nuclei[3];
   nuc_li4=&nuclei[4];
   nuc_heavy=&nuclei[5];
-  ame.get_nucleus(2,2,*nuc_alpha);
-  ame.get_nucleus(1,1,*nuc_deut);
-  ame.get_nucleus(1,2,*nuc_trit);
-  ame.get_nucleus(2,1,*nuc_he3);
-  ame.get_nucleus(3,1,*nuc_li4);
 
-  nuc_alpha->g=1.0;
-  nuc_deut->g=3.0;
-  nuc_trit->g=2.0;
-  nuc_li4->g=5.0;
-  nuc_he3->g=2.0;
- 
-  // Compute neutron and proton separation energies in MeV. Note that
-  // Shen et al. (2010) defines Sn and Sp to be positive for stable
-  // nuclei. We only compute the light nuclei here, the heavy nuclei
-  // will be added later.
-  o2scl::nucleus nuc_temp;
-  Sneut.resize(6);
-  Sprot.resize(6);
-  for(size_t i=0;i<5;i++) {
-    ame.get_nucleus(nuclei[i].Z,nuclei[i].N-1,nuc_temp);
-    Sneut[i]=-(nuclei[i].be-nuc_temp.be)*hc_mev_fm;
-    ame.get_nucleus(nuclei[i].Z-1,nuclei[i].N,nuc_temp);
-    Sprot[i]=-(nuclei[i].be-nuc_temp.be)*hc_mev_fm;  
-  }
-  vomega.resize(6);
-  vomega_prime.resize(6);
-  Ec.resize(6);
-  
   nB_grid_spec="10^(i*0.04-12)*2.0";
   Ye_grid_spec="0.01*(i+1)";
   T_grid_spec="0.1*1.046^i";
@@ -172,9 +106,82 @@ eos_nuclei::eos_nuclei() {
   n_nB2=0;
   n_Ye2=0;
   n_T2=0;
+
+  ext_guess="";
 }
 
 eos_nuclei::~eos_nuclei() {
+}
+
+void eos_nuclei::load_nuclei() {
+  int mpi_rank, mpi_size;
+#ifndef NO_MPI
+  // Get MPI rank, etc.
+  MPI_Comm_rank(MPI_COMM_WORLD,&mpi_rank);
+  MPI_Comm_size(MPI_COMM_WORLD,&mpi_size);
+  
+  // Ensure that multiple MPI ranks aren't reading from the
+  // filesystem at the same time
+  int tag=0, buffer=0;
+  if (mpi_size>1 && mpi_rank>=1) {
+    MPI_Recv(&buffer,1,MPI_INT,mpi_rank-1,
+	     tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
+  }
+#endif
+  
+#ifdef O2SCL_CORI
+  // Load the nuclear masses
+  cout << "Rank " << mpi_rank << " loading nuclear masses." << endl;  
+  o2scl_hdf::ame_load_ext(ame,"data/ame16.o2","ame16.o2");
+  o2scl_hdf::mnmsk_load(m95,"data/mnmsk.o2");
+  o2scl_hdf::hfb_sp_load(hfb,27,"data");
+  cout << "Rank " << mpi_rank << " finished loading nuclear masses."
+       << endl;  
+#else
+  // Load the nuclear masses
+  o2scl_hdf::ame_load(ame);
+  o2scl_hdf::mnmsk_load(m95);
+  o2scl_hdf::hfb_sp_load(hfb,27);
+#endif
+  
+#ifndef NO_MPI
+  // Send a message to the next MPI rank
+  if (mpi_size>1 && mpi_rank<mpi_size-1) {
+    MPI_Send(&buffer,1,MPI_INT,mpi_rank+1,
+	     tag,MPI_COMM_WORLD);
+  }
+#endif
+
+  ame.get_nucleus(2,2,*nuc_alpha);
+  ame.get_nucleus(1,1,*nuc_deut);
+  ame.get_nucleus(1,2,*nuc_trit);
+  ame.get_nucleus(2,1,*nuc_he3);
+  ame.get_nucleus(3,1,*nuc_li4);
+
+  nuc_alpha->g=1.0;
+  nuc_deut->g=3.0;
+  nuc_trit->g=2.0;
+  nuc_li4->g=5.0;
+  nuc_he3->g=2.0;
+ 
+  // Compute neutron and proton separation energies in MeV. Note that
+  // Shen et al. (2010) defines Sn and Sp to be positive for stable
+  // nuclei. We only compute the light nuclei here, the heavy nuclei
+  // will be added later.
+  o2scl::nucleus nuc_temp;
+  Sneut.resize(6);
+  Sprot.resize(6);
+  for(size_t i=0;i<5;i++) {
+    ame.get_nucleus(nuclei[i].Z,nuclei[i].N-1,nuc_temp);
+    Sneut[i]=-(nuclei[i].be-nuc_temp.be)*hc_mev_fm;
+    ame.get_nucleus(nuclei[i].Z-1,nuclei[i].N,nuc_temp);
+    Sprot[i]=-(nuclei[i].be-nuc_temp.be)*hc_mev_fm;  
+  }
+  vomega.resize(6);
+  vomega_prime.resize(6);
+  Ec.resize(6);
+
+  return;
 }
 
 double partition_func::delta_small_iand(double x) {
@@ -4475,6 +4482,37 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
   int gt_verbose=2;
 
   // -----------------------------------------------------
+  // External guess
+  
+#ifndef NO_MPI
+  // Get MPI rank, etc.
+  MPI_Comm_rank(MPI_COMM_WORLD,&mpi_rank);
+  MPI_Comm_size(MPI_COMM_WORLD,&mpi_size);
+  
+  // Ensure that multiple MPI ranks aren't reading from the
+  // filesystem at the same time
+  int tag=0, buffer2=0;
+  if (mpi_size>1 && mpi_rank>=1) {
+    MPI_Recv(&buffer2,1,MPI_INT,mpi_rank-1,
+	     tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
+  }
+#endif
+  
+  eos_nuclei external;
+  if (ext_guess.length()>0) {
+    external.read_results(ext_guess);
+    cout << "FIXME: should check that grids match." << endl;
+  }
+  
+#ifndef NO_MPI
+  // Send a message to the next MPI rank
+  if (mpi_size>1 && mpi_rank<mpi_size-1) {
+    MPI_Send(&buffer2,1,MPI_INT,mpi_rank+1,
+	     tag,MPI_COMM_WORLD);
+  }
+#endif
+  
+  // -----------------------------------------------------
   // All processors read input file in turn
 
   string out_file;
@@ -4774,6 +4812,35 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	      }	
 	      
 	      tg3_flag.get(inB,iYe,iT)=(double)iflag_in_progress_with_guess;
+	      guess_found=true;
+	    }
+
+	    if (ext_guess.length()>0 &&
+		external.tg3_flag.get(inB,iYe,iT)>9.9 &&
+		(iflag==iflag_guess || iflag==iflag_empty)) {
+	      tasks.push_back(inB);
+	      tasks.push_back(iYe);
+	      tasks.push_back(iT);
+	      tasks.push_back(inB);
+	      tasks.push_back(iYe);
+	      tasks.push_back(iT);
+	      if (alg_mode>=2) {
+		double line[8]={external.tg3_log_xn.get(inB,iYe,iT),
+				external.tg3_log_xp.get(inB,iYe,iT),
+				0.0,0.0,
+				external.tg3_A_min.get(inB,iYe,iT),
+				external.tg3_A_max.get(inB,iYe,iT),
+				external.tg3_NmZ_min.get(inB,iYe,iT),
+				external.tg3_NmZ_max.get(inB,iYe,iT)};
+		gtab.line_of_data(8,line);
+	      } else {
+		double line[8]={external.tg3_log_xn.get(inB,iYe,iT),
+				external.tg3_log_xp.get(inB,iYe,iT),
+				external.tg3_Z.get(inB,iYe,iT),
+				external.tg3_A.get(inB,iYe,iT),
+				0.0,0.0,0.0,0.0};
+		gtab.line_of_data(8,line);
+	      }
 	      guess_found=true;
 	    }
 	    
@@ -5284,7 +5351,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	  }
 
 	  // Update file if necessary
-	  if (i%(file_update_iters)==file_update_iters-1 &&
+	  if (((int)i)%file_update_iters==file_update_iters-1 && 
 	      MPI_Wtime()-last_file_time>file_update_time) {
 	    
 	    cout << "Updating file." << endl;
@@ -6170,6 +6237,10 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
   p_nucleon_func.str=&nucleon_func;
   p_nucleon_func.help="Function for delta Z and delta N in the SNA.";
   cl.par_list.insert(make_pair("nucleon_func",&p_nucleon_func));
+
+  p_ext_guess.str=&ext_guess;
+  p_ext_guess.help="";
+  cl.par_list.insert(make_pair("ext_guess",&p_ext_guess));
 
   p_Ye_list.str=&Ye_list;
   p_Ye_list.help="List of electron fractions to consider computing";

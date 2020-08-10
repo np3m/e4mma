@@ -31,7 +31,11 @@ int main(int argc, char *argv[]) {
   // Init MPI
   MPI_Init(&argc,&argv);
 #endif
+  
   eos_nuclei eph;
+
+  eph.load_nuclei();
+  
   cli cl;
   
   eph.setup_cli(cl);

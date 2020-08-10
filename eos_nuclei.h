@@ -82,6 +82,7 @@ public:
 
     \todo Rename n_nB2 to n_nB, etc.
     \todo Make child of eos_sn_base
+    \todo Use \c loaded instead of testing n_nB2==0
 */
 class eos_nuclei : public eos {
 
@@ -90,15 +91,27 @@ public:
   eos_nuclei();
 
   virtual ~eos_nuclei();
-  
+
+  /// \name Grid
+  //@{
   size_t n_nB2;
   size_t n_Ye2;
   size_t n_T2;
   std::vector<double> nB_grid2;
   std::vector<double> Ye_grid2;
   std::vector<double> T_grid2;
+  //@}
+
+  /// True if an EOS is currently loaded
   bool loaded;
 
+  /** \brief Load nuclear masses
+   */
+  void load_nuclei();
+  
+  /// External guess
+  std::string ext_guess;
+  
   /** \brief Object for sending slack messages
    */
   o2scl::slack_messenger slack;
@@ -317,6 +330,7 @@ public:
   o2scl::cli::parameter_bool p_show_all_nuclei;
   o2scl::cli::parameter_bool p_recompute;
   o2scl::cli::parameter_string p_edge_list;
+  o2scl::cli::parameter_string p_ext_guess;
   o2scl::cli::parameter_bool p_six_neighbors;
   o2scl::cli::parameter_bool p_full_results;
   o2scl::cli::parameter_bool p_rnuc_less_rws;
@@ -336,7 +350,7 @@ public:
    */
   int eos_deriv(std::vector<std::string> &sv, bool itive_com);
 
-  /** \brief Desc
+  /** \brief Add electrons and photons
    */
   int add_eg(std::vector<std::string> &sv, bool itive_com);
 
@@ -366,7 +380,7 @@ public:
 			 int ix, double &mun_gas, double &mup_gas,
 			 o2scl::thermo &th_gas);
 
-  /** \brief Desc
+  /** \brief Solve for the nuclei via minimization
    */
   double solve_nuclei_min(size_t nv, const ubvector &x, 
 			  double nb, double ye, double T,
@@ -457,11 +471,11 @@ public:
    */
   int generate_table(std::vector<std::string> &sv, bool itive_com);
 
-  /** \brief Desc
+  /** \brief Load an EOS table
    */
   int load(std::vector<std::string> &sv, bool itive_com);
   
-  /** \brief Desc
+  /** \brief Output an EOS table to a file
    */
   int output(std::vector<std::string> &sv, bool itive_com);
 
@@ -499,11 +513,12 @@ public:
    */
   int point_nuclei(std::vector<std::string> &sv, bool itive_com);
 
-  /** \brief Desc
+  /** \brief Use results lower densities to provide initial 
+      guesses to higher densities
    */
   int increase_density(std::vector<std::string> &sv, bool itive_com);
 
-  /** \brief Desc
+  /** \brief Create a tensor which contains the results of \f$ Z/A \f$
    */
   int create_ZoA(std::vector<std::string> &sv, bool itive_com);
 
