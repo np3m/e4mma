@@ -3572,12 +3572,18 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
 int eos_nuclei::increase_density(std::vector<std::string> &sv,
 				 bool itive_com) {
 
+  if (sv.size()<8) {
+    cerr << "Need nB1 nB2 Ye1 Ye2 T1 T2 output_file." << endl;
+    return 2;
+  }
+  
   double nB_start=o2scl::function_to_double(sv[1]);
   double nB_end=o2scl::function_to_double(sv[2]);
   double Ye_start=o2scl::function_to_double(sv[3]);
   double Ye_end=o2scl::function_to_double(sv[4]);
   double T_start=o2scl::function_to_double(sv[5])/hc_mev_fm;
   double T_end=o2scl::function_to_double(sv[6])/hc_mev_fm;
+  std::string out_file;
 
   size_t inB_start=vector_lookup(n_nB2,nB_grid2,nB_start);
   size_t iYe_start=vector_lookup(n_Ye2,Ye_grid2,Ye_start);
@@ -3671,7 +3677,10 @@ int eos_nuclei::increase_density(std::vector<std::string> &sv,
       }
     }
 
-    write_results("id2.o2");
+    // We require an output file as it allows the user to specify
+    // different files when multiple runs are occurring at the
+    // same time
+    write_results(out_file);
     
   }
   
@@ -6088,7 +6097,7 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
       "",new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::point_nuclei),o2scl::cli::comm_option_both},
      {0,"increase-density","",
-      -1,-1,"","",new o2scl::comm_option_mfptr<eos_nuclei>
+      7,7,"","",new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::increase_density),o2scl::cli::comm_option_both},
      {0,"ZoA","",
       -1,-1,"","",new o2scl::comm_option_mfptr<eos_nuclei>
