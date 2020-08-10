@@ -1904,7 +1904,7 @@ int eos_nuclei::eos_fixed_dist
 	    Sneut[index]=-(nuclei[index].be-nuc_temp.be)*hc_mev_fm;
 	    m95.get_nucleus(Z-1,N,nuc_temp);
 	    Sprot[index]=-(nuclei[index].be-nuc_temp.be)*hc_mev_fm;
-	    
+
 	  } else {
 	    
 	    frdm.get_nucleus(Z,N,nuclei[index]);
@@ -3042,9 +3042,9 @@ void eos_nuclei::write_nuclei(std::string fname) {
 	  
 	  ame.get_nucleus(Z,N,nuc);
 	  ame.get_nucleus(Z,N-1,nuc_temp);
-	  double Sn=-(nuclei[5].be-nuc_temp.be)*hc_mev_fm;
+	  double Sn=-(nuc.be-nuc_temp.be)*hc_mev_fm;
 	  ame.get_nucleus(Z-1,N,nuc_temp);
-	  double Sp=-(nuclei[5].be-nuc_temp.be)*hc_mev_fm;
+	  double Sp=-(nuc.be-nuc_temp.be)*hc_mev_fm;
 	  
 	  line[0]=nuc.Z;
 	  line[1]=nuc.N;
@@ -3061,9 +3061,9 @@ void eos_nuclei::write_nuclei(std::string fname) {
 	  
 	  m95.get_nucleus(Z,N,nuc);
 	  m95.get_nucleus(Z,N-1,nuc_temp);
-	  double Sn=-(nuclei[5].be-nuc_temp.be)*hc_mev_fm;
+	  double Sn=-(nuc.be-nuc_temp.be)*hc_mev_fm;
 	  m95.get_nucleus(Z-1,N,nuc_temp);
-	  double Sp=-(nuclei[5].be-nuc_temp.be)*hc_mev_fm;
+	  double Sp=-(nuc.be-nuc_temp.be)*hc_mev_fm;
 	  
 	  line[0]=nuc.Z;
 	  line[1]=nuc.N;
@@ -3078,9 +3078,9 @@ void eos_nuclei::write_nuclei(std::string fname) {
 	  
 	  frdm.get_nucleus(Z,N,nuc);
 	  frdm.get_nucleus(Z,N-1,nuc_temp);
-	  double Sn=-(nuclei[5].be-nuc_temp.be)*hc_mev_fm;
+	  double Sn=-(nuc.be-nuc_temp.be)*hc_mev_fm;
 	  frdm.get_nucleus(Z-1,N,nuc_temp);
-	  double Sp=-(nuclei[5].be-nuc_temp.be)*hc_mev_fm;
+	  double Sp=-(nuc.be-nuc_temp.be)*hc_mev_fm;
 	  
 	  line[0]=nuc.Z;
 	  line[1]=nuc.N;
