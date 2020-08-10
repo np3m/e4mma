@@ -109,6 +109,10 @@ public:
    */
   void load_nuclei();
   
+  /** \brief Load nuclear masses
+   */
+  void write_nuclei(std::string fname);
+  
   /// External guess
   std::string ext_guess;
   

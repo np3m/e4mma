@@ -2991,6 +2991,74 @@ int eos_nuclei::fit_frdm(std::vector<std::string> &sv,
   return 0;
 }
 
+void eos_nuclei::write_nuclei(std::string fname) {
+
+  cout << "Function write_nuclei() file " << fname << endl;
+  
+  hdf_file hf;
+  
+  wordexp_single_file(fname);
+  
+  hf.open_or_create(fname);
+
+  hid_t gid=hf.open_group("nuclei");
+  hf.set_current_id(gid);
+
+  vector<nucleus> dist;
+  dist.push_back(nuclei[0]);
+  dist.push_back(nuclei[1]);
+  dist.push_back(nuclei[2]);
+  dist.push_back(nuclei[3]);
+  dist.push_back(nuclei[4]);
+  for(int Z=5;Z<200;Z++) {
+    for(int N=5;N<200;N++) {
+      if (N<=max_ratio*Z && Z<=max_ratio*N) {
+	nucleus nuc;
+	if (ame.is_included(Z,N) &&
+	    ame.is_included(Z-1,N) &&
+	    ame.is_included(Z,N-1)) {
+	  ame.get_nucleus(Z,N,nuc);
+	} else if (m95.is_included(Z,N) &&
+		   m95.is_included(Z-1,N) &&
+		   m95.is_included(Z,N-1)) {
+	  m95.get_nucleus(Z,N,nuc);
+	} else {
+	  frdm.get_nucleus(Z,N,nuc);
+	}
+	if (hfb.is_included(Z,N)) {
+	  if (hfb.get_ZN(Z,N).Jexp<99) {
+	    nuc.g=2.0*hfb.get_ZN(Z,N).Jexp+1.0;
+	  } else {
+	    nuc.g=2.0*hfb.get_ZN(Z,N).Jth+1.0;
+	  }
+	} else {
+	  if (Z%2==0 && N%2==0) {
+	    nuc.g=1.0;
+	  } else {
+	    nuc.g=2.0;
+	  }
+	}
+	dist.push_back(nuc);
+      }
+    }
+  }
+
+  table<> t;
+  t.line_of_names("Z N g m");
+  for(size_t i=0;i<dist.size();i++) {
+    double line[4]={((double)dist[i].Z),
+		    ((double)dist[i].N),dist[i].g,dist[i].m};
+    t.line_of_data(4,line);
+  }
+  hdf_output(hf,t,"mass_table");
+
+  hf.close_group(gid);
+  
+  hf.close();
+  
+  return;
+}
+  
 int eos_nuclei::write_results(std::string fname) {
 
   cout << "Function write_results() file " << fname << endl;
