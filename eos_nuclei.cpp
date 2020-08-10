@@ -2991,6 +2991,16 @@ int eos_nuclei::fit_frdm(std::vector<std::string> &sv,
   return 0;
 }
 
+int eos_nuclei::write_nuclei(std::vector<std::string> &sv,
+			     bool itive_com) {
+  if (sv.size()<2) {
+    cerr << "No filename specified in write_nuclei()." << endl;
+    return 1;
+  }
+  write_nuclei(sv[1]);
+  return 0;
+}
+
 void eos_nuclei::write_nuclei(std::string fname) {
 
   cout << "Function write_nuclei() file " << fname << endl;
@@ -3001,59 +3011,125 @@ void eos_nuclei::write_nuclei(std::string fname) {
   
   hf.open_or_create(fname);
 
-  hid_t gid=hf.open_group("nuclei");
-  hf.set_current_id(gid);
+  nucleus nuc_temp;
+  
+  table<> t;
+  t.line_of_names("Z N g m be Sn Sp mass_type spin_type");
+  for(size_t i=0;i<5;i++) {
 
-  vector<nucleus> dist;
-  dist.push_back(nuclei[0]);
-  dist.push_back(nuclei[1]);
-  dist.push_back(nuclei[2]);
-  dist.push_back(nuclei[3]);
-  dist.push_back(nuclei[4]);
-  for(int Z=5;Z<200;Z++) {
-    for(int N=5;N<200;N++) {
+    ame.get_nucleus(nuclei[i].Z,nuclei[i].N-1,nuc_temp);
+    double Sn=-(nuclei[i].be-nuc_temp.be)*hc_mev_fm;
+    ame.get_nucleus(nuclei[i].Z-1,nuclei[i].N,nuc_temp);
+    double Sp=-(nuclei[i].be-nuc_temp.be)*hc_mev_fm;
+    
+    double line[9]={((double)nuclei[i].Z),
+		    ((double)nuclei[i].N),
+		    nuclei[i].g,nuclei[i].m*hc_mev_fm,
+		    nuclei[i].be*hc_mev_fm,Sn,Sp,1,1};
+    t.line_of_data(9,line);
+  }
+  for(int Z=5;Z<=200;Z++) {
+    for(int N=5;N<=200;N++) {
+      
       if (N<=max_ratio*Z && Z<=max_ratio*N) {
+	
+	double line[9];
 	nucleus nuc;
+	
 	if (ame.is_included(Z,N) &&
 	    ame.is_included(Z-1,N) &&
 	    ame.is_included(Z,N-1)) {
+	  
 	  ame.get_nucleus(Z,N,nuc);
+	  ame.get_nucleus(Z,N-1,nuc_temp);
+	  double Sn=-(nuclei[5].be-nuc_temp.be)*hc_mev_fm;
+	  ame.get_nucleus(Z-1,N,nuc_temp);
+	  double Sp=-(nuclei[5].be-nuc_temp.be)*hc_mev_fm;
+	  
+	  line[0]=nuc.Z;
+	  line[1]=nuc.N;
+	  line[2]=nuc.g;
+	  line[3]=nuc.m*hc_mev_fm;
+	  line[4]=nuc.be*hc_mev_fm;
+	  line[5]=Sn;
+	  line[6]=Sp;
+	  line[7]=2;
+	  
 	} else if (m95.is_included(Z,N) &&
 		   m95.is_included(Z-1,N) &&
 		   m95.is_included(Z,N-1)) {
+	  
 	  m95.get_nucleus(Z,N,nuc);
+	  m95.get_nucleus(Z,N-1,nuc_temp);
+	  double Sn=-(nuclei[5].be-nuc_temp.be)*hc_mev_fm;
+	  m95.get_nucleus(Z-1,N,nuc_temp);
+	  double Sp=-(nuclei[5].be-nuc_temp.be)*hc_mev_fm;
+	  
+	  line[0]=nuc.Z;
+	  line[1]=nuc.N;
+	  line[2]=nuc.g;
+	  line[3]=nuc.m*hc_mev_fm;
+	  line[4]=nuc.be*hc_mev_fm;
+	  line[5]=Sn;
+	  line[6]=Sp;
+	  line[7]=3;
+	  
 	} else {
+	  
 	  frdm.get_nucleus(Z,N,nuc);
+	  frdm.get_nucleus(Z,N-1,nuc_temp);
+	  double Sn=-(nuclei[5].be-nuc_temp.be)*hc_mev_fm;
+	  frdm.get_nucleus(Z-1,N,nuc_temp);
+	  double Sp=-(nuclei[5].be-nuc_temp.be)*hc_mev_fm;
+	  
+	  line[0]=nuc.Z;
+	  line[1]=nuc.N;
+	  line[2]=nuc.g;
+	  line[3]=nuc.m*hc_mev_fm;
+	  line[4]=nuc.be*hc_mev_fm;
+	  line[5]=Sn;
+	  line[6]=Sp;
+	  line[7]=4;
+	  
 	}
+	
 	if (hfb.is_included(Z,N)) {
 	  if (hfb.get_ZN(Z,N).Jexp<99) {
 	    nuc.g=2.0*hfb.get_ZN(Z,N).Jexp+1.0;
+	    line[8]=2;
 	  } else {
 	    nuc.g=2.0*hfb.get_ZN(Z,N).Jth+1.0;
+	    line[8]=3;
 	  }
 	} else {
+	  line[8]=4;
 	  if (Z%2==0 && N%2==0) {
 	    nuc.g=1.0;
 	  } else {
 	    nuc.g=2.0;
 	  }
 	}
-	dist.push_back(nuc);
+
+	if (Z==46) {
+	  if (N==64) {
+	    for(size_t i=0;i<9;i++) {
+	      cout.width(13);
+	      cout << t.get_column_name(i) << " ";
+	    }
+	    cout << endl;
+	  }
+	  cout.setf(ios::showpos);
+	  vector_out(cout,9,line,true);
+	  cout.unsetf(ios::showpos);
+	}
+	
+	t.line_of_data(9,line);
       }
     }
   }
 
-  table<> t;
-  t.line_of_names("Z N g m");
-  for(size_t i=0;i<dist.size();i++) {
-    double line[4]={((double)dist[i].Z),
-		    ((double)dist[i].N),dist[i].g,dist[i].m};
-    t.line_of_data(4,line);
-  }
   hdf_output(hf,t,"mass_table");
 
-  hf.close_group(gid);
-  
   hf.close();
   
   return;
@@ -6155,7 +6231,7 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
   
   eos::setup_cli(cl);
   
-  static const int nopt=17;
+  static const int nopt=18;
   
   o2scl::comm_option_s options[nopt]=
     {{0,"eos-deriv","compute derivatives",
@@ -6204,6 +6280,10 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
       3,3,"<input file 1> <input file 2> <output file>",
       "",new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::merge_tables),o2scl::cli::comm_option_both},
+     {0,"write-nuclei","",
+      1,1,"<output file>",
+      "",new o2scl::comm_option_mfptr<eos_nuclei>
+      (this,&eos_nuclei::write_nuclei),o2scl::cli::comm_option_both},
      {0,"compare-tables","Compare two output tables.",
       2,3,"<input file 1> <input file 2> [quantity]",
       ((std::string)"Compare two EOS tables. If the optional argument ")+

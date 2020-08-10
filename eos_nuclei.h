@@ -478,6 +478,11 @@ public:
   /** \brief Load an EOS table
    */
   int load(std::vector<std::string> &sv, bool itive_com);
+
+  /** \brief Desc
+   */
+  int write_nuclei(std::vector<std::string> &sv,
+			       bool itive_com);
   
   /** \brief Output an EOS table to a file
    */
