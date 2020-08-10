@@ -3658,7 +3658,7 @@ int eos_nuclei::increase_density(std::vector<std::string> &sv,
   double Ye_end=o2scl::function_to_double(sv[4]);
   double T_start=o2scl::function_to_double(sv[5])/hc_mev_fm;
   double T_end=o2scl::function_to_double(sv[6])/hc_mev_fm;
-  std::string out_file;
+  std::string out_file=sv[7];
 
   size_t inB_start=vector_lookup(n_nB2,nB_grid2,nB_start);
   size_t iYe_start=vector_lookup(n_Ye2,Ye_grid2,Ye_start);
