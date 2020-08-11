@@ -134,7 +134,7 @@ public:
   std::string Ye_list;
   
   /// Extended Skyrme model for finite-temperature corrections
-  o2scl::eos_had_skyrme_ext skyrme_ext;
+  eos_had_skyrme_ext skyrme_ext;
   
   /** \brief Select high-temperature EOS
       

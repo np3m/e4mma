@@ -36,10 +36,6 @@
 #include <o2scl/fermion_nonrel.h>
 #include <o2scl/fermion_deriv_nr.h>
 
-#ifndef DOXYGEN_NO_O2NS
-namespace o2scl {
-#endif
-  
   /** \brief Extended Skyrme hadronic equation of state 
 
       This is the modified Skyrme model proposed by Holt and Lim.
@@ -55,7 +51,7 @@ namespace o2scl {
      */
     template<class fermion_t>
       void base_thermo
-      (fermion_t &ne, fermion_t &pr, double ltemper, thermo &locth,
+      (fermion_t &ne, fermion_t &pr, double ltemper, o2scl::thermo &locth,
        double term, double term2, double ham1, double ham2,
        double ham3, double ham4, double ham5, double ham6) {
 
@@ -146,13 +142,14 @@ namespace o2scl {
     /** \brief Equation of state as a function of densities
 	at finite temperature
     */
-    virtual int calc_temp_e(fermion &ne, fermion &pr, double temper, 
-			    thermo &th);
+    virtual int calc_temp_e(o2scl::fermion &ne, o2scl::fermion &pr,
+			    double temper, o2scl::thermo &th);
 
     /** \brief Equation of state as a function of densities at 
 	zero temperature
     */
-    virtual int calc_e(fermion &ne, fermion &pr, thermo &lt);
+    virtual int calc_e(o2scl::fermion &ne, o2scl::fermion &pr,
+		       o2scl::thermo &lt);
 
     /// Return string denoting type ("eos_had_skyrme_ext")
     virtual const char *type() { return "eos_had_skyrme_ext"; }
@@ -162,9 +159,5 @@ namespace o2scl {
     double alpha2, alpha3;
 
   };
-
-#ifndef DOXYGEN_NO_O2NS
-}
-#endif
 
 #endif

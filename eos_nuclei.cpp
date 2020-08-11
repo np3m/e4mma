@@ -3142,19 +3142,6 @@ void eos_nuclei::write_nuclei(std::string fname) {
 	  }
 	}
 
-	if (Z==46) {
-	  if (N==64) {
-	    for(size_t i=0;i<9;i++) {
-	      cout.width(13);
-	      cout << t.get_column_name(i) << " ";
-	    }
-	    cout << endl;
-	  }
-	  cout.setf(ios::showpos);
-	  vector_out(cout,9,line,true);
-	  cout.unsetf(ios::showpos);
-	}
-	
 	t.line_of_data(9,line);
       }
     }
@@ -3226,6 +3213,8 @@ int eos_nuclei::write_results(std::string fname) {
 
   hf.setd("m_neut",neutron.m*o2scl_const::hc_mev_fm);
   hf.setd("m_prot",proton.m*o2scl_const::hc_mev_fm);
+  hf.setd("hc",o2scl_const::hc_mev_fm);
+  hf.setd("alpha_em",o2scl_const::fine_structure);
   
   if (derivs_computed) {
     hdf_output(hf,tg3_Eint,"Eint");
@@ -3460,7 +3449,7 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
   size_t inB=0, iYe=0, iT=0;
 
   // Adjust to put the user-specified point on the grid
-  if (n_nB2>0) {
+  if (loaded) {
 
     inB=vector_lookup(n_nB2,nB_grid2,nB);
     nB=nB_grid2[inB];
@@ -3498,7 +3487,7 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
     cout << log_xn << " "
 	 << log_xp << " " << nuc_Z1 << " " << nuc_N1 << endl;
     guess_provided=true;
-  } else if (n_nB2>0) {
+  } else if (loaded) {
     flag=tg3_flag.get(inB,iYe,iT);
     if (flag>4.9) {
       if (alg_mode==0 || alg_mode==1) {
@@ -3583,7 +3572,7 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
   }
 
   // Print out the results
-  if (n_nB2>0 && ret==0) {
+  if (loaded && ret==0) {
     cout << "log_xn: " << log_xn << endl;
     cout << "log_xp: " << log_xp << endl;
     cout << "Z: " << tg3_Z.get(inB,iYe,iT) << endl;
@@ -4347,6 +4336,8 @@ void eos_nuclei::new_table() {
     }
   }
 
+  loaded=true;
+  
   return;
 }  
 

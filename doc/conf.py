@@ -34,13 +34,24 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.todo',
               'sphinx.ext.mathjax',
               'sphinx.ext.ifconfig',
+              'sphinx.ext.intersphinx',
               'sphinx.ext.autosectionlabel',
               'breathe']
 
 #
-breathe_projects = { "eos": os.path.abspath('../doc/xml') }
+breathe_projects = { "eos": os.path.abspath('xml') }
 breathe_default_project = "eos"
 #
+
+intersphinx_mapping = {'o2scl':
+                       ('https://neutronstars.utk.edu/code/o2scl-dev/html/',
+                        'o2scl_objects.inv'),
+                       'o2sclp':
+                       ('https://neutronstars.utk.edu/code/o2scl-dev/part/html/',
+                        'o2scl_part_objects.inv'),
+                       'o2scle':
+                       ('https://neutronstars.utk.edu/code/o2scl-dev/eos/html/',
+                        'o2scl_eos_objects.inv')}
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['templates']
