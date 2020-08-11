@@ -126,6 +126,9 @@ public:
   /// Integrator
   o2scl::inte_qag_gsl<> iqg;
 
+  /// Desc
+  void compute_X(double nB, ubvector &X);
+  
   /** \brief List of electron fractions to examine for computing
    */
   std::string Ye_list;

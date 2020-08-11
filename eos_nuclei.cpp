@@ -113,6 +113,38 @@ eos_nuclei::eos_nuclei() {
 eos_nuclei::~eos_nuclei() {
 }
 
+void eos_nuclei::compute_X(double nB, ubvector &X) {
+  X.resize(6);
+  
+  if (nuclei.size()<6) {
+    O2SCL_ERR("Nuclei array not properly sized.",o2scl::exc_esanity);
+  }
+  
+  nuc_alpha=&nuclei[0];
+  nuc_deut=&nuclei[1];
+  nuc_trit=&nuclei[2];
+  nuc_he3=&nuclei[3];
+  nuc_li4=&nuclei[4];
+  nuc_heavy=&nuclei[5];
+  
+  X[0]=nuc_alpha->n*4.0/nB;
+  X[1]=nuc_deut->n*2.0/nB;
+  X[2]=nuc_trit->n*3.0/nB;
+  X[3]=nuc_he3->n*3.0/nB;
+  X[4]=nuc_li4->n*4.0/nB;
+  
+  if (alg_mode==2 || alg_mode==3 || alg_mode==4) {
+    X[5]=0.0;
+    for(size_t i=5;i<nuclei.size();i++) {
+      X[5]+=nuclei[i].n*(nuclei[i].Z+nuclei[i].N)/nB;
+    }
+  } else {
+    X[5]=nuc_heavy->n*(nuc_heavy->Z+nuc_heavy->N)/nB;
+  }
+  
+  return;
+}
+
 void eos_nuclei::load_nuclei() {
   int mpi_rank, mpi_size;
 #ifndef NO_MPI
@@ -3538,34 +3570,10 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
       cout << "Point failed." << endl;
     } else {
       cout << "Point succeeded." << endl;
-      
-      ubvector X(6);
-      
-      if (nuclei.size()<6) {
-	O2SCL_ERR("Nuclei array not properly sized.",o2scl::exc_einval);
-      }
-      
-      nuc_alpha=&nuclei[0];
-      nuc_deut=&nuclei[1];
-      nuc_trit=&nuclei[2];
-      nuc_he3=&nuclei[3];
-      nuc_li4=&nuclei[4];
-      nuc_heavy=&nuclei[5];
-      
-      X[0]=nuc_alpha->n*4.0/nB;
-      X[1]=nuc_deut->n*2.0/nB;
-      X[2]=nuc_trit->n*3.0/nB;
-      X[3]=nuc_he3->n*3.0/nB;
-      X[4]=nuc_li4->n*4.0/nB;
-      if (alg_mode==2 || alg_mode==3 || alg_mode==4) {
-	X[5]=0.0;
-	for(size_t i=5;i<nuclei.size();i++) {
-	  X[5]+=nuclei[i].n*(nuclei[i].Z+nuclei[i].N)/nB;
-	}
-      } else {
-	X[5]=nuc_heavy->n*(nuc_heavy->Z+nuc_heavy->N)/nB;
-      }
 
+      ubvector X;
+      compute_X(nB,X);
+      
       store_point(inB,iYe,iT,nB,Ye,T,thx,log_xn,log_xp,Zbar,Nbar,
 		  mun_full,mup_full,X,A_min,A_max,NmZ_min,NmZ_max,10.0);
     }
@@ -3588,134 +3596,57 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
     cout << "NmZ_max: " << tg3_NmZ_max.get(inB,iYe,iT) << endl;
   }
 
-#ifdef O2SCL_NEVER_DEFINED
-  
-  // Print out the results
-  if (n_nB2>0 && ret==0) {
-    cout << "point_nuclei (log_xn,log_xp,Z,N,f):\n  ";
-    cout.precision(5);
-    cout << "\t" << log_xn << " " << log_xp << endl;
-	 << thx.ed-T*thx.en << endl;
-    cout << "\tF: " << (thx.ed-T*thx.en)/nB*hc_mev_fm << endl;
-    cout.precision(6);
-    cout << "\tS/nB: " << thx.en/nB_grid2[inB] << endl;
-    cout << "\tE/nB (MeV): " << thx.ed/nB_grid2[inB]*hc_mev_fm << endl;
-    cout << "\tP (MeV/fm^3): " << thx.pr*hc_mev_fm << endl;
-    cout << "\tmun (MeV): " << mun_full*hc_mev_fm << endl;
-    cout << "\tmup (MeV): " << mup_full*hc_mev_fm << endl;
-    cout << "\tTI: " << thx.ed*hc_mev_fm+thx.pr*hc_mev_fm << " " 
-	 << thx.en*T_grid2[iT]+
-      nB_grid2[inB]*(1.0-Ye_grid2[iYe])*mun_full*hc_mev_fm+
-      nB_grid2[inB]*Ye_grid2[iYe]*mup_full*hc_mev_fm << endl;
-    if (alg_mode==2 || alg_mode==3 || alg_mode==4) {
-      cout << "\tA_min,A_max,NmZ_min,NmZ_max: " << A_min << " "
-	   << A_max << " " << NmZ_min << " " << NmZ_max << endl;
-    }
-    cout << "\tZbar, Nbar, Abar: " << Zbar << " " << Nbar << " "
-	 << Zbar+Nbar << endl;
-    ubvector X(6);
-    if (true) {
-      nuc_alpha=&nuclei[0];
-      nuc_deut=&nuclei[1];
-      nuc_trit=&nuclei[2];
-      nuc_he3=&nuclei[3];
-      nuc_li4=&nuclei[4];
-      nuc_heavy=&nuclei[5];
-      
-      X[0]=nuc_alpha->n*4.0/nB;
-      X[1]=nuc_deut->n*2.0/nB;
-      X[2]=nuc_trit->n*3.0/nB;
-      X[3]=nuc_he3->n*3.0/nB;
-      X[4]=nuc_li4->n*4.0/nB;
-      if (alg_mode==2 || alg_mode==3 || alg_mode==4) {
-	X[5]=0.0;
-	for(size_t i=5;i<nuclei.size();i++) {
-	  X[5]+=nuclei[i].n*(nuclei[i].Z+nuclei[i].N)/nB;
-	}
+  if (alg_mode>=2 && show_all_nuclei) {
+    
+    cout << "Writing distribution to dist.o2." << endl;
+    
+    table3d t3d;
+    t3d.set_xy("N",uniform_grid_end_width<double>(0.0,400.0,1.0),
+	       "Z",uniform_grid_end_width<double>(0.0,400.0,1.0));
+    
+    // New slices
+    t3d.new_slice("n_nuc");
+    t3d.set_slice_all("n_nuc",0.0);
+    t3d.new_slice("X_nuc");
+    t3d.set_slice_all("X_nuc",0.0);
+    
+    // Initialize these to zero to avoid warnings, but they
+    // are always set in the i=0 case below
+    double n_nuc_min=0.0, X_nuc_min=0.0;
+    for(size_t i=0;i<nuclei.size();i++) {
+      // Compute minimums
+      if (i==0) {
+	n_nuc_min=nuclei[i].n;
+	X_nuc_min=nuclei[i].n*nuclei[i].A/nB;
       } else {
-	X[5]=nuc_heavy->n*(nuc_heavy->Z+nuc_heavy->N)/nB;
-      }
-      cout << "\tX " << X[0] << " " << X[1] << " " << X[2] << endl;
-      cout << "\t" << X[3] << " " << X[4] << " " << X[5] << endl;
-    }
-    
-    if (fname.length()>0) {
-
-      if (nuclei.size()<6) {
-	O2SCL_ERR2("Nuclei array not properly sized ",
-		   "in eos_nuclei::point_nuclei().",o2scl::exc_einval);
-      }
-
-      cout << "Store point to file? " << flush;
-      char ch;
-      cin >> ch;
-      
-      if (ch=='y' || ch=='Y') {
-	cout << "Using filename: " << fname << endl;
-	cout << "Going to store_point." << endl;
-	store_point(inB,iYe,iT,nB,Ye,T,thx,log_xn,log_xp,Zbar,Nbar,
-		    mun_full,mup_full,X,A_min,A_max,NmZ_min,NmZ_max,10.0);
-	cout << "Writing results to file " << fname << endl;
-	write_results(fname);
-      }
-    }
-    
-    if (show_all_nuclei) {
-      
-      cout << "Writing distribution to dist.o2." << endl;
-      
-      table3d t3d;
-      t3d.set_xy("N",uniform_grid_end_width<double>(0.0,400.0,1.0),
-		 "Z",uniform_grid_end_width<double>(0.0,400.0,1.0));
-
-      // New slices
-      t3d.new_slice("n_nuc");
-      t3d.set_slice_all("n_nuc",0.0);
-      t3d.new_slice("X_nuc");
-      t3d.set_slice_all("X_nuc",0.0);
-      
-      // Initialize these to zero to avoid warnings, but they
-      // are always set in the i=0 case below
-      double n_nuc_min=0.0, X_nuc_min=0.0;
-      for(size_t i=0;i<nuclei.size();i++) {
-	// Compute minimums
-	if (i==0) {
+	if (nuclei[i].n<n_nuc_min) {
 	  n_nuc_min=nuclei[i].n;
-	  X_nuc_min=nuclei[i].n*nuclei[i].A/nB;
-	} else {
-	  if (nuclei[i].n<n_nuc_min) {
-	    n_nuc_min=nuclei[i].n;
-	  }
-	  if (nuclei[i].n*nuclei[i].A/nB<X_nuc_min) {
-	    X_nuc_min=nuclei[i].n*nuclei[i].A/nB;
-	  }
 	}
-	// Set n_nuc and X_nuc
-	t3d.set(nuclei[i].N,nuclei[i].Z,"n_nuc",nuclei[i].n);
-	t3d.set(nuclei[i].N,nuclei[i].Z,"X_nuc",nuclei[i].n*nuclei[i].A/nB);
+	if (nuclei[i].n*nuclei[i].A/nB<X_nuc_min) {
+	  X_nuc_min=nuclei[i].n*nuclei[i].A/nB;
+	}
       }
-
-      // Now take logs, replacing zeros with the minimum value
-      t3d.new_slice("log10_n_nuc");
-      t3d.set_slice_all("log10_n_nuc",log10(n_nuc_min));
-      t3d.new_slice("log10_X_nuc");
-      t3d.set_slice_all("log10_X_nuc",log10(X_nuc_min));
-      for(size_t i=0;i<nuclei.size();i++) {
-	t3d.set(nuclei[i].N,nuclei[i].Z,"log10_n_nuc",log10(nuclei[i].n));
-	t3d.set(nuclei[i].N,nuclei[i].Z,"log10_X_nuc",log10(nuclei[i].n/nB));
-      }
-
-      // Output to file
-      hdf_file hfx;
-      hfx.open_or_create("dist.o2");
-      hdf_output(hfx,(const table3d &)t3d,"dist");
-      hfx.close();
+      // Set n_nuc and X_nuc
+      t3d.set(nuclei[i].N,nuclei[i].Z,"n_nuc",nuclei[i].n);
+      t3d.set(nuclei[i].N,nuclei[i].Z,"X_nuc",nuclei[i].n*nuclei[i].A/nB);
     }
-  } else {
-    cout << "No results to show." << endl;
+    
+    // Now take logs, replacing zeros with the minimum value
+    t3d.new_slice("log10_n_nuc");
+    t3d.set_slice_all("log10_n_nuc",log10(n_nuc_min));
+    t3d.new_slice("log10_X_nuc");
+    t3d.set_slice_all("log10_X_nuc",log10(X_nuc_min));
+    for(size_t i=0;i<nuclei.size();i++) {
+      t3d.set(nuclei[i].N,nuclei[i].Z,"log10_n_nuc",log10(nuclei[i].n));
+      t3d.set(nuclei[i].N,nuclei[i].Z,"log10_X_nuc",log10(nuclei[i].n/nB));
+    }
+    
+    // Output to file
+    hdf_file hfx;
+    hfx.open_or_create("dist.o2");
+    hdf_output(hfx,(const table3d &)t3d,"dist");
+    hfx.close();
   }
-  
-#endif
   
   return 0;
 }
@@ -3786,32 +3717,8 @@ int eos_nuclei::increase_density(std::vector<std::string> &sv,
 	
 	if (ret==0) {
 	  
-	  ubvector X(6);
-	  
-	  if (nuclei.size()<6) {
-	    O2SCL_ERR("Nuclei array not properly sized.",o2scl::exc_einval);
-	  }
-	  
-	  nuc_alpha=&nuclei[0];
-	  nuc_deut=&nuclei[1];
-	  nuc_trit=&nuclei[2];
-	  nuc_he3=&nuclei[3];
-	  nuc_li4=&nuclei[4];
-	  nuc_heavy=&nuclei[5];
-	  
-	  X[0]=nuc_alpha->n*4.0/nB;
-	  X[1]=nuc_deut->n*2.0/nB;
-	  X[2]=nuc_trit->n*3.0/nB;
-	  X[3]=nuc_he3->n*3.0/nB;
-	  X[4]=nuc_li4->n*4.0/nB;
-	  if (alg_mode==2 || alg_mode==3 || alg_mode==4) {
-	    X[5]=0.0;
-	    for(size_t i=5;i<nuclei.size();i++) {
-	      X[5]+=nuclei[i].n*(nuclei[i].Z+nuclei[i].N)/nB;
-	    }
-	  } else {
-	    X[5]=nuc_heavy->n*(nuc_heavy->Z+nuc_heavy->N)/nB;
-	  }
+	  ubvector X;
+	  compute_X(nB,X);
 	  
 	  cout << "before: " << tg3_Z.get(inB,iYe,iT) << " "
 	       << tg3_Z.get(inB,iYe,iT) << endl;
@@ -4738,32 +4645,10 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	cerr << "Initial point for blank table failed." << endl;
 	return 1;
       }
-      ubvector X(6);
       
-      if (nuclei.size()<6) {
-	O2SCL_ERR("Nuclei array not properly sized.",o2scl::exc_einval);
-      }
+      ubvector X;
+      compute_X(nB,X);
       
-      nuc_alpha=&nuclei[0];
-      nuc_deut=&nuclei[1];
-      nuc_trit=&nuclei[2];
-      nuc_he3=&nuclei[3];
-      nuc_li4=&nuclei[4];
-      nuc_heavy=&nuclei[5];
-      
-      X[0]=nuc_alpha->n*4.0/nB;
-      X[1]=nuc_deut->n*2.0/nB;
-      X[2]=nuc_trit->n*3.0/nB;
-      X[3]=nuc_he3->n*3.0/nB;
-      X[4]=nuc_li4->n*4.0/nB;
-      if (alg_mode==2 || alg_mode==3 || alg_mode==4) {
-	X[5]=0.0;
-	for(size_t i=5;i<nuclei.size();i++) {
-	  X[5]+=nuclei[i].n*(nuclei[i].Z+nuclei[i].N)/nB;
-	}
-      } else {
-	X[5]=nuc_heavy->n*(nuc_heavy->Z+nuc_heavy->N)/nB;
-      }
       store_point(250,50,80,nB,Ye,T,thx,log_xn,log_xp,
 		  Zbar,Nbar,mun_full,mup_full,X,A_min,A_max,
 		  NmZ_min,NmZ_max,10.0);
@@ -5603,32 +5488,10 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 		 << ret << ", " << i << "/" << ntasks << endl;
 	  }
 	  if (ret==0) {
-	    ubvector X(6);
 	    
-	    if (nuclei.size()<6) {
-	      O2SCL_ERR("Nuclei array not properly sized.",o2scl::exc_einval);
-	    }
+	    ubvector X;
+	    compute_X(nB,X);
 	    
-	    nuc_alpha=&nuclei[0];
-	    nuc_deut=&nuclei[1];
-	    nuc_trit=&nuclei[2];
-	    nuc_he3=&nuclei[3];
-	    nuc_li4=&nuclei[4];
-	    nuc_heavy=&nuclei[5];
-      
-	    X[0]=nuc_alpha->n*4.0/nB;
-	    X[1]=nuc_deut->n*2.0/nB;
-	    X[2]=nuc_trit->n*3.0/nB;
-	    X[3]=nuc_he3->n*3.0/nB;
-	    X[4]=nuc_li4->n*4.0/nB;
-	    if (alg_mode==2 || alg_mode==3 || alg_mode==4) {
-	      X[5]=0.0;
-	      for(size_t jk=5;jk<nuclei.size();jk++) {
-		X[5]+=nuclei[jk].n*(nuclei[jk].Z+nuclei[jk].N)/nB;
-	      }
-	    } else {
-	      X[5]=nuc_heavy->n*(nuc_heavy->Z+nuc_heavy->N)/nB;
-	    }
 	    store_point(inB,iYe,iT,nB,Ye,T,thx,log_xn,log_xp,
 			Zbar,Nbar,mun_full,mup_full,X,A_min,A_max,
 			NmZ_min,NmZ_max,10.0);
@@ -6306,10 +6169,20 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
       "",new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::mcarlo_nuclei),o2scl::cli::comm_option_both},
      {0,"point-nuclei",
-      "Compute EOS w/nuclei at a (n_B,Y_e,T) point.",
+      "Compute and/or show EOS results at one (n_B,Y_e,T) point.",
       -1,-1,((string)"<n_B> <Y_e> <T (MeV)> [log(xn) log(xp) Z N] ")+
       "[alg_mode 2-3: log(xn) log(xp) A_min A_max NmZ_min NmZ_max] [fname]",
-      "",new o2scl::comm_option_mfptr<eos_nuclei>
+      ((std::string)"If an EOS is loaded, then the n_B, Y_e, and T ")+
+      "values are modified to ensure that they lie on a grid point. "+
+      "If an initial guess is specified on the command line, it is "+
+      "used even if there is a good guess already in the table. "+
+      "If the flag is not 10 or if \"recompute\" is true, then the EOS is "+
+      "recomputed. If an EOS is loaded or the recompute was successful, "+
+      "then the results are output to the screen. If the point was "+
+      "successful it is stored in the current tables. If \"show_all"+
+      "_nuclei\" is true, then a file named \"dist.o2\" is created "+
+      "which holds the full nuclear distribution.",
+      new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::point_nuclei),o2scl::cli::comm_option_both},
      {0,"increase-density","",
       7,7,"","",new o2scl::comm_option_mfptr<eos_nuclei>
