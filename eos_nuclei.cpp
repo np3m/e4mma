@@ -3283,16 +3283,23 @@ int eos_nuclei::read_results(std::string fname) {
   hf.open_or_create(fname);
 
   // nB, Ye, T grid
-  
+
+  if (verbose>2) cout << "Reading n_nB." << endl;
   hf.get_szt("n_nB",n_nB2);
+  if (verbose>2) cout << "Reading n_Ye." << endl;
   hf.get_szt("n_Ye",n_Ye2);
+  if (verbose>2) cout << "Reading n_T." << endl;
   hf.get_szt("n_T",n_T2);
   if (n_nB2==0 || n_Ye2==0 || n_T2==0) {
     O2SCL_ERR("No data in file.",o2scl::exc_efailed);
   }
+  if (verbose>2) cout << "Reading nB_grid." << endl;
   hf.getd_vec("nB_grid",nB_grid2);
+  if (verbose>2) cout << "Reading Ye_grid." << endl;
   hf.getd_vec("Ye_grid",Ye_grid2);
+  if (verbose>2) cout << "Reading T_grid." << endl;
   hf.getd_vec("T_grid",T_grid2);
+  
   if (hf.find_object_by_name("log_xn",type)!=0 || type!="tensor_grid") {
     O2SCL_ERR("Couldn't find tensor log_xn in file.",
 	      o2scl::exc_enotfound);
@@ -3301,39 +3308,61 @@ int eos_nuclei::read_results(std::string fname) {
   // Flags
 
   int itmp;
+  if (verbose>2) cout << "Reading baryons_only." << endl;
   hf.geti_def("baryons_only",1,itmp);
   if (itmp==1) baryons_only_loaded=true;
   else baryons_only_loaded=false;
   
+  if (verbose>2) cout << "Reading with_leptons." << endl;
   hf.geti_def("with_leptons",0,itmp);
   if (itmp==1) with_leptons_loaded=true;
   else with_leptons_loaded=false;
   
+  if (verbose>2) cout << "Reading derivs_computed." << endl;
   hf.geti_def("derivs_computed",0,itmp);
   if (itmp==1) derivs_computed=true;
   else derivs_computed=false;
   
   include_muons=false;
 
+  if (verbose>2) cout << "Reading alg_mode." << endl;
   hf.geti_def("alg_mode",4,alg_mode);
 
   // Main data
   
+  if (verbose>2) cout << "Reading log_xn." << endl;
   hdf_input(hf,tg3_log_xn,"log_xn");
+  if (verbose>2) cout << "Reading log_xp." << endl;
   hdf_input(hf,tg3_log_xp,"log_xp");
+  if (verbose>2) cout << "Reading Z." << endl;
   hdf_input(hf,tg3_Z,"Z");
+  if (verbose>2) cout << "Reading A." << endl;
   hdf_input(hf,tg3_A,"A");
+  if (verbose>2) cout << "Reading flag." << endl;
   hdf_input(hf,tg3_flag,"flag");
+  if (verbose>2) cout << "Reading Fint." << endl;
   hdf_input(hf,tg3_Fint,"Fint");
-  hdf_input(hf,tg3_Sint,"Sint");
+
+  if (hf.find_object_by_name("Sint",type)==0 && type=="tensor_grid") {
+    if (verbose>2) cout << "Reading Sint." << endl;
+    hdf_input(hf,tg3_Sint,"Sint");
+  }
   
+  if (verbose>2) cout << "Reading Xn." << endl;
   hdf_input(hf,tg3_Xn,"Xn");
+  if (verbose>2) cout << "Reading Xp." << endl;
   hdf_input(hf,tg3_Xp,"Xp");
+  if (verbose>2) cout << "Reading Xalpha." << endl;
   hdf_input(hf,tg3_Xalpha,"Xalpha");
+  if (verbose>2) cout << "Reading Xnuclei." << endl;
   hdf_input(hf,tg3_Xnuclei,"Xnuclei");
+  if (verbose>2) cout << "Reading Xd." << endl;
   hdf_input(hf,tg3_Xd,"Xd");
+  if (verbose>2) cout << "Reading Xt." << endl;
   hdf_input(hf,tg3_Xt,"Xt");
+  if (verbose>2) cout << "Reading XHe3." << endl;
   hdf_input(hf,tg3_XHe3,"XHe3");
+  if (verbose>2) cout << "Reading XLi4." << endl;
   hdf_input(hf,tg3_XLi4,"XLi4");
 
   // Nuclear distribution
@@ -3343,21 +3372,25 @@ int eos_nuclei::read_results(std::string fname) {
       O2SCL_ERR("Couldn't find tensor A_min in file.",
 		o2scl::exc_enotfound);
     }
+    if (verbose>2) cout << "Reading A_min." << endl;
     hdf_input(hf,tg3_A_min,"A_min");
     if (hf.find_object_by_name("A_max",type)!=0 || type!="tensor_grid") {
       O2SCL_ERR("Couldn't find tensor A_max in file.",
 		o2scl::exc_enotfound);
     }
+    if (verbose>2) cout << "Reading A_max." << endl;
     hdf_input(hf,tg3_A_max,"A_max");
     if (hf.find_object_by_name("NmZ_min",type)!=0 || type!="tensor_grid") {
       O2SCL_ERR("Couldn't find tensor NmZ_min in file.",
 		o2scl::exc_enotfound);
     }
+    if (verbose>2) cout << "Reading NmZ_min." << endl;
     hdf_input(hf,tg3_NmZ_min,"NmZ_min");
     if (hf.find_object_by_name("NmZ_max",type)!=0 || type!="tensor_grid") {
       O2SCL_ERR("Couldn't find tensor NmZ_max in file.",
 		o2scl::exc_enotfound);
     }
+    if (verbose>2) cout << "Reading NmZ_max." << endl;
     hdf_input(hf,tg3_NmZ_max,"NmZ_max");
   }
 
@@ -3373,27 +3406,35 @@ int eos_nuclei::read_results(std::string fname) {
       O2SCL_ERR("Couldn't find tensor Eint in file.",
 		o2scl::exc_enotfound);
     }
+    if (verbose>2) cout << "Reading Eint." << endl;
     hdf_input(hf,tg3_Eint,"Eint");
     if (hf.find_object_by_name("Pint",type)!=0 || type!="tensor_grid") {
       O2SCL_ERR("Couldn't find tensor Pint in file.",
 		o2scl::exc_enotfound);
     }
+    if (verbose>2) cout << "Reading Pint." << endl;
     hdf_input(hf,tg3_Pint,"Pint");
     if (hf.find_object_by_name("mun",type)!=0 || type!="tensor_grid") {
       O2SCL_ERR("Couldn't find tensor mun in file.",
 		o2scl::exc_enotfound);
     }
+    if (verbose>2) cout << "Reading mun." << endl;
     hdf_input(hf,tg3_mun,"mun");
     if (hf.find_object_by_name("mup",type)!=0 || type!="tensor_grid") {
       O2SCL_ERR("Couldn't find tensor mup in file.",
 		o2scl::exc_enotfound);
     }
+    if (verbose>2) cout << "Reading mup." << endl;
     hdf_input(hf,tg3_mup,"mup");
     
     if (with_leptons_loaded) {
+      if (verbose>2) cout << "Reading F." << endl;
       hdf_input(hf,tg3_F,"F");
+      if (verbose>2) cout << "Reading E." << endl;
       hdf_input(hf,tg3_E,"E");
+      if (verbose>2) cout << "Reading P." << endl;
       hdf_input(hf,tg3_P,"P");
+      if (verbose>2) cout << "Reading S." << endl;
       hdf_input(hf,tg3_S,"S");
     } else {
       tg3_F.clear();
