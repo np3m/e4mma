@@ -1,18 +1,10 @@
-Class Documentation
-===================
+Other Classes
+=============
 
 Class eos
 ---------
 	     
 .. doxygenclass:: eos
-   :members:
-   :protected-members:
-   :undoc-members:
-
-Class eos_nuclei
-----------------
-	     
-.. doxygenclass:: eos_nuclei
    :members:
    :protected-members:
    :undoc-members:

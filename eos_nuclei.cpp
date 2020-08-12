@@ -1374,10 +1374,10 @@ int eos_nuclei::eos_fixed_ZN(double nB, double Ye, double T,
      (&eos_nuclei::solve_nuclei),this,std::placeholders::_1,
      std::placeholders::_2,std::placeholders::_3,nB,Ye,T,0,
      std::ref(mun_gas),std::ref(mup_gas),std::ref(th_gas));
-
-    x1[0]=log_xn;
-    x1[1]=log_xp;
-    
+  
+  x1[0]=log_xn;
+  x1[1]=log_xp;
+  
   mh.tol_abs=mh.tol_rel/1.0e4;
   if (debug) mh.verbose=1;
   if (function_verbose%10>2) mh.verbose=2;
@@ -2637,7 +2637,16 @@ int eos_nuclei::store_point
   double fr=th.ed-T*th.en;
   if (!std::isfinite(fr)) {
     cout << "Free energy not finite in store_point(), (nB,Ye,T)=("
-	 << nB << "," << Ye << "," << T*hc_mev_fm << ")." << endl;
+	 << nB << "," << Ye << "," << T*hc_mev_fm << "). Skipping."
+	 << endl;
+    return 0;
+  }
+
+  if (!std::isfinite(A)) {
+    cout << "A not finite in store_point(), (nB,Ye,T)=("
+	 << nB << "," << Ye << "," << T*hc_mev_fm << "). Skipping."
+	 << endl;
+    return 0;
   }
 
   int iflag=((int)(tg3_flag.get(i_nB,i_Ye,i_T)*(1.0+1.0e-12)));
