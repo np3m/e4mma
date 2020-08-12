@@ -110,10 +110,10 @@ doc: empty
 	cd doc; make html
 
 sync-doc:
-	rsync -Cavzu sphinx/build/html/* $(STATIC_DOC_DIR)/eos
+	rsync -Cavzu doc/build/html/* $(STATIC_DOC_DIR)/eos
 
 test-sync:
-	rsync -Cavzun sphinx/build/html/* $(STATIC_DOC_DIR)/eos
+	rsync -Cavzun doc/build/html/* $(STATIC_DOC_DIR)/eos
 
 clean:
 	rm -f *.o eos_nuclei eos_nuclei_nompi eos eos_nompi
