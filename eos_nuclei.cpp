@@ -2642,8 +2642,8 @@ int eos_nuclei::store_point
     return 0;
   }
 
-  if (!std::isfinite(A)) {
-    cout << "A not finite in store_point(), (nB,Ye,T)=("
+  if (!std::isfinite(Nbar) || !std::isfinite(Zbar)) {
+    cout << "Z or N not finite in store_point(), (nB,Ye,T)=("
 	 << nB << "," << Ye << "," << T*hc_mev_fm << "). Skipping."
 	 << endl;
     return 0;
@@ -3539,7 +3539,8 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
     guess_provided=true;
   } else if (loaded) {
     flag=tg3_flag.get(inB,iYe,iT);
-    if (flag>4.9) {
+    // If the flag is 'guess' or 'in progress with guess'
+    if (flag>4.9 || fabs(flag+5)<0.01) {
       if (alg_mode==0 || alg_mode==1) {
 	cout << "Function point_nuclei(): "
 	     << "Reading guess (N,Z) from current table." << endl;
@@ -3822,6 +3823,11 @@ int eos_nuclei::create_ZoA(std::vector<std::string> &sv,
 int eos_nuclei::stats(std::vector<std::string> &sv,
 			    bool itive_com) {
 
+  if (loaded==false) {
+    cerr << "No table loaded in stats()." << endl;
+    return 3;
+  }
+  
   cout << endl;
   cout << "derivs_computed: " << derivs_computed << endl;
   cout << "with_leptons: " << with_leptons_loaded << endl;
@@ -3874,9 +3880,28 @@ int eos_nuclei::stats(std::vector<std::string> &sv,
   cout << "S_neg_count: " << S_neg_count << endl;
   cout << endl;
   cout << "flag counts:" << endl;
+  size_t count=0;
   for(int j=0;j<22;j++) {
+    if (j!=20) count+=flags[j];
     cout.width(3);
     cout << j-10 << ": " << flags[j] << endl;
+  }
+
+  // Only 100 points missing, so output the missing points
+  if (count<100) {
+    for(size_t i=0;i<data.size();i++) {
+      int iflag=((int)(data[i]*(1.0+1.0e-12)));
+      if (iflag!=10) {
+	size_t ix[3];
+	tg3_Xn.unpack_index(i,ix);
+	double nB=nB_grid2[ix[0]];
+	double Ye=Ye_grid2[ix[1]];
+	double T=T_grid2[ix[2]];
+	cout << i << " " << nB << " " << Ye << " "
+	     << T << " " << iflag << endl;
+      }
+    }
+    
   }
   
   return 0;
@@ -3998,6 +4023,7 @@ int eos_nuclei::merge_tables(std::vector<std::string> &sv,
 	  tg3_A.set(i,j,k,en2.tg3_A.get(i,j,k));
 	  tg3_flag.set(i,j,k,en2.tg3_flag.get(i,j,k));
 	  tg3_Fint.set(i,j,k,en2.tg3_Fint.get(i,j,k));
+	  tg3_Sint.set(i,j,k,en2.tg3_Sint.get(i,j,k));
 
 	  tg3_Xn.set(i,j,k,en2.tg3_Xn.get(i,j,k));
 	  tg3_Xp.set(i,j,k,en2.tg3_Xp.get(i,j,k));
@@ -4011,7 +4037,6 @@ int eos_nuclei::merge_tables(std::vector<std::string> &sv,
 	  if (derivs_computed) {
 	    tg3_Eint.set(i,j,k,en2.tg3_Eint.get(i,j,k));
 	    tg3_Pint.set(i,j,k,en2.tg3_Pint.get(i,j,k));
-	    tg3_Sint.set(i,j,k,en2.tg3_Sint.get(i,j,k));
 	    tg3_mun.set(i,j,k,en2.tg3_mun.get(i,j,k));
 	    tg3_mup.set(i,j,k,en2.tg3_mup.get(i,j,k));
 	    if (with_leptons_loaded) {
@@ -4119,6 +4144,7 @@ int eos_nuclei::compare_tables(std::vector<std::string> &sv,
   names.push_back("Z");
   names.push_back("A");
   names.push_back("Fint");
+  names.push_back("Sint");
   names.push_back("Xn");
   names.push_back("Xp");
   names.push_back("Xalpha");
@@ -4127,7 +4153,6 @@ int eos_nuclei::compare_tables(std::vector<std::string> &sv,
   names.push_back("Xt");
   names.push_back("XHe3");
   names.push_back("XLi4");
-  names.push_back("Sint");
   if (derivs_computed) {
     names.push_back("Eint");
     names.push_back("Pint");
@@ -4293,8 +4318,8 @@ void eos_nuclei::new_table() {
   tg3_A.resize(3,st);
   tg3_flag.resize(3,st);
   tg3_Fint.resize(3,st);
-    tg3_Sint.resize(3,st);
-
+  tg3_Sint.resize(3,st);
+  
   tg3_Xn.resize(3,st);
   tg3_Xp.resize(3,st);
   tg3_Xalpha.resize(3,st);
@@ -4310,7 +4335,7 @@ void eos_nuclei::new_table() {
   tg3_A.set_grid_packed(packed);
   tg3_flag.set_grid_packed(packed);
   tg3_Fint.set_grid_packed(packed);
-    tg3_Sint.set_grid_packed(packed);
+  tg3_Sint.set_grid_packed(packed);
   
   tg3_Xn.set_grid_packed(packed);
   tg3_Xp.set_grid_packed(packed);
