@@ -105,6 +105,12 @@ public:
   /// True if an EOS is currently loaded
   bool loaded;
 
+  /// Ranges for randomly selected ranges
+  std::vector<double> fd_rand_ranges;
+
+  /// Fiducial value for solver tolerance
+  double mh_tol_rel;
+  
   /** \brief Load nuclear masses
    */
   void load_nuclei();

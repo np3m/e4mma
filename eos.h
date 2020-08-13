@@ -244,7 +244,7 @@ class eos {
   bool model_selected;
   
   /// Random number generator
-  o2scl::rng_gsl r;
+  o2scl::rng_gsl rng;
   //@}
   
   /// \name EOS outputs

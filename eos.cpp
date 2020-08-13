@@ -166,7 +166,7 @@ void eos_crust_virial_v2::fit(bool show_fit) {
   
   // Chi-squared and fitting data
   chi_fit_funct<vector<double>,ubmatrix,std::function<
-					  double(size_t,const std::vector<double> &, double)> > 
+    double(size_t,const std::vector<double> &, double)> > 
     cff(neut_data,Tv_neut,bnv,bn_err,ff_neutron);
   
   cout << "Neutron virial coefficient:\n" << endl;
@@ -276,7 +276,7 @@ void eos_crust_virial_v2::fit(bool show_fit) {
   
   // Chi-squared and fitting data
   chi_fit_funct<vector<double>,ubmatrix,std::function<
-					  double(size_t,const std::vector<double> &, double)> > 
+    double(size_t,const std::vector<double> &, double)> > 
     cff_nuc(nuc_data,Tv_nuc,bpnv,bpn_err,ff_nuc);
   
   cout << "Initial chi-squared: " << cff_nuc.chi2(bpn_np,bpn_params) << endl;
@@ -624,7 +624,7 @@ eos::eos() {
   sk_Tcorr.alpha=0.144165;
 
   // Seed the random number generator with the clock time
-  r.clock_seed();
+  rng.clock_seed();
 
   old_version=false;
 
@@ -3609,22 +3609,22 @@ int eos::random(std::vector<std::string> &sv, bool itive_com) {
     }
 
     // Select a random value for phi
-    phi=r.random();
+    phi=rng.random();
 
     // Random neutron star EOS
-    i_ns=r.random_int(nstar_tab.get_nlines());
+    i_ns=rng.random_int(nstar_tab.get_nlines());
 
     // Select a random QMC two-body interaction
-    qmc_alpha=(r.random()*0.06)+0.47;
-    qmc_a=(r.random()*1.0)+12.5;
+    qmc_alpha=(rng.random()*0.06)+0.47;
+    qmc_a=(rng.random()*1.0)+12.5;
    
     // Select a random value of S and L according
     // to perscription in PRC 91, 015804 (2015)
-    eos_L=r.random()*21.0+44.0;
-    eos_S=r.random()*6.6+29.5;
+    eos_L=rng.random()*21.0+44.0;
+    eos_S=rng.random()*6.6+29.5;
 
     // Select a random Skyrme model
-    i_skyrme=r.random_int(UNEDF_tab.get_nlines());
+    i_skyrme=rng.random_int(UNEDF_tab.get_nlines());
     
     if (true || verbose>1) {
       cout << "Trying random model: " << endl;

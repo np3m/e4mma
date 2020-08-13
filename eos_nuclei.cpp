@@ -55,6 +55,7 @@ eos_nuclei::eos_nuclei() {
   mh.err_nonconv=false;
   mh.def_jac.err_nonconv=false;
   mh.tol_rel=1.0e-6;
+  mh_tol_rel=1.0e-6;
   rbg.err_nonconv=false;
 
   baryons_only_loaded=true;
@@ -371,9 +372,8 @@ double eos_nuclei::f_min_search(size_t nvar,const ubvector &x,
 }
 
 int eos_nuclei::init_function(size_t dim, const ubvector &x, ubvector &y) {
-  rng_gsl gr;
-  for (size_t i = 0; i < dim; ++i) {
-    y[i] = 0.1*gr.random();
+  for (size_t i=0;i<dim;i++) {
+    y[i]=0.1*rng.random();
   }
   return 0;
 }
@@ -2098,17 +2098,21 @@ int eos_nuclei::eos_fixed_dist
     x1[1]=log_xp;
 
   if ((alg_mode==2 || alg_mode==4) && nB<1.0e-11) {
-    mh.tol_rel=1.0e-8;
+    mh.tol_rel=mh_tol_rel/1.0e2;
   } else {
-    mh.tol_rel=1.0e-6;
+    mh.tol_rel=mh_tol_rel;
   }
 
   // 8/27: updated
+  // 8/13/2020 AWS: I don't think this does anything because
+  // the mroot_hybrids solver ignores tol_abs. 
   if (alg_mode==2 || alg_mode==4 || nB<1.0e-09) {
     mh.tol_abs=mh.tol_rel/1.0e4;
   }
   
-  if (loc_verbose>1) mh.verbose=1;
+  if (loc_verbose>2) mh.verbose=1;
+
+  double qual_best=1.0e100;
 
   int mh_ret=mh.msolve(2,x1,sn_func);
 
@@ -2116,6 +2120,10 @@ int eos_nuclei::eos_fixed_dist
 
     for(int k=0;k<n_solves && mh_ret!=0;k++) {
       mh_ret=mh.msolve(2,x1,sn_func);
+      sn_func(2,x1,y1);
+      if (fabs(y1[0])+fabs(y1[1])<qual_best) {
+	qual_best=fabs(y1[0])+fabs(y1[1]);
+      }
     }
     
   } else {
@@ -2129,8 +2137,8 @@ int eos_nuclei::eos_fixed_dist
 			 pow(10.0,x1[0])+pow(10.0,x1[1])>0.50))
 	    && count<count_total) {
         mh.tol_abs=mh.tol_rel/1.0e4;
-        x1[0]=log_xn*(1.0+1.0*r.random_int(100)*0.01);
-        x1[1]=log_xp*(1.0+1.0*r.random_int(100)*0.01);
+        x1[0]=log_xn*(1.0+1.0*rng.random_int(100)*0.01);
+        x1[1]=log_xp*(1.0+1.0*rng.random_int(100)*0.01);
         mh_ret=mh.msolve(2,x1,sn_func);
         count++;
       }
@@ -2138,8 +2146,8 @@ int eos_nuclei::eos_fixed_dist
       while(mh_ret!=0 && count<count_total) {
 
         mh.tol_abs=mh.tol_rel/1.0e4;
-        x1[0]=log_xn*(1.0+0.5*r.random_int(100)*0.01);
-        x1[1]=log_xp*(1.0+0.5*r.random_int(100)*0.01);
+        x1[0]=log_xn*(1.0+0.5*rng.random_int(100)*0.01);
+        x1[1]=log_xp*(1.0+0.5*rng.random_int(100)*0.01);
         mh_ret=mh.msolve(2,x1,sn_func);
         count++;
       }
@@ -2188,7 +2196,7 @@ int eos_nuclei::eos_fixed_dist
 	    ranges[j*2]=blow;
 	    ranges[j*2+1]=bhigh;
 	  }
-	  if (loc_verbose>1) {
+	  if (loc_verbose>2) {
 	    cout << blow << " " << ylow << " "
 		 << bhigh << " " << yhigh << endl;
 	  }
@@ -2197,7 +2205,7 @@ int eos_nuclei::eos_fixed_dist
 	if ((yhigh<0.0 && ylow>0.0) || (yhigh>0.0 && ylow<0.0)) {
 	  // If we've found a good bracket, then use
 	  // Brent's method.
-	  if (loc_verbose>1) rbg.verbose=1;
+	  if (loc_verbose>2) rbg.verbose=1;
 	  int rbg_ret=rbg.solve_bkt(blow,bhigh,ld_func);
 	  if (rbg_ret!=0) {
 	    // If the bracketing solver failed, then stop
@@ -2220,9 +2228,13 @@ int eos_nuclei::eos_fixed_dist
 
 	// Check the quality of the current root
 	sn_func(2,x1,y1);
-	
-	double qual=sqrt(y1[0]*y1[0]+y1[1]*y1[1]);
-	if (loc_verbose>1) {
+
+	if (fabs(y1[0])+fabs(y1[1])<qual_best) {
+	  qual_best=fabs(y1[0])+fabs(y1[1]);
+	}
+	  
+	double qual=fabs(y1[0])+fabs(y1[1]);
+	if (loc_verbose>2) {
 	  cout << "qual: " << qual << " mh.tol_rel: "
 	       << mh.tol_rel << endl;
 	}
@@ -2238,6 +2250,7 @@ int eos_nuclei::eos_fixed_dist
 	  // Update qual_last
 	  qual_last=qual;
 	}
+	
       }
       
       // End of for (k=0;k<10;k++) {
@@ -2277,15 +2290,23 @@ int eos_nuclei::eos_fixed_dist
       ms.set_step(1,step);
       int mret=1;
       for(int jk=0;jk<n_minimizes && mret!=0;jk++) {
+	
 	mret=ms.mmin(2,x1,ymin,min_func);
+	
+	sn_func(2,x1,y1);
+
+	if (fabs(y1[0])+fabs(y1[1])<qual_best) {
+	  qual_best=fabs(y1[0])+fabs(y1[1]);
+	}
+
       }
 
       // Evaluate the equations and see if they have been
       // solved, independent of the value of mret
       sn_func(2,x1,y1);
       
-      double qual=sqrt(y1[0]*y1[0]+y1[1]*y1[1]);
-      if (loc_verbose>1) {
+      double qual=fabs(y1[0])+fabs(y1[1]);
+      if (loc_verbose>2) {
 	cout << "qual: " << qual << " " << y1[0] << " " << y1[1] << " "
 	     << mret << endl;
       }
@@ -2298,6 +2319,12 @@ int eos_nuclei::eos_fixed_dist
     }
     
     // If the bracketing didn't work, try random initial guesses
+    if (fd_rand_ranges.size()>=4) {
+      ranges[0]=fd_rand_ranges[0];
+      ranges[1]=fd_rand_ranges[1];
+      ranges[2]=fd_rand_ranges[2];
+      ranges[3]=fd_rand_ranges[3];
+    }
     if (loc_verbose>1) {
       cout << "x1,ranges: " << x1[0] << " " << x1[1] << " "
 	   << ranges[0] << " " << ranges[1] << " "
@@ -2319,13 +2346,19 @@ int eos_nuclei::eos_fixed_dist
 	}
       */
       for(int kk=0;kk<n_randoms && mh_ret!=0;kk++) {
-	x1[0]=ranges[0]+r.random()*(ranges[1]-ranges[0]);
-	x1[1]=ranges[2]+r.random()*(ranges[3]-ranges[2]);
+	x1[0]=ranges[0]+rng.random()*(ranges[1]-ranges[0]);
+	x1[1]=ranges[2]+rng.random()*(ranges[3]-ranges[2]);
 	mh_ret=mh.msolve(2,x1,sn_func);
-	if (loc_verbose>1) {
+	if (loc_verbose>2) {
 	  cout << kk << " " << x1[0] << " " << x1[1] << " "
 	       << mh_ret << endl;
 	}
+	sn_func(2,x1,y1);
+	
+	if (fabs(y1[0])+fabs(y1[1])<qual_best) {
+	  qual_best=fabs(y1[0])+fabs(y1[1]);
+	}
+	
 	//cout << kk << " " << mh_ret << endl;
       }
       //cout << "mh_ret: " << mh_ret << endl;
@@ -2339,7 +2372,8 @@ int eos_nuclei::eos_fixed_dist
 	     << "x1[0], x1[1], y1[0], y1[1]:\n  " 
 	     << x1[0] << " " << x1[1] << " " << y1[0] << " "
 	     << y1[1] << endl;
-	cout << nB << " " << Ye << " " << T << endl;
+	cout << "qual_best: " << qual_best << endl;
+	cout << "nB,Ye,T: " << nB << " " << Ye << " " << T << endl;
       }
       if (loc_verbose==8) {
 	char ch;
@@ -2699,27 +2733,31 @@ int eos_nuclei::store_point
   if (alg_mode!=3) {
     double nb_frac_sum=n_fraction+p_fraction+X[0]+X[1]+
       X[2]+X[3]+X[4]+X[5];
-    if (fabs(nb_frac_sum-1.0)>1.0e-6) {
-      cout << "nB fraction: " << n_fraction << " " << p_fraction << " ";
-      vector_out(cout,X,true);
-      cout << "nB fraction sum: " << nb_frac_sum << endl;
-      cout << "nB problem: " << nB << " " << Ye << " " << T << endl;
-      ////return 1;
-      //O2SCL_ERR("nB fraction problem in store_point().",
-      //o2scl::exc_efailed);
+    if (fabs(nb_frac_sum-1.0)>mh_tol_rel) {
+      cout << "nB fraction mismatch." << endl;
+      cout << "  " << n_fraction << " " << p_fraction << " ";
+      vector_out(cout,X,false);
+      cout << "  nB_frac_sum,mh_tol_rel: " << nb_frac_sum << " "
+	   << mh_tol_rel << endl;
+      cout << "  nB,Ye,T: " << nB << " " << Ye << " " << T << endl;
+      cout << "  Not storing point." << endl;
+      return 1;
     }
+    
     if (alg_mode!=2 && alg_mode!=4) {
+      
       // X[0]*nB/4.0 is the number density of alpha particles, so
       // X[0]*nB/4.0*2.0 is the number of protons contributed from
       // alpha particles, then we just divide by nB.
+      
       double Ye_sum=p_fraction+X[0]/4.0*2.0+X[1]/2.0+X[2]/3.0+
 	X[3]/3.0*2.0+X[4]/4.0*3.0+X[5]/(Nbar+Zbar)*Zbar;
-      if (fabs(Ye_sum-Ye)>1.0e-6) {
-	cout << "Ye sum, Ye: " << Ye_sum << " " << Ye << endl;
-	exit(-1);
+      if (fabs(Ye_sum-Ye)>mh_tol_rel) {
+	cout << "Ye fraction mismatch." << endl;
+	cout << "  Ye sum,Ye,mh_tol_rel: " << Ye_sum << " " << Ye << " "
+	     << mh_tol_rel << endl;
+	cout << "  Not storing point." << endl;
 	return 2;
-	O2SCL_ERR("Ye matching problem in store_point().",
-		  o2scl::exc_efailed);
       }
     }
   }
@@ -3351,7 +3389,7 @@ int eos_nuclei::read_results(std::string fname) {
   hdf_input(hf,tg3_flag,"flag");
   if (verbose>2) cout << "Reading Fint." << endl;
   hdf_input(hf,tg3_Fint,"Fint");
-
+  
   if (hf.find_object_by_name("Sint",type)==0 && type=="tensor_grid") {
     if (verbose>2) cout << "Reading Sint." << endl;
     hdf_input(hf,tg3_Sint,"Sint");
@@ -3589,6 +3627,18 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
   // If necessary, compute the point
   if (flag<10 || recompute==true) {
     cout << "Computing point." << endl;
+
+    if (loaded && inB>0 && inB<n_nB2-1 &&
+	tg3_flag.get(inB-1,iYe,iT)>9.9 &&
+	tg3_flag.get(inB+1,iYe,iT)>9.9) {
+      cout << "Automatically setting ranges." << endl;
+      fd_rand_ranges.resize(4);
+      fd_rand_ranges[0]=tg3_log_xn.get(inB-1,iYe,iT);
+      fd_rand_ranges[1]=tg3_log_xn.get(inB+1,iYe,iT);
+      fd_rand_ranges[2]=tg3_log_xp.get(inB-1,iYe,iT);
+      fd_rand_ranges[3]=tg3_log_xp.get(inB+1,iYe,iT);
+      vector_out(cout,fd_rand_ranges,true);
+    }
     
     thermo thx;
     double mun_full, mup_full;
@@ -3609,7 +3659,7 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
     if (ret!=0) {
       cout << "Point failed." << endl;
     } else {
-      cout << "Point succeeded." << endl;
+      cout << "Point succeeded. Storing." << endl;
 
       ubvector X;
       compute_X(nB,X);
@@ -3617,7 +3667,9 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
       store_point(inB,iYe,iT,nB,Ye,T,thx,log_xn,log_xp,Zbar,Nbar,
 		  mun_full,mup_full,X,A_min,A_max,NmZ_min,NmZ_max,10.0);
     }
-  
+
+    if (fd_rand_ranges.size()>0) fd_rand_ranges.clear();
+    
   } else {
     cout << "Point already computed and recompute is false." << endl;
   }
@@ -3887,8 +3939,10 @@ int eos_nuclei::stats(std::vector<std::string> &sv,
     cout << j-10 << ": " << flags[j] << endl;
   }
 
-  // Only 100 points missing, so output the missing points
+  // Less than 100 points missing, so output the missing points
   if (count<100) {
+    cout << "\nOnly " << count << " non-converged points: " << endl;
+    size_t temp_ctr=0;
     for(size_t i=0;i<data.size();i++) {
       int iflag=((int)(data[i]*(1.0+1.0e-12)));
       if (iflag!=10) {
@@ -3897,8 +3951,12 @@ int eos_nuclei::stats(std::vector<std::string> &sv,
 	double nB=nB_grid2[ix[0]];
 	double Ye=Ye_grid2[ix[1]];
 	double T=T_grid2[ix[2]];
+	cout.width(2);
+	cout << temp_ctr << " ";
+	cout.width(8);
 	cout << i << " " << nB << " " << Ye << " "
 	     << T << " " << iflag << endl;
+	temp_ctr++;
       }
     }
     
@@ -4618,7 +4676,12 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
   eos_nuclei external;
   if (ext_guess.length()>0) {
     external.read_results(ext_guess);
-    cout << "FIXME: should check that grids match." << endl;
+    if (nB_grid2!=external.nB_grid2 ||
+	Ye_grid2!=external.Ye_grid2 ||
+	T_grid2!=external.T_grid2) {
+      O2SCL_ERR("Grids don't match for external guess.",
+		o2scl::exc_einval);
+    }
   }
   
 #ifndef NO_MPI
@@ -5631,7 +5694,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	     << elapsed << endl;
 	done=true;
 	
-      } else if (write_elapsed>file_update_time) {
+      } else if (true || write_elapsed>file_update_time) {
 	
 	cout << "Updating file." << endl;
 	write_results(out_file);
@@ -6055,38 +6118,6 @@ int eos_nuclei::mcarlo_nuclei(std::vector<std::string> &sv, bool itive_com) {
     // This value is set in EOS
     line.push_back(Lambda_bar_14);
     
-    /*
-      Found grid point (inB,iYe,iT)=(229,49,51)
-      (nB,Ye,T)=(2.890880e-03,5.000000e-01,9.910964e-01).
-      Point already computed.
-      Read result:
-      log_xn, log_xp, A_min, A_max, NmZ_min, NmZ_max:
-      -7.092658e+00 -3.230078e+00 0 0 0 0
-      Abar, Zbar: 9.776819e+01 4.885581e+01
-      Fint: -9.995036e+00
-      S/nB: 2.827432e-01
-      E/nB (MeV): -9.714811e+00
-      P (MeV/fm^3): 3.151271e-05
-      mun (MeV): -1.439725e+01
-      mup (MeV): -5.571011e+00
-      TI: -2.805283e-02 -2.805282e-02
-      Read guess from /Users/x5a/data/eos/dsh_eos_fiducial.o2:
-      log_xn, log_xp, A_min, A_max, NmZ_min, NmZ_max:
-      -7.092658e+00 -3.230078e+00 0 0 0 0
-      Success in point_nuclei_aws (log_xn,log_xp,Z,N,f):
-      -7.09872e+00 -3.23088e+00 4.88557e+01 4.89122e+01 -1.46429e-04
-      F: -9.99503e+00
-      S/nB: 2.827369e-01
-      E/nB (MeV): -9.714812e+00
-      P (MeV/fm^3): 3.151327e-05
-      mun (MeV): -1.439751e+01
-      mup (MeV): -5.570755e+00
-      TI: -2.805284e-02 -2.805284e-02
-      A_min,A_max,NmZ_min,NmZ_max: 5 200 -200 200
-      Zbar, Nbar, Abar: 4.885573e+01 4.891218e+01 9.776791e+01
-      X 4.181108e-05 2.857607e-08 1.416566e-11
-      8.058513e-08 0.000000e+00 9.993810e-01
-    */
     if (true) {
       double nB=0.00289088;
       double Ye=0.5;
@@ -6313,8 +6344,9 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
     "If true, use previously computed points as guesses for neighbors";
   cl.par_list.insert(make_pair("propagate_points",&p_propagate_points));
   
-  p_mh_tol_rel.d=&mh.tol_rel;
-  p_mh_tol_rel.help="Relative tolerance for the solver (default 10^(-6)).";
+  p_mh_tol_rel.d=&mh_tol_rel;
+  p_mh_tol_rel.help=((std::string)"Relative tolerance for the solver ")+
+    "(default 10^(-6)).";
   cl.par_list.insert(make_pair("mh_tol_rel",&p_mh_tol_rel));
   
   p_max_time.d=&max_time;

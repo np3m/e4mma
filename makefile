@@ -87,6 +87,13 @@ eos_nuclei_nompi: eos_nompi.o main_nompi.o eos_nuclei_nompi.o \
 		 eos_nuclei_nompi.o eos_had_skyrme_ext_nompi.o $(LIBS) \
 		-lreadline
 
+# A shorthand alias for eos_nuclei_nompi
+enn: eos_nompi.o main_nompi.o eos_nuclei_nompi.o \
+		eos_had_skyrme_ext_nompi.o virial_solver_deriv.h
+	$(LCXX) $(LCFLAGS) -o enn eos_nompi.o main_nompi.o \
+		 eos_nuclei_nompi.o eos_had_skyrme_ext_nompi.o $(LIBS) \
+		-lreadline
+
 eos_nompi: eos_nompi.o main_eos_nompi.o \
 		eos_had_skyrme_ext_nompi.o virial_solver_deriv.h
 	$(LCXX) $(LCFLAGS) -o eos_nompi eos_nompi.o \
@@ -132,98 +139,3 @@ P_LARGE_SL = 470 738 0.5 13.0 100.0 36.0 0.9
 
 # ----------------------------------------------------------------
 
-cv0:
-	eos_nuclei_nompi -select-model $(P_FIDUCIAL) -check-virial
-
-md0:
-	eos_nuclei -select-model $(P_FIDUCIAL) -mcarlo-data
-
-# ----------------------------------------------------------------
-# Test XD's tables
-# ----------------------------------------------------------------
-
-testx:
-	eos_nuclei -set full_results 1 -select-model $(P_FIDUCIAL) \
-		-point-nuclei-aws 0.05 0.5 0.1 \
-		~/data/eos/dsh_eos_fiducial.o2
-
-# ----------------------------------------------------------------
-# Recompute XD's tables
-# ----------------------------------------------------------------
-
-restart:
-	cp ~/data/eos/dsh_eos_fiducial.o2 data/check_fiducial.o2
-	eos_nuclei_nompi -set full_results 1 -select-model $(P_FIDUCIAL) \
-		-edit-data data/check_fiducial.o2 \
-		"inB%13==0 && iYe%13==0 && iT%13==0" flag 5 \
-		data/check_fiducial.o2
-
-# 35141 is just a random prime number which gives 8144 matches
-restart2:
-	cp ~/data/eos/dsh_eos_fiducial.o2 data/check_fiducial.o2
-	eos_nuclei_nompi -set full_results 1 -select-model $(P_FIDUCIAL) \
-		-edit-data data/check_fiducial.o2 \
-		"floor(sin(inB*nYe*nT+iYe*nT+iT)*35141)%35141==0" flag 5 \
-		data/check_fiducial.o2
-
-restart3:
-	cp ~/data/eos/dsh_eos_fiducial.o2 data/check_fiducial.o2
-	eos_nuclei_nompi -set full_results 1 -select-model $(P_FIDUCIAL) \
-		-edit-data data/check_fiducial.o2 \
-		"abs(Ye-0.1)<0.001 && nB>0.04 && nB<0.07" flag 5 \
-		data/check_fiducial.o2
-
-recompute:
-	eos_nuclei_nompi -set full_results 1 -select-model $(P_FIDUCIAL) \
-		-set function_verbose 12211 \
-		-generate-table data/check_fiducial.o2 \
-		data/check_fiducial.o2
-
-recompute2:
-	eos_nuclei_nompi -set full_results 1 -select-model $(P_FIDUCIAL) \
-		-set six_neighbors 1 \
-		-generate-table data/check_fiducial.o2 \
-		data/check_fiducial.o2
-
-testx2:
-	eos_nuclei_nompi -set full_results 1 -select-model $(P_FIDUCIAL) \
-		-point-nuclei-aws 0.050237 0.19 12.86536 \
-		~/data/eos/dsh_eos_fiducial.o2
-
-testx3:
-	eos_nuclei_nompi -set full_results 1 -select-model $(P_FIDUCIAL) \
-		-point-nuclei-aws 0.00289088 0.5 0.9910964 \
-		~/data/eos/dsh_eos_fiducial.o2
-
-testx4:
-	eos_nuclei_nompi -set full_results 1 -select-model $(P_FIDUCIAL) \
-		-point-nuclei-aws 0.03 0.1 3.0 \
-		~/data/eos/dsh_eos_fiducial.o2
-
-mn1:
-	eos_nuclei_nompi -set full_results 1 \
-		-mcarlo-nuclei
-
-# -set function_verbose 12211 
-
-# ----------------------------------------------------------------
-# Recompute derivatives
-# ----------------------------------------------------------------
-
-fid_deriv:
-	eos_nuclei_nompi -set full_results 1 -select-model $(P_FIDUCIAL) \
-		-eos-deriv ~/data/eos/dsh_eos_fiducial.o2 \
-		~/data/eos/dsh_fid_deriv.o2 
-
-fid_eg:
-	eos_nuclei_nompi -set full_results 1 -select-model $(P_FIDUCIAL) \
-		-add-eg ~/data/eos/dsh_fid_deriv.o2 \
-		~/data/eos/dsh_fid_eg.o2 
-
-fid_mt:
-	eos_nuclei_nompi  -set full_results 1 -select-model $(P_FIDUCIAL) \
-		-maxwell-test ~/data/eos/dsh_fid_eg.o2 0.4 1.0 mt.o2
-
-fid_mt2:
-	eos_nuclei_nompi  -set full_results 1 -select-model $(P_FIDUCIAL) \
-		-maxwell-test ~/data/eos/dsh_fid_eg.o2 0.4 0.2 mt2.o2
