@@ -102,6 +102,9 @@ public:
   std::vector<double> T_grid2;
   //@}
 
+  /// Desc
+  int fd_A_max;
+  
   /// True if an EOS is currently loaded
   bool loaded;
 
@@ -341,6 +344,7 @@ public:
   /// \name Other parameter objects
   //@{
   o2scl::cli::parameter_bool p_show_all_nuclei;
+  o2scl::cli::parameter_int p_fd_A_max;
   o2scl::cli::parameter_bool p_recompute;
   o2scl::cli::parameter_string p_edge_list;
   o2scl::cli::parameter_string p_ext_guess;

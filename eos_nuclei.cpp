@@ -33,6 +33,8 @@ using namespace o2scl_hdf;
 
 eos_nuclei::eos_nuclei() {
 
+  fd_A_max=200;
+  
   nuclei.resize(6);
   nuc_alpha=&nuclei[0];
   nuc_deut=&nuclei[1];
@@ -1152,6 +1154,9 @@ int eos_nuclei::solve_nuclei(size_t nv, const ubvector &x, ubvector &y,
     cout << "y: " << y[0] << " " << y[1] << endl;
   }
 
+  //cout << "Z: " << x[0] << " " << x[1] << " " << y[0] << " "
+  //<< y[1] << " " << fabs(y[0])+fabs(y[1]) << endl;
+  
   // Don't allow infinite values
   if (!std::isfinite(y[0]) || !std::isfinite(y[1])) {
     if (loc_verbose>0) {
@@ -1605,7 +1610,7 @@ int eos_nuclei::eos_vary_dist
     // If alg_mode is 4, then don't vary the distibution at all,
     // just choose these values
     A_min=5;
-    A_max=200;
+    A_max=fd_A_max;
     NmZ_min=-200;
     NmZ_max=200;
   } else if (A_min==0 || A_max==0 ||
@@ -3637,6 +3642,7 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
       fd_rand_ranges[1]=tg3_log_xn.get(inB+1,iYe,iT);
       fd_rand_ranges[2]=tg3_log_xp.get(inB-1,iYe,iT);
       fd_rand_ranges[3]=tg3_log_xp.get(inB+1,iYe,iT);
+      cout << "  ";
       vector_out(cout,fd_rand_ranges,true);
     }
     
@@ -3904,7 +3910,8 @@ int eos_nuclei::stats(std::vector<std::string> &sv,
       tg3_Xn.unpack_index(i,ix);
       double nB=nB_grid2[ix[0]];
       if (nb_frac_count<1000 && fabs(check_X-1.0)>1.0e-6) {
-	cout << "Nuclear fractions do not add up to 1 (i,nB,Ye,T,X_total): "
+	cout << "Nuclear fractions do not add up to 1 "
+	     << "(i,nB,Ye,T,X_total):\n  "
 	     << i << " " << nB_grid2[ix[0]] << " "
 	     << Ye_grid2[ix[1]] << " " << T_grid2[ix[2]] << " " 
 	     << check_X << endl;
@@ -6310,6 +6317,10 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
     "every point (default false).";
   cl.par_list.insert(make_pair("show_all_nuclei",&p_show_all_nuclei));
   
+  p_fd_A_max.i=&fd_A_max;
+  p_fd_A_max.help="";
+  cl.par_list.insert(make_pair("fd_A_max",&p_fd_A_max));
+  
   p_recompute.b=&recompute;
   p_recompute.help=((string)"If true, recompute points in the table ")+
     "and ignore the flag.";
@@ -6366,9 +6377,9 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
   cl.par_list.insert(make_pair("Ye_list",&p_Ye_list));
 
   p_alg_mode.i=&alg_mode;
-  p_alg_mode.help=((string)"Algorithm mode (default 1; ")+
-    "0 for AWS's SNA, 1 for XD's SNA, 2 for AWS's vary dist., "+
-    "3 for XD's full dist., and 4 for AWS's fixed dist.)";
+  p_alg_mode.help=((string)"Algorithm mode (default 4; ")+
+    "0 for SNA, 1 for old SNA method, 2 for vary dist., "+
+    "3 for old vary dist., and 4 for fixed dist.)";
   cl.par_list.insert(make_pair("alg_mode",&p_alg_mode));
   
   p_fixed_dist_alg.i=&fixed_dist_alg;
