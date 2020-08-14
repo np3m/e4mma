@@ -3739,10 +3739,28 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
       t3d.set(nuclei[i].N,nuclei[i].Z,"log10_X_nuc",log10(nuclei[i].n/nB));
     }
     
+    // Now create a table adding up isotopes
+    table<> tab;
+    tab.line_of_names("Z X_nuc");
+    for(size_t i=1;i<=400;i++) {
+      double line[2]={((double)i),0.0};
+      tab.line_of_data(2,line);
+    }
+    for(size_t i=0;i<nuclei.size();i++) {
+      int iZ=nuclei[i].Z;
+      if (iZ>=1 && iZ<=400) {
+	tab.set("X_nuc",iZ,tab.get("X_nuc",iZ)+nuclei[i].n*nuclei[i].A);
+      }
+    }
+    for(size_t i=1;i<=400;i++) {
+      tab.set("X_nuc",i,tab.get("X_nuc",i)/nB);
+    }
+    
     // Output to file
     hdf_file hfx;
     hfx.open_or_create("dist.o2");
     hdf_output(hfx,(const table3d &)t3d,"dist");
+    hdf_output(hfx,tab,"dist_sum");
     hfx.close();
   }
   
