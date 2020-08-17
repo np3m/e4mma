@@ -219,29 +219,29 @@ void eos_nuclei::load_nuclei() {
   return;
 }
 
-double partition_func::delta_small_iand(double x) {
-  if (x<1.0e-200) return 0.0;
+double partition_func::delta_small_iand(double E) {
+  if (E<1.0e-200) return 0.0;
   // This integrand is in units of 1/MeV? Check this.
-  double ret=sqrt(pi)/12.0*exp(2.0*sqrt(a*(x-delta)))/
-    pow(a,1.0/4.0)/pow((x-delta),5.0/4.0)*exp(-x/T_MeV);
+  double ret=sqrt(pi)/12.0*exp(2.0*sqrt(a*(E-delta)))/
+    pow(a,1.0/4.0)/pow((E-delta),5.0/4.0)*exp(-E/T_MeV);
   if (!std::isfinite(ret)) {
-    cout << "a,delta,T_MeV,x: "
-	 << a << " " << delta << " " << T_MeV << " " << x << endl;
-    cout << exp(2.0*sqrt(a*(x-delta))) << " " << exp(-x/T_MeV) << " " 
-	 << pow((x-delta),5.0/4.0) << " " << ret << endl;
+    cout << "a,delta,T_MeV,E: "
+	 << a << " " << delta << " " << T_MeV << " " << E << endl;
+    cout << exp(2.0*sqrt(a*(E-delta))) << " " << exp(-E/T_MeV) << " " 
+	 << pow((E-delta),5.0/4.0) << " " << ret << endl;
     O2SCL_ERR2("Value of delta_small_iand is not finite ",
 	       "in partition_func::delta_small_iand().",o2scl::exc_efailed);
   }
   return ret;
 }
 
-double partition_func::delta_small_iand_prime(double x) {
-  if (x<1.0e-200) return 0.0;
-  double ret=x/T_MeV*sqrt(pi)/12.0*exp(2.0*sqrt(a*(x-delta)))/
-    pow(a,1.0/4.0)/pow((x-delta),5.0/4.0)*exp(-x/T_MeV);
+double partition_func::delta_small_iand_prime(double E) {
+  if (E<1.0e-200) return 0.0;
+  double ret=E/T_MeV*sqrt(pi)/12.0*exp(2.0*sqrt(a*(E-delta)))/
+    pow(a,1.0/4.0)/pow((E-delta),5.0/4.0)*exp(-E/T_MeV);
   if (!std::isfinite(ret)) {
-    cout << "a,delta,T_MeV,x: "
-	 << a << " " << delta << " " << T_MeV << " " << x << endl;
+    cout << "a,delta,T_MeV,E: "
+	 << a << " " << delta << " " << T_MeV << " " << E << endl;
     O2SCL_ERR2("Value of delta_small_iand_prime is not finite ",
 	       "in partition_func::delta_small_iand_prime().",
 	       o2scl::exc_efailed);
@@ -249,24 +249,24 @@ double partition_func::delta_small_iand_prime(double x) {
   return ret;
 }
   
-double partition_func::delta_large_iand(double x) {
-  if (x<1.0e-200) return 0.0;
-  double ret=C*exp((x-delta)/Tc)*exp(-x/T_MeV); 
+double partition_func::delta_large_iand(double E) {
+  if (E<1.0e-200) return 0.0;
+  double ret=C*exp((E-delta)/Tc)*exp(-E/T_MeV); 
   if (!std::isfinite(ret)) {
-    cout << "a,delta,T_MeV,x: "
-	 << a << " " << delta << " " << T_MeV << " " << x << endl;
+    cout << "a,delta,T_MeV,E: "
+	 << a << " " << delta << " " << T_MeV << " " << E << endl;
     O2SCL_ERR2("Value of delta_large_iand is not finite ",
 	       "in partition_func::delta_large_iand().",o2scl::exc_efailed);
   }
   return ret;
 } 
 
-double partition_func::delta_large_iand_prime(double x) {
-  if (x<1.0e-200) return 0.0;
-  double ret=x/T_MeV*C*exp((x-delta)/Tc)*exp(-x/T_MeV); 
+double partition_func::delta_large_iand_prime(double E) {
+  if (E<1.0e-200) return 0.0;
+  double ret=E/T_MeV*C*exp((E-delta)/Tc)*exp(-E/T_MeV); 
   if (!std::isfinite(ret)) {
-    cout << "a,delta,T_MeV,x: "
-	 << a << " " << delta << " " << T_MeV << " " << x << endl;
+    cout << "a,delta,T_MeV,E: "
+	 << a << " " << delta << " " << T_MeV << " " << E << endl;
     O2SCL_ERR2("Value of delta_large_iand_prime is not finite ",
 	       "in partition_func::delta_large_iand_prime().",
 	       o2scl::exc_efailed);
@@ -1278,8 +1278,9 @@ int eos_nuclei::eos_fixed_ZN(double nB, double Ye, double T,
 
       // MeV
       double zEd=min(Sneut[i],Sprot[i])/2.0;
+      // fm
       double zR=1.25*cbrt(nuclei[i].Z+nuclei[i].N-1.0);
-      // MeV
+      // MeV since nuclei[i].m is in fm^{-1}
       double zER=0.5/nuclei[i].m/zR/zR*hc_mev_fm;
       // MeV
       double zEc=(nuclei[i].Z-1.0)*fine_structure/zR*hc_mev_fm;

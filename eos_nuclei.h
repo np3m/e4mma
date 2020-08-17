@@ -49,32 +49,32 @@ public:
   double Tc;
     
   /** \brief Integrand for partition function when \f$ \delta \f$
-      is small
+      is smaller than \f$ E_d \f$
 
       From eq. (25) & (27) in Shen 10.
   */
-  double delta_small_iand(double x);
+  double delta_small_iand(double E);
     
   /** \brief Integrand for derivative of partition function
       with respect to temperature when \f$ \delta \f$
-      is small
+      is smaller than \f$ E_d \f$
 
       From eq. (26) & (27) in Shen 10.
   */
-  double delta_small_iand_prime(double x);
+  double delta_small_iand_prime(double E);
     
-  /** \brief Integrand when \f$ \delta \f$ is large
+  /** \brief Integrand when \f$ \delta \f$ is greater than \f$ E_d \f$
 
       From eq. (25) and (30) in Shen 10.
    */
-  double delta_large_iand(double x);
+  double delta_large_iand(double E);
     
   /** \brief Integrand for temperature derivative when \f$ \delta
-      \f$ is large
+      \f$ is greater than \f$ E_d \f$
 
       From eq. (26) and (30) in Shen 10.
   */
-  double delta_large_iand_prime(double x);
+  double delta_large_iand_prime(double E);
     
 };
 
