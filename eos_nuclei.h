@@ -547,6 +547,7 @@ public:
   /** \brief Desc
    */
   int mcarlo_nuclei(std::vector<std::string> &sv, bool itive_com);
+  int mcarlo_nuclei2(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Setup the command-line interface
    */

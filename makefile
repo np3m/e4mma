@@ -89,7 +89,7 @@ eos_nuclei_nompi: eos_nompi.o main_nompi.o eos_nuclei_nompi.o \
 
 # A shorthand alias for eos_nuclei_nompi
 enn: eos_nompi.o main_nompi.o eos_nuclei_nompi.o \
-		eos_had_skyrme_ext_nompi.o virial_solver_deriv.h
+		eos_had_skyrme_ext_nompi.o eos_nompi.o 
 	$(LCXX) $(LCFLAGS) -o enn eos_nompi.o main_nompi.o \
 		 eos_nuclei_nompi.o eos_had_skyrme_ext_nompi.o $(LIBS) \
 		-lreadline
