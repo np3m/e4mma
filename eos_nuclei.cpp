@@ -3699,8 +3699,9 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
     cout << "Writing distribution to dist.o2." << endl;
     
     table3d t3d;
-    t3d.set_xy("N",uniform_grid_end_width<double>(0.0,400.0,1.0),
-	       "Z",uniform_grid_end_width<double>(0.0,400.0,1.0));
+    A_max=((int)(tg3_A_max.get(inB,iYe,iT)+1.0e-10));
+    t3d.set_xy("N",uniform_grid_end_width<double>(0.0,A_max,1.0),
+	       "Z",uniform_grid_end_width<double>(0.0,A_max,1.0));
     
     // New slices
     t3d.new_slice("n_nuc");
@@ -3742,18 +3743,18 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
     // Now create a table adding up isotopes
     table<> tab;
     tab.line_of_names("Z X_nuc");
-    for(size_t i=1;i<=400;i++) {
-      double line[2]={((double)i),0.0};
+    for(int i=1;i<=A_max;i++) {
+      double line[2]={((double)(i+1)),0.0};
       tab.line_of_data(2,line);
     }
     for(size_t i=0;i<nuclei.size();i++) {
       int iZ=nuclei[i].Z;
-      if (iZ>=1 && iZ<=400) {
-	tab.set("X_nuc",iZ,tab.get("X_nuc",iZ)+nuclei[i].n*nuclei[i].A);
+      if (iZ>=1 && iZ<=A_max) {
+	tab.set("X_nuc",iZ-1,tab.get("X_nuc",iZ-1)+nuclei[i].n*nuclei[i].A);
       }
     }
-    for(size_t i=1;i<=400;i++) {
-      tab.set("X_nuc",i,tab.get("X_nuc",i)/nB);
+    for(int i=1;i<=A_max;i++) {
+      tab.set("X_nuc",i-1,tab.get("X_nuc",i-1)/nB);
     }
     
     // Output to file
