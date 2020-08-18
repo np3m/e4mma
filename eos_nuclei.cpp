@@ -2411,83 +2411,53 @@ int eos_nuclei::eos_fixed_dist
     }
   }
 
+  // -------------------------------------------------------------
+  // Compute entropy density
+  
   double xn=pow(10.0,log_xn);
   double xp=pow(10.0,log_xp);
 
-  cout << "Fixme: nn and np not defined." << endl;
-  exit(-1);
-  double nn=1.0e10, np=1.0e10;
-  
   double kappa=1.0-nB/n0;
-  double xi=kappa+nn/n0+np/n0;
-  
+  double xi=kappa/(1.0-nB*xn/n0-nB*xp/n0);
+
+  // The total of the number density over all nuclei
   double sum_nuc=0.0;
-  double f_c=0.0;
-  //p_c_test=0.0;
-  ubvector fnuc(n_nuclei), en(n_nuclei), xx(n_nuclei);
-  f=0.0;
+
+  // Begin with zero and then add up contributions to the entropy
+  // density
   thx.en=0.0;
   
   for (size_t i=0;i<n_nuclei;i++) {
+    
+    double en_nucleus;
+    
     if (nuclei[i].n>1.0e-300) {
-      double lambda=sqrt(2.0*pi/nuclei[i].m/T);
-      fnuc[i]=-T*(log(vomega[i]/nuclei[i].n/pow(lambda,3.0))+1.0)*
-	nuclei[i].n;
-      en[i]=nuclei[i].n*(log(vomega[i]/nuclei[i].n/pow(lambda,3.0))+
-			 5.0/2.0+vomega_prime[i]*T/vomega[i]);
-      if (!std::isfinite(fnuc[i])) {
-	if (nuclei[i].n<1.0e-200) {
-	  nuclei[i].n=0.0;
-	  fnuc[i]=0.0;
-	  en[i]=0.0;
-	} else {
-	  cout << "Nuclear free energy not finite." << endl;
-	  cout << nuclei[i].n << " " << nuclei[i].be << " " << lambda
-	       << " " << vomega[i] << endl;
-	  exit(-1);
-	}
+      if (nuclei[i].n<1.0e-200) {
+	nuclei[i].n=0.0;
+	en_nucleus=0.0;
+      } else {
+	double lambda=sqrt(2.0*pi/nuclei[i].m/T);
+	en_nucleus=nuclei[i].n*(log(vomega[i]/nuclei[i].n/pow(lambda,3.0))+
+				5.0/2.0+vomega_prime[i]*T/vomega[i]);
       }
-    } else {
-      nuclei[i].n=0.0;
-      fnuc[i]=0.0;
-      en[i]=0.0;
+      
+      // Coulomb contribution to pressure for nuclei
+      thx.en+=en_nucleus;
+      sum_nuc+=nuclei[i].n;
     }
-    
-    // Coulomb contribution to pressure for nuclei
-    xx[i]=cbrt(nB*Ye/n0*nuclei[i].A/nuclei[i].Z);
-    double rA=cbrt(3.0*nuclei[i].A/4.0/pi/n0);
-    //p_c_test+=-0.6*nuclei[i].n*nuclei[i].Z*nuclei[i].Z*fine_structure/rA*
-    //(0.5*xx[i]-0.5*pow(xx[i],3.0));
-    double Ecoul=0.0;
-    Ecoul=-0.6*nuclei[i].Z*nuclei[i].Z*fine_structure/rA*
-      (1.5*xx[i]-0.5*pow(xx[i],3.0));
-    fnuc[i]+=nuclei[i].n*nuclei[i].be+1.433e-05*
-      pow(nuclei[i].Z,2.39)/hc_mev_fm*nuclei[i].n;
-    sum_nuc+=nuclei[i].n;
-    f_c+=nuclei[i].n*Ecoul;
-    f+=fnuc[i];
-    thx.en+=en[i];
-    
 
   }
   
-  f+=f_c+xi*(th_gas.ed-T*th_gas.en)-T*sum_nuc*log(kappa);
   thx.en+=xi*th_gas.en+sum_nuc*log(kappa);
-  thx.ed=f+T*thx.en;
-  thx.pr=th_gas.pr+sum_nuc*T/kappa;//+p_c_test;
 
-  if (!std::isfinite(f)) {
-    cout << "Free energy not finite." << endl;
-    vector_out(cout,fnuc,true);
-    cout << log_xn << " " << log_xp << endl;
-    cout << f_c << " " << th_gas.ed-T*th_gas.en << " " << kappa << endl;
-    cout << f << endl;
-    exit(-1);
-    return 6;
-  }
+  // -------------------------------------------------------------
 
+  // Nucleon chemical potentials, energy density, and pressure
+  // are not currently computed 
   mun_full=neutron.m;
   mup_full=proton.m;
+  thx.ed=0.0;
+  thx.pr=0.0;
 
   if (loc_verbose==8) {
     char ch;
