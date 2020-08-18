@@ -107,9 +107,12 @@ class eos_crust_virial_v2 : public o2scl::eos_crust_virial {
    */
   virtual void fit(bool show_fit=false);
 
+  /// \name Constructor and destructor
+  //@{
   eos_crust_virial_v2();
 
   virtual ~eos_crust_virial_v2() {}
+  //@}
   
 }; 
 
@@ -118,19 +121,6 @@ class eos_crust_virial_v2 : public o2scl::eos_crust_virial {
 class eos {
   
  protected:
-
-  /** \brief (default false)
-   */
-  bool old_version;
-  
-  /** \brief Use NRAPR (for testing and comparison)
-   */
-  bool use_nrapr;
-  
-  /** \brief Store Lambda bar for a 1.4 solar mass neutron
-      star
-  */
-  double Lambda_bar_14;
 
   /// \name Main EOS parameters [protected]
   //@{
@@ -263,6 +253,12 @@ class eos {
   
   /// The virial entropy
   double s_virial;
+
+  /** \brief The value of \f$ \bar{\Lambda} \f$ 
+      for a 1.4 solar mass neutron
+      star
+  */
+  double Lambda_bar_14;
   //@}
   
   /// \name The fit to the neutron star EOS [protected]
@@ -345,7 +341,7 @@ class eos {
   o2scl::cli::parameter_bool p_include_muons;
   o2scl::cli::parameter_bool p_select_cs2_test;
   o2scl::cli::parameter_bool p_test_ns_cs2;
-  o2scl::cli::parameter_bool p_use_nrapr;
+  o2scl::cli::parameter_bool p_use_skalt;
   o2scl::cli::parameter_double p_a_virial;
   o2scl::cli::parameter_double p_b_virial;
   //@}
@@ -455,6 +451,9 @@ class eos {
 
   /// The virial EOS
   eos_crust_virial_v2 ecv;
+
+  /// Alternative skryme model
+  o2scl::eos_had_skyrme sk_alt;
   //@}
 
   /// \name The parameters for the QMC energy density [protected]
@@ -482,29 +481,42 @@ class eos {
   //@}
 
  public:
-  
-  o2scl::eos_had_skyrme sk_nrapr;
-  
+
+  /// \name Constructor and destructor
+  //@{
   eos();
 
   virtual ~eos() {
   }
+  //@}
 
   /// \name Settings [public]
   //@{
-  /** \brief If true, test the neutron star speed of sound
+  /** \brief If true, use the EOS from the Du et al. (2019) paper
+      instead of the Du et al. (2020) update (default false)
+   */
+  bool old_version;
+  
+  /** \brief Use a Skyrme model rather than the Du et al. 
+      combined EOS
+   */
+  bool use_skalt;
+  
+  /** \brief If true, test the neutron star speed of sound 
+      (default true)
    */
   bool test_ns_cs2;
   
   /** \brief If true, save the results of the neutron star fit to
-      a file, and immediately exit
+      a file, and immediately exit (default false)
    */
   bool ns_record;
 
   /** \brief If true, use the old neutron star fit (default true)
 
       This defaults to true because the old fit performs a bit
-      better than the new one.
+      better than the new one. The new fit was never used
+      in a publication. 
    */
   bool old_ns_fit;
 

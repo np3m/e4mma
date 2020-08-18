@@ -155,8 +155,11 @@
     virtual const char *type() { return "eos_had_skyrme_ext"; }
     //@}
 
+    /// \name The new parameters
+    //@{
     double t4, x4, t5, x5;
     double alpha2, alpha3;
+    //@}
 
   };
 

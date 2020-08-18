@@ -597,11 +597,11 @@ eos::eos() {
   o2scl_hdf::hdf_input(hf,UNEDF_tab,name);
   hf.close();
 
-  use_nrapr=false;
+  use_skalt=false;
 #ifdef O2SCL_CORI
-  o2scl_hdf::skyrme_load(sk_nrapr,"data/NRAPR.o2",true,1);
+  o2scl_hdf::skyrme_load(sk_alt,"data/NRAPR.o2",true,1);
 #else
-  o2scl_hdf::skyrme_load(sk_nrapr,"NRAPR");
+  o2scl_hdf::skyrme_load(sk_alt,"NRAPR");
 #endif
 
 #ifdef O2SCL_MPI
@@ -1423,8 +1423,8 @@ double eos::free_energy_density_ep
   relf.pair_density(electron,T);
   photon.massless_calc(T);
   double frnp;
-  if (use_nrapr) {
-    sk_nrapr.calc_temp_e(neutron,proton,T,th2);
+  if (use_skalt) {
+    sk_alt.calc_temp_e(neutron,proton,T,th2);
     frnp=th2.ed-T*th2.en;
   } else {
     frnp=free_energy_density(neutron,proton,T,th2);
@@ -1442,8 +1442,8 @@ double eos::entropy(fermion &n, fermion &p, double nn,
   p.n=pn;
   n.mu=n.m;
   p.mu=p.m;
-  if (use_nrapr) {
-    sk_nrapr.calc_temp_e(n,p,T,th);
+  if (use_skalt) {
+    sk_alt.calc_temp_e(n,p,T,th);
   } else {
     free_energy_density(n,p,T,th);
   }
@@ -1460,8 +1460,8 @@ double eos::ed(fermion &n, fermion &p, double nn,
   p.n=pn;
   n.mu=n.m;
   p.mu=p.m;
-  if (use_nrapr) {
-    sk_nrapr.calc_temp_e(n,p,T,th);
+  if (use_skalt) {
+    sk_alt.calc_temp_e(n,p,T,th);
   } else {
     free_energy_density(n,p,T,th);
   }
@@ -1479,8 +1479,8 @@ double eos::dfdnn_total(fermion &n, fermion &p, double nn,
   p.n=pn;
   n.mu=n.m;
   p.mu=p.m;
-  if (use_nrapr) {
-    sk_nrapr.calc_temp_e(n,p,T,th);
+  if (use_skalt) {
+    sk_alt.calc_temp_e(n,p,T,th);
   } else {
     free_energy_density(n,p,T,th);
   }
@@ -1497,8 +1497,8 @@ double eos::dfdnp_total(fermion &n, fermion &p, double nn,
   p.n=pn;
   n.mu=n.m;
   p.mu=p.m;
-  if (use_nrapr) {
-    sk_nrapr.calc_temp_e(n,p,T,th);
+  if (use_skalt) {
+    sk_alt.calc_temp_e(n,p,T,th);
   } else {
     free_energy_density(n,p,T,th);
   }
@@ -1516,8 +1516,8 @@ double eos::cs2_fixYe(fermion &n, fermion &p, double T, thermo &th) {
   pn=p.n;
   n.mu=n.m;
   p.mu=p.m;
-  if (use_nrapr) {
-    sk_nrapr.calc_temp_e(n,p,T,th);
+  if (use_skalt) {
+    sk_alt.calc_temp_e(n,p,T,th);
   } else {
     free_energy_density(n,p,T,th);
   }
@@ -1743,8 +1743,8 @@ double eos::cs2_fixmuL(fermion &n, fermion &p, double T, thermo &th) {
   pn=p.n;
   n.mu=n.m;
   p.mu=p.m;
-  if (use_nrapr) {
-    sk_nrapr.calc_temp_e(n,p,T,th);
+  if (use_skalt) {
+    sk_alt.calc_temp_e(n,p,T,th);
   } else {
     free_energy_density(n,p,T,th);
   }
@@ -1926,8 +1926,8 @@ int eos::table_Ye(std::vector<std::string> &sv, bool itive_com) {
       neutron.n=nB_grid[i]*(1.0-Ye);
       proton.n=nB_grid[i]*Ye;
       double t1, t2, t3, t4, t5;
-      if (use_nrapr) {
-	sk_nrapr.calc_temp_e(neutron,proton,T_grid[j]/hc_mev_fm,th2);
+      if (use_skalt) {
+	sk_alt.calc_temp_e(neutron,proton,T_grid[j]/hc_mev_fm,th2);
       } else {
 	free_energy_density(neutron,proton,T_grid[j]/hc_mev_fm,th2);
       }
@@ -1987,8 +1987,8 @@ int eos::table_nB(std::vector<std::string> &sv, bool itive_com) {
       neutron.n=nB*(1.0-Ye_grid[i]);
       proton.n=nB*Ye_grid[i];
       double t1, t2, t3, t4, t5;
-      if (use_nrapr) {
-	sk_nrapr.calc_temp_e(neutron,proton,T_grid[j]/hc_mev_fm,th2);
+      if (use_skalt) {
+	sk_alt.calc_temp_e(neutron,proton,T_grid[j]/hc_mev_fm,th2);
       } else {
 	free_energy_density(neutron,proton,T_grid[j]/hc_mev_fm,th2);
       }
@@ -2088,8 +2088,8 @@ int eos::table_full(std::vector<std::string> &sv, bool itive_com) {
 	// Hadronic part
 	neutron.n=nB_grid[i]*(1.0-Ye_grid[j]);
 	proton.n=nB_grid[i]*Ye_grid[j];
-	if (use_nrapr) {
-	  sk_nrapr.calc_temp_e(neutron,proton,T_grid[k]/hc_mev_fm,th2);
+	if (use_skalt) {
+	  sk_alt.calc_temp_e(neutron,proton,T_grid[k]/hc_mev_fm,th2);
 	} else {
 	  free_energy_density(neutron,proton,T_grid[k]/hc_mev_fm,th2);
 	}
@@ -2286,8 +2286,8 @@ int eos::test_deriv(std::vector<std::string> &sv, bool itive_com) {
     neutron.n=nb*0.99;
     proton.n=nb*0.01;
     T=0.1/hc_mev_fm;
-    if (use_nrapr) {
-      sk_nrapr.calc_temp_e(neutron,proton,T,th2);
+    if (use_skalt) {
+      sk_alt.calc_temp_e(neutron,proton,T,th2);
     } else {
       free_energy_density(neutron,proton,T,th2);
     }
@@ -2371,8 +2371,8 @@ int eos::test_deriv(std::vector<std::string> &sv, bool itive_com) {
     neutron.n=nb*0.51;
     proton.n=nb*0.49;
     T=0.1/hc_mev_fm;
-    if (use_nrapr) {
-      sk_nrapr.calc_temp_e(neutron,proton,T,th2);
+    if (use_skalt) {
+      sk_alt.calc_temp_e(neutron,proton,T,th2);
     } else {
       free_energy_density(neutron,proton,T,th2);
     }
@@ -2456,8 +2456,8 @@ int eos::test_deriv(std::vector<std::string> &sv, bool itive_com) {
     neutron.n=nb*0.99;
     proton.n=nb*0.01;
     T=1.0/hc_mev_fm;
-    if (use_nrapr) {
-      sk_nrapr.calc_temp_e(neutron,proton,T,th2);
+    if (use_skalt) {
+      sk_alt.calc_temp_e(neutron,proton,T,th2);
     } else {
       free_energy_density(neutron,proton,T,th2);
     }
@@ -2541,8 +2541,8 @@ int eos::test_deriv(std::vector<std::string> &sv, bool itive_com) {
     neutron.n=nb*0.51;
     proton.n=nb*0.49;
     T=1.0/hc_mev_fm;
-    if (use_nrapr) {
-      sk_nrapr.calc_temp_e(neutron,proton,T,th2);
+    if (use_skalt) {
+      sk_alt.calc_temp_e(neutron,proton,T,th2);
     } else {
       free_energy_density(neutron,proton,T,th2);
     }
@@ -2626,8 +2626,8 @@ int eos::test_deriv(std::vector<std::string> &sv, bool itive_com) {
     neutron.n=nb*0.99;
     proton.n=nb*0.01;
     T=30.0/hc_mev_fm;
-    if (use_nrapr) {
-      sk_nrapr.calc_temp_e(neutron,proton,T,th2);
+    if (use_skalt) {
+      sk_alt.calc_temp_e(neutron,proton,T,th2);
     } else {
       free_energy_density(neutron,proton,T,th2);
     }
@@ -2711,8 +2711,8 @@ int eos::test_deriv(std::vector<std::string> &sv, bool itive_com) {
     neutron.n=nb*0.51;
     proton.n=nb*0.49;
     T=30.0/hc_mev_fm;
-    if (use_nrapr) {
-      sk_nrapr.calc_temp_e(neutron,proton,T,th2);
+    if (use_skalt) {
+      sk_alt.calc_temp_e(neutron,proton,T,th2);
     } else {
       free_energy_density(neutron,proton,T,th2);
     }
@@ -3050,8 +3050,8 @@ int eos::solve_Ye(size_t nv, const ubvector &x, ubvector &y,
   neutron.n=nb*(1.0-Ye);
   proton.n=nb*Ye;
 
-  if (use_nrapr) {
-    sk_nrapr.calc_temp_e(neutron,proton,T,th2);
+  if (use_skalt) {
+    sk_alt.calc_temp_e(neutron,proton,T,th2);
   } else {
     double t1, t2;
     sk.eff_mass(neutron,proton,t1,t2);
@@ -3092,9 +3092,9 @@ int eos::solve_fixed_sonb_YL(size_t nv, const ubvector &x, ubvector &y,
   double T2=T;
   if (sonb==0.0) T2=0.0;
 
-  if (use_nrapr) {
+  if (use_skalt) {
     
-    sk_nrapr.calc_temp_e(neutron,proton,T2,th2);
+    sk_alt.calc_temp_e(neutron,proton,T2,th2);
     
   } else {
     
@@ -3145,9 +3145,9 @@ int eos::solve_T(size_t nv, const ubvector &x, ubvector &y,
   neutron.n=nb*(1.0-Ye);
   proton.n=nb*Ye;
 
-  if (use_nrapr) {
+  if (use_skalt) {
 
-    sk_nrapr.calc_temp_e(neutron,proton,T,th2);
+    sk_alt.calc_temp_e(neutron,proton,T,th2);
     
   } else {
     
@@ -3199,8 +3199,8 @@ int eos::mcarlo_data(std::vector<std::string> &sv, bool itive_com) {
       neutron.n=nB_arr[k]*(1.0-Ye_arr[k]);
       proton.n=nB_arr[k]*Ye_arr[k];
       double T=T_arr[k]/hc_mev_fm;
-      if (use_nrapr) {
-	line.push_back(sk_nrapr.calc_temp_e(neutron,proton,T,th2)/
+      if (use_skalt) {
+	line.push_back(sk_alt.calc_temp_e(neutron,proton,T,th2)/
 		       nB_arr[k]*hc_mev_fm);
       } else {
 	line.push_back(free_energy_density(neutron,proton,T,th2)/
@@ -3668,8 +3668,8 @@ int eos::point(std::vector<std::string> &sv, bool itive_com) {
 
   neutron.n=nB*(1.0-Ye);
   proton.n=nB*Ye;
-  if (use_nrapr) {
-    sk_nrapr.calc_temp_e(neutron,proton,T,th2);
+  if (use_skalt) {
+    sk_alt.calc_temp_e(neutron,proton,T,th2);
     
     if (verbose>=1) {
       
@@ -3881,10 +3881,10 @@ void eos::setup_cli(o2scl::cli &cl) {
     "speed of sound (default false)";
   cl.par_list.insert(make_pair("test_ns_cs2",&p_test_ns_cs2));
 
-  p_use_nrapr.b=&use_nrapr;
-  p_use_nrapr.help=((std::string)"Use NRAPR ")+
+  p_use_skalt.b=&use_skalt;
+  p_use_skalt.help=((std::string)"Use NRAPR ")+
     "(default false)";
-  cl.par_list.insert(make_pair("use_nrapr",&p_use_nrapr));
+  cl.par_list.insert(make_pair("use_skalt",&p_use_skalt));
 
   p_a_virial.d=&a_virial;
   p_a_virial.help="Virial coefficient a (default 3.0)";

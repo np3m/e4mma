@@ -63,7 +63,6 @@ eos_nuclei::eos_nuclei() {
   baryons_only_loaded=true;
   derivs_computed=false;
   with_leptons_loaded=false;
-  heavy=false;
 
   //nucleon_func="(nb<0.04)*((i<100)*10+(i>=100)*sqrt(i))+(nb>=0.04)*100";
   nucleon_func="(i<100)*10+(i>=100)*sqrt(i)";
@@ -853,7 +852,7 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
 	double cs_sq=(nn2*nn2*(f_nnnn-f_nnT*f_nnT/f_TT)+
 		      2.0*nn2*np2*(f_nnnp-f_nnT*f_npT/f_TT)+
 		      np2*np2*(f_npnp-f_npT*f_npT/f_TT)-
-		      2.0*en*(nn2*f_nnT/f_TT+np*f_npT/f_TT)-en*en/f_TT)/den;
+		      2.0*en*(nn2*f_nnT/f_TT+np2*f_npT/f_TT)-en*en/f_TT)/den;
 	cs2.get(i,j,k)=cs_sq;
       }
     }
@@ -1006,8 +1005,8 @@ int eos_nuclei::solve_nuclei(size_t nv, const ubvector &x, ubvector &y,
     // Compute chemical potential shift at a fiducial proton density
     proton.n=1.0e-100;
 
-    if (use_nrapr) {
-      sk_nrapr.calc_temp_e(neutron,proton,T,th2);
+    if (use_skalt) {
+      sk_alt.calc_temp_e(neutron,proton,T,th2);
     } else {
       free_energy_density(neutron,proton,T,th2);
     }
@@ -1023,8 +1022,8 @@ int eos_nuclei::solve_nuclei(size_t nv, const ubvector &x, ubvector &y,
     // Compute chemical potential shift at a fiducial neutron density
     neutron.n=1.0e-100;
 
-    if (use_nrapr) {
-      sk_nrapr.calc_temp_e(neutron,proton,T,th2);
+    if (use_skalt) {
+      sk_alt.calc_temp_e(neutron,proton,T,th2);
     } else {
       free_energy_density(neutron,proton,T,th2);
     }
@@ -1037,8 +1036,8 @@ int eos_nuclei::solve_nuclei(size_t nv, const ubvector &x, ubvector &y,
     
   } else {
     
-    if (use_nrapr) {
-      sk_nrapr.calc_temp_e(neutron,proton,T,th_gas);
+    if (use_skalt) {
+      sk_alt.calc_temp_e(neutron,proton,T,th_gas);
     } else {
       free_energy_density(neutron,proton,T,th_gas);
     }
@@ -1047,8 +1046,8 @@ int eos_nuclei::solve_nuclei(size_t nv, const ubvector &x, ubvector &y,
 
   mun_gas=neutron.mu;
   mup_gas=proton.mu;
-  nn=nn_prime*xi;
-  np=np_prime*xi;
+  double nn=nn_prime*xi;
+  double np=np_prime*xi;
 
   // Set densities and accumulate results for nn_tilde and np_tilde
   double nn_tilde=nn;
@@ -1486,6 +1485,10 @@ int eos_nuclei::eos_fixed_ZN(double nB, double Ye, double T,
   log_xp=x1[1];
   double xn=pow(10.0,x1[0]);
   double xp=pow(10.0,x1[1]);
+
+  cout << "Fixme: nn and np not defined." << endl;
+  exit(-1);
+  double nn=1.0e10, np=1.0e10;
   
   double kappa=1.0-nB/n0;
   double xi=kappa+nn/n0+np/n0;
@@ -1534,10 +1537,8 @@ int eos_nuclei::eos_fixed_ZN(double nB, double Ye, double T,
   f+=f_c+xi*(th_gas.ed-T*th_gas.en)-T*sum_nuc*log(kappa);
   thx.en+=xi*th_gas.en+sum_nuc*log(kappa);
   thx.ed=f+T*thx.en;
+  double p0_nuc=0.0;
   thx.pr=p0_nuc+sum_nuc*T/kappa+p_c2;
-
-  mun=mun_gas+1.0/kappa*sum_nuc*T/n0;
-  mup=mup_gas+1.0/kappa*sum_nuc*T/n0;
 
   if (!std::isfinite(f)) {
     cout << "Free energy not finite." << endl;
@@ -1549,16 +1550,8 @@ int eos_nuclei::eos_fixed_ZN(double nB, double Ye, double T,
     return 6;
   }
   
-  // Check definition of free energy and thermodynamic identity
-  if (debug) {
-    cout << thx.ed+thx.pr << " "
-	 << mun*nB*(1.0-Ye)+mup*nB*Ye+T*thx.en << endl;
-    cout << f << " " << thx.ed-T*thx.en << endl;
-    exit(-1);
-  }
-
-  mun_full=mun;
-  mup_full=mup;
+  mun_full=neutron.m;
+  mup_full=proton.m;
 
   return 0;
 }
@@ -1588,8 +1581,8 @@ int eos_nuclei::eos_vary_dist
     for(size_t i=0;i<nuclei.size();i++) {
       nuclei[i].n=0.0;
     }
-    if (use_nrapr) {
-      sk_nrapr.calc_temp_e(neutron,proton,T,thx);
+    if (use_skalt) {
+      sk_alt.calc_temp_e(neutron,proton,T,thx);
     } else {
       free_energy_density(neutron,proton,T,thx);
     }
@@ -1758,8 +1751,8 @@ int eos_nuclei::eos_vary_dist
     for(size_t i=0;i<nuclei.size();i++) {
       nuclei[i].n=0.0;
     }
-    if (use_nrapr) {
-      sk_nrapr.calc_temp_e(neutron,proton,T,thy);
+    if (use_skalt) {
+      sk_alt.calc_temp_e(neutron,proton,T,thy);
     } else {
       free_energy_density(neutron,proton,T,thy);
     }
@@ -2421,12 +2414,16 @@ int eos_nuclei::eos_fixed_dist
   double xn=pow(10.0,log_xn);
   double xp=pow(10.0,log_xp);
 
+  cout << "Fixme: nn and np not defined." << endl;
+  exit(-1);
+  double nn=1.0e10, np=1.0e10;
+  
   double kappa=1.0-nB/n0;
   double xi=kappa+nn/n0+np/n0;
   
   double sum_nuc=0.0;
   double f_c=0.0;
-  p_c_test=0.0;
+  //p_c_test=0.0;
   ubvector fnuc(n_nuclei), en(n_nuclei), xx(n_nuclei);
   f=0.0;
   thx.en=0.0;
@@ -2459,8 +2456,8 @@ int eos_nuclei::eos_fixed_dist
     // Coulomb contribution to pressure for nuclei
     xx[i]=cbrt(nB*Ye/n0*nuclei[i].A/nuclei[i].Z);
     double rA=cbrt(3.0*nuclei[i].A/4.0/pi/n0);
-    p_c_test+=-0.6*nuclei[i].n*nuclei[i].Z*nuclei[i].Z*fine_structure/rA*
-      (0.5*xx[i]-0.5*pow(xx[i],3.0));
+    //p_c_test+=-0.6*nuclei[i].n*nuclei[i].Z*nuclei[i].Z*fine_structure/rA*
+    //(0.5*xx[i]-0.5*pow(xx[i],3.0));
     double Ecoul=0.0;
     Ecoul=-0.6*nuclei[i].Z*nuclei[i].Z*fine_structure/rA*
       (1.5*xx[i]-0.5*pow(xx[i],3.0));
@@ -2478,8 +2475,6 @@ int eos_nuclei::eos_fixed_dist
   thx.en+=xi*th_gas.en+sum_nuc*log(kappa);
   thx.ed=f+T*thx.en;
   thx.pr=th_gas.pr+sum_nuc*T/kappa;//+p_c_test;
-  mun=mun_gas+1.0/kappa*sum_nuc*T/n0;
-  mup=mup_gas+1.0/kappa*sum_nuc*T/n0;
 
   if (!std::isfinite(f)) {
     cout << "Free energy not finite." << endl;
@@ -2491,14 +2486,8 @@ int eos_nuclei::eos_fixed_dist
     return 6;
   }
 
-  // Check thermodynamic identity
-  if (loc_verbose>1) {
-    cout << "Thermodynamic identity: " << thx.ed+thx.pr << " "
-	 << mun*nB*(1.0-Ye)+mup*nB*Ye+T*thx.en << endl;
-  }
-
-  mun_full=mun;
-  mup_full=mup;
+  mun_full=neutron.m;
+  mup_full=proton.m;
 
   if (loc_verbose==8) {
     char ch;
@@ -2539,8 +2528,8 @@ int eos_nuclei::eos_vary_ZN
     for(size_t i=0;i<6;i++) {
       nuclei[i].n=0.0;
     }
-    if (use_nrapr) {
-      sk_nrapr.calc_temp_e(neutron,proton,T,thx);
+    if (use_skalt) {
+      sk_alt.calc_temp_e(neutron,proton,T,thx);
     } else {
       free_energy_density(neutron,proton,T,thx);
     }
@@ -2895,20 +2884,20 @@ int eos_nuclei::select_high_T(int option) {
     eos_Tcorr=&sk_Tcorr;
   } else if (option==1) {
     // NRAPR from Steiner et al. (2005)
-    sk_Tcorr.t0=sk_nrapr.t0;
-    sk_Tcorr.t1=sk_nrapr.t1;
-    sk_Tcorr.t2=sk_nrapr.t2;
-    sk_Tcorr.t3=sk_nrapr.t3;
-    sk_Tcorr.x0=sk_nrapr.x0;
-    sk_Tcorr.x1=sk_nrapr.x1;
-    sk_Tcorr.x2=sk_nrapr.x2;
-    sk_Tcorr.x3=sk_nrapr.x3;
-    sk_Tcorr.alpha=sk_nrapr.alpha;
-    sk_Tcorr.a=sk_nrapr.a;
-    sk_Tcorr.b=sk_nrapr.b;
-    sk_Tcorr.W0=sk_nrapr.W0;
-    sk_Tcorr.b4=sk_nrapr.b4;
-    sk_Tcorr.b4p=sk_nrapr.b4p;
+    sk_Tcorr.t0=sk_alt.t0;
+    sk_Tcorr.t1=sk_alt.t1;
+    sk_Tcorr.t2=sk_alt.t2;
+    sk_Tcorr.t3=sk_alt.t3;
+    sk_Tcorr.x0=sk_alt.x0;
+    sk_Tcorr.x1=sk_alt.x1;
+    sk_Tcorr.x2=sk_alt.x2;
+    sk_Tcorr.x3=sk_alt.x3;
+    sk_Tcorr.alpha=sk_alt.alpha;
+    sk_Tcorr.a=sk_alt.a;
+    sk_Tcorr.b=sk_alt.b;
+    sk_Tcorr.W0=sk_alt.W0;
+    sk_Tcorr.b4=sk_alt.b4;
+    sk_Tcorr.b4p=sk_alt.b4p;
     eos_Tcorr=&sk_Tcorr;
   } else if (option>=2 && option<=5) {
     
@@ -6136,8 +6125,8 @@ int eos_nuclei::mcarlo_nuclei(std::vector<std::string> &sv, bool itive_com) {
       neutron.n=nB_arr[k]*(1.0-Ye_arr[k]);
       proton.n=nB_arr[k]*Ye_arr[k];
       double T=T_arr[k]/hc_mev_fm;
-      if (use_nrapr) {
-	line.push_back(sk_nrapr.calc_temp_e(neutron,proton,T,th2)/
+      if (use_skalt) {
+	line.push_back(sk_alt.calc_temp_e(neutron,proton,T,th2)/
 		       nB_arr[k]*hc_mev_fm);
       } else {
 	line.push_back(free_energy_density(neutron,proton,T,th2)/

@@ -88,11 +88,14 @@ class eos_nuclei : public eos {
 
 public:
 
+  /// \name Constructor and destructor
+  //@{
   eos_nuclei();
 
   virtual ~eos_nuclei();
+  //@}
 
-  /// \name Grid
+  /// \name Grid specification
   //@{
   size_t n_nB2;
   size_t n_Ye2;
@@ -100,50 +103,54 @@ public:
   std::vector<double> nB_grid2;
   std::vector<double> Ye_grid2;
   std::vector<double> T_grid2;
+  std::string nB_grid_spec;
+  std::string Ye_grid_spec;
+  std::string T_grid_spec;
   //@}
 
-  /// Desc
-  int fd_A_max;
-  
+  /// \name Other internal objects
+  //@{
+  /// Dictionary for mapping buffers to physical quantities
+  o2scl::vec_index vi;
+
   /// True if an EOS is currently loaded
   bool loaded;
 
-  /// Ranges for randomly selected ranges
+  /** \brief Ranges for randomly selected ranges in 
+      \ref eos_fixed_dist()
+   */
   std::vector<double> fd_rand_ranges;
 
-  /// Fiducial value for solver tolerance
-  double mh_tol_rel;
-  
-  /** \brief Load nuclear masses
-   */
-  void load_nuclei();
-  
-  /** \brief Load nuclear masses
-   */
-  void write_nuclei(std::string fname);
-  
-  /// External guess
-  std::string ext_guess;
-  
   /** \brief Object for sending slack messages
    */
   o2scl::slack_messenger slack;
 
-  /// Virial solver used in \ref check_virial()
-  virial_solver_deriv vsd;
-  
-  /// Integrator
-  o2scl::inte_qag_gsl<> iqg;
-
-  /// Desc
-  void compute_X(double nB, ubvector &X);
-  
   /** \brief List of electron fractions to examine for computing
    */
   std::string Ye_list;
+  //@}
+
+  /// \name Other functions
+  //@{
+  /** \brief Use results lower densities to provide initial 
+      guesses to higher densities
+   */
+  int increase_density(std::vector<std::string> &sv, bool itive_com);
+
+  /** \brief Create a tensor which contains the results of \f$ Z/A \f$
+   */
+  int create_ZoA(std::vector<std::string> &sv, bool itive_com);
+
+  /** \brief Monte Carlo results with nuclei
+   */
+  int mcarlo_nuclei(std::vector<std::string> &sv, bool itive_com);
+
+  /** \brief Monte Carlo results with nuclei (version 2)
+   */
+  int mcarlo_nuclei2(std::vector<std::string> &sv, bool itive_com);
   
-  /// Extended Skyrme model for finite-temperature corrections
-  eos_had_skyrme_ext skyrme_ext;
+  /// Compute the baryon number fractions and put them in \c X
+  void compute_X(double nB, ubvector &X);
   
   /** \brief Select high-temperature EOS
       
@@ -161,7 +168,19 @@ public:
   /** \brief Command-line interface for selection of the high-temperature EOS
    */
   int select_high_T_cl(std::vector<std::string> &sv, bool itive_com);
+  //@}
   
+  /// \name Other internal physics objects
+  //@{
+  /// Virial solver used in \ref check_virial()
+  virial_solver_deriv vsd;
+
+  /// Extended Skyrme model for finite-temperature corrections
+  eos_had_skyrme_ext skyrme_ext;
+  //@}
+  
+  /// \name Nuclear masses and their fits
+  //@{
   /** \brief Fit nuclear masses
    */
   int fit_frdm(std::vector<std::string> &sv,
@@ -186,17 +205,7 @@ public:
   /** \brief Fit theory masses
    */
   o2scl::nucmass_fit nm_fit;
-
-  /// Desc (default 2.25)
-  double max_ratio;
-  
-  /** \brief The number of neutrons in the nucleus
-   */
-  size_t nucN;
-
-  /** \brief The number of protons in the nucleus
-   */
-  size_t nucZ;
+  //@}
 
   /// \name Nucleus objects
   //@{
@@ -209,6 +218,11 @@ public:
   o2scl::nucleus *nuc_heavy;
   //@}
 
+  /// \name Mathematical algorithm objects
+  //@{
+  /// Integrator
+  o2scl::inte_qag_gsl<> iqg;
+
   /** \brief Solver 
    */
   o2scl::mroot_hybrids<> mh;
@@ -216,6 +230,12 @@ public:
   /** \brief Bracketing solver
    */
   o2scl::root_brent_gsl<> rbg;
+  //@}
+
+  /// \name The nuclear partition function
+  //@{
+  /// Object which integrates partition functions
+  partition_func part_func;
   
   /** \brief Neutron separation energies (in MeV)
    */
@@ -237,39 +257,40 @@ public:
   /** \brief Coulomb energy (in \f$ \mathrm{fm}^{-1} \f$ )
    */
   ubvector Ec;
-  
-  /** \ Store the results of solve_nuclei
-   */
-  double mun_old, mup_old, mun, mup, nn, np;
-  double p_c, p_c_test;
-  double f0_nuc, p0_nuc, ed0_nuc, en0_nuc;
-  double f_total, Pr_total, en_total, ed_total;
-  bool heavy;
+  //@}
 
-  double file_update_time;
-  int file_update_iters;
-  o2scl::cli::parameter_double p_file_update_time;
-  o2scl::cli::parameter_int p_file_update_iters;
-  
+  /// \name Legacy variables
+  //@{
+  //double mun, mup;
+  //@}
+
   /// \name MPI message values
   //@{
   static const int message_continue=0;
   static const int message_done=1;
   //@}
 
-  /// \name Grid specification
+  /// \name Parameters modifiable by the CLI user
   //@{
-  std::string nB_grid_spec;
-  std::string Ye_grid_spec;
-  std::string T_grid_spec;
-  o2scl::cli::parameter_string p_nB_grid_spec;
-  o2scl::cli::parameter_string p_Ye_grid_spec;
-  o2scl::cli::parameter_string p_T_grid_spec;
-  //@}
+  /// The time between file updates in seconds (default 1800)
+  double file_update_time;
+  /// The number of iterations between file updates (default 1000)
+  int file_update_iters;
+    
+  /** \brief The maximum value of A for a fixed distribution
+      (when alg_mode is 4)
+  */
+  int fd_A_max;
+  
+  /// The maximum value of \f$ N/Z \f$ or \f$ Z/N \f$ (default 2.25)
+  double max_ratio;
+  
+  /// Fiducial value for solver tolerance (default \f$ 10^{-6} \f$)
+  double mh_tol_rel;
 
-  /// Dictionary for mapping buffers to physical quantities
-  o2scl::vec_index vi;
-
+  /// File containing external guess
+  std::string ext_guess;
+  
   /** \brief Function to describe the Z and N range 
 
       This is the function used to specify the range of Z and N which
@@ -340,6 +361,7 @@ public:
       Requires that derivs_computed is also true
    */
   bool with_leptons_loaded;
+  //@}
 
   /// \name Other parameter objects
   //@{
@@ -361,9 +383,16 @@ public:
   o2scl::cli::parameter_int p_function_verbose;
   o2scl::cli::parameter_string p_Ye_list;
   o2scl::cli::parameter_double p_max_ratio;
+  o2scl::cli::parameter_double p_file_update_time;
+  o2scl::cli::parameter_int p_file_update_iters;
+  o2scl::cli::parameter_string p_nB_grid_spec;
+  o2scl::cli::parameter_string p_Ye_grid_spec;
+  o2scl::cli::parameter_string p_T_grid_spec;
   //@}
 
-  /** \brief Compute derivatives analytically
+  /// \name EOS post-processing functions
+  //@{
+  /** \brief Compute derivatives numerically
    */
   int eos_deriv(std::vector<std::string> &sv, bool itive_com);
 
@@ -371,9 +400,36 @@ public:
    */
   int add_eg(std::vector<std::string> &sv, bool itive_com);
 
-  /** \brief Desc
+  /** \brief Edit an EOS table
    */
-  int maxwell_test(std::vector<std::string> &sv, bool itive_com);
+  int edit_data(std::vector<std::string> &sv, bool itive_com);
+
+  /** \brief Merge two tables
+   */
+  int merge_tables(std::vector<std::string> &sv, bool itive_com);
+
+  /** \brief Compare two tables
+   */
+  int compare_tables(std::vector<std::string> &sv, bool itive_com);
+
+  /** \brief Output the statistics on flag values for a table
+   */
+  int stats(std::vector<std::string> &sv, bool itive_com);
+
+  /** \brief Compute the EOS at one point
+   */
+  int point_nuclei(std::vector<std::string> &sv, bool itive_com);
+  //@}
+
+  /// \name Miscellaneous functions
+  //@{
+  /** \brief Setup the command-line interface
+   */
+  virtual void setup_cli(o2scl::cli &cli); 
+
+  /** \brief Initialize tensors for a new EOS table
+   */
+  void new_table();
 
   /** \brief Check the virial solver by using it to compute
       the EOS over a wide range of densities and temperatures
@@ -389,6 +445,22 @@ public:
   */
   int check_virial(std::vector<std::string> &sv, bool itive_com);
   
+  /** \brief Compute eos with nuclei by searching minimum
+   */
+  double f_min_search(size_t nvar,const ubvector &x,
+		      double nb, double ye, double T);
+  
+  /** \brief initialization for differential evolution approach
+   */		      
+  int init_function(size_t dim, const ubvector &x, ubvector &y);
+  
+  /** \brief Old Maxwell construction test
+   */
+  int maxwell_test(std::vector<std::string> &sv, bool itive_com);
+  //@}
+
+  /// \name Internal functions for the main algorithm
+  //@{
   /** \brief Construct an equation to solve for matter at low 
       densities
   */
@@ -404,18 +476,6 @@ public:
 			  double &mun_gas, double &mup_gas,
 			  o2scl::thermo &th_gas);
 
-  /** \brief Write results to an HDF5 file
-
-      \todo Eventually replace this with eos_sn_base::output()
-  */
-  int write_results(std::string fname);
-  
-  /** \brief Read results from an HDF5 file
-
-      \todo Eventually replace this with eos_sn_base::load()
-  */
-  int read_results(std::string fname);
-  
   /** \brief Construct equations to solve for a fixed baryon
       density and electron fraction (AWS version)
   */
@@ -464,7 +524,6 @@ public:
    int &A_max, int &NmZ_min, int &NmZ_max, bool dist_changed,
    bool no_nuclei);
 
-
   /** \brief Determine the EOS presuming a distribution of nuclei
       with fixed limits in A and \f$ N-Z \f$ but used to fix table only
   */
@@ -487,24 +546,46 @@ public:
   /** \brief Generate a table (MPI version)
    */
   int generate_table(std::vector<std::string> &sv, bool itive_com);
+  //@}
 
-  /** \brief Load an EOS table
+  /// \name File I/O functions
+  //@{
+  /** \brief Load an EOS table (CLI wrapper)
    */
   int load(std::vector<std::string> &sv, bool itive_com);
 
-  /** \brief Desc
-   */
-  int write_nuclei(std::vector<std::string> &sv,
-			       bool itive_com);
-  
-  /** \brief Output an EOS table to a file
+  /** \brief Output an EOS table to a file (CLI wrapper)
    */
   int output(std::vector<std::string> &sv, bool itive_com);
 
-  /** \brief Edit an EOS table
-   */
-  int edit_data(std::vector<std::string> &sv, bool itive_com);
+  /** \brief Write results to an HDF5 file
 
+      \future Eventually replace this with eos_sn_base::output()?
+  */
+  int write_results(std::string fname);
+  
+  /** \brief Read results from an HDF5 file
+
+      \future Eventually replace this with eos_sn_base::load()?
+  */
+  int read_results(std::string fname);
+  
+  /** \brief Write the nuclear masses to an HDF5 file
+   */
+  int write_nuclei(std::vector<std::string> &sv,
+			       bool itive_com);
+
+  /** \brief Load nuclear masses
+
+      This function is called in <tt>main()</tt>.
+   */
+  void load_nuclei();
+  
+  /** \brief Write nuclear masses to a file
+   */
+  void write_nuclei(std::string fname);
+  //@}
+  
   /// \name Flag values
   //@{
   /// Point is empty
@@ -519,45 +600,7 @@ public:
   static const int iflag_done=10;
   //@}
   
-  /** \brief Merge two tables
-   */
-  int merge_tables(std::vector<std::string> &sv, bool itive_com);
-
-  /** \brief Compare two tables
-   */
-  int compare_tables(std::vector<std::string> &sv, bool itive_com);
-
-  /** \brief Output the statistics on flag values for a table
-   */
-  int stats(std::vector<std::string> &sv, bool itive_com);
-
-  /** \brief Compute the EOS at one point
-   */
-  int point_nuclei(std::vector<std::string> &sv, bool itive_com);
-
-  /** \brief Use results lower densities to provide initial 
-      guesses to higher densities
-   */
-  int increase_density(std::vector<std::string> &sv, bool itive_com);
-
-  /** \brief Create a tensor which contains the results of \f$ Z/A \f$
-   */
-  int create_ZoA(std::vector<std::string> &sv, bool itive_com);
-
-  /** \brief Desc
-   */
-  int mcarlo_nuclei(std::vector<std::string> &sv, bool itive_com);
-  int mcarlo_nuclei2(std::vector<std::string> &sv, bool itive_com);
-
-  /** \brief Setup the command-line interface
-   */
-  virtual void setup_cli(o2scl::cli &cli); 
-
-  /** \brief Initialize tensors for a new EOS table
-   */
-  void new_table();
-  
-  /// \name Tensors for full output
+  /// \name Main EOS table storage
   //@{
   o2scl::tensor_grid3<> tg3_log_xn;
   o2scl::tensor_grid3<> tg3_log_xp;
@@ -587,18 +630,6 @@ public:
   o2scl::tensor_grid3<> tg3_NmZ_min;
   o2scl::tensor_grid3<> tg3_NmZ_max;
   //@}
-
-  /// Object which integrates partition functions
-  partition_func part_func;
-  
-  /** \brief Compute eos with nuclei by searching minimum
-   */
-  double f_min_search(size_t nvar,const ubvector &x,
-		      double nb, double ye, double T);
-  
-  /** \brief initialization for differential evolution approach
-   */		      
-  int init_function(size_t dim, const ubvector &x, ubvector &y);
   
 };
 
