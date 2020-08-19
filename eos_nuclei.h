@@ -255,13 +255,11 @@ public:
   ubvector vomega_prime;
   
   /** \brief Coulomb energy (in \f$ \mathrm{fm}^{-1} \f$ )
-   */
+      
+      This quantity is computed in \ref solve_nuclei() and then
+      used later in \ref eos_fixed_dist().
+  */
   ubvector Ec;
-  //@}
-
-  /// \name Legacy variables
-  //@{
-  //double mun, mup;
   //@}
 
   /// \name MPI message values

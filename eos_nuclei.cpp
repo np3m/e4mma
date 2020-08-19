@@ -1814,9 +1814,6 @@ int eos_nuclei::eos_fixed_dist
 
   int loc_verbose=function_verbose/100%10;
 
-  // Free energy density in units of 1/fm^4
-  double f;
-  
   double T_MeV=T*hc_mev_fm;
   double n0=0.16;
   // Chemical potentials for homogeneous matter
@@ -2412,7 +2409,7 @@ int eos_nuclei::eos_fixed_dist
   }
 
   // -------------------------------------------------------------
-  // Compute entropy density
+  // Compute free energy density and entropy density
   
   double xn=pow(10.0,log_xn);
   double xp=pow(10.0,log_xp);
@@ -2423,33 +2420,52 @@ int eos_nuclei::eos_fixed_dist
   // The total of the number density over all nuclei
   double sum_nuc=0.0;
 
-  // Begin with zero and then add up contributions to the entropy
-  // density
+  // Begin with zero and then add up contributions. Free energy
+  // density in fm^{-4} and entropy density in fm^{-3}
+  double f=0.0;
   thx.en=0.0;
   
   for (size_t i=0;i<n_nuclei;i++) {
     
-    double en_nucleus;
+    double en_nuc, fr_nuc;
     
     if (nuclei[i].n>1.0e-300) {
-      if (nuclei[i].n<1.0e-200) {
-	nuclei[i].n=0.0;
-	en_nucleus=0.0;
-      } else {
-	double lambda=sqrt(2.0*pi/nuclei[i].m/T);
-	en_nucleus=nuclei[i].n*(log(vomega[i]/nuclei[i].n/pow(lambda,3.0))+
-				5.0/2.0+vomega_prime[i]*T/vomega[i]);
+      double lambda=sqrt(2.0*pi/nuclei[i].m/T);
+      fr_nuc=-T*(log(vomega[i]/nuclei[i].n/pow(lambda,3.0))+1.0)*
+	nuclei[i].n;
+      en_nuc=nuclei[i].n*(log(vomega[i]/nuclei[i].n/pow(lambda,3.0))+
+			  5.0/2.0+vomega_prime[i]*T/vomega[i]);
+      if (!std::isfinite(fr_nuc)) {
+	if (nuclei[i].n<1.0e-200) {
+	  nuclei[i].n=0.0;
+	  fr_nuc=0.0;
+	  en_nuc=0.0;
+	} else {
+	  cout << "Nuclear free energy not finite." << endl;
+	  cout << nuclei[i].n << " " << nuclei[i].be << " " << lambda
+	       << " " << vomega[i] << endl;
+	  exit(-1);
+	}
       }
-      
-      // Coulomb contribution to pressure for nuclei
-      thx.en+=en_nucleus;
-      sum_nuc+=nuclei[i].n;
+    } else {
+      nuclei[i].n=0.0;
+      fr_nuc=0.0;
+      en_nuc=0.0;
     }
-
+    fr_nuc+=nuclei[i].n*nuclei[i].be;
+    sum_nuc+=nuclei[i].n;
+    
+    f+=fr_nuc+nuclei[i].n*Ec[i];
+    thx.en+=en_nuc;
   }
-  
-  thx.en+=xi*th_gas.en+sum_nuc*log(kappa);
 
+  // Final calculations of free energy density, entropy
+  // density, and energy density
+  
+  f+=xi*(th_gas.ed-T*th_gas.en)-T*sum_nuc*log(kappa);
+  thx.en+=xi*th_gas.en+sum_nuc*log(kappa);
+  thx.ed=f+T*thx.en;
+   
   // -------------------------------------------------------------
 
   // Nucleon chemical potentials, energy density, and pressure
