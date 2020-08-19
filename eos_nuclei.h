@@ -108,77 +108,6 @@ public:
   std::string T_grid_spec;
   //@}
 
-  /// \name Other internal objects
-  //@{
-  /// Dictionary for mapping buffers to physical quantities
-  o2scl::vec_index vi;
-
-  /// True if an EOS is currently loaded
-  bool loaded;
-
-  /** \brief Ranges for randomly selected ranges in 
-      \ref eos_fixed_dist()
-   */
-  std::vector<double> fd_rand_ranges;
-
-  /** \brief Object for sending slack messages
-   */
-  o2scl::slack_messenger slack;
-
-  /** \brief List of electron fractions to examine for computing
-   */
-  std::string Ye_list;
-  //@}
-
-  /// \name Other functions
-  //@{
-  /** \brief Use results lower densities to provide initial 
-      guesses to higher densities
-   */
-  int increase_density(std::vector<std::string> &sv, bool itive_com);
-
-  /** \brief Create a tensor which contains the results of \f$ Z/A \f$
-   */
-  int create_ZoA(std::vector<std::string> &sv, bool itive_com);
-
-  /** \brief Monte Carlo results with nuclei
-   */
-  int mcarlo_nuclei(std::vector<std::string> &sv, bool itive_com);
-
-  /** \brief Monte Carlo results with nuclei (version 2)
-   */
-  int mcarlo_nuclei2(std::vector<std::string> &sv, bool itive_com);
-  
-  /// Compute the baryon number fractions and put them in \c X
-  void compute_X(double nB, ubvector &X);
-  
-  /** \brief Select high-temperature EOS
-      
-      \note This function is called by the constructor and thus
-      cannot be virtual
-  */
-  int select_high_T(int option);
-
-  /** \brief Compute the second derivatives and the
-      eigenvalues of the stability matrix
-  */
-  int stability(std::vector<std::string> &sv,
-		bool itive_com);
-  
-  /** \brief Command-line interface for selection of the high-temperature EOS
-   */
-  int select_high_T_cl(std::vector<std::string> &sv, bool itive_com);
-  //@}
-  
-  /// \name Other internal physics objects
-  //@{
-  /// Virial solver used in \ref check_virial()
-  virial_solver_deriv vsd;
-
-  /// Extended Skyrme model for finite-temperature corrections
-  eos_had_skyrme_ext skyrme_ext;
-  //@}
-  
   /// \name Nuclear masses and their fits
   //@{
   /** \brief Fit nuclear masses
@@ -253,13 +182,6 @@ public:
       temperature
   */
   ubvector vomega_prime;
-  
-  /** \brief Coulomb energy (in \f$ \mathrm{fm}^{-1} \f$ )
-      
-      This quantity is computed in \ref solve_nuclei() and then
-      used later in \ref eos_fixed_dist().
-  */
-  ubvector Ec;
   //@}
 
   /// \name MPI message values
@@ -361,6 +283,89 @@ public:
   bool with_leptons_loaded;
   //@}
 
+  /// \name Other internal objects
+  //@{
+  /** \brief Coulomb energy (in \f$ \mathrm{fm}^{-1} \f$ )
+      
+      This quantity is computed in \ref solve_nuclei() and then
+      used later in \ref eos_fixed_dist().
+  */
+  ubvector Ec;
+  
+  /// Dictionary for mapping buffers to physical quantities
+  o2scl::vec_index vi;
+
+  /// True if an EOS is currently loaded
+  bool loaded;
+
+  /** \brief Ranges for randomly selected ranges in 
+      \ref eos_fixed_dist()
+   */
+  std::vector<double> fd_rand_ranges;
+
+  /** \brief Object for sending slack messages
+   */
+  o2scl::slack_messenger slack;
+
+  /** \brief List of electron fractions to examine for computing
+   */
+  std::string Ye_list;
+  //@}
+
+  /// \name Other internal physics objects
+  //@{
+  /// Virial solver used in \ref check_virial()
+  virial_solver_deriv vsd;
+
+  /// Extended Skyrme model for finite-temperature corrections
+  eos_had_skyrme_ext skyrme_ext;
+  //@}
+  
+  /// \name Flag values
+  //@{
+  /// Point is empty
+  static const int iflag_empty=0;
+  /// Point is in progress, and empty
+  static const int iflag_in_progress_empty=-1;
+  /// Point is in progress, and has initial guess 
+  static const int iflag_in_progress_with_guess=-5;
+  /// Point has initial guess
+  static const int iflag_guess=5;
+  /// Point is finished
+  static const int iflag_done=10;
+  //@}
+  
+  /// \name Main EOS table storage
+  //@{
+  o2scl::tensor_grid3<> tg3_log_xn;
+  o2scl::tensor_grid3<> tg3_log_xp;
+  o2scl::tensor_grid3<> tg3_flag;
+  o2scl::tensor_grid3<> tg3_F;
+  o2scl::tensor_grid3<> tg3_E;
+  o2scl::tensor_grid3<> tg3_P;
+  o2scl::tensor_grid3<> tg3_S;
+  o2scl::tensor_grid3<> tg3_Fint;
+  o2scl::tensor_grid3<> tg3_Eint;
+  o2scl::tensor_grid3<> tg3_Pint;
+  o2scl::tensor_grid3<> tg3_Sint;
+  o2scl::tensor_grid3<> tg3_mun;
+  o2scl::tensor_grid3<> tg3_mup;
+  o2scl::tensor_grid3<> tg3_Z;
+  o2scl::tensor_grid3<> tg3_A;
+  o2scl::tensor_grid3<> tg3_Xn;
+  o2scl::tensor_grid3<> tg3_Xp;
+  o2scl::tensor_grid3<> tg3_Xalpha;
+  o2scl::tensor_grid3<> tg3_Xnuclei;
+  o2scl::tensor_grid3<> tg3_Xd;
+  o2scl::tensor_grid3<> tg3_Xt;
+  o2scl::tensor_grid3<> tg3_XHe3;
+  o2scl::tensor_grid3<> tg3_XLi4;
+  o2scl::tensor_grid3<> tg3_A_min;
+  o2scl::tensor_grid3<> tg3_A_max;
+  o2scl::tensor_grid3<> tg3_NmZ_min;
+  o2scl::tensor_grid3<> tg3_NmZ_max;
+  //@}
+  
   /// \name Other parameter objects
   //@{
   o2scl::cli::parameter_bool p_show_all_nuclei;
@@ -388,76 +393,7 @@ public:
   o2scl::cli::parameter_string p_T_grid_spec;
   //@}
 
-  /// \name EOS post-processing functions
-  //@{
-  /** \brief Compute derivatives numerically
-   */
-  int eos_deriv(std::vector<std::string> &sv, bool itive_com);
-
-  /** \brief Add electrons and photons
-   */
-  int add_eg(std::vector<std::string> &sv, bool itive_com);
-
-  /** \brief Edit an EOS table
-   */
-  int edit_data(std::vector<std::string> &sv, bool itive_com);
-
-  /** \brief Merge two tables
-   */
-  int merge_tables(std::vector<std::string> &sv, bool itive_com);
-
-  /** \brief Compare two tables
-   */
-  int compare_tables(std::vector<std::string> &sv, bool itive_com);
-
-  /** \brief Output the statistics on flag values for a table
-   */
-  int stats(std::vector<std::string> &sv, bool itive_com);
-
-  /** \brief Compute the EOS at one point
-   */
-  int point_nuclei(std::vector<std::string> &sv, bool itive_com);
-  //@}
-
-  /// \name Miscellaneous functions
-  //@{
-  /** \brief Setup the command-line interface
-   */
-  virtual void setup_cli(o2scl::cli &cli); 
-
-  /** \brief Initialize tensors for a new EOS table
-   */
-  void new_table();
-
-  /** \brief Check the virial solver by using it to compute
-      the EOS over a wide range of densities and temperatures
-      
-      This function is particularly good for checking to make
-      sure that the virial part of the EOS does not lead to 
-      any discontinuities. 
-
-      For example, 
-
-      o2graph -read check_virial.o2 zn -Ye-slice 0.3 -set logz 1 \
-      -den-plot slice -show
-  */
-  int check_virial(std::vector<std::string> &sv, bool itive_com);
-  
-  /** \brief Compute eos with nuclei by searching minimum
-   */
-  double f_min_search(size_t nvar,const ubvector &x,
-		      double nb, double ye, double T);
-  
-  /** \brief initialization for differential evolution approach
-   */		      
-  int init_function(size_t dim, const ubvector &x, ubvector &y);
-  
-  /** \brief Old Maxwell construction test
-   */
-  int maxwell_test(std::vector<std::string> &sv, bool itive_com);
-  //@}
-
-  /// \name Internal functions for the main algorithm
+  /// \name Functions for the main algorithm
   //@{
   /** \brief Construct an equation to solve for matter at low 
       densities
@@ -475,7 +411,7 @@ public:
 			  o2scl::thermo &th_gas);
 
   /** \brief Construct equations to solve for a fixed baryon
-      density and electron fraction (AWS version)
+      density and electron fraction
   */
   int solve_nuclei(size_t nv, const ubvector &x, ubvector &y, double nb,
 		   double ye, double T, 
@@ -484,7 +420,7 @@ public:
   
   /** \brief Determine the EOS presuming a fixed single heavy nucleus
       and solving for the log (base 10) of the
-      free neutron and proton abundances (AWS version)
+      free neutron and proton abundances
   */
   int eos_fixed_ZN(double nb, double ye, double T,
 		   double &log_xn, double &log_xp,
@@ -546,6 +482,37 @@ public:
   int generate_table(std::vector<std::string> &sv, bool itive_com);
   //@}
 
+  /// \name EOS post-processing functions
+  //@{
+  /** \brief Compute derivatives numerically
+   */
+  int eos_deriv(std::vector<std::string> &sv, bool itive_com);
+
+  /** \brief Add electrons and photons
+   */
+  int add_eg(std::vector<std::string> &sv, bool itive_com);
+
+  /** \brief Edit an EOS table
+   */
+  int edit_data(std::vector<std::string> &sv, bool itive_com);
+
+  /** \brief Merge two tables
+   */
+  int merge_tables(std::vector<std::string> &sv, bool itive_com);
+
+  /** \brief Compare two tables
+   */
+  int compare_tables(std::vector<std::string> &sv, bool itive_com);
+
+  /** \brief Output the statistics on flag values for a table
+   */
+  int stats(std::vector<std::string> &sv, bool itive_com);
+
+  /** \brief Compute the EOS at one point
+   */
+  int point_nuclei(std::vector<std::string> &sv, bool itive_com);
+  //@}
+
   /// \name File I/O functions
   //@{
   /** \brief Load an EOS table (CLI wrapper)
@@ -584,49 +551,79 @@ public:
   void write_nuclei(std::string fname);
   //@}
   
-  /// \name Flag values
+  /// \name Miscellaneous functions
   //@{
-  /// Point is empty
-  static const int iflag_empty=0;
-  /// Point is in progress, and empty
-  static const int iflag_in_progress_empty=-1;
-  /// Point is in progress, and has initial guess 
-  static const int iflag_in_progress_with_guess=-5;
-  /// Point has initial guess
-  static const int iflag_guess=5;
-  /// Point is finished
-  static const int iflag_done=10;
-  //@}
+  /** \brief Setup the command-line interface
+   */
+  virtual void setup_cli(o2scl::cli &cli); 
+
+  /** \brief Initialize tensors for a new EOS table
+   */
+  void new_table();
+
+  /** \brief Check the virial solver by using it to compute
+      the EOS over a wide range of densities and temperatures
+      
+      This function is particularly good for checking to make
+      sure that the virial part of the EOS does not lead to 
+      any discontinuities. 
+
+      For example, 
+
+      o2graph -read check_virial.o2 zn -Ye-slice 0.3 -set logz 1 \
+      -den-plot slice -show
+  */
+  int check_virial(std::vector<std::string> &sv, bool itive_com);
   
-  /// \name Main EOS table storage
-  //@{
-  o2scl::tensor_grid3<> tg3_log_xn;
-  o2scl::tensor_grid3<> tg3_log_xp;
-  o2scl::tensor_grid3<> tg3_flag;
-  o2scl::tensor_grid3<> tg3_F;
-  o2scl::tensor_grid3<> tg3_E;
-  o2scl::tensor_grid3<> tg3_P;
-  o2scl::tensor_grid3<> tg3_S;
-  o2scl::tensor_grid3<> tg3_Fint;
-  o2scl::tensor_grid3<> tg3_Eint;
-  o2scl::tensor_grid3<> tg3_Pint;
-  o2scl::tensor_grid3<> tg3_Sint;
-  o2scl::tensor_grid3<> tg3_mun;
-  o2scl::tensor_grid3<> tg3_mup;
-  o2scl::tensor_grid3<> tg3_Z;
-  o2scl::tensor_grid3<> tg3_A;
-  o2scl::tensor_grid3<> tg3_Xn;
-  o2scl::tensor_grid3<> tg3_Xp;
-  o2scl::tensor_grid3<> tg3_Xalpha;
-  o2scl::tensor_grid3<> tg3_Xnuclei;
-  o2scl::tensor_grid3<> tg3_Xd;
-  o2scl::tensor_grid3<> tg3_Xt;
-  o2scl::tensor_grid3<> tg3_XHe3;
-  o2scl::tensor_grid3<> tg3_XLi4;
-  o2scl::tensor_grid3<> tg3_A_min;
-  o2scl::tensor_grid3<> tg3_A_max;
-  o2scl::tensor_grid3<> tg3_NmZ_min;
-  o2scl::tensor_grid3<> tg3_NmZ_max;
+  /** \brief Use results lower densities to provide initial 
+      guesses to higher densities
+   */
+  int increase_density(std::vector<std::string> &sv, bool itive_com);
+
+  /** \brief Create a tensor which contains the results of \f$ Z/A \f$
+   */
+  int create_ZoA(std::vector<std::string> &sv, bool itive_com);
+
+  /** \brief Monte Carlo results with nuclei
+   */
+  int mcarlo_nuclei(std::vector<std::string> &sv, bool itive_com);
+
+  /** \brief Monte Carlo results with nuclei (version 2)
+   */
+  int mcarlo_nuclei2(std::vector<std::string> &sv, bool itive_com);
+  
+  /// Compute the baryon number fractions and put them in \c X
+  void compute_X(double nB, ubvector &X);
+  
+  /** \brief Select high-temperature EOS
+      
+      \note This function is called by the constructor and thus
+      cannot be virtual
+  */
+  int select_high_T(int option);
+
+  /** \brief Compute the second derivatives and the
+      eigenvalues of the stability matrix
+  */
+  int stability(std::vector<std::string> &sv,
+		bool itive_com);
+  
+  /** \brief Command-line interface for selection of the high-temperature EOS
+   */
+  int select_high_T_cl(std::vector<std::string> &sv, bool itive_com);
+
+  /** \brief Compute eos with nuclei by searching minimum
+   */
+  double f_min_search(size_t nvar,const ubvector &x,
+		      double nb, double ye, double T);
+  
+  /** \brief Initialization for differential evolution approach
+   */		      
+  int init_function(size_t dim, const ubvector &x, ubvector &y);
+  
+  /** \brief Old Maxwell construction test
+   */
+  int maxwell_test(std::vector<std::string> &sv, bool itive_com);
   //@}
   
 };

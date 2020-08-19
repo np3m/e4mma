@@ -13,7 +13,9 @@ current version of `O2scl
 <https://neutronstars.utk.edu/code/o2scl/index.html>`_ is required.
 
 You will need to manually edit the makefile to work with your system
-and then compile ``eos_nuclei`` in order to generate an EOS.
+and then compile ``eos_nuclei`` in order to generate an EOS. The
+homogeneous matter EOS from Du et al. (2019) has a separate executable
+``eos``, which can also be compiled.
 
 More documentation will be added as time permits.
 

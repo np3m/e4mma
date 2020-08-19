@@ -41,9 +41,6 @@ class virial_solver_deriv {
   
  protected:
   
-  /// Linear system solver
-  o2scl_linalg::linear_solver_LU<ubvector,ubmatrix> lsol;  
-
   // Generic polynomial solver
   o2scl::poly_real_coeff_gsl quart;
   
@@ -71,7 +68,9 @@ class virial_solver_deriv {
   double d2zpdnndnp;
   double d2zpdnp2;
   //@}
-  
+
+  /// \name Main functions
+  //@{
   /** \brief Solve for the fugacity given the density
    */
   virtual void solve_fugacity(double nn, double np,
@@ -84,15 +83,7 @@ class virial_solver_deriv {
 
     // At high densities or very low densities, just use the
     // non-interacting result
-
-    //std::cout << "Herex: " << nn << " " << np << " " << nnt << " "
-    //<< npt << std::endl;
-    
-    //if (nnt>100.0 || npt>100.0 || nnt<5.0e-6 || npt<5.0e-6) {
-    //if (nn+np>0.64 || nnt<5.0e-6 || npt<5.0e-6) {
     if (nnt<5.0e-6 || npt<5.0e-6) {
-      //std::cout << "Here4: " << nn << " " << np << " " << nnt << " "
-      //<< npt << std::endl;
       zn=nnt;
       zp=npt;
       return;
@@ -108,26 +99,13 @@ class virial_solver_deriv {
     double e=b_n*npt*npt/2.0/b_pn/b_pn;
     
     quart.solve_rc(a,b,c,d,e,res[0],res[1],res[2],res[3]);
-    /*
-      std::cout << "Here3: " << a << " " << b << " " << c << " "
-      << d << " " << e << std::endl;
-      std::cout << res[0] << " " << res[1] << " " << res[2] << " "
-      << res[3] << std::endl;
-    */
     
-    //std::cout << b_n << " " << b_pn << " ";
     std::vector<double> zp_list, zn_list;
     for(size_t k=0;k<4;k++) {
-      /*
-	std::cout << k << " " << (res[k].imag()==0) << " "
-	<< (res[k].real()>0.0) << " "
-	<< (res[k].real()<50.0) << std::endl;
-      */
       if (res[k].imag()==0.0 && res[k].real()>0.0 && res[k].real()<500.0) {
 	double r0, r1;
 	gsl_poly_solve_quadratic(2.0*b_n,2.0*res[k].real()*
 				 b_pn+1.0,-nnt,&r0,&r1);
-	//std::cout << "r0,r1: " << r0 << " " << r1 << std::endl;
 	if (r0>0.0 && r0<500.0) {
 	  if (r1>0.0 && r1<500.0) {
 	    O2SCL_ERR2("Unexpected pair of roots in ",
@@ -139,7 +117,6 @@ class virial_solver_deriv {
 	  zn_list.push_back(r0);
 	}
 	if (r1>0.0 && r1<500.0) {
-	  //std::cout << res[k] << "," << r1 << " ";
 	  zp_list.push_back(res[k].real());
 	  zn_list.push_back(r1);
 	}
@@ -170,9 +147,6 @@ class virial_solver_deriv {
       O2SCL_ERR2("Unexpected root multiplicity in ",
 		 "virial_solver_deriv::solve_fugacity().",o2scl::exc_einval);
     }
-    //std::cout << "zn,zp: " << zn << " " << zp << std::endl;
-    //std::cout << zn << " " << zp << " " << disc << " ";
-    //std::cout << std::endl;
     return;
   }
 
@@ -246,6 +220,7 @@ class virial_solver_deriv {
     
     return;
   }
+  //@}
 
 };
 
