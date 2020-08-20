@@ -2463,16 +2463,16 @@ int eos_nuclei::eos_fixed_dist
   // density, and energy density
   
   f+=xi*(th_gas.ed-T*th_gas.en)-T*sum_nuc*log(kappa);
+  cout << "Here: " << f << endl;
   thx.en+=xi*th_gas.en+sum_nuc*log(kappa);
   thx.ed=f+T*thx.en;
    
   // -------------------------------------------------------------
 
-  // Nucleon chemical potentials, energy density, and pressure
+  // Nucleon chemical potentials and pressure
   // are not currently computed 
   mun_full=neutron.m;
   mup_full=proton.m;
-  thx.ed=0.0;
   thx.pr=0.0;
 
   if (loc_verbose==8) {
@@ -3308,7 +3308,7 @@ int eos_nuclei::read_results(std::string fname) {
 
   wordexp_single_file(fname);
 
-  hf.open_or_create(fname);
+  hf.open(fname);
 
   // nB, Ye, T grid
 
@@ -3640,7 +3640,7 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
 
     if (ret!=0) {
       cout << "Point failed." << endl;
-    } else {
+    } else if (loaded) {
       cout << "Point succeeded. Storing." << endl;
 
       ubvector X;
@@ -3648,7 +3648,16 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
       
       store_point(inB,iYe,iT,nB,Ye,T,thx,log_xn,log_xp,Zbar,Nbar,
 		  mun_full,mup_full,X,A_min,A_max,NmZ_min,NmZ_max,10.0);
+    } else {
+      cout << "Point succeeded." << endl;
     }
+
+    if (ret==0) {
+      cout << "log_xn: " << log_xn << endl;
+      cout << "log_xp: " << log_xp << endl;
+      cout << "f: " << thx.ed-T*thx.en << endl;
+      cout << "F: " << (thx.ed-T*thx.en)/nB << endl;
+    }      
 
     if (fd_rand_ranges.size()>0) fd_rand_ranges.clear();
     
@@ -3657,25 +3666,25 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
   }
 
   // Print out the results
-  if (loaded && ret==0) {
-    cout << "log_xn: " << log_xn << endl;
-    cout << "log_xp: " << log_xp << endl;
-    cout << "Z: " << tg3_Z.get(inB,iYe,iT) << endl;
-    cout << "A: " << tg3_A.get(inB,iYe,iT) << endl;
-    cout << "Fint: " << tg3_Fint.get(inB,iYe,iT) << endl;
-    cout << "Sint: " << tg3_Sint.get(inB,iYe,iT) << endl;
-    cout << "A_min: " << tg3_A_min.get(inB,iYe,iT) << endl;
-    cout << "A_max: " << tg3_A_max.get(inB,iYe,iT) << endl;
-    cout << "NmZ_min: " << tg3_NmZ_min.get(inB,iYe,iT) << endl;
-    cout << "NmZ_max: " << tg3_NmZ_max.get(inB,iYe,iT) << endl;
-    cout << "Xn: " << tg3_Xn.get(inB,iYe,iT) << endl;
-    cout << "Xp: " << tg3_Xp.get(inB,iYe,iT) << endl;
-    cout << "Xd: " << tg3_Xd.get(inB,iYe,iT) << endl;
-    cout << "Xt: " << tg3_Xt.get(inB,iYe,iT) << endl;
-    cout << "XHe3: " << tg3_XHe3.get(inB,iYe,iT) << endl;
-    cout << "XLi4: " << tg3_XLi4.get(inB,iYe,iT) << endl;
-    cout << "Xalpha: " << tg3_Xalpha.get(inB,iYe,iT) << endl;
-    cout << "Xnuclei: " << tg3_Xnuclei.get(inB,iYe,iT) << endl;
+  if (ret==0) {
+    if (loaded) {
+      cout << "Z: " << tg3_Z.get(inB,iYe,iT) << endl;
+      cout << "A: " << tg3_A.get(inB,iYe,iT) << endl;
+      cout << "Fint: " << tg3_Fint.get(inB,iYe,iT) << endl;
+      cout << "Sint: " << tg3_Sint.get(inB,iYe,iT) << endl;
+      cout << "A_min: " << tg3_A_min.get(inB,iYe,iT) << endl;
+      cout << "A_max: " << tg3_A_max.get(inB,iYe,iT) << endl;
+      cout << "NmZ_min: " << tg3_NmZ_min.get(inB,iYe,iT) << endl;
+      cout << "NmZ_max: " << tg3_NmZ_max.get(inB,iYe,iT) << endl;
+      cout << "Xn: " << tg3_Xn.get(inB,iYe,iT) << endl;
+      cout << "Xp: " << tg3_Xp.get(inB,iYe,iT) << endl;
+      cout << "Xd: " << tg3_Xd.get(inB,iYe,iT) << endl;
+      cout << "Xt: " << tg3_Xt.get(inB,iYe,iT) << endl;
+      cout << "XHe3: " << tg3_XHe3.get(inB,iYe,iT) << endl;
+      cout << "XLi4: " << tg3_XLi4.get(inB,iYe,iT) << endl;
+      cout << "Xalpha: " << tg3_Xalpha.get(inB,iYe,iT) << endl;
+      cout << "Xnuclei: " << tg3_Xnuclei.get(inB,iYe,iT) << endl;
+    }
   }
 
   if (alg_mode>=2 && show_all_nuclei) {
