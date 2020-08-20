@@ -2423,8 +2423,10 @@ int eos_nuclei::eos_fixed_dist
   // Begin with zero and then add up contributions. Free energy
   // density in fm^{-4} and entropy density in fm^{-3}
   double f=0.0;
+
   thx.en=0.0;
-  
+
+  cout.precision(12);
   for (size_t i=0;i<n_nuclei;i++) {
     
     double en_nuc, fr_nuc;
@@ -2452,7 +2454,8 @@ int eos_nuclei::eos_fixed_dist
       fr_nuc=0.0;
       en_nuc=0.0;
     }
-    fr_nuc+=nuclei[i].n*nuclei[i].be;
+    fr_nuc+=nuclei[i].n*nuclei[i].be+1.433e-05*
+      pow(nuclei[i].Z,2.39)/hc_mev_fm*nuclei[i].n;
     sum_nuc+=nuclei[i].n;
     
     f+=fr_nuc+nuclei[i].n*Ec[i];
@@ -2463,7 +2466,6 @@ int eos_nuclei::eos_fixed_dist
   // density, and energy density
   
   f+=xi*(th_gas.ed-T*th_gas.en)-T*sum_nuc*log(kappa);
-  cout << "Here: " << f << endl;
   thx.en+=xi*th_gas.en+sum_nuc*log(kappa);
   thx.ed=f+T*thx.en;
    
@@ -3520,6 +3522,8 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
   // Adjust to put the user-specified point on the grid
   if (loaded) {
 
+    flag=tg3_flag.get(inB,iYe,iT);
+    
     inB=vector_lookup(n_nB2,nB_grid2,nB);
     nB=nB_grid2[inB];
     iYe=vector_lookup(n_Ye2,Ye_grid2,Ye);
@@ -3557,7 +3561,6 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
 	 << log_xp << " " << nuc_Z1 << " " << nuc_N1 << endl;
     guess_provided=true;
   } else if (loaded) {
-    flag=tg3_flag.get(inB,iYe,iT);
     // If the flag is 'guess' or 'in progress with guess'
     if (flag>4.9 || fabs(flag+5)<0.01) {
       if (alg_mode==0 || alg_mode==1) {
@@ -3606,8 +3609,8 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
   int ret=0;
   
   // If necessary, compute the point
-  if (flag<10 || recompute==true) {
-    cout << "Computing point." << endl;
+  if (flag<9.9 || recompute==true) {
+    cout << "Computing point " << flag << " " << recompute << endl;
 
     if (loaded && inB>0 && inB<n_nB2-1 &&
 	tg3_flag.get(inB-1,iYe,iT)>9.9 &&
@@ -3656,7 +3659,9 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
       cout << "log_xn: " << log_xn << endl;
       cout << "log_xp: " << log_xp << endl;
       cout << "f: " << thx.ed-T*thx.en << endl;
-      cout << "F: " << (thx.ed-T*thx.en)/nB << endl;
+      cout << "F: " << (thx.ed-T*thx.en)/nB*hc_mev_fm << endl;
+      cout << "A: " << Zbar+Nbar << endl;
+      cout << "Z: " << Zbar << endl;
     }      
 
     if (fd_rand_ranges.size()>0) fd_rand_ranges.clear();
