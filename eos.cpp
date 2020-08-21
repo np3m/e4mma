@@ -1508,153 +1508,8 @@ double eos::dfdnp_total(fermion &n, fermion &p, double nn,
   return p.mu+electron.mu+p.m;
 }
 
-double eos::cs2_fixYe(fermion &n, fermion &p, double T, thermo &th) {
- 
-  double nn,pn;
-  deriv_gsl<> gd;
-  nn=n.n;
-  pn=p.n;
-  n.mu=n.m;
-  p.mu=p.m;
-  if (use_skalt) {
-    sk_alt.calc_temp_e(n,p,T,th);
-  } else {
-    free_energy_density(n,p,T,th);
-  }
-  thermo th1=th;
-  fermion n1=n,p1=p;
-  //double scale=1.0e03;
-  // Numerically compute required second derivatives
+double eos::cs2_func(fermion &n, fermion &p, double T, thermo &th) {
   
-  // d^2f/dnn^2
-  std::function<double(double)> dfdnn_totaldnnfunc=
-    std::bind(std::mem_fn<double(fermion &, fermion &, double,
-				 double, double, thermo &)>
-	      (&eos::dfdnn_total),
-	      this,std::ref(n),std::ref(p),std::placeholders::_1,
-	      pn,T,std::ref(th));
-  //gd.h=nn/scale;
-  double dfdnn_totaldnn=gd.deriv(nn,dfdnn_totaldnnfunc);
-  
-  // d^2f/dnn/dnp
-  std::function<double(double)> dfdnn_totaldnpfunc=
-    std::bind(std::mem_fn<double(fermion &, fermion &, double,
-				 double, double, thermo &)>
-	      (&eos::dfdnn_total),
-	      this,std::ref(n),std::ref(p),nn,std::placeholders::_1,T,
-	      std::ref(th));
-  //gd.h=pn/scale;
-  double dfdnn_totaldnp=gd.deriv(pn,dfdnn_totaldnpfunc);
-
-  // d^2f/dnn/dT
-  std::function<double(double)> dfdnn_totaldTfunc=
-    std::bind(std::mem_fn<double(fermion &, fermion &, double,
-				 double, double, thermo &)>
-	      (&eos::dfdnn_total),
-	      this,std::ref(n),std::ref(p),nn,pn,std::placeholders::_1,
-	      std::ref(th));
-  //gd.h=T/scale;
-  double dfdnn_totaldT=gd.deriv(T,dfdnn_totaldTfunc);
-
-  // d^2f/dnp/dnn
-  std::function<double(double)> dfdnp_totaldnnfunc=
-    std::bind(std::mem_fn<double(fermion &, fermion &, double,
-				 double, double, thermo &)>
-	      (&eos::dfdnp_total),
-	      this,std::ref(n),std::ref(p),std::placeholders::_1,pn,T,
-	      std::ref(th));
-  //gd.h=nn/scale;
-  double dfdnp_totaldnn=gd.deriv(nn,dfdnp_totaldnnfunc);
-
-  // d^2f/dnp^2
-  std::function<double(double)> dfdnp_totaldnpfunc=
-    std::bind(std::mem_fn<double(fermion &, fermion &, double,
-				 double, double, thermo &)>
-	      (&eos::dfdnp_total),
-	      this,std::ref(n),std::ref(p),nn,std::placeholders::_1,T,
-	      std::ref(th));
-  //gd.h=pn/scale;
-  double dfdnp_totaldnp=gd.deriv(pn,dfdnp_totaldnpfunc);
-
-  // d^2f/dnp/dT
-  std::function<double(double)> dfdnp_totaldTfunc=
-    std::bind(std::mem_fn<double(fermion &, fermion &, double,
-				 double, double, thermo &)>
-	      (&eos::dfdnp_total),
-	      this,std::ref(n),std::ref(p),nn,pn,std::placeholders::_1,
-	      std::ref(th));
-  //gd.h=T/scale;
-  double dfdnp_totaldT=gd.deriv(T,dfdnp_totaldTfunc);
-
-  // d^2f/dT^2
-  std::function<double(double)> dsdTfunc=
-    std::bind(std::mem_fn<double(fermion &, fermion &, double,
-				 double, double, thermo &)>
-	      (&eos::entropy),
-	      this,std::ref(n),std::ref(p),nn,pn,std::placeholders::_1,
-	      std::ref(th));
-  //gd.h=T/scale;
-  double dsdT=gd.deriv(T,dsdTfunc);
-
-  // d^2f/dT/dnn
-  std::function<double(double)> dsdnnfunc=
-    std::bind(std::mem_fn<double(fermion &, fermion &, double,
-				 double, double, thermo &)>
-	      (&eos::entropy),
-	      this,std::ref(n),std::ref(p),std::placeholders::_1,pn,T,
-	      std::ref(th));
-  //gd.h=nn/scale;
-  double dsdnn=gd.deriv(nn,dsdnnfunc);
-  
-  // d^2f/dT/dnp
-  std::function<double(double)> dsdnpfunc=
-    std::bind(std::mem_fn<double(fermion &, fermion &, double,
-				 double, double, thermo &)>
-	      (&eos::entropy),
-	      this,std::ref(n),std::ref(p),nn,std::placeholders::_1,T,
-	      std::ref(th));
-  //gd.h=pn/scale;
-  double dsdnp=gd.deriv(pn,dsdnpfunc);
-
-  double dfdnbdT, dfdnedT, dfdnbdne, dfdTdT, dfdnbdnb, dfdnedne;
-  dfdnbdT=dfdnn_totaldT;
-  dfdnedT=dfdnp_totaldT-dfdnn_totaldT;
-  dfdnbdne=dfdnn_totaldnp-dfdnn_totaldnn;
-  dfdTdT=-dsdT;
-  dfdnbdnb=dfdnn_totaldnn;
-  dfdnedne=dfdnp_totaldnp+dfdnn_totaldnn-dfdnp_totaldnn-dfdnn_totaldnp;
-
-  double dfdnp_total1=dfdnp_total(n,p,nn,pn,T,th);
-  double dfdnn_total1=dfdnn_total(n,p,nn,pn,T,th);
-  double mul,mub,s,ed1,nb;
-  nb=n1.n+p1.n;
-  mub=dfdnn_total1;
-  mul=dfdnp_total1-dfdnn_total1;
-  s=entropy(n1,p1,n1.n,p1.n,T,th1);
-  ed1=ed(n1,p1,n1.n,p1.n,T,th1);
-
-  double ne=p1.n;
-
-  // Compute dPdNb
-  double dPdnb=dfdnbdnb*nb+dfdnbdne*ne;
-
-  // Compute dPdNe
-  double dPdne=dfdnbdne*nb+dfdnedne*ne;
-
-  // Compute dPdT
-  double dPdT=dfdnbdT*nb+dfdnedT*ne+s;
-
-  double pr=mul*ne+mub*nb+T*s-ed1;
-  
-  double cs_sq=(-nb*dPdnb*dfdTdT-ne*dPdne*dfdTdT+dPdT*
-		(dfdnbdT*nb+dfdnedT*ne+s))/((pr+ed1)*(-dfdTdT));
-
-  return cs_sq;
-}
-
-double eos::cs2_fixYe_alt(fermion &n, fermion &p, double T,
-			  thermo &th) {
- 
   deriv_gsl<> gd;
   double nn=n.n;
   double np=p.n;
@@ -1732,155 +1587,6 @@ double eos::cs2_fixYe_alt(fermion &n, fermion &p, double T,
 		np*np*(f_npnp-f_npT*f_npT/f_TT)-
 		2.0*en*(nn*f_nnT/f_TT+np*f_npT/f_TT)-en*en/f_TT)/den;
 
-  return cs_sq;
-}
-
-double eos::cs2_fixmuL(fermion &n, fermion &p, double T, thermo &th) {
- 
-  double nn,pn;
-  deriv_gsl<> gd;
-  nn=n.n;
-  pn=p.n;
-  n.mu=n.m;
-  p.mu=p.m;
-  if (use_skalt) {
-    sk_alt.calc_temp_e(n,p,T,th);
-  } else {
-    free_energy_density(n,p,T,th);
-  }
-  thermo th1=th;
-  fermion n1=n, p1=p;
-
-  // Numerically compute required second derivatives
-  
-  // d^2f/dnn^2
-  std::function<double(double)> dfdnn_totaldnnfunc=
-    std::bind(std::mem_fn<double(fermion &, fermion &, double,
-				 double, double, thermo &)>
-	      (&eos::dfdnn_total),
-	      this,std::ref(n),std::ref(p),std::placeholders::_1,
-	      pn,T,std::ref(th));
-  double dfdnn_totaldnn=gd.deriv(nn,dfdnn_totaldnnfunc);
-  
-  // d^2f/dnn/dnp
-  std::function<double(double)> dfdnn_totaldnpfunc=
-    std::bind(std::mem_fn<double(fermion &, fermion &, double,
-				 double, double, thermo &)>
-	      (&eos::dfdnn_total),
-	      this,std::ref(n),std::ref(p),nn,std::placeholders::_1,T,
-	      std::ref(th));
-  double dfdnn_totaldnp=gd.deriv(pn,dfdnn_totaldnpfunc);
-
-  // d^2f/dnn/dT
-  std::function<double(double)> dfdnn_totaldTfunc=
-    std::bind(std::mem_fn<double(fermion &, fermion &, double,
-				 double, double, thermo &)>
-	      (&eos::dfdnn_total),
-	      this,std::ref(n),std::ref(p),nn,pn,std::placeholders::_1,
-	      std::ref(th));
-  double dfdnn_totaldT=gd.deriv(T,dfdnn_totaldTfunc);
-
-  // d^2f/dnp/dnn
-  std::function<double(double)> dfdnp_totaldnnfunc=
-    std::bind(std::mem_fn<double(fermion &, fermion &, double,
-				 double, double, thermo &)>
-	      (&eos::dfdnp_total),
-	      this,std::ref(n),std::ref(p),std::placeholders::_1,pn,T,
-	      std::ref(th));
-  double dfdnp_totaldnn=gd.deriv(nn,dfdnp_totaldnnfunc);
-
-  // d^2f/dnp^2
-  std::function<double(double)> dfdnp_totaldnpfunc=
-    std::bind(std::mem_fn<double(fermion &, fermion &, double,
-				 double, double, thermo &)>
-	      (&eos::dfdnp_total),
-	      this,std::ref(n),std::ref(p),nn,std::placeholders::_1,T,
-	      std::ref(th));
-  double dfdnp_totaldnp=gd.deriv(pn,dfdnp_totaldnpfunc);
-
-  // d^2f/dnp/dT
-  std::function<double(double)> dfdnp_totaldTfunc=
-    std::bind(std::mem_fn<double(fermion &, fermion &, double,
-				 double, double, thermo &)>
-	      (&eos::dfdnp_total),
-	      this,std::ref(n),std::ref(p),nn,pn,std::placeholders::_1,
-	      std::ref(th));
-  double dfdnp_totaldT=gd.deriv(T,dfdnp_totaldTfunc);
-
-  // d^2f/dT^2
-  std::function<double(double)> dsdTfunc=
-    std::bind(std::mem_fn<double(fermion &, fermion &, double,
-				 double, double, thermo &)>
-	      (&eos::entropy),
-	      this,std::ref(n),std::ref(p),nn,pn,std::placeholders::_1,
-	      std::ref(th));
-  double dsdT=gd.deriv(T,dsdTfunc);
-
-  // d^2f/dT/dnn
-  std::function<double(double)> dsdnnfunc=
-    std::bind(std::mem_fn<double(fermion &, fermion &, double,
-				 double, double, thermo &)>
-	      (&eos::entropy),
-	      this,std::ref(n),std::ref(p),std::placeholders::_1,pn,T,
-	      std::ref(th));
-  double dsdnn=gd.deriv(nn,dsdnnfunc);
-  
-  // d^2f/dT/dnp
-  std::function<double(double)> dsdnpfunc=
-    std::bind(std::mem_fn<double(fermion &, fermion &, double,
-				 double, double, thermo &)>
-	      (&eos::entropy),
-	      this,std::ref(n),std::ref(p),nn,std::placeholders::_1,T,
-	      std::ref(th));
-  double dsdnp=gd.deriv(pn,dsdnpfunc);
-
-  double dfdnbdT, dfdnedT, dfdnbdne, dfdTdT, dfdnbdnb, dfdnedne;
-  dfdnbdT=dfdnn_totaldT;
-  dfdnedT=dfdnp_totaldT-dfdnn_totaldT;
-  dfdnbdne=dfdnn_totaldnp-dfdnn_totaldnn;
-  dfdTdT=-dsdT;
-  dfdnbdnb=dfdnn_totaldnn;
-  dfdnedne=dfdnp_totaldnp+dfdnn_totaldnn-dfdnp_totaldnn-dfdnn_totaldnp;
-
-  double dfdnp_total1=dfdnp_total(n,p,nn,pn,T,th);
-  double dfdnn_total1=dfdnn_total(n,p,nn,pn,T,th);
-  double mul,mub,s,ed1,nb;
-  nb=n1.n+p1.n;
-  mub=dfdnn_total1;
-  mul=dfdnp_total1-dfdnn_total1;
-  s=entropy(n1,p1,n1.n,p1.n,T,th1);
-  ed1=ed(n1,p1,n1.n,p1.n,T,th1);
-  
-  double ne=p1.n;
-
-  // Compute dSdTVmulNb/V
-  double dSdTVmulNb=(-dfdTdT*dfdnedne+dfdnedT*dfdnedT)/dfdnedne;
-  
-  // Compute dSdVTmulNb
-  double dSdVTmulNb=(s*dfdnedne+dfdnedT*dfdnedne*ne+dfdnbdT*dfdnedne*nb-
-		     dfdnedT*dfdnedne*ne-dfdnedT*dfdnbdne*nb)/dfdnedne;
- 
-  // Compute dpdVTmulNb*V
-  double dpdVTmulNb=(-dfdnbdnb*dfdnedne+dfdnbdne*dfdnbdne)*nb*nb/dfdnedne;
-
-  // Compute dpdTVmulNb
-  double dpdTVmulNb=dSdVTmulNb;
-
-  // Compute dpdVSmulNb*V;
-  double dpdVSmulNb=(dpdVTmulNb*dSdTVmulNb-dpdTVmulNb*dSdVTmulNb)/dSdTVmulNb;
- 
-  // Compute dNedVSmulNb
-  double dNedVSmulNb=(dfdTdT*(dfdnedne*ne+dfdnbdne*nb)-
-		      (dfdnedT*ne+dfdnbdT*nb)*dfdnedT)/
-    (-dfdnedT*dfdnedT+dfdTdT*dfdnedne);
-
-  double pr=mul*ne+mub*nb+T*s-ed1;
-  
-  // Compute depsilondVsmulNb*V
-  double depsilondVSmulNb=-pr-ed1+mul*dNedVSmulNb;
-  
-  double cs_sq=dpdVSmulNb/depsilondVSmulNb;
-  
   return cs_sq;
 }
 
@@ -2000,8 +1706,8 @@ int eos::table_nB(std::vector<std::string> &sv, bool itive_com) {
       t.set(i,j,"g",g_virial);
       t.set(i,j,"msn",neutron.ms/neutron.m);
       t.set(i,j,"msp",proton.ms/proton.m);
-      double cs2=cs2_fixYe(neutron,proton,T_grid[j]/hc_mev_fm,th2);
-      t.set(i,j,"cs2",cs2);
+      double cs2_val=cs2_func(neutron,proton,T_grid[j]/hc_mev_fm,th2);
+      t.set(i,j,"cs2",cs2_val);
     }
   }
 
@@ -2111,8 +1817,8 @@ int eos::table_full(std::vector<std::string> &sv, bool itive_com) {
 	t_mun.set(i,j,k,hc_mev_fm*neutron.mu);
 	t_mup.set(i,j,k,hc_mev_fm*proton.mu);
 
-	double cs2=cs2_fixYe(neutron,proton,T_grid[k]/hc_mev_fm,th2);
-	t_cs2.set(i,j,k,cs2);
+	double cs2_val=cs2_func(neutron,proton,T_grid[k]/hc_mev_fm,th2);
+	t_cs2.set(i,j,k,cs2_val);
 	t_mue.set(i,j,k,eso.electron.mu);
 
 	if (!std::isfinite(th2.ed)) {
@@ -3574,7 +3280,7 @@ int eos::select_internal(int i_ns_loc, int i_skyrme_loc,
 	for(double Tx=1.0/hc_mev_fm;Tx<10.01/hc_mev_fm;Tx+=9.0/hc_mev_fm) {
 	  neutron.n=nbx*(1.0-yex);
 	  proton.n=nbx*yex;
-	  double cs2x=cs2_fixYe(neutron,proton,Tx,th2);
+	  double cs2x=cs2_func(neutron,proton,Tx,th2);
 	  if (cs2x<0.0) {
 	    model_selected=false;
 	    if (true) {

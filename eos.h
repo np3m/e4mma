@@ -202,23 +202,10 @@ class eos {
   double ed(o2scl::fermion &n, o2scl::fermion &p,
 	    double nn, double np, double T, o2scl::thermo &th);
 
-  /** \brief Compute the squared speed of sound at 
-      fixed \f$ Y_e \f$
+  /** \brief Compute the squared speed of sound 
   */
-  double cs2_fixYe(o2scl::fermion &n, o2scl::fermion &p, double T,
-		   o2scl::thermo &th);
-
-  /** \brief Compute the squared speed of sound at 
-      fixed \f$ Y_e \f$, alternate version
-  */
-  double cs2_fixYe_alt(o2scl::fermion &n, o2scl::fermion &p, double T,
-		       o2scl::thermo &th);
-  
-  /** \brief Compute the squared speed of sound at fixed
-      \f$ \mu_L \f$
-  */
-  double cs2_fixmuL(o2scl::fermion &n, o2scl::fermion &p, double T,
-		    o2scl::thermo &th);
+  double cs2_func(o2scl::fermion &n, o2scl::fermion &p, double T,
+		  o2scl::thermo &th);
   //@}
 
   /// \name Internal variables [protected]

@@ -663,6 +663,165 @@ int eos_nuclei::eos_deriv(std::vector<std::string> &sv,
     
 }
 
+int eos_nuclei::eos_second_deriv(std::vector<std::string> &sv,
+				 bool itive_com) {
+
+  std::cout << "Computing second derivatives." << endl;
+  
+  // -----------------------------------------------------
+  // Read table
+    
+  if (derivs_computed==false) {
+    cerr << "Fail." << endl;
+  }
+
+  tensor_grid3<> tg3_dmundnB;
+  tensor_grid3<> tg3_dmundYe;
+  tensor_grid3<> tg3_dmundT;
+  tensor_grid3<> tg3_dmupdYe;
+  tensor_grid3<> tg3_dmupdT;
+  tensor_grid3<> tg3_dsdT;
+  
+  derivs_computed=true;
+  
+  size_t st[3]={n_nB2,n_Ye2,n_T2};
+  vector<vector<double> > grid={nB_grid2,Ye_grid2,Y_grid2};
+  
+  tg3_dmundnB.resize(3,st);
+  tg3_dmundYe.resize(3,st);
+  tg3_dmundT.resize(3,st);
+  tg3_dmupdYe.resize(3,st);
+  tg3_dmupdT.resize(3,st);
+  tg3_dsdT.resize(3,st);
+  
+  tg3_dmundnB.set_grid(grid);
+  tg3_dmundYe.set_grid(grid);
+  tg3_dmundT.set_grid(grid);
+  tg3_dmupdYe.set_grid(grid);
+  tg3_dmupdT.set_grid(grid);
+  tg3_dsdT.set_grid(grid);
+  
+  // Temporary vectors
+  ubvector mun_vec_nB(n_nB2), mun_vec_Ye(n_Ye2), mun_vec_T(n_T2);
+  ubvector mup_vec_Ye(n_Ye2), mup_vec_T(n_T2);
+  ubvector s_vec_T(n_T2);
+
+  // The interpolator
+  interp_steffen<vector<double>,ubvector> itp_stf;
+
+  // First, compute the temperature derivatives
+  for (size_t i=0;i<n_nB2;i++) {
+    double nB=nB_grid2[i];
+    for (size_t j=0;j<n_Ye2;j++) {
+      for(size_t k=0;k<n_T2;k++) {
+	mun_vec_T[k]=tg3_mun.get(i,j,k);
+	mup_vec_T[k]=tg3_mup.get(i,j,k);
+	s_vec_T[k]=tg3_S.get(i,j,k)/nB;
+      }
+      itp_stf.set(n_T2,T_grid2,mun_vec_T);
+      for(size_t k=0;k<n_T2;k++) {
+	tg3_dmunT.set(i,j,k,itp_stf.deriv(T_grid2[k]));
+      }
+      itp_stf.set(n_T2,T_grid2,mup_vec_T);
+      for(size_t k=0;k<n_T2;k++) {
+	tg3_dmupT.set(i,j,k,itp_stf.deriv(T_grid2[k]));
+      }
+      itp_stf.set(n_T2,T_grid2,s_vec_T);
+      for(size_t k=0;k<n_T2;k++) {
+	tg3_dmunT.set(i,j,k,itp_stf.deriv(T_grid2[k]));
+      }
+    }
+  }
+
+  // Second, compute the Ye derivatives
+  for (size_t i=0;i<n_nB2;i++) {
+    for(size_t k=0;k<n_T2;k++) {
+      for (size_t j=0;j<n_Ye2;j++) {
+	mun_vec_Ye[j]=tg3_mun.get(i,j,k);
+	mup_vec_Ye[j]=tg3_mup.get(i,j,k);
+      }
+      itp_stf.set(n_Ye2,Ye_grid2,mun_vec_Ye);
+      for (size_t j=0;j<n_Ye2;j++) {
+	tg3_dmundYe.set(i,j,k,itp_stf.deriv(Ye_grid2[j]));
+      }
+      itp_stf.set(n_Ye2,Ye_grid2,mup_vec_Ye);
+      for (size_t j=0;j<n_Ye2;j++) {
+	tg3_dmupdYe.set(i,j,k,itp_stf.deriv(Ye_grid2[j]));
+      }
+    }
+  }
+
+  // Third, compute the baryon density derivative
+  for (size_t j=0;j<n_Ye2;j++) {
+    for(size_t k=0;k<n_T2;k++) {
+      for (size_t i=0;i<n_nB2;i++) {
+	mun_vec_nB[i]=tg3_mun.get(i,j,k);
+      }
+      itp_stf.set(n_nB2,nB_grid2,mun_vec_nB);
+      for (size_t i=0;i<n_nB2;i++) {
+	tg3_dmundnB.set(i,j,k,itp_stf.deriv(nB_grid2[i]));
+      }
+    }
+  }
+
+  // Now go through every point and compute the remaining
+  // quantities
+  
+  for (size_t i=0;i<n_nB2;i++) {
+    double nB=nB_grid2[i];
+    for (size_t j=0;j<n_Ye2;j++) {
+      double Ye=Ye_grid2[j];
+      for (size_t k=0;k<n_T2;k++) {
+	double T=T_grid2[k];
+
+	double dmupdnB=tg3_dmundnB.get(i,j,k)+
+	  tg3_dmundYe.get(i,j,k)*(1.0-Ye)/nB+
+	  tg3_dmupdYe.get(i,j,k)*Ye/nB;
+	  
+	double dmundnn=tg3_dmundnB.get(i,j,k)-
+	  Ye*tg3_dmundYe.get(i,j,k)/nB;
+	double dmundnp=tg3_dmundnB.get(i,j,k)+
+	  (1.0-Ye)*tg3_dmundYe.get(i,j,k)/nB;
+	double dmundT=tg3_dmundT.get(i,j,k);
+	
+	double dmupdnn=dmundnp;
+	double dmupnnp=dmupdnB+
+	  (1.0-Ye)*tg3_dmupdYe.get(i,j,k)/nB;
+	
+	double dsdnn=-tg3_dmundT.get(i,j,k);
+	double dsdnp=-tg3_dmupdT.get(i,j,k);
+	double dsdT=tg3_dsdT.get(i,j,k);
+
+	double f_nnnn=dmundnn;
+	double f_nnnp=dmundnp;
+	double f_npnn=dmupdnn;
+	double f_npnp=dmupdnp;
+	double f_nnT=dmundT;
+	double f_npT=dmupdT;
+	double f_TT=-dsdT;
+	double nn=nB*(1.0-Ye);
+	double np=nB*Ye;
+	double en=tg3_Sint.get(i,j,k)*nB;
+
+	double mue=0.0;
+	double den=en*T+(tg3_mun.get(i,j,k)+neutron.m)*nn+
+	  (tg3_mup.get(i,j,k)+proton.m+mue)*np;
+	
+	double cs_sq=(nn*nn*(f_nnnn-f_nnT*f_nnT/f_TT)+
+		      2.0*nn*np*(f_nnnp-f_nnT*f_npT/f_TT)+
+		      np*np*(f_npnp-f_npT*f_npT/f_TT)-
+		      2.0*en*(nn*f_nnT/f_TT+np*f_npT/f_TT)-en*en/f_TT)/den;
+	
+      }
+    }
+  }
+  
+  std::cout << "Finished computing derivatives." << endl;
+
+  return 0;
+    
+}
+
 int eos_nuclei::stability(std::vector<std::string> &sv,
                           bool itive_com) {
 
