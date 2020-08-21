@@ -2426,7 +2426,6 @@ int eos_nuclei::eos_fixed_dist
 
   thx.en=0.0;
 
-  cout.precision(12);
   for (size_t i=0;i<n_nuclei;i++) {
     
     double en_nuc, fr_nuc;
