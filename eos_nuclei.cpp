@@ -3930,6 +3930,10 @@ int eos_nuclei::stats(std::vector<std::string> &sv,
   vector<size_t> flags(22);
   
   size_t nb_frac_count=0, S_neg_count=0, Fint_count=0, F_count=0;
+
+  // (We can't verify the thermodynamic identity with the leptons
+  // without computing the electron chemical potential.)
+  size_t ti_int_count=0;
   
   for(size_t i=0;i<data.size();i++) {
     
@@ -3948,8 +3952,8 @@ int eos_nuclei::stats(std::vector<std::string> &sv,
       double Ye=Ye_grid2[ix[1]];
       double T=T_grid2[ix[2]];
 
+      // Check that X's add up to 1
       if (nb_frac_count<1000) {
-	
 	double check_X=tg3_Xn.get_data()[i]+tg3_Xp.get_data()[i]+
 	  tg3_Xalpha.get_data()[i]+tg3_Xnuclei.get_data()[i]+
 	  tg3_Xd.get_data()[i]+tg3_Xt.get_data()[i]+
@@ -3968,44 +3972,62 @@ int eos_nuclei::stats(std::vector<std::string> &sv,
 	}
       }
 
-      if (tg3_Eint.total_size()>0) {
+      // Check that Fint=Eint-T*Sint
+      if (tg3_Eint.total_size()>0 && Fint_count<1000) {
 	
-	if (Fint_count<1000) {
-	  double Fint_check=tg3_Fint.get_data()[i]-
-	    tg3_Eint.get_data()[i]+T*tg3_Sint.get_data()[i];
-	  if (fabs(Fint_check)>1.0e-9) {
-	    cout << "Fint doesn't match Eint-T*Sint (i,nB,Ye,T,Fint_check): "
-		 << i << " " << nB << " " << Ye << " " << T
-		 << " " << Fint_check << endl;
-	    Fint_count++;
-	    if (Fint_count==1000) {
-	      cout << "Further Fint warnings suppressed." << endl;
-	    }
+	double Fint_check=tg3_Fint.get_data()[i]-
+	  tg3_Eint.get_data()[i]+T*tg3_Sint.get_data()[i];
+	if (fabs(Fint_check)>1.0e-9) {
+	  cout << "Fint doesn't match Eint-T*Sint (i,nB,Ye,T,Fint_check): "
+	       << i << " " << nB << " " << Ye << " " << T
+	       << " " << Fint_check << endl;
+	  cout << "  " << tg3_Fint.get_data()[i] << " ";
+	  cout << tg3_Eint.get_data()[i] << " ";
+	  cout << T*tg3_Sint.get_data()[i] << endl;
+	  Fint_count++;
+	  if (Fint_count==1000) {
+	    cout << "Further Fint warnings suppressed." << endl;
 	  }
 	}
-
       }
 
-      if (with_leptons_loaded) {
-	
-	if (F_count<1000) {
-	  double F_check=tg3_F.get_data()[i]-
-	    tg3_E.get_data()[i]+T*tg3_S.get_data()[i];
-	  if (fabs(F_check)>1.0e-9) {
-	    cout << "F doesn't match E-T*S (i,nB,Ye,T,F_check): "
-		 << i << " " << nB << " " << Ye << " " << T
-		 << " " << F_check << endl;
-	    F_count++;
-	    if (F_count==1000) {
-	      cout << "Further Fint warnings suppressed." << endl;
-	    }
+      // Check that Eint=-Pint+T*Sint+nn*mun+np*mup
+      if (derivs_computed && ti_int_count<1000) {
+	double nn=nB*(1.0-Ye);
+	double np=nB*Ye;
+	double ti_int_check=tg3_Eint.get_data()[i]*nB+
+	  tg3_Pint.get_data()[i]-T*tg3_Sint.get_data()[i]*nB-
+	  nn*tg3_mun.get_data()[i]-np*tg3_mup.get_data()[i];
+	if (fabs(ti_int_check)>1.0e-9) {
+	  cout << "Therm. ident. doens't hold (i,nB,Ye,T,ti_int_check): "
+	       << i << " " << nB << " " << Ye << " " << T
+	       << " " << ti_int_check << endl;
+	  ti_int_count++;
+	  if (ti_int_count==1000) {
+	    cout << "Further Fint warnings suppressed." << endl;
+	  }
+	}
+      }
+
+      // Check that F=E-T*S
+      if (with_leptons_loaded && F_count<1000) {
+
+	double F_check=tg3_F.get_data()[i]-
+	  tg3_E.get_data()[i]+T*tg3_S.get_data()[i];
+	if (fabs(F_check)>1.0e-9) {
+	  cout << "F doesn't match E-T*S (i,nB,Ye,T,F_check): "
+	       << i << " " << nB << " " << Ye << " " << T
+	       << " " << F_check << endl;
+	  F_count++;
+	  if (F_count==1000) {
+	    cout << "Further Fint warnings suppressed." << endl;
 	  }
 	}
       
       }
-      
-      if (derivs_computed && S_neg_count<1000 &&
-	  tg3_Sint.get_data()[i]<0.0) {
+
+      // Check that Sint>0
+      if (S_neg_count<1000 && tg3_Sint.get_data()[i]<0.0) {
 	cout << "Entropy per baryon negative (i,nB,Ye,T,Sint): "
 	     << i << " " << nB << " " << Ye << " "
 	     << T << " " << tg3_Sint.get_data()[i] << endl;
@@ -4025,6 +4047,9 @@ int eos_nuclei::stats(std::vector<std::string> &sv,
   }
   if (with_leptons_loaded) {
     cout << "F_count: " << F_count << endl;
+  }
+  if (derivs_computed) {
+    cout << "ti_int_count: " << ti_int_count << endl;
   }
   cout << endl;
   cout << "flag counts:" << endl;
