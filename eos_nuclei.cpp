@@ -3377,9 +3377,30 @@ int eos_nuclei::read_results(std::string fname) {
     if (verbose>2) cout << "Reading Sint." << endl;
     hdf_input(hf,tg3_Sint,"Sint");
   }
-  if (hf.find_object_by_name("Eint",type)==0 && type=="tensor_grid") {
+
+  // Fix old tables which don't have Eint
+  if (hf.find_object_by_name("Eint",type)==0 && type=="tensor_grid") {    
     if (verbose>2) cout << "Reading Eint." << endl;
     hdf_input(hf,tg3_Eint,"Eint");
+  } else if (tg3_Sint.total_size()>0) {
+    cout << "Fixing file with missing Eint." << endl;
+    vector<vector<double> > grid={nB_grid2,Ye_grid2,
+				   T_grid2};
+    vector<size_t> sz={n_nB2,n_Ye2,n_T2};
+    tg3_Eint.resize(3,sz);
+    tg3_Eint.set_grid(grid);
+    for(size_t i=0;i<tg3_Eint.total_size();i++) {
+      //std::cout << "J: " << i << " " << tg3_Eint.total_size() << endl;
+      size_t ix[3];
+      tg3_Eint.unpack_index(i,ix);
+      //std::cout << "H: " << i << " " << ix[0] << std::endl;
+      
+      double T=T_grid2[ix[2]];
+      
+      double Eint_val=tg3_Fint.get_data()[i]+
+	T*tg3_Sint.get_data()[i];
+      tg3_Eint.get(ix[0],ix[1],ix[2])=Eint_val;
+    }
   }
   
   if (verbose>2) cout << "Reading Xn." << endl;
