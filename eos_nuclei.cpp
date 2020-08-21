@@ -68,9 +68,9 @@ eos_nuclei::eos_nuclei() {
   nucleon_func="(i<100)*10+(i>=100)*sqrt(i)";
   
   vi.append({"msg","index","flag","nB","Ye","T","log_xn","log_xp",
-	"Z","N","fr","ed","pr","en","mun","mup","no_nuclei",
-	"inB","iYe","iT","A_min","A_max","NmZ_min","NmZ_max",
-	"Xalpha","Xd","Xt","XHe3","XLi4","Xnuclei"});
+	     "Z","N","fr","ed","pr","en","mun","mup","no_nuclei",
+	     "inB","iYe","iT","A_min","A_max","NmZ_min","NmZ_max",
+	     "Xalpha","Xd","Xt","XHe3","XLi4","Xnuclei"});
 
   select_high_T(6);
   
@@ -390,7 +390,7 @@ int eos_nuclei::load(std::vector<std::string> &sv,
 }
 
 int eos_nuclei::output(std::vector<std::string> &sv,
-		     bool itive_com) {
+		       bool itive_com) {
   if (sv.size()<2) {
     cout << "No filename in output." << endl;
   }
@@ -906,9 +906,9 @@ double eos_nuclei::solve_nuclei_min
 }
 
 int eos_nuclei::solve_nuclei(size_t nv, const ubvector &x, ubvector &y,
-				 double nB, double Ye, double T,
-				 int loc_verbose, double &mun_gas,
-				 double &mup_gas, thermo &th_gas) {
+			     double nB, double Ye, double T,
+			     int loc_verbose, double &mun_gas,
+			     double &mup_gas, thermo &th_gas) {
   
   double log_xn=x[0];
   double log_xp=x[1];
@@ -2037,7 +2037,7 @@ int eos_nuclei::eos_fixed_dist
 	if (part_func.delta>zEd) {
 	  part_func.delta=zEd;
 	  part_func.Tc=1.0/(-1.25/part_func.delta+sqrt(part_func.a)/
-			   sqrt(part_func.delta));
+			    sqrt(part_func.delta));
 	  part_func.C=sqrt(pi)/12.0*pow(part_func.a,-0.25)*
 	    pow(part_func.delta,-1.25)*
 	    exp(1.25+sqrt(part_func.a*part_func.delta));
@@ -2090,8 +2090,8 @@ int eos_nuclei::eos_fixed_dist
      std::placeholders::_2,std::placeholders::_3,nB,Ye,T,0,
      std::ref(mun_gas),std::ref(mup_gas),std::ref(th_gas));
 
-    x1[0]=log_xn;
-    x1[1]=log_xp;
+  x1[0]=log_xn;
+  x1[1]=log_xp;
 
   if ((alg_mode==2 || alg_mode==4) && nB<1.0e-11) {
     mh.tol_rel=mh_tol_rel/1.0e2;
@@ -2565,7 +2565,7 @@ int eos_nuclei::eos_vary_ZN
 	log_xn=log_xn_guess;
 	log_xp=log_xp_guess;
 	int eret=eos_fixed_ZN(nB,Ye,T,log_xn,log_xp,iZ,iN,thx,
-				  mun_full,mup_full);
+			      mun_full,mup_full);
 	double f=thx.ed-T*thx.en;
 	if (show_all_nuclei) {
 	  if (eret==0) {
@@ -2620,7 +2620,7 @@ int eos_nuclei::eos_vary_ZN
   nuc_N1=N_min;
   
   int lret=eos_fixed_ZN(nB,Ye,T,log_xn,log_xp,nuc_Z1,nuc_N1,thx,
-			    mun_full,mup_full);
+			mun_full,mup_full);
   
   if (lret!=0) {
     return 2;
@@ -2685,7 +2685,7 @@ int eos_nuclei::store_point
       
     } else {
       cout << "New point has smaller free energy. Old: " << fr_old
-         << " New: " << fr << endl;
+	   << " New: " << fr << endl;
     }      
   }
   
@@ -3208,6 +3208,7 @@ int eos_nuclei::write_results(std::string fname) {
   hdf_output(hf,tg3_flag,"flag");
   hdf_output(hf,tg3_Fint,"Fint");
   hdf_output(hf,tg3_Sint,"Sint");
+  hdf_output(hf,tg3_Eint,"Eint");
   
   hdf_output(hf,tg3_Xn,"Xn");
   hdf_output(hf,tg3_Xp,"Xp");
@@ -3247,7 +3248,6 @@ int eos_nuclei::write_results(std::string fname) {
   hf.setd("alpha_em",o2scl_const::fine_structure);
   
   if (derivs_computed) {
-    hdf_output(hf,tg3_Eint,"Eint");
     hdf_output(hf,tg3_Pint,"Pint");
     hdf_output(hf,tg3_mun,"mun");
     hdf_output(hf,tg3_mup,"mup");
@@ -3377,6 +3377,10 @@ int eos_nuclei::read_results(std::string fname) {
     if (verbose>2) cout << "Reading Sint." << endl;
     hdf_input(hf,tg3_Sint,"Sint");
   }
+  if (hf.find_object_by_name("Eint",type)==0 && type=="tensor_grid") {
+    if (verbose>2) cout << "Reading Eint." << endl;
+    hdf_input(hf,tg3_Eint,"Eint");
+  }
   
   if (verbose>2) cout << "Reading Xn." << endl;
   hdf_input(hf,tg3_Xn,"Xn");
@@ -3432,12 +3436,6 @@ int eos_nuclei::read_results(std::string fname) {
   }
   
   if (derivs_computed) {
-    if (hf.find_object_by_name("Eint",type)!=0 || type!="tensor_grid") {
-      O2SCL_ERR("Couldn't find tensor Eint in file.",
-		o2scl::exc_enotfound);
-    }
-    if (verbose>2) cout << "Reading Eint." << endl;
-    hdf_input(hf,tg3_Eint,"Eint");
     if (hf.find_object_by_name("Pint",type)!=0 || type!="tensor_grid") {
       O2SCL_ERR("Couldn't find tensor Pint in file.",
 		o2scl::exc_enotfound);
@@ -3473,7 +3471,6 @@ int eos_nuclei::read_results(std::string fname) {
       tg3_S.clear();
     }
   } else {
-    tg3_Eint.clear();
     tg3_Pint.clear();
     tg3_mun.clear();
     tg3_mup.clear();
@@ -3501,7 +3498,7 @@ int eos_nuclei::read_results(std::string fname) {
 }
 
 int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
-				 bool itive_com) {
+			     bool itive_com) {
 
   if (sv.size()<4) {
     cerr << "Not enough arguments in point-nuclei." << endl;
@@ -3896,7 +3893,7 @@ int eos_nuclei::create_ZoA(std::vector<std::string> &sv,
 
 
 int eos_nuclei::stats(std::vector<std::string> &sv,
-			    bool itive_com) {
+		      bool itive_com) {
 
   if (loaded==false) {
     cerr << "No table loaded in stats()." << endl;
@@ -3911,49 +3908,104 @@ int eos_nuclei::stats(std::vector<std::string> &sv,
   
   const vector<double> &data=tg3_flag.get_data();
   vector<size_t> flags(22);
-  size_t nb_frac_count=0, S_neg_count=0;
+  
+  size_t nb_frac_count=0, S_neg_count=0, Fint_count=0, F_count=0;
+  
   for(size_t i=0;i<data.size();i++) {
+    
     int iflag=((int)(data[i]*(1.0+1.0e-12)));
     if (iflag<-10 || iflag>10) {
       iflag=11;
     }
     flags[iflag+10]++;
+    
     if (iflag==10) {
-      double check_X=tg3_Xn.get_data()[i]+tg3_Xp.get_data()[i]+
-	tg3_Xalpha.get_data()[i]+tg3_Xnuclei.get_data()[i]+
-	tg3_Xd.get_data()[i]+tg3_Xt.get_data()[i]+
-	tg3_XHe3.get_data()[i]+tg3_XLi4.get_data()[i];
+      
       size_t ix[3];
       tg3_Xn.unpack_index(i,ix);
+      
       double nB=nB_grid2[ix[0]];
-      if (nb_frac_count<1000 && fabs(check_X-1.0)>1.0e-6) {
-	cout << "Nuclear fractions do not add up to 1 "
-	     << "(i,nB,Ye,T,X_total):\n  "
-	     << i << " " << nB_grid2[ix[0]] << " "
-	     << Ye_grid2[ix[1]] << " " << T_grid2[ix[2]] << " " 
-	     << check_X << endl;
-	nb_frac_count++;
-	if (nb_frac_count==1000) {
-	  cout << "Further nuclear fractions warnings suppressed."
-	       << endl;
+      double Ye=Ye_grid2[ix[1]];
+      double T=T_grid2[ix[2]];
+
+      if (nb_frac_count<1000) {
+	
+	double check_X=tg3_Xn.get_data()[i]+tg3_Xp.get_data()[i]+
+	  tg3_Xalpha.get_data()[i]+tg3_Xnuclei.get_data()[i]+
+	  tg3_Xd.get_data()[i]+tg3_Xt.get_data()[i]+
+	  tg3_XHe3.get_data()[i]+tg3_XLi4.get_data()[i];
+	
+	if (fabs(check_X-1.0)>1.0e-6) {
+	  cout << "Nuclear fractions do not add up to 1 "
+	       << "(i,nB,Ye,T,X_total):\n  "
+	       << i << " " << nB << " " << Ye << " "
+	       << T << " " << check_X << endl;
+	  nb_frac_count++;
+	  if (nb_frac_count==1000) {
+	    cout << "Further nuclear fractions warnings suppressed."
+		 << endl;
+	  }
 	}
       }
+
+      if (tg3_Eint.total_size()>0) {
+	
+	if (Fint_count<1000) {
+	  double Fint_check=tg3_Fint.get_data()[i]-
+	    tg3_Eint.get_data()[i]+T*tg3_Sint.get_data()[i];
+	  if (fabs(Fint_check)>1.0e-9) {
+	    cout << "Fint doesn't match Eint-T*Sint (i,nB,Ye,T,Fint_check): "
+		 << i << " " << nB << " " << Ye << " " << T
+		 << " " << Fint_check << endl;
+	    Fint_count++;
+	    if (Fint_count==1000) {
+	      cout << "Further Fint warnings suppressed." << endl;
+	    }
+	  }
+	}
+
+      }
+
+      if (with_leptons_loaded) {
+	
+	if (F_count<1000) {
+	  double F_check=tg3_F.get_data()[i]-
+	    tg3_E.get_data()[i]+T*tg3_S.get_data()[i];
+	  if (fabs(F_check)>1.0e-9) {
+	    cout << "F doesn't match E-T*S (i,nB,Ye,T,F_check): "
+		 << i << " " << nB << " " << Ye << " " << T
+		 << " " << F_check << endl;
+	    F_count++;
+	    if (F_count==1000) {
+	      cout << "Further Fint warnings suppressed." << endl;
+	    }
+	  }
+	}
+      
+      }
+      
       if (derivs_computed && S_neg_count<1000 &&
 	  tg3_Sint.get_data()[i]<0.0) {
 	cout << "Entropy per baryon negative (i,nB,Ye,T,Sint): "
-	     << i << " " << nB_grid2[ix[0]] << " "
-	     << Ye_grid2[ix[1]] << " " << T_grid2[ix[2]]*hc_mev_fm << " " 
-	     << tg3_Sint.get_data()[i] << endl;
+	     << i << " " << nB << " " << Ye << " "
+	     << T << " " << tg3_Sint.get_data()[i] << endl;
 	S_neg_count++;
 	if (S_neg_count==1000) {
 	  cout << "Further negative entropy warnings suppressed."
 	       << endl;
 	}
       }
+      
     }
   }
   cout << "nb_frac_count: " << nb_frac_count << endl;
   cout << "S_neg_count: " << S_neg_count << endl;
+  if (tg3_Eint.total_size()>0) {
+    cout << "Fint_count: " << Fint_count << endl;
+  }
+  if (with_leptons_loaded) {
+    cout << "F_count: " << F_count << endl;
+  }
   cout << endl;
   cout << "flag counts:" << endl;
   size_t count=0;
@@ -3964,7 +4016,7 @@ int eos_nuclei::stats(std::vector<std::string> &sv,
   }
 
   // Less than 100 points missing, so output the missing points
-  if (count<100) {
+  if (count>0 && count<100) {
     cout << "\nOnly " << count << " non-converged points: " << endl;
     size_t temp_ctr=0;
     for(size_t i=0;i<data.size();i++) {
@@ -3990,7 +4042,7 @@ int eos_nuclei::stats(std::vector<std::string> &sv,
 }
 
 int eos_nuclei::merge_tables(std::vector<std::string> &sv,
-				 bool itive_com) {
+			     bool itive_com) {
 
   if (sv.size()<4) {
     cerr << "Command 'merge-tables' needs at least 3 arguments." << endl;
@@ -4106,6 +4158,7 @@ int eos_nuclei::merge_tables(std::vector<std::string> &sv,
 	  tg3_flag.set(i,j,k,en2.tg3_flag.get(i,j,k));
 	  tg3_Fint.set(i,j,k,en2.tg3_Fint.get(i,j,k));
 	  tg3_Sint.set(i,j,k,en2.tg3_Sint.get(i,j,k));
+	  tg3_Eint.set(i,j,k,en2.tg3_Eint.get(i,j,k));
 
 	  tg3_Xn.set(i,j,k,en2.tg3_Xn.get(i,j,k));
 	  tg3_Xp.set(i,j,k,en2.tg3_Xp.get(i,j,k));
@@ -4117,7 +4170,6 @@ int eos_nuclei::merge_tables(std::vector<std::string> &sv,
 	  tg3_XLi4.set(i,j,k,en2.tg3_XLi4.get(i,j,k));
 
 	  if (derivs_computed) {
-	    tg3_Eint.set(i,j,k,en2.tg3_Eint.get(i,j,k));
 	    tg3_Pint.set(i,j,k,en2.tg3_Pint.get(i,j,k));
 	    tg3_mun.set(i,j,k,en2.tg3_mun.get(i,j,k));
 	    tg3_mup.set(i,j,k,en2.tg3_mup.get(i,j,k));
@@ -4168,7 +4220,7 @@ int eos_nuclei::merge_tables(std::vector<std::string> &sv,
 }
 
 int eos_nuclei::compare_tables(std::vector<std::string> &sv,
-				   bool itive_com) {
+			       bool itive_com) {
   
   if (sv.size()<2) {
     cerr << "Command 'compare-tables' needs 2 arguments." << endl;
@@ -4227,6 +4279,7 @@ int eos_nuclei::compare_tables(std::vector<std::string> &sv,
   names.push_back("A");
   names.push_back("Fint");
   names.push_back("Sint");
+  names.push_back("Eint");
   names.push_back("Xn");
   names.push_back("Xp");
   names.push_back("Xalpha");
@@ -4236,7 +4289,6 @@ int eos_nuclei::compare_tables(std::vector<std::string> &sv,
   names.push_back("XHe3");
   names.push_back("XLi4");
   if (derivs_computed) {
-    names.push_back("Eint");
     names.push_back("Pint");
     names.push_back("mun");
     names.push_back("mup");
@@ -4263,8 +4315,8 @@ int eos_nuclei::compare_tables(std::vector<std::string> &sv,
   ptrs.push_back(&tg3_XHe3);
   ptrs.push_back(&tg3_XLi4);
   ptrs.push_back(&tg3_Sint);
+  ptrs.push_back(&tg3_Eint);
   if (derivs_computed) {
-    ptrs.push_back(&tg3_Eint);
     ptrs.push_back(&tg3_Pint);
     ptrs.push_back(&tg3_mun);
     ptrs.push_back(&tg3_mup);
@@ -4291,8 +4343,8 @@ int eos_nuclei::compare_tables(std::vector<std::string> &sv,
   ptrs2.push_back(&en2.tg3_XHe3);
   ptrs2.push_back(&en2.tg3_XLi4);
   ptrs2.push_back(&en2.tg3_Sint);
+  ptrs2.push_back(&en2.tg3_Eint);
   if (derivs_computed) {
-    ptrs2.push_back(&en2.tg3_Eint);
     ptrs2.push_back(&en2.tg3_Pint);
     ptrs2.push_back(&en2.tg3_mun);
     ptrs2.push_back(&en2.tg3_mup);
@@ -4401,6 +4453,7 @@ void eos_nuclei::new_table() {
   tg3_flag.resize(3,st);
   tg3_Fint.resize(3,st);
   tg3_Sint.resize(3,st);
+  tg3_Eint.resize(3,st);
   
   tg3_Xn.resize(3,st);
   tg3_Xp.resize(3,st);
@@ -4418,6 +4471,7 @@ void eos_nuclei::new_table() {
   tg3_flag.set_grid_packed(packed);
   tg3_Fint.set_grid_packed(packed);
   tg3_Sint.set_grid_packed(packed);
+  tg3_Eint.set_grid_packed(packed);
   
   tg3_Xn.set_grid_packed(packed);
   tg3_Xp.set_grid_packed(packed);
@@ -4435,6 +4489,7 @@ void eos_nuclei::new_table() {
   tg3_flag.set_all(0.0);
   tg3_Fint.set_all(0.0);
   tg3_Sint.set_all(0.0);
+  tg3_Eint.set_all(0.0);
 
   tg3_Xn.set_all(0.0);
   tg3_Xp.set_all(0.0);
@@ -4465,9 +4520,6 @@ void eos_nuclei::new_table() {
   }
   
   if (derivs_computed) {
-    tg3_Eint.resize(3,st);
-    tg3_Eint.set_grid_packed(packed);
-    tg3_Eint.set_all(0.0);
     tg3_Pint.resize(3,st);
     tg3_Pint.set_grid_packed(packed);
     tg3_Pint.set_all(0.0);
@@ -4542,6 +4594,7 @@ int eos_nuclei::edit_data(std::vector<std::string> &sv,
 	vars["flag"]=tg3_flag.get(inB,iYe,iT);
 	vars["Fint"]=tg3_Fint.get(inB,iYe,iT);
 	vars["Sint"]=tg3_Sint.get(inB,iYe,iT);
+	vars["Eint"]=tg3_Eint.get(inB,iYe,iT);
 	vars["Z"]=tg3_Z.get(inB,iYe,iT);
 	vars["A"]=tg3_A.get(inB,iYe,iT);
 	vars["log_xn"]=tg3_log_xn.get(inB,iYe,iT);
@@ -4575,7 +4628,6 @@ int eos_nuclei::edit_data(std::vector<std::string> &sv,
 	}
 
 	if (derivs_computed) {
-	  vars["Eint"]=tg3_Eint.get(inB,iYe,iT);
 	  vars["Pint"]=tg3_Pint.get(inB,iYe,iT);
 	  vars["mun"]=tg3_mun.get(inB,iYe,iT);
 	  vars["mup"]=tg3_mup.get(inB,iYe,iT);
@@ -4645,7 +4697,7 @@ int eos_nuclei::edit_data(std::vector<std::string> &sv,
 }
 
 int eos_nuclei::generate_table(std::vector<std::string> &sv,
-				   bool itive_com) {
+			       bool itive_com) {
 
   if (derivs_computed) {
     cout << "Function generate-table setting derivs_computed to false."
@@ -4782,7 +4834,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	Nbar=nuc_N1;
       } else if (alg_mode==0) {
 	first_ret=eos_vary_ZN(nB,Ye,T,log_xn,log_xp,nuc_Z1,nuc_N1,
-				  thx,mun_full,mup_full,false);
+			      thx,mun_full,mup_full,false);
 	Zbar=nuc_Z1;
 	Nbar=nuc_N1;
       } else if (alg_mode==2 || alg_mode==4) {
@@ -4791,8 +4843,8 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 				NmZ_min,NmZ_max,true,false);
       } else if (alg_mode==3) {
 	first_ret=eos_vary_dist(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,thx,
-				    mun_full,mup_full,A_min,A_max,
-				    NmZ_min,NmZ_max,true,false);
+				mun_full,mup_full,A_min,A_max,
+				NmZ_min,NmZ_max,true,false);
       }
       if (first_ret!=0) {
 	cerr << "Initial point for blank table failed." << endl;
@@ -5623,7 +5675,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	    // Xingfu's function here
 	  } else if (alg_mode==0) {
 	    ret=eos_vary_ZN(nB,Ye,T,log_xn,log_xp,nuc_Z1,nuc_N1,
-				thx,mun_full,mup_full,no_nuclei);
+			    thx,mun_full,mup_full,no_nuclei);
 	    Zbar=nuc_Z1;
 	    Nbar=nuc_N1;
 	  } else if (alg_mode==2 || alg_mode==3 || alg_mode==4) {
@@ -5858,11 +5910,11 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	  // Xingfu's function here
 	} else if (alg_mode==0) {
 	  ret=eos_vary_ZN(nB,Ye,T,log_xn,log_xp,nuc_Z1,nuc_N1,
-			      thx,mun_full,mup_full,no_nuclei);
+			  thx,mun_full,mup_full,no_nuclei);
 	} else if (alg_mode==2 || alg_mode==3 || alg_mode==4) {
 	  ret=eos_vary_dist(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,
-				thx,mun_full,mup_full,
-				A_min,A_max,NmZ_min,NmZ_max,true,no_nuclei);
+			    thx,mun_full,mup_full,
+			    A_min,A_max,NmZ_min,NmZ_max,true,no_nuclei);
 	}
 
 	if (gt_verbose>1) {
@@ -5968,7 +6020,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 }
 
 int eos_nuclei::check_virial(std::vector<std::string> &sv,
-			   bool itive_com) {
+			     bool itive_com) {
 
   size_t n_nB=0, n_Ye=0, n_T=0;
   vector<double> nB_grid, Ye_grid, T_grid;
@@ -6247,9 +6299,9 @@ int eos_nuclei::mcarlo_nuclei2(std::vector<std::string> &sv,
     log_xp=log_xp_best;
     
     int ret2=eos_vary_dist(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,
-			  thx,mun_full,mup_full,
-			  A_min,A_max,NmZ_min,NmZ_max,
-			  dist_changed,no_nuclei);
+			   thx,mun_full,mup_full,
+			   A_min,A_max,NmZ_min,NmZ_max,
+			   dist_changed,no_nuclei);
     ubvector X;
     compute_X(nB,X);
     
@@ -6338,7 +6390,7 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
       "is unspecified, then all quantities are compared. If [quantity] "+
       "is specified, then only that particular quantitiy is compared. "+
       "Only points for which flag=10 in both tables are compared. "+
-      "If derivs_computed is true, then Eint, Pint, Sint, mun, and "+
+      "If derivs_computed is true, then Pint, mun, and "+
       "mup are available for comparisons. If with_leptons_loaded is "+
       "true, then "+
       "F, E, P, and S, are also available for comparisons. Any current "+
