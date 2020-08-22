@@ -557,6 +557,14 @@ int eos_nuclei::eg_table(std::vector<std::string> &sv,
 
   eos_sn_base esb;
   esb.include_muons=include_muons;
+
+  // Higher accuracy
+  esb.relf.upper_limit_fac=40.0;
+  esb.relf.dit->tol_abs=1.0e-13;
+  esb.relf.dit->tol_rel=1.0e-13;
+  esb.relf.nit->tol_abs=1.0e-13;
+  esb.relf.nit->tol_rel=1.0e-13;
+  esb.relf.density_root->tol_rel=1.0e-10;
   
   for (size_t i=0;i<n_nB2;i++) {
     double nB=nB_grid2[i];
@@ -4170,9 +4178,7 @@ int eos_nuclei::stats(std::vector<std::string> &sv,
   
   size_t nb_frac_count=0, S_neg_count=0, Fint_count=0, F_count=0;
 
-  // (We can't verify the thermodynamic identity with the leptons
-  // without computing the electron chemical potential.)
-  size_t ti_int_count=0;
+  size_t ti_int_count=0, ti_count=0;
   
   for(size_t i=0;i<data.size();i++) {
     
@@ -4230,7 +4236,7 @@ int eos_nuclei::stats(std::vector<std::string> &sv,
 	}
       }
 
-      // Check that Eint=-Pint+T*Sint+nn*mun+np*mup
+      // Check that Eint*nB=-Pint+T*Sint*nB+nn*mun+np*mup
       if (derivs_computed && ti_int_count<1000) {
 	double nn=nB*(1.0-Ye);
 	double np=nB*Ye;
@@ -4243,6 +4249,25 @@ int eos_nuclei::stats(std::vector<std::string> &sv,
 	       << " " << ti_int_check << endl;
 	  ti_int_count++;
 	  if (ti_int_count==1000) {
+	    cout << "Further Fint warnings suppressed." << endl;
+	  }
+	}
+      }
+
+      // Check that E*nB=-P+T*S*nB+nn*mun+np*mup+ne*mue
+      if (derivs_computed && ti_count<1000) {
+	double nn=nB*(1.0-Ye);
+	double np=nB*Ye;
+	double ti_check=tg3_E.get_data()[i]*nB+
+	  tg3_P.get_data()[i]-T*tg3_S.get_data()[i]*nB-
+	  nn*tg3_mun.get_data()[i]-np*tg3_mup.get_data()[i]-
+	  np*tg3_mue.get_data()[i];
+	if (fabs(ti_check)>1.0e-9) {
+	  cout << "Therm. ident. doens't hold (i,nB,Ye,T,ti_check): "
+	       << i << " " << nB << " " << Ye << " " << T
+	       << " " << ti_check << endl;
+	  ti_count++;
+	  if (ti_count==1000) {
 	    cout << "Further Fint warnings suppressed." << endl;
 	  }
 	}
@@ -4284,11 +4309,12 @@ int eos_nuclei::stats(std::vector<std::string> &sv,
   if (tg3_Eint.total_size()>0) {
     cout << "Fint_count: " << Fint_count << endl;
   }
-  if (with_leptons_loaded) {
-    cout << "F_count: " << F_count << endl;
-  }
   if (derivs_computed) {
     cout << "ti_int_count: " << ti_int_count << endl;
+    if (with_leptons_loaded) {
+      cout << "F_count: " << F_count << endl;
+      cout << "ti_count: " << ti_count << endl;
+    }
   }
   cout << endl;
   cout << "flag counts:" << endl;
