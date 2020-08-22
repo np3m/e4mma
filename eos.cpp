@@ -3460,7 +3460,7 @@ int eos::test_eg(std::vector<std::string> &sv,
   tensor_grid3<> t_mue(n_nB,n_Ye,n_T);
   t_mue.set_grid(grid_arr);
   
-  eos_sn_oo eso;
+  eos_sn_base eso;
   eso.include_muons=include_muons;
 
   for(size_t i=0;i<n_nB;i++) {

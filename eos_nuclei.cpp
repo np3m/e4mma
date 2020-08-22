@@ -480,8 +480,13 @@ int eos_nuclei::add_eg(std::vector<std::string> &sv,
     tg3_F.set_grid_packed(packed);
     tg3_F.set_all(0.0);
   }
+  if (tg3_mue.total_size()==0) {
+    tg3_mue.resize(3,st);
+    tg3_mue.set_grid_packed(packed);
+    tg3_mue.set_all(0.0);
+  }
   
-  eos_sn_oo eso;
+  eos_sn_base eso;
   eso.include_muons=false;
   
   for (size_t i=0;i<n_nB2;i++) {
@@ -500,7 +505,7 @@ int eos_nuclei::add_eg(std::vector<std::string> &sv,
 		  hc_mev_fm*lep.pr);
 	tg3_S.set(i,j,k,tg3_Sint.get(i,j,k)+
 		  hc_mev_fm*lep.en/nB_grid2[i]);
-	//tg3_mup.set(i,j,k,tg3_mup.get(i,j,k)+hc_mev_fm*mue);
+	tg3_mue.set(i,j,k,hc_mev_fm*mue);
       }
     }
     cout << "add_eg(): " << i+1 << "/" << n_nB2 << endl;
@@ -508,6 +513,86 @@ int eos_nuclei::add_eg(std::vector<std::string> &sv,
 
   with_leptons_loaded=true;
 
+  return 0;
+}
+
+int eos_nuclei::eg_table(std::vector<std::string> &sv,
+			 bool itive_com) {
+
+  if (sv.size()<2) {
+    cerr << "Need filename." << endl;
+    return 2;
+  }
+  
+  // This is similar to eos::eg_table(), so I need
+  // to figure out how to combine them sensibly.
+
+  if (loaded==false || n_nB2==0 || n_Ye2==0 || n_T2==0) {
+    new_table();
+  }
+  
+  tensor_grid3<> mu_e;
+  tensor_grid3<> E;
+  tensor_grid3<> n_mu;
+  tensor_grid3<> P;
+  tensor_grid3<> S;
+  tensor_grid3<> F;
+  
+  size_t st[3]={n_nB2,n_Ye2,n_T2};
+  vector<vector<double> > grid={nB_grid2,Ye_grid2,T_grid2};
+
+  mu_e.resize(3,st);
+  n_mu.resize(3,st);
+  E.resize(3,st);
+  P.resize(3,st);
+  S.resize(3,st);
+  F.resize(3,st);
+
+  mu_e.set_grid(grid);
+  n_mu.set_grid(grid);
+  E.set_grid(grid);
+  P.set_grid(grid);
+  S.set_grid(grid);
+  F.set_grid(grid);
+
+  eos_sn_base esb;
+  esb.include_muons=include_muons;
+  
+  for (size_t i=0;i<n_nB2;i++) {
+    double nB=nB_grid2[i];
+    for (size_t j=0;j<n_Ye2;j++) {
+      for (size_t k=0;k<n_T2;k++) {
+	double T=T_grid2[k];
+	
+	thermo lep;
+	double mue;
+	esb.compute_eg_point(nB_grid2[i],Ye_grid2[j],T_grid2[k],lep,mue);
+
+	mu_e.set(i,j,k,mue*o2scl_const::hc_mev_fm);
+	E.set(i,j,k,lep.ed/nB*o2scl_const::hc_mev_fm);
+	P.set(i,j,k,lep.pr*o2scl_const::hc_mev_fm);
+	S.set(i,j,k,lep.en/nB);
+	F.set(i,j,k,(lep.ed-T*lep.en)/nB*o2scl_const::hc_mev_fm);
+	if (include_muons) {
+	  n_mu.set(i,j,k,muon.n*o2scl_const::hc_mev_fm);
+	}
+      }
+    }
+    cout << "eg_table(): " << i+1 << "/" << n_nB2 << endl;
+  }
+
+  hdf_file hf;
+  hf.open_or_create(sv[1]);
+  hdf_output(hf,mu_e,"mue");
+  if (include_muons) {
+    hdf_output(hf,n_mu,"nmu");
+  }
+  hdf_output(hf,F,"F");
+  hdf_output(hf,E,"E");
+  hdf_output(hf,P,"P");
+  hdf_output(hf,S,"S");
+  hf.close();
+  
   return 0;
 }
 
@@ -673,6 +758,7 @@ int eos_nuclei::eos_second_deriv(std::vector<std::string> &sv,
     
   if (derivs_computed==false) {
     cerr << "Fail." << endl;
+    return 3;
   }
 
   tensor_grid3<> tg3_dmundnB;
@@ -685,7 +771,7 @@ int eos_nuclei::eos_second_deriv(std::vector<std::string> &sv,
   derivs_computed=true;
   
   size_t st[3]={n_nB2,n_Ye2,n_T2};
-  vector<vector<double> > grid={nB_grid2,Ye_grid2,Y_grid2};
+  vector<vector<double> > grid={nB_grid2,Ye_grid2,T_grid2};
   
   tg3_dmundnB.resize(3,st);
   tg3_dmundYe.resize(3,st);
@@ -720,15 +806,15 @@ int eos_nuclei::eos_second_deriv(std::vector<std::string> &sv,
       }
       itp_stf.set(n_T2,T_grid2,mun_vec_T);
       for(size_t k=0;k<n_T2;k++) {
-	tg3_dmunT.set(i,j,k,itp_stf.deriv(T_grid2[k]));
+	tg3_dmundT.set(i,j,k,itp_stf.deriv(T_grid2[k]));
       }
       itp_stf.set(n_T2,T_grid2,mup_vec_T);
       for(size_t k=0;k<n_T2;k++) {
-	tg3_dmupT.set(i,j,k,itp_stf.deriv(T_grid2[k]));
+	tg3_dmupdT.set(i,j,k,itp_stf.deriv(T_grid2[k]));
       }
       itp_stf.set(n_T2,T_grid2,s_vec_T);
       for(size_t k=0;k<n_T2;k++) {
-	tg3_dmunT.set(i,j,k,itp_stf.deriv(T_grid2[k]));
+	tg3_dsdT.set(i,j,k,itp_stf.deriv(T_grid2[k]));
       }
     }
   }
@@ -778,27 +864,15 @@ int eos_nuclei::eos_second_deriv(std::vector<std::string> &sv,
 	  tg3_dmundYe.get(i,j,k)*(1.0-Ye)/nB+
 	  tg3_dmupdYe.get(i,j,k)*Ye/nB;
 	  
-	double dmundnn=tg3_dmundnB.get(i,j,k)-
+	double f_nnnn=tg3_dmundnB.get(i,j,k)-
 	  Ye*tg3_dmundYe.get(i,j,k)/nB;
-	double dmundnp=tg3_dmundnB.get(i,j,k)+
+	double f_nnnp=tg3_dmundnB.get(i,j,k)+
 	  (1.0-Ye)*tg3_dmundYe.get(i,j,k)/nB;
-	double dmundT=tg3_dmundT.get(i,j,k);
-	
-	double dmupdnn=dmundnp;
-	double dmupnnp=dmupdnB+
+	double f_npnp=dmupdnB+
 	  (1.0-Ye)*tg3_dmupdYe.get(i,j,k)/nB;
-	
-	double dsdnn=-tg3_dmundT.get(i,j,k);
-	double dsdnp=-tg3_dmupdT.get(i,j,k);
-	double dsdT=tg3_dsdT.get(i,j,k);
-
-	double f_nnnn=dmundnn;
-	double f_nnnp=dmundnp;
-	double f_npnn=dmupdnn;
-	double f_npnp=dmupdnp;
-	double f_nnT=dmundT;
-	double f_npT=dmupdT;
-	double f_TT=-dsdT;
+	double f_nnT=tg3_dmundT.get(i,j,k);
+	double f_npT=tg3_dmupdT.get(i,j,k);
+	double f_TT=-tg3_dsdT.get(i,j,k);
 	double nn=nB*(1.0-Ye);
 	double np=nB*Ye;
 	double en=tg3_Sint.get(i,j,k)*nB;
@@ -816,7 +890,7 @@ int eos_nuclei::eos_second_deriv(std::vector<std::string> &sv,
     }
   }
   
-  std::cout << "Finished computing derivatives." << endl;
+  std::cout << "Finished computing second derivatives." << endl;
 
   return 0;
     
@@ -2988,6 +3062,7 @@ int eos_nuclei::store_point
       tg3_E.set(i_nB,i_Ye,i_T,(th.ed+electron.ed+photon.ed)/nB*hc_mev_fm);
       tg3_P.set(i_nB,i_Ye,i_T,(th.pr+electron.pr+photon.pr)*hc_mev_fm);
       tg3_S.set(i_nB,i_Ye,i_T,(th.en+electron.en+photon.en)/nB);
+      tg3_mue.set(i_nB,i_Ye,i_T,electron.mu*hc_mev_fm);
       
     }
     
@@ -3414,6 +3489,7 @@ int eos_nuclei::write_results(std::string fname) {
       hdf_output(hf,tg3_E,"E");
       hdf_output(hf,tg3_P,"P");
       hdf_output(hf,tg3_S,"S");
+      hdf_output(hf,tg3_mup,"mue");
     }      
   }
 
@@ -3643,11 +3719,14 @@ int eos_nuclei::read_results(std::string fname) {
       hdf_input(hf,tg3_P,"P");
       if (verbose>2) cout << "Reading S." << endl;
       hdf_input(hf,tg3_S,"S");
+      if (verbose>2) cout << "Reading mue." << endl;
+      hdf_input(hf,tg3_mue,"mue");
     } else {
       tg3_F.clear();
       tg3_E.clear();
       tg3_P.clear();
       tg3_S.clear();
+      tg3_mue.clear();
     }
   } else {
     tg3_Pint.clear();
@@ -3657,6 +3736,7 @@ int eos_nuclei::read_results(std::string fname) {
     tg3_E.clear();
     tg3_P.clear();
     tg3_S.clear();
+    tg3_mue.clear();
   }
   
   hf.close();
@@ -4501,6 +4581,7 @@ int eos_nuclei::compare_tables(std::vector<std::string> &sv,
       names.push_back("E");
       names.push_back("P");
       names.push_back("S");
+      names.push_back("mue");
     }
   }
   
@@ -4529,6 +4610,7 @@ int eos_nuclei::compare_tables(std::vector<std::string> &sv,
       ptrs.push_back(&tg3_E);
       ptrs.push_back(&tg3_P);
       ptrs.push_back(&tg3_S);
+      ptrs.push_back(&tg3_mue);
     }
   }
   
@@ -4557,6 +4639,7 @@ int eos_nuclei::compare_tables(std::vector<std::string> &sv,
       ptrs2.push_back(&en2.tg3_E);
       ptrs2.push_back(&en2.tg3_P);
       ptrs2.push_back(&en2.tg3_S);
+      ptrs2.push_back(&en2.tg3_mue);
     }
   }
   
@@ -4746,6 +4829,9 @@ void eos_nuclei::new_table() {
       tg3_F.resize(3,st);
       tg3_F.set_grid_packed(packed);
       tg3_F.set_all(0.0);
+      tg3_mue.resize(3,st);
+      tg3_mue.set_grid_packed(packed);
+      tg3_mue.set_all(0.0);
     }
   }
 
@@ -4884,6 +4970,16 @@ int eos_nuclei::edit_data(std::vector<std::string> &sv,
 	      tg3_Pint.get(inB,iYe,iT)=val2;
 	    } else if (tensor_to_change=="Sint") {
 	      tg3_Sint.get(inB,iYe,iT)=val2;
+	    } else if (tensor_to_change=="F") {
+	      tg3_F.get(inB,iYe,iT)=val2;
+	    } else if (tensor_to_change=="E") {
+	      tg3_E.get(inB,iYe,iT)=val2;
+	    } else if (tensor_to_change=="P") {
+	      tg3_P.get(inB,iYe,iT)=val2;
+	    } else if (tensor_to_change=="S") {
+	      tg3_S.get(inB,iYe,iT)=val2;
+	    } else if (tensor_to_change=="mue") {
+	      tg3_mue.get(inB,iYe,iT)=val2;
 	    } else {
 	      cerr << "Invalid value for tensor to change." << endl;
 	      return 3;
@@ -6535,7 +6631,7 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
   
   eos::setup_cli(cl);
   
-  static const int nopt=19;
+  static const int nopt=20;
   
   o2scl::comm_option_s options[nopt]=
     {{0,"eos-deriv","compute derivatives",
@@ -6543,8 +6639,12 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
       (this,&eos_nuclei::eos_deriv),
       o2scl::cli::comm_option_both},
      {0,"add-eg","Add electrons and photons.",
-      0,0,"<file in> <file out>","",new o2scl::comm_option_mfptr<eos_nuclei>
+      0,0,"","",new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::add_eg),
+      o2scl::cli::comm_option_both},
+     {0,"eg-table","Make electron and photon table.",
+      1,1,"<output file>","",new o2scl::comm_option_mfptr<eos_nuclei>
+      (this,&eos_nuclei::eg_table),
       o2scl::cli::comm_option_both},
      {0,"maxwell-test","",
       4,4,"<file in> <file out>","",new o2scl::comm_option_mfptr<eos_nuclei>

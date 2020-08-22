@@ -350,6 +350,7 @@ public:
   o2scl::tensor_grid3<> tg3_Sint;
   o2scl::tensor_grid3<> tg3_mun;
   o2scl::tensor_grid3<> tg3_mup;
+  o2scl::tensor_grid3<> tg3_mue;
   o2scl::tensor_grid3<> tg3_Z;
   o2scl::tensor_grid3<> tg3_A;
   o2scl::tensor_grid3<> tg3_Xn;
@@ -488,9 +489,13 @@ public:
    */
   int eos_deriv(std::vector<std::string> &sv, bool itive_com);
 
+  int eos_second_deriv(std::vector<std::string> &sv, bool itive_com);
+
   /** \brief Add electrons and photons
    */
   int add_eg(std::vector<std::string> &sv, bool itive_com);
+
+  int eg_table(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Edit an EOS table
    */
