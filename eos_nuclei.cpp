@@ -558,14 +558,6 @@ int eos_nuclei::eg_table(std::vector<std::string> &sv,
   eos_sn_base esb;
   esb.include_muons=include_muons;
 
-  // Higher accuracy
-  esb.relf.upper_limit_fac=40.0;
-  esb.relf.dit->tol_abs=1.0e-13;
-  esb.relf.dit->tol_rel=1.0e-13;
-  esb.relf.nit->tol_abs=1.0e-13;
-  esb.relf.nit->tol_rel=1.0e-13;
-  esb.relf.density_root->tol_rel=1.0e-10;
-  
   for (size_t i=0;i<n_nB2;i++) {
     double nB=nB_grid2[i];
     for (size_t j=0;j<n_Ye2;j++) {
