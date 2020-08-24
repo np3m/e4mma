@@ -5349,8 +5349,8 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
       gtab.line_of_names("log_xn log_xp Z A A_min A_max NmZ_min NmZ_max");
 
       size_t nB_step=1;
-      size_t Ye_step=1;
-      size_t T_step=1;
+      size_t Ye_step=0;
+      size_t T_step=0;
 
       // Interpret variable Ye_list as an array of type size_t
       vector<size_t> Ye_list_sizet;
