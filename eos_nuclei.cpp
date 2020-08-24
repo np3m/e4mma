@@ -5454,6 +5454,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	    if (six_neighbors==true &&
 		(iflag==iflag_guess ||
 		 (propagate_points && iflag!=iflag_done))) {
+
 	      if (inB>0) {
 		int iflag2=((int)(tg3_flag.get(inB-1,iYe,iT)*
 				  (1.0+1.0e-12)));
@@ -5505,7 +5506,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 		  guess_found=true;
 		}
 	      }
-	      if (iYe>0) {
+	      if (false && iYe>0) {
 		int iflag2=((int)(tg3_flag.get(inB,iYe-1,iT)*
 				  (1.0+1.0e-12)));
 		if (iflag2==iflag_in_progress_with_guess ||
@@ -5538,7 +5539,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 		  guess_found=true;
 		}
 	      }
-	      if (iT>0) {
+	      if (false && iT>0) {
 		int iflag2=((int)(tg3_flag.get(inB,iYe,iT-1)*
 				  (1.0+1.0e-12)));
 		if (iflag2==iflag_in_progress_with_guess ||
@@ -5622,7 +5623,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 		  guess_found=true;
 		}
 	      }
-	      if (iYe<((int)n_Ye2)-1) {
+	      if (false && iYe<((int)n_Ye2)-1) {
 		int iflag2=((int)(tg3_flag.get(inB,iYe+1,iT)*
 				  (1.0+1.0e-12)));
 		if (iflag2==iflag_in_progress_with_guess ||
@@ -5655,7 +5656,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 		  guess_found=true;
 		}
 	      }
-	      if (iT<((int)n_T2)-1) {
+	      if (false && iT<((int)n_T2)-1) {
 		int iflag2=((int)(tg3_flag.get(inB,iYe,iT+1)*
 				  (1.0+1.0e-12)));
 		if (iflag2==iflag_in_progress_with_guess ||
