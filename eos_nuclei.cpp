@@ -2987,7 +2987,8 @@ int eos_nuclei::store_point
   tg3_Fint.set(i_nB,i_Ye,i_T,(th.ed-T*th.en)/nB*hc_mev_fm);
   tg3_Eint.set(i_nB,i_Ye,i_T,th.ed/nB*hc_mev_fm);
   tg3_Sint.set(i_nB,i_Ye,i_T,th.en/nB);
-  cout << "HereA: " << th.ed-T*th.en << endl;
+  cout << "HereA: " << th.ed-T*th.en << " " << log_xn << " "
+       << log_xp << endl;
   cout << "Here: " << th.ed/nB*hc_mev_fm << endl;
   cout << "Here: " << th.en/nB << endl;
   exit(-1);
