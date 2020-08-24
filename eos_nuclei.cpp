@@ -2881,6 +2881,8 @@ int eos_nuclei::store_point
  double A_min, double A_max, double NmZ_min, double NmZ_max,
  double loc_flag) {
 
+  cout << "Here." << endl;
+
   int loc_verbose=function_verbose/10000%10;
 
   double fr=th.ed-T*th.en;
@@ -2983,6 +2985,12 @@ int eos_nuclei::store_point
   tg3_A.set(i_nB,i_Ye,i_T,Zbar+Nbar);
   tg3_flag.set(i_nB,i_Ye,i_T,loc_flag);
   tg3_Fint.set(i_nB,i_Ye,i_T,(th.ed-T*th.en)/nB*hc_mev_fm);
+  tg3_Eint.set(i_nB,i_Ye,i_T,th.ed/nB*hc_mev_fm);
+  tg3_Sint.set(i_nB,i_Ye,i_T,th.en/nB);
+  cout << "HereA: " << th.ed-T*th.en << endl;
+  cout << "Here: " << th.ed/nB*hc_mev_fm << endl;
+  cout << "Here: " << th.en/nB << endl;
+  exit(-1);
 
   if (loc_verbose>1) {
     cout << "store_point() output:\n  nB, Ye, T (MeV): "
@@ -3034,7 +3042,6 @@ int eos_nuclei::store_point
   // not correctly analytically compute mun, mup, Eint and Pint
   if (false && derivs_computed) {
     
-    tg3_Eint.set(i_nB,i_Ye,i_T,th.ed/nB*hc_mev_fm);
     tg3_Pint.set(i_nB,i_Ye,i_T,th.pr*hc_mev_fm);
 
     if (loc_verbose>1) {
@@ -3904,7 +3911,7 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
 
       ubvector X;
       compute_X(nB,X);
-      
+
       store_point(inB,iYe,iT,nB,Ye,T,thx,log_xn,log_xp,Zbar,Nbar,
 		  mun_full,mup_full,X,A_min,A_max,NmZ_min,NmZ_max,10.0);
     } else {
@@ -3931,8 +3938,11 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
     if (loaded) {
       cout << "Z: " << tg3_Z.get(inB,iYe,iT) << endl;
       cout << "A: " << tg3_A.get(inB,iYe,iT) << endl;
-      cout << "Fint: " << tg3_Fint.get(inB,iYe,iT) << endl;
+      cout << "Fint: " << tg3_Fint.get(inB,iYe,iT) << " ";
+      cout << tg3_Eint.get(inB,iYe,iT)-
+	T*hc_mev_fm*tg3_Sint.get(inB,iYe,iT) << endl;
       cout << "Sint: " << tg3_Sint.get(inB,iYe,iT) << endl;
+      cout << "Eint: " << tg3_Eint.get(inB,iYe,iT) << endl;
       cout << "A_min: " << tg3_A_min.get(inB,iYe,iT) << endl;
       cout << "A_max: " << tg3_A_max.get(inB,iYe,iT) << endl;
       cout << "NmZ_min: " << tg3_NmZ_min.get(inB,iYe,iT) << endl;
@@ -4215,12 +4225,17 @@ int eos_nuclei::stats(std::vector<std::string> &sv,
 	double Fint_check=tg3_Fint.get_data()[i]-
 	  tg3_Eint.get_data()[i]+T_MeV*tg3_Sint.get_data()[i];
 	if (fabs(Fint_check)>1.0e-9) {
-	  cout << "Fint doesn't match Eint-T*Sint (i,nB,Ye,T,Fint_check): "
+	  cout << "Fint doesn't match Eint-T*Sint:"
+	       << "(i,nB,Ye,T,Fint_check):\n  "
 	       << i << " " << nB << " " << Ye << " " << T_MeV
 	       << " " << Fint_check << endl;
-	  cout << "  " << tg3_Fint.get_data()[i] << " ";
+	  cout << "  (Fint,Eint,T,Sint,Eint-T*Sint): "
+	       << tg3_Fint.get_data()[i] << " ";
 	  cout << tg3_Eint.get_data()[i] << " ";
-	  cout << T_MeV*tg3_Sint.get_data()[i] << endl;
+	  cout << T_MeV << " " << tg3_Sint.get_data()[i] << " ";
+	  cout << tg3_Eint.get_data()[i]-T_MeV*tg3_Sint.get_data()[i] << endl;
+	  char ch;
+	  cin >> ch;
 	  Fint_count++;
 	  if (Fint_count==1000) {
 	    cout << "Further Fint warnings suppressed." << endl;
