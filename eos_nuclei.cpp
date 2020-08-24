@@ -2881,8 +2881,6 @@ int eos_nuclei::store_point
  double A_min, double A_max, double NmZ_min, double NmZ_max,
  double loc_flag) {
 
-  cout << "Here." << endl;
-
   int loc_verbose=function_verbose/10000%10;
 
   double fr=th.ed-T*th.en;
@@ -2987,11 +2985,6 @@ int eos_nuclei::store_point
   tg3_Fint.set(i_nB,i_Ye,i_T,(th.ed-T*th.en)/nB*hc_mev_fm);
   tg3_Eint.set(i_nB,i_Ye,i_T,th.ed/nB*hc_mev_fm);
   tg3_Sint.set(i_nB,i_Ye,i_T,th.en/nB);
-  cout << "HereA: " << th.ed-T*th.en << " " << log_xn << " "
-       << log_xp << endl;
-  cout << "Here: " << th.ed/nB*hc_mev_fm << endl;
-  cout << "Here: " << th.en/nB << endl;
-  exit(-1);
 
   if (loc_verbose>1) {
     cout << "store_point() output:\n  nB, Ye, T (MeV): "
@@ -3427,6 +3420,21 @@ void eos_nuclei::write_nuclei(std::string fname) {
   
 int eos_nuclei::write_results(std::string fname) {
 
+  int mpi_rank, mpi_size;
+#ifndef NO_MPI
+  // Get MPI rank, etc.
+  MPI_Comm_rank(MPI_COMM_WORLD,&mpi_rank);
+  MPI_Comm_size(MPI_COMM_WORLD,&mpi_size);
+  
+  // Ensure that multiple MPI ranks aren't reading from the
+  // filesystem at the same time
+  int tag=0, buffer=0;
+  if (mpi_size>1 && mpi_rank>=1) {
+    MPI_Recv(&buffer,1,MPI_INT,mpi_rank-1,
+	     tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
+  }
+#endif
+  
   cout << "Function write_results() file " << fname << endl;
   
   hdf_file hf;
@@ -3524,6 +3532,14 @@ int eos_nuclei::write_results(std::string fname) {
   hf.close();
   
   cout << "Function write_results() done. " << endl;
+
+#ifndef NO_MPI
+  // Send a message to the next MPI rank
+  if (mpi_size>1 && mpi_rank<mpi_size-1) {
+    MPI_Send(&buffer,1,MPI_INT,mpi_rank+1,
+	     tag,MPI_COMM_WORLD);
+  }
+#endif
 
   return 0;
 }
@@ -3939,9 +3955,7 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
     if (loaded) {
       cout << "Z: " << tg3_Z.get(inB,iYe,iT) << endl;
       cout << "A: " << tg3_A.get(inB,iYe,iT) << endl;
-      cout << "Fint: " << tg3_Fint.get(inB,iYe,iT) << " ";
-      cout << tg3_Eint.get(inB,iYe,iT)-
-	T*hc_mev_fm*tg3_Sint.get(inB,iYe,iT) << endl;
+      cout << "Fint: " << tg3_Fint.get(inB,iYe,iT) << endl;
       cout << "Sint: " << tg3_Sint.get(inB,iYe,iT) << endl;
       cout << "Eint: " << tg3_Eint.get(inB,iYe,iT) << endl;
       cout << "A_min: " << tg3_A_min.get(inB,iYe,iT) << endl;
@@ -4235,8 +4249,6 @@ int eos_nuclei::stats(std::vector<std::string> &sv,
 	  cout << tg3_Eint.get_data()[i] << " ";
 	  cout << T_MeV << " " << tg3_Sint.get_data()[i] << " ";
 	  cout << tg3_Eint.get_data()[i]-T_MeV*tg3_Sint.get_data()[i] << endl;
-	  char ch;
-	  cin >> ch;
 	  Fint_count++;
 	  if (Fint_count==1000) {
 	    cout << "Further Fint warnings suppressed." << endl;
@@ -4445,6 +4457,7 @@ int eos_nuclei::merge_tables(std::vector<std::string> &sv,
 	double flag2=en2.tg3_flag.get(i,j,k);
 	double Fint1=tg3_Fint.get(i,j,k);
 	double Fint2=en2.tg3_Fint.get(i,j,k);
+
 	if (fabs(flag1)<0.5 && (Fint1>1.0e90 ||
 				!std::isfinite(Fint1) || Fint1<(-1.0e10))) {
 	  flag1=0.0;
@@ -4484,11 +4497,7 @@ int eos_nuclei::merge_tables(std::vector<std::string> &sv,
 	    zero and "2" has a smaller free energy
 	    4: "2" has a non-zero flag but "1" does not
 	  */
-	  
-	  cout << "Copying point from Table 2 to Table 1: "
-	       << flag1 << " " << flag2 << " " << nB << ","
-	       << Ye << "," << T_MeV << ")." << endl;
-	  exit(-1);
+
 	  tg3_flag.set(i,j,k,en2.tg3_flag.get(i,j,k));
 
 	  tg3_log_xn.set(i,j,k,en2.tg3_log_xn.get(i,j,k));
