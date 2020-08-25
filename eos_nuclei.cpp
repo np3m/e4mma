@@ -5349,8 +5349,8 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
       gtab.line_of_names("log_xn log_xp Z A A_min A_max NmZ_min NmZ_max");
 
       size_t nB_step=1;
-      size_t Ye_step=0;
-      size_t T_step=0;
+      size_t Ye_step=1;
+      size_t T_step=1;
 
       // Interpret variable Ye_list as an array of type size_t
       vector<size_t> Ye_list_sizet;
@@ -5572,7 +5572,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 		  guess_found=true;
 		}
 	      }
-	      if (inB<((int)n_nB2)-1) {
+	      if (false && inB<((int)n_nB2)-1) {
 		int iflag2=((int)(tg3_flag.get(inB+1,iYe,iT)*
 				  (1.0+1.0e-12)));
 		if (iflag2==iflag_in_progress_with_guess ||
