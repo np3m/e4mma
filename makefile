@@ -110,9 +110,12 @@ doc: empty
 	cd doc; cp ~/o2scl/doc/o2scl/o2scl.tag .
 	cd doc; cp ~/o2scl/doc/o2scl/part/o2scl_part.tag .
 	cd doc; cp ~/o2scl/doc/o2scl/eos/o2scl_eos.tag .
-	cd doc; cp ~/o2scl/doc/o2scl/sphinx/build/html/objects.inv o2scl_objects.inv
-	cd doc; cp ~/o2scl/doc/o2scl/part/sphinx/build/html/objects.inv o2scl_part_objects.inv
-	cd doc; cp ~/o2scl/doc/o2scl/eos/sphinx/build/html/objects.inv o2scl_eos_objects.inv
+	cd doc; cp ~/o2scl/doc/o2scl/sphinx/build/html/objects.inv \
+		o2scl_objects.inv
+	cd doc; cp ~/o2scl/doc/o2scl/part/sphinx/build/html/objects.inv \
+		o2scl_part_objects.inv
+	cd doc; cp ~/o2scl/doc/o2scl/eos/sphinx/build/html/objects.inv \
+		o2scl_eos_objects.inv
 	cd doc; doxygen doxyfile
 	cd doc; make html
 
@@ -139,3 +142,17 @@ P_LARGE_SL = 470 738 0.5 13.0 100.0 36.0 0.9
 
 # ----------------------------------------------------------------
 
+t:
+	enn -set select_cs2_test 0 -select-model $(P_FIDUCIAL) \
+		-set fd_A_max 600 -set max_ratio 5.0 \
+		-load ~/data/eos/20/08/25/fid_600m.o2 \
+		-set six_neighbors 1 -set fixed_dist_alg 9999 \
+		-generate-table temp.o2 
+
+t2:
+	enn -set select_cs2_test 0 -select-model $(P_FIDUCIAL) \
+		-set fd_A_max 600 -set max_ratio 5.0 \
+		-load ~/data/eos/20/08/25/fid_600m.o2 \
+		-set mh_tol_rel 1.0e-3 -set function_verbose 11211 \
+		-set fixed_dist_alg 9999 \
+		-point-nuclei 5.51e-3 0.02 0.1

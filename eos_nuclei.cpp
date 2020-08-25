@@ -3420,7 +3420,7 @@ void eos_nuclei::write_nuclei(std::string fname) {
   
 int eos_nuclei::write_results(std::string fname) {
 
-  int mpi_rank, mpi_size;
+  int mpi_rank=0, mpi_size=1;
 #ifndef NO_MPI
   // Get MPI rank, etc.
   MPI_Comm_rank(MPI_COMM_WORLD,&mpi_rank);
@@ -3435,7 +3435,8 @@ int eos_nuclei::write_results(std::string fname) {
   }
 #endif
   
-  cout << "Function write_results() file " << fname << endl;
+  cout << "Function write_results(): rank " << mpi_rank
+       << " reading file " << fname << endl;
   
   hdf_file hf;
   
@@ -3531,7 +3532,8 @@ int eos_nuclei::write_results(std::string fname) {
   
   hf.close();
   
-  cout << "Function write_results() done. " << endl;
+  cout << "Function write_results(): rank " << mpi_rank
+       << " done reading file." << endl;
 
 #ifndef NO_MPI
   // Send a message to the next MPI rank
@@ -3546,9 +3548,7 @@ int eos_nuclei::write_results(std::string fname) {
 
 int eos_nuclei::read_results(std::string fname) {
 
-  cout << "Function read_results() file " << fname << endl;
-  
-  int mpi_rank, mpi_size;
+  int mpi_rank=0, mpi_size=1;
 #ifndef NO_MPI
   // Get MPI rank, etc.
   MPI_Comm_rank(MPI_COMM_WORLD,&mpi_rank);
@@ -3562,6 +3562,9 @@ int eos_nuclei::read_results(std::string fname) {
 	     tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
   }
 #endif
+  
+  cout << "Function read_results(): rank " << mpi_rank
+       << " reading file " << fname << endl;
   
   hdf_file hf;
   string type;
@@ -3767,6 +3770,9 @@ int eos_nuclei::read_results(std::string fname) {
 
   loaded=true;
   
+  cout << "Function read_results(): rank " << mpi_rank
+       << " done reading file." << endl;
+
 #ifndef NO_MPI
   // Send a message to the next MPI rank
   if (mpi_size>1 && mpi_rank<mpi_size-1) {
@@ -3774,8 +3780,6 @@ int eos_nuclei::read_results(std::string fname) {
 	     tag,MPI_COMM_WORLD);
   }
 #endif
-
-  cout << "Function read_results() done. " << endl;
 
   return 0;
 }
@@ -3799,11 +3803,9 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
   int flag=0;
   size_t inB=0, iYe=0, iT=0;
 
-  // Adjust to put the user-specified point on the grid
+  // If a table is loaded
   if (loaded) {
 
-    flag=tg3_flag.get(inB,iYe,iT);
-    
     inB=vector_lookup(n_nB2,nB_grid2,nB);
     nB=nB_grid2[inB];
     iYe=vector_lookup(n_Ye2,Ye_grid2,Ye);
@@ -3811,10 +3813,12 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
     iT=vector_lookup(n_T2,T_grid2,T*hc_mev_fm);
     T=T_grid2[iT]/hc_mev_fm;
     
+    flag=((int)(tg3_flag.get(inB,iYe,iT)+1.0e-10));
+    
     cout << "Found grid point (inB,iYe,iT)=(" << inB << ","
 	 << iYe << "," << iT << ")\n\t(nB,Ye,T)=("
-	 << nB << "," << Ye << "," << T*hc_mev_fm << ")." << endl;
-
+	 << nB << "," << Ye << "," << T*hc_mev_fm << "), flag="
+	 << flag << "." << endl;
   }
   
   if ((alg_mode==2 || alg_mode==3 || alg_mode==4) && sv.size()>=10) {
@@ -3842,7 +3846,7 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
     guess_provided=true;
   } else if (loaded) {
     // If the flag is 'guess' or 'in progress with guess'
-    if (flag>4.9 || fabs(flag+5)<0.01) {
+    if (flag>=5 || flag==-5) {
       if (alg_mode==0 || alg_mode==1) {
 	cout << "Function point_nuclei(): "
 	     << "Reading guess (N,Z) from current table." << endl;
@@ -3867,30 +3871,53 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
 	     << A_max << " " << NmZ_min << " " << NmZ_max << endl;
 	guess_provided=true;
       }
+    } else if (inB>0 && tg3_flag.get(inB-1,iYe,iT)>9.9 && alg_mode==4) {
+      cout << "Reading guess from lower baryon density point." << endl;
+      log_xn=tg3_log_xn.get(inB-1,iYe,iT);
+      log_xp=tg3_log_xp.get(inB-1,iYe,iT);
+      A_min=((int)(tg3_A_min.get(inB-1,iYe,iT)));
+      A_max=((int)(tg3_A_max.get(inB-1,iYe,iT)));
+      NmZ_min=((int)(tg3_NmZ_min.get(inB-1,iYe,iT)));
+      NmZ_max=((int)(tg3_NmZ_max.get(inB-1,iYe,iT)));
+      cout << "  log_xn,log_xp,Z,A: "
+	   << log_xn << " " << log_xp << " ";
+      cout << tg3_Z.get(inB-1,iYe,iT) << " ";
+      cout << tg3_A.get(inB-1,iYe,iT) << endl;
+      cout << "  A_min,A_Max,NmZ_min,NmZ_max: ";
+      cout << A_min << " "
+	   << A_max << " " << NmZ_min << " " << NmZ_max << " ";
+      guess_provided=true;
     }
   }
-  
+
+  // If no guess was found, then just use a default guess
   if (guess_provided==false) {
     cout << "Function point_nuclei(): "
 	 << "Using hard-coded initial guess." << endl;
     log_xn=-1.0;
     log_xp=-1.0;
-    if (alg_mode==2 || alg_mode==3 || alg_mode==4) {
+    if (alg_mode==2 || alg_mode==3) {
       A_min=20;
       A_max=40;
       NmZ_min=-5;
       NmZ_max=5;
+    } else if (alg_mode==4) {
+      A_min=5;
+      A_max=fd_A_max;
+      NmZ_min=-200;
+      NmZ_max=200;
     } else {
       nuc_Z1=28;
       nuc_N1=28;
     }
   }
 
-  int ret=0;
+  int ret=-1;
   
   // If necessary, compute the point
-  if (flag<9.9 || recompute==true) {
-    cout << "Computing point " << flag << " " << recompute << endl;
+  if (flag<10 || recompute==true) {
+    
+    cout << "Computing point." << endl;
 
     if (loaded && inB>0 && inB<n_nB2-1 &&
 	tg3_flag.get(inB-1,iYe,iT)>9.9 &&
@@ -3946,31 +3973,41 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
 
     if (fd_rand_ranges.size()>0) fd_rand_ranges.clear();
     
-  } else {
+  }
+
+  // (At this point in the code, the integer 'flag' is the old
+  // flag, not the new flag, which is stored in tg3_flag)
+
+  if (flag>=10 && recompute) {
     cout << "Point already computed and recompute is false." << endl;
   }
 
-  // Print out the results
-  if (ret==0) {
-    if (loaded) {
-      cout << "Z: " << tg3_Z.get(inB,iYe,iT) << endl;
-      cout << "A: " << tg3_A.get(inB,iYe,iT) << endl;
-      cout << "Fint: " << tg3_Fint.get(inB,iYe,iT) << endl;
-      cout << "Sint: " << tg3_Sint.get(inB,iYe,iT) << endl;
-      cout << "Eint: " << tg3_Eint.get(inB,iYe,iT) << endl;
-      cout << "A_min: " << tg3_A_min.get(inB,iYe,iT) << endl;
-      cout << "A_max: " << tg3_A_max.get(inB,iYe,iT) << endl;
-      cout << "NmZ_min: " << tg3_NmZ_min.get(inB,iYe,iT) << endl;
-      cout << "NmZ_max: " << tg3_NmZ_max.get(inB,iYe,iT) << endl;
-      cout << "Xn: " << tg3_Xn.get(inB,iYe,iT) << endl;
-      cout << "Xp: " << tg3_Xp.get(inB,iYe,iT) << endl;
-      cout << "Xd: " << tg3_Xd.get(inB,iYe,iT) << endl;
-      cout << "Xt: " << tg3_Xt.get(inB,iYe,iT) << endl;
-      cout << "XHe3: " << tg3_XHe3.get(inB,iYe,iT) << endl;
-      cout << "XLi4: " << tg3_XLi4.get(inB,iYe,iT) << endl;
-      cout << "Xalpha: " << tg3_Xalpha.get(inB,iYe,iT) << endl;
-      cout << "Xnuclei: " << tg3_Xnuclei.get(inB,iYe,iT) << endl;
-    }
+  // Print out the results when tables have been loaded if either the
+  // computation worked (ret==0) or if the old flag was marked done
+  // (flag==10).
+  
+  if ((ret==0 || flag==10) && loaded) {
+    cout << "nB,Ye,T: " << nB << " " << Ye << " " << T*hc_mev_fm << endl;
+    cout << "flag: " << tg3_flag.get(inB,iYe,iT) << endl;
+    cout << "log_xn: " << tg3_log_xn.get(inB,iYe,iT) << endl;
+    cout << "log_xp: " << tg3_log_xp.get(inB,iYe,iT) << endl;
+    cout << "Z: " << tg3_Z.get(inB,iYe,iT) << endl;
+    cout << "A: " << tg3_A.get(inB,iYe,iT) << endl;
+    cout << "Fint: " << tg3_Fint.get(inB,iYe,iT) << " MeV" << endl;
+    cout << "Sint: " << tg3_Sint.get(inB,iYe,iT) << endl;
+    cout << "Eint: " << tg3_Eint.get(inB,iYe,iT) << " MeV" << endl;
+    cout << "A_min: " << tg3_A_min.get(inB,iYe,iT) << endl;
+    cout << "A_max: " << tg3_A_max.get(inB,iYe,iT) << endl;
+    cout << "NmZ_min: " << tg3_NmZ_min.get(inB,iYe,iT) << endl;
+    cout << "NmZ_max: " << tg3_NmZ_max.get(inB,iYe,iT) << endl;
+    cout << "Xn: " << tg3_Xn.get(inB,iYe,iT) << endl;
+    cout << "Xp: " << tg3_Xp.get(inB,iYe,iT) << endl;
+    cout << "Xd: " << tg3_Xd.get(inB,iYe,iT) << endl;
+    cout << "Xt: " << tg3_Xt.get(inB,iYe,iT) << endl;
+    cout << "XHe3: " << tg3_XHe3.get(inB,iYe,iT) << endl;
+    cout << "XLi4: " << tg3_XLi4.get(inB,iYe,iT) << endl;
+    cout << "Xalpha: " << tg3_Xalpha.get(inB,iYe,iT) << endl;
+    cout << "Xnuclei: " << tg3_Xnuclei.get(inB,iYe,iT) << endl;
   }
 
   if (alg_mode>=2 && show_all_nuclei) {
@@ -5348,9 +5385,9 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
       table<> gtab;
       gtab.line_of_names("log_xn log_xp Z A A_min A_max NmZ_min NmZ_max");
 
-      size_t nB_step=1;
-      size_t Ye_step=1;
-      size_t T_step=1;
+      size_t nB_step=0;
+      size_t Ye_step=0;
+      size_t T_step=0;
 
       // Interpret variable Ye_list as an array of type size_t
       vector<size_t> Ye_list_sizet;
@@ -5455,6 +5492,8 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 		(iflag==iflag_guess ||
 		 (propagate_points && iflag!=iflag_done))) {
 
+	      bool full_six=false;
+	      
 	      if (inB>0) {
 		int iflag2=((int)(tg3_flag.get(inB-1,iYe,iT)*
 				  (1.0+1.0e-12)));
@@ -5466,8 +5505,14 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 		  tasks.push_back(inB);
 		  tasks.push_back(iYe);
 		  tasks.push_back(iT);
-
+		  
 		  if (alg_mode>=2) {
+		    // If we're at small densities and we've converged
+		    // at both a higher density and a lower density,
+		    // then we can linearly interpolate to get a good
+		    // guess. At higher densities this is not
+		    // necessarily a good guess because of the
+		    // liquid-gas phase transition
 		    if (nB_grid2[inB]<1.0e-3 && inB<((int)n_nB2)-1 &&
 			tg3_flag.get(inB+1,iYe,iT)>9.9) {
 		      double line[8]={(tg3_log_xn.get(inB-1,iYe,iT)+
@@ -5506,7 +5551,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 		  guess_found=true;
 		}
 	      }
-	      if (false && iYe>0) {
+	      if (full_six && iYe>0) {
 		int iflag2=((int)(tg3_flag.get(inB,iYe-1,iT)*
 				  (1.0+1.0e-12)));
 		if (iflag2==iflag_in_progress_with_guess ||
@@ -5539,7 +5584,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 		  guess_found=true;
 		}
 	      }
-	      if (false && iT>0) {
+	      if (full_six && iT>0) {
 		int iflag2=((int)(tg3_flag.get(inB,iYe,iT-1)*
 				  (1.0+1.0e-12)));
 		if (iflag2==iflag_in_progress_with_guess ||
@@ -5572,7 +5617,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 		  guess_found=true;
 		}
 	      }
-	      if (false && inB<((int)n_nB2)-1) {
+	      if (full_six && inB<((int)n_nB2)-1) {
 		int iflag2=((int)(tg3_flag.get(inB+1,iYe,iT)*
 				  (1.0+1.0e-12)));
 		if (iflag2==iflag_in_progress_with_guess ||
@@ -5623,7 +5668,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 		  guess_found=true;
 		}
 	      }
-	      if (false && iYe<((int)n_Ye2)-1) {
+	      if (full_six && iYe<((int)n_Ye2)-1) {
 		int iflag2=((int)(tg3_flag.get(inB,iYe+1,iT)*
 				  (1.0+1.0e-12)));
 		if (iflag2==iflag_in_progress_with_guess ||
@@ -5656,7 +5701,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 		  guess_found=true;
 		}
 	      }
-	      if (false && iT<((int)n_T2)-1) {
+	      if (full_six && iT<((int)n_T2)-1) {
 		int iflag2=((int)(tg3_flag.get(inB,iYe,iT+1)*
 				  (1.0+1.0e-12)));
 		if (iflag2==iflag_in_progress_with_guess ||
