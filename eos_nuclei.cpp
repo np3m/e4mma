@@ -3436,7 +3436,7 @@ int eos_nuclei::write_results(std::string fname) {
 #endif
   
   cout << "Function write_results(): rank " << mpi_rank
-       << " reading file " << fname << endl;
+       << " writing file " << fname << endl;
   
   hdf_file hf;
   
@@ -3533,7 +3533,7 @@ int eos_nuclei::write_results(std::string fname) {
   hf.close();
   
   cout << "Function write_results(): rank " << mpi_rank
-       << " done reading file." << endl;
+       << " done writing file." << endl;
 
 #ifndef NO_MPI
   // Send a message to the next MPI rank
