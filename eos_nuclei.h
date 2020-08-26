@@ -254,7 +254,7 @@ public:
       also using the six neighboring points as an initial guess
       (default false)
   */
-  bool six_neighbors;
+  int six_neighbors;
 
   /** \brief A new function verbose parameter
    */
@@ -374,7 +374,7 @@ public:
   o2scl::cli::parameter_bool p_recompute;
   o2scl::cli::parameter_string p_edge_list;
   o2scl::cli::parameter_string p_ext_guess;
-  o2scl::cli::parameter_bool p_six_neighbors;
+  o2scl::cli::parameter_int p_six_neighbors;
   o2scl::cli::parameter_bool p_full_results;
   o2scl::cli::parameter_bool p_rnuc_less_rws;
   o2scl::cli::parameter_bool p_include_eg;

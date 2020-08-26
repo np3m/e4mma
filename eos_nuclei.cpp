@@ -50,7 +50,7 @@ eos_nuclei::eos_nuclei() {
   show_all_nuclei=false;
   recompute=false;
   edge_list="";
-  six_neighbors=false;
+  six_neighbors=0;
   propagate_points=true;
   
   mh.ntrial=10000;
@@ -5488,12 +5488,10 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	    
 	    // If six_neighbors is true, set up six additional tasks
 	    // for neighbors with useful initial guesses
-	    if (six_neighbors==true &&
+	    if (six_neighbors>0 &&
 		(iflag==iflag_guess ||
 		 (propagate_points && iflag!=iflag_done))) {
 
-	      bool full_six=false;
-	      
 	      if (inB>0) {
 		int iflag2=((int)(tg3_flag.get(inB-1,iYe,iT)*
 				  (1.0+1.0e-12)));
@@ -5551,7 +5549,8 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 		  guess_found=true;
 		}
 	      }
-	      if (full_six && iYe>0) {
+	      
+	      if (six_neighbors>4 && iYe>0) {
 		int iflag2=((int)(tg3_flag.get(inB,iYe-1,iT)*
 				  (1.0+1.0e-12)));
 		if (iflag2==iflag_in_progress_with_guess ||
@@ -5584,7 +5583,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 		  guess_found=true;
 		}
 	      }
-	      if (full_six && iT>0) {
+	      if (six_neighbors>2 && iT>0) {
 		int iflag2=((int)(tg3_flag.get(inB,iYe,iT-1)*
 				  (1.0+1.0e-12)));
 		if (iflag2==iflag_in_progress_with_guess ||
@@ -5617,7 +5616,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 		  guess_found=true;
 		}
 	      }
-	      if (full_six && inB<((int)n_nB2)-1) {
+	      if (six_neighbors>1 && inB<((int)n_nB2)-1) {
 		int iflag2=((int)(tg3_flag.get(inB+1,iYe,iT)*
 				  (1.0+1.0e-12)));
 		if (iflag2==iflag_in_progress_with_guess ||
@@ -5668,7 +5667,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 		  guess_found=true;
 		}
 	      }
-	      if (full_six && iYe<((int)n_Ye2)-1) {
+	      if (six_neighbors>4 && iYe<((int)n_Ye2)-1) {
 		int iflag2=((int)(tg3_flag.get(inB,iYe+1,iT)*
 				  (1.0+1.0e-12)));
 		if (iflag2==iflag_in_progress_with_guess ||
@@ -5701,7 +5700,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 		  guess_found=true;
 		}
 	      }
-	      if (full_six && iT<((int)n_T2)-1) {
+	      if (six_neighbors>2 && iT<((int)n_T2)-1) {
 		int iflag2=((int)(tg3_flag.get(inB,iYe,iT+1)*
 				  (1.0+1.0e-12)));
 		if (iflag2==iflag_in_progress_with_guess ||
@@ -6888,8 +6887,9 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
   p_edge_list.help=((string)"List of names");
   cl.par_list.insert(make_pair("edge_list",&p_edge_list));
   
-  p_six_neighbors.b=&six_neighbors;
-  p_six_neighbors.help="If true, use all six neighbors as guesses";
+  p_six_neighbors.i=&six_neighbors;
+  p_six_neighbors.help=((string)"If greater than 0, use nearest ")+
+    "neighbors as guesses (default0 0).";
   cl.par_list.insert(make_pair("six_neighbors",&p_six_neighbors));
   
   p_rnuc_less_rws.b=&rnuc_less_rws;
