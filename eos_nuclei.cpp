@@ -2599,8 +2599,8 @@ int eos_nuclei::eos_fixed_dist
       // If the ranges don't include the best point so far, expand them
       if (x1[0]<ranges[0]) ranges[0]=x1[0]-(ranges[1]-ranges[0]);
       if (x1[0]>ranges[1]) ranges[1]=x1[0]+(ranges[1]-ranges[0]);
-      if (x1[1]<ranges[2]) ranges[2]=x1[1]-(ranges[1]-ranges[2]);
-      if (x1[1]>ranges[3]) ranges[3]=x1[1]+(ranges[3]-ranges[0]);
+      if (x1[1]<ranges[2]) ranges[2]=x1[1]-(ranges[3]-ranges[2]);
+      if (x1[1]>ranges[3]) ranges[3]=x1[1]+(ranges[3]-ranges[2]);
       
       if (loc_verbose>1) {
 	cout << "x1,ranges: " << x1[0] << " " << x1[1] << " "
@@ -2610,7 +2610,8 @@ int eos_nuclei::eos_fixed_dist
       
     }
     
-    if (mh_ret!=0 && ranges[0]<1.0e50 && ranges[2]<1.0e50) {
+    if (mh_ret!=0 && ranges[0]<1.0e50 && ranges[1]<1.0e50 &&
+	ranges[2]<1.0e50 && ranges[3]<1.0e50) {
       for(int kk=0;kk<n_randoms && mh_ret!=0;kk++) {
 	x1[0]=ranges[0]+rng.random()*(ranges[1]-ranges[0]);
 	x1[1]=ranges[2]+rng.random()*(ranges[3]-ranges[2]);
