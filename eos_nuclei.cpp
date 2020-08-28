@@ -2356,12 +2356,16 @@ int eos_nuclei::eos_fixed_dist
 
     for(int k=0;k<n_solves && mh_ret!=0;k++) {
       mh_ret=mh.msolve(2,x1,sn_func);
+      if (loc_verbose>=2 && mpi_size==1) {
+	cout << "Rank " << mpi_rank << " finished solve " << k+1
+	     << "/" << n_solves << endl;
+      }
       sn_func(2,x1,y1);
       if (fabs(y1[0])+fabs(y1[1])<qual_best) {
 	qual_best=fabs(y1[0])+fabs(y1[1]);
       }
       if (mh_ret==0 && mpi_size==1) {
-	cout << "Rank " << mpi_rank << " finished at solve " << k << endl;
+	cout << "Rank " << mpi_rank << " finished after solve " << k << endl;
       }
     }
     
@@ -2463,6 +2467,11 @@ int eos_nuclei::eos_fixed_dist
 	// End of for (j=0;j<2;j++) {
       }
 
+      if (loc_verbose>=2 && mpi_size==1) {
+	cout << "Rank " << mpi_rank << " finished bracket " << k+1
+	     << "/" << n_brackets << endl;
+      }
+      
       if (bracketing_done==false) {
 
 	// Check the quality of the current root
@@ -2533,7 +2542,7 @@ int eos_nuclei::eos_fixed_dist
       ms.set_step(1,step);
       int mret=1;
       int jk;
-      for(jk=0;jk<n_minimizes && mret!=0;jk++) {
+      for(jk=0;jk<n_minimizes && qual_best>mh.tol_rel;jk++) {
 	
 	mret=ms.mmin(2,x1,ymin,min_func);
 	
@@ -2543,6 +2552,11 @@ int eos_nuclei::eos_fixed_dist
 	  qual_best=fabs(y1[0])+fabs(y1[1]);
 	}
 
+	if (loc_verbose>=2 && mpi_size==1) {
+	  cout << "Rank " << mpi_rank << " finished minimization " << jk+1
+	       << "/" << n_minimizes << " " << mret << " " << qual_best << endl;
+	}
+	
       }
 
       // Evaluate the equations and see if they have been
@@ -2606,7 +2620,11 @@ int eos_nuclei::eos_fixed_dist
 	if (fabs(y1[0])+fabs(y1[1])<qual_best) {
 	  qual_best=fabs(y1[0])+fabs(y1[1]);
 	}
-
+	
+	if (loc_verbose>=2 && mpi_size==1 && kk%99==0) {
+	  cout << "Rank " << mpi_rank << " finished random solve " << kk+1
+	       << "/" << n_randoms << endl;
+	}
 	if (mh_ret==0 && mpi_size==1) {
 	  cout << "Rank " << mpi_rank << " finished after "
 	       << kk << " random solves." << endl;
