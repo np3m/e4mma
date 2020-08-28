@@ -2358,7 +2358,7 @@ int eos_nuclei::eos_fixed_dist
       mh_ret=mh.msolve(2,x1,sn_func);
       if (loc_verbose>=2 && mpi_size==1) {
 	cout << "Rank " << mpi_rank << " finished solve " << k+1
-	     << "/" << n_solves << endl;
+	     << "/" << n_solves << " " << x1[0] << " " << x1[1] << endl;
       }
       sn_func(2,x1,y1);
       if (fabs(y1[0])+fabs(y1[1])<qual_best) {
@@ -2469,7 +2469,7 @@ int eos_nuclei::eos_fixed_dist
 
       if (loc_verbose>=2 && mpi_size==1) {
 	cout << "Rank " << mpi_rank << " finished bracket " << k+1
-	     << "/" << n_brackets << endl;
+	     << "/" << n_brackets << " " << x1[0] << " " << x1[1] << endl;
       }
       
       if (bracketing_done==false) {
@@ -2554,7 +2554,8 @@ int eos_nuclei::eos_fixed_dist
 
 	if (loc_verbose>=2 && mpi_size==1) {
 	  cout << "Rank " << mpi_rank << " finished minimization " << jk+1
-	       << "/" << n_minimizes << " " << mret << " " << qual_best << endl;
+	       << "/" << n_minimizes << " " << mret << " " << qual_best
+	       << " " << x1[0] << " " << x1[1] << endl;
 	}
 	
       }
@@ -2587,6 +2588,13 @@ int eos_nuclei::eos_fixed_dist
       ranges[2]=fd_rand_ranges[2];
       ranges[3]=fd_rand_ranges[3];
     }
+    
+    // If the ranges don't include the best point so far, expand them
+    if (x1[0]<ranges[0]) ranges[0]=x1[0]-(ranges[1]-ranges[0]);
+    if (x1[0]>ranges[1]) ranges[1]=x1[0]+(ranges[1]-ranges[0]);
+    if (x1[1]<ranges[2]) ranges[2]=x1[1]-(ranges[1]-ranges[2]);
+    if (x1[1]>ranges[3]) ranges[3]=x1[1]+(ranges[3]-ranges[0]);
+    
     if (loc_verbose>1) {
       cout << "x1,ranges: " << x1[0] << " " << x1[1] << " "
 	   << ranges[0] << " " << ranges[1] << " "
@@ -2621,9 +2629,9 @@ int eos_nuclei::eos_fixed_dist
 	  qual_best=fabs(y1[0])+fabs(y1[1]);
 	}
 	
-	if (loc_verbose>=2 && mpi_size==1 && kk%99==0) {
+	if (loc_verbose>=2 && mpi_size==1 && kk%100==99) {
 	  cout << "Rank " << mpi_rank << " finished random solve " << kk+1
-	       << "/" << n_randoms << endl;
+	       << "/" << n_randoms << " " << x1[0] << " " << x1[1] << endl;
 	}
 	if (mh_ret==0 && mpi_size==1) {
 	  cout << "Rank " << mpi_rank << " finished after "
