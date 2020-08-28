@@ -2045,6 +2045,13 @@ int eos_nuclei::eos_fixed_dist
  int &A_max, int &NmZ_min, int &NmZ_max, bool dist_changed,
  bool no_nuclei) {
 
+  int mpi_rank=0, mpi_size=1;
+#ifndef NO_MPI
+  // Get MPI rank, etc.
+  MPI_Comm_rank(MPI_COMM_WORLD,&mpi_rank);
+  MPI_Comm_size(MPI_COMM_WORLD,&mpi_size);
+#endif
+  
   int loc_verbose=function_verbose/100%10;
 
   double T_MeV=T*hc_mev_fm;
@@ -2353,6 +2360,9 @@ int eos_nuclei::eos_fixed_dist
       if (fabs(y1[0])+fabs(y1[1])<qual_best) {
 	qual_best=fabs(y1[0])+fabs(y1[1]);
       }
+      if (mh_ret==0 && mpi_size==1) {
+	cout << "Rank " << mpi_rank << " finished at solve " << k << endl;
+      }
     }
     
   } else {
@@ -2472,6 +2482,10 @@ int eos_nuclei::eos_fixed_dist
 	  // Stop, and set mh_ret to zero to indicate that we're done
 	  k=n_brackets;
 	  mh_ret=0;
+	  if (mpi_size==1) {
+	    cout << "Rank " << mpi_rank << " finished after "
+		 << k << " brackets." << endl;
+	  }
 	} else if (k>0 && qual_last==qual) {
 	  // If our quality hasn't improved, stop
 	  k=10;	  
@@ -2518,7 +2532,8 @@ int eos_nuclei::eos_fixed_dist
       step[0]=0.01;
       ms.set_step(1,step);
       int mret=1;
-      for(int jk=0;jk<n_minimizes && mret!=0;jk++) {
+      int jk;
+      for(jk=0;jk<n_minimizes && mret!=0;jk++) {
 	
 	mret=ms.mmin(2,x1,ymin,min_func);
 	
@@ -2543,6 +2558,10 @@ int eos_nuclei::eos_fixed_dist
       if (qual<mh.tol_rel) {
 	// Set mh_ret to zero to indicate that we're done
 	mh_ret=0;
+	if (mpi_size==1) {
+	  cout << "Rank " << mpi_rank << " finished after "
+	       << jk << " minimizer calls." << endl;
+	}
       }
       
     }
@@ -2587,7 +2606,11 @@ int eos_nuclei::eos_fixed_dist
 	if (fabs(y1[0])+fabs(y1[1])<qual_best) {
 	  qual_best=fabs(y1[0])+fabs(y1[1]);
 	}
-	
+
+	if (mh_ret==0 && mpi_size==1) {
+	  cout << "Rank " << mpi_rank << " finished after "
+	       << kk << " random solves." << endl;
+	}
 	//cout << kk << " " << mh_ret << endl;
       }
       //cout << "mh_ret: " << mh_ret << endl;
@@ -4154,11 +4177,11 @@ int eos_nuclei::increase_density(std::vector<std::string> &sv,
 	  compute_X(nB,X);
 	  
 	  cout << "before: " << tg3_Z.get(inB,iYe,iT) << " "
-	       << tg3_Z.get(inB,iYe,iT) << endl;
+	       << tg3_A.get(inB,iYe,iT) << endl;
 	  store_point(inB,iYe,iT,nB,Ye,T,thx,log_xn,log_xp,Zbar,Nbar,
 		      mun_full,mup_full,X,A_min,A_max,NmZ_min,NmZ_max,10.0);
 	  cout << "after: " << tg3_Z.get(inB,iYe,iT) << " "
-	       << tg3_Z.get(inB,iYe,iT) << endl;
+	       << tg3_A.get(inB,iYe,iT) << endl;
 	  cout << endl;
 	  
 	} else {
