@@ -6169,7 +6169,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 #else
 	  double curr_time=MPI_Wtime();
 #endif
-	  if (((int)i)%(file_update_iters)==file_update_iters-1 &&
+	  if (((int)i)%(file_update_iters)==file_update_iters-1 ||
 	      curr_time-last_file_time>file_update_time) {
 	    
 	    cout << "Updating file." << endl;
