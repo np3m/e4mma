@@ -2333,6 +2333,10 @@ int eos_nuclei::eos_fixed_dist
   x1[0]=log_xn;
   x1[1]=log_xp;
 
+  if (mpi_size==1 && loc_verbose>=2) {
+    cout << "Initial guess: " << x1[0] << " " << x1[1] << endl;
+  }
+  
   if ((alg_mode==2 || alg_mode==4) && nB<1.0e-11) {
     mh.tol_rel=mh_tol_rel/1.0e2;
   } else {
@@ -2580,41 +2584,33 @@ int eos_nuclei::eos_fixed_dist
       }
       
     }
+
+    // If the minimizer didn't work, try random initial guesses
     
-    // If the bracketing didn't work, try random initial guesses
-    if (fd_rand_ranges.size()>=4) {
-      ranges[0]=fd_rand_ranges[0];
-      ranges[1]=fd_rand_ranges[1];
-      ranges[2]=fd_rand_ranges[2];
-      ranges[3]=fd_rand_ranges[3];
+    if (mh_ret!=0) {
+      
+      if (fd_rand_ranges.size()>=4) {
+	ranges[0]=fd_rand_ranges[0];
+	ranges[1]=fd_rand_ranges[1];
+	ranges[2]=fd_rand_ranges[2];
+	ranges[3]=fd_rand_ranges[3];
+      }
+      
+      // If the ranges don't include the best point so far, expand them
+      if (x1[0]<ranges[0]) ranges[0]=x1[0]-(ranges[1]-ranges[0]);
+      if (x1[0]>ranges[1]) ranges[1]=x1[0]+(ranges[1]-ranges[0]);
+      if (x1[1]<ranges[2]) ranges[2]=x1[1]-(ranges[1]-ranges[2]);
+      if (x1[1]>ranges[3]) ranges[3]=x1[1]+(ranges[3]-ranges[0]);
+      
+      if (loc_verbose>1) {
+	cout << "x1,ranges: " << x1[0] << " " << x1[1] << " "
+	     << ranges[0] << " " << ranges[1] << " "
+	     << ranges[2] << " " << ranges[3] << endl;
+      }
+      
     }
     
-    // If the ranges don't include the best point so far, expand them
-    if (x1[0]<ranges[0]) ranges[0]=x1[0]-(ranges[1]-ranges[0]);
-    if (x1[0]>ranges[1]) ranges[1]=x1[0]+(ranges[1]-ranges[0]);
-    if (x1[1]<ranges[2]) ranges[2]=x1[1]-(ranges[1]-ranges[2]);
-    if (x1[1]>ranges[3]) ranges[3]=x1[1]+(ranges[3]-ranges[0]);
-    
-    if (loc_verbose>1) {
-      cout << "x1,ranges: " << x1[0] << " " << x1[1] << " "
-	   << ranges[0] << " " << ranges[1] << " "
-	   << ranges[2] << " " << ranges[3] << endl;
-    }
     if (mh_ret!=0 && ranges[0]<1.0e50 && ranges[2]<1.0e50) {
-      /*
-	if (ranges[0]>1.0e50) {
-	ranges[0]=x1[0]-2.0;
-	ranges[1]=x1[0]+2.0;
-	cout << "ranges2a: " << ranges[0] << " " << ranges[1] << " "
-	<< ranges[2] << " " << ranges[3] << endl;
-	}
-	if (ranges[2]>1.0e50) {
-	ranges[2]=x1[1]-2.0;
-	ranges[3]=x1[1]+2.0;
-	cout << "ranges2b: " << ranges[0] << " " << ranges[1] << " "
-	<< ranges[2] << " " << ranges[3] << endl;
-	}
-      */
       for(int kk=0;kk<n_randoms && mh_ret!=0;kk++) {
 	x1[0]=ranges[0]+rng.random()*(ranges[1]-ranges[0]);
 	x1[1]=ranges[2]+rng.random()*(ranges[3]-ranges[2]);
