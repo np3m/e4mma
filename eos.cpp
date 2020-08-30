@@ -3563,41 +3563,41 @@ void eos::setup_cli(o2scl::cli &cl) {
   cl.set_comm_option_vec(nopt,options);
   
   p_verbose.i=&verbose;
-  p_verbose.help="Verbose parameter (default 1)";
+  p_verbose.help="Verbose parameter (default 1).";
   cl.par_list.insert(make_pair("verbose",&p_verbose));
 
   p_old_ns_fit.b=&old_ns_fit;
-  p_old_ns_fit.help="If true, use the old NS fit (default true)";
+  p_old_ns_fit.help="If true, use the old NS fit (default true).";
   cl.par_list.insert(make_pair("old_ns_fit",&p_old_ns_fit));
 
   p_ns_record.b=&ns_record;
-  p_ns_record.help="If true, record the NS fit results (default false)";
+  p_ns_record.help="If true, record the NS fit results (default false).";
   cl.par_list.insert(make_pair("ns_record",&p_ns_record));
 
   p_include_muons.b=&include_muons;
-  p_include_muons.help="If true, include muons (default false)";
+  p_include_muons.help="If true, include muons (default false).";
   cl.par_list.insert(make_pair("include_muons",&p_include_muons));
 
   p_select_cs2_test.b=&select_cs2_test;
-  p_select_cs2_test.help="Test cs2 in select_internal() (default true)";
+  p_select_cs2_test.help="Test cs2 in select_internal() (default true).";
   cl.par_list.insert(make_pair("select_cs2_test",&p_select_cs2_test));
 
   p_test_ns_cs2.b=&test_ns_cs2;
   p_test_ns_cs2.help=((std::string)"If true, then test the neutron star ")+
-    "speed of sound (default false)";
+    "speed of sound (default false).";
   cl.par_list.insert(make_pair("test_ns_cs2",&p_test_ns_cs2));
 
   p_use_skalt.b=&use_skalt;
-  p_use_skalt.help=((std::string)"Use NRAPR ")+
-    "(default false)";
+  p_use_skalt.help=((std::string)"Use the alternate Skyrme model ")+
+    "(default false).";
   cl.par_list.insert(make_pair("use_skalt",&p_use_skalt));
 
   p_a_virial.d=&a_virial;
-  p_a_virial.help="Virial coefficient a (default 3.0)";
+  p_a_virial.help="Virial coefficient a (default 3.0).";
   cl.par_list.insert(make_pair("a_virial",&p_a_virial));
 
   p_b_virial.d=&b_virial;
-  p_b_virial.help="Virial coefficient b (default 0.0)";
+  p_b_virial.help="Virial coefficient b (default 0.0).";
   cl.par_list.insert(make_pair("b_virial",&p_b_virial));
 
   return;

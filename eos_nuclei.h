@@ -83,6 +83,14 @@ public:
     \todo Rename n_nB2 to n_nB, etc.
     \todo Make child of eos_sn_base
     \todo Use \c loaded instead of testing n_nB2==0
+    \todo Move select_high_T to the parent
+
+    \future Allow different form for the NS fit
+
+    \future Allow user to specify where data files are
+    located or to manually specify the nuclear model?
+
+    \future Allow RMF rather than just Skyrme.
 */
 class eos_nuclei : public eos {
 

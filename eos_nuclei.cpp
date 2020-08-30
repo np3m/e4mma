@@ -96,7 +96,7 @@ eos_nuclei::eos_nuclei() {
   max_ratio=2.25;
   loaded=false;
   file_update_time=1800;
-  file_update_iters=1000;
+  file_update_iters=100000;
 
   // These function calls do nothing if these environment variables
   // are not defined
@@ -382,7 +382,8 @@ int eos_nuclei::init_function(size_t dim, const ubvector &x, ubvector &y) {
 int eos_nuclei::load(std::vector<std::string> &sv,
 		     bool itive_com) {
   if (sv.size()<2) {
-    cout << "No filename in load." << endl;
+    cerr << "No filename in load." << endl;
+    return 1;
   }
   cout << "Loading: " << sv[1] << endl;
   read_results(sv[1]);
@@ -392,7 +393,8 @@ int eos_nuclei::load(std::vector<std::string> &sv,
 int eos_nuclei::output(std::vector<std::string> &sv,
 		       bool itive_com) {
   if (sv.size()<2) {
-    cout << "No filename in output." << endl;
+    cerr << "No filename in output." << endl;
+    return 1;
   }
   write_results(sv[1]);	
   return 0;
@@ -2064,7 +2066,7 @@ int eos_nuclei::eos_fixed_dist
   int n_brackets=((fixed_dist_alg/10)%10)*10;
   int n_minimizes=(fixed_dist_alg/100)%10;
   int n_randoms=((fixed_dist_alg/1000)%10)*1000;
-  if (loc_verbose>1) {
+  if (mpi_size==1 && loc_verbose>1) {
     cout << "n_solves,n_brackets,n_minimizes,n_randoms: "
 	 << n_solves << " " << n_brackets << " " << n_minimizes << " "
 	 << n_randoms << endl;
@@ -2343,7 +2345,7 @@ int eos_nuclei::eos_fixed_dist
     mh.tol_rel=mh_tol_rel;
   }
 
-  // 8/27: updated
+  // 8/27/19: updated
   // 8/13/2020 AWS: I don't think this does anything because
   // the mroot_hybrids solver ignores tol_abs. 
   if (alg_mode==2 || alg_mode==4 || nB<1.0e-09) {
@@ -2364,8 +2366,8 @@ int eos_nuclei::eos_fixed_dist
 	cout << "Rank " << mpi_rank << " finished solve " << k+1
 	     << "/" << n_solves << " " << x1[0] << " " << x1[1] << endl;
       }
-      sn_func(2,x1,y1);
-      if (fabs(y1[0])+fabs(y1[1])<qual_best) {
+      int iret=sn_func(2,x1,y1);
+      if (iret==0 && fabs(y1[0])+fabs(y1[1])<qual_best) {
 	qual_best=fabs(y1[0])+fabs(y1[1]);
       }
       if (mh_ret==0 && mpi_size==1) {
@@ -2479,9 +2481,9 @@ int eos_nuclei::eos_fixed_dist
       if (bracketing_done==false) {
 
 	// Check the quality of the current root
-	sn_func(2,x1,y1);
+	int iret=sn_func(2,x1,y1);
 
-	if (fabs(y1[0])+fabs(y1[1])<qual_best) {
+	if (iret==0 && fabs(y1[0])+fabs(y1[1])<qual_best) {
 	  qual_best=fabs(y1[0])+fabs(y1[1]);
 	}
 	  
@@ -2491,7 +2493,7 @@ int eos_nuclei::eos_fixed_dist
 	       << mh.tol_rel << endl;
 	}
 	
-	if (qual<mh.tol_rel) {
+	if (iret==0 && qual<mh.tol_rel) {
 	  // Stop, and set mh_ret to zero to indicate that we're done
 	  k=n_brackets;
 	  mh_ret=0;
@@ -2550,9 +2552,9 @@ int eos_nuclei::eos_fixed_dist
 	
 	mret=ms.mmin(2,x1,ymin,min_func);
 	
-	sn_func(2,x1,y1);
+	int iret=sn_func(2,x1,y1);
 
-	if (fabs(y1[0])+fabs(y1[1])<qual_best) {
+	if (iret==0 && fabs(y1[0])+fabs(y1[1])<qual_best) {
 	  qual_best=fabs(y1[0])+fabs(y1[1]);
 	}
 
@@ -2566,7 +2568,7 @@ int eos_nuclei::eos_fixed_dist
 
       // Evaluate the equations and see if they have been
       // solved, independent of the value of mret
-      sn_func(2,x1,y1);
+      int iret2=sn_func(2,x1,y1);
       
       double qual=fabs(y1[0])+fabs(y1[1]);
       if (loc_verbose>2) {
@@ -2574,7 +2576,7 @@ int eos_nuclei::eos_fixed_dist
 	     << mret << endl;
       }
       
-      if (qual<mh.tol_rel) {
+      if (iret2==0 && qual<mh.tol_rel) {
 	// Set mh_ret to zero to indicate that we're done
 	mh_ret=0;
 	if (mpi_size==1) {
@@ -2602,7 +2604,7 @@ int eos_nuclei::eos_fixed_dist
       if (x1[1]<ranges[2]) ranges[2]=x1[1]-(ranges[3]-ranges[2]);
       if (x1[1]>ranges[3]) ranges[3]=x1[1]+(ranges[3]-ranges[2]);
       
-      if (loc_verbose>1) {
+      if (mpi_size==2 && loc_verbose>1) {
 	cout << "x1,ranges: " << x1[0] << " " << x1[1] << " "
 	     << ranges[0] << " " << ranges[1] << " "
 	     << ranges[2] << " " << ranges[3] << endl;
@@ -2620,9 +2622,9 @@ int eos_nuclei::eos_fixed_dist
 	  cout << kk << " " << x1[0] << " " << x1[1] << " "
 	       << mh_ret << endl;
 	}
-	sn_func(2,x1,y1);
+	int iret=sn_func(2,x1,y1);
 	
-	if (fabs(y1[0])+fabs(y1[1])<qual_best) {
+	if (iret==0 && fabs(y1[0])+fabs(y1[1])<qual_best) {
 	  qual_best=fabs(y1[0])+fabs(y1[1]);
 	}
 	
@@ -5279,13 +5281,9 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
       double mun_full=0.0, mup_full=0.0;
       int first_ret=0;
       if (alg_mode==1) {
-	// Xingfu's function here
-	ubvector guess(2);
-	guess[0]=pow(10.0,log_xn);
-	guess[1]=pow(10.0,log_xp);
-	//eos_with_nuclei(nB,Ye,T,guess,nuc_Z1,nuc_N1);
-	Zbar=nuc_Z1;
-	Nbar=nuc_N1;
+	cerr << "Mode alg_mode=1 no longer supported in generate-table."
+	     << endl;
+	return 1;
       } else if (alg_mode==0) {
 	first_ret=eos_vary_ZN(nB,Ye,T,log_xn,log_xp,nuc_Z1,nuc_N1,
 			      thx,mun_full,mup_full,false);
@@ -6134,7 +6132,9 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	  
 	  int ret=0;
 	  if (alg_mode==1) {
-	    // Xingfu's function here
+	    cerr << "Mode alg_mode=1 no longer supported in generate-table."
+		 << endl;
+	    return 1;
 	  } else if (alg_mode==0) {
 	    ret=eos_vary_ZN(nB,Ye,T,log_xn,log_xp,nuc_Z1,nuc_N1,
 			    thx,mun_full,mup_full,no_nuclei);
@@ -6369,7 +6369,9 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	}
 	
 	if (alg_mode==1) {
-	  // Xingfu's function here
+	  cerr << "Mode alg_mode=1 no longer supported in generate-table."
+	       << endl;
+	  return 1;
 	} else if (alg_mode==0) {
 	  ret=eos_vary_ZN(nB,Ye,T,log_xn,log_xp,nuc_Z1,nuc_N1,
 			  thx,mun_full,mup_full,no_nuclei);
@@ -6797,7 +6799,8 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
   
   o2scl::comm_option_s options[nopt]=
     {{0,"eos-deriv","compute derivatives",
-      0,0,"<file in> <file out>","",new o2scl::comm_option_mfptr<eos_nuclei>
+      0,0,"<file in> <file out>","",
+      new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::eos_deriv),
       o2scl::cli::comm_option_both},
      {0,"add-eg","Add electrons and photons.",
@@ -6808,15 +6811,16 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
       1,1,"<output file>","",new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::eg_table),
       o2scl::cli::comm_option_both},
-     {0,"maxwell-test","",
-      4,4,"<file in> <file out>","",new o2scl::comm_option_mfptr<eos_nuclei>
+     {0,"maxwell-test","Experimental test of Maxwell construction.",
+      4,4,"<file in> <file out>","",
+      new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::maxwell_test),
       o2scl::cli::comm_option_both},
-     {0,"fit-frdm","mass fit",
+     {0,"fit-frdm","Fit the FRDM mass model.",
       0,0,"","",new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::fit_frdm),
       o2scl::cli::comm_option_both},
-     {0,"check-virial","",
+     {0,"check-virial","Check the virial EOS.",
       0,0,"","",new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::check_virial),
       o2scl::cli::comm_option_both},
@@ -6824,8 +6828,7 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
       0,1,"[out file]",
       "",new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::generate_table),o2scl::cli::comm_option_both},
-     {0,"load","Load an EOS table.",
-      0,1,"<filename>",
+     {0,"load","Load an EOS table.",0,1,"<filename>",
       "",new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::load),o2scl::cli::comm_option_both},
      {0,"output","Output an EOS table.",
@@ -6846,7 +6849,7 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
       3,3,"<input file 1> <input file 2> <output file>",
       "",new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::merge_tables),o2scl::cli::comm_option_both},
-     {0,"write-nuclei","",
+     {0,"write-nuclei","Output nuclear masses.",
       1,1,"<output file>",
       "",new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::write_nuclei),o2scl::cli::comm_option_both},
@@ -6891,42 +6894,53 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
       "which holds the full nuclear distribution.",
       new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::point_nuclei),o2scl::cli::comm_option_both},
-     {0,"increase-density","",
-      7,7,"","",new o2scl::comm_option_mfptr<eos_nuclei>
+     {0,"increase-density",
+      "Increase nB to optimize the phase transition.",7,7,
+      "<nB low> <nB high> <Ye low> <Ye high> <T low> <T high> <output file>",
+      "",new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::increase_density),o2scl::cli::comm_option_both},
      {0,"ZoA","",
       -1,-1,"","",new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::create_ZoA),o2scl::cli::comm_option_both},
-     {0,"select-high-T","",
-      1,1,"<>","",new o2scl::comm_option_mfptr<eos_nuclei>
+     {0,"select-high-T",
+      "Choose the Skyrme model for the finite T corrections.",
+      1,1,"<index>","",new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::select_high_T_cl),o2scl::cli::comm_option_both}
     };
   cl.set_comm_option_vec(nopt,options);
 
   p_nB_grid_spec.str=&nB_grid_spec;
-  p_nB_grid_spec.help="Function for default baryon density grid.";
+  p_nB_grid_spec.help=((string)"The function for default baryon ")+
+    "density grid. Used by the new_table() function, and the "+
+    "check-virial and eos-deriv commands.";
   cl.par_list.insert(make_pair("nB_grid_spec",&p_nB_grid_spec));
 
   p_Ye_grid_spec.str=&Ye_grid_spec;
-  p_Ye_grid_spec.help="Function for default electron fraction grid.";
+  p_Ye_grid_spec.help=((string)"The function for default electron ")+
+    "fraction grid. Used by the new_table() function, and the "+
+    "check-virial and eos-deriv commands.";
   cl.par_list.insert(make_pair("Ye_grid_spec",&p_Ye_grid_spec));
-
+  
   p_T_grid_spec.str=&T_grid_spec;
-  p_T_grid_spec.help="Function for default temperature grid.";
+  p_T_grid_spec.help=((string)"The function for default temperature ")+
+    "grid. Used by the new_table() function, and the "+
+    "check-virial and eos-deriv commands.";
   cl.par_list.insert(make_pair("T_grid_spec",&p_T_grid_spec));
   
   p_show_all_nuclei.b=&show_all_nuclei;
   p_show_all_nuclei.help=((string)"If true, show all nuclei considered at ")+
-    "every point (default false).";
+    "every point (default false). This applies to the point-nuclei "+
+    "command and the eos_vary_ZN() function.";
   cl.par_list.insert(make_pair("show_all_nuclei",&p_show_all_nuclei));
   
   p_fd_A_max.i=&fd_A_max;
-  p_fd_A_max.help="";
+  p_fd_A_max.help=((string)"The maximum value of A for the alg_mode=4 ")+
+    "fixed distribution (default 200).";
   cl.par_list.insert(make_pair("fd_A_max",&p_fd_A_max));
   
   p_recompute.b=&recompute;
   p_recompute.help=((string)"If true, recompute points in the table ")+
-    "and ignore the flag.";
+    "and ignore the flag value.";
   cl.par_list.insert(make_pair("recompute",&p_recompute));
   
   p_edge_list.str=&edge_list;
@@ -6935,25 +6949,19 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
   
   p_six_neighbors.i=&six_neighbors;
   p_six_neighbors.help=((string)"If greater than 0, use nearest ")+
-    "neighbors as guesses (default0 0).";
+    "neighbors as guesses (default 0). Values greater than 0 use "+
+    "the point at the next smallest density, values greater than 1 "+
+    "use the point at the next largest density, values greater than 2 "+
+    "use points at the next largest and next smallest temperature, "+
+    "and values greater than 4 use the next largest and smallest "+
+    "electron fraction.";
   cl.par_list.insert(make_pair("six_neighbors",&p_six_neighbors));
   
   p_rnuc_less_rws.b=&rnuc_less_rws;
   p_rnuc_less_rws.help=((string)"If true, restrict rnuc to ")+
-    "be smaller than rws (default true)";
+    "be smaller than rws (default true).";
   cl.par_list.insert(make_pair("rnuc_less_rws",&p_rnuc_less_rws));
 
-  /*
-    p_derivs_computed.b=&derivs_computed;
-    p_derivs_computed.help=
-    "If true, then include all the derivatives of the free energy";
-    cl.par_list.insert(make_pair("derivs_computed",&p_derivs_computed));
-    
-    p_with_leptons_loaded.b=&with_leptons_loaded;
-    p_with_leptons_loaded.help="If true, include leptons and photons";
-    cl.par_list.insert(make_pair("with_leptons_loaded",&p_with_leptons_loaded));
-  */
-  
   p_propagate_points.b=&propagate_points;
   p_propagate_points.help=
     "If true, use previously computed points as guesses for neighbors";
@@ -6961,11 +6969,13 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
   
   p_mh_tol_rel.d=&mh_tol_rel;
   p_mh_tol_rel.help=((std::string)"Relative tolerance for the solver ")+
-    "(default 10^(-6)).";
+    "in the eos_fixed_dist() function (default 10^(-6)).";
   cl.par_list.insert(make_pair("mh_tol_rel",&p_mh_tol_rel));
   
   p_max_time.d=&max_time;
-  p_max_time.help="Max time (default is 0.0 which is no maximum time).";
+  p_max_time.help=((string)"Maximum time, in seconds, for the ")+
+    "generate-table command. The default is 0.0 which is "+
+    "no maximum time.";
   cl.par_list.insert(make_pair("max_time",&p_max_time));
   
   p_nucleon_func.str=&nucleon_func;
@@ -6973,11 +6983,14 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
   cl.par_list.insert(make_pair("nucleon_func",&p_nucleon_func));
 
   p_ext_guess.str=&ext_guess;
-  p_ext_guess.help="";
+  p_ext_guess.help=((string)"Filename containing separate table ")+
+    "to use as a guess for the generate-table command.";
   cl.par_list.insert(make_pair("ext_guess",&p_ext_guess));
 
   p_Ye_list.str=&Ye_list;
-  p_Ye_list.help="List of electron fractions to consider computing";
+  p_Ye_list.help=((string)"The list of electron fractions to consider ")+
+    "for the generate-table command. Can be several comma-separated "+
+    "ranges e.g. \"1-3,5-7,59-60\". Zero-indexed.";
   cl.par_list.insert(make_pair("Ye_list",&p_Ye_list));
 
   p_alg_mode.i=&alg_mode;
@@ -6993,7 +7006,7 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
     "divided by 10, the "+
     "100s digit is the number of minimizes, and the 1000s digit "+
     "is the number of random guesses to try divided by 1000. "+
-    "The default is 1111.";
+    "The default is 1111. Other good options are 1919 and 9999.";
   cl.par_list.insert(make_pair("fixed_dist_alg",&p_fixed_dist_alg));
   
   p_function_verbose.i=&function_verbose;
@@ -7005,15 +7018,19 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
   cl.par_list.insert(make_pair("function_verbose",&p_function_verbose));
   
   p_max_ratio.d=&max_ratio;
-  p_max_ratio.help="The maximum of N/Z or Z/N.";
+  p_max_ratio.help="The maximum of N/Z or Z/N (default 2.25).";
   cl.par_list.insert(make_pair("max_ratio",&p_max_ratio));
 
   p_file_update_time.d=&file_update_time;
-  p_file_update_time.help="";
+  p_file_update_time.help=((string)"The time (in seconds) between ")+
+    "output file updates for the generate-table command. Default is "+
+    "1800 or 30 minutes.";
   cl.par_list.insert(make_pair("file_update_time",&p_file_update_time));
 
   p_file_update_iters.i=&file_update_iters;
-  p_file_update_iters.help="";
+  p_file_update_iters.help=((string)"The number of points between ")+
+    "output file updates for the generate-table command. Default is "+
+    "100000.";
   cl.par_list.insert(make_pair("file_update_iters",&p_file_update_iters));
 
 }
