@@ -25,6 +25,7 @@
 #include <o2scl/interp.h>
 #include <o2scl/svd.h>
 #include <o2scl/vector.h>
+#include <o2scl/mmin_bfgs2.h>
 
 using namespace std;
 using namespace o2scl;
@@ -2338,7 +2339,7 @@ int eos_nuclei::eos_fixed_dist
   if (mpi_size==1 && loc_verbose>=2) {
     cout << "Initial guess: " << x1[0] << " " << x1[1] << endl;
   }
-  
+
   if ((alg_mode==2 || alg_mode==4) && nB<1.0e-11) {
     mh.tol_rel=mh_tol_rel/1.0e2;
   } else {
@@ -2362,13 +2363,14 @@ int eos_nuclei::eos_fixed_dist
 
     for(int k=0;k<n_solves && mh_ret!=0;k++) {
       mh_ret=mh.msolve(2,x1,sn_func);
-      if (loc_verbose>=2 && mpi_size==1) {
-	cout << "Rank " << mpi_rank << " finished solve " << k+1
-	     << "/" << n_solves << " " << x1[0] << " " << x1[1] << endl;
-      }
       int iret=sn_func(2,x1,y1);
       if (iret==0 && fabs(y1[0])+fabs(y1[1])<qual_best) {
 	qual_best=fabs(y1[0])+fabs(y1[1]);
+      }
+      if (loc_verbose>=2 && mpi_size==1) {
+	cout << "Rank " << mpi_rank << " finished solve " << k+1
+	     << "/" << n_solves << " " << x1[0] << " " << x1[1] << " "
+	     << qual_best << endl;
       }
       if (mh_ret==0 && mpi_size==1) {
 	cout << "Rank " << mpi_rank << " finished after solve " << k << endl;
@@ -2586,7 +2588,150 @@ int eos_nuclei::eos_fixed_dist
       }
       
     }
-
+    
+    if (false) {
+      table3d surv;
+      uniform_grid_log_end<double> ug(1.0e-8,0.01,99);
+      surv.set_xy("dx",ug,"dy",ug);
+      surv.line_of_names("pp1 pp2 pps ppret pm1 pm2 pms pmret");
+      surv.line_of_names("mp1 mp2 mps mpret mm1 mm2 mms mmret");
+      ubvector x2(2);
+      for(size_t sj=0;sj<surv.get_nx();sj++) {
+	for(size_t suk=0;suk<surv.get_ny();suk++) {
+	  x2[0]=x1[0]+surv.get_grid_x(sj);
+	  x2[1]=x1[1]+surv.get_grid_y(suk);
+	  int siret=sn_func(2,x2,y1);
+	  cout << "Survey: " << sj << " " << suk << " ";
+	  cout << siret << " " << y1[0] << " " << y1[1] << " ";
+	  if (siret==0) {
+	    surv.set(sj,suk,"pp1",y1[0]);
+	    surv.set(sj,suk,"pp2",y1[1]);
+	    surv.set(sj,suk,"pps",fabs(y1[0])+fabs(y1[1]));
+	  } else {
+	    surv.set(sj,suk,"pp1",0.0);
+	    surv.set(sj,suk,"pp2",0.0);
+	    surv.set(sj,suk,"pps",0.0);
+	  }
+	  surv.set(sj,suk,"ppret",siret);
+	  x2[0]=x1[0]+surv.get_grid_x(sj);
+	  x2[1]=x1[1]-surv.get_grid_y(suk);
+	  siret=sn_func(2,x2,y1);
+	  cout << siret << " " << y1[0] << " " << y1[1] << " ";
+	  if (siret==0) {
+	    surv.set(sj,suk,"pm1",y1[0]);
+	    surv.set(sj,suk,"pm2",y1[1]);
+	    surv.set(sj,suk,"pms",fabs(y1[0])+fabs(y1[1]));
+	  } else {
+	    surv.set(sj,suk,"pm1",0.0);
+	    surv.set(sj,suk,"pm2",0.0);
+	    surv.set(sj,suk,"pms",0.0);
+	  }
+	  surv.set(sj,suk,"pmret",siret);
+	  x2[0]=x1[0]-surv.get_grid_x(sj);
+	  x2[1]=x1[1]+surv.get_grid_y(suk);
+	  siret=sn_func(2,x2,y1);
+	  cout << siret << " " << y1[0] << " " << y1[1] << " ";
+	  if (siret==0) {
+	    surv.set(sj,suk,"mp1",y1[0]);
+	    surv.set(sj,suk,"mp2",y1[1]);
+	    surv.set(sj,suk,"mps",fabs(y1[0])+fabs(y1[1]));
+	  } else {
+	    surv.set(sj,suk,"mp1",0.0);
+	    surv.set(sj,suk,"mp2",0.0);
+	    surv.set(sj,suk,"mps",0.0);
+	  }
+	  surv.set(sj,suk,"mpret",siret);
+	  x2[0]=x1[0]-surv.get_grid_x(sj);
+	  x2[1]=x1[1]-surv.get_grid_y(suk);
+	  siret=sn_func(2,x2,y1);
+	  cout << siret << " " << y1[0] << " " << y1[1] << endl;
+	  if (siret==0) {
+	    surv.set(sj,suk,"mm1",y1[0]);
+	    surv.set(sj,suk,"mm2",y1[1]);
+	    surv.set(sj,suk,"mms",fabs(y1[0])+fabs(y1[1]));
+	  } else {
+	    surv.set(sj,suk,"mm1",0.0);
+	    surv.set(sj,suk,"mm2",0.0);
+	    surv.set(sj,suk,"mms",0.0);
+	  }
+	  surv.set(sj,suk,"mmret",siret);
+	}
+      }
+      double pps_max=matrix_max_value<ubmatrix,double>(surv.get_slice("pps"));
+      for(size_t sj=0;sj<surv.get_nx();sj++) {
+	for(size_t suk=0;suk<surv.get_ny();suk++) {
+	  if (fabs(surv.get(sj,suk,"ppret"))>1.0e-4) {
+	    surv.set(sj,suk,"pps",pps_max);
+	  }
+	  if (surv.get(sj,suk,"pps")>1.0) {
+	    surv.set(sj,suk,"pps",1.0);
+	  }
+	}
+      }
+      double pms_max=matrix_max_value<ubmatrix,double>(surv.get_slice("pms"));
+      for(size_t sj=0;sj<surv.get_nx();sj++) {
+	for(size_t suk=0;suk<surv.get_ny();suk++) {
+	  if (fabs(surv.get(sj,suk,"pmret"))>1.0e-4) {
+	    surv.set(sj,suk,"pms",pms_max);
+	  }
+	  if (surv.get(sj,suk,"pms")>1.0) {
+	    surv.set(sj,suk,"pms",1.0);
+	  }
+	}
+      }
+      double mps_max=matrix_max_value<ubmatrix,double>(surv.get_slice("mps"));
+      for(size_t sj=0;sj<surv.get_nx();sj++) {
+	for(size_t suk=0;suk<surv.get_ny();suk++) {
+	  if (fabs(surv.get(sj,suk,"mpret"))>1.0e-4) {
+	    surv.set(sj,suk,"mps",mps_max);
+	  }
+	  if (surv.get(sj,suk,"mps")>1.0) {
+	    surv.set(sj,suk,"mps",1.0);
+	  }
+	}
+      }
+      double mms_max=matrix_max_value<ubmatrix,double>(surv.get_slice("mms"));
+      for(size_t sj=0;sj<surv.get_nx();sj++) {
+	for(size_t suk=0;suk<surv.get_ny();suk++) {
+	  if (fabs(surv.get(sj,suk,"mmret"))>1.0e-4) {
+	    surv.set(sj,suk,"mms",mms_max);
+	  }
+	  if (surv.get(sj,suk,"mms")>1.0) {
+	    surv.set(sj,suk,"mms",1.0);
+	  }
+	}
+      }
+      cout << pps_max << " " << pms_max << " " << mps_max << " "
+	   << mms_max << endl;
+      double val;
+      size_t suoi, suoj;
+      matrix_min_index<ubmatrix,double>(surv.get_slice("pps"),suoi,suoj,val);
+      cout << val << " " << surv.get_grid_x(suoi) << " "
+	   << surv.get_grid_y(suoj) << " " 
+	   << x1[0]+surv.get_grid_x(suoi) << " "
+	   << x1[1]+surv.get_grid_y(suoj) << endl;
+      matrix_min_index<ubmatrix,double>(surv.get_slice("pms"),suoi,suoj,val);
+      cout << val << " " << surv.get_grid_x(suoi) << " "
+	   << surv.get_grid_y(suoj) << " " 
+	   << x1[0]+surv.get_grid_x(suoi) << " "
+	   << x1[1]-surv.get_grid_y(suoj) << endl;
+      matrix_min_index<ubmatrix,double>(surv.get_slice("mps"),suoi,suoj,val);
+      cout << val << " " << surv.get_grid_x(suoi) << " "
+	   << surv.get_grid_y(suoj) << " " 
+	   << x1[0]-surv.get_grid_x(suoi) << " "
+	   << x1[1]+surv.get_grid_y(suoj) << endl;
+      matrix_min_index<ubmatrix,double>(surv.get_slice("mms"),suoi,suoj,val);
+      cout << val << " " << surv.get_grid_x(suoi) << " "
+	   << surv.get_grid_y(suoj) << " " 
+	   << x1[0]-surv.get_grid_x(suoi) << " "
+	   << x1[1]-surv.get_grid_y(suoj) << endl;
+      hdf_file hf;
+      hf.open_or_create("survey.o2");
+      hdf_output(hf,(const table3d &)surv,"survey");
+      hf.close();
+      exit(-1);
+    }
+    
     // If the minimizer didn't work, try random initial guesses
     
     if (mh_ret!=0) {
@@ -2603,8 +2748,11 @@ int eos_nuclei::eos_fixed_dist
       if (x1[0]>ranges[1]) ranges[1]=x1[0]+(ranges[1]-ranges[0]);
       if (x1[1]<ranges[2]) ranges[2]=x1[1]-(ranges[3]-ranges[2]);
       if (x1[1]>ranges[3]) ranges[3]=x1[1]+(ranges[3]-ranges[2]);
+
+      if (ranges[1]>0.0) ranges[1]=0.0;
+      if (ranges[3]>0.0) ranges[3]=0.0;
       
-      if (mpi_size==2 && loc_verbose>1) {
+      if (mpi_size==1 && loc_verbose>1) {
 	cout << "x1,ranges: " << x1[0] << " " << x1[1] << " "
 	     << ranges[0] << " " << ranges[1] << " "
 	     << ranges[2] << " " << ranges[3] << endl;
@@ -2630,17 +2778,37 @@ int eos_nuclei::eos_fixed_dist
 	
 	if (loc_verbose>=2 && mpi_size==1 && kk%100==99) {
 	  cout << "Rank " << mpi_rank << " finished random solve " << kk+1
-	       << "/" << n_randoms << " " << x1[0] << " " << x1[1] << endl;
+	       << "/" << n_randoms << " " << x1[0] << " " << x1[1] << " "
+	       << qual_best << endl;
 	}
 	if (mh_ret==0 && mpi_size==1) {
 	  cout << "Rank " << mpi_rank << " finished after "
 	       << kk << " random solves." << endl;
 	}
 	//cout << kk << " " << mh_ret << endl;
+
+	// AWS 8/31/2020: I'm not sure if this helps or not
+	if (false && kk%1000==999) {
+	  double d1=ranges[1]-ranges[0];
+	  double d2=ranges[3]-ranges[2];
+	  ranges[0]-=d1;
+	  ranges[1]+=d1;
+	  ranges[2]-=d2;
+	  ranges[3]+=d2;
+	  if (ranges[1]>0.0) ranges[1]=0.0;
+	  if (ranges[3]>0.0) ranges[3]=0.0;
+	  if (mpi_size==1 && loc_verbose>1) {
+	    cout << "ranges: "
+		 << ranges[0] << " " << ranges[1] << " "
+		 << ranges[2] << " " << ranges[3] << endl;
+	  }
+	}
+
+	//cout << "mh_ret: " << mh_ret << endl;
+	//char ch;
+	//cin >> ch;
+	
       }
-      //cout << "mh_ret: " << mh_ret << endl;
-      //char ch;
-      //cin >> ch;
     }
 
     if (mh_ret!=0) {
