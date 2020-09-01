@@ -2835,13 +2835,13 @@ int eos_nuclei::eos_fixed_dist
   // the chemical potentials are updated
   sn_func(2,x1,y1);
   
-  if (loc_verbose>1) {
+  if (mpi_size==1 && loc_verbose>1) {
     sn_func(2,x1,y1);
     cout << "Success in eos_fixed_dist(), "
 	 << "x1[0], x1[1], y1[0], y1[1]:\n  " 
 	 << x1[0] << " " << x1[1] << " " << y1[0] << " "
 	 << y1[1] << endl;
-    cout << nB << " " << Ye << " " << T << endl;
+    cout << "nB,Ye,T: " << nB << " " << Ye << " " << T << endl;
   }
 
   // 8/27: log_xn and log_xp are used below, so it's important that
@@ -4393,41 +4393,6 @@ int eos_nuclei::increase_density(std::vector<std::string> &sv,
   
   return 0;
 }
-
-int eos_nuclei::create_ZoA(std::vector<std::string> &sv,
-			   bool itive_com) {
-
-  if (sv.size()<2) {
-    cerr << "Not enough arguments for create_ZoA." << endl;
-    return 1;
-  }
-  
-  vector<vector<double> > grid={nB_grid2,Ye_grid2,
-				T_grid2};
-  tensor_grid3<vector<double>,vector<size_t> > ZoA;
-  vector<size_t> sz={n_nB2,n_Ye2,n_T2};
-  ZoA.resize(3,sz);
-  ZoA.set_grid(grid);
-  
-  for(size_t iT=0;iT<n_T2;iT++) {
-    for(size_t iYe=0;iYe<n_Ye2;iYe++) {
-      for(size_t inB=0;inB<n_nB2;inB++) {
-	if (tg3_Xnuclei.get(inB,iYe,iT)>0.1) {
-	  ZoA.get(inB,iYe,iT)=tg3_Z.get(inB,iYe,iT)/tg3_A.get(inB,iYe,iT);
-	} else {
-	  ZoA.get(inB,iYe,iT)=0.0;
-	}
-      }
-    }
-  }
-  
-  hdf_file hf;
-  hf.open_or_create(sv[1]);
-  hdf_output(hf,ZoA,"ZoA");
-  hf.close();
-  return 0;
-}
-
 
 int eos_nuclei::stats(std::vector<std::string> &sv,
 		      bool itive_com) {
@@ -6963,7 +6928,7 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
   
   eos::setup_cli(cl);
   
-  static const int nopt=20;
+  static const int nopt=19;
   
   o2scl::comm_option_s options[nopt]=
     {{0,"eos-deriv","compute derivatives",
@@ -7067,9 +7032,6 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
       "<nB low> <nB high> <Ye low> <Ye high> <T low> <T high> <output file>",
       "",new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::increase_density),o2scl::cli::comm_option_both},
-     {0,"ZoA","",
-      -1,-1,"","",new o2scl::comm_option_mfptr<eos_nuclei>
-      (this,&eos_nuclei::create_ZoA),o2scl::cli::comm_option_both},
      {0,"select-high-T",
       "Choose the Skyrme model for the finite T corrections.",
       1,1,"<index>","",new o2scl::comm_option_mfptr<eos_nuclei>

@@ -593,10 +593,6 @@ public:
    */
   int increase_density(std::vector<std::string> &sv, bool itive_com);
 
-  /** \brief Create a tensor which contains the results of \f$ Z/A \f$
-   */
-  int create_ZoA(std::vector<std::string> &sv, bool itive_com);
-
   /** \brief Monte Carlo results with nuclei
    */
   int mcarlo_nuclei(std::vector<std::string> &sv, bool itive_com);
