@@ -157,6 +157,21 @@ class eos {
     (o2scl::fermion &n, o2scl::fermion &p, double T,
      o2scl::thermo &th);
 
+  /** \brief Desc
+      
+      f1 is g*f_virial
+      f2 is (1-g)*f_skyrme
+      f3 is (1-g)*delta^2*esym
+      f4 is (1-g)*delta f_hot
+
+      so that the total homogeneous free energy is f1+f2+f3+f4
+   */
+  double free_energy_density_detail
+  (o2scl::fermion &n, o2scl::fermion &p, double T, o2scl::thermo &th,
+   double &zn, double &zp,
+   double &f1, double &f2, double &f3, double &f4, 
+   double &g_virial, double &dgvirialdT);
+
   /** \brief Compute the free energy density using the virial 
       expansion including derivative information
   */
@@ -226,12 +241,6 @@ class eos {
   
   /// \name EOS outputs
   //@{
-  /// The value of the virial modulation function
-  double g_virial;
-
-  /// The temperature derivative of the virial modulation function
-  double dgvirialdT;
-
   /// The free energy of degenerate matter
   double f_deg;
   

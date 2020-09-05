@@ -1977,39 +1977,43 @@ int eos_nuclei::eos_vary_dist
   } while (done==false);
   
   // Compare with the homogeneous free energy and if it's favored,
-  // then set the values accordingly (AWS 8/30/19: this doesn't work
-  // yet, but I can't remember why.)
+  // then set the values accordingly
   
-  if (false && nB>0.01) {
+  if (nB>0.01) {
+    
     thermo thy;
     neutron.n=nB*(1.0-Ye);
     proton.n=nB*Ye;
-    for(size_t i=0;i<nuclei.size();i++) {
-      nuclei[i].n=0.0;
-    }
     if (use_skalt) {
       sk_alt.calc_temp_e(neutron,proton,T,thy);
     } else {
       free_energy_density(neutron,proton,T,thy);
     }
+    
     if (thy.ed-T*thy.en<thx.ed-T*thx.en) {
+      
+      //cout << "Nuclear matter preferred." << endl;
+      for(size_t i=0;i<nuclei.size();i++) {
+	nuclei[i].n=0.0;
+      }
+      
       thx=thy;
       
       log_xn=log10(neutron.n/nB);
       log_xp=log10(proton.n/nB);
       Zbar=0.0;
       Nbar=0.0;
-      A_min=8;
-      A_max=9;
-      NmZ_min=-1;
-      NmZ_max=1;
+      A_min=5;
+      A_max=fd_A_max;
+      NmZ_min=-200;
+      NmZ_max=200;
     
       mun_full=neutron.mu;
       mup_full=proton.mu;
     }
     return 0;
   }
-  
+
   // Determine average N and Z
   
   double nt=0.0;
@@ -4341,6 +4345,8 @@ int eos_nuclei::increase_density(std::vector<std::string> &sv,
       A_max=tg3_A_max.get(inB_start,iYe,iT);
       NmZ_min=tg3_NmZ_min.get(inB_start,iYe,iT);
       NmZ_max=tg3_NmZ_max.get(inB_start,iYe,iT);
+
+      bool no_nuclei=false;
       
       for(size_t inB=inB_start;inB<=inB_end;inB++) {
 	
@@ -4364,17 +4370,39 @@ int eos_nuclei::increase_density(std::vector<std::string> &sv,
 	cout << ret << " " << nB << " " << Ye << " " << T*hc_mev_fm << " "
 	     << Zbar << " " << Nbar << endl;
 	
+	if (no_nuclei==false && Zbar==0 && Nbar==0) {
+	  cout << "Setting no-nuclei to true for this Ye and T."
+	       << endl;
+	  no_nuclei=true;
+	}
+	
 	if (ret==0) {
 	  
 	  ubvector X;
 	  compute_X(nB,X);
+
+	  if (tg3_A.get(inB,iYe,iT)>0.0) {
+	    cout << "before: " << tg3_Z.get(inB,iYe,iT) << " "
+		 << tg3_A.get(inB,iYe,iT) << " "
+		 << tg3_A.get(inB,iYe,iT)/
+	      tg3_Z.get(inB,iYe,iT) << endl;
+	  } else {
+	    cout << "before: " << tg3_Z.get(inB,iYe,iT) << " "
+		 << tg3_A.get(inB,iYe,iT) << " " << 0.0 << endl;
+	  }
 	  
-	  cout << "before: " << tg3_Z.get(inB,iYe,iT) << " "
-	       << tg3_A.get(inB,iYe,iT) << endl;
 	  store_point(inB,iYe,iT,nB,Ye,T,thx,log_xn,log_xp,Zbar,Nbar,
 		      mun_full,mup_full,X,A_min,A_max,NmZ_min,NmZ_max,10.0);
-	  cout << "after: " << tg3_Z.get(inB,iYe,iT) << " "
-	       << tg3_A.get(inB,iYe,iT) << endl;
+	  
+	  if (tg3_A.get(inB,iYe,iT)>0.0) {
+	    cout << "after: " << tg3_Z.get(inB,iYe,iT) << " "
+		 << tg3_A.get(inB,iYe,iT) << " "
+		 << tg3_A.get(inB,iYe,iT)/
+	      tg3_Z.get(inB,iYe,iT) << endl;
+	  } else {
+	    cout << "after: " << tg3_Z.get(inB,iYe,iT) << " "
+		 << tg3_A.get(inB,iYe,iT) << " " << 0.0 << endl;
+	  }
 	  cout << endl;
 	  
 	} else {

@@ -964,6 +964,18 @@ int eos::new_ns_eos(double nb, fermion &n,
 
 double eos::free_energy_density
 (fermion &n, fermion &p, double T, thermo &th) {
+  double zn, zp;
+  double f1, f2, f3, f4;
+  double g_virial, dgvirialdT;
+  return free_energy_density_detail(n,p,T,th,zn,zp,f1,f2,f3,f4,
+				    g_virial,dgvirialdT);
+}
+
+double eos::free_energy_density_detail
+(o2scl::fermion &n, o2scl::fermion &p, double T, o2scl::thermo &th,
+ double &zn, double &zp,
+ double &f1, double &f2, double &f3, double &f4,
+ double &g_virial, double &dgvirialdT) {
 
   if (model_selected==false) {
     O2SCL_ERR("No model selected in free_energy_density().",
@@ -1000,8 +1012,8 @@ double eos::free_energy_density
   double P_virial=th.pr;
   double mu_n_virial=n.mu;
   double mu_p_virial=p.mu;
-  double zn=exp(mu_n_virial/T);
-  double zp=exp(mu_p_virial/T);
+  zn=exp(mu_n_virial/T);
+  zp=exp(mu_p_virial/T);
   g_virial=1.0/(a_virial*zn*zn+a_virial*zp*zp+b_virial*zn*zp+1.0);
   if (T==0.0) {
     dfvirialdT=0.0;
@@ -1223,7 +1235,11 @@ double eos::free_energy_density
       (1.0-delta2)*(f_skyrme_eqden_T-f_skyrme_eqden_T0);    
   }
   double f_total=f_virial*g_virial+f_deg*(1.0-g_virial);
-    
+  f1=f_virial*g_virial*(1.0-g_virial);
+  f2=f_skyrme_eqdenT0*(1.0-g_virial);
+  f3=delta2*e_sym*(1.0-g_virial);
+  f4=(f_skyrme_T-f_skyrme_T0)*(1.0-g_virial);
+  
   // -------------------------------------------------------------
   // Compute derivatives for chemical potentials
  
@@ -1641,7 +1657,7 @@ int eos::table_Ye(std::vector<std::string> &sv, bool itive_com) {
       t.set(i,j,"Fint",foa_hc);
       t.set(i,j,"Sint",th2.en/nB_grid[i]);
       t.set(i,j,"Pint",th2.pr*hc_mev_fm);
-      t.set(i,j,"g",g_virial);
+      t.set(i,j,"g",0.0);
       t.set(i,j,"msn",neutron.ms/neutron.m);
       t.set(i,j,"msp",proton.ms/proton.m);
     }
@@ -1703,7 +1719,7 @@ int eos::table_nB(std::vector<std::string> &sv, bool itive_com) {
       t.set(i,j,"Fint",foa_hc);
       t.set(i,j,"Sint",th2.en/nB);
       t.set(i,j,"Pint",th2.pr*hc_mev_fm);
-      t.set(i,j,"g",g_virial);
+      t.set(i,j,"g",0.0);
       t.set(i,j,"msn",neutron.ms/neutron.m);
       t.set(i,j,"msp",proton.ms/proton.m);
       double cs2_val=cs2_func(neutron,proton,T_grid[j]/hc_mev_fm,th2);
