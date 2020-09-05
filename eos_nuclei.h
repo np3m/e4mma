@@ -374,6 +374,23 @@ public:
   o2scl::tensor_grid3<> tg3_NmZ_min;
   o2scl::tensor_grid3<> tg3_NmZ_max;
   //@}
+
+  /// \name Detail storage
+  //@{
+  bool include_detail;
+  o2scl::tensor_grid3<> tg3_zn;
+  o2scl::tensor_grid3<> tg3_zp;
+  o2scl::tensor_grid3<> tg3_F1;
+  o2scl::tensor_grid3<> tg3_F2;
+  o2scl::tensor_grid3<> tg3_F3;
+  o2scl::tensor_grid3<> tg3_F4;
+  o2scl::tensor_grid3<> tg3_Un;
+  o2scl::tensor_grid3<> tg3_Up;
+  o2scl::tensor_grid3<> tg3_msn;
+  o2scl::tensor_grid3<> tg3_msp;
+  o2scl::tensor_grid3<> tg3_g;
+  o2scl::tensor_grid3<> tg3_dgdT;
+  //@}
   
   /// \name Other parameter objects
   //@{
@@ -425,7 +442,7 @@ public:
   int solve_nuclei(size_t nv, const ubvector &x, ubvector &y, double nb,
 		   double ye, double T, 
 		   int loc_verbose, double &mun_gas, double &mup_gas,
-		   o2scl::thermo &th_gas);
+		   o2scl::thermo &th_gas, std::vector<double> &vdet);
   
   /** \brief Determine the EOS presuming a fixed single heavy nucleus
       and solving for the log (base 10) of the
@@ -445,8 +462,11 @@ public:
 		  double Zbar, double Nbar, 
 		  double mun_full, double mup_full, ubvector &X,
 		  double A_min, double A_max, double NmZ_min, double NmZ_max,
-		  double flag=10.0);
-
+		  double flag=10.0, double zn=0.0, double zp=0.0,
+		  double F1=0.0, double F2=0.0, double F3=0.0,
+		  double F4=0.0, double Un=0.0, double Up=0.0,
+		  double msn=0.0, double msp=0.0, double g=0.0,
+		  double dgdT=0.0);
 
   /** \brief Determine the EOS allowing the Z and N of the nucleus
       to vary

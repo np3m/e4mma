@@ -71,7 +71,9 @@ eos_nuclei::eos_nuclei() {
   vi.append({"msg","index","flag","nB","Ye","T","log_xn","log_xp",
 	     "Z","N","fr","ed","pr","en","mun","mup","no_nuclei",
 	     "inB","iYe","iT","A_min","A_max","NmZ_min","NmZ_max",
-	     "Xalpha","Xd","Xt","XHe3","XLi4","Xnuclei"});
+	     "Xalpha","Xd","Xt","XHe3","XLi4","Xnuclei",
+	     "zn","zp","F1","F2","F3","F4","Un","Up","msn",
+	     "msp","g","dgdT"});
 
   select_high_T(6);
   
@@ -111,6 +113,7 @@ eos_nuclei::eos_nuclei() {
   n_T2=0;
 
   ext_guess="";
+  include_detail=false;
 }
 
 eos_nuclei::~eos_nuclei() {
@@ -1120,7 +1123,8 @@ double eos_nuclei::solve_nuclei_ld
   xp[0]=x[0];
   xp[1]=x[1];
   xp[ix]=x2;
-  int ret=solve_nuclei(nv,xp,yp,nb,ye,T,0,mun_gas,mup_gas,th_gas);
+  vector<double> vdet;
+  int ret=solve_nuclei(nv,xp,yp,nb,ye,T,0,mun_gas,mup_gas,th_gas,vdet);
   if (ret!=0) return pow(10.0,80.0+((double(ret))));
   return yp[ix];
 }
@@ -1131,7 +1135,8 @@ double eos_nuclei::solve_nuclei_min
 
   double retval;
   ubvector yp(2);
-  int ret=solve_nuclei(nv,x,yp,nb,ye,T,0,mun_gas,mup_gas,th_gas);
+  vector<double> vdet;
+  int ret=solve_nuclei(nv,x,yp,nb,ye,T,0,mun_gas,mup_gas,th_gas,vdet);
   retval=yp[0]*yp[0]+yp[1]*yp[1];
   if (ret!=0) retval=pow(10.0,80.0+((double(ret))));
   if (!std::isfinite(yp[0]) || !std::isfinite(yp[1]) ||
@@ -1144,7 +1149,8 @@ double eos_nuclei::solve_nuclei_min
 int eos_nuclei::solve_nuclei(size_t nv, const ubvector &x, ubvector &y,
 			     double nB, double Ye, double T,
 			     int loc_verbose, double &mun_gas,
-			     double &mup_gas, thermo &th_gas) {
+			     double &mup_gas, thermo &th_gas,
+			     std::vector<double> &vdet) {
   
   double log_xn=x[0];
   double log_xp=x[1];
@@ -1609,12 +1615,14 @@ int eos_nuclei::eos_fixed_ZN(double nB, double Ye, double T,
 
   ubvector x1(2), y1(2);
 
+  vector<double> vdet;
   mm_funct sn_func=std::bind
     (std::mem_fn<int(size_t,const ubvector &,ubvector&,double,double,
-		     double,int,double &,double &,thermo &)>
+		     double,int,double &,double &,thermo &,
+		     std::vector<double> &)>
      (&eos_nuclei::solve_nuclei),this,std::placeholders::_1,
      std::placeholders::_2,std::placeholders::_3,nB,Ye,T,0,
-     std::ref(mun_gas),std::ref(mup_gas),std::ref(th_gas));
+     std::ref(mun_gas),std::ref(mup_gas),std::ref(th_gas),std::ref(vdet));
   
   x1[0]=log_xn;
   x1[1]=log_xp;
@@ -2330,12 +2338,15 @@ int eos_nuclei::eos_fixed_dist
 
   ubvector x1(2), y1(2);
   
+  vector<double> vdet;
   mm_funct sn_func=std::bind
     (std::mem_fn<int(size_t,const ubvector &,ubvector&,double,double,
-		     double,int,double &,double &,thermo &)>
+		     double,int,double &,double &,thermo &,
+		     vector<double> &)>
      (&eos_nuclei::solve_nuclei),this,std::placeholders::_1,
      std::placeholders::_2,std::placeholders::_3,nB,Ye,T,0,
-     std::ref(mun_gas),std::ref(mup_gas),std::ref(th_gas));
+     std::ref(mun_gas),std::ref(mup_gas),std::ref(th_gas),
+     std::ref(vdet));
 
   x1[0]=log_xn;
   x1[1]=log_xp;
@@ -3099,7 +3110,9 @@ int eos_nuclei::store_point
  thermo &th, double log_xn, double log_xp, double Zbar, double Nbar,
  double mun_full, double mup_full, ubvector &X,
  double A_min, double A_max, double NmZ_min, double NmZ_max,
- double loc_flag) {
+ double loc_flag, double zn, double zp, double F1, double F2,
+ double F3, double F4, double Un, double Up, double msn,
+ double msp, double g, double dgdT) {
 
   int loc_verbose=function_verbose/10000%10;
 
@@ -3251,6 +3264,21 @@ int eos_nuclei::store_point
   }
 
   tg3_Sint.set(i_nB,i_Ye,i_T,th.en/nB);
+
+  if (include_detail) {
+    tg3_zn.set(i_nB,i_Ye,i_T,zn);
+    tg3_zp.set(i_nB,i_Ye,i_T,zp);
+    tg3_F1.set(i_nB,i_Ye,i_T,F1);
+    tg3_F2.set(i_nB,i_Ye,i_T,F2);
+    tg3_F3.set(i_nB,i_Ye,i_T,F3);
+    tg3_F4.set(i_nB,i_Ye,i_T,F4);
+    tg3_Un.set(i_nB,i_Ye,i_T,Un);
+    tg3_Up.set(i_nB,i_Ye,i_T,Up);
+    tg3_msn.set(i_nB,i_Ye,i_T,msn);
+    tg3_msp.set(i_nB,i_Ye,i_T,msp);
+    tg3_g.set(i_nB,i_Ye,i_T,g);
+    tg3_dgdT.set(i_nB,i_Ye,i_T,dgdT);
+  }
   
   // AWS 8/4/2020: This section is commented out because the code does
   // not correctly analytically compute mun, mup, Eint and Pint
@@ -3749,6 +3777,8 @@ int eos_nuclei::write_results(std::string fname) {
   hf.set_szt("n_oth",n_oth);
   hf.sets_vec("oth_names",oth_names);
   hf.sets_vec("oth_units",oth_units);
+
+  hf.seti("detail",include_detail);
   
   hf.close();
   
@@ -6659,8 +6689,8 @@ int eos_nuclei::check_virial(std::vector<std::string> &sv,
 
   vector<double> packed, packed2;
 
-  o2scl::tensor_grid3<> tg3_zn;
-  o2scl::tensor_grid3<> tg3_zp;
+  //o2scl::tensor_grid3<> tg3_zn;
+  //o2scl::tensor_grid3<> tg3_zp;
   o2scl::tensor_grid3<> tg3_zn2;
   o2scl::tensor_grid3<> tg3_zp2;
 
