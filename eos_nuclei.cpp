@@ -1818,10 +1818,17 @@ int eos_nuclei::eos_vary_dist
     log_xp=log10(proton.n/nB);
     Zbar=0.0;
     Nbar=0.0;
-    A_min=8;
-    A_max=9;
-    NmZ_min=-1;
-    NmZ_max=1;
+    if (alg_mode==4) {
+      A_min=5;
+      A_max=fd_A_max;
+      NmZ_min=-200;
+      NmZ_max=200;
+    } else {
+      A_min=8;
+      A_max=9;
+      NmZ_min=-1;
+      NmZ_max=1;
+    }
     for(size_t i=0;i<nuclei.size();i++) {
       nuclei[i].n=0.0;
     }
@@ -4377,6 +4384,8 @@ int eos_nuclei::increase_density(std::vector<std::string> &sv,
       NmZ_max=tg3_NmZ_max.get(inB_start,iYe,iT);
 
       bool no_nuclei=false;
+
+      vector<double> Zarr, Narr;
       
       for(size_t inB=inB_start;inB<=inB_end;inB++) {
 	
@@ -4391,14 +4400,34 @@ int eos_nuclei::increase_density(std::vector<std::string> &sv,
 	  cout << "Only works for alg_mode=4." << endl;
 	  return 1;
 	}
+
+	// If the next point will take us outside the limiting N/Z,
+	// then just set no_nuclei to true
+	if (no_nuclei==false && Zarr.size()>=2 && Narr.size()>=2) {
+	  double last_Z=Zarr[Zarr.size()-1];
+	  double last_N=Narr[Narr.size()-1];
+	  double last_ratio=last_N/last_Z;
+	  double sec_last_Z=Zarr[Zarr.size()-2];
+	  double sec_last_N=Narr[Narr.size()-2];
+	  double sec_last_ratio=sec_last_N/sec_last_Z;
+	  double dratio=sec_last_ratio-last_ratio;
+	  if (last_ratio+dratio>max_ratio-1.0) {
+	    cout << "Predicted ratio: " << last_ratio+dratio << " "
+		 << "max_ratio: " << max_ratio << endl;
+	    //no_nuclei=true;
+	  }
+	}
 	
 	double Zbar, Nbar;
 	int ret=eos_vary_dist(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,
 			      thx,mun_full,mup_full,
 			      A_min,A_max,NmZ_min,NmZ_max,
-			      true,false);
+			      true,no_nuclei);
 	cout << ret << " " << nB << " " << Ye << " " << T*hc_mev_fm << " "
-	     << Zbar << " " << Nbar << endl;
+	     << Zbar << " " << Nbar << " " << Nbar/Zbar << endl;
+
+	Zarr.push_back(Zbar);
+	Narr.push_back(Nbar);
 	
 	if (no_nuclei==false && Zbar==0 && Nbar==0) {
 	  cout << "Setting no-nuclei to true for this Ye and T."
