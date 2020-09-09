@@ -1993,7 +1993,7 @@ int eos_nuclei::eos_vary_dist
   
   // Compare with the homogeneous free energy and if it's favored,
   // then set the values accordingly
-  
+
   if (nB>0.01) {
     
     thermo thy;
@@ -2013,7 +2013,7 @@ int eos_nuclei::eos_vary_dist
       }
       
       thx=thy;
-      
+
       log_xn=log10(neutron.n/nB);
       log_xp=log10(proton.n/nB);
       Zbar=0.0;
@@ -2025,8 +2025,9 @@ int eos_nuclei::eos_vary_dist
     
       mun_full=neutron.mu;
       mup_full=proton.mu;
+      
+      return 0;
     }
-    return 0;
   }
 
   // Determine average N and Z
@@ -2380,6 +2381,9 @@ int eos_nuclei::eos_fixed_dist
   double qual_best=1.0e100;
 
   int mh_ret=mh.msolve(2,x1,sn_func);
+  if (mh_ret==0 && mpi_size==1) {
+    cout << "Rank " << mpi_rank << " finished after initial solve." << endl;
+  }
 
   if (alg_mode==2 || alg_mode==4) {
 
@@ -2395,7 +2399,8 @@ int eos_nuclei::eos_fixed_dist
 	     << qual_best << endl;
       }
       if (mh_ret==0 && mpi_size==1) {
-	cout << "Rank " << mpi_rank << " finished after solve " << k << endl;
+	cout << "Rank " << mpi_rank << " finished after solve " << k
+	     << "." << endl;
       }
     }
     
@@ -4142,7 +4147,7 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
       cout << tg3_A.get(inB-1,iYe,iT) << endl;
       cout << "  A_min,A_Max,NmZ_min,NmZ_max: ";
       cout << A_min << " "
-	   << A_max << " " << NmZ_min << " " << NmZ_max << " ";
+	   << A_max << " " << NmZ_min << " " << NmZ_max << endl;
       guess_provided=true;
     }
   }
@@ -4173,8 +4178,12 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
   
   // If necessary, compute the point
   if (flag<10 || recompute==true) {
-    
-    cout << "Computing point." << endl;
+
+    if (flag<10) {
+      cout << "Computing point because flag < 10." << endl;
+    } else {
+      cout << "Computing point because recompute is true." << endl;
+    }
 
     if (loaded && inB>0 && inB<n_nB2-1 &&
 	tg3_flag.get(inB-1,iYe,iT)>9.9 &&
@@ -4235,7 +4244,7 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
   // (At this point in the code, the integer 'flag' is the old
   // flag, not the new flag, which is stored in tg3_flag)
 
-  if (flag>=10 && recompute) {
+  if (flag>=10 && recompute==false) {
     cout << "Point already computed and recompute is false." << endl;
   }
 
@@ -4244,6 +4253,7 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
   // (flag==10).
   
   if ((ret==0 || flag==10) && loaded) {
+    cout << "Results stored in table:" << endl;
     cout << "nB,Ye,T: " << nB << " " << Ye << " " << T*hc_mev_fm << endl;
     cout << "flag: " << tg3_flag.get(inB,iYe,iT) << endl;
     cout << "log_xn: " << tg3_log_xn.get(inB,iYe,iT) << endl;
@@ -4414,7 +4424,11 @@ int eos_nuclei::increase_density(std::vector<std::string> &sv,
 	  if (last_ratio+dratio>max_ratio-1.0) {
 	    cout << "Predicted ratio: " << last_ratio+dratio << " "
 		 << "max_ratio: " << max_ratio << endl;
-	    //no_nuclei=true;
+	    if (last_ratio+dratio>max_ratio-0.1) {
+	      cout << "Predicted ratio large, setting no_nuclei to true."
+		   << endl;
+	      no_nuclei=true;
+	    }
 	  }
 	}
 	
@@ -4423,13 +4437,20 @@ int eos_nuclei::increase_density(std::vector<std::string> &sv,
 			      thx,mun_full,mup_full,
 			      A_min,A_max,NmZ_min,NmZ_max,
 			      true,no_nuclei);
-	cout << ret << " " << nB << " " << Ye << " " << T*hc_mev_fm << " "
-	     << Zbar << " " << Nbar << " " << Nbar/Zbar << endl;
+	if (Zbar>0.0 && Nbar>0.0) {
+	  cout << "ret,nB,Ye,T_MeV,Z,N,N/Z: "
+	       << ret << " " << nB << " " << Ye << " " << T*hc_mev_fm << " "
+	       << Zbar << " " << Nbar << " " << Nbar/Zbar << endl;
+	} else {
+	  cout << "ret,nB,Ye,T_MeV,Z,N: "
+	       << ret << " " << nB << " " << Ye << " " << T*hc_mev_fm << " "
+	       << Zbar << " " << Nbar << endl;
+	}
 
 	Zarr.push_back(Zbar);
 	Narr.push_back(Nbar);
 	
-	if (no_nuclei==false && Zbar==0 && Nbar==0) {
+	if (no_nuclei==false && Zbar<1.0e-6 && Nbar<1.0e-6) {
 	  cout << "Setting no-nuclei to true for this Ye and T."
 	       << endl;
 	  no_nuclei=true;
@@ -4454,18 +4475,29 @@ int eos_nuclei::increase_density(std::vector<std::string> &sv,
 		      mun_full,mup_full,X,A_min,A_max,NmZ_min,NmZ_max,10.0);
 	  
 	  if (tg3_A.get(inB,iYe,iT)>0.0) {
-	    cout << "after: " << tg3_Z.get(inB,iYe,iT) << " "
+	    cout << "after: " << tg3_log_xn.get(inB,iYe,iT) << " "
+		 << tg3_log_xp.get(inB,iYe,iT) << " "
+		 << tg3_Xnuclei.get(inB,iYe,iT) << " "
+		 << tg3_Z.get(inB,iYe,iT) << " "
 		 << tg3_A.get(inB,iYe,iT) << " "
 		 << tg3_A.get(inB,iYe,iT)/
 	      tg3_Z.get(inB,iYe,iT) << endl;
 	  } else {
-	    cout << "after: " << tg3_Z.get(inB,iYe,iT) << " "
+	    cout << "after: " << tg3_log_xn.get(inB,iYe,iT) << " "
+		 << tg3_log_xp.get(inB,iYe,iT) << " "
+		 << tg3_Xnuclei.get(inB,iYe,iT) << " "
+		 << tg3_Z.get(inB,iYe,iT) << " "
 		 << tg3_A.get(inB,iYe,iT) << " " << 0.0 << endl;
 	  }
 	  cout << endl;
 	  
 	} else {
-	  inB=inB_end;
+	  // If we failed, presume that we're past the transition
+	  if (nB>0.04) {
+	    no_nuclei=true;
+	  } else {
+	    inB=inB_end;
+	  }
 	}
 	
       }
