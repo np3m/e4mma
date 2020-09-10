@@ -4420,8 +4420,8 @@ int eos_nuclei::increase_density(std::vector<std::string> &sv,
 	  double sec_last_Z=Zarr[Zarr.size()-2];
 	  double sec_last_N=Narr[Narr.size()-2];
 	  double sec_last_ratio=sec_last_N/sec_last_Z;
-	  double dratio=sec_last_ratio-last_ratio;
-	  if (last_ratio+dratio>max_ratio-1.0) {
+	  double dratio=last_ratio-sec_last_ratio;
+	  if (last_ratio>sec_last_ratio && last_ratio+dratio>max_ratio-1.0) {
 	    cout << "Predicted ratio: " << last_ratio+dratio << " "
 		 << "max_ratio: " << max_ratio << endl;
 	    if (last_ratio+dratio>max_ratio-0.1) {
