@@ -157,7 +157,8 @@ class eos {
     (o2scl::fermion &n, o2scl::fermion &p, double T,
      o2scl::thermo &th);
 
-  /** \brief Desc
+  /** \brief Compute the free energy returning several 
+      details as output parameters
       
       f1 is g*f_virial
       f2 is (1-g)*f_skyrme

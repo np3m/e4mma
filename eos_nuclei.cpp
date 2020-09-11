@@ -4451,7 +4451,8 @@ int eos_nuclei::increase_density(std::vector<std::string> &sv,
 	Narr.push_back(Nbar);
 	
 	if (no_nuclei==false && Zbar<1.0e-6 && Nbar<1.0e-6) {
-	  cout << "Setting no-nuclei to true for this Ye and T."
+	  cout << "Function eos_vary_dist() found no nuclei preferred.\n"
+	       << "  Setting no-nuclei to true for this Ye and T."
 	       << endl;
 	  no_nuclei=true;
 	}
