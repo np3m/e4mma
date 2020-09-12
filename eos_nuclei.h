@@ -484,8 +484,8 @@ public:
   int eos_fixed_dist
   (double nB, double Ye, double T, double &log_xn, double &log_xp,
    o2scl::thermo &thx, double &mun_full, double &mup_full, int &A_min,
-   int &A_max, int &NmZ_min, int &NmZ_max, bool dist_changed,
-   bool no_nuclei);
+   int &A_max, int &NmZ_min, int &NmZ_max,  std::vector<double> &vdet,
+   bool dist_changed, bool no_nuclei);
 
   /** \brief Determine the EOS presuming a distribution of nuclei
       with fixed limits in A and \f$ N-Z \f$ but used to fix table only
@@ -503,7 +503,8 @@ public:
   (double nB, double Ye, double T, double &log_xn, double &log_xp,
    double &Zbar, double &Nbar, 
    o2scl::thermo &thx, double &mun_full, double &mup_full, int &A_min,
-   int &A_max, int &NmZ_min, int &NmZ_max, bool dist_changed,
+   int &A_max, int &NmZ_min, int &NmZ_max,
+   std::vector<double> &vdet, bool dist_changed,
    bool no_nuclei);
    
   /** \brief Generate a table (MPI version)
@@ -517,12 +518,16 @@ public:
    */
   int eos_deriv(std::vector<std::string> &sv, bool itive_com);
 
+  /** \brief Compute second derivatives numerically
+   */
   int eos_second_deriv(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Add electrons and photons
    */
   int add_eg(std::vector<std::string> &sv, bool itive_com);
 
+  /** \brief Construct an electrons and photon table
+   */
   int eg_table(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Edit an EOS table

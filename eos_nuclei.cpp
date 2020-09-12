@@ -1291,7 +1291,10 @@ int eos_nuclei::solve_nuclei(size_t nv, const ubvector &x, ubvector &y,
     if (use_skalt) {
       sk_alt.calc_temp_e(neutron,proton,T,th_gas);
     } else {
-      free_energy_density(neutron,proton,T,th_gas);
+      if (vdet.size()<8) vdet.resize(8);
+      free_energy_density_detail(neutron,proton,T,th_gas,vdet[0],
+				 vdet[1],vdet[2],vdet[3],vdet[4],
+				 vdet[5],vdet[6],vdet[7]);
     }
     
   }
@@ -1814,6 +1817,7 @@ int eos_nuclei::eos_vary_dist
 (double nB, double Ye, double T, double &log_xn, double &log_xp,
  double &Zbar, double &Nbar, thermo &thx, double &mun_full,
  double &mup_full, int &A_min, int &A_max, int &NmZ_min, int &NmZ_max,
+ vector<double> &vdet,
  bool dist_changed, bool no_nuclei) {
   
   int loc_verbose=function_verbose/1000%10;
@@ -1889,7 +1893,7 @@ int eos_nuclei::eos_vary_dist
     // Compute the EOS with the current nuclear distribution
     int ret=eos_fixed_dist
       (nB,Ye,T,log_xn,log_xp,thx,mun_full,mup_full,
-       A_min,A_max,NmZ_min,NmZ_max,dist_changed,no_nuclei);
+       A_min,A_max,NmZ_min,NmZ_max,vdet,dist_changed,no_nuclei);
     if (ret!=0) {
       return ret;
     }
@@ -2075,7 +2079,8 @@ int eos_nuclei::eos_vary_dist
 int eos_nuclei::eos_fixed_dist
 (double nB, double Ye, double T, double &log_xn, double &log_xp,
  thermo &thx, double &mun_full, double &mup_full, int &A_min,
- int &A_max, int &NmZ_min, int &NmZ_max, bool dist_changed,
+ int &A_max, int &NmZ_min, int &NmZ_max,
+ vector<double> &vdet, bool dist_changed,
  bool no_nuclei) {
 
   int mpi_rank=0, mpi_size=1;
@@ -2355,8 +2360,7 @@ int eos_nuclei::eos_fixed_dist
   }
 
   ubvector x1(2), y1(2);
-  
-  vector<double> vdet;
+
   mm_funct sn_func=std::bind
     (std::mem_fn<int(size_t,const ubvector &,ubvector&,double,double,
 		     double,int,double &,double &,thermo &,
@@ -4212,10 +4216,11 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
     double mun_full, mup_full;
     
     double Zbar, Nbar;
+    vector<double> vdet;
     if (alg_mode==2 || alg_mode==3 || alg_mode==4) {
       ret=eos_vary_dist(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,
 			thx,mun_full,mup_full,
-			A_min,A_max,NmZ_min,NmZ_max,
+			A_min,A_max,NmZ_min,NmZ_max,vdet,
 			true,false);
     } else {
       ret=eos_vary_ZN(nB,Ye,T,log_xn,log_xp,nuc_Z1,nuc_N1,
@@ -4443,10 +4448,11 @@ int eos_nuclei::increase_density(std::vector<std::string> &sv,
 	}
 	
 	double Zbar, Nbar;
+	vector<double> vdet;
 	int ret=eos_vary_dist(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,
 			      thx,mun_full,mup_full,
 			      A_min,A_max,NmZ_min,NmZ_max,
-			      true,no_nuclei);
+			      vdet,true,no_nuclei);
 	if (Zbar>0.0 && Nbar>0.0) {
 	  cout << "ret,nB,Ye,T_MeV,Z,N,N/Z: "
 	       << ret << " " << nB << " " << Ye << " " << T*hc_mev_fm << " "
@@ -5549,6 +5555,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
       thermo thx;
       double mun_full=0.0, mup_full=0.0;
       int first_ret=0;
+      vector<double> vdet;
       if (alg_mode==1) {
 	cerr << "Mode alg_mode=1 no longer supported in generate-table."
 	     << endl;
@@ -5561,11 +5568,11 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
       } else if (alg_mode==2 || alg_mode==4) {
 	first_ret=eos_vary_dist(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,thx,
 				mun_full,mup_full,A_min,A_max,
-				NmZ_min,NmZ_max,true,false);
+				NmZ_min,NmZ_max,vdet,true,false);
       } else if (alg_mode==3) {
 	first_ret=eos_vary_dist(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,thx,
 				mun_full,mup_full,A_min,A_max,
-				NmZ_min,NmZ_max,true,false);
+				NmZ_min,NmZ_max,vdet,true,false);
       }
       if (first_ret!=0) {
 	cerr << "Initial point for blank table failed." << endl;
@@ -6414,9 +6421,10 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	    A_max=gtab.get("A_max",i);
 	    NmZ_min=gtab.get("NmZ_min",i);
 	    NmZ_max=gtab.get("NmZ_max",i);
+	    vector<double> vdet;
 	    ret=eos_vary_dist
 	      (nB,Ye,T,log_xn,log_xp,Zbar,Nbar,thx,mun_full,mup_full,
-	       A_min,A_max,NmZ_min,NmZ_max,true,no_nuclei);    
+	       A_min,A_max,NmZ_min,NmZ_max,vdet,true,no_nuclei);    
 	  }
 	  if (gt_verbose>1) {
 	    cout << "Point at (nB,Ye,T)=("
@@ -6645,9 +6653,10 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	  ret=eos_vary_ZN(nB,Ye,T,log_xn,log_xp,nuc_Z1,nuc_N1,
 			  thx,mun_full,mup_full,no_nuclei);
 	} else if (alg_mode==2 || alg_mode==3 || alg_mode==4) {
+	  vector<double> &vdet;
 	  ret=eos_vary_dist(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,
 			    thx,mun_full,mup_full,
-			    A_min,A_max,NmZ_min,NmZ_max,true,no_nuclei);
+			    A_min,A_max,NmZ_min,NmZ_max,vdet,true,no_nuclei);
 	}
 
 	if (gt_verbose>1) {
@@ -7023,9 +7032,10 @@ int eos_nuclei::mcarlo_nuclei2(std::vector<std::string> &sv,
       log_xn=tg3_log_xn.get(inB,iYe,iT)+(rng.random()*6.0-3.0);
       log_xp=tg3_log_xp.get(inB,iYe,iT)+(rng.random()*6.0-3.0);
       
+      vector<double> vdet;
       int ret=eos_vary_dist(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,
 			    thx,mun_full,mup_full,
-			    A_min,A_max,NmZ_min,NmZ_max,
+			    A_min,A_max,NmZ_min,NmZ_max,vdet,
 			    dist_changed,no_nuclei);
       cout << "AWS: " << ret << " " << log_xn << " " << log_xp << " "
 	   << Zbar << " " << Nbar << " " << Zbar+Nbar << " " 
@@ -7041,9 +7051,10 @@ int eos_nuclei::mcarlo_nuclei2(std::vector<std::string> &sv,
     log_xn=log_xn_best;
     log_xp=log_xp_best;
     
+    vector<double> vdet;
     int ret2=eos_vary_dist(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,
 			   thx,mun_full,mup_full,
-			   A_min,A_max,NmZ_min,NmZ_max,
+			   A_min,A_max,NmZ_min,NmZ_max,vdet,
 			   dist_changed,no_nuclei);
     ubvector X;
     compute_X(nB,X);
