@@ -1849,7 +1849,10 @@ int eos_nuclei::eos_vary_dist
     if (use_skalt) {
       sk_alt.calc_temp_e(neutron,proton,T,thx);
     } else {
-      free_energy_density(neutron,proton,T,thx);
+      if (vdet.size()<8) vdet.resize(8);
+      free_energy_density_detail(neutron,proton,T,thx,vdet[0],
+				 vdet[1],vdet[2],vdet[3],vdet[4],
+				 vdet[5],vdet[6],vdet[7]);
     }
     mun_full=neutron.mu;
     mup_full=proton.mu;
@@ -2016,7 +2019,10 @@ int eos_nuclei::eos_vary_dist
     if (use_skalt) {
       sk_alt.calc_temp_e(neutron,proton,T,thy);
     } else {
-      free_energy_density(neutron,proton,T,thy);
+      if (vdet.size()<8) vdet.resize(8);
+      free_energy_density_detail(neutron,proton,T,thy,vdet[0],
+				 vdet[1],vdet[2],vdet[3],vdet[4],
+				 vdet[5],vdet[6],vdet[7]);
     }
     
     if (thy.ed-T*thy.en<thx.ed-T*thx.en) {
@@ -3136,9 +3142,7 @@ int eos_nuclei::store_point
  thermo &th, double log_xn, double log_xp, double Zbar, double Nbar,
  double mun_full, double mup_full, ubvector &X,
  double A_min, double A_max, double NmZ_min, double NmZ_max,
- double loc_flag, double zn, double zp, double F1, double F2,
- double F3, double F4, double Un, double Up, double msn,
- double msp, double g, double dgdT) {
+ double loc_flag, vector<double> &vdet) {
 
   int loc_verbose=function_verbose/10000%10;
 
@@ -3292,18 +3296,18 @@ int eos_nuclei::store_point
   tg3_Sint.set(i_nB,i_Ye,i_T,th.en/nB);
 
   if (include_detail) {
-    tg3_zn.set(i_nB,i_Ye,i_T,zn);
-    tg3_zp.set(i_nB,i_Ye,i_T,zp);
-    tg3_F1.set(i_nB,i_Ye,i_T,F1);
-    tg3_F2.set(i_nB,i_Ye,i_T,F2);
-    tg3_F3.set(i_nB,i_Ye,i_T,F3);
-    tg3_F4.set(i_nB,i_Ye,i_T,F4);
-    tg3_Un.set(i_nB,i_Ye,i_T,Un);
-    tg3_Up.set(i_nB,i_Ye,i_T,Up);
-    tg3_msn.set(i_nB,i_Ye,i_T,msn);
-    tg3_msp.set(i_nB,i_Ye,i_T,msp);
-    tg3_g.set(i_nB,i_Ye,i_T,g);
-    tg3_dgdT.set(i_nB,i_Ye,i_T,dgdT);
+    tg3_zn.set(i_nB,i_Ye,i_T,vdet[0]);
+    tg3_zp.set(i_nB,i_Ye,i_T,vdet[1]);
+    tg3_F1.set(i_nB,i_Ye,i_T,vdet[2]);
+    tg3_F2.set(i_nB,i_Ye,i_T,vdet[3]);
+    tg3_F3.set(i_nB,i_Ye,i_T,vdet[4]);
+    tg3_F4.set(i_nB,i_Ye,i_T,vdet[5]);
+    tg3_Un.set(i_nB,i_Ye,i_T,vdet[6]);
+    tg3_Up.set(i_nB,i_Ye,i_T,vdet[7]);
+    tg3_msn.set(i_nB,i_Ye,i_T,vdet[8]);
+    tg3_msp.set(i_nB,i_Ye,i_T,vdet[9]);
+    tg3_g.set(i_nB,i_Ye,i_T,vdet[10]);
+    tg3_dgdT.set(i_nB,i_Ye,i_T,vdet[11]);
   }
   
   // AWS 8/4/2020: This section is commented out because the code does
@@ -4238,7 +4242,8 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
       compute_X(nB,X);
 
       store_point(inB,iYe,iT,nB,Ye,T,thx,log_xn,log_xp,Zbar,Nbar,
-		  mun_full,mup_full,X,A_min,A_max,NmZ_min,NmZ_max,10.0);
+		  mun_full,mup_full,X,A_min,A_max,NmZ_min,NmZ_max,
+		  10.0,vdet);
     } else {
       cout << "Point succeeded." << endl;
     }
@@ -4489,7 +4494,8 @@ int eos_nuclei::increase_density(std::vector<std::string> &sv,
 	  }
 	  
 	  store_point(inB,iYe,iT,nB,Ye,T,thx,log_xn,log_xp,Zbar,Nbar,
-		      mun_full,mup_full,X,A_min,A_max,NmZ_min,NmZ_max,10.0);
+		      mun_full,mup_full,X,A_min,A_max,NmZ_min,
+		      NmZ_max,10.0,vdet);
 	  
 	  if (tg3_A.get(inB,iYe,iT)>0.0) {
 	    cout << "after: " << tg3_log_xn.get(inB,iYe,iT) << " "
@@ -5584,7 +5590,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
       
       store_point(250,50,80,nB,Ye,T,thx,log_xn,log_xp,
 		  Zbar,Nbar,mun_full,mup_full,X,A_min,A_max,
-		  NmZ_min,NmZ_max,10.0);
+		  NmZ_min,NmZ_max,10.0,vdet);
 
       // End of 'else' for 'if (in_file!="none")'
     }
@@ -6207,6 +6213,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 		     << " F=" << (thy.ed-Tt*thy.en)/nBt*hc_mev_fm << endl;
 	      }
 	      ubvector X(6);
+	      vector<double> vdet;
 	      X[0]=input_buffers[proc_index][vi["Xalpha"]];
 	      X[1]=input_buffers[proc_index][vi["Xd"]];
 	      X[2]=input_buffers[proc_index][vi["Xt"]];
@@ -6228,7 +6235,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 			  input_buffers[proc_index][vi["A_max"]],
 			  input_buffers[proc_index][vi["NmZ_min"]],
 			  input_buffers[proc_index][vi["NmZ_max"]],
-			  input_buffers[proc_index][vi["flag"]]);
+			  input_buffers[proc_index][vi["flag"]],vdet);
 	    } else {
 	      if (gt_verbose>1) {
 		cout << "Rank " << mpi_rank
@@ -6405,6 +6412,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	  thermo thx;
 	  double mun_full, mup_full, Zbar, Nbar;
 	  int A_min=0, A_max=0, NmZ_min=0, NmZ_max=0;
+	  vector<double> vdet;
 	  
 	  int ret=0;
 	  if (alg_mode==1) {
@@ -6421,7 +6429,6 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	    A_max=gtab.get("A_max",i);
 	    NmZ_min=gtab.get("NmZ_min",i);
 	    NmZ_max=gtab.get("NmZ_max",i);
-	    vector<double> vdet;
 	    ret=eos_vary_dist
 	      (nB,Ye,T,log_xn,log_xp,Zbar,Nbar,thx,mun_full,mup_full,
 	       A_min,A_max,NmZ_min,NmZ_max,vdet,true,no_nuclei);    
@@ -6438,7 +6445,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	    
 	    store_point(inB,iYe,iT,nB,Ye,T,thx,log_xn,log_xp,
 			Zbar,Nbar,mun_full,mup_full,X,A_min,A_max,
-			NmZ_min,NmZ_max,10.0);
+			NmZ_min,NmZ_max,10.0,vdet);
 	  }
 
 	  

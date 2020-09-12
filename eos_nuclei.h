@@ -462,11 +462,7 @@ public:
 		  double Zbar, double Nbar, 
 		  double mun_full, double mup_full, ubvector &X,
 		  double A_min, double A_max, double NmZ_min, double NmZ_max,
-		  double flag=10.0, double zn=0.0, double zp=0.0,
-		  double F1=0.0, double F2=0.0, double F3=0.0,
-		  double F4=0.0, double Un=0.0, double Up=0.0,
-		  double msn=0.0, double msp=0.0, double g=0.0,
-		  double dgdT=0.0);
+		  double flag, std::vector<double> &vdet);
 
   /** \brief Determine the EOS allowing the Z and N of the nucleus
       to vary
@@ -499,13 +495,12 @@ public:
   /** \brief Determine the EOS presuming a distribution of nuclei
       and optimizing the limits in A and \f$ N-Z \f$
   */
-  int eos_vary_dist
-  (double nB, double Ye, double T, double &log_xn, double &log_xp,
-   double &Zbar, double &Nbar, 
-   o2scl::thermo &thx, double &mun_full, double &mup_full, int &A_min,
-   int &A_max, int &NmZ_min, int &NmZ_max,
-   std::vector<double> &vdet, bool dist_changed,
-   bool no_nuclei);
+  int eos_vary_dist(double nB, double Ye, double T, double &log_xn,
+		    double &log_xp, double &Zbar, double &Nbar, 
+		    o2scl::thermo &thx, double &mun_full, double &mup_full,
+		    int &A_min, int &A_max, int &NmZ_min, int &NmZ_max,
+		    std::vector<double> &vdet, bool dist_changed,
+		    bool no_nuclei);
    
   /** \brief Generate a table (MPI version)
    */
