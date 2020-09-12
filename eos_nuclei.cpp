@@ -3802,12 +3802,51 @@ int eos_nuclei::write_results(std::string fname) {
     oth_units.push_back("");
     oth_units.push_back("");
   }
+
+  hf.seti("detail",include_detail);
+  if (include_detail) {
+    hdf_output(hf,tg3_zn,"zn");
+    hdf_output(hf,tg3_zp,"zp");
+    hdf_output(hf,tg3_msn,"msn");
+    hdf_output(hf,tg3_msp,"msp");
+    hdf_output(hf,tg3_F1,"F1");
+    hdf_output(hf,tg3_F2,"F2");
+    hdf_output(hf,tg3_F3,"F3");
+    hdf_output(hf,tg3_F4,"F4");
+    hdf_output(hf,tg3_Un,"Un");
+    hdf_output(hf,tg3_Up,"Up");
+    hdf_output(hf,tg3_g,"g");
+    hdf_output(hf,tg3_dgdT,"dgdT");
+    oth_names.push_back("zn");
+    oth_units.push_back("");
+    oth_names.push_back("zp");
+    oth_units.push_back("");
+    oth_names.push_back("msn");
+    oth_units.push_back("MeV");
+    oth_names.push_back("msp");
+    oth_units.push_back("MeV");
+    oth_names.push_back("F1");
+    oth_units.push_back("MeV");
+    oth_names.push_back("F2");
+    oth_units.push_back("MeV");
+    oth_names.push_back("F3");
+    oth_units.push_back("MeV");
+    oth_names.push_back("F4");
+    oth_units.push_back("MeV");
+    oth_names.push_back("Un");
+    oth_units.push_back("MeV");
+    oth_names.push_back("Up");
+    oth_units.push_back("MeV");
+    oth_names.push_back("g");
+    oth_units.push_back("");
+    oth_names.push_back("dgdT");
+    oth_units.push_back("1/MeV");
+  }
+
   size_t n_oth=oth_names.size();
   hf.set_szt("n_oth",n_oth);
   hf.sets_vec("oth_names",oth_names);
   hf.sets_vec("oth_units",oth_units);
-
-  hf.seti("detail",include_detail);
   
   hf.close();
   
@@ -3892,6 +3931,11 @@ int eos_nuclei::read_results(std::string fname) {
   hf.geti_def("derivs_computed",0,itmp);
   if (itmp==1) derivs_computed=true;
   else derivs_computed=false;
+  
+  if (verbose>2) cout << "Reading include_detail." << endl;
+  hf.geti_def("detail",0,itmp);
+  if (itmp==1) include_detail=true;
+  else include_detail=false;
   
   include_muons=false;
 
@@ -4044,7 +4088,34 @@ int eos_nuclei::read_results(std::string fname) {
     tg3_S.clear();
     tg3_mue.clear();
   }
-  
+
+  if (include_detail) {
+  if (verbose>2) cout << "Reading zn." << endl;
+  hdf_input(hf,tg3_zn,"zn");
+  if (verbose>2) cout << "Reading zp." << endl;
+  hdf_input(hf,tg3_zp,"zp");
+  if (verbose>2) cout << "Reading msn." << endl;
+  hdf_input(hf,tg3_msn,"msn");
+  if (verbose>2) cout << "Reading msp." << endl;
+  hdf_input(hf,tg3_msp,"msp");
+  if (verbose>2) cout << "Reading F1." << endl;
+  hdf_input(hf,tg3_F1,"F1");
+  if (verbose>2) cout << "Reading F2." << endl;
+  hdf_input(hf,tg3_F2,"F2");
+  if (verbose>2) cout << "Reading F3." << endl;
+  hdf_input(hf,tg3_F3,"F3");
+  if (verbose>2) cout << "Reading F4." << endl;
+  hdf_input(hf,tg3_F4,"F4");
+  if (verbose>2) cout << "Reading Un." << endl;
+  hdf_input(hf,tg3_Un,"Un");
+  if (verbose>2) cout << "Reading Up." << endl;
+  hdf_input(hf,tg3_Up,"Up");
+  if (verbose>2) cout << "Reading g." << endl;
+  hdf_input(hf,tg3_g,"g");
+  if (verbose>2) cout << "Reading dgdT." << endl;
+  hdf_input(hf,tg3_dgdT,"dgdT");
+  }
+
   hf.close();
 
   loaded=true;
