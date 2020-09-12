@@ -23,6 +23,7 @@
 #include "virial_solver_deriv.h"
 #include <o2scl/nucmass_fit.h>
 #include <o2scl/slack_messenger.h>
+#include <map>
 
 typedef boost::numeric::ublas::vector<double> ubvector;
 typedef boost::numeric::ublas::matrix<double> ubmatrix;
@@ -442,7 +443,7 @@ public:
   int solve_nuclei(size_t nv, const ubvector &x, ubvector &y, double nb,
 		   double ye, double T, 
 		   int loc_verbose, double &mun_gas, double &mup_gas,
-		   o2scl::thermo &th_gas, std::vector<double> &vdet);
+		   o2scl::thermo &th_gas, std::map<std::string,double> &vdet);
   
   /** \brief Determine the EOS presuming a fixed single heavy nucleus
       and solving for the log (base 10) of the
@@ -462,7 +463,7 @@ public:
 		  double Zbar, double Nbar, 
 		  double mun_full, double mup_full, ubvector &X,
 		  double A_min, double A_max, double NmZ_min, double NmZ_max,
-		  double flag, std::vector<double> &vdet);
+		  double flag, std::map<std::string,double> &vdet);
 
   /** \brief Determine the EOS allowing the Z and N of the nucleus
       to vary
@@ -480,7 +481,8 @@ public:
   int eos_fixed_dist
   (double nB, double Ye, double T, double &log_xn, double &log_xp,
    o2scl::thermo &thx, double &mun_full, double &mup_full, int &A_min,
-   int &A_max, int &NmZ_min, int &NmZ_max,  std::vector<double> &vdet,
+   int &A_max, int &NmZ_min, int &NmZ_max,
+   std::map<std::string,double> &vdet,
    bool dist_changed, bool no_nuclei);
 
   /** \brief Determine the EOS presuming a distribution of nuclei
@@ -499,7 +501,7 @@ public:
 		    double &log_xp, double &Zbar, double &Nbar, 
 		    o2scl::thermo &thx, double &mun_full, double &mup_full,
 		    int &A_min, int &A_max, int &NmZ_min, int &NmZ_max,
-		    std::vector<double> &vdet, bool dist_changed,
+		    std::map<std::string,double> &vdet, bool dist_changed,
 		    bool no_nuclei);
    
   /** \brief Generate a table (MPI version)
