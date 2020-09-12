@@ -44,9 +44,9 @@ eos_nuclei::eos_nuclei() {
   nuc_li4=&nuclei[4];
   nuc_heavy=&nuclei[5];
 
-  nB_grid_spec="10^(i*0.04-12)*2.0";
-  Ye_grid_spec="0.01*(i+1)";
-  T_grid_spec="0.1*1.046^i";
+  nB_grid_spec="301,10^(i*0.04-12)*2.0";
+  Ye_grid_spec="70,0.01*(i+1)";
+  T_grid_spec="160,0.1*1.046^i";
 
   show_all_nuclei=false;
   recompute=false;
@@ -620,20 +620,30 @@ int eos_nuclei::eos_deriv(std::vector<std::string> &sv,
     std::map<std::string,double> vars;
     
     vector<double> packed;
+    vector<std::string> split_res;
+
+    split_string_delim(nB_grid_spec,split_res,',');
+    n_nB2=stoszt(split_res[0]);
     
-    calc.compile(nB_grid_spec.c_str());
+    calc.compile(split_res[1].c_str());
     for(size_t i=0;i<n_nB2;i++) {
       vars["i"]=((double)i);
       packed.push_back(nB_grid2[i]);
     }
     
-    calc.compile(Ye_grid_spec.c_str());
+    split_string_delim(Ye_grid_spec,split_res,',');
+    n_Ye2=stoszt(split_res[0]);
+    
+    calc.compile(split_res[1].c_str());
     for(size_t i=0;i<n_Ye2;i++) {
       vars["i"]=((double)i);
       packed.push_back(Ye_grid2[i]);
     }
     
-    calc.compile(T_grid_spec.c_str());
+    split_string_delim(T_grid_spec,split_res,',');
+    n_T2=stoszt(split_res[0]);
+    
+    calc.compile(split_res[1].c_str());
     for(size_t i=0;i<n_T2;i++) {
       vars["i"]=((double)i);
       packed.push_back(T_grid2[i]);
@@ -3843,7 +3853,7 @@ int eos_nuclei::read_results(std::string fname) {
   hf.get_szt("n_Ye",n_Ye2);
   if (verbose>2) cout << "Reading n_T." << endl;
   hf.get_szt("n_T",n_T2);
-  if (n_nB2==0 || n_Ye2==0 || n_T2==0) {
+  if (loaded==false) {
     O2SCL_ERR("No data in file.",o2scl::exc_efailed);
   }
   if (verbose>2) cout << "Reading nB_grid." << endl;
@@ -5119,22 +5129,32 @@ void eos_nuclei::new_table() {
   std::map<std::string,double> vars;
     
   vector<double> packed;
-    
-  calc.compile(nB_grid_spec.c_str());
+  vector<std::string> split_res;
+  
+  split_string_delim(nB_grid_spec,split_res,',');
+  n_nB2=stoszt(split_res[0]);
+  
+  calc.compile(split_res[1].c_str());
   for(size_t i=0;i<n_nB2;i++) {
     vars["i"]=((double)i);
     nB_grid2.push_back(calc.eval(&vars));
     packed.push_back(nB_grid2[i]);
   }
     
-  calc.compile(Ye_grid_spec.c_str());
+  split_string_delim(Ye_grid_spec,split_res,',');
+  n_Ye2=stoszt(split_res[0]);
+
+  calc.compile(split_res[1].c_str());
   for(size_t i=0;i<n_Ye2;i++) {
     vars["i"]=((double)i);
     Ye_grid2.push_back(calc.eval(&vars));
     packed.push_back(Ye_grid2[i]);
   }
     
-  calc.compile(T_grid_spec.c_str());
+  split_string_delim(T_grid_spec,split_res,',');
+  n_T2=stoszt(split_res[0]);
+
+  calc.compile(split_res[1].c_str());
   for(size_t i=0;i<n_T2;i++) {
     vars["i"]=((double)i);
     T_grid2.push_back(calc.eval(&vars));
@@ -5504,13 +5524,9 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
     // -----------------------------------------------------
     // Read the input file
     
-    if (n_nB2==0) {
+    if (loaded==false) {
 
       cout << "No data. Creating new table." << endl;
-      
-      n_nB2=301;
-      n_Ye2=70;
-      n_T2=160;
       
       new_table();
       
@@ -6750,13 +6766,17 @@ int eos_nuclei::check_virial(std::vector<std::string> &sv,
   std::map<std::string,double> vars;
 
   vector<double> packed, packed2;
+  vector<std::string> split_res;
 
   //o2scl::tensor_grid3<> tg3_zn;
   //o2scl::tensor_grid3<> tg3_zp;
   o2scl::tensor_grid3<> tg3_zn2;
   o2scl::tensor_grid3<> tg3_zp2;
 
-  calc.compile(nB_grid_spec.c_str());
+  split_string_delim(nB_grid_spec,split_res,',');
+  n_nB2=stoszt(split_res[0]);
+  
+  calc.compile(split_res[1].c_str());
   for(size_t i=0;i<n_nB;i++) {
     vars["i"]=((double)i);
     nB_grid.push_back(calc.eval(&vars));
@@ -6766,7 +6786,10 @@ int eos_nuclei::check_virial(std::vector<std::string> &sv,
     packed2.push_back(pow(10.0,-50.0+i*2));
   }
     
-  calc.compile(Ye_grid_spec.c_str());
+  split_string_delim(Ye_grid_spec,split_res,',');
+  n_Ye2=stoszt(split_res[0]);
+  
+  calc.compile(split_res[1].c_str());
   for(size_t i=0;i<n_Ye;i++) {
     vars["i"]=((double)i);
     Ye_grid.push_back(calc.eval(&vars));
@@ -6774,7 +6797,10 @@ int eos_nuclei::check_virial(std::vector<std::string> &sv,
     packed2.push_back(Ye_grid[i]);
   }
     
-  calc.compile(T_grid_spec.c_str());
+  split_string_delim(T_grid_spec,split_res,',');
+  n_T2=stoszt(split_res[0]);
+  
+  calc.compile(split_res[1].c_str());
   for(size_t i=0;i<n_T;i++) {
     vars["i"]=((double)i);
     T_grid.push_back(calc.eval(&vars));
