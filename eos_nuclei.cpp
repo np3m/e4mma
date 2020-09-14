@@ -2105,7 +2105,7 @@ int eos_nuclei::eos_fixed_dist
 
   int n_solves=(fixed_dist_alg%10)+1;
   int n_brackets=((fixed_dist_alg/10)%10)*10;
-  int n_minimizes=(fixed_dist_alg/100)%10;
+  int n_minimizes=(fixed_dist_alg/100)%10*4;
   int n_randoms=((fixed_dist_alg/1000)%10)*1000;
   if (mpi_size==1 && loc_verbose>1) {
     cout << "n_solves,n_brackets,n_minimizes,n_randoms: "
@@ -6798,7 +6798,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	  output_buffer[vi["N"]]=nuc_N1;
 	}
 	if (include_detail) {
-	  output_buffer[vi["zn"]]=vdet["zn"];
+	  //output_buffer[vi["zn"]]=vdet["zn"];
 	}
 	//cout << "Sending back: " << f_min << " "
 	//<< f_min/nB*hc_mev_fm << endl;
