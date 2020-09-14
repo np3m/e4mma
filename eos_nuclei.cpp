@@ -4853,10 +4853,11 @@ int eos_nuclei::stats(std::vector<std::string> &sv,
     cout << j-10 << ": " << flags[j] << endl;
   }
 
-  // Less than 100 points missing, so output the missing points
-  if (count>0 && count<100) {
+  // Less than 200 points missing, so output the missing points
+  if (count>0 && count<200) {
     cout << "\nOnly " << count << " non-converged points: " << endl;
     size_t temp_ctr=0;
+    cout << "i nB Ye T_MeV flag: " << endl;
     for(size_t i=0;i<data.size();i++) {
       int iflag=((int)(data[i]*(1.0+1.0e-12)));
       if (iflag!=10) {
