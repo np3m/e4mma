@@ -405,6 +405,7 @@ public:
   o2scl::cli::parameter_bool p_rnuc_less_rws;
   o2scl::cli::parameter_bool p_include_eg;
   o2scl::cli::parameter_bool p_propagate_points;
+  o2scl::cli::parameter_bool p_include_detail;
   o2scl::cli::parameter_double p_mh_tol_rel;
   o2scl::cli::parameter_double p_max_time;
   o2scl::cli::parameter_string p_nucleon_func;
@@ -493,7 +494,17 @@ public:
    o2scl::thermo &thx, double &mun_full, double &mup_full, int &A_min,
    int &A_max, int &NmZ_min, int &NmZ_max, bool dist_changed,
    bool no_nuclei);
-  
+
+  /** \brief Compute the EOS presuming homogeneous nuclear matter
+   */
+  int nuc_matter(double nB, double Ye, double T,
+		 double &log_xn, double &log_xp,
+		 double &Zbar, double &Nbar, o2scl::thermo &thx,
+		 double &mun_full, double &mup_full,
+		 int &A_min, int &A_max,
+		 int &NmZ_min, int &NmZ_max,
+		 std::map<std::string,double> &vdet);
+
   /** \brief Determine the EOS presuming a distribution of nuclei
       and optimizing the limits in A and \f$ N-Z \f$
   */

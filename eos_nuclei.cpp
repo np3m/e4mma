@@ -1812,49 +1812,84 @@ int eos_nuclei::eos_fixed_ZN(double nB, double Ye, double T,
   return 0;
 }
 
+int eos_nuclei::nuc_matter(double nB, double Ye, double T,
+			   double &log_xn, double &log_xp,
+			   double &Zbar, double &Nbar, thermo &thx,
+			   double &mun_full, double &mup_full,
+			   int &A_min, int &A_max,
+			   int &NmZ_min, int &NmZ_max,
+			   map<string,double> &vdet) {
+  
+  neutron.n=nB*(1.0-Ye);
+  proton.n=nB*Ye;
+  log_xn=log10(neutron.n/nB);
+  log_xp=log10(proton.n/nB);
+  
+  Zbar=0.0;
+  Nbar=0.0;
+  
+  if (alg_mode==4) {
+    // If alg_mode is 4, then just set these to the fixed
+    // distribution values
+    A_min=5;
+    A_max=fd_A_max;
+    NmZ_min=-200;
+    NmZ_max=200;
+  } else {
+    // Otherwise, these are the default guesses for
+    // the "vary_dist" mode
+    A_min=8;
+    A_max=9;
+    NmZ_min=-1;
+    NmZ_max=1;
+  }
+
+  // Set all the nuclear densities to zero (necessary?)
+  for(size_t i=0;i<nuclei.size();i++) {
+    nuclei[i].n=0.0;
+  }
+
+  // Now compute the full EOS
+  if (use_skalt) {
+    sk_alt.calc_temp_e(neutron,proton,T,thx);
+  } else {
+    double f1, f2, f3, f4;
+    free_energy_density_detail(neutron,proton,T,thx,vdet["zn"],
+			       vdet["zp"],f1,f2,f3,f4,vdet["g"],
+			       vdet["dgdT"]);
+    if (include_detail) {
+      vdet["F1"]=f1/nB*hc_mev_fm;
+      vdet["F2"]=f2/nB*hc_mev_fm;
+      vdet["F3"]=f3/nB*hc_mev_fm;
+      vdet["F4"]=f4/nB*hc_mev_fm;
+      vdet["msn"]=neutron.ms*hc_mev_fm;
+      vdet["msp"]=proton.ms*hc_mev_fm;
+      vdet["Un"]=neutron.nu*hc_mev_fm;
+      vdet["Up"]=proton.nu*hc_mev_fm;
+      vdet["dgdT"]/=hc_mev_fm;
+    }
+  }
+  
+  mun_full=neutron.mu;
+  mup_full=proton.mu;
+  
+  return 0;
+}
+
 int eos_nuclei::eos_vary_dist
 (double nB, double Ye, double T, double &log_xn, double &log_xp,
  double &Zbar, double &Nbar, thermo &thx, double &mun_full,
  double &mup_full, int &A_min, int &A_max, int &NmZ_min, int &NmZ_max,
- map<string,double> &vdet,
- bool dist_changed, bool no_nuclei) {
+ map<string,double> &vdet, bool dist_changed, bool no_nuclei) {
   
   int loc_verbose=function_verbose/1000%10;
   
   // We want homogeneous matter if we're above the saturation density
   // or if the 'no_nuclei' flag is true. 
-  
+
   if (no_nuclei==true || nB>0.16) {
-    neutron.n=nB*(1.0-Ye);
-    proton.n=nB*Ye;
-    log_xn=log10(neutron.n/nB);
-    log_xp=log10(proton.n/nB);
-    Zbar=0.0;
-    Nbar=0.0;
-    if (alg_mode==4) {
-      A_min=5;
-      A_max=fd_A_max;
-      NmZ_min=-200;
-      NmZ_max=200;
-    } else {
-      A_min=8;
-      A_max=9;
-      NmZ_min=-1;
-      NmZ_max=1;
-    }
-    for(size_t i=0;i<nuclei.size();i++) {
-      nuclei[i].n=0.0;
-    }
-    if (use_skalt) {
-      sk_alt.calc_temp_e(neutron,proton,T,thx);
-    } else {
-      free_energy_density_detail(neutron,proton,T,thx,vdet["zn"],
-				 vdet["zp"],vdet["f1"],vdet["f2"],
-				 vdet["f3"],vdet["f4"],vdet["g"],
-				 vdet["dgdT"]);
-    }
-    mun_full=neutron.mu;
-    mup_full=proton.mu;
+    nuc_matter(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,thx,mun_full,
+	       mup_full,A_min,A_max,NmZ_min,NmZ_max,vdet);
     return 0;
   }
   
@@ -2007,48 +2042,6 @@ int eos_nuclei::eos_vary_dist
 
   } while (done==false);
   
-  // Compare with the homogeneous free energy and if it's favored,
-  // then set the values accordingly
-
-  if (nB>0.01) {
-    
-    thermo thy;
-    neutron.n=nB*(1.0-Ye);
-    proton.n=nB*Ye;
-    if (use_skalt) {
-      sk_alt.calc_temp_e(neutron,proton,T,thy);
-    } else {
-      free_energy_density_detail(neutron,proton,T,thy,vdet["zn"],
-				 vdet["zp"],vdet["f1"],vdet["f2"],
-				 vdet["f3"],vdet["f4"],vdet["g"],
-				 vdet["dgdT"]);
-    }
-    
-    if (thy.ed-T*thy.en<thx.ed-T*thx.en) {
-      
-      //cout << "Nuclear matter preferred." << endl;
-      for(size_t i=0;i<nuclei.size();i++) {
-	nuclei[i].n=0.0;
-      }
-      
-      thx=thy;
-
-      log_xn=log10(neutron.n/nB);
-      log_xp=log10(proton.n/nB);
-      Zbar=0.0;
-      Nbar=0.0;
-      A_min=5;
-      A_max=fd_A_max;
-      NmZ_min=-200;
-      NmZ_max=200;
-    
-      mun_full=neutron.mu;
-      mup_full=proton.mu;
-      
-      return 0;
-    }
-  }
-
   // Determine average N and Z
   
   double nt=0.0;
@@ -2066,6 +2059,37 @@ int eos_nuclei::eos_vary_dist
   }
   Zbar/=nt;
   Nbar/=nt;
+  
+  // Compare with the homogeneous free energy and if it's favored,
+  // then set the values accordingly
+
+  if (nB>0.01) {
+    
+    thermo thx2;
+    double log_xn2, log_xp2, Zbar2, Nbar2, mun_full2, mup_full2;
+    int A_min2, A_max2, NmZ_min2, NmZ_max2;
+    std::map<std::string,double> vdet2;
+    
+    nuc_matter(nB,Ye,T,log_xn2,log_xp2,Zbar2,Nbar2,thx2,mun_full2,
+	       mup_full2,A_min2,A_max2,NmZ_min2,NmZ_max2,vdet2);
+    
+    if (thx2.ed-T*thx2.en<thx.ed-T*thx.en) {
+      log_xn=log_xn2;
+      log_xp=log_xp2;
+      Zbar=Zbar2;
+      Nbar=Nbar2;
+      thx=thx2;
+      mun_full=mun_full2;
+      mup_full=mup_full2;
+      A_min=A_min2;
+      A_max=A_max2;
+      NmZ_min=NmZ_min2;
+      NmZ_max=NmZ_max2;
+      vdet=vdet2;
+      return 0;
+    }
+  }
+
   if (loc_verbose>1) {
     cout << "Rank,size,Zbar,Nbar " << mpi_rank << " "
 	 << nuclei.size() << " " << Zbar << " " << Nbar << endl;
@@ -4153,7 +4177,10 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
   int flag=0;
   size_t inB=0, iYe=0, iT=0;
 
-  // If a table is loaded
+  // -------------------------------------------------------------------
+  // If a table is loaded, then fix the density, electron fraction,
+  // and temperature to a grid point
+  
   if (loaded) {
 
     inB=vector_lookup(n_nB2,nB_grid2,nB);
@@ -4170,8 +4197,13 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
 	 << nB << "," << Ye << "," << T*hc_mev_fm << "), flag="
 	 << flag << "." << endl;
   }
+
+  // -------------------------------------------------------------------
+  // Attempt to find a good initial guess, either from the command
+  // line or from the table
   
   if ((alg_mode==2 || alg_mode==3 || alg_mode==4) && sv.size()>=10) {
+    
     cout << "Function point_nuclei(): "
 	 << "Reading guess (log_xn,log_xp,A_min,A_max,NmZ_min,NmZ_max) "
 	 << "from command line." << endl;
@@ -4184,7 +4216,9 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
     cout << log_xn << " " << log_xp << " " << A_min << " "
 	 << A_max << " " << NmZ_min << " " << NmZ_max << endl;
     guess_provided=true;
+    
   } else if ((alg_mode==0 || alg_mode==1) && sv.size()>=8) {
+    
     cout << "Function point_nuclei(): "
 	 << "Reading guess (log_xn,log_xp,N,Z) from command line." << endl;
     log_xn=o2scl::function_to_double(sv[4]);
@@ -4194,9 +4228,12 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
     cout << log_xn << " "
 	 << log_xp << " " << nuc_Z1 << " " << nuc_N1 << endl;
     guess_provided=true;
+    
   } else if (loaded) {
+    
     // If the flag is 'guess' or 'in progress with guess'
     if (flag>=5 || flag==-5) {
+      
       if (alg_mode==0 || alg_mode==1) {
 	cout << "Function point_nuclei(): "
 	     << "Reading guess (N,Z) from current table." << endl;
@@ -4221,7 +4258,12 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
 	     << A_max << " " << NmZ_min << " " << NmZ_max << endl;
 	guess_provided=true;
       }
+      
     } else if (inB>0 && tg3_flag.get(inB-1,iYe,iT)>9.9 && alg_mode==4) {
+
+      // Otherwise if there is a good guess from the adjacent point
+      // at lower baryon density
+      
       cout << "Reading guess from lower baryon density point." << endl;
       log_xn=tg3_log_xn.get(inB-1,iYe,iT);
       log_xp=tg3_log_xp.get(inB-1,iYe,iT);
@@ -4240,7 +4282,9 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
     }
   }
 
+  // -------------------------------------------------------------------
   // If no guess was found, then just use a default guess
+  
   if (guess_provided==false) {
     cout << "Function point_nuclei(): "
 	 << "Using hard-coded initial guess." << endl;
@@ -4262,9 +4306,11 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
     }
   }
 
+  // -------------------------------------------------------------------
+  // If necessary and possible, compute the point
+  
   int ret=-1;
   
-  // If necessary, compute the point
   if (flag<10 || recompute==true) {
 
     if (flag<10) {
@@ -4321,10 +4367,24 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
     if (ret==0) {
       cout << "log_xn: " << log_xn << endl;
       cout << "log_xp: " << log_xp << endl;
-      cout << "f: " << thx.ed-T*thx.en << endl;
-      cout << "F: " << (thx.ed-T*thx.en)/nB*hc_mev_fm << endl;
+      cout << "fint: " << thx.ed-T*thx.en << endl;
+      cout << "Fint: " << (thx.ed-T*thx.en)/nB*hc_mev_fm << " MeV" << endl;
       cout << "A: " << Zbar+Nbar << endl;
       cout << "Z: " << Zbar << endl;
+      if (include_detail) {
+	cout << "zn: " << vdet["zn"] << endl;
+	cout << "zp: " << vdet["zp"] << endl;
+	cout << "F1: " << vdet["F1"] << " MeV" << endl;
+	cout << "F2: " << vdet["F2"] << " MeV" << endl;
+	cout << "F3: " << vdet["F3"] << " MeV" << endl;
+	cout << "F3: " << vdet["F3"] << " MeV" << endl;
+	cout << "msn: " << vdet["msn"] << " MeV" << endl;
+	cout << "msp: " << vdet["msp"] << " MeV" << endl;
+	cout << "Un: " << vdet["Un"] << " MeV" << endl;
+	cout << "Up: " << vdet["Up"] << " MeV" << endl;
+	cout << "g: " << vdet["g"] << endl;
+	cout << "dgdT: " << vdet["dgdT"] << " 1/MeV" << endl;
+      }
     }      
 
     if (fd_rand_ranges.size()>0) fd_rand_ranges.clear();
@@ -4338,9 +4398,10 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
     cout << "Point already computed and recompute is false." << endl;
   }
 
-  // Print out the results when tables have been loaded if either the
-  // computation worked (ret==0) or if the old flag was marked done
-  // (flag==10).
+  // -------------------------------------------------------------------
+  // Print out the results when tables have been loaded and if either
+  // the computation worked (ret==0) or if the old flag was marked
+  // done (flag==10).
   
   if ((ret==0 || flag==10) && loaded) {
     cout << "Results stored in table:" << endl;
@@ -4365,8 +4426,25 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
     cout << "XLi4: " << tg3_XLi4.get(inB,iYe,iT) << endl;
     cout << "Xalpha: " << tg3_Xalpha.get(inB,iYe,iT) << endl;
     cout << "Xnuclei: " << tg3_Xnuclei.get(inB,iYe,iT) << endl;
+    if (include_detail) {
+      cout << "zn: " << tg3_zn.get(inB,iYe,iT) << endl;
+      cout << "zp: " << tg3_zp.get(inB,iYe,iT) << endl;
+      cout << "F1: " << tg3_F1.get(inB,iYe,iT) << " MeV" << endl;
+      cout << "F2: " << tg3_F2.get(inB,iYe,iT) << " MeV" << endl;
+      cout << "F3: " << tg3_F3.get(inB,iYe,iT) << " MeV" << endl;
+      cout << "F3: " << tg3_F3.get(inB,iYe,iT) << " MeV" << endl;
+      cout << "msn: " << tg3_msn.get(inB,iYe,iT) << " MeV" << endl;
+      cout << "msp: " << tg3_msp.get(inB,iYe,iT) << " MeV" << endl;
+      cout << "Un: " << tg3_Un.get(inB,iYe,iT) << " MeV" << endl;
+      cout << "Up: " << tg3_Up.get(inB,iYe,iT) << " MeV" << endl;
+      cout << "g: " << tg3_g.get(inB,iYe,iT) << endl;
+      cout << "dgdT: " << tg3_dgdT.get(inB,iYe,iT) << " 1/MeV" << endl;
+    }
   }
 
+  // -------------------------------------------------------------------
+  // Output the nuclear distribution
+  
   if (alg_mode>=2 && show_all_nuclei) {
     
     cout << "Writing distribution to dist.o2." << endl;
@@ -7406,5 +7484,9 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
     "output file updates for the generate-table command. Default is "+
     "100000.";
   cl.par_list.insert(make_pair("file_update_iters",&p_file_update_iters));
+
+  p_include_detail.b=&include_detail;
+  p_include_detail.help="";
+  cl.par_list.insert(make_pair("include_detail",&p_include_detail));
 
 }
