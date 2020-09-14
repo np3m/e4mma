@@ -3899,8 +3899,8 @@ int eos_nuclei::read_results(std::string fname) {
   hf.get_szt("n_Ye",n_Ye2);
   if (verbose>2) cout << "Reading n_T." << endl;
   hf.get_szt("n_T",n_T2);
-  if (loaded==false) {
-    O2SCL_ERR("No data in file.",o2scl::exc_efailed);
+  if (n_nB2==0 || n_Ye2==0 || n_T2==0) {
+    O2SCL_ERR("One of the grid counts is zero.",o2scl::exc_efailed);
   }
   if (verbose>2) cout << "Reading nB_grid." << endl;
   hf.getd_vec("nB_grid",nB_grid2);
@@ -6458,6 +6458,8 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	  double nB=nB_grid2[inB];
 	  double Ye=Ye_grid2[iYe];
 	  double T=T_grid2[iT]/hc_mev_fm;
+	  cout << "  nB,Ye,T: " << nB << " " << Ye << " " << T*hc_mev_fm
+	       << endl;
 	  double log_xn=gtab.get("log_xn",i);
 	  double log_xp=gtab.get("log_xp",i);
 	  size_t nuc_Z1=((size_t)(gtab.get("Z",i)+1.0e-12));

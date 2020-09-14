@@ -83,7 +83,11 @@ class virial_solver_deriv {
 
     // At high densities or very low densities, just use the
     // non-interacting result
-    if (nnt<5.0e-6 || npt<5.0e-6) {
+    //
+    // AWS: 9/13/2020: I added the "|| nnt>1.0e5 || npt>1.0e5" option
+    // later, and this might not be the best method
+    // 
+    if (nnt<5.0e-6 || npt<5.0e-6 || nnt>1.0e5 || npt>1.0e5) {
       zn=nnt;
       zp=npt;
       return;
@@ -137,12 +141,12 @@ class virial_solver_deriv {
       }
     } else {
       std::cout << "virial_solver_deriv::solve_fugacity "
-		<< "multiplicty problem:\n\t"
-		<< res[0] << " " << res[1] << "\n\t"
-		<< res[2] << " " << res[3] << std::endl;
-      std::cout << "\t" << nn << " " << np << " "
+		<< "multiplicity problem:\n\t"
+		<< "res0,res1: " << res[0] << " " << res[1] << "\n\t"
+		<< "res2,res3: " << res[2] << " " << res[3] << std::endl;
+      std::cout << "\tnn,np,lam_n,lam_p: " << nn << " " << np << " "
 		<< lam_n << " " << lam_p << "\n\t"
-		<< nnt << " " << npt << " "
+		<< "nnt,npt,zp_list.size(): " << nnt << " " << npt << " "
 		<< zp_list.size() << std::endl;
       O2SCL_ERR2("Unexpected root multiplicity in ",
 		 "virial_solver_deriv::solve_fugacity().",o2scl::exc_einval);
