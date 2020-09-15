@@ -1258,7 +1258,7 @@ int eos_nuclei::solve_nuclei(size_t nv, const ubvector &x, ubvector &y,
     proton.n=1.0e-100;
 
     if (use_skalt) {
-      sk_alt.calc_temp_e(neutron,proton,T,th2);
+      eosp_alt->calc_temp_e(neutron,proton,T,th2);
     } else {
       free_energy_density(neutron,proton,T,th2);
     }
@@ -1275,7 +1275,7 @@ int eos_nuclei::solve_nuclei(size_t nv, const ubvector &x, ubvector &y,
     neutron.n=1.0e-100;
 
     if (use_skalt) {
-      sk_alt.calc_temp_e(neutron,proton,T,th2);
+      eosp_alt->calc_temp_e(neutron,proton,T,th2);
     } else {
       free_energy_density(neutron,proton,T,th2);
     }
@@ -1289,7 +1289,7 @@ int eos_nuclei::solve_nuclei(size_t nv, const ubvector &x, ubvector &y,
   } else {
     
     if (use_skalt) {
-      sk_alt.calc_temp_e(neutron,proton,T,th_gas);
+      eosp_alt->calc_temp_e(neutron,proton,T,th_gas);
     } else {
       free_energy_density_detail(neutron,proton,T,th_gas,vdet["zn"],
 				 vdet["zp"],vdet["f1"],vdet["f2"],
@@ -1851,7 +1851,7 @@ int eos_nuclei::nuc_matter(double nB, double Ye, double T,
 
   // Now compute the full EOS
   if (use_skalt) {
-    sk_alt.calc_temp_e(neutron,proton,T,thx);
+    eosp_alt->calc_temp_e(neutron,proton,T,thx);
   } else {
     double f1, f2, f3, f4;
     free_energy_density_detail(neutron,proton,T,thx,vdet["zn"],
@@ -2074,6 +2074,8 @@ int eos_nuclei::eos_vary_dist
 	       mup_full2,A_min2,A_max2,NmZ_min2,NmZ_max2,vdet2);
     
     if (thx2.ed-T*thx2.en<thx.ed-T*thx.en) {
+      cout << "Nuclear matter preferred." << endl;
+      exit(-1);
       log_xn=log_xn2;
       log_xp=log_xp2;
       Zbar=Zbar2;
@@ -3025,22 +3027,13 @@ int eos_nuclei::eos_vary_ZN
   // We want homogeneous matter if we're above the saturation
   // density or if the 'no_nuclei' flag is true
   if (no_nuclei==true || nB>0.16) {
-    neutron.n=nB*(1.0-Ye);
-    proton.n=nB*Ye;
-    log_xn=log10(neutron.n/nB);
-    log_xp=log10(proton.n/nB);
+    int A_min, A_max, NmZ_min, NmZ_max;
+    double Zbar, Nbar;
+    map<string,double> vdet;
+    nuc_matter(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,thx,mun_full,
+	       mup_full,A_min,A_max,NmZ_min,NmZ_max,vdet);
     nuc_Z1=0;
     nuc_N1=0;
-    for(size_t i=0;i<6;i++) {
-      nuclei[i].n=0.0;
-    }
-    if (use_skalt) {
-      sk_alt.calc_temp_e(neutron,proton,T,thx);
-    } else {
-      free_energy_density(neutron,proton,T,thx);
-    }
-    mun_full=neutron.mu;
-    mup_full=proton.mu;
     return 0;
   }
   
@@ -7096,7 +7089,7 @@ int eos_nuclei::mcarlo_nuclei(std::vector<std::string> &sv, bool itive_com) {
       proton.n=nB_arr[k]*Ye_arr[k];
       double T=T_arr[k]/hc_mev_fm;
       if (use_skalt) {
-	line.push_back(sk_alt.calc_temp_e(neutron,proton,T,th2)/
+	line.push_back(eosp_alt->calc_temp_e(neutron,proton,T,th2)/
 		       nB_arr[k]*hc_mev_fm);
       } else {
 	line.push_back(free_energy_density(neutron,proton,T,th2)/
@@ -7459,7 +7452,7 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
     "divided by 10, the "+
     "100s digit is the number of minimizes, and the 1000s digit "+
     "is the number of random guesses to try divided by 1000. "+
-    "The default is 1111. Other good options are 1919 and 9999.";
+    "The default is 1111. Other good options are 1319 and 9999.";
   cl.par_list.insert(make_pair("fixed_dist_alg",&p_fixed_dist_alg));
   
   p_function_verbose.i=&function_verbose;

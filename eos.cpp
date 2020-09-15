@@ -629,6 +629,7 @@ eos::eos() {
   old_version=false;
 
   eos_Tcorr=&sk_Tcorr;
+  eosp_alt=&sk_alt;
 }
 
 double eos::energy_density_qmc(double nn, double np) {
@@ -1440,7 +1441,7 @@ double eos::free_energy_density_ep
   photon.massless_calc(T);
   double frnp;
   if (use_skalt) {
-    sk_alt.calc_temp_e(neutron,proton,T,th2);
+    eosp_alt->calc_temp_e(neutron,proton,T,th2);
     frnp=th2.ed-T*th2.en;
   } else {
     frnp=free_energy_density(neutron,proton,T,th2);
@@ -1459,7 +1460,7 @@ double eos::entropy(fermion &n, fermion &p, double nn,
   n.mu=n.m;
   p.mu=p.m;
   if (use_skalt) {
-    sk_alt.calc_temp_e(n,p,T,th);
+    eosp_alt->calc_temp_e(n,p,T,th);
   } else {
     free_energy_density(n,p,T,th);
   }
@@ -1477,7 +1478,7 @@ double eos::ed(fermion &n, fermion &p, double nn,
   n.mu=n.m;
   p.mu=p.m;
   if (use_skalt) {
-    sk_alt.calc_temp_e(n,p,T,th);
+    eosp_alt->calc_temp_e(n,p,T,th);
   } else {
     free_energy_density(n,p,T,th);
   }
@@ -1496,7 +1497,7 @@ double eos::dfdnn_total(fermion &n, fermion &p, double nn,
   n.mu=n.m;
   p.mu=p.m;
   if (use_skalt) {
-    sk_alt.calc_temp_e(n,p,T,th);
+    eosp_alt->calc_temp_e(n,p,T,th);
   } else {
     free_energy_density(n,p,T,th);
   }
@@ -1514,7 +1515,7 @@ double eos::dfdnp_total(fermion &n, fermion &p, double nn,
   n.mu=n.m;
   p.mu=p.m;
   if (use_skalt) {
-    sk_alt.calc_temp_e(n,p,T,th);
+    eosp_alt->calc_temp_e(n,p,T,th);
   } else {
     free_energy_density(n,p,T,th);
   }
@@ -1649,7 +1650,7 @@ int eos::table_Ye(std::vector<std::string> &sv, bool itive_com) {
       proton.n=nB_grid[i]*Ye;
       double t1, t2, t3, t4, t5;
       if (use_skalt) {
-	sk_alt.calc_temp_e(neutron,proton,T_grid[j]/hc_mev_fm,th2);
+	eosp_alt->calc_temp_e(neutron,proton,T_grid[j]/hc_mev_fm,th2);
       } else {
 	free_energy_density(neutron,proton,T_grid[j]/hc_mev_fm,th2);
       }
@@ -1710,7 +1711,7 @@ int eos::table_nB(std::vector<std::string> &sv, bool itive_com) {
       proton.n=nB*Ye_grid[i];
       double t1, t2, t3, t4, t5;
       if (use_skalt) {
-	sk_alt.calc_temp_e(neutron,proton,T_grid[j]/hc_mev_fm,th2);
+	eosp_alt->calc_temp_e(neutron,proton,T_grid[j]/hc_mev_fm,th2);
       } else {
 	free_energy_density(neutron,proton,T_grid[j]/hc_mev_fm,th2);
       }
@@ -1811,7 +1812,7 @@ int eos::table_full(std::vector<std::string> &sv, bool itive_com) {
 	neutron.n=nB_grid[i]*(1.0-Ye_grid[j]);
 	proton.n=nB_grid[i]*Ye_grid[j];
 	if (use_skalt) {
-	  sk_alt.calc_temp_e(neutron,proton,T_grid[k]/hc_mev_fm,th2);
+	  eosp_alt->calc_temp_e(neutron,proton,T_grid[k]/hc_mev_fm,th2);
 	} else {
 	  free_energy_density(neutron,proton,T_grid[k]/hc_mev_fm,th2);
 	}
@@ -2009,7 +2010,7 @@ int eos::test_deriv(std::vector<std::string> &sv, bool itive_com) {
     proton.n=nb*0.01;
     T=0.1/hc_mev_fm;
     if (use_skalt) {
-      sk_alt.calc_temp_e(neutron,proton,T,th2);
+      eosp_alt->calc_temp_e(neutron,proton,T,th2);
     } else {
       free_energy_density(neutron,proton,T,th2);
     }
@@ -2094,7 +2095,7 @@ int eos::test_deriv(std::vector<std::string> &sv, bool itive_com) {
     proton.n=nb*0.49;
     T=0.1/hc_mev_fm;
     if (use_skalt) {
-      sk_alt.calc_temp_e(neutron,proton,T,th2);
+      eosp_alt->calc_temp_e(neutron,proton,T,th2);
     } else {
       free_energy_density(neutron,proton,T,th2);
     }
@@ -2179,7 +2180,7 @@ int eos::test_deriv(std::vector<std::string> &sv, bool itive_com) {
     proton.n=nb*0.01;
     T=1.0/hc_mev_fm;
     if (use_skalt) {
-      sk_alt.calc_temp_e(neutron,proton,T,th2);
+      eosp_alt->calc_temp_e(neutron,proton,T,th2);
     } else {
       free_energy_density(neutron,proton,T,th2);
     }
@@ -2264,7 +2265,7 @@ int eos::test_deriv(std::vector<std::string> &sv, bool itive_com) {
     proton.n=nb*0.49;
     T=1.0/hc_mev_fm;
     if (use_skalt) {
-      sk_alt.calc_temp_e(neutron,proton,T,th2);
+      eosp_alt->calc_temp_e(neutron,proton,T,th2);
     } else {
       free_energy_density(neutron,proton,T,th2);
     }
@@ -2349,7 +2350,7 @@ int eos::test_deriv(std::vector<std::string> &sv, bool itive_com) {
     proton.n=nb*0.01;
     T=30.0/hc_mev_fm;
     if (use_skalt) {
-      sk_alt.calc_temp_e(neutron,proton,T,th2);
+      eosp_alt->calc_temp_e(neutron,proton,T,th2);
     } else {
       free_energy_density(neutron,proton,T,th2);
     }
@@ -2434,7 +2435,7 @@ int eos::test_deriv(std::vector<std::string> &sv, bool itive_com) {
     proton.n=nb*0.49;
     T=30.0/hc_mev_fm;
     if (use_skalt) {
-      sk_alt.calc_temp_e(neutron,proton,T,th2);
+      eosp_alt->calc_temp_e(neutron,proton,T,th2);
     } else {
       free_energy_density(neutron,proton,T,th2);
     }
@@ -2773,7 +2774,7 @@ int eos::solve_Ye(size_t nv, const ubvector &x, ubvector &y,
   proton.n=nb*Ye;
 
   if (use_skalt) {
-    sk_alt.calc_temp_e(neutron,proton,T,th2);
+    eosp_alt->calc_temp_e(neutron,proton,T,th2);
   } else {
     double t1, t2;
     sk.eff_mass(neutron,proton,t1,t2);
@@ -2816,7 +2817,7 @@ int eos::solve_fixed_sonb_YL(size_t nv, const ubvector &x, ubvector &y,
 
   if (use_skalt) {
     
-    sk_alt.calc_temp_e(neutron,proton,T2,th2);
+    eosp_alt->calc_temp_e(neutron,proton,T2,th2);
     
   } else {
     
@@ -2869,7 +2870,7 @@ int eos::solve_T(size_t nv, const ubvector &x, ubvector &y,
 
   if (use_skalt) {
 
-    sk_alt.calc_temp_e(neutron,proton,T,th2);
+    eosp_alt->calc_temp_e(neutron,proton,T,th2);
     
   } else {
     
@@ -2922,7 +2923,7 @@ int eos::mcarlo_data(std::vector<std::string> &sv, bool itive_com) {
       proton.n=nB_arr[k]*Ye_arr[k];
       double T=T_arr[k]/hc_mev_fm;
       if (use_skalt) {
-	line.push_back(sk_alt.calc_temp_e(neutron,proton,T,th2)/
+	line.push_back(eosp_alt->calc_temp_e(neutron,proton,T,th2)/
 		       nB_arr[k]*hc_mev_fm);
       } else {
 	line.push_back(free_energy_density(neutron,proton,T,th2)/
@@ -3391,7 +3392,7 @@ int eos::point(std::vector<std::string> &sv, bool itive_com) {
   neutron.n=nB*(1.0-Ye);
   proton.n=nB*Ye;
   if (use_skalt) {
-    sk_alt.calc_temp_e(neutron,proton,T,th2);
+    eosp_alt->calc_temp_e(neutron,proton,T,th2);
     
     if (verbose>=1) {
       

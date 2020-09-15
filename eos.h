@@ -451,6 +451,9 @@ class eos {
 
   /// Alternative skryme model
   o2scl::eos_had_skyrme sk_alt;
+
+  /// Pointer to alternative model
+  o2scl::eos_had_temp_base *eosp_alt;
   //@}
 
   /// \name The parameters for the QMC energy density [protected]
