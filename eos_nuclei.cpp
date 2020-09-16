@@ -4813,6 +4813,7 @@ int eos_nuclei::fix_cc(std::vector<std::string> &sv,
 		tg3_Z.get(inB,iYe,iT) << endl;
 	    } else {
 	      cout << "Success (log_xn,log_xp,Xnuc,Z,N): "
+		   << tg3_log_xn.get(inB,iYe,iT) << " "
 		   << tg3_log_xp.get(inB,iYe,iT) << " "
 		   << tg3_Xnuclei.get(inB,iYe,iT) << " "
 		   << tg3_Z.get(inB,iYe,iT) << " "
@@ -4821,6 +4822,9 @@ int eos_nuclei::fix_cc(std::vector<std::string> &sv,
 	    cout << endl;
 	    
 	  }
+
+	  write_results(out_file);
+	  exit(-1);
 	  
 	}
 	
