@@ -4721,7 +4721,7 @@ int eos_nuclei::fix_cc(std::vector<std::string> &sv,
 	double Ye=Ye_grid2[iYe];
 	double T=T_grid2[iT]/hc_mev_fm;
 
-	if (tg3_flag.get(inB-1,iYe,iT)<9.9) {
+	if (tg3_flag.get(inB,iYe,iT)<9.9) {
 	  
 	  cout << "Found uncomputed point at (nB,Ye,T):\n"
 	       << "\t" << nB << " " << Ye << " "
@@ -4823,12 +4823,10 @@ int eos_nuclei::fix_cc(std::vector<std::string> &sv,
 	    
 	  }
 
-	  write_results(out_file);
-	  exit(-1);
-	  
 	}
 	
       }
+      
     }
 
   }
