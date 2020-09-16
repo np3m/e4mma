@@ -4677,6 +4677,147 @@ int eos_nuclei::increase_density(std::vector<std::string> &sv,
   return 0;
 }
 
+int eos_nuclei::fix_cc(std::vector<std::string> &sv,
+		       bool itive_com) {
+
+  if (sv.size()<2) {
+    cerr << "Need output_file." << endl;
+    return 2;
+  }
+  
+  std::string out_file=sv[1];
+
+  size_t inB_start=vector_lookup(n_nB2,nB_grid2,0.01);
+  size_t inB_end=vector_lookup(n_nB2,nB_grid2,0.16);
+
+  double log_xn, log_xp;
+  size_t nuc_Z1, nuc_N1;
+  int A_min, A_max, NmZ_min, NmZ_max;
+
+  derivs_computed=false;
+  with_leptons_loaded=false;
+  bool no_nuclei;
+  
+  for(size_t iT=0;iT<n_T2;iT++) {
+    
+    for(size_t iYe=0;iYe<n_Ye2;iYe++) {
+  
+      for(size_t inB=inB_start;inB<=inB_end;inB++) {
+	
+	double nB=nB_grid2[inB];
+	double Ye=Ye_grid2[iYe];
+	double T=T_grid2[iT]/hc_mev_fm;
+
+	if (tg3_flag.get(inB-1,iYe,iT)<9.9) {
+	  cout << "Found uncomputed point at (nB,Ye,T):\n"
+	       << "\t" << nB << " " << Ye << " "
+	       << T*hc_mev_fm << endl;
+	}
+
+	no_nuclei=false;
+
+	if (inB>0 && inB<n_nB2-1 && tg3_flag.get(inB-1,iYe,iT)>9.9 &&
+	    tg3_flag.get(inB+1,iYe,iT)>9.9 &&
+	    tg3_Z.get(inB-1,iYe,iT)<1.0e-4 &&
+	    tg3_Z.get(inB+1,iYe,iT)<1.0e-4 &&
+	    tg3_A.get(inB-1,iYe,iT)<1.0e-4 &&
+	    tg3_A.get(inB+1,iYe,iT)<1.0e-4 &&
+	    tg3_Xnuclei.get(inB-1,iYe,iT)<1.0e-4 &&
+	    tg3_Xnuclei.get(inB+1,iYe,iT)<1.0e-4) {
+	  no_nuclei=true;
+	  cout << "Surrounding points have no nuclei." << endl;
+	}
+
+	if (inB>2) {
+	  double Z_prev=tg3_Z.get(inB-1,iYe,iT);
+	  double A_prev=tg3_A.get(inB-1,iYe,iT);
+	  double Z_prev2=tg3_Z.get(inB-2,iYe,iT);
+	  double A_prev2=tg3_A.get(inB-2,iYe,iT);
+	  double NoZ_prev=(A_prev-Z_prev)/Z_prev;
+	  double NoZ_prev2=(A_prev2-Z_prev2)/Z_prev2;
+	  if (NoZ_prev>NoZ_prev2) {
+	    double dNoZ=NoZ_prev-NoZ_prev2;
+	    if (NoZ_prev+dNoZ>max_ratio) {
+	      no_nuclei=true;
+	      cout << "Extrapolated Z/N is too large." << endl;
+	    }
+	  }
+	}
+
+	// Get initial guess 
+	log_xn=tg3_log_xn.get(inB-1,iYe,iT);
+	log_xp=tg3_log_xp.get(inB-1,iYe,iT);
+	A_min=tg3_A_min.get(inB-1,iYe,iT);
+	A_max=tg3_A_max.get(inB-1,iYe,iT);
+	NmZ_min=tg3_NmZ_min.get(inB-1,iYe,iT);
+	NmZ_max=tg3_NmZ_max.get(inB-1,iYe,iT);
+	
+	thermo thx;
+	double mun_full, mup_full;
+	
+	if (alg_mode!=4) {
+	  cout << "Only works for alg_mode=4." << endl;
+	  return 1;
+	}
+
+	double Zbar, Nbar;
+	map<string,double> vdet;
+	int ret=eos_vary_dist(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,
+			      thx,mun_full,mup_full,
+			      A_min,A_max,NmZ_min,NmZ_max,
+			      vdet,true,no_nuclei);
+	if (ret!=0) {
+	  cout << "Function eos_vary_dist() failed, going "
+	       << "without nuclei." << endl;
+	  no_nuclei=true;
+	  ret=eos_vary_dist(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,
+				thx,mun_full,mup_full,
+				A_min,A_max,NmZ_min,NmZ_max,
+				vdet,true,no_nuclei);
+	}
+
+	if (ret==0) {
+	  
+	  ubvector X;
+	  compute_X(nB,X);
+
+	  store_point(inB,iYe,iT,nB,Ye,T,thx,log_xn,log_xp,Zbar,Nbar,
+		      mun_full,mup_full,X,A_min,A_max,NmZ_min,
+		      NmZ_max,10.0,vdet);
+	  
+	  if (tg3_A.get(inB,iYe,iT)>0.0) {
+	    cout << "Success (log_xn,log_xp,Xnuc,Z,N,N/Z): "
+		 << tg3_log_xn.get(inB,iYe,iT) << " "
+		 << tg3_log_xp.get(inB,iYe,iT) << " "
+		 << tg3_Xnuclei.get(inB,iYe,iT) << " "
+		 << tg3_Z.get(inB,iYe,iT) << " "
+		 << tg3_A.get(inB,iYe,iT)-tg3_Z.get(inB,iYe,iT) << " "
+		 << (tg3_A.get(inB,iYe,iT)-tg3_Z.get(inB,iYe,iT))/
+	      tg3_Z.get(inB,iYe,iT) << endl;
+	  } else {
+	    cout << "Success (log_xn,log_xp,Xnuc,Z,N): "
+		 << tg3_log_xp.get(inB,iYe,iT) << " "
+		 << tg3_Xnuclei.get(inB,iYe,iT) << " "
+		 << tg3_Z.get(inB,iYe,iT) << " "
+		 << tg3_A.get(inB,iYe,iT) << endl;
+	  }
+	  cout << endl;
+	  
+	}
+	
+      }
+    }
+
+    // We require an output file as it allows the user to specify
+    // different files when multiple runs are occurring at the
+    // same time
+    write_results(out_file);
+    
+  }
+  
+  return 0;
+}
+
 int eos_nuclei::stats(std::vector<std::string> &sv,
 		      bool itive_com) {
 
@@ -7244,7 +7385,7 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
   
   eos::setup_cli(cl);
   
-  static const int nopt=19;
+  static const int nopt=20;
   
   o2scl::comm_option_s options[nopt]=
     {{0,"eos-deriv","compute derivatives",
@@ -7348,6 +7489,11 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
       "<nB low> <nB high> <Ye low> <Ye high> <T low> <T high> <output file>",
       "",new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::increase_density),o2scl::cli::comm_option_both},
+     {0,"fix-cc",
+      "Increase nB to optimize the phase transition.",1,1,
+      "<output file>",
+      "",new o2scl::comm_option_mfptr<eos_nuclei>
+      (this,&eos_nuclei::fix_cc),o2scl::cli::comm_option_both},
      {0,"select-high-T",
       "Choose the Skyrme model for the finite T corrections.",
       1,1,"<index>","",new o2scl::comm_option_mfptr<eos_nuclei>

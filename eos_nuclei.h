@@ -626,6 +626,10 @@ public:
    */
   int increase_density(std::vector<std::string> &sv, bool itive_com);
 
+  /** \brief Desc
+   */
+  int fix_cc(std::vector<std::string> &sv, bool itive_com);
+
   /** \brief Monte Carlo results with nuclei
    */
   int mcarlo_nuclei(std::vector<std::string> &sv, bool itive_com);
