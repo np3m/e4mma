@@ -1844,7 +1844,8 @@ int eos_nuclei::nuc_matter(double nB, double Ye, double T,
     NmZ_max=1;
   }
 
-  // Set all the nuclear densities to zero (necessary?)
+  // Set all the nuclear densities to zero (this does appear
+  // to be necessary not to confuse the other functions).
   for(size_t i=0;i<nuclei.size();i++) {
     nuclei[i].n=0.0;
   }
@@ -2069,7 +2070,7 @@ int eos_nuclei::eos_vary_dist
     double log_xn2, log_xp2, Zbar2, Nbar2, mun_full2, mup_full2;
     int A_min2, A_max2, NmZ_min2, NmZ_max2;
     std::map<std::string,double> vdet2;
-    
+
     nuc_matter(nB,Ye,T,log_xn2,log_xp2,Zbar2,Nbar2,thx2,mun_full2,
 	       mup_full2,A_min2,A_max2,NmZ_min2,NmZ_max2,vdet2);
     
@@ -2090,6 +2091,17 @@ int eos_nuclei::eos_vary_dist
       vdet=vdet2;
       return 0;
     }
+
+    // If nuclear matter was not preferred, then just go back
+    // to the nuclei solution
+    int ret=eos_fixed_dist
+      (nB,Ye,T,log_xn,log_xp,thx,mun_full,mup_full,
+       A_min,A_max,NmZ_min,NmZ_max,vdet,false,no_nuclei);
+    if (ret!=0) {
+      cout << "Fail X." << endl;
+      exit(-1);
+    }
+    
   }
 
   if (loc_verbose>1) {
@@ -3230,11 +3242,12 @@ int eos_nuclei::store_point
     if (fabs(nb_frac_sum-1.0)>mh_tol_rel) {
       cout << "nB fraction mismatch." << endl;
       cout << "  " << n_fraction << " " << p_fraction << " ";
-      vector_out(cout,X,false);
+      vector_out(cout,X,true);
       cout << "  nB_frac_sum,mh_tol_rel: " << nb_frac_sum << " "
 	   << mh_tol_rel << endl;
       cout << "  nB,Ye,T: " << nB << " " << Ye << " " << T << endl;
       cout << "  Not storing point." << endl;
+      exit(-1);
       return 1;
     }
     
@@ -4709,112 +4722,118 @@ int eos_nuclei::fix_cc(std::vector<std::string> &sv,
 	double T=T_grid2[iT]/hc_mev_fm;
 
 	if (tg3_flag.get(inB-1,iYe,iT)<9.9) {
+	  
 	  cout << "Found uncomputed point at (nB,Ye,T):\n"
 	       << "\t" << nB << " " << Ye << " "
 	       << T*hc_mev_fm << endl;
-	}
-
-	no_nuclei=false;
-
-	if (inB>0 && inB<n_nB2-1 && tg3_flag.get(inB-1,iYe,iT)>9.9 &&
-	    tg3_flag.get(inB+1,iYe,iT)>9.9 &&
-	    tg3_Z.get(inB-1,iYe,iT)<1.0e-4 &&
-	    tg3_Z.get(inB+1,iYe,iT)<1.0e-4 &&
-	    tg3_A.get(inB-1,iYe,iT)<1.0e-4 &&
-	    tg3_A.get(inB+1,iYe,iT)<1.0e-4 &&
-	    tg3_Xnuclei.get(inB-1,iYe,iT)<1.0e-4 &&
-	    tg3_Xnuclei.get(inB+1,iYe,iT)<1.0e-4) {
-	  no_nuclei=true;
-	  cout << "Surrounding points have no nuclei." << endl;
-	}
-
-	if (inB>2) {
-	  double Z_prev=tg3_Z.get(inB-1,iYe,iT);
-	  double A_prev=tg3_A.get(inB-1,iYe,iT);
-	  double Z_prev2=tg3_Z.get(inB-2,iYe,iT);
-	  double A_prev2=tg3_A.get(inB-2,iYe,iT);
-	  double NoZ_prev=(A_prev-Z_prev)/Z_prev;
-	  double NoZ_prev2=(A_prev2-Z_prev2)/Z_prev2;
-	  if (NoZ_prev>NoZ_prev2) {
-	    double dNoZ=NoZ_prev-NoZ_prev2;
-	    if (NoZ_prev+dNoZ>max_ratio) {
-	      no_nuclei=true;
-	      cout << "Extrapolated Z/N is too large." << endl;
+	  
+	  no_nuclei=false;
+	  
+	  if (inB>20 && no_nuclei==false) {
+	    for(size_t j=1;j<20 && no_nuclei==false;j++) {
+	      cout << "j: " << j << endl;
+	      if (tg3_flag.get(inB-j,iYe,iT)>9.9 &&
+		  tg3_Z.get(inB-j,iYe,iT)<1.0e-4 &&
+		  tg3_A.get(inB-j,iYe,iT)<1.0e-4) {
+		cout << "Found nuclear matter at a lower density."
+		     << endl;
+		no_nuclei=true;
+	      }
 	    }
 	  }
-	}
-
-	// Get initial guess 
-	log_xn=tg3_log_xn.get(inB-1,iYe,iT);
-	log_xp=tg3_log_xp.get(inB-1,iYe,iT);
-	A_min=tg3_A_min.get(inB-1,iYe,iT);
-	A_max=tg3_A_max.get(inB-1,iYe,iT);
-	NmZ_min=tg3_NmZ_min.get(inB-1,iYe,iT);
-	NmZ_max=tg3_NmZ_max.get(inB-1,iYe,iT);
-	
-	thermo thx;
-	double mun_full, mup_full;
-	
-	if (alg_mode!=4) {
-	  cout << "Only works for alg_mode=4." << endl;
-	  return 1;
-	}
-
-	double Zbar, Nbar;
-	map<string,double> vdet;
-	int ret=eos_vary_dist(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,
-			      thx,mun_full,mup_full,
-			      A_min,A_max,NmZ_min,NmZ_max,
-			      vdet,true,no_nuclei);
-	if (ret!=0) {
-	  cout << "Function eos_vary_dist() failed, going "
-	       << "without nuclei." << endl;
-	  no_nuclei=true;
-	  ret=eos_vary_dist(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,
+	  
+	  if (no_nuclei==false && inB>2) {
+	    double Z_prev=tg3_Z.get(inB-1,iYe,iT);
+	    double Z_prev2=tg3_Z.get(inB-2,iYe,iT);
+	    if (Z_prev>0 && Z_prev2>0) {
+	      double A_prev=tg3_A.get(inB-1,iYe,iT);
+	      double A_prev2=tg3_A.get(inB-2,iYe,iT);
+	      double NoZ_prev=(A_prev-Z_prev)/Z_prev;
+	      double NoZ_prev2=(A_prev2-Z_prev2)/Z_prev2;
+	      cout << "prev: " << NoZ_prev << " " << NoZ_prev2 << endl;
+	      if (NoZ_prev>NoZ_prev2) {
+		double dNoZ=NoZ_prev-NoZ_prev2;
+		if (NoZ_prev+dNoZ>max_ratio) {
+		  no_nuclei=true;
+		  cout << "Extrapolated Z/N is too large." << endl;
+		}
+	      }
+	    }
+	  }
+	  
+	  // Get initial guess 
+	  log_xn=tg3_log_xn.get(inB-1,iYe,iT);
+	  log_xp=tg3_log_xp.get(inB-1,iYe,iT);
+	  A_min=tg3_A_min.get(inB-1,iYe,iT);
+	  A_max=tg3_A_max.get(inB-1,iYe,iT);
+	  NmZ_min=tg3_NmZ_min.get(inB-1,iYe,iT);
+	  NmZ_max=tg3_NmZ_max.get(inB-1,iYe,iT);
+	  
+	  thermo thx;
+	  double mun_full, mup_full;
+	  
+	  if (alg_mode!=4) {
+	    cout << "Only works for alg_mode=4." << endl;
+	    return 1;
+	  }
+	  
+	  double Zbar, Nbar;
+	  map<string,double> vdet;
+	  int ret=eos_vary_dist(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,
 				thx,mun_full,mup_full,
 				A_min,A_max,NmZ_min,NmZ_max,
 				vdet,true,no_nuclei);
-	}
-
-	if (ret==0) {
-	  
-	  ubvector X;
-	  compute_X(nB,X);
-
-	  store_point(inB,iYe,iT,nB,Ye,T,thx,log_xn,log_xp,Zbar,Nbar,
-		      mun_full,mup_full,X,A_min,A_max,NmZ_min,
-		      NmZ_max,10.0,vdet);
-	  
-	  if (tg3_A.get(inB,iYe,iT)>0.0) {
-	    cout << "Success (log_xn,log_xp,Xnuc,Z,N,N/Z): "
-		 << tg3_log_xn.get(inB,iYe,iT) << " "
-		 << tg3_log_xp.get(inB,iYe,iT) << " "
-		 << tg3_Xnuclei.get(inB,iYe,iT) << " "
-		 << tg3_Z.get(inB,iYe,iT) << " "
-		 << tg3_A.get(inB,iYe,iT)-tg3_Z.get(inB,iYe,iT) << " "
-		 << (tg3_A.get(inB,iYe,iT)-tg3_Z.get(inB,iYe,iT))/
-	      tg3_Z.get(inB,iYe,iT) << endl;
-	  } else {
-	    cout << "Success (log_xn,log_xp,Xnuc,Z,N): "
-		 << tg3_log_xp.get(inB,iYe,iT) << " "
-		 << tg3_Xnuclei.get(inB,iYe,iT) << " "
-		 << tg3_Z.get(inB,iYe,iT) << " "
-		 << tg3_A.get(inB,iYe,iT) << endl;
+	  if (ret!=0) {
+	    cout << "Function eos_vary_dist() failed, going "
+		 << "without nuclei." << endl;
+	    no_nuclei=true;
+	    ret=eos_vary_dist(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,
+			      thx,mun_full,mup_full,
+			      A_min,A_max,NmZ_min,NmZ_max,
+			      vdet,true,no_nuclei);
 	  }
-	  cout << endl;
+	  
+	  if (ret==0) {
+	    
+	    ubvector X;
+	    compute_X(nB,X);
+	    
+	    store_point(inB,iYe,iT,nB,Ye,T,thx,log_xn,log_xp,Zbar,Nbar,
+			mun_full,mup_full,X,A_min,A_max,NmZ_min,
+			NmZ_max,10.0,vdet);
+	    
+	    if (tg3_A.get(inB,iYe,iT)>0.0) {
+	      cout << "Success (log_xn,log_xp,Xnuc,Z,N,N/Z): "
+		   << tg3_log_xn.get(inB,iYe,iT) << " "
+		   << tg3_log_xp.get(inB,iYe,iT) << " "
+		   << tg3_Xnuclei.get(inB,iYe,iT) << " "
+		   << tg3_Z.get(inB,iYe,iT) << " "
+		   << tg3_A.get(inB,iYe,iT)-tg3_Z.get(inB,iYe,iT) << " "
+		   << (tg3_A.get(inB,iYe,iT)-tg3_Z.get(inB,iYe,iT))/
+		tg3_Z.get(inB,iYe,iT) << endl;
+	    } else {
+	      cout << "Success (log_xn,log_xp,Xnuc,Z,N): "
+		   << tg3_log_xp.get(inB,iYe,iT) << " "
+		   << tg3_Xnuclei.get(inB,iYe,iT) << " "
+		   << tg3_Z.get(inB,iYe,iT) << " "
+		   << tg3_A.get(inB,iYe,iT) << endl;
+	    }
+	    cout << endl;
+	    
+	  }
 	  
 	}
 	
       }
     }
 
-    // We require an output file as it allows the user to specify
-    // different files when multiple runs are occurring at the
-    // same time
-    write_results(out_file);
-    
   }
   
+  // We require an output file as it allows the user to specify
+  // different files when multiple runs are occurring at the
+  // same time
+  write_results(out_file);
+    
   return 0;
 }
 
