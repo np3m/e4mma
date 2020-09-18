@@ -423,8 +423,8 @@ public:
 
   /// \name Functions for the main algorithm
   //@{
-  /** \brief Construct an equation to solve for matter at low 
-      densities
+  /** \brief Use only one of the two equations for a 
+      function for a root bracketing algorithm
   */
   double solve_nuclei_ld(double x2, size_t nv, const ubvector &x, 
 			 double nb, double ye, double T,
