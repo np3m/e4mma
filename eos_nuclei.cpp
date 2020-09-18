@@ -4977,7 +4977,7 @@ int eos_nuclei::stats(std::vector<std::string> &sv,
       }
 
       // Check that Sint>0
-      if (S_neg_count<1000 && tg3_Sint.get_data()[i]<0.0) {
+      if (false && S_neg_count<1000 && tg3_Sint.get_data()[i]<0.0) {
 	cout << "Entropy per baryon negative (i,nB,Ye,T,Sint): "
 	     << i << " " << nB << " " << Ye << " "
 	     << T_MeV << " " << tg3_Sint.get_data()[i] << endl;
@@ -4991,7 +4991,7 @@ int eos_nuclei::stats(std::vector<std::string> &sv,
     }
   }
   cout << "nb_frac_count: " << nb_frac_count << endl;
-  cout << "S_neg_count: " << S_neg_count << endl;
+  //cout << "Sint_neg_count: " << S_neg_count << endl;
   if (tg3_Eint.total_size()>0) {
     cout << "Fint_count: " << Fint_count << endl;
   }
