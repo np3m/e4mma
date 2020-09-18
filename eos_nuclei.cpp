@@ -26,6 +26,7 @@
 #include <o2scl/svd.h>
 #include <o2scl/vector.h>
 #include <o2scl/mmin_bfgs2.h>
+#include <o2scl/diff_evo_adapt.h>
 
 using namespace std;
 using namespace o2scl;
@@ -2155,6 +2156,10 @@ int eos_nuclei::eos_fixed_dist
 	 << n_randoms << endl;
   }
 
+  // ----------------------------------------------------------------
+  // If the distribution has changed, set up the nuclei array and the
+  // neutron separation energies
+
   if (dist_changed) {
 
     // Count nuclei
@@ -2290,6 +2295,10 @@ int eos_nuclei::eos_fixed_dist
     
     // End of if dist_changed
   }
+
+  // ----------------------------------------------------------------
+  // Compute the partition functions for this distribution and this
+  // temperature
   
   size_t n_nuclei=nuclei.size();
 
@@ -2406,6 +2415,9 @@ int eos_nuclei::eos_fixed_dist
     }
   }
 
+  // ---------------------------------------------------------------
+  // Set up for calling the solver
+  
   ubvector x1(2), y1(2);
 
   mm_funct sn_func=std::bind
@@ -2492,6 +2504,9 @@ int eos_nuclei::eos_fixed_dist
       }
     }
   }
+
+  // ---------------------------------------------------------------
+  // If the solver failed, call the bracketing solver
 
   if (mh_ret!=0 && (nB<2.2e-12 || alg_mode==2 || alg_mode==4)) {
     
@@ -2615,10 +2630,63 @@ int eos_nuclei::eos_fixed_dist
       }
     }
 
-    // Try a minimizer
+    // ---------------------------------------------------------------
+    // Adaptive differential evolution
+    
+    if (false) {
+
+      multi_funct min_func=std::bind
+	(std::mem_fn<double(size_t,const ubvector &,
+			    double,double,double,double &,double &,
+			    thermo &)>
+	 (&eos_nuclei::solve_nuclei_min),this,
+	 std::placeholders::_1,std::placeholders::_2,nB,Ye,T,
+	 std::ref(mun_gas),std::ref(mup_gas),std::ref(th_gas));
+      
+      if (fd_rand_ranges.size()>=4) {
+	ranges[0]=fd_rand_ranges[0];
+	ranges[1]=fd_rand_ranges[1];
+	ranges[2]=fd_rand_ranges[2];
+	ranges[3]=fd_rand_ranges[3];
+      }
+      
+      // If the ranges don't include the best point so far, expand them
+      if (x1[0]<ranges[0]) ranges[0]=x1[0]-(ranges[1]-ranges[0]);
+      if (x1[0]>ranges[1]) ranges[1]=x1[0]+(ranges[1]-ranges[0]);
+      if (x1[1]<ranges[2]) ranges[2]=x1[1]-(ranges[3]-ranges[2]);
+      if (x1[1]>ranges[3]) ranges[3]=x1[1]+(ranges[3]-ranges[2]);
+
+      if (ranges[1]>0.0) ranges[1]=0.0;
+      if (ranges[3]>0.0) ranges[3]=0.0;
+
+      diff_evo_adapt<> de;
+      de.err_nonconv=false;
+      ubvector step(2);
+      step[0]=ranges[1]-ranges[0];
+      step[1]=ranges[3]-ranges[2];
+      double ymin;
+      //de.verbose=1;
+      int de_ret=de.mmin(2,x1,ymin,min_func);
+
+      if (de_ret==0) {
+	int iret=sn_func(2,x1,y1);
+	
+	if (iret==0 && fabs(y1[0])+fabs(y1[1])<qual_best) {
+	  qual_best=fabs(y1[0])+fabs(y1[1]);
+	}
+	
+	if (qual_best<mh.tol_rel) {
+	  mh_ret=0;
+	}
+      }
+      
+    }
+    
+    // ---------------------------------------------------------------
+    // Try the minimizer
+
     if (n_minimizes>0 && mh_ret!=0) {
       
-      // First, find a suitable bracket
       multi_funct min_func=std::bind
 	(std::mem_fn<double(size_t,const ubvector &,
 			    double,double,double,double &,double &,
@@ -2641,6 +2709,11 @@ int eos_nuclei::eos_fixed_dist
       for(jk=0;jk<n_minimizes && qual_best>mh.tol_rel;jk++) {
 	
 	mret=ms.mmin(2,x1,ymin,min_func);
+
+	// AWS 9/18/2020: This doesn't seem to help
+	if (false) {
+	  mh_ret=mh.msolve(2,x1,sn_func);
+	}
 	
 	int iret=sn_func(2,x1,y1);
 
@@ -2677,6 +2750,9 @@ int eos_nuclei::eos_fixed_dist
       
     }
     
+    // ---------------------------------------------------------------
+    // Survey the solution space
+
     if (false) {
       table3d surv;
       uniform_grid_log_end<double> ug(1.0e-8,0.01,99);
@@ -2745,7 +2821,8 @@ int eos_nuclei::eos_fixed_dist
 	  surv.set(sj,suk,"mmret",siret);
 	}
       }
-      double pps_max=matrix_max_value<ubmatrix,double>(surv.get_slice("pps"));
+      double pps_max=matrix_max_value<ubmatrix,double>
+	(surv.get_slice("pps"));
       for(size_t sj=0;sj<surv.get_nx();sj++) {
 	for(size_t suk=0;suk<surv.get_ny();suk++) {
 	  if (fabs(surv.get(sj,suk,"ppret"))>1.0e-4) {
@@ -2756,7 +2833,8 @@ int eos_nuclei::eos_fixed_dist
 	  }
 	}
       }
-      double pms_max=matrix_max_value<ubmatrix,double>(surv.get_slice("pms"));
+      double pms_max=matrix_max_value<ubmatrix,double>
+	(surv.get_slice("pms"));
       for(size_t sj=0;sj<surv.get_nx();sj++) {
 	for(size_t suk=0;suk<surv.get_ny();suk++) {
 	  if (fabs(surv.get(sj,suk,"pmret"))>1.0e-4) {
@@ -2767,7 +2845,8 @@ int eos_nuclei::eos_fixed_dist
 	  }
 	}
       }
-      double mps_max=matrix_max_value<ubmatrix,double>(surv.get_slice("mps"));
+      double mps_max=matrix_max_value<ubmatrix,double>
+	(surv.get_slice("mps"));
       for(size_t sj=0;sj<surv.get_nx();sj++) {
 	for(size_t suk=0;suk<surv.get_ny();suk++) {
 	  if (fabs(surv.get(sj,suk,"mpret"))>1.0e-4) {
@@ -2778,7 +2857,8 @@ int eos_nuclei::eos_fixed_dist
 	  }
 	}
       }
-      double mms_max=matrix_max_value<ubmatrix,double>(surv.get_slice("mms"));
+      double mms_max=matrix_max_value<ubmatrix,double>
+	(surv.get_slice("mms"));
       for(size_t sj=0;sj<surv.get_nx();sj++) {
 	for(size_t suk=0;suk<surv.get_ny();suk++) {
 	  if (fabs(surv.get(sj,suk,"mmret"))>1.0e-4) {
@@ -2793,22 +2873,26 @@ int eos_nuclei::eos_fixed_dist
 	   << mms_max << endl;
       double val;
       size_t suoi, suoj;
-      matrix_min_index<ubmatrix,double>(surv.get_slice("pps"),suoi,suoj,val);
+      matrix_min_index<ubmatrix,double>(surv.get_slice("pps"),
+					suoi,suoj,val);
       cout << val << " " << surv.get_grid_x(suoi) << " "
 	   << surv.get_grid_y(suoj) << " " 
 	   << x1[0]+surv.get_grid_x(suoi) << " "
 	   << x1[1]+surv.get_grid_y(suoj) << endl;
-      matrix_min_index<ubmatrix,double>(surv.get_slice("pms"),suoi,suoj,val);
+      matrix_min_index<ubmatrix,double>(surv.get_slice("pms"),
+					suoi,suoj,val);
       cout << val << " " << surv.get_grid_x(suoi) << " "
 	   << surv.get_grid_y(suoj) << " " 
 	   << x1[0]+surv.get_grid_x(suoi) << " "
 	   << x1[1]-surv.get_grid_y(suoj) << endl;
-      matrix_min_index<ubmatrix,double>(surv.get_slice("mps"),suoi,suoj,val);
+      matrix_min_index<ubmatrix,double>(surv.get_slice("mps"),
+					suoi,suoj,val);
       cout << val << " " << surv.get_grid_x(suoi) << " "
 	   << surv.get_grid_y(suoj) << " " 
 	   << x1[0]-surv.get_grid_x(suoi) << " "
 	   << x1[1]+surv.get_grid_y(suoj) << endl;
-      matrix_min_index<ubmatrix,double>(surv.get_slice("mms"),suoi,suoj,val);
+      matrix_min_index<ubmatrix,double>(surv.get_slice("mms"),
+					suoi,suoj,val);
       cout << val << " " << surv.get_grid_x(suoi) << " "
 	   << surv.get_grid_y(suoj) << " " 
 	   << x1[0]-surv.get_grid_x(suoi) << " "
@@ -2820,7 +2904,8 @@ int eos_nuclei::eos_fixed_dist
       exit(-1);
     }
     
-    // If the minimizer didn't work, try random initial guesses
+    // ---------------------------------------------------------------
+    // Set up the solution ranges
     
     if (mh_ret!=0) {
       
@@ -2848,6 +2933,9 @@ int eos_nuclei::eos_fixed_dist
       
     }
     
+    // ---------------------------------------------------------------
+    // If the minimizer didn't work, try random initial guesses
+
     if (mh_ret!=0 && ranges[0]<1.0e50 && ranges[1]<1.0e50 &&
 	ranges[2]<1.0e50 && ranges[3]<1.0e50) {
       for(int kk=0;kk<n_randoms && mh_ret!=0;kk++) {
