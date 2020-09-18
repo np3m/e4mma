@@ -512,6 +512,7 @@ int eos_nuclei::add_eg(std::vector<std::string> &sv,
 	tg3_S.set(i,j,k,tg3_Sint.get(i,j,k)+
 		  lep.en/nB_grid2[i]);
 	tg3_mue.set(i,j,k,hc_mev_fm*mue);
+
       }
     }
     cout << "add_eg(): " << i+1 << "/" << n_nB2 << endl;
@@ -689,6 +690,10 @@ int eos_nuclei::eos_deriv(std::vector<std::string> &sv,
       }
       itp_stf.set(n_T2,T_grid2,fint_vec_T);
       for(size_t k=0;k<n_T2;k++) {
+	// Note that fint_vec_T above is stored in MeV/fm^3, so
+	// when we take a derivative wrt to temperature (stored
+	// in MeV), we get the correct units of 1/fm^3, and then
+	// we divide by the baryon density in units of 1/fm^3
 	tg3_Sint.set(i,j,k,-itp_stf.deriv(T_grid2[k])/nB_grid2[i]);
       }
     }
@@ -4902,9 +4907,12 @@ int eos_nuclei::stats(std::vector<std::string> &sv,
 
       // Check that Fint=Eint-T*Sint
       if (tg3_Eint.total_size()>0 && Fint_count<1000) {
-	
-	double Fint_check=tg3_Fint.get_data()[i]-
-	  tg3_Eint.get_data()[i]+T_MeV*tg3_Sint.get_data()[i];
+
+	double scale=tg3_Fint.get_data()[i];
+	if (scale<10.0) scale=10.0;
+	double Fint_check=(tg3_Fint.get_data()[i]-
+			   tg3_Eint.get_data()[i]+
+			   T_MeV*tg3_Sint.get_data()[i])/scale;
 	if (fabs(Fint_check)>1.0e-9) {
 	  cout << "Fint doesn't match Eint-T*Sint:"
 	       << "(i,nB,Ye,T,Fint_check):\n  "
@@ -4926,9 +4934,13 @@ int eos_nuclei::stats(std::vector<std::string> &sv,
       if (derivs_computed && ti_int_count<1000) {
 	double nn=nB*(1.0-Ye);
 	double np=nB*Ye;
-	double ti_int_check=tg3_Eint.get_data()[i]*nB+
-	  tg3_Pint.get_data()[i]-T_MeV*tg3_Sint.get_data()[i]*nB-
-	  nn*tg3_mun.get_data()[i]-np*tg3_mup.get_data()[i];
+	double scale=tg3_Eint.get_data()[i];
+	if (scale<100.0) scale=100.0;
+	double ti_int_check=(tg3_Eint.get_data()[i]*nB+
+			     tg3_Pint.get_data()[i]-
+			     T_MeV*tg3_Sint.get_data()[i]*nB-
+			     nn*tg3_mun.get_data()[i]-
+			     np*tg3_mup.get_data()[i])/scale/nB;
 	if (fabs(ti_int_check)>1.0e-9) {
 	  cout << "Therm. ident. doens't hold (i,nB,Ye,T,ti_int_check): "
 	       << i << " " << nB << " " << Ye << " " << T_MeV
@@ -4944,10 +4956,14 @@ int eos_nuclei::stats(std::vector<std::string> &sv,
       if (derivs_computed && ti_count<1000) {
 	double nn=nB*(1.0-Ye);
 	double np=nB*Ye;
-	double ti_check=tg3_E.get_data()[i]*nB+
-	  tg3_P.get_data()[i]-T_MeV*tg3_S.get_data()[i]*nB-
-	  nn*tg3_mun.get_data()[i]-np*tg3_mup.get_data()[i]-
-	  np*tg3_mue.get_data()[i];
+	double scale=tg3_E.get_data()[i];
+	if (scale<10.0) scale=10.0;
+	double ti_check=(tg3_E.get_data()[i]*nB+
+			 tg3_P.get_data()[i]-
+			 T_MeV*tg3_S.get_data()[i]*nB-
+			 nn*tg3_mun.get_data()[i]-
+			 np*tg3_mup.get_data()[i]-
+			 np*tg3_mue.get_data()[i])/scale/nB;
 	if (fabs(ti_check)>1.0e-9) {
 	  cout << "Therm. ident. doens't hold (i,nB,Ye,T,ti_check): "
 	       << i << " " << nB << " " << Ye << " " << T_MeV
@@ -4962,8 +4978,11 @@ int eos_nuclei::stats(std::vector<std::string> &sv,
       // Check that F=E-T*S
       if (with_leptons_loaded && F_count<1000) {
 
-	double F_check=tg3_F.get_data()[i]-
-	  tg3_E.get_data()[i]+T_MeV*tg3_S.get_data()[i];
+	double scale=tg3_F.get_data()[i];
+	if (scale<10.0) scale=10.0;
+	double F_check=(tg3_F.get_data()[i]-
+			tg3_E.get_data()[i]+
+			T_MeV*tg3_S.get_data()[i])/scale;
 	if (fabs(F_check)>1.0e-9) {
 	  cout << "F doesn't match E-T*S (i,nB,Ye,T,F_check): "
 	       << i << " " << nB << " " << Ye << " " << T_MeV
