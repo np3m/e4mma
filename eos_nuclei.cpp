@@ -2076,7 +2076,6 @@ int eos_nuclei::eos_vary_dist
     
     if (thx2.ed-T*thx2.en<thx.ed-T*thx.en) {
       cout << "Nuclear matter preferred." << endl;
-      exit(-1);
       log_xn=log_xn2;
       log_xp=log_xp2;
       Zbar=Zbar2;
@@ -3999,7 +3998,7 @@ int eos_nuclei::read_results(std::string fname) {
   } else if (tg3_Sint.total_size()>0) {
     cout << "Fixing file with missing Eint." << endl;
     vector<vector<double> > grid={nB_grid2,Ye_grid2,
-				   T_grid2};
+				  T_grid2};
     vector<size_t> sz={n_nB2,n_Ye2,n_T2};
     tg3_Eint.resize(3,sz);
     tg3_Eint.set_grid(grid);
@@ -4120,30 +4119,30 @@ int eos_nuclei::read_results(std::string fname) {
   }
 
   if (include_detail) {
-  if (verbose>2) cout << "Reading zn." << endl;
-  hdf_input(hf,tg3_zn,"zn");
-  if (verbose>2) cout << "Reading zp." << endl;
-  hdf_input(hf,tg3_zp,"zp");
-  if (verbose>2) cout << "Reading msn." << endl;
-  hdf_input(hf,tg3_msn,"msn");
-  if (verbose>2) cout << "Reading msp." << endl;
-  hdf_input(hf,tg3_msp,"msp");
-  if (verbose>2) cout << "Reading F1." << endl;
-  hdf_input(hf,tg3_F1,"F1");
-  if (verbose>2) cout << "Reading F2." << endl;
-  hdf_input(hf,tg3_F2,"F2");
-  if (verbose>2) cout << "Reading F3." << endl;
-  hdf_input(hf,tg3_F3,"F3");
-  if (verbose>2) cout << "Reading F4." << endl;
-  hdf_input(hf,tg3_F4,"F4");
-  if (verbose>2) cout << "Reading Un." << endl;
-  hdf_input(hf,tg3_Un,"Un");
-  if (verbose>2) cout << "Reading Up." << endl;
-  hdf_input(hf,tg3_Up,"Up");
-  if (verbose>2) cout << "Reading g." << endl;
-  hdf_input(hf,tg3_g,"g");
-  if (verbose>2) cout << "Reading dgdT." << endl;
-  hdf_input(hf,tg3_dgdT,"dgdT");
+    if (verbose>2) cout << "Reading zn." << endl;
+    hdf_input(hf,tg3_zn,"zn");
+    if (verbose>2) cout << "Reading zp." << endl;
+    hdf_input(hf,tg3_zp,"zp");
+    if (verbose>2) cout << "Reading msn." << endl;
+    hdf_input(hf,tg3_msn,"msn");
+    if (verbose>2) cout << "Reading msp." << endl;
+    hdf_input(hf,tg3_msp,"msp");
+    if (verbose>2) cout << "Reading F1." << endl;
+    hdf_input(hf,tg3_F1,"F1");
+    if (verbose>2) cout << "Reading F2." << endl;
+    hdf_input(hf,tg3_F2,"F2");
+    if (verbose>2) cout << "Reading F3." << endl;
+    hdf_input(hf,tg3_F3,"F3");
+    if (verbose>2) cout << "Reading F4." << endl;
+    hdf_input(hf,tg3_F4,"F4");
+    if (verbose>2) cout << "Reading Un." << endl;
+    hdf_input(hf,tg3_Un,"Un");
+    if (verbose>2) cout << "Reading Up." << endl;
+    hdf_input(hf,tg3_Up,"Up");
+    if (verbose>2) cout << "Reading g." << endl;
+    hdf_input(hf,tg3_g,"g");
+    if (verbose>2) cout << "Reading dgdT." << endl;
+    hdf_input(hf,tg3_dgdT,"dgdT");
   }
 
   hf.close();
@@ -4712,6 +4711,8 @@ int eos_nuclei::fix_cc(std::vector<std::string> &sv,
   bool no_nuclei;
   
   for(size_t iT=0;iT<n_T2;iT++) {
+
+    bool found_point=false;
     
     for(size_t iYe=0;iYe<n_Ye2;iYe++) {
   
@@ -4722,6 +4723,7 @@ int eos_nuclei::fix_cc(std::vector<std::string> &sv,
 	double T=T_grid2[iT]/hc_mev_fm;
 
 	if (tg3_flag.get(inB,iYe,iT)<9.9) {
+	  found_point=true;
 	  
 	  cout << "Found uncomputed point at (nB,Ye,T):\n"
 	       << "\t" << nB << " " << Ye << " "
@@ -4829,13 +4831,14 @@ int eos_nuclei::fix_cc(std::vector<std::string> &sv,
       
     }
 
+    if (found_point==true) {
+      // We require an output file as it allows the user to specify
+      // different files when multiple runs are occurring at the
+      // same time
+      write_results(out_file);
+    }
+
   }
-  
-  // We require an output file as it allows the user to specify
-  // different files when multiple runs are occurring at the
-  // same time
-  write_results(out_file);
-    
   return 0;
 }
 
