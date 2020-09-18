@@ -502,7 +502,7 @@ int eos_nuclei::add_eg(std::vector<std::string> &sv,
 	thermo lep;
 	double mue;
 	eso.compute_eg_point(nB_grid2[i],Ye_grid2[j],T_grid2[k],lep,mue);
-
+	
 	tg3_F.set(i,j,k,tg3_Fint.get(i,j,k)+
 		  (hc_mev_fm*lep.ed-T_grid2[k]*lep.en)/nB_grid2[i]);
 	tg3_E.set(i,j,k,tg3_Eint.get(i,j,k)+
@@ -510,7 +510,7 @@ int eos_nuclei::add_eg(std::vector<std::string> &sv,
 	tg3_P.set(i,j,k,tg3_Pint.get(i,j,k)+
 		  hc_mev_fm*lep.pr);
 	tg3_S.set(i,j,k,tg3_Sint.get(i,j,k)+
-		  hc_mev_fm*lep.en/nB_grid2[i]);
+		  lep.en/nB_grid2[i]);
 	tg3_mue.set(i,j,k,hc_mev_fm*mue);
       }
     }
