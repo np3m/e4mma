@@ -35,7 +35,7 @@ using namespace o2scl_hdf;
 
 eos_nuclei::eos_nuclei() {
 
-  fd_A_max=200;
+  fd_A_max=600;
   
   nuclei.resize(6);
   nuc_alpha=&nuclei[0];
@@ -97,7 +97,7 @@ eos_nuclei::eos_nuclei() {
   rnuc_less_rws=true;
 
   function_verbose=11111;
-  max_ratio=2.25;
+  max_ratio=7.0;
   loaded=false;
   file_update_time=1800;
   file_update_iters=100000;
@@ -7468,7 +7468,8 @@ int eos_nuclei::mcarlo_nuclei2(std::vector<std::string> &sv,
 			    thx,mun_full,mup_full,
 			    A_min,A_max,NmZ_min,NmZ_max,vdet,
 			    dist_changed,no_nuclei);
-      cout << "AWS: " << ret << " " << log_xn << " " << log_xp << " "
+      cout << "ret,log_xn,log_xp,Z,N,A,Z/A:\n  "
+	   << ret << " " << log_xn << " " << log_xp << " "
 	   << Zbar << " " << Nbar << " " << Zbar+Nbar << " " 
 	   << Zbar/(Zbar+Nbar) << endl;
       
