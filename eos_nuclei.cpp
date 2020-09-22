@@ -7440,6 +7440,7 @@ int eos_nuclei::mcarlo_nuclei2(std::vector<std::string> &sv,
 
   static const int N=1000;
   for(int j=0;j<N;j++) {
+    std::cout << "j: " << j << endl;
     
     std::vector<std::string> obj;
     random(obj,false);
