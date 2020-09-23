@@ -2457,7 +2457,10 @@ int eos_nuclei::eos_fixed_dist
     if (fabs(y1[0])+fabs(y1[1])<mh.tol_rel) {
       mh_ret=0;
     } else {
-      cout << "Verify failed: " << y1[0] << " " << y1[1] << " "
+      cout << "Verify failed." << endl;
+      cout << "  nB,Ye,T: " << nB << " " << Ye << " "
+	   << T*hc_mev_fm << endl;
+      cout << "  y[0],y[1],tol: " << y1[0] << " " << y1[1] << " "
 	   << mh.tol_rel << endl;
       return 1;
     }
@@ -4964,8 +4967,8 @@ int eos_nuclei::verify(std::vector<std::string> &sv,
   if (mode=="random" || mode=="random_lg") {
     n_tot=stoszt(sv[2]);
   }
+  if (mode=="point") n_tot=1;
   
-
   double log_xn, log_xp;
   size_t nuc_Z1, nuc_N1;
   int A_min, A_max, NmZ_min, NmZ_max;
@@ -4977,16 +4980,38 @@ int eos_nuclei::verify(std::vector<std::string> &sv,
   verify_only=true;
 
   size_t inB_lo=0, inB_hi=0;
-  if (mode=="random_lg") {
+  if (mode=="random_lg" || mode=="all_lg") {
     inB_lo=vector_lookup(nB_grid2,0.01);
     inB_hi=vector_lookup(nB_grid2,0.15);
   }
 
+  if (mode=="all_lg") {
+    n_tot=(inB_hi-inB_lo+1)*n_Ye2*n_T2;
+  }
+
+  bool verify_success=true;
+  
   for(size_t j=0;j<n_tot;j++) {
     
     size_t inB=0, iYe=0, iT=0;
 
     if (mode=="all") {
+      vector<size_t> vix;
+      tg3_A.unpack_index(j,vix);
+      inB=vix[0];
+      iYe=vix[1];
+      iT=vix[2];
+    } else if (mode=="all_lg") {
+      size_t n_slice=n_Ye2*n_T2;
+      inB=j/n_slice;
+      size_t j2=j-n_slice*inB;
+      iYe=j2/n_Ye2;
+      iT=j2-n_T2*iYe;
+      cout << j << " " << inB << " " << iYe << " " << iT << endl;
+    } else if (mode=="point") {
+      inB=vector_lookup(nB_grid2,o2scl::function_to_double(sv[2]));
+      iYe=vector_lookup(Ye_grid2,o2scl::function_to_double(sv[3]));
+      iT=vector_lookup(T_grid2,o2scl::function_to_double(sv[4]));
     } else {
       if (mode=="random_lg") {
 	inB=rng.random_int(inB_hi-inB_lo+1)+inB_lo;
@@ -5029,16 +5054,23 @@ int eos_nuclei::verify(std::vector<std::string> &sv,
 			  A_min,A_max,NmZ_min,NmZ_max,
 			  vdet,true,no_nuclei);
 
+    cout << "verify() j,nB,Ye,T,ret: ";
     cout.width(((size_t)log10(n_tot*(10.0-1.0e-8))));
-    cout << j << " " << nB << " " << Ye << " " << T << " " << ret << endl;
+    cout << j << " " << nB << " " << Ye << " " << T*hc_mev_fm
+	 << " " << ret << endl;
     if (ret!=0) {
-      cout << "Verification failed. Exiting early." << endl;
-      exit(-1);
+      cout << "Verification failed. Stopping." << endl;
+      j=n_tot;
+      verify_success=false;
     }
 
   }
 
-  cout << "Verification succeeded." << endl;
+  verify_only=false;
+
+  if (verify_success) {
+    cout << "Verification succeeded." << endl;
+  }
   
   return 0;
 }
@@ -7735,7 +7767,7 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
       "<output file>",
       "",new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::fix_cc),o2scl::cli::comm_option_both},
-     {0,"verify","",1,2,"",
+     {0,"verify","",1,4,"",
       "",new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::verify),o2scl::cli::comm_option_both},
      {0,"select-high-T",
