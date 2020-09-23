@@ -244,6 +244,11 @@ public:
   */
   bool recompute;
 
+  /** \brief If true, verify points only and do not attempt to solve
+      (default false)
+  */
+  bool verify_only;
+
   /** \brief If true, recompute points where Z, A, log_xn, 
       or log_xp reach a maximum or minimum (default false)
   */
@@ -398,6 +403,7 @@ public:
   o2scl::cli::parameter_bool p_show_all_nuclei;
   o2scl::cli::parameter_int p_fd_A_max;
   o2scl::cli::parameter_bool p_recompute;
+  o2scl::cli::parameter_bool p_verify_only;
   o2scl::cli::parameter_string p_edge_list;
   o2scl::cli::parameter_string p_ext_guess;
   o2scl::cli::parameter_int p_six_neighbors;
@@ -629,6 +635,10 @@ public:
   /** \brief Desc
    */
   int fix_cc(std::vector<std::string> &sv, bool itive_com);
+  
+  /** \brief Desc
+   */
+  int verify(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Monte Carlo results with nuclei
    */

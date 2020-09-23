@@ -51,6 +51,7 @@ eos_nuclei::eos_nuclei() {
 
   show_all_nuclei=false;
   recompute=false;
+  verify_only=false;
   edge_list="";
   six_neighbors=0;
   propagate_points=true;
@@ -2448,14 +2449,29 @@ int eos_nuclei::eos_fixed_dist
   if (alg_mode==2 || alg_mode==4 || nB<1.0e-09) {
     mh.tol_abs=mh.tol_rel/1.0e4;
   }
+
+  int mh_ret=-1;
+  
+  if (verify_only) {
+    sn_func(2,x1,y1);
+    if (fabs(y1[0])+fabs(y1[1])<mh.tol_rel) {
+      mh_ret=0;
+    } else {
+      cout << "Verify failed: " << y1[0] << " " << y1[1] << " "
+	   << mh.tol_rel << endl;
+      return 1;
+    }
+  }
   
   if (loc_verbose>2) mh.verbose=1;
 
   double qual_best=1.0e100;
 
-  int mh_ret=mh.msolve(2,x1,sn_func);
-  if (mh_ret==0 && mpi_size==1) {
-    cout << "Rank " << mpi_rank << " finished after initial solve." << endl;
+  if (mh_ret!=0) {
+    mh_ret=mh.msolve(2,x1,sn_func);
+    if (mh_ret==0 && mpi_size==1) {
+      cout << "Rank " << mpi_rank << " finished after initial solve." << endl;
+    }
   }
 
   if (alg_mode==2 || alg_mode==4) {
@@ -4932,6 +4948,98 @@ int eos_nuclei::fix_cc(std::vector<std::string> &sv,
     }
 
   }
+  return 0;
+}
+
+int eos_nuclei::verify(std::vector<std::string> &sv,
+		       bool itive_com) {
+
+  if (sv.size()<2) {
+    cerr << "Need mode." << endl;
+    return 2;
+  }
+  
+  std::string mode=sv[1];
+  size_t n_tot=n_nB2*n_Ye2*n_T2;
+  if (mode=="random" || mode=="random_lg") {
+    n_tot=stoszt(sv[2]);
+  }
+  
+
+  double log_xn, log_xp;
+  size_t nuc_Z1, nuc_N1;
+  int A_min, A_max, NmZ_min, NmZ_max;
+
+  derivs_computed=false;
+  with_leptons_loaded=false;
+  bool no_nuclei;
+
+  verify_only=true;
+
+  size_t inB_lo=0, inB_hi=0;
+  if (mode=="random_lg") {
+    inB_lo=vector_lookup(nB_grid2,0.01);
+    inB_hi=vector_lookup(nB_grid2,0.15);
+  }
+
+  for(size_t j=0;j<n_tot;j++) {
+    
+    size_t inB=0, iYe=0, iT=0;
+
+    if (mode=="all") {
+    } else {
+      if (mode=="random_lg") {
+	inB=rng.random_int(inB_hi-inB_lo+1)+inB_lo;
+      } else {
+	inB=rng.random_int(n_nB2);
+      }
+      iYe=rng.random_int(n_Ye2);
+      iT=rng.random_int(n_T2);
+    }
+  
+    double nB=nB_grid2[inB];
+    double Ye=Ye_grid2[iYe];
+    double T=T_grid2[iT]/hc_mev_fm;
+
+    // Get initial guess 
+    log_xn=tg3_log_xn.get(inB,iYe,iT);
+    log_xp=tg3_log_xp.get(inB,iYe,iT);
+    A_min=tg3_A_min.get(inB,iYe,iT);
+    A_max=tg3_A_max.get(inB,iYe,iT);
+    NmZ_min=tg3_NmZ_min.get(inB,iYe,iT);
+    NmZ_max=tg3_NmZ_max.get(inB,iYe,iT);
+    no_nuclei=false;
+    if (tg3_A.get(inB,iYe,iT)<1.0e-6 &&
+	tg3_Z.get(inB,iYe,iT)<1.0e-6) {
+      no_nuclei=true;
+    }
+    
+    thermo thx;
+    double mun_full, mup_full;
+    
+    if (alg_mode!=4) {
+      cout << "Only works for alg_mode=4." << endl;
+      return 1;
+    }
+    
+    double Zbar, Nbar;
+    map<string,double> vdet;
+    int ret=eos_vary_dist(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,
+			  thx,mun_full,mup_full,
+			  A_min,A_max,NmZ_min,NmZ_max,
+			  vdet,true,no_nuclei);
+
+    cout.width(((size_t)log10(n_tot*(10.0-1.0e-8))));
+    cout << j << " " << nB << " " << Ye << " " << T << " " << ret << endl;
+    if (ret!=0) {
+      cout << "Verification failed. Exiting early." << endl;
+      exit(-1);
+    }
+
+  }
+
+  cout << "Verification succeeded." << endl;
+  
   return 0;
 }
 
@@ -7518,7 +7626,7 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
   
   eos::setup_cli(cl);
   
-  static const int nopt=20;
+  static const int nopt=21;
   
   o2scl::comm_option_s options[nopt]=
     {{0,"eos-deriv","compute derivatives",
@@ -7627,6 +7735,9 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
       "<output file>",
       "",new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::fix_cc),o2scl::cli::comm_option_both},
+     {0,"verify","",1,2,"",
+      "",new o2scl::comm_option_mfptr<eos_nuclei>
+      (this,&eos_nuclei::verify),o2scl::cli::comm_option_both},
      {0,"select-high-T",
       "Choose the Skyrme model for the finite T corrections.",
       1,1,"<index>","",new o2scl::comm_option_mfptr<eos_nuclei>
@@ -7665,8 +7776,13 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
   
   p_recompute.b=&recompute;
   p_recompute.help=((string)"If true, recompute points in the table ")+
-    "and ignore the flag value.";
+    "and ignore the flag value (default false).";
   cl.par_list.insert(make_pair("recompute",&p_recompute));
+  
+  p_verify_only.b=&verify_only;
+  p_verify_only.help=((string)"If true, don't call the solver, just ")+
+    "verify the initial guess (default false).";
+  cl.par_list.insert(make_pair("verify_only",&p_verify_only));
   
   p_edge_list.str=&edge_list;
   p_edge_list.help=((string)"List of names");
