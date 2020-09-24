@@ -4977,8 +4977,6 @@ int eos_nuclei::verify(std::vector<std::string> &sv,
   with_leptons_loaded=false;
   bool no_nuclei;
 
-  verify_only=true;
-
   size_t inB_lo=0, inB_hi=0;
   if (mode=="random_lg" || mode=="all_lg") {
     inB_lo=vector_lookup(nB_grid2,0.01);
@@ -5049,10 +5047,20 @@ int eos_nuclei::verify(std::vector<std::string> &sv,
     
     double Zbar, Nbar;
     map<string,double> vdet;
+    
+    verify_only=true;
     int ret=eos_vary_dist(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,
 			  thx,mun_full,mup_full,
 			  A_min,A_max,NmZ_min,NmZ_max,
 			  vdet,true,no_nuclei);
+    verify_only=false;
+    if (ret!=0) {
+      cout << "Verification failed. Computing." << endl;
+      ret=eos_vary_dist(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,
+			  thx,mun_full,mup_full,
+			  A_min,A_max,NmZ_min,NmZ_max,
+			  vdet,true,no_nuclei);
+    }
 
     cout << "verify() j,nB,Ye,T,ret: ";
     cout.width(((size_t)log10(n_tot*(10.0-1.0e-8))));
@@ -5065,8 +5073,6 @@ int eos_nuclei::verify(std::vector<std::string> &sv,
     }
 
   }
-
-  verify_only=false;
 
   if (verify_success) {
     cout << "Verification succeeded." << endl;
