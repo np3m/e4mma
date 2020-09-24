@@ -4981,11 +4981,13 @@ int eos_nuclei::verify(std::vector<std::string> &sv,
   if (mode=="random_lg" || mode=="all_lg") {
     inB_lo=vector_lookup(nB_grid2,0.01);
     inB_hi=vector_lookup(nB_grid2,0.15);
+    cout << "inB_lo, inB_hi: " << inB_lo << " " << inB_hi << endl;
   }
 
   if (mode=="all_lg") {
     n_tot=(inB_hi-inB_lo+1)*n_Ye2*n_T2;
   }
+  cout << "n_tot: " << n_tot << endl;
 
   bool verify_success=true;
   
@@ -5003,9 +5005,9 @@ int eos_nuclei::verify(std::vector<std::string> &sv,
       size_t n_slice=n_Ye2*n_T2;
       inB=j/n_slice;
       size_t j2=j-n_slice*inB;
-      iYe=j2/n_Ye2;
+      iYe=j2/n_T2;
       iT=j2-n_T2*iYe;
-      cout << j << " " << inB << " " << iYe << " " << iT << endl;
+      inB+=inB_lo;
     } else if (mode=="point") {
       inB=vector_lookup(nB_grid2,o2scl::function_to_double(sv[2]));
       iYe=vector_lookup(Ye_grid2,o2scl::function_to_double(sv[3]));
@@ -5055,6 +5057,7 @@ int eos_nuclei::verify(std::vector<std::string> &sv,
 			  vdet,true,no_nuclei);
     verify_only=false;
     if (ret!=0) {
+      tg3_flag.get(inB,iYe,iT)=5.0;
       cout << "Verification failed. Computing." << endl;
       ret=eos_vary_dist(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,
 			  thx,mun_full,mup_full,
