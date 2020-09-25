@@ -4962,10 +4962,11 @@ int eos_nuclei::verify(std::vector<std::string> &sv,
     return 2;
   }
   
-  std::string mode=sv[1];
+  std::string mode=sv[1], out_file=sv[2];
   size_t n_tot=n_nB2*n_Ye2*n_T2;
   if (mode=="random" || mode=="random_lg") {
     n_tot=stoszt(sv[2]);
+    out_file=sv[3];
   }
   if (mode=="point") n_tot=1;
   
@@ -5070,6 +5071,11 @@ int eos_nuclei::verify(std::vector<std::string> &sv,
       cout << "Verification failed. Stopping." << endl;
       j=n_tot;
       verify_success=false;
+    }
+    
+    if (((int)j)%file_update_iters==file_update_iters-1) {
+      cout << "Updating file." << endl;
+      write_results(out_file);
     }
 
   }
