@@ -1505,6 +1505,8 @@ int eos_nuclei::eos_fixed_ZN(double nB, double Ye, double T,
   } else {
     if (nucZ1%2==0 && nucN1%2==0) {
       nuc_heavy->g=1.0;
+      //} else if (nucZ1%2==1 && nucN1%2==1) {
+      //nuc_heavy->g=3.0;
     } else {
       nuc_heavy->g=2.0;
     }
@@ -2284,6 +2286,8 @@ int eos_nuclei::eos_fixed_dist
 	  } else {
 	    if (Z%2==0 && N%2==0) {
 	      nuclei[index].g=1.0;
+	      //} else if (Z%2==1 && N%2==1) {
+	      //nuclei[index].g=3.0;
 	    } else {
 	      nuclei[index].g=2.0;
 	    }
@@ -3819,6 +3823,8 @@ void eos_nuclei::write_nuclei(std::string fname) {
 	  line[8]=4;
 	  if (Z%2==0 && N%2==0) {
 	    nuc.g=1.0;
+	    //} else if (Z%2==1 && N%2==1) {
+	    //nuc.g=3.0;
 	  } else {
 	    nuc.g=2.0;
 	  }
@@ -5057,6 +5063,8 @@ int eos_nuclei::verify(std::vector<std::string> &sv,
 			  A_min,A_max,NmZ_min,NmZ_max,
 			  vdet,true,no_nuclei);
     verify_only=false;
+
+    bool computed=false;
     if (ret!=0) {
       tg3_flag.get(inB,iYe,iT)=5.0;
       cout << "Verification failed. Computing." << endl;
@@ -5064,16 +5072,39 @@ int eos_nuclei::verify(std::vector<std::string> &sv,
 			  thx,mun_full,mup_full,
 			  A_min,A_max,NmZ_min,NmZ_max,
 			  vdet,true,no_nuclei);
+
+      if (ret==0) {
+	// Note that Zbar and Nbar aren't computed if verify_only is true
+	if (fabs(Zbar-tg3_Z.get(inB,iYe,iT))>1.0e-6) {
+	  cout << "Z changed from "
+	       << tg3_Z.get(inB,iYe,iT) << " to " << Zbar << endl;
+	}
+	if (fabs(Zbar+Nbar-tg3_A.get(inB,iYe,iT))>1.0e-6) {
+	  cout << "A changed from "
+	       << tg3_A.get(inB,iYe,iT) << " to " << Zbar+Nbar << endl;
+	}
+      }
+
+      computed=true;
     }
 
     cout << "verify() j,nB,Ye,T,ret: ";
     cout.width(((size_t)log10(n_tot*(10.0-1.0e-8))));
     cout << j << " " << nB << " " << Ye << " " << T*hc_mev_fm
 	 << " " << ret << endl;
+    
     if (ret!=0) {
       cout << "Verification failed. Stopping." << endl;
       j=n_tot;
       verify_success=false;
+    }
+
+    if (ret==0 && computed) {
+      ubvector X;
+      compute_X(nB,X);
+      store_point(inB,iYe,iT,nB,Ye,T,thx,log_xn,log_xp,Zbar,Nbar,
+		  mun_full,mup_full,X,A_min,A_max,NmZ_min,NmZ_max,
+		  10.0,vdet);
     }
     
     if (((int)j)%file_update_iters==file_update_iters-1) {
