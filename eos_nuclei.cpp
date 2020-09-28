@@ -1351,9 +1351,9 @@ int eos_nuclei::solve_nuclei(size_t nv, const ubvector &x, ubvector &y,
 		  ((double)nuclei[i].Z)*mup_gas
 		  -nuclei[i].be-1.433e-05*pow(nuclei[i].Z,2.39)/hc_mev_fm
 		  -Ec[i]-th_gas.pr*vv)/T;
-      if (arg>900.0) {
+      if (arg>700.0) {
 	return 7;
-      } else if (arg<-900.0) {
+      } else if (arg<-700.0) {
 	nuclei[i].n=0.0;
       } else {
 	nuclei[i].n=kappa*vomega[i]/pow(lambda,3.0)*exp(arg);
