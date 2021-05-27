@@ -42,7 +42,7 @@ class virial_solver_deriv {
  protected:
   
   // Generic polynomial solver
-  o2scl::poly_real_coeff_gsl quart;
+  o2scl::poly_real_coeff_gsl<> quart;
   
   /// Storage for the four roots
   std::complex<double> res[4];

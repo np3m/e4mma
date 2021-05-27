@@ -53,10 +53,10 @@ class virial_solver {
   o2scl_linalg::linear_solver_LU<ubvector,ubmatrix> lsol;  
 
   /// Quartic polynomial solver
-  o2scl::quartic_real_coeff_cern quart;
+  o2scl::quartic_real_coeff_cern<> quart;
 
   // Generic polynomial solver
-  o2scl::poly_real_coeff_gsl quart2;
+  o2scl::poly_real_coeff_gsl<> quart2;
   
   /// Storage for the four roots
   std::complex<double> res_zp[4],res_zn[4]; 
