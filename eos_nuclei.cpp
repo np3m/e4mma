@@ -2631,7 +2631,8 @@ int eos_nuclei::eos_fixed_dist
 	  }
 	} else if (k>0 && qual_last==qual) {
 	  // If our quality hasn't improved, stop
-	  k=10;	  
+	  k=10;
+          bracketing_done=true;
 	} else {
 	  // Update qual_last
 	  qual_last=qual;
