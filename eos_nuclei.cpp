@@ -4336,7 +4336,7 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
     A_max=((size_t)(o2scl::function_to_double(sv[7])*(1.0+1.0e-12)));
     NmZ_min=((size_t)(o2scl::function_to_double(sv[8])*(1.0+1.0e-12)));
     NmZ_max=((size_t)(o2scl::function_to_double(sv[9])*(1.0+1.0e-12)));
-    cout << log_xn << " " << log_xp << " " << A_min << " "
+    cout << "  " << log_xn << " " << log_xp << " " << A_min << " "
 	 << A_max << " " << NmZ_min << " " << NmZ_max << endl;
     guess_provided=true;
     
@@ -4348,7 +4348,7 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
     log_xp=o2scl::function_to_double(sv[5]);
     nuc_Z1=((size_t)(o2scl::function_to_double(sv[6])*(1.0+1.0e-12)));
     nuc_N1=((size_t)(o2scl::function_to_double(sv[7])*(1.0+1.0e-12)));
-    cout << log_xn << " "
+    cout << "  " << log_xn << " "
 	 << log_xp << " " << nuc_Z1 << " " << nuc_N1 << endl;
     guess_provided=true;
     
@@ -4364,12 +4364,12 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
 	log_xp=tg3_log_xp.get(inB,iYe,iT);
 	nuc_Z1=((size_t)(tg3_Z.get(inB,iYe,iT)));
 	nuc_N1=((size_t)(tg3_A.get(inB,iYe,iT)))-nuc_Z1;
-	cout << log_xn << " "
+	cout << "  " << log_xn << " "
 	     << log_xp << " " << nuc_Z1 << " " << nuc_N1 << endl;
 	guess_provided=true;
       } else {
-	cout << "Function point_nuclei(): "
-	     << "Reading guess (log_xn,log_xp,A_min,A_max,NmZ_min,NmZ_max) "
+	cout << "Function point_nuclei():\n"
+	     << "  Reading guess (log_xn,log_xp,A_min,A_max,NmZ_min,NmZ_max) "
 	     << "from current table." << endl;
 	log_xn=tg3_log_xn.get(inB,iYe,iT);
 	log_xp=tg3_log_xp.get(inB,iYe,iT);
@@ -4377,7 +4377,7 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
 	A_max=((int)(tg3_A_max.get(inB,iYe,iT)));
 	NmZ_min=((int)(tg3_NmZ_min.get(inB,iYe,iT)));
 	NmZ_max=((int)(tg3_NmZ_max.get(inB,iYe,iT)));
-	cout << log_xn << " " << log_xp << " " << A_min << " "
+	cout << "  " << log_xn << " " << log_xp << " " << A_min << " "
 	     << A_max << " " << NmZ_min << " " << NmZ_max << endl;
 	guess_provided=true;
       }
@@ -4445,7 +4445,8 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
     if (loaded && inB>0 && inB<n_nB2-1 &&
 	tg3_flag.get(inB-1,iYe,iT)>9.9 &&
 	tg3_flag.get(inB+1,iYe,iT)>9.9) {
-      cout << "Automatically setting ranges." << endl;
+      cout << "Automatically setting ranges for log_xn and log_xp "
+           << "from neighboring points." << endl;
       fd_rand_ranges.resize(4);
       fd_rand_ranges[0]=tg3_log_xn.get(inB-1,iYe,iT);
       fd_rand_ranges[1]=tg3_log_xn.get(inB+1,iYe,iT);
