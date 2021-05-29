@@ -210,6 +210,9 @@ public:
       (when alg_mode is 4)
   */
   int fd_A_max;
+
+  /// Desc
+  bool extend_frdm;
   
   /// The maximum value of \f$ N/Z \f$ or \f$ Z/N \f$ (default 2.25)
   double max_ratio;
@@ -400,6 +403,7 @@ public:
   
   /// \name Other parameter objects
   //@{
+  o2scl::cli::parameter_bool p_extend_frdm;
   o2scl::cli::parameter_bool p_show_all_nuclei;
   o2scl::cli::parameter_int p_fd_A_max;
   o2scl::cli::parameter_bool p_recompute;

@@ -49,6 +49,7 @@ eos_nuclei::eos_nuclei() {
   Ye_grid_spec="70,0.01*(i+1)";
   T_grid_spec="160,0.1*1.046^i";
 
+  extend_frdm=true;
   show_all_nuclei=false;
   recompute=false;
   verify_only=false;
@@ -1485,7 +1486,7 @@ int eos_nuclei::eos_fixed_ZN(double nB, double Ye, double T,
     m95.get_nucleus(nucZ1-1,nucN1,nuc_temp);
     Sprot[5]=-(nuclei[5].be-nuc_temp.be)*hc_mev_fm;
     
-  } else {
+  } else if (extend_frdm) {
     
     frdm.get_nucleus(nucZ1,nucN1,*nuc_heavy);
     frdm.get_nucleus(nucZ1,nucN1-1,nuc_temp);
@@ -1493,6 +1494,11 @@ int eos_nuclei::eos_fixed_ZN(double nB, double Ye, double T,
     frdm.get_nucleus(nucZ1-1,nucN1,nuc_temp);
     Sprot[5]=-(nuclei[5].be-nuc_temp.be)*hc_mev_fm;
 
+  } else {
+
+    O2SCL_ERR("No nucleus mass information available.",
+              o2scl::exc_einval);
+    
   }
   
   // Set spin degeneracy of heavy nucleus
@@ -2173,7 +2179,17 @@ int eos_nuclei::eos_fixed_dist
 	int Z=A-N;
 	if (N>2 && Z>2 && (rnuc_less_rws==false || Z>=nB*Ye*A/n0) &&
 	    N<=max_ratio*Z && Z<=max_ratio*N) {
-	  count++;
+	  if (ame.is_included(Z,N) &&
+	      ame.is_included(Z-1,N) &&
+	      ame.is_included(Z,N-1)) {
+            count++;
+	  } else if (m95.is_included(Z,N) &&
+		     m95.is_included(Z-1,N) &&
+		     m95.is_included(Z,N-1)) {
+            count++;
+	  } else if (extend_frdm) {
+            count++;
+          }
 	}
       }
     }
@@ -2228,24 +2244,18 @@ int eos_nuclei::eos_fixed_dist
       for(int NmZ=NmZ_min;NmZ<=NmZ_max;NmZ+=2) {
 	int N=(A+NmZ)/2;
 	int Z=A-N;
+        
 	if (N>2 && Z>2 && (rnuc_less_rws==false || Z>=nB*Ye*A/n0) &&
 	    N<=max_ratio*Z && Z<=max_ratio*N) {
-
-	  if (index>=count) {
-	    O2SCL_ERR2("Indexing problem in ",
-		       "eos_nuclei::eos_fixed_dist().",o2scl::exc_esanity);
-	  }
-	  
+          
+          bool skip_nucleus=false;
+          
 	  // Obtain heavy nucleus and neutron and proton separation
 	  // energies. Ensuring that all three nuclei are in the same
 	  // mass formula avoids problems with the neutron and
 	  // separation energies at the boundary between the mass
 	  // formulae.
 
-	  if (index>=nuclei.size()) {
-	    O2SCL_ERR("Nuclei size problem point 1.",
-		      o2scl::exc_esanity);
-	  }	    
 	  if (ame.is_included(Z,N) &&
 	      ame.is_included(Z-1,N) &&
 	      ame.is_included(Z,N-1)) {
@@ -2266,7 +2276,7 @@ int eos_nuclei::eos_fixed_dist
 	    m95.get_nucleus(Z-1,N,nuc_temp);
 	    Sprot[index]=-(nuclei[index].be-nuc_temp.be)*hc_mev_fm;
 
-	  } else {
+	  } else if (extend_frdm) {
 	    
 	    frdm.get_nucleus(Z,N,nuclei[index]);
 	    frdm.get_nucleus(Z,N-1,nuc_temp);
@@ -2274,26 +2284,40 @@ int eos_nuclei::eos_fixed_dist
 	    frdm.get_nucleus(Z-1,N,nuc_temp);
 	    Sprot[index]=-(nuclei[index].be-nuc_temp.be)*hc_mev_fm;
 	    
-	  }
-	  
-	  // Set spin degeneracy of heavy nucleus
-	  if (hfb.is_included(Z,N)) {
-	    if (hfb.get_ZN(Z,N).Jexp<99) {
-	      nuclei[index].g=2.0*hfb.get_ZN(Z,N).Jexp+1.0;
-	    } else {
-	      nuclei[index].g=2.0*hfb.get_ZN(Z,N).Jth+1.0;
-	    }
 	  } else {
-	    if (Z%2==0 && N%2==0) {
-	      nuclei[index].g=1.0;
-	      //} else if (Z%2==1 && N%2==1) {
-	      //nuclei[index].g=3.0;
-	    } else {
-	      nuclei[index].g=2.0;
-	    }
-	  }
-	  
-	  index++;
+            
+            skip_nucleus=true;
+            
+          }            
+
+          if (skip_nucleus==false) {
+
+            if (index>=nuclei.size()) {
+              std::cout << "Index: " << index << " nuclei.size(): "
+                        << nuclei.size() << std::endl;
+              O2SCL_ERR2("Indexing problem in ",
+                         "eos_nuclei::eos_fixed_dist().",o2scl::exc_esanity);
+            }
+            
+            // Set spin degeneracy of heavy nucleus
+            if (hfb.is_included(Z,N)) {
+              if (hfb.get_ZN(Z,N).Jexp<99) {
+                nuclei[index].g=2.0*hfb.get_ZN(Z,N).Jexp+1.0;
+              } else {
+                nuclei[index].g=2.0*hfb.get_ZN(Z,N).Jth+1.0;
+              }
+            } else {
+              if (Z%2==0 && N%2==0) {
+                nuclei[index].g=1.0;
+                //} else if (Z%2==1 && N%2==1) {
+                //nuclei[index].g=3.0;
+              } else {
+                nuclei[index].g=2.0;
+              }
+            }
+            
+            index++;
+          }
 	}
       }
     }
@@ -3747,6 +3771,7 @@ void eos_nuclei::write_nuclei(std::string fname) {
 		    nuclei[i].be*hc_mev_fm,Sn,Sp,1,1};
     t.line_of_data(9,line);
   }
+  
   for(int Z=5;Z<=200;Z++) {
     for(int N=5;N<=200;N++) {
       
@@ -3754,6 +3779,7 @@ void eos_nuclei::write_nuclei(std::string fname) {
 	
 	double line[9];
 	nucleus nuc;
+        bool skip_nucleus=false;
 	
 	if (ame.is_included(Z,N) &&
 	    ame.is_included(Z-1,N) &&
@@ -3793,7 +3819,7 @@ void eos_nuclei::write_nuclei(std::string fname) {
 	  line[6]=Sp;
 	  line[7]=3;
 	  
-	} else {
+	} else if (extend_frdm) {
 	  
 	  frdm.get_nucleus(Z,N,nuc);
 	  frdm.get_nucleus(Z,N-1,nuc_temp);
@@ -3810,28 +3836,32 @@ void eos_nuclei::write_nuclei(std::string fname) {
 	  line[6]=Sp;
 	  line[7]=4;
 	  
-	}
-	
-	if (hfb.is_included(Z,N)) {
-	  if (hfb.get_ZN(Z,N).Jexp<99) {
-	    nuc.g=2.0*hfb.get_ZN(Z,N).Jexp+1.0;
-	    line[8]=2;
-	  } else {
-	    nuc.g=2.0*hfb.get_ZN(Z,N).Jth+1.0;
-	    line[8]=3;
-	  }
 	} else {
-	  line[8]=4;
-	  if (Z%2==0 && N%2==0) {
-	    nuc.g=1.0;
-	    //} else if (Z%2==1 && N%2==1) {
-	    //nuc.g=3.0;
-	  } else {
-	    nuc.g=2.0;
-	  }
-	}
+          skip_nucleus=true;
+        }
 
-	t.line_of_data(9,line);
+        if (skip_nucleus==false) {
+          if (hfb.is_included(Z,N)) {
+            if (hfb.get_ZN(Z,N).Jexp<99) {
+              nuc.g=2.0*hfb.get_ZN(Z,N).Jexp+1.0;
+              line[8]=2;
+            } else {
+              nuc.g=2.0*hfb.get_ZN(Z,N).Jth+1.0;
+              line[8]=3;
+            }
+          } else {
+            line[8]=4;
+            if (Z%2==0 && N%2==0) {
+              nuc.g=1.0;
+              //} else if (Z%2==1 && N%2==1) {
+              //nuc.g=3.0;
+            } else {
+              nuc.g=2.0;
+            }
+          }
+          
+          t.line_of_data(9,line);
+        }
       }
     }
   }
@@ -7848,6 +7878,10 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
     "every point (default false). This applies to the point-nuclei "+
     "command and the eos_vary_ZN() function.";
   cl.par_list.insert(make_pair("show_all_nuclei",&p_show_all_nuclei));
+  
+  p_extend_frdm.b=&extend_frdm;
+  p_extend_frdm.help=((string)"");
+  cl.par_list.insert(make_pair("extend_frdm",&p_extend_frdm));
   
   p_fd_A_max.i=&fd_A_max;
   p_fd_A_max.help=((string)"The maximum value of A for the alg_mode=4 ")+
