@@ -7961,7 +7961,8 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
     "divided by 10, the "+
     "100s digit is the number of minimizes, and the 1000s digit "+
     "is the number of random guesses to try divided by 1000. "+
-    "The default is 1111. Other good options are 1319 and 9999.";
+    "The default is 1111. Other good options are 1319, 1919, 1999, "+
+    "and 9999.";
   cl.par_list.insert(make_pair("fixed_dist_alg",&p_fixed_dist_alg));
   
   p_function_verbose.i=&function_verbose;
