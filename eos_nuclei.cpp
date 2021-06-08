@@ -2462,7 +2462,8 @@ int eos_nuclei::eos_fixed_dist
   x1[1]=log_xp;
 
   if (mpi_size==1 && loc_verbose>=2) {
-    cout << "Initial guess: " << x1[0] << " " << x1[1] << endl;
+    cout << "Initial guess (log_xn,log_xp): "
+         << x1[0] << " " << x1[1] << endl;
   }
 
   if ((alg_mode==2 || alg_mode==4) && nB<1.0e-11) {
@@ -2486,7 +2487,7 @@ int eos_nuclei::eos_fixed_dist
       mh_ret=0;
     } else {
       cout << "Verify failed." << endl;
-      cout << "  nB,Ye,T: " << nB << " " << Ye << " "
+      cout << "  nB,Ye,T[MeV]: " << nB << " " << Ye << " "
 	   << T*hc_mev_fm << endl;
       cout << "  y[0],y[1],tol: " << y1[0] << " " << y1[1] << " "
 	   << mh.tol_rel << endl;
@@ -3042,7 +3043,8 @@ int eos_nuclei::eos_fixed_dist
 	     << x1[0] << " " << x1[1] << " " << y1[0] << " "
 	     << y1[1] << endl;
 	cout << "qual_best: " << qual_best << endl;
-	cout << "nB,Ye,T: " << nB << " " << Ye << " " << T << endl;
+	cout << "nB,Ye,T[MeV]: " << nB << " " << Ye << " "
+             << T*hc_mev_fm << endl;
       }
       if (loc_verbose==8) {
 	char ch;
@@ -3065,7 +3067,8 @@ int eos_nuclei::eos_fixed_dist
 	 << "x1[0], x1[1], y1[0], y1[1]:\n  " 
 	 << x1[0] << " " << x1[1] << " " << y1[0] << " "
 	 << y1[1] << endl;
-    cout << "nB,Ye,T: " << nB << " " << Ye << " " << T << endl;
+    cout << "nB,Ye,T[MeV]: " << nB << " " << Ye << " "
+         << T*hc_mev_fm << endl;
   }
 
   // 8/27: log_xn and log_xp are used below, so it's important that
@@ -3385,7 +3388,7 @@ int eos_nuclei::store_point
       vector_out(cout,X,true);
       cout << "  nB_frac_sum,mh_tol_rel: " << nb_frac_sum << " "
 	   << mh_tol_rel << endl;
-      cout << "  nB,Ye,T: " << nB << " " << Ye << " " << T << endl;
+      cout << "  nB,Ye,T[1/fm]: " << nB << " " << Ye << " " << T << endl;
       cout << "  Not storing point." << endl;
       exit(-1);
       return 1;
@@ -4347,7 +4350,7 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
     flag=((int)(tg3_flag.get(inB,iYe,iT)+1.0e-10));
     
     cout << "Found grid point (inB,iYe,iT)=(" << inB << ","
-	 << iYe << "," << iT << ")\n\t(nB,Ye,T)=("
+	 << iYe << "," << iT << ")\n\t(nB,Ye,T[MeV])=("
 	 << nB << "," << Ye << "," << T*hc_mev_fm << "), flag="
 	 << flag << "." << endl;
   }
@@ -4560,7 +4563,7 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
   
   if ((ret==0 || flag==10) && loaded) {
     cout << "Results stored in table:" << endl;
-    cout << "nB,Ye,T: " << nB << " " << Ye << " " << T*hc_mev_fm << endl;
+    cout << "nB,Ye,T[MeV]: " << nB << " " << Ye << " " << T*hc_mev_fm << endl;
     cout << "flag: " << tg3_flag.get(inB,iYe,iT) << endl;
     cout << "log_xn: " << tg3_log_xn.get(inB,iYe,iT) << endl;
     cout << "log_xp: " << tg3_log_xp.get(inB,iYe,iT) << endl;
@@ -7020,7 +7023,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	  double nB=nB_grid2[inB];
 	  double Ye=Ye_grid2[iYe];
 	  double T=T_grid2[iT]/hc_mev_fm;
-	  cout << "  nB,Ye,T: " << nB << " " << Ye << " " << T*hc_mev_fm
+	  cout << "  nB,Ye,T[MeV]: " << nB << " " << Ye << " " << T*hc_mev_fm
 	       << endl;
 	  double log_xn=gtab.get("log_xn",i);
 	  double log_xp=gtab.get("log_xp",i);
@@ -7072,9 +7075,11 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	       A_min,A_max,NmZ_min,NmZ_max,vdet,true,no_nuclei);    
 	  }
 	  if (gt_verbose>1) {
-	    cout << "Point at (nB,Ye,T)=("
+            cout.precision(5);
+	    cout << "Point at (nB,Ye,T[MeV])=("
 		 << nB << "," << Ye << "," << T*hc_mev_fm << "), ret="
 		 << ret << ", " << i << "/" << ntasks << endl;
+            cout.precision(6);
 	  }
 	  if (ret==0) {
 	    
