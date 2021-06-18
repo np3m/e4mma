@@ -6347,6 +6347,8 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 
     bool done=false;
     while (done==false) {
+
+      bool one_success=false;
       
       // -----------------------------------------------------
       // Compute tasks (either w/o MPI or w/MPI on rank 0)
@@ -6848,6 +6850,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	    // If it succeeded, store the results, otherwise, just
 	    // leave the point alone
 	    if (iflag>=10) {
+              one_success=true;
 	      thermo thy;
 	      thy.ed=input_buffers[proc_index][vi["ed"]];
 	      thy.pr=input_buffers[proc_index][vi["pr"]];
@@ -7096,6 +7099,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	  }
 	  if (ret==0) {
 	    
+            one_success=true;
 	    ubvector X;
 	    compute_X(nB,X);
 	    
@@ -7157,6 +7161,14 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	     << " percent done." << endl;
       }
 
+      if (one_success==false) {
+        if (gt_verbose>0) {
+          cout << "Rank " << mpi_rank << " found no successes. Stopping."
+               << endl;
+        }
+        done=true;
+      }
+      
       double elapsed, write_elapsed;
 #ifdef NO_MPI
       elapsed=time(0)-mpi_start_time;
@@ -7172,7 +7184,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	     << elapsed << endl;
 	done=true;
 	
-      } else if (true || write_elapsed>file_update_time) {
+      } else if (write_elapsed>file_update_time) {
 	
 	cout << "Updating file." << endl;
 	write_results(out_file);
