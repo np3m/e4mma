@@ -652,6 +652,10 @@ public:
    */
   int mcarlo_nuclei2(std::vector<std::string> &sv, bool itive_com);
   
+  /** \brief Monte Carlo results in beta equilibrium
+   */
+  int mcarlo_beta(std::vector<std::string> &sv, bool itive_com);
+  
   /// Compute the baryon number fractions and put them in \c X
   void compute_X(double nB, ubvector &X);
   

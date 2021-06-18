@@ -178,7 +178,7 @@ P_LARGE_SL = 470 738 0.5 13.0 100.0 36.0 0.9
 
 # ----------------------------------------------------------------
 
-temp:
+mbt:
 	enn \
 		-set select_cs2_test 0 \
 		-select-model $(P_FIDUCIAL) \
@@ -186,4 +186,4 @@ temp:
 		-set extend_frdm 0 \
 		-set fd_A_max 600 -set max_ratio 7.0 \
 		-load jun_18a.o2 \
-		-mcarlo-nuclei2 0.14 0.1 10.0 temp.o2
+		-mcarlo-beta 0.14 10.0 temp.o2

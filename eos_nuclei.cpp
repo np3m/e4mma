@@ -7749,6 +7749,131 @@ int eos_nuclei::mcarlo_nuclei2(std::vector<std::string> &sv,
 	 << Zbar << " " << Nbar << " " << Zbar+Nbar << " " 
 	 << Zbar/(Zbar+Nbar) << " " << X[5] << endl;
     
+    if (ret2==0) {
+      double line[7]={log_xn,log_xp,Zbar,Nbar,Zbar+Nbar,
+		      Zbar/(Zbar+Nbar),X[5]};
+      tab.line_of_data(7,line);
+    }
+
+    if (j%100==0) {
+      hdf_file hf;
+      hf.open_or_create(sv[4]);
+      hdf_output(hf,tab,"mn2");
+      hf.close();
+    }
+    
+  }
+
+  return 0;
+}
+
+int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv, 
+			       bool itive_com) {
+  
+  /*
+    t.line_of_names(((string)"index S L qmc_a qmc_b qmc_alpha ")+
+    "qmc_beta i_ns i_skyrme phi eos_n0 eos_EoA eos_K "+
+    "chi2_ns ns_fit0 ns_fit1 ns_fit2 ns_fit3 ns_fit4 "+
+    "Fint Eint Sint Pint munfull mupfull log_xn log_xp Z A "+
+    "Amin Amax NmZ_max NmZ_min Xn Xp Xalpha Xd Xt XHe3 XLi4 "+
+    "Xnuclei ns_min_cs2 ns_max_cs2 Lambda_bar_14");
+  */
+
+  double nB=function_to_double(sv[1]);
+  double T=function_to_double(sv[2])/hc_mev_fm;
+  
+  if (loaded==false) {
+    cerr << "Requires EOS guess." << endl;
+    return 2;
+  }
+
+  size_t inB=vector_lookup(n_nB2,nB_grid2,nB);
+  nB=nB_grid2[inB];
+  size_t iT=vector_lookup(n_T2,T_grid2,T*hc_mev_fm);
+  T=T_grid2[iT]/hc_mev_fm;
+
+  table<> tab;
+  tab.line_of_names("log_xn log_xp Z N A ZoA Xnuclei");
+
+  static const int N=1000;
+  for(int j=0;j<N;j++) {
+    std::cout << "j: " << j << endl;
+
+    // Create a random EOS
+    std::vector<std::string> obj;
+    random(obj,false);
+    
+    double log_xn_best=0.0, log_xp_best=0.0;
+    double fr_best=1.0e10;
+    size_t iYe_best=0;
+    double log_xn, log_xp;
+    double Zbar, Nbar;
+      thermo thx;
+      double mun_full, mup_full;
+      bool dist_changed=true;
+      bool no_nuclei=false;
+    
+    for(size_t iYe=0;iYe<n_Ye2;iYe++) {
+      double Ye=Ye_grid2[iYe];
+      
+      if (tg3_flag.get(inB,iYe,iT)<9.9) {
+        cerr << "Point not converged." << endl;
+        return 3;
+      }
+      
+      int A_min=((int)(tg3_A_min.get(inB,iYe,iT)));
+      int A_max=((int)(tg3_A_max.get(inB,iYe,iT)));
+      int NmZ_min=((int)(tg3_NmZ_min.get(inB,iYe,iT)));
+      int NmZ_max=((int)(tg3_NmZ_max.get(inB,iYe,iT)));
+      
+      for(size_t k=0;k<10;k++) {
+        
+        log_xn=tg3_log_xn.get(inB,iYe,iT)+(rng.random()*6.0-3.0);
+        log_xp=tg3_log_xp.get(inB,iYe,iT)+(rng.random()*6.0-3.0);
+        
+        map<string,double> vdet;
+        int ret=eos_vary_dist(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,
+                              thx,mun_full,mup_full,
+                              A_min,A_max,NmZ_min,NmZ_max,vdet,
+                              dist_changed,no_nuclei);
+        cout << "ret,log_xn,log_xp,Z,N,A,Z/A,fr:\n  "
+             << ret << " " << log_xn << " " << log_xp << " "
+             << Zbar << " " << Nbar << " " << Zbar+Nbar << " " 
+             << Zbar/(Zbar+Nbar) << " "
+             << thx.ed-T*thx.en << endl;
+        
+        if (ret==0 && thx.ed-T*thx.en<fr_best) {
+          fr_best=thx.ed-T*thx.en;
+          log_xn_best=log_xn;
+          log_xp_best=log_xp;
+          iYe_best=iYe;
+          cout << "iYe_best: " << iYe << endl;
+        }
+      }
+    }
+    exit(-1);
+    
+    log_xn=log_xn_best;
+    log_xp=log_xp_best;
+    double Ye_best=Ye_grid2[iYe_best];
+    int A_min_best=((int)(tg3_A_min.get(inB,iYe_best,iT)));
+    int A_max_best=((int)(tg3_A_max.get(inB,iYe_best,iT)));
+    int NmZ_min_best=((int)(tg3_NmZ_min.get(inB,iYe_best,iT)));
+    int NmZ_max_best=((int)(tg3_NmZ_max.get(inB,iYe_best,iT)));
+    
+    map<string,double> vdet;
+    int ret2=eos_vary_dist(nB,Ye_best,T,log_xn,log_xp,Zbar,Nbar,
+			   thx,mun_full,mup_full,
+			   A_min_best,A_max_best,NmZ_min_best,
+                           NmZ_max_best,vdet,
+			   dist_changed,no_nuclei);
+    ubvector X;
+    compute_X(nB,X);
+    
+    cout << "AWS: " << ret2 << " " << log_xn << " " << log_xp << " "
+	 << Zbar << " " << Nbar << " " << Zbar+Nbar << " " 
+	 << Zbar/(Zbar+Nbar) << " " << X[5] << endl;
+    
     if (true) {
       
       cout << neutron.mu << endl;
@@ -7757,6 +7882,8 @@ int eos_nuclei::mcarlo_nuclei2(std::vector<std::string> &sv,
       cout << proton.ms << endl;
       cout << neutron.n << endl;
       cout << proton.n << endl;
+
+      cout << sk.t0 << endl;
       
       double u2eos=neutron.mu*hc_mev_fm-pow(neutron.kf*hc_mev_fm,2.0)/
         neutron.ms/hc_mev_fm;
@@ -7790,8 +7917,8 @@ int eos_nuclei::mcarlo_nuclei2(std::vector<std::string> &sv,
 
     if (j%100==0) {
       hdf_file hf;
-      hf.open_or_create(sv[4]);
-      hdf_output(hf,tab,"mn2");
+      hf.open_or_create(sv[3]);
+      hdf_output(hf,tab,"mb");
       hf.close();
     }
     
@@ -7804,7 +7931,7 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
   
   eos::setup_cli(cl);
   
-  static const int nopt=21;
+  static const int nopt=22;
   
   o2scl::comm_option_s options[nopt]=
     {{0,"eos-deriv","compute derivatives",
@@ -7887,6 +8014,10 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
       4,4,"<nB> <Ye> <T> <filename>",
       "",new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::mcarlo_nuclei2),o2scl::cli::comm_option_both},
+     {0,"mcarlo-beta","",
+      3,3,"<nB> <T> <filename>",
+      "",new o2scl::comm_option_mfptr<eos_nuclei>
+      (this,&eos_nuclei::mcarlo_beta),o2scl::cli::comm_option_both},
      {0,"point-nuclei",
       "Compute and/or show EOS results at one (n_B,Y_e,T) point.",
       -1,-1,((string)"<n_B> <Y_e> <T (MeV)> [log(xn) log(xp) Z N] ")+
