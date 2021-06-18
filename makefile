@@ -64,6 +64,36 @@ eos_nuclei: eos.o main.o eos_nuclei.o eos_had_skyrme_ext.o \
 # Version without MPI
 # ----------------------------------------------------------------
 
+zidu/Couplings.o: zidu/Couplings.cpp zidu/Couplings.hpp
+	$(LCXX) $(LCFLAGS) -DNUOPAC_HAS_GSL -o zidu/Couplings.o \
+		-c zidu/Couplings.cpp
+
+zidu/FluidState.o: zidu/FluidState.cpp zidu/FluidState.hpp
+	$(LCXX) $(LCFLAGS) -DNUOPAC_HAS_GSL -o zidu/FluidState.o \
+		-c zidu/FluidState.cpp
+
+zidu/FluidStateReSInt.o: zidu/FluidStateReSInt.cpp
+	$(LCXX) $(LCFLAGS) -DNUOPAC_HAS_GSL -o zidu/FluidStateReSInt.o \
+	-c zidu/FluidStateReSInt.cpp
+
+zidu/FunctionIntegrator.o: zidu/FunctionIntegrator.cpp \
+	zidu/FunctionIntegrator.hpp
+	$(LCXX) $(LCFLAGS) -DNUOPAC_HAS_GSL -o zidu/FunctionIntegrator.o \
+	-c zidu/FunctionIntegrator.cpp
+
+zidu/Polarization.o: zidu/Polarization.cpp zidu/Polarization.hpp
+	$(LCXX) $(LCFLAGS) -DNUOPAC_HAS_GSL -o zidu/Polarization.o \
+		-c zidu/Polarization.cpp
+
+zidu/PolarizationNonRelv2Apr8.o: zidu/PolarizationNonRelv2Apr8.cpp 
+	$(LCXX) $(LCFLAGS) -DNUOPAC_HAS_GSL \
+		-o zidu/PolarizationNonRelv2Apr8.o \
+		-c zidu/PolarizationNonRelv2Apr8.cpp
+
+zidu/jacobi_rule.o: zidu/jacobi_rule.cpp zidu/jacobi_rule.hpp
+	$(LCXX) $(LCFLAGS) -DNUOPAC_HAS_GSL -o zidu/jacobi_rule.o \
+		-c zidu/jacobi_rule.cpp
+
 eos_nompi.o: eos.cpp virial_solver.h eos.h
 	$(LCXX) $(LCFLAGS) -o eos_nompi.o -c eos.cpp
 
@@ -89,9 +119,15 @@ eos_nuclei_nompi: eos_nompi.o main_nompi.o eos_nuclei_nompi.o \
 
 # A shorthand alias for eos_nuclei_nompi
 enn: eos_nompi.o main_nompi.o eos_nuclei_nompi.o \
-		eos_had_skyrme_ext_nompi.o eos_nompi.o 
+		eos_had_skyrme_ext_nompi.o eos_nompi.o \
+		zidu/Couplings.o zidu/FluidStateReSInt.o \
+		zidu/FunctionIntegrator.o zidu/Polarization.o \
+		zidu/PolarizationNonRelv2Apr8.o zidu/jacobi_rule.o 
 	$(LCXX) $(LCFLAGS) -o enn eos_nompi.o main_nompi.o \
-		 eos_nuclei_nompi.o eos_had_skyrme_ext_nompi.o $(LIBS) \
+		zidu/Couplings.o zidu/FluidStateReSInt.o \
+		zidu/FunctionIntegrator.o zidu/Polarization.o \
+		zidu/PolarizationNonRelv2Apr8.o zidu/jacobi_rule.o \
+		eos_nuclei_nompi.o eos_had_skyrme_ext_nompi.o $(LIBS) \
 		-lreadline
 
 eos_nompi: eos_nompi.o main_eos_nompi.o \
@@ -143,14 +179,11 @@ P_LARGE_SL = 470 738 0.5 13.0 100.0 36.0 0.9
 # ----------------------------------------------------------------
 
 temp:
-	cd ~/wcs/eos && enn \
+	enn \
 		-set select_cs2_test 0 \
 		-select-model $(P_FIDUCIAL) \
 		-set a_virial 10 -set b_virial 10 \
 		-set extend_frdm 0 \
 		-set fd_A_max 600 -set max_ratio 7.0 \
-		-load wmp.o2 \
-		-set six_neighbors 0 \
-		-set fixed_dist_alg 1999 \
-		-set function_verbose 11211 \
-		-generate-table x.o2 
+		-load jun_18a.o2 \
+		-mcarlo-nuclei2 0.14 0.1 10.0 temp.o2

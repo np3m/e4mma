@@ -19,6 +19,10 @@
   -------------------------------------------------------------------
 */
 #include "eos_nuclei.h"
+#include "zidu/Tensor.hpp"
+#include "zidu/Polarization.hpp"
+#include "zidu/PolarizationNonRel.hpp"
+#include "zidu/Constants.hpp"
 
 #include <o2scl/root_brent_gsl.h>
 #include <o2scl/classical.h>
@@ -32,6 +36,7 @@ using namespace std;
 using namespace o2scl;
 using namespace o2scl_const;
 using namespace o2scl_hdf;
+using namespace nuopac;
 
 eos_nuclei::eos_nuclei() {
 
@@ -7725,7 +7730,7 @@ int eos_nuclei::mcarlo_nuclei2(std::vector<std::string> &sv,
       if (ret==0 && thx.ed-T*thx.en<fr_best) {
 	fr_best=thx.ed-T*thx.en;
 	log_xn_best=log_xn;
-	log_xp_best=log_xp;
+	log_xp_best=log_xp;        
       }
     }
 
@@ -7743,7 +7748,40 @@ int eos_nuclei::mcarlo_nuclei2(std::vector<std::string> &sv,
     cout << "AWS: " << ret2 << " " << log_xn << " " << log_xp << " "
 	 << Zbar << " " << Nbar << " " << Zbar+Nbar << " " 
 	 << Zbar/(Zbar+Nbar) << " " << X[5] << endl;
-
+    
+    if (true) {
+      
+      cout << neutron.mu << endl;
+      cout << proton.mu << endl;
+      cout << neutron.ms << endl;
+      cout << proton.ms << endl;
+      cout << neutron.n << endl;
+      cout << proton.n << endl;
+      
+      double u2eos=neutron.mu*hc_mev_fm-pow(neutron.kf*hc_mev_fm,2.0)/
+        neutron.ms/hc_mev_fm;
+      double u4eos=proton.mu*hc_mev_fm-pow(proton.kf*hc_mev_fm,2.0)/
+        proton.ms/hc_mev_fm;
+      FluidState betaEoS;
+      betaEoS=FluidState::StateFromDensities
+        (T*hc_mev_fm,neutron.ms*hc_mev_fm,proton.ms*hc_mev_fm,
+         neutron.n*pow(hc_mev_fm,3.0),proton.n*pow(hc_mev_fm,3.0),
+         u2eos,u4eos,electron.m*hc_mev_fm,electron.n*pow(hc_mev_fm,3.0));
+      
+      WeakCouplings nscat=WeakCouplings::NeutronScattering();
+      nscat.F2=0.0;
+      
+      //turn off pauli blocking for NC
+      PolarizationNonRel pol(betaEoS, nscat, false, false, false);
+      
+      // Incoming neutrino energy
+      double E1=12.0;
+      double full=pol.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
+      
+      cout << "full: " << full << endl;
+      exit(-1);
+    }
+    
     if (ret2==0) {
       double line[7]={log_xn,log_xp,Zbar,Nbar,Zbar+Nbar,
 		      Zbar/(Zbar+Nbar),X[5]};
