@@ -142,3 +142,15 @@ P_LARGE_SL = 470 738 0.5 13.0 100.0 36.0 0.9
 
 # ----------------------------------------------------------------
 
+temp:
+	cd ~/wcs/eos && enn \
+		-set select_cs2_test 0 \
+		-select-model $(P_FIDUCIAL) \
+		-set a_virial 10 -set b_virial 10 \
+		-set extend_frdm 0 \
+		-set fd_A_max 600 -set max_ratio 7.0 \
+		-load wmp.o2 \
+		-set six_neighbors 0 \
+		-set fixed_dist_alg 1999 \
+		-set function_verbose 11211 \
+		-generate-table x.o2 

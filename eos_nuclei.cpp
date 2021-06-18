@@ -2515,9 +2515,12 @@ int eos_nuclei::eos_fixed_dist
 	qual_best=fabs(y1[0])+fabs(y1[1]);
       }
       if (loc_verbose>=2 && mpi_size==1) {
-	cout << "Rank " << mpi_rank << " finished solve " << k+1
-	     << "/" << n_solves << " " << x1[0] << " " << x1[1] << " "
+	cout << "Rank " << mpi_rank << " solve " << k+1
+	     << "/" << n_solves << " x1[0],x1[1],qual: ";
+        cout.precision(5);
+        cout << x1[0] << " " << x1[1] << " "
 	     << qual_best << endl;
+        cout.precision(6);
       }
       if (mh_ret==0 && mpi_size==1) {
 	cout << "Rank " << mpi_rank << " finished after solve " << k
@@ -2627,8 +2630,11 @@ int eos_nuclei::eos_fixed_dist
       }
 
       if (loc_verbose>=2 && mpi_size==1) {
-	cout << "Rank " << mpi_rank << " finished bracket " << k+1
-	     << "/" << n_brackets << " " << x1[0] << " " << x1[1] << endl;
+	cout << "Rank " << mpi_rank << " bracket " << k+1
+	     << "/" << n_brackets << " x1[0],x1[1]: ";
+        cout.precision(5);
+        cout << x1[0] << " " << x1[1] << endl;
+        cout.precision(6);
       }
       
       if (bracketing_done==false) {
@@ -2771,9 +2777,12 @@ int eos_nuclei::eos_fixed_dist
 	}
 
 	if (loc_verbose>=2 && mpi_size==1) {
-	  cout << "Rank " << mpi_rank << " finished minimization " << jk+1
-	       << "/" << n_minimizes << " " << mret << " " << qual_best
+	  cout << "Rank " << mpi_rank << " min " << jk+1
+	       << "/" << n_minimizes << " ret,qual,x1[0],x1[1]: ";
+          cout.precision(5);
+          cout << mret << " " << qual_best
 	       << " " << x1[0] << " " << x1[1] << endl;
+          cout.precision(6);
 	}
 	
       }
@@ -2975,8 +2984,9 @@ int eos_nuclei::eos_fixed_dist
       if (ranges[3]>0.0) ranges[3]=0.0;
       
       if (mpi_size==1 && loc_verbose>1) {
-	cout << "x1,ranges: " << x1[0] << " " << x1[1] << " "
-	     << ranges[0] << " " << ranges[1] << " "
+	cout << "x1,ranges: ";
+        cout << x1[0] << " " << x1[1] << " "
+	     << ranges[0] << " " << ranges[1] << "\n  "
 	     << ranges[2] << " " << ranges[3] << endl;
       }
       
@@ -3002,9 +3012,12 @@ int eos_nuclei::eos_fixed_dist
 	}
 	
 	if (loc_verbose>=2 && mpi_size==1 && kk%100==99) {
-	  cout << "Rank " << mpi_rank << " finished random solve " << kk+1
-	       << "/" << n_randoms << " " << x1[0] << " " << x1[1] << " "
+	  cout << "Rank " << mpi_rank << " solve " << kk+1
+	       << "/" << n_randoms << " x1[0],x1[1],qual: ";
+          cout.precision(4);
+          cout << x1[0] << " " << x1[1] << " "
 	       << qual_best << endl;
+          cout.precision(6);
 	}
 	if (mh_ret==0 && mpi_size==1) {
 	  cout << "Rank " << mpi_rank << " finished after "
@@ -3042,8 +3055,8 @@ int eos_nuclei::eos_fixed_dist
 	     << "x1[0], x1[1], y1[0], y1[1]:\n  " 
 	     << x1[0] << " " << x1[1] << " " << y1[0] << " "
 	     << y1[1] << endl;
-	cout << "qual_best: " << qual_best << endl;
-	cout << "nB,Ye,T[MeV]: " << nB << " " << Ye << " "
+	cout << "  qual_best: " << qual_best << endl;
+	cout << "  nB,Ye,T[MeV]: " << nB << " " << Ye << " "
              << T*hc_mev_fm << endl;
       }
       if (loc_verbose==8) {
@@ -3422,7 +3435,7 @@ int eos_nuclei::store_point
   tg3_Sint.set(i_nB,i_Ye,i_T,th.en/nB);
 
   if (loc_verbose>1) {
-    cout << "store_point() output:\n  nB, Ye, T (MeV): "
+    cout << "store_point() output:\n  nB, Ye, T [MeV]: "
 	 << nB << " " << Ye << " " << T*hc_mev_fm << endl;
     cout << "  log_xn, log_xp, Z, A: "
 	 << log_xn << " " << log_xp << " " << Zbar << " "
@@ -6334,6 +6347,8 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 
     bool done=false;
     while (done==false) {
+
+      bool one_success=false;
       
       // -----------------------------------------------------
       // Compute tasks (either w/o MPI or w/MPI on rank 0)
@@ -6835,6 +6850,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	    // If it succeeded, store the results, otherwise, just
 	    // leave the point alone
 	    if (iflag>=10) {
+              one_success=true;
 	      thermo thy;
 	      thy.ed=input_buffers[proc_index][vi["ed"]];
 	      thy.pr=input_buffers[proc_index][vi["pr"]];
@@ -7083,6 +7099,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	  }
 	  if (ret==0) {
 	    
+            one_success=true;
 	    ubvector X;
 	    compute_X(nB,X);
 	    
@@ -7144,6 +7161,14 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	     << " percent done." << endl;
       }
 
+      if (one_success==false) {
+        if (gt_verbose>0) {
+          cout << "Rank " << mpi_rank << " found no successes. Stopping."
+               << endl;
+        }
+        done=true;
+      }
+      
       double elapsed, write_elapsed;
 #ifdef NO_MPI
       elapsed=time(0)-mpi_start_time;
@@ -7159,7 +7184,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	     << elapsed << endl;
 	done=true;
 	
-      } else if (true || write_elapsed>file_update_time) {
+      } else if (write_elapsed>file_update_time) {
 	
 	cout << "Updating file." << endl;
 	write_results(out_file);
@@ -7291,7 +7316,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 
 	if (gt_verbose>1) {
 	  cout << "Rank " << mpi_rank
-	       << " computing point at nB,Ye,T(MeV): " << nB << " " 
+	       << " computing point at nB,Ye,T[MeV]: " << nB << " " 
 	       << Ye << " " << T*hc_mev_fm << endl;
 	}
 	
@@ -7314,7 +7339,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	  cout.precision(4);
 	  if (ret==0) {
 	    cout << "Rank " << mpi_rank
-		 << " done. nB,Ye,T(MeV),F(MeV): " << nB << " " 
+		 << " done. nB,Ye,T[MeV],F[MeV]: " << nB << " " 
 		 << Ye << " " << T*hc_mev_fm << " "
 		 << (thx.ed-thx.en*T)/nB*hc_mev_fm << endl;
 	    cout << "Rank " << mpi_rank
@@ -7331,7 +7356,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	    }
 	  } else {
 	    cout << "Rank " << mpi_rank
-		 << " failed. nB,Ye,T(MeV),ret: " << nB << " " 
+		 << " failed. nB,Ye,T[MeV],ret: " << nB << " " 
 		 << Ye << " " << T*hc_mev_fm << " "
 		 << ret << endl;
 	  }
