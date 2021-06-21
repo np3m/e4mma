@@ -49,7 +49,13 @@ namespace nuopac {
 /// has been fixed.
 ///
 class PolarizationNonRel : public Polarization {
+
+protected:
+
+  double xt0, xt1, xt2, xt3, xx0, xx1, xx2, xx3, xepsilon;
+
 public:
+
   PolarizationNonRel(FluidState stNR, WeakCouplings wc = WeakCouplings(), 
      bool antiNeutrinoNR = false, bool doReddyNR = false, bool doBlockNR = false) 
       : Polarization(stNR, wc, antiNeutrinoNR, doReddyNR, doBlockNR) {} 
@@ -63,6 +69,27 @@ public:
   double GetRePIp(  double q0, double q) const;
   void PrintGetImPI2(  double q0, double q) const;
   double gamma0(double q0, double q) const;
+
+  void set_skyrme(double xt0_,
+                  double xt1_,
+                  double xt2_,
+                  double xt3_,
+                  double xx0_,
+                  double xx1_,
+                  double xx2_,
+                  double xx3_, double xepsilon_) {
+    xt0=xt0_;
+    xt1=xt1_;
+    xt2=xt2_;
+    xt3=xt3_;
+    xx0=xx0_;
+    xx1=xx1_;
+    xx2=xx2_;
+    xx3=xx3_;
+    xepsilon=xepsilon_;
+    return;
+  }
+  
 protected:
   void SetPolarizations(double q0, double q, 
       Tensor<double>* piVV, 

@@ -77,8 +77,8 @@ using namespace nuopac;
 
 Polarization::Polarization(FluidState stPol, WeakCouplings wc, bool antiNeutrinoPol, 
     bool doReddyPol, bool doBlockPol, int NAngularPoints, int NQ0Points) 
-    : coup(wc), st(stPol), antiNeutrino(antiNeutrinoPol), doReddy(doReddyPol), 
-    doBlock(doBlockPol), doCurrentConservation(false), mG2(2.0), 
+  : coup(wc), st(stPol), antiNeutrino(antiNeutrinoPol), doReddy(doReddyPol), 
+    doBlock(doBlockPol), doCurrentConservation(false), mG2(2.0),
     NPGJ(NAngularPoints), NNPGL(NQ0Points),
     xx(NPGJ), ww(NPGJ), xl(NPGJ), wl(NPGJ), xgl(NNPGL), wgl(NNPGL) {
   cgqf(NPGJ, 1,  0.0, 0.0, -1.0, 1.0, xl.data(), wl.data()); 

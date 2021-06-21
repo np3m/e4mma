@@ -569,6 +569,18 @@ void PolarizationNonRel::SetPolarizations(double q0, double q,
        x2= 2.717*1.0E-02;
        x3= 1.3611*1.0E-01;
 
+       if (true) {
+         epsilon=xepsilon;
+         t0=xt0;
+         t1=xt1;
+         t2=xt2;
+         t3=xt3;
+         t0=xt0;
+         t1=xt1;
+         t2=xt2;
+         t3=xt3;
+       }
+
      //ft1
      /*  epsilon= 2.2834001699*1.0E-01;
        t0 = -2.2233370185*1.0E+03;

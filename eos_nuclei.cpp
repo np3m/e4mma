@@ -7996,11 +7996,21 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
          neutron.n*pow(hc_mev_fm,3.0),proton.n*pow(hc_mev_fm,3.0),
          u2eos,u4eos,electron.m*hc_mev_fm,electron.n*pow(hc_mev_fm,3.0));
       
-      WeakCouplings nscat=WeakCouplings::NeutronScattering();
+      //WeakCouplings nscat=WeakCouplings::NeutronScattering();
+      WeakCouplings nscat=WeakCouplings::NuCapture();
       nscat.F2=0.0;
       
       //turn off pauli blocking for NC
+      //Polarization(FluidState st, WeakCouplings wc = WeakCouplings(), 
+      //bool antiNeutrino = false, bool doReddy = false, bool doBlock = false,
+      //int NAngularPoints = 64, int NQ0Points = 256);
+      
       PolarizationNonRel pol(betaEoS, nscat, false, false, false);
+
+      skyrme_load(sk,"NRAPR");
+      pol.set_skyrme(sk.t0*hc_mev_fm,sk.t1*hc_mev_fm,
+                     sk.t2*hc_mev_fm,sk.t3*hc_mev_fm,
+                     sk.x0,sk.x1,sk.x2,sk.x3,sk.alpha);
       
       // Incoming neutrino energy
       double E1=12.0;

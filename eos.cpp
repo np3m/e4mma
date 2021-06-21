@@ -1194,7 +1194,7 @@ double eos::free_energy_density_detail
     tx.line_of_names("nb ed mu");
     for(nb=0.08;nb<2.0;nb+=0.01) {
       new_ns_eos(nb,n,e_ns,densdnn);
-      double line[3]={nb,e_ns,densdnn};
+      vector<double> line={nb,e_ns,densdnn};
       tx.line_of_data(3,line);
     }
 
@@ -2984,7 +2984,7 @@ int eos::vir_comp(std::vector<std::string> &sv, bool itive_com) {
 	double F_vir=free_energy_density_virial(neutron,proton,T,th2)/
 	  nb*hc_mev_fm;
 	double zn=exp(neutron.mu/T);
-	double line2[3]={log10(nb),zn,F_vir};
+	vector<double> line2={log10(nb),zn,F_vir};
 	t2.line_of_data(3,line2);
       }
     }

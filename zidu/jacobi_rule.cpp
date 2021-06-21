@@ -46,11 +46,11 @@ using namespace std;
 //void timestamp ( );
 
 /*
-//****************************************************************************80
+/ ****************************************************************************80
 
 int main ( int argc, char *argv[] )
 
-//****************************************************************************80
+/ ****************************************************************************80
 //
 //  Purpose:
 //
@@ -502,7 +502,7 @@ double class_matrix ( int kind, int m, double alpha, double beta, double aj[],
   double pi = 3.14159265358979323846264338327950;
   double temp;
   double temp2;
-  double zemu;
+  double zemu=0.0;
 
   temp = r8_epsilon ( );
 
@@ -1232,14 +1232,14 @@ void scqf ( int nt, double t[], int mlt[], double wts[], int nwts, int ndx[],
 //    Input, double A, B, the interval endpoints.
 //
 {
-  double al;
-  double be;
+  double al=0.0;
+  double be=0.0;
   int i;
   int k;
   int l;
   double p;
-  double shft;
-  double slp;
+  double shft=0.0;
+  double slp=0.0;
   double temp;
   double tmp;
 
