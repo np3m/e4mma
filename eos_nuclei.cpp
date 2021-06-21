@@ -61,6 +61,7 @@ eos_nuclei::eos_nuclei() {
   edge_list="";
   six_neighbors=0;
   propagate_points=true;
+  survey_eqs=false;
   
   mh.ntrial=10000;
   mh.err_nonconv=false;
@@ -2814,160 +2815,6 @@ int eos_nuclei::eos_fixed_dist
     }
     
     // ---------------------------------------------------------------
-    // Survey the solution space
-
-    if (false) {
-      table3d surv;
-      uniform_grid_log_end<double> ug(1.0e-8,0.01,99);
-      surv.set_xy("dx",ug,"dy",ug);
-      surv.line_of_names("pp1 pp2 pps ppret pm1 pm2 pms pmret");
-      surv.line_of_names("mp1 mp2 mps mpret mm1 mm2 mms mmret");
-      ubvector x2(2);
-      for(size_t sj=0;sj<surv.get_nx();sj++) {
-	for(size_t suk=0;suk<surv.get_ny();suk++) {
-	  x2[0]=x1[0]+surv.get_grid_x(sj);
-	  x2[1]=x1[1]+surv.get_grid_y(suk);
-	  int siret=sn_func(2,x2,y1);
-	  cout << "Survey: " << sj << " " << suk << " ";
-	  cout << siret << " " << y1[0] << " " << y1[1] << " ";
-	  if (siret==0) {
-	    surv.set(sj,suk,"pp1",y1[0]);
-	    surv.set(sj,suk,"pp2",y1[1]);
-	    surv.set(sj,suk,"pps",fabs(y1[0])+fabs(y1[1]));
-	  } else {
-	    surv.set(sj,suk,"pp1",0.0);
-	    surv.set(sj,suk,"pp2",0.0);
-	    surv.set(sj,suk,"pps",0.0);
-	  }
-	  surv.set(sj,suk,"ppret",siret);
-	  x2[0]=x1[0]+surv.get_grid_x(sj);
-	  x2[1]=x1[1]-surv.get_grid_y(suk);
-	  siret=sn_func(2,x2,y1);
-	  cout << siret << " " << y1[0] << " " << y1[1] << " ";
-	  if (siret==0) {
-	    surv.set(sj,suk,"pm1",y1[0]);
-	    surv.set(sj,suk,"pm2",y1[1]);
-	    surv.set(sj,suk,"pms",fabs(y1[0])+fabs(y1[1]));
-	  } else {
-	    surv.set(sj,suk,"pm1",0.0);
-	    surv.set(sj,suk,"pm2",0.0);
-	    surv.set(sj,suk,"pms",0.0);
-	  }
-	  surv.set(sj,suk,"pmret",siret);
-	  x2[0]=x1[0]-surv.get_grid_x(sj);
-	  x2[1]=x1[1]+surv.get_grid_y(suk);
-	  siret=sn_func(2,x2,y1);
-	  cout << siret << " " << y1[0] << " " << y1[1] << " ";
-	  if (siret==0) {
-	    surv.set(sj,suk,"mp1",y1[0]);
-	    surv.set(sj,suk,"mp2",y1[1]);
-	    surv.set(sj,suk,"mps",fabs(y1[0])+fabs(y1[1]));
-	  } else {
-	    surv.set(sj,suk,"mp1",0.0);
-	    surv.set(sj,suk,"mp2",0.0);
-	    surv.set(sj,suk,"mps",0.0);
-	  }
-	  surv.set(sj,suk,"mpret",siret);
-	  x2[0]=x1[0]-surv.get_grid_x(sj);
-	  x2[1]=x1[1]-surv.get_grid_y(suk);
-	  siret=sn_func(2,x2,y1);
-	  cout << siret << " " << y1[0] << " " << y1[1] << endl;
-	  if (siret==0) {
-	    surv.set(sj,suk,"mm1",y1[0]);
-	    surv.set(sj,suk,"mm2",y1[1]);
-	    surv.set(sj,suk,"mms",fabs(y1[0])+fabs(y1[1]));
-	  } else {
-	    surv.set(sj,suk,"mm1",0.0);
-	    surv.set(sj,suk,"mm2",0.0);
-	    surv.set(sj,suk,"mms",0.0);
-	  }
-	  surv.set(sj,suk,"mmret",siret);
-	}
-      }
-      double pps_max=matrix_max_value<ubmatrix,double>
-	(surv.get_slice("pps"));
-      for(size_t sj=0;sj<surv.get_nx();sj++) {
-	for(size_t suk=0;suk<surv.get_ny();suk++) {
-	  if (fabs(surv.get(sj,suk,"ppret"))>1.0e-4) {
-	    surv.set(sj,suk,"pps",pps_max);
-	  }
-	  if (surv.get(sj,suk,"pps")>1.0) {
-	    surv.set(sj,suk,"pps",1.0);
-	  }
-	}
-      }
-      double pms_max=matrix_max_value<ubmatrix,double>
-	(surv.get_slice("pms"));
-      for(size_t sj=0;sj<surv.get_nx();sj++) {
-	for(size_t suk=0;suk<surv.get_ny();suk++) {
-	  if (fabs(surv.get(sj,suk,"pmret"))>1.0e-4) {
-	    surv.set(sj,suk,"pms",pms_max);
-	  }
-	  if (surv.get(sj,suk,"pms")>1.0) {
-	    surv.set(sj,suk,"pms",1.0);
-	  }
-	}
-      }
-      double mps_max=matrix_max_value<ubmatrix,double>
-	(surv.get_slice("mps"));
-      for(size_t sj=0;sj<surv.get_nx();sj++) {
-	for(size_t suk=0;suk<surv.get_ny();suk++) {
-	  if (fabs(surv.get(sj,suk,"mpret"))>1.0e-4) {
-	    surv.set(sj,suk,"mps",mps_max);
-	  }
-	  if (surv.get(sj,suk,"mps")>1.0) {
-	    surv.set(sj,suk,"mps",1.0);
-	  }
-	}
-      }
-      double mms_max=matrix_max_value<ubmatrix,double>
-	(surv.get_slice("mms"));
-      for(size_t sj=0;sj<surv.get_nx();sj++) {
-	for(size_t suk=0;suk<surv.get_ny();suk++) {
-	  if (fabs(surv.get(sj,suk,"mmret"))>1.0e-4) {
-	    surv.set(sj,suk,"mms",mms_max);
-	  }
-	  if (surv.get(sj,suk,"mms")>1.0) {
-	    surv.set(sj,suk,"mms",1.0);
-	  }
-	}
-      }
-      cout << pps_max << " " << pms_max << " " << mps_max << " "
-	   << mms_max << endl;
-      double val;
-      size_t suoi, suoj;
-      matrix_min_index<ubmatrix,double>(surv.get_slice("pps"),
-					suoi,suoj,val);
-      cout << val << " " << surv.get_grid_x(suoi) << " "
-	   << surv.get_grid_y(suoj) << " " 
-	   << x1[0]+surv.get_grid_x(suoi) << " "
-	   << x1[1]+surv.get_grid_y(suoj) << endl;
-      matrix_min_index<ubmatrix,double>(surv.get_slice("pms"),
-					suoi,suoj,val);
-      cout << val << " " << surv.get_grid_x(suoi) << " "
-	   << surv.get_grid_y(suoj) << " " 
-	   << x1[0]+surv.get_grid_x(suoi) << " "
-	   << x1[1]-surv.get_grid_y(suoj) << endl;
-      matrix_min_index<ubmatrix,double>(surv.get_slice("mps"),
-					suoi,suoj,val);
-      cout << val << " " << surv.get_grid_x(suoi) << " "
-	   << surv.get_grid_y(suoj) << " " 
-	   << x1[0]-surv.get_grid_x(suoi) << " "
-	   << x1[1]+surv.get_grid_y(suoj) << endl;
-      matrix_min_index<ubmatrix,double>(surv.get_slice("mms"),
-					suoi,suoj,val);
-      cout << val << " " << surv.get_grid_x(suoi) << " "
-	   << surv.get_grid_y(suoj) << " " 
-	   << x1[0]-surv.get_grid_x(suoi) << " "
-	   << x1[1]-surv.get_grid_y(suoj) << endl;
-      hdf_file hf;
-      hf.open_or_create("survey.o2");
-      hdf_output(hf,(const table3d &)surv,"survey");
-      hf.close();
-      exit(-1);
-    }
-    
-    // ---------------------------------------------------------------
     // Set up the solution ranges
     
     if (mh_ret!=0) {
@@ -3054,6 +2901,246 @@ int eos_nuclei::eos_fixed_dist
       }
     }
 
+    // ---------------------------------------------------------------
+    // Survey the solution space
+
+    if (survey_eqs) {
+
+      static const size_t surv_N=100;
+      
+      vector<double> g_forward, g_backward;
+      for(double xt=1.0e-8;xt<0.01001;xt*=pow(1.0e6,1.0/((double)surv_N-1))) {
+        g_forward.push_back(xt);
+        g_backward.push_back(xt);
+      }
+      vector_reverse<vector<double>,double>(surv_N,g_backward);
+      
+      // Divide the space into four quadrants, ++, +-, -+, and --
+      table3d surv_pp;
+      surv_pp.set_xy("dx",surv_N,g_forward,"dy",surv_N,g_forward);
+      surv_pp.line_of_names("e1 e2 s ret");
+      table3d surv_pm;
+      surv_pm.set_xy("dx",surv_N,g_forward,"dy",surv_N,g_backward);
+      surv_pm.line_of_names("e1 e2 s ret");
+      table3d surv_mm;
+      surv_mm.set_xy("dx",surv_N,g_backward,"dy",surv_N,g_backward);
+      surv_mm.line_of_names("e1 e2 s ret");
+      table3d surv_mp;
+      surv_mp.set_xy("dx",surv_N,g_backward,"dy",surv_N,g_forward);
+      surv_mp.line_of_names("e1 e2 s ret");
+      
+      ubvector x2(2);
+      
+      for(size_t sj=0;sj<surv_N;sj++) {
+        cout << sj << "/" << surv_N << endl;
+	for(size_t suk=0;suk<surv_N;suk++) {
+
+          // Handle the ++ quadrant
+	  x2[0]=x1[0]+surv_pp.get_grid_x(sj);
+	  x2[1]=x1[1]+surv_pp.get_grid_y(suk);
+	  int siret=sn_func(2,x2,y1);
+          
+	  //cout << "Survey: " << sj << " " << suk << " ";
+	  //cout << siret << " " << y1[0] << " " << y1[1] << " ";
+          
+	  if (siret==0) {
+	    surv_pp.set(sj,suk,"e1",y1[0]);
+	    surv_pp.set(sj,suk,"e2",y1[1]);
+	    surv_pp.set(sj,suk,"s",fabs(y1[0])+fabs(y1[1]));
+	  } else {
+	    surv_pp.set(sj,suk,"e1",0.0);
+	    surv_pp.set(sj,suk,"e2",0.0);
+	    surv_pp.set(sj,suk,"s",0.0);
+	  }
+	  surv_pp.set(sj,suk,"ret",siret);
+
+          // Handle the +- quadrant
+	  x2[0]=x1[0]+surv_pm.get_grid_x(sj);
+	  x2[1]=x1[1]-surv_pm.get_grid_y(suk);
+	  siret=sn_func(2,x2,y1);
+          
+	  //cout << siret << " " << y1[0] << " " << y1[1] << " ";
+          
+	  if (siret==0) {
+	    surv_pm.set(sj,suk,"e1",y1[0]);
+	    surv_pm.set(sj,suk,"e2",y1[1]);
+	    surv_pm.set(sj,suk,"s",fabs(y1[0])+fabs(y1[1]));
+	  } else {
+	    surv_pm.set(sj,suk,"e1",0.0);
+	    surv_pm.set(sj,suk,"e2",0.0);
+	    surv_pm.set(sj,suk,"s",0.0);
+	  }
+	  surv_pm.set(sj,suk,"ret",siret);
+
+          // Handle the -+ quadrant
+          
+	  x2[0]=x1[0]-surv_mp.get_grid_x(sj);
+	  x2[1]=x1[1]+surv_mp.get_grid_y(suk);
+	  siret=sn_func(2,x2,y1);
+          
+	  //cout << siret << " " << y1[0] << " " << y1[1] << " ";
+          
+	  if (siret==0) {
+	    surv_mp.set(sj,suk,"e1",y1[0]);
+	    surv_mp.set(sj,suk,"e2",y1[1]);
+	    surv_mp.set(sj,suk,"s",fabs(y1[0])+fabs(y1[1]));
+	  } else {
+	    surv_mp.set(sj,suk,"e1",0.0);
+	    surv_mp.set(sj,suk,"e2",0.0);
+	    surv_mp.set(sj,suk,"s",0.0);
+	  }
+	  surv_mp.set(sj,suk,"ret",siret);
+
+          // Handle the -- quadrant
+	  x2[0]=x1[0]-surv_mm.get_grid_x(sj);
+	  x2[1]=x1[1]-surv_mm.get_grid_y(suk);
+	  siret=sn_func(2,x2,y1);
+	  //cout << siret << " " << y1[0] << " " << y1[1] << endl;
+	  if (siret==0) {
+	    surv_mm.set(sj,suk,"e1",y1[0]);
+	    surv_mm.set(sj,suk,"e2",y1[1]);
+	    surv_mm.set(sj,suk,"s",fabs(y1[0])+fabs(y1[1]));
+	  } else {
+	    surv_mm.set(sj,suk,"e1",0.0);
+	    surv_mm.set(sj,suk,"e2",0.0);
+	    surv_mm.set(sj,suk,"s",0.0);
+	  }
+	  surv_mm.set(sj,suk,"ret",siret);
+	}
+      }
+      cout << endl;
+
+      // Compute the maximum value of the solution quality in each
+      // quadrant. If the return value is non-zero, Set the solution
+      // quality to the maximum value. Also, if any value is larger
+      // than 1, then set it equal to 1. 
+      
+      double pps_max=matrix_max_value<ubmatrix,double>
+	(surv_pp.get_slice("s"));
+      double pps_min=matrix_min_value<ubmatrix,double>
+	(surv_pp.get_slice("s"));
+      for(size_t sj=0;sj<surv_N;sj++) {
+	for(size_t suk=0;suk<surv_N;suk++) {
+	  if (fabs(surv_pp.get(sj,suk,"ret"))>1.0e-4) {
+	    surv_pp.set(sj,suk,"s",pps_max);
+	  }
+	  if (surv_pp.get(sj,suk,"s")>1.0) {
+	    surv_pp.set(sj,suk,"s",1.0);
+	  }
+	}
+      }
+      double pms_max=matrix_max_value<ubmatrix,double>
+	(surv_pm.get_slice("s"));
+      double pms_min=matrix_min_value<ubmatrix,double>
+	(surv_pm.get_slice("s"));
+      for(size_t sj=0;sj<surv_N;sj++) {
+	for(size_t suk=0;suk<surv_N;suk++) {
+	  if (fabs(surv_pm.get(sj,suk,"ret"))>1.0e-4) {
+	    surv_pm.set(sj,suk,"s",pms_max);
+	  }
+	  if (surv_pm.get(sj,suk,"s")>1.0) {
+	    surv_pm.set(sj,suk,"s",1.0);
+	  }
+	}
+      }
+      double mps_max=matrix_max_value<ubmatrix,double>
+	(surv_mp.get_slice("s"));
+      double mps_min=matrix_min_value<ubmatrix,double>
+	(surv_mp.get_slice("s"));
+      for(size_t sj=0;sj<surv_N;sj++) {
+	for(size_t suk=0;suk<surv_N;suk++) {
+	  if (fabs(surv_mp.get(sj,suk,"ret"))>1.0e-4) {
+	    surv_mp.set(sj,suk,"s",mps_max);
+	  }
+	  if (surv_mp.get(sj,suk,"s")>1.0) {
+	    surv_mp.set(sj,suk,"s",1.0);
+	  }
+	}
+      }
+      double mms_max=matrix_max_value<ubmatrix,double>
+	(surv_mm.get_slice("s"));
+      double mms_min=matrix_min_value<ubmatrix,double>
+	(surv_mm.get_slice("s"));
+      for(size_t sj=0;sj<surv_N;sj++) {
+	for(size_t suk=0;suk<surv_N;suk++) {
+	  if (fabs(surv_mm.get(sj,suk,"ret"))>1.0e-4) {
+	    surv_mm.set(sj,suk,"s",mms_max);
+	  }
+	  if (surv_mm.get(sj,suk,"s")>1.0) {
+	    surv_mm.set(sj,suk,"s",1.0);
+	  }
+	}
+      }
+
+      double min_min=1.0, min_x, min_y;
+      
+      // Compute the optimal point in each quadrant
+      cout.setf(ios::showpos);
+      cout.precision(10);
+      double val;
+      size_t suoi, suoj;
+      matrix_min_index<ubmatrix,double>(surv_pp.get_slice("s"),
+					suoi,suoj,val);
+      cout << "quad  optimal           delta x           delta y       "
+           << "    x_opt            y_opt" << endl;
+      cout << "++   " << val << " " << surv_pp.get_grid_x(suoi) << " "
+	   << surv_pp.get_grid_y(suoj) << " " 
+	   << x1[0]+surv_pp.get_grid_x(suoi) << " "
+	   << x1[1]+surv_pp.get_grid_y(suoj) << endl;
+      if (val<min_min) {
+        min_min=val;
+        min_x=x1[0]+surv_pp.get_grid_x(suoi);
+        min_y=x1[1]+surv_pp.get_grid_y(suoj);
+      }
+      matrix_min_index<ubmatrix,double>(surv_pm.get_slice("s"),
+					suoi,suoj,val);
+      cout << "+-   " << val << " " << surv_pm.get_grid_x(suoi) << " "
+	   << -surv_pm.get_grid_y(suoj) << " " 
+	   << x1[0]+surv_pm.get_grid_x(suoi) << " "
+	   << x1[1]-surv_pm.get_grid_y(suoj) << endl;
+      if (val<min_min) {
+        min_min=val;
+        min_x=x1[0]+surv_pm.get_grid_x(suoi);
+        min_y=x1[1]-surv_pm.get_grid_y(suoj);
+      }
+      matrix_min_index<ubmatrix,double>(surv_mp.get_slice("s"),
+					suoi,suoj,val);
+      cout << "-+   " << val << " " << -surv_mp.get_grid_x(suoi) << " "
+	   << surv_mp.get_grid_y(suoj) << " " 
+	   << x1[0]-surv_mp.get_grid_x(suoi) << " "
+	   << x1[1]+surv_mp.get_grid_y(suoj) << endl;
+      if (val<min_min) {
+        min_min=val;
+        min_x=x1[0]-surv_mp.get_grid_x(suoi);
+        min_y=x1[1]+surv_mp.get_grid_y(suoj);
+      }
+      matrix_min_index<ubmatrix,double>(surv_mm.get_slice("s"),
+					suoi,suoj,val);
+      cout << "--   " << val << " " << -surv_mm.get_grid_x(suoi) << " "
+	   << -surv_mm.get_grid_y(suoj) << " " 
+	   << x1[0]-surv_mm.get_grid_x(suoi) << " "
+	   << x1[1]-surv_mm.get_grid_y(suoj) << endl;
+      if (val<min_min) {
+        min_min=val;
+        min_x=x1[0]-surv_mm.get_grid_x(suoi);
+        min_y=x1[1]-surv_mm.get_grid_y(suoj);
+      }
+      cout << endl;
+      cout.unsetf(ios::showpos);
+
+      cout << "min_min: " << min_min << " " << min_x << " " << min_y << endl;
+      
+      cout.precision(6);
+
+      hdf_file hf;
+      hf.open_or_create("survey.o2");
+      hdf_output(hf,(const table3d &)surv_pp,"surv_pp");
+      hdf_output(hf,(const table3d &)surv_pm,"surv_pm");
+      hdf_output(hf,(const table3d &)surv_mp,"surv_mp");
+      hdf_output(hf,(const table3d &)surv_mm,"surv_mm");
+      hf.close();
+    }
+    
     if (mh_ret!=0) {
       if (loc_verbose>1) {
 	cout << "Failed in eos_fixed_dist(), "
@@ -3072,7 +3159,9 @@ int eos_nuclei::eos_fixed_dist
       }
       return 5;
     }
-    
+
+    // End of if (mh_ret!=0 && (nB<2.2e-12 || alg_mode==2 ||
+    // alg_mode==4)) {
   }
 
   // Perform a final call to solve_nuclei() to ensure
@@ -8081,6 +8170,10 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
   p_extend_frdm.b=&extend_frdm;
   p_extend_frdm.help=((string)"");
   cl.par_list.insert(make_pair("extend_frdm",&p_extend_frdm));
+  
+  p_survey_eqs.b=&survey_eqs;
+  p_survey_eqs.help=((string)"");
+  cl.par_list.insert(make_pair("survey_eqs",&p_survey_eqs));
   
   p_fd_A_max.i=&fd_A_max;
   p_fd_A_max.help=((string)"The maximum value of A for the alg_mode=4 ")+

@@ -282,6 +282,9 @@ public:
   */
   bool propagate_points;
 
+  /// Desc
+  bool survey_eqs;
+
   /** \brief If true, output all of the data necessary for a full EOS
 
       If true, include Eint, Pint, Sint, mun, and mup. If include_eg
@@ -403,6 +406,7 @@ public:
   
   /// \name Other parameter objects
   //@{
+  o2scl::cli::parameter_bool p_survey_eqs;
   o2scl::cli::parameter_bool p_extend_frdm;
   o2scl::cli::parameter_bool p_show_all_nuclei;
   o2scl::cli::parameter_int p_fd_A_max;
