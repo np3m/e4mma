@@ -162,7 +162,7 @@ test-sync:
 	rsync -Cavzun doc/build/html/* $(STATIC_DOC_DIR)/eos
 
 clean:
-	rm -f *.o eos_nuclei eos_nuclei_nompi eos eos_nompi
+	rm -f *.o eos_nuclei eos_nuclei_nompi eos eos_nompi zidu/*.o
 
 # ----------------------------------------------------------------
 # New EOS parameter sets

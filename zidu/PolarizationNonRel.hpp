@@ -50,9 +50,9 @@ namespace nuopac {
 ///
 class PolarizationNonRel : public Polarization {
 public:
-  PolarizationNonRel(FluidState st, WeakCouplings wc = WeakCouplings(), 
-      bool antiNeutrino = false, bool doReddy = false, bool doBlock = false) 
-      : Polarization(st, wc, antiNeutrino, doReddy, doBlock) {} 
+  PolarizationNonRel(FluidState stNR, WeakCouplings wc = WeakCouplings(), 
+     bool antiNeutrinoNR = false, bool doReddyNR = false, bool doBlockNR = false) 
+      : Polarization(stNR, wc, antiNeutrinoNR, doReddyNR, doBlockNR) {} 
    
   std::array<double, 4> CalculateBasePolarizations(double q0, double q) const;
   std::array<double, 4> CalculateBasePolarizationsNeutron(double q0, double q) const;

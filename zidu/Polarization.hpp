@@ -110,6 +110,7 @@ public:
   int NPGJ, NNPGL;
   std::vector<double> xx, ww, xl, wl;
   std::vector<double> xgl, wgl;
+  
 protected:
   virtual void SetPolarizations(double q0, double q, 
       Tensor<double>* piVV, 

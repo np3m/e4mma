@@ -46,10 +46,10 @@ FluidState::FluidState() : T(0.0), M2(0.0), M3(0.0), M4(0.0),
         Mu2(0.0), Mu3(0.0), Mu4(0.0), U2(0.0), U4(0.0),  n2(0.0), 
         n3(0.0), n4(0.0), SensitiveP(0.0) {}
 
-FluidState::FluidState(double T, double M2, double M4, 
-    double Mu2, double Mu4, double U2, double U4, double M3, double Mu3) 
-    : T(T), M2(M2), M4(M4), Mu2(Mu2), Mu4(Mu4), U2(U2), U4(U4), 
-    M3(M3), Mu3(Mu3) {
+FluidState::FluidState(double Tfl, double M2fl, double M4fl, 
+    double Mu2fl, double Mu4fl, double U2fl, double U4fl, double M3fl, double Mu3fl) 
+    : T(Tfl), M2(M2fl), M4(M4fl), Mu2(Mu2fl), Mu4(Mu4fl), U2(U2fl), U4(U4fl), 
+    M3(M3fl), Mu3(Mu3fl) {
   n2 = GetDensity(T, M2, Mu2, U2, 2.0);
   n3 = GetDensity(T, M3, Mu3, 0.0, 2.0);
   n3 -= GetDensity(T, M3, -Mu3, 0.0, 2.0);

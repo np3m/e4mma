@@ -262,12 +262,12 @@ for (int i=0; i<10; i++)
      double roun=betaEoS.n2/densFac;
      double roup=betaEoS.n4/densFac;
       double kf=pow(0.5*rou*3*3.14159*3.14159,1.0/3.0);
-     double kfn=pow(roun*3*3.14159*3.14159,1.0/3.0);
-     double kfp=pow(roup*3*3.14159*3.14159,1.0/3.0);
-      double fnn=0.5*(t0*(1.0-x0)+1.0/6.0*t3*pow(rou,epsilon)*(1.0-x3)+2.0/3.0*epsilon*t3*pow(rou,epsilon-1)*((1+x3/2.0)*rou-(1.0/2.0+x3)*roun)+1.0/6.0*epsilon*(epsilon-1.0)*t3*pow(rou,epsilon-2.0)*((1+x3/2.0)*pow(rou,2.0)-(0.5+x3)*(roun*roun+roup*roup)))+0.25*(t1*(1-x1)+3*t2*(1+x2))*kfn*kfn;
-     double fpp=0.5*(t0*(1.0-x0)+1.0/6.0*t3*pow(rou,epsilon)*(1.0-x3)+2.0/3.0*epsilon*t3*pow(rou,epsilon-1)*((1+x3/2.0)*rou-(1.0/2.0+x3)*roup)+1.0/6.0*epsilon*(epsilon-1.0)*t3*pow(rou,epsilon-2.0)*((1+x3/2.0)*pow(rou,2.0)-(0.5+x3)*(roun*roun+roup*roup)))+0.25*(t1*(1-x1)+3*t2*(1+x2))*kfp*kfp;
-     double gnn=0.5*(t0*(x0-1)+1.0/6.0*t3*pow(rou,epsilon)*(x3-1.0))+0.25*(t1*(x1-1)+t2*(1+x2))*kfn*kfn;
-     double gpp=0.5*(t0*(x0-1)+1.0/6.0*t3*pow(rou,epsilon)*(x3-1.0))+0.25*(t1*(x1-1)+t2*(1+x2))*kfp*kfp;
+     double kfnTest=pow(roun*3*3.14159*3.14159,1.0/3.0);
+     double kfpTest=pow(roup*3*3.14159*3.14159,1.0/3.0);
+      double fnn=0.5*(t0*(1.0-x0)+1.0/6.0*t3*pow(rou,epsilon)*(1.0-x3)+2.0/3.0*epsilon*t3*pow(rou,epsilon-1)*((1+x3/2.0)*rou-(1.0/2.0+x3)*roun)+1.0/6.0*epsilon*(epsilon-1.0)*t3*pow(rou,epsilon-2.0)*((1+x3/2.0)*pow(rou,2.0)-(0.5+x3)*(roun*roun+roup*roup)))+0.25*(t1*(1-x1)+3*t2*(1+x2))*kfnTest*kfnTest;
+     double fpp=0.5*(t0*(1.0-x0)+1.0/6.0*t3*pow(rou,epsilon)*(1.0-x3)+2.0/3.0*epsilon*t3*pow(rou,epsilon-1)*((1+x3/2.0)*rou-(1.0/2.0+x3)*roup)+1.0/6.0*epsilon*(epsilon-1.0)*t3*pow(rou,epsilon-2.0)*((1+x3/2.0)*pow(rou,2.0)-(0.5+x3)*(roun*roun+roup*roup)))+0.25*(t1*(1-x1)+3*t2*(1+x2))*kfpTest*kfpTest;
+     double gnn=0.5*(t0*(x0-1)+1.0/6.0*t3*pow(rou,epsilon)*(x3-1.0))+0.25*(t1*(x1-1)+t2*(1+x2))*kfnTest*kfnTest;
+     double gpp=0.5*(t0*(x0-1)+1.0/6.0*t3*pow(rou,epsilon)*(x3-1.0))+0.25*(t1*(x1-1)+t2*(1+x2))*kfpTest*kfpTest;
 
      fnn=fnn/pow(197.3,3);
      fpp=fpp/pow(197.3,3);
@@ -336,9 +336,9 @@ for (int i=0; i<10; i++)
  // double vrpa=vf;
  
  
-    double densFac = pow(Constants::HBCFmMeV, 3);
+   
  //
- double t0,t1,t2,t3,x0,x1,x2,x3,epsilon;
+// double t0,t1,t2,t3,x0,x1,x2,x3,epsilon;
  //ft6
      /*  epsilon= 1.4339134197*1.0E-01;
        t0 = -3.1535549664*1.0E+03;
@@ -360,9 +360,9 @@ for (int i=0; i<10; i++)
        x2= 2.717*1.0E-02;
        x3= 1.3611*1.0E-01;
 
-     double rou=(betaEoS.n2+betaEoS.n4)/densFac;
-     double kf=pow(0.5*rou*3*3.14159*3.14159,1.0/3.0);
-     double kfn=pow(rou*3*3.14159*3.14159,1.0/3.0);
+      rou=(betaEoS.n2+betaEoS.n4)/densFac;
+      kf=pow(0.5*rou*3*3.14159*3.14159,1.0/3.0);
+    // double kfn=pow(rou*3*3.14159*3.14159,1.0/3.0);
 
 
  //for high density skyrme
@@ -371,14 +371,14 @@ for (int i=0; i<10; i++)
      double f0p=-1.0/4.0*t0-1.0/2.0*t0*x0-1.0/8.0*t1*kf*kf-1.0/4.0*t1*x1*kf*kf+1.0/8.0*t2*kf*kf+1.0/4.0*t2*x2*kf*kf-1.0/24.0*t3*pow(rou,epsilon)-1.0/12.0*t3*x3*pow(rou,epsilon);
      double g0=-1.0/4.0*t0+1.0/2.0*x0*t0-1.0/8.0*t1*kf*kf+1.0/4.0*t1*x1*kf*kf+1.0/8.0*t2*kf*kf+1.0/4.0*t2*x2*kf*kf-1.0/24.0*t3*pow(rou,epsilon)+1.0/12.0*t3*x3*pow(rou,epsilon);
      double g0p=-1.0/4.0*t0-1.0/8.0*t1*kf*kf+1.0/8.0*t2*kf*kf-1.0/24.0*t3*pow(rou,epsilon);
-     double f0n=1.0/2.0*t0-1.0/2.0*t0*x0+1.0/8.0*t1*kfn*kfn-1.0/4.0*t1*x1*kfn*kfn+3.0/4.0*t2*kfn*kfn+3.0/4.0*t2*x2*kfn*kfn+(epsilon+1.0)*(epsilon+2.0)/24.0*t3*pow(rou,epsilon)-(epsilon+1.0)*(epsilon+2.0)/24.0*t3*x3*pow(rou,epsilon);
-     double g0n=-1.0/2.0*t0+1.0/2.0*t0*x0-1.0/4.0*t1*kfn*kfn+1.0/4.0*t1*x1*kfn*kfn+1.0/4.0*t2*kfn*kfn+1.0/4.0*t2*x2*kfn*kfn-1.0/12.0*t3*pow(rou,epsilon)+1.0/12.0*t3*x3*pow(rou,epsilon);
-     double fnn=0.5*(t0*(1.0-x0)+1.0/6.0*t3*pow(rou,epsilon)*(1.0-x3)+2.0/3.0*epsilon*t3*pow(rou,epsilon-1)*((1+x3/2.0)*rou-(1.0/2.0+x3)*roun)+1.0/6.0*epsilon*(epsilon-1.0)*t3*pow(rou,epsilon-2.0)*((1+x3/2.0)*pow(rou,2.0)-(0.5+x3)*(roun*roun+roup*roup)))+0.25*(t1*(1-x1)+3*t2*(1+x2))*kfn*kfn;
-     double fpp=0.5*(t0*(1.0-x0)+1.0/6.0*t3*pow(rou,epsilon)*(1.0-x3)+2.0/3.0*epsilon*t3*pow(rou,epsilon-1)*((1+x3/2.0)*rou-(1.0/2.0+x3)*roup)+1.0/6.0*epsilon*(epsilon-1.0)*t3*pow(rou,epsilon-2.0)*((1+x3/2.0)*pow(rou,2.0)-(0.5+x3)*(roun*roun+roup*roup)))+0.25*(t1*(1-x1)+3*t2*(1+x2))*kfp*kfp;
-     double gnn=0.5*(t0*(x0-1)+1.0/6.0*t3*pow(rou,epsilon)*(x3-1.0))+0.25*(t1*(x1-1)+t2*(1+x2))*kfn*kfn;
-     double gpp=0.5*(t0*(x0-1)+1.0/6.0*t3*pow(rou,epsilon)*(x3-1.0))+0.25*(t1*(x1-1)+t2*(1+x2))*kfp*kfp;
-     double fnp=0.5*(t0*(2.0+x0)+1.0/6.0*t3*pow(rou,epsilon)*(2.0+x3)+1.0/2.0*epsilon*t3*pow(rou,epsilon)+1.0/6.0*epsilon*(epsilon-1.0)*t3*pow(rou,epsilon-2.0)*((1+x3/2.0)*pow(rou,2.0)-(0.5+x3)*(roun*roun+roup*roup)))+0.5*0.25*(t1*(2.0+x1)+t2*(2.0+x2))*(kfn*kfn+kfp*kfp);
-     double gnp=0.5*(t0*x0+1.0/6.0*t3*pow(rou,epsilon)*x3)+0.5*0.25*(t1*x1+t2*x2)*(kfn*kfn+kfp*kfp);
+    // double f0n=1.0/2.0*t0-1.0/2.0*t0*x0+1.0/8.0*t1*kfn*kfn-1.0/4.0*t1*x1*kfn*kfn+3.0/4.0*t2*kfn*kfn+3.0/4.0*t2*x2*kfn*kfn+(epsilon+1.0)*(epsilon+2.0)/24.0*t3*pow(rou,epsilon)-(epsilon+1.0)*(epsilon+2.0)/24.0*t3*x3*pow(rou,epsilon);
+    // double g0n=-1.0/2.0*t0+1.0/2.0*t0*x0-1.0/4.0*t1*kfn*kfn+1.0/4.0*t1*x1*kfn*kfn+1.0/4.0*t2*kfn*kfn+1.0/4.0*t2*x2*kfn*kfn-1.0/12.0*t3*pow(rou,epsilon)+1.0/12.0*t3*x3*pow(rou,epsilon);
+      fnn=0.5*(t0*(1.0-x0)+1.0/6.0*t3*pow(rou,epsilon)*(1.0-x3)+2.0/3.0*epsilon*t3*pow(rou,epsilon-1)*((1+x3/2.0)*rou-(1.0/2.0+x3)*roun)+1.0/6.0*epsilon*(epsilon-1.0)*t3*pow(rou,epsilon-2.0)*((1+x3/2.0)*pow(rou,2.0)-(0.5+x3)*(roun*roun+roup*roup)))+0.25*(t1*(1-x1)+3*t2*(1+x2))*kfnTest*kfnTest;
+      fpp=0.5*(t0*(1.0-x0)+1.0/6.0*t3*pow(rou,epsilon)*(1.0-x3)+2.0/3.0*epsilon*t3*pow(rou,epsilon-1)*((1+x3/2.0)*rou-(1.0/2.0+x3)*roup)+1.0/6.0*epsilon*(epsilon-1.0)*t3*pow(rou,epsilon-2.0)*((1+x3/2.0)*pow(rou,2.0)-(0.5+x3)*(roun*roun+roup*roup)))+0.25*(t1*(1-x1)+3*t2*(1+x2))*kfpTest*kfpTest;
+      gnn=0.5*(t0*(x0-1)+1.0/6.0*t3*pow(rou,epsilon)*(x3-1.0))+0.25*(t1*(x1-1)+t2*(1+x2))*kfnTest*kfnTest;
+      gpp=0.5*(t0*(x0-1)+1.0/6.0*t3*pow(rou,epsilon)*(x3-1.0))+0.25*(t1*(x1-1)+t2*(1+x2))*kfpTest*kfpTest;
+     double fnp=0.5*(t0*(2.0+x0)+1.0/6.0*t3*pow(rou,epsilon)*(2.0+x3)+1.0/2.0*epsilon*t3*pow(rou,epsilon)+1.0/6.0*epsilon*(epsilon-1.0)*t3*pow(rou,epsilon-2.0)*((1+x3/2.0)*pow(rou,2.0)-(0.5+x3)*(roun*roun+roup*roup)))+0.5*0.25*(t1*(2.0+x1)+t2*(2.0+x2))*(kfnTest*kfnTest+kfpTest*kfpTest);
+     double gnp=0.5*(t0*x0+1.0/6.0*t3*pow(rou,epsilon)*x3)+0.5*0.25*(t1*x1+t2*x2)*(kfnTest*kfnTest+kfpTest*kfpTest); 
      fnn=fnn/pow(197.3,3);
      fpp=fpp/pow(197.3,3);
      gnn=gnn/pow(197.3,3);
@@ -774,14 +774,14 @@ datacc <<"charged current: "<<(betaEoS.n2+betaEoS.n4)/densFac<<" "<<betaEoS.n2/(
  for (int k=1;k<100;k++)
   {
 
-  double w=wmin+dw*k;
+    w=wmin+dw*k;
 //   **********new version**************
     auto pt= pol.CalculateBasePolarizations(w, 10*T);//charged current
    
-    double piL=pt[1];
+    piL=pt[1];
    
 //  ***********PiLRe**********************
-    double piLRe=pol.GetImPI2(w,10*T);
+    piLRe=pol.GetImPI2(w,10*T);
  
 
  // piL=pol.GetImPI(w,5*T);//piL is 2*ImPI0
@@ -791,7 +791,7 @@ datacc <<"charged current: "<<(betaEoS.n2+betaEoS.n4)/densFac<<" "<<betaEoS.n2/(
   double vgt=2.8*1.0E-5;
   double vrpa=vf;*/
 
-  double t0,t1,t2,t3,x0,x1,x2,x3,epsilon;
+ // double t0,t1,t2,t3,x0,x1,x2,x3,epsilon;
  /* //ft7
        epsilon= 1.6112652355*1.0E-01;
        t0=-2.8515584390*1.0E+03;
@@ -818,18 +818,18 @@ datacc <<"charged current: "<<(betaEoS.n2+betaEoS.n4)/densFac<<" "<<betaEoS.n2/(
      double roun=betaEoS.n2/densFac;
      double roup=betaEoS.n4/densFac;
     
-     double kfn=pow(roun*3*3.14159*3.14159,1.0/3.0);
-     double kfp=pow(roup*3*3.14159*3.14159,1.0/3.0);
+     double kfnTest=pow(roun*3*3.14159*3.14159,1.0/3.0);
+     double kfpTest=pow(roup*3*3.14159*3.14159,1.0/3.0);
      double kf=pow(0.5*rou*3*3.14159*3.14159,1.0/3.0);
 
-     double f0p=-1.0/4.0*t0-1.0/2.0*t0*x0-1.0/8.0*t1*kf*kf-1.0/4.0*t1*x1*kf*kf+1.0/8.0*t2*kf*kf+1.0/4.0*t2*x2*kf*kf-1.0/24.0*t3*pow(rou,epsilon)-1.0/12.0*t3*x3*pow(rou,epsilon);
-     double g0p=-1.0/4.0*t0-1.0/8.0*t1*kf*kf+1.0/8.0*t2*kf*kf-1.0/24.0*t3*pow(rou,epsilon);
+    // double f0p=-1.0/4.0*t0-1.0/2.0*t0*x0-1.0/8.0*t1*kf*kf-1.0/4.0*t1*x1*kf*kf+1.0/8.0*t2*kf*kf+1.0/4.0*t2*x2*kf*kf-1.0/24.0*t3*pow(rou,epsilon)-1.0/12.0*t3*x3*pow(rou,epsilon);
+    // double g0p=-1.0/4.0*t0-1.0/8.0*t1*kf*kf+1.0/8.0*t2*kf*kf-1.0/24.0*t3*pow(rou,epsilon);
     // double vf=2.0*f0p;// for symmetric nuclear matter
     // double vgt=2.0*g0p;// for symmetric nuclear matter
-     double fnn=0.5*(t0*(1.0-x0)+1.0/6.0*t3*pow(rou,epsilon)*(1.0-x3)+2.0/3.0*epsilon*t3*pow(rou,epsilon-1)*((1+x3/2.0)*rou-(1.0/2.0+x3)*roun)+1.0/6.0*epsilon*(epsilon-1.0)*t3*pow(rou,epsilon-2.0)*((1+x3/2.0)*pow(rou,2.0)-(0.5+x3)*(roun*roun+roup*roup)))+0.25*(t1*(1-x1)+3*t2*(1+x2))*kfn*kfn;
-     double fnp=0.5*(t0*(2.0+x0)+1.0/6.0*t3*pow(rou,epsilon)*(2.0+x3)+1.0/2.0*epsilon*t3*pow(rou,epsilon)+1.0/6.0*epsilon*(epsilon-1.0)*t3*pow(rou,epsilon-2.0)*((1+x3/2.0)*pow(rou,2.0)-(0.5+x3)*(roun*roun+roup*roup)))+0.5*0.25*(t1*(2.0+x1)+t2*(2.0+x2))*(kfn*kfn+kfp*kfp);
-     double gnn=0.5*(t0*(x0-1)+1.0/6.0*t3*pow(rou,epsilon)*(x3-1.0))+0.25*(t1*(x1-1)+t2*(1+x2))*kfn*kfn;
-     double gnp=0.5*(t0*x0+1.0/6.0*t3*pow(rou,epsilon)*x3)+0.5*0.25*(t1*x1+t2*x2)*(kfn*kfn+kfp*kfp);
+    // double fnn=0.5*(t0*(1.0-x0)+1.0/6.0*t3*pow(rou,epsilon)*(1.0-x3)+2.0/3.0*epsilon*t3*pow(rou,epsilon-1)*((1+x3/2.0)*rou-(1.0/2.0+x3)*roun)+1.0/6.0*epsilon*(epsilon-1.0)*t3*pow(rou,epsilon-2.0)*((1+x3/2.0)*pow(rou,2.0)-(0.5+x3)*(roun*roun+roup*roup)))+0.25*(t1*(1-x1)+3*t2*(1+x2))*kfn*kfn;
+    // double fnp=0.5*(t0*(2.0+x0)+1.0/6.0*t3*pow(rou,epsilon)*(2.0+x3)+1.0/2.0*epsilon*t3*pow(rou,epsilon)+1.0/6.0*epsilon*(epsilon-1.0)*t3*pow(rou,epsilon-2.0)*((1+x3/2.0)*pow(rou,2.0)-(0.5+x3)*(roun*roun+roup*roup)))+0.5*0.25*(t1*(2.0+x1)+t2*(2.0+x2))*(kfn*kfn+kfp*kfp);
+    // double gnn=0.5*(t0*(x0-1)+1.0/6.0*t3*pow(rou,epsilon)*(x3-1.0))+0.25*(t1*(x1-1)+t2*(1+x2))*kfn*kfn;
+    // double gnp=0.5*(t0*x0+1.0/6.0*t3*pow(rou,epsilon)*x3)+0.5*0.25*(t1*x1+t2*x2)*(kfn*kfn+kfp*kfp);
    //  double vf=fnn-fnp;
    //  double vgt=gnn-gnp;
        double w1nnVec,w1npVec,w1nnAx,w1npAx,w2nnVec,w2npVec,w2nnAx,w2npAx;
@@ -842,10 +842,10 @@ datacc <<"charged current: "<<(betaEoS.n2+betaEoS.n4)/densFac<<" "<<betaEoS.n2/(
       w2nnAx=0.25*(t1*(x1-1)+t2*(1+x2));
       w2npAx=0.25*(t1*x1+t2*x2);
 
-      double vf=0.5*(w1nnVec-w1npVec)+(w2nnVec-w2npVec)*kfn*kfn;//kf should be the hole momenta at fermi see surface, here the transition is (pn^-1,pn^-1), the hole is neutron hole
-      double vgt=0.5*(w1nnAx-w1npAx)+(w2nnAx-w2npAx)*kfn*kfn;
-     double vrpa=vgt/pow(197.3,3);//change unit to MeV-2
-     double vrpaVec=vf/pow(197.3,3);//change unit to MeV-2 
+       vf=0.5*(w1nnVec-w1npVec)+(w2nnVec-w2npVec)*kfnTest*kfnTest;//kf should be the hole momenta at fermi see surface, here the transition is (pn^-1,pn^-1), the hole is neutron hole
+       vgt=0.5*(w1nnAx-w1npAx)+(w2nnAx-w2npAx)*kfnTest*kfnTest;
+       vrpa=vgt/pow(197.3,3);//change unit to MeV-2
+      double  vrpaVec=vf/pow(197.3,3);//change unit to MeV-2 
 
      //virial
   /*   double fnn;
@@ -862,7 +862,7 @@ datacc <<"charged current: "<<(betaEoS.n2+betaEoS.n4)/densFac<<" "<<betaEoS.n2/(
   double vrpaVec=vf; */
   
   double piLRPA;
-  double response;
+ 
   double FermiF;
   double zz;
   zz=(w+betaEoS.Mu2-betaEoS.Mu4)/T;
@@ -1048,7 +1048,7 @@ datacc <<"charged current: "<<(betaEoS.n2+betaEoS.n4)/densFac<<" "<<betaEoS.n2/(
   }
  
   // Test that the simple EoS stuff is working correctly
- for (int i=1; i<100;i++)
+/* for (int i=1; i<100;i++)
  {  
   double n2 = 1.e-4*densFac*i;
   double n4 = 1.e-4*densFac*i;
@@ -1076,10 +1076,10 @@ datacc <<"charged current: "<<(betaEoS.n2+betaEoS.n4)/densFac<<" "<<betaEoS.n2/(
   double E1 = 10.0; 
   double full = pol.CalculateInverseMFP(E1)/Constants::HBCFmMeV*1.e13; 
   
-  double sig0 = 
+  sig0 = 
       4.0*pow(Constants::GfMeV*E1*Constants::HBCFmMeV, 2)/Constants::Pi; 
   sig0 = sig0*(pow(nscat.Cv, 2) + 3.0*pow(nscat.Ca, 2))/4.0;
-  double elastic = sig0*st.effectiveDensity/densFac*1.e13; 
+  elastic = sig0*st.effectiveDensity/densFac*1.e13; 
 //  std::cout << "Neutral current: " << n2 <<" "<< full << " " << elastic << " " 
 //      << 1.0-full/elastic << std::endl;
 //  datanc << "Neutral current: " << n2 <<" "<< full << " " << elastic << " "
@@ -1090,8 +1090,8 @@ datacc <<"charged current: "<<(betaEoS.n2+betaEoS.n4)/densFac<<" "<<betaEoS.n2/(
 
 
   E1 = 1.0;
-  double deltaM = 1.293; 
-  bool antiNu = false; 
+  deltaM = 1.293; 
+  antiNu = false; 
   M4 = M2 - deltaM; 
   M3 = 0.511;
   n2 = 1.e-4*densFac*0.9*i;
@@ -1125,7 +1125,7 @@ datacc <<"charged current: "<<(betaEoS.n2+betaEoS.n4)/densFac<<" "<<betaEoS.n2/(
   if (fabs((noWm-elastic)/noWm)>1.e-2) return 1;
    
   return 0;
- }
+ }*/
   datacc.close();
   datanc.close();
   fclose(fpconfig);
