@@ -7897,12 +7897,13 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
     size_t iYe_best=0;
     double log_xn, log_xp;
     double Zbar, Nbar;
-      thermo thx;
-      double mun_full, mup_full;
-      bool dist_changed=true;
-      bool no_nuclei=false;
+    thermo thx;
+    double mun_full, mup_full;
+    bool dist_changed=true;
+    bool no_nuclei=false;
     
-    for(size_t iYe=0;iYe<n_Ye2;iYe++) {
+    //for(size_t iYe=0;iYe<n_Ye2;iYe++) {
+    for(size_t iYe=40;iYe<n_Ye2;iYe++) {
       double Ye=Ye_grid2[iYe];
       
       if (tg3_flag.get(inB,iYe,iT)<9.9) {
@@ -7914,11 +7915,15 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
       int A_max=((int)(tg3_A_max.get(inB,iYe,iT)));
       int NmZ_min=((int)(tg3_NmZ_min.get(inB,iYe,iT)));
       int NmZ_max=((int)(tg3_NmZ_max.get(inB,iYe,iT)));
+
+      double fr_Ye=1.0e100;
       
       for(size_t k=0;k<10;k++) {
         
-        log_xn=tg3_log_xn.get(inB,iYe,iT)+(rng.random()*6.0-3.0);
-        log_xp=tg3_log_xp.get(inB,iYe,iT)+(rng.random()*6.0-3.0);
+        //log_xn=tg3_log_xn.get(inB,iYe,iT)+(rng.random()*6.0-3.0);
+        //log_xp=tg3_log_xp.get(inB,iYe,iT)+(rng.random()*6.0-3.0);
+        log_xn=tg3_log_xn.get(inB,iYe,iT)+(rng.random()*0.5-0.25);
+        log_xp=tg3_log_xp.get(inB,iYe,iT)+(rng.random()*0.5-0.25);
         
         map<string,double> vdet;
         int ret=eos_vary_dist(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,
@@ -7930,7 +7935,10 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
              << Zbar << " " << Nbar << " " << Zbar+Nbar << " " 
              << Zbar/(Zbar+Nbar) << " "
              << thx.ed-T*thx.en << endl;
-        
+
+        if (ret==0 && thx.ed-T*thx.en<fr_Ye) {
+          fr_Ye=thx.ed-T*thx.en;
+        }
         if (ret==0 && thx.ed-T*thx.en<fr_best) {
           fr_best=thx.ed-T*thx.en;
           log_xn_best=log_xn;
@@ -7938,9 +7946,13 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
           iYe_best=iYe;
           cout << "iYe_best: " << iYe << endl;
         }
+        // End of for(size_t k=0;k<10;k++) {
       }
+      cout << "(X) iYe,Ye,fr_Ye: " << iYe << " " << Ye << " "
+           << fr_Ye << endl;
+      
+      // End of loop for(size_t iYe=0;iYe<n_Ye2;iYe++) {
     }
-    exit(-1);
     
     log_xn=log_xn_best;
     log_xp=log_xp_best;
@@ -7959,7 +7971,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
     ubvector X;
     compute_X(nB,X);
     
-    cout << "AWS: " << ret2 << " " << log_xn << " " << log_xp << " "
+    cout << "Beta-eq point: " << ret2 << " " << log_xn << " " << log_xp << " "
 	 << Zbar << " " << Nbar << " " << Zbar+Nbar << " " 
 	 << Zbar/(Zbar+Nbar) << " " << X[5] << endl;
     

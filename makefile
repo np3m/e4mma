@@ -185,6 +185,7 @@ mbt:
 		-set a_virial 10 -set b_virial 10 \
 		-set extend_frdm 0 \
 		-set fd_A_max 600 -set max_ratio 7.0 \
-		-load jun_18a.o2 \
-		-mcarlo-beta 0.14 10.0 temp.o2
+		-set fixed_dist_alg 1999 \
+		-load ~/data/eos/21/06/20/jun_19d.o2 \
+		-mcarlo-beta 0.14 10.0 temp.o2 > mbt.out 2>&1 &
 
