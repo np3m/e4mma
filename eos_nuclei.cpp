@@ -523,7 +523,7 @@ int eos_nuclei::add_eg(std::vector<std::string> &sv,
 		  lep.en/nB_grid2[i]);
 	tg3_mue.set(i,j,k,hc_mev_fm*mue);
 
-        if (false) {
+        if (i==0 && j==0 && k==0) {
           double nB=nB_grid2[i];
           double T_MeV=T_grid2[k];
           double Ye=Ye_grid2[j];
@@ -539,8 +539,16 @@ int eos_nuclei::add_eg(std::vector<std::string> &sv,
                            np*tg3_mue.get(i,j,k))/scale/nB;
           cout << nB << " " << Ye << " " << T_MeV << " "
                << ti_check << " " << scale << endl;
-          char ch;
-          cin >> ch;
+          cout << tg3_E.get(i,j,k)*nB << " "
+               << tg3_P.get(i,j,k) << " "
+               << T_MeV*tg3_S.get(i,j,k)*nB << " "
+               << nn*tg3_mun.get(i,j,k) << " "
+               << np*tg3_mup.get(i,j,k) << " "
+               << np*tg3_mue.get(i,j,k) << endl;
+          cout << tg3_mue.get(i,j,k) << endl;
+          //exit(-1);
+          //char ch;
+          //cin >> ch;
         }          
 
       }
@@ -4093,7 +4101,7 @@ int eos_nuclei::write_results(std::string fname) {
       hdf_output(hf,tg3_E,"E");
       hdf_output(hf,tg3_P,"P");
       hdf_output(hf,tg3_S,"S");
-      hdf_output(hf,tg3_mup,"mue");
+      hdf_output(hf,tg3_mue,"mue");
     }      
   }
 
@@ -5408,7 +5416,8 @@ int eos_nuclei::stats(std::vector<std::string> &sv,
 	if (fabs(ti_check)>1.0e-9) {
 	  ti_count++;
           if (ti_count<1000) {
-            cout << "Therm. ident. doens't hold (ti_count,i,nB,Ye,T,ti_check): "
+            cout << "Therm. ident. doens't hold (ti_count,i,"
+                 << "nB,Ye,T,ti_check): "
                  << ti_count << " " << i << "\n  "
                  << nB << " " << Ye << " " << T_MeV
                  << " " << ti_check << endl;
@@ -5419,6 +5428,7 @@ int eos_nuclei::stats(std::vector<std::string> &sv,
                    << nn*tg3_mun.get_data()[i] << " "
                    << np*tg3_mup.get_data()[i] << " "
                    << np*tg3_mue.get_data()[i] << endl;
+              cout << tg3_mue.get_data()[i] << endl;
               exit(-1);
             }
           } else if (ti_count==1000) {
