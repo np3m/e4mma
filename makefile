@@ -190,5 +190,5 @@ mbt:
 		-set fd_A_max 600 -set max_ratio 7.0 \
 		-set fixed_dist_alg 1999 \
 		-load ~/data/eos/21/06/20/jun_19d.o2 \
-		-mcarlo-beta 0.14 10.0 temp.o2 > mbt.out 2>&1 &
+		-mcarlo-beta 0.14 10.0 temp.o2
 

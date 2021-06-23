@@ -676,7 +676,10 @@ void PolarizationNonRel::SetPolarizations(double q0, double q,
      double gpp=0.5*(t0*(x0-1)+1.0/6.0*t3*pow(rou,epsilon)*(x3-1.0))+0.25*(t1*(x1-1)+t2*(1+x2))*kfp*kfp;
      double fnp=0.5*(t0*(2.0+x0)+1.0/6.0*t3*pow(rou,epsilon)*(2.0+x3)+1.0/2.0*epsilon*t3*pow(rou,epsilon)+1.0/6.0*epsilon*(epsilon-1.0)*t3*pow(rou,epsilon-2.0)*((1+x3/2.0)*pow(rou,2.0)-(0.5+x3)*(roun*roun+roup*roup)))+0.5*0.25*(t1*(2.0+x1)+t2*(2.0+x2))*(kfn*kfn+kfp*kfp);
      double gnp=0.5*(t0*x0+1.0/6.0*t3*pow(rou,epsilon)*x3)+0.5*0.25*(t1*x1+t2*x2)*(kfn*kfn+kfp*kfp);
-      
+
+     std::cout << "Here: " << fnn << " " << fnp << " " << gnn << " "
+               << gpp << " " << kfn << " " << kfp << std::endl;
+     
      //for neutral current couplings
    /*  fnn=fnn/pow(197.3,3);
      fpp=fpp/pow(197.3,3);
@@ -727,7 +730,7 @@ void PolarizationNonRel::SetPolarizations(double q0, double q,
 
  // *************************************************************
  // charged current piL
-  piL=2*(piL/2)/((1-vrpa*(piLRe/2))*(1-vrpa*(piLRe/2))+vrpa*vrpa*(piL/2)*(piL/2));//piL is 2*Im PI
+     //piL=2*(piL/2)/((1-vrpa*(piLRe/2))*(1-vrpa*(piLRe/2))+vrpa*vrpa*(piL/2)*(piL/2));//piL is 2*Im PI
 
  // neutral current piL vector
  // piL=2*(piLn/2+fpp*(piLp/2.0*piLnRe/2.0-piLn/2.0*piLpRe/2.0))/((1-fnn*(piLnRe/2)-fpp*(piLpRe/2))*(1-fnn*(piLnRe/2)-fpp*(piLpRe/2))+(piLn/2.0*fnn+piLp/2.0*fpp)*(piLn/2.0*fnn+piLp/2.0*fpp));

@@ -1,7 +1,7 @@
 /*
   -------------------------------------------------------------------
   
-  Copyright (C) 2018-2020, Xingfu Du and Andrew W. Steiner
+  Copyright (C) 2018-2020, Xingfu Du, Zidu Lin, and Andrew W. Steiner
   
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -7942,7 +7942,8 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
     bool no_nuclei=false;
     
     //for(size_t iYe=0;iYe<n_Ye2;iYe++) {
-    for(size_t iYe=40;iYe<n_Ye2;iYe++) {
+    //for(size_t iYe=40;iYe<n_Ye2;iYe++) {
+    for(size_t iYe=49;iYe<50;iYe++) {
       double Ye=Ye_grid2[iYe];
       
       if (tg3_flag.get(inB,iYe,iT)<9.9) {
@@ -8015,38 +8016,72 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
 	 << Zbar/(Zbar+Nbar) << " " << X[5] << endl;
     
     if (true) {
+
+      T=10.0/hc_mev_fm;
       
-      cout << neutron.mu << endl;
-      cout << proton.mu << endl;
-      cout << neutron.ms << endl;
-      cout << proton.ms << endl;
-      cout << neutron.n << endl;
-      cout << proton.n << endl;
+      if (true) {
+        skyrme_load(sk,"NRAPR");
+        neutron.n=1.503779e-01;
+        proton.n=9.622062e-03;
+        thermo thxx;
+        sk.calc_temp_e(neutron,proton,10.0/hc_mev_fm,thxx);
+        electron.n=proton.n;
+      }
+      
+      cout << "mun: " << neutron.mu*hc_mev_fm << endl;
+      cout << "mup: " << proton.mu*hc_mev_fm << endl;
+      cout << "msn: " << neutron.ms*hc_mev_fm << endl;
+      cout << "msp: " << proton.ms*hc_mev_fm << endl;
+      cout << "nn: " << neutron.n << endl;
+      cout << "np: " << proton.n << endl;
 
       cout << sk.t0 << endl;
+      cout << neutron.inc_rest_mass << endl;
       
-      double u2eos=neutron.mu*hc_mev_fm-pow(neutron.kf*hc_mev_fm,2.0)/
+      double u2eos=neutron.mu*hc_mev_fm-pow(neutron.kf*hc_mev_fm,2.0)/2.0/
         neutron.ms/hc_mev_fm;
-      double u4eos=proton.mu*hc_mev_fm-pow(proton.kf*hc_mev_fm,2.0)/
+      cout << "U2: " << u2eos << endl;
+      double u4eos=proton.mu*hc_mev_fm-pow(proton.kf*hc_mev_fm,2.0)/2.0/
         proton.ms/hc_mev_fm;
+      cout << "U4: " << u4eos << endl;
+      cout << "T*hc_mev_fm: " << T*hc_mev_fm << endl;
+
+      neutron.ms=751.587/hc_mev_fm;
+      proton.ms=575.792/hc_mev_fm;
+      u2eos=-35.8795;
+      u4eos=-103.247;
+      
       FluidState betaEoS;
       betaEoS=FluidState::StateFromDensities
         (T*hc_mev_fm,neutron.ms*hc_mev_fm,proton.ms*hc_mev_fm,
          neutron.n*pow(hc_mev_fm,3.0),proton.n*pow(hc_mev_fm,3.0),
          u2eos,u4eos,electron.m*hc_mev_fm,electron.n*pow(hc_mev_fm,3.0));
+      cout << betaEoS.Mu3 << endl;
+
+      /*
+        nrparEos: baryon den: 0.16 y_N: 0.939862 n2: 0.150378 n4:
+        0.00962206 M3: 0.511 m2eff: 751.587 m4eff: 575.792 U2:
+        -35.8795 U4: -103.247 deltaU: 67.3676 mu2: 34.2278 Mu4:
+        -88.6003 mu2-mu4 122.828 Mu3: 123.617 n3: 0.00962206 vf:
+        0.000237182 vgt: 0.000146182
+
+        charged current: 0.16 0.939862 noWm: 0.00072131 Wm: 0.00072131
+        elastic: 0.000949514 elastic1: 0.0752413 noWm/elastc: 0.759663
+        noWm/elastic1: 0.00958663 M3: 0.511 neff/n: 0.938675 pe/Ee:
+        0.0134443 deltaU: 67.3676 mu2-mu4 122.828 ImPi0: -2.27353 
+      */
       
       //WeakCouplings nscat=WeakCouplings::NeutronScattering();
-      WeakCouplings nscat=WeakCouplings::NuCapture();
-      nscat.F2=0.0;
+      WeakCouplings ncap=WeakCouplings::NuCapture();
+      ncap.F2=0.0;
       
       //turn off pauli blocking for NC
       //Polarization(FluidState st, WeakCouplings wc = WeakCouplings(), 
       //bool antiNeutrino = false, bool doReddy = false, bool doBlock = false,
       //int NAngularPoints = 64, int NQ0Points = 256);
       
-      PolarizationNonRel pol(betaEoS, nscat, false, false, false);
+      PolarizationNonRel pol(betaEoS, ncap, false, false, true);
 
-      skyrme_load(sk,"NRAPR");
       pol.set_skyrme(sk.t0*hc_mev_fm,sk.t1*hc_mev_fm,
                      sk.t2*hc_mev_fm,sk.t3*hc_mev_fm,
                      sk.x0,sk.x1,sk.x2,sk.x3,sk.alpha);
