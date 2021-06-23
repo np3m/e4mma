@@ -510,6 +510,7 @@ int eos_nuclei::add_eg(std::vector<std::string> &sv,
 	
 	thermo lep;
 	double mue;
+        // Note that this function accepts the temperature in MeV
 	eso.compute_eg_point(nB_grid2[i],Ye_grid2[j],T_grid2[k],lep,mue);
 	
 	tg3_F.set(i,j,k,tg3_Fint.get(i,j,k)+
@@ -522,7 +523,28 @@ int eos_nuclei::add_eg(std::vector<std::string> &sv,
 		  lep.en/nB_grid2[i]);
 	tg3_mue.set(i,j,k,hc_mev_fm*mue);
 
+        if (false) {
+          double nB=nB_grid2[i];
+          double T_MeV=T_grid2[k];
+          double Ye=Ye_grid2[j];
+          double nn=nB*(1.0-Ye);
+          double np=nB*Ye;
+          double scale=fabs(tg3_E.get(i,j,k));
+          if (scale<10.0) scale=10.0;
+          double ti_check=(tg3_E.get(i,j,k)*nB+
+                           tg3_P.get(i,j,k)-
+                           T_MeV*tg3_S.get(i,j,k)*nB-
+                           nn*tg3_mun.get(i,j,k)-
+                           np*tg3_mup.get(i,j,k)-
+                           np*tg3_mue.get(i,j,k))/scale/nB;
+          cout << nB << " " << Ye << " " << T_MeV << " "
+               << ti_check << " " << scale << endl;
+          char ch;
+          cin >> ch;
+        }          
+
       }
+      
     }
     cout << "add_eg(): " << i+1 << "/" << n_nB2 << endl;
   }
@@ -5302,19 +5324,20 @@ int eos_nuclei::stats(std::vector<std::string> &sv,
       double T_MeV=T_grid2[ix[2]];
 
       // Check that X's add up to 1
-      if (nb_frac_count<1000) {
+      if (true) {
 	double check_X=tg3_Xn.get_data()[i]+tg3_Xp.get_data()[i]+
 	  tg3_Xalpha.get_data()[i]+tg3_Xnuclei.get_data()[i]+
 	  tg3_Xd.get_data()[i]+tg3_Xt.get_data()[i]+
 	  tg3_XHe3.get_data()[i]+tg3_XLi4.get_data()[i];
 	
 	if (fabs(check_X-1.0)>1.0e-6) {
-	  cout << "Nuclear fractions do not add up to 1 "
-	       << "(i,nB,Ye,T,X_total):\n  "
-	       << i << " " << nB << " " << Ye << " "
-	       << T_MeV << " " << check_X << endl;
 	  nb_frac_count++;
-	  if (nb_frac_count==1000) {
+          if (nb_frac_count<1000) {
+            cout << "Nuclear fractions do not add up to 1 "
+                 << "(i,nB,Ye,T,X_total):\n  "
+                 << i << " " << nB << " " << Ye << " "
+                 << T_MeV << " " << check_X << endl;
+          } else if (nb_frac_count==1000) {
 	    cout << "Further nuclear fractions warnings suppressed."
 		 << endl;
 	  }
@@ -5322,35 +5345,36 @@ int eos_nuclei::stats(std::vector<std::string> &sv,
       }
 
       // Check that Fint=Eint-T*Sint
-      if (tg3_Eint.total_size()>0 && Fint_count<1000) {
+      if (tg3_Eint.total_size()>0) {
 
-	double scale=tg3_Fint.get_data()[i];
+	double scale=fabs(tg3_Fint.get_data()[i]);
 	if (scale<10.0) scale=10.0;
 	double Fint_check=(tg3_Fint.get_data()[i]-
 			   tg3_Eint.get_data()[i]+
 			   T_MeV*tg3_Sint.get_data()[i])/scale;
 	if (fabs(Fint_check)>1.0e-9) {
-	  cout << "Fint doesn't match Eint-T*Sint:"
-	       << "(i,nB,Ye,T,Fint_check):\n  "
-	       << i << " " << nB << " " << Ye << " " << T_MeV
-	       << " " << Fint_check << endl;
-	  cout << "  (Fint,Eint,T,Sint,Eint-T*Sint): "
-	       << tg3_Fint.get_data()[i] << " ";
-	  cout << tg3_Eint.get_data()[i] << " ";
-	  cout << T_MeV << " " << tg3_Sint.get_data()[i] << " ";
-	  cout << tg3_Eint.get_data()[i]-T_MeV*tg3_Sint.get_data()[i] << endl;
 	  Fint_count++;
-	  if (Fint_count==1000) {
+          if (Fint_count<1000) {
+            cout << "Fint doesn't match Eint-T*Sint:"
+                 << "(i,nB,Ye,T,Fint_check):\n  "
+                 << i << " " << nB << " " << Ye << " " << T_MeV
+                 << " " << Fint_check << endl;
+            cout << "  (Fint,Eint,T,Sint,Eint-T*Sint): "
+                 << tg3_Fint.get_data()[i] << " ";
+            cout << tg3_Eint.get_data()[i] << " ";
+            cout << T_MeV << " " << tg3_Sint.get_data()[i] << " ";
+            cout << tg3_Eint.get_data()[i]-T_MeV*tg3_Sint.get_data()[i] << endl;
+          } else if (Fint_count==1000) {
 	    cout << "Further Fint warnings suppressed." << endl;
 	  }
 	}
       }
 
       // Check that Eint*nB=-Pint+T*Sint*nB+nn*mun+np*mup
-      if (derivs_computed && ti_int_count<1000) {
+      if (derivs_computed) {
 	double nn=nB*(1.0-Ye);
 	double np=nB*Ye;
-	double scale=tg3_Eint.get_data()[i];
+	double scale=fabs(tg3_Eint.get_data()[i]);
 	if (scale<100.0) scale=100.0;
 	double ti_int_check=(tg3_Eint.get_data()[i]*nB+
 			     tg3_Pint.get_data()[i]-
@@ -5358,21 +5382,22 @@ int eos_nuclei::stats(std::vector<std::string> &sv,
 			     nn*tg3_mun.get_data()[i]-
 			     np*tg3_mup.get_data()[i])/scale/nB;
 	if (fabs(ti_int_check)>1.0e-9) {
-	  cout << "Therm. ident. doens't hold (i,nB,Ye,T,ti_int_check): "
-	       << i << " " << nB << " " << Ye << " " << T_MeV
-	       << " " << ti_int_check << endl;
 	  ti_int_count++;
-	  if (ti_int_count==1000) {
+          if (ti_int_count<1000) {
+            cout << "Therm. ident. doens't hold (i,nB,Ye,T,ti_int_check): "
+                 << i << " " << nB << " " << Ye << " " << T_MeV
+                 << " " << ti_int_check << endl;
+	  } else if (ti_int_count==1000) {
 	    cout << "Further Fint warnings suppressed." << endl;
 	  }
 	}
       }
 
       // Check that E*nB=-P+T*S*nB+nn*mun+np*mup+ne*mue
-      if (derivs_computed && ti_count<1000) {
+      if (derivs_computed) {
 	double nn=nB*(1.0-Ye);
 	double np=nB*Ye;
-	double scale=tg3_E.get_data()[i];
+	double scale=fabs(tg3_E.get_data()[i]);
 	if (scale<10.0) scale=10.0;
 	double ti_check=(tg3_E.get_data()[i]*nB+
 			 tg3_P.get_data()[i]-
@@ -5381,32 +5406,46 @@ int eos_nuclei::stats(std::vector<std::string> &sv,
 			 np*tg3_mup.get_data()[i]-
 			 np*tg3_mue.get_data()[i])/scale/nB;
 	if (fabs(ti_check)>1.0e-9) {
-	  cout << "Therm. ident. doens't hold (i,nB,Ye,T,ti_check): "
-	       << i << " " << nB << " " << Ye << " " << T_MeV
-	       << " " << ti_check << endl;
 	  ti_count++;
-	  if (ti_count==1000) {
+          if (ti_count<1000) {
+            cout << "Therm. ident. doens't hold (ti_count,i,nB,Ye,T,ti_check): "
+                 << ti_count << " " << i << "\n  "
+                 << nB << " " << Ye << " " << T_MeV
+                 << " " << ti_check << endl;
+            if (false) {
+              cout << tg3_E.get_data()[i]*nB << " "
+                   << tg3_P.get_data()[i] << " "
+                   << T_MeV*tg3_S.get_data()[i]*nB << " "
+                   << nn*tg3_mun.get_data()[i] << " "
+                   << np*tg3_mup.get_data()[i] << " "
+                   << np*tg3_mue.get_data()[i] << endl;
+              exit(-1);
+            }
+          } else if (ti_count==1000) {
 	    cout << "Further Fint warnings suppressed." << endl;
 	  }
 	}
       }
 
       // Check that F=E-T*S
-      if (with_leptons_loaded && F_count<1000) {
+      if (with_leptons_loaded) {
 
-	double scale=tg3_F.get_data()[i];
+	double scale=fabs(tg3_F.get_data()[i]);
 	if (scale<10.0) scale=10.0;
 	double F_check=(tg3_F.get_data()[i]-
 			tg3_E.get_data()[i]+
 			T_MeV*tg3_S.get_data()[i])/scale;
 	if (fabs(F_check)>1.0e-9) {
-	  cout << "F doesn't match E-T*S (i,nB,Ye,T,F_check): "
-	       << i << " " << nB << " " << Ye << " " << T_MeV
-	       << " " << F_check << endl;
 	  F_count++;
-	  if (F_count==1000) {
+          if (F_count<1000) {
+            cout << "F doesn't match E-T*S (F_count,i,nB,Ye,T,F_check,scale): "
+                 << F_count << " " << i << "\n  " << nB << " " << Ye
+                 << " " << T_MeV
+                 << " " << F_check << " " << scale << endl;
+          } else if (F_count==1000) {
 	    cout << "Further Fint warnings suppressed." << endl;
 	  }
+          exit(-1);
 	}
       
       }
