@@ -504,13 +504,15 @@ int eos_nuclei::add_eg(std::vector<std::string> &sv,
   eos_sn_base eso;
   eso.include_muons=false;
   
-  for (size_t i=0;i<n_nB2;i++) {
+  //for (size_t i=0;i<n_nB2;i++) {
+  for (size_t i=86;i<n_nB2;i++) {
     for (size_t j=0;j<n_Ye2;j++) {
       for (size_t k=0;k<n_T2;k++) {
 	
 	thermo lep;
 	double mue;
         // Note that this function accepts the temperature in MeV
+        // and the electron chemical potential is returned in 1/fm.
 	eso.compute_eg_point(nB_grid2[i],Ye_grid2[j],T_grid2[k],lep,mue);
 	
 	tg3_F.set(i,j,k,tg3_Fint.get(i,j,k)+
@@ -523,7 +525,8 @@ int eos_nuclei::add_eg(std::vector<std::string> &sv,
 		  lep.en/nB_grid2[i]);
 	tg3_mue.set(i,j,k,hc_mev_fm*mue);
 
-        if (i==0 && j==0 && k==0) {
+        if (true) {
+          
           double nB=nB_grid2[i];
           double T_MeV=T_grid2[k];
           double Ye=Ye_grid2[j];
@@ -537,16 +540,28 @@ int eos_nuclei::add_eg(std::vector<std::string> &sv,
                            nn*tg3_mun.get(i,j,k)-
                            np*tg3_mup.get(i,j,k)-
                            np*tg3_mue.get(i,j,k))/scale/nB;
-          cout << nB << " " << Ye << " " << T_MeV << " "
-               << ti_check << " " << scale << endl;
-          cout << tg3_E.get(i,j,k)*nB << " "
-               << tg3_P.get(i,j,k) << " "
-               << T_MeV*tg3_S.get(i,j,k)*nB << " "
-               << nn*tg3_mun.get(i,j,k) << " "
-               << np*tg3_mup.get(i,j,k) << " "
-               << np*tg3_mue.get(i,j,k) << endl;
-          cout << tg3_mue.get(i,j,k) << endl;
-          //exit(-1);
+          double ti_check2=(lep.ed*hc_mev_fm+
+                            lep.pr*hc_mev_fm-
+                            T_MeV*lep.en-
+                            np*mue*hc_mev_fm)/scale/nB;
+          double ti_int_check=(tg3_Eint.get(i,j,k)*nB+
+                               tg3_Pint.get(i,j,k)-
+                               T_MeV*tg3_Sint.get(i,j,k)*nB-
+                               nn*tg3_mun.get(i,j,k)-
+                               np*tg3_mup.get(i,j,k))/scale/nB;
+          if (fabs(ti_check)>1.0e-9) {
+            cout << nB << " " << Ye << " " << T_MeV << " "
+                 << ti_check << " " << scale << endl;
+            cout << ti_int_check << " " << ti_check2 << " " << Ye*nB << endl;
+            cout << tg3_E.get(i,j,k)*nB << " "
+                 << tg3_P.get(i,j,k) << " "
+                 << T_MeV*tg3_S.get(i,j,k)*nB << " "
+                 << nn*tg3_mun.get(i,j,k) << " "
+                 << np*tg3_mup.get(i,j,k) << " "
+                 << np*tg3_mue.get(i,j,k) << endl;
+            cout << tg3_mue.get(i,j,k) << endl;
+            exit(-1);
+          }
           //char ch;
           //cin >> ch;
         }          
@@ -4052,8 +4067,10 @@ int eos_nuclei::write_results(std::string fname) {
   hdf_output(hf,tg3_A,"A");
   hdf_output(hf,tg3_flag,"flag");
   hdf_output(hf,tg3_Fint,"Fint");
-  hdf_output(hf,tg3_Sint,"Sint");
-  hdf_output(hf,tg3_Eint,"Eint");
+  if (derivs_computed) {
+    hdf_output(hf,tg3_Sint,"Sint");
+    hdf_output(hf,tg3_Eint,"Eint");
+  }
   
   hdf_output(hf,tg3_Xn,"Xn");
   hdf_output(hf,tg3_Xp,"Xp");
@@ -4274,34 +4291,37 @@ int eos_nuclei::read_results(std::string fname) {
   hdf_input(hf,tg3_flag,"flag");
   if (verbose>2) cout << "Reading Fint." << endl;
   hdf_input(hf,tg3_Fint,"Fint");
-  
-  if (hf.find_object_by_name("Sint",type)==0 && type=="tensor_grid") {
-    if (verbose>2) cout << "Reading Sint." << endl;
-    hdf_input(hf,tg3_Sint,"Sint");
-  }
 
-  // Fix old tables which don't have Eint
-  if (hf.find_object_by_name("Eint",type)==0 && type=="tensor_grid") {    
-    if (verbose>2) cout << "Reading Eint." << endl;
-    hdf_input(hf,tg3_Eint,"Eint");
-  } else if (tg3_Sint.total_size()>0) {
-    cout << "Fixing file with missing Eint." << endl;
-    vector<vector<double> > grid={nB_grid2,Ye_grid2,
-				  T_grid2};
-    vector<size_t> sz={n_nB2,n_Ye2,n_T2};
-    tg3_Eint.resize(3,sz);
-    tg3_Eint.set_grid(grid);
-    for(size_t i=0;i<tg3_Eint.total_size();i++) {
-      //std::cout << "J: " << i << " " << tg3_Eint.total_size() << endl;
-      size_t ix[3];
-      tg3_Eint.unpack_index(i,ix);
-      //std::cout << "H: " << i << " " << ix[0] << std::endl;
-      
-      double T_MeV=T_grid2[ix[2]];
-      
-      double Eint_val=tg3_Fint.get_data()[i]+
-	T_MeV*tg3_Sint.get_data()[i];
-      tg3_Eint.get(ix[0],ix[1],ix[2])=Eint_val;
+  if (derivs_computed) {
+    if (hf.find_object_by_name("Sint",type)==0 && type=="tensor_grid") {
+      if (verbose>2) cout << "Reading Sint." << endl;
+      hdf_input(hf,tg3_Sint,"Sint");
+    }
+
+    // Fix old tables which don't have Eint
+    if (hf.find_object_by_name("Eint",type)==0 && type=="tensor_grid") {    
+      if (verbose>2) cout << "Reading Eint." << endl;
+      hdf_input(hf,tg3_Eint,"Eint");
+    } else if (tg3_Sint.total_size()>0) {
+      cout << "Fixing file with missing Eint." << endl;
+      exit(-1);
+      vector<vector<double> > grid={nB_grid2,Ye_grid2,
+                                    T_grid2};
+      vector<size_t> sz={n_nB2,n_Ye2,n_T2};
+      tg3_Eint.resize(3,sz);
+      tg3_Eint.set_grid(grid);
+      for(size_t i=0;i<tg3_Eint.total_size();i++) {
+        //std::cout << "J: " << i << " " << tg3_Eint.total_size() << endl;
+        size_t ix[3];
+        tg3_Eint.unpack_index(i,ix);
+        //std::cout << "H: " << i << " " << ix[0] << std::endl;
+        
+        double T_MeV=T_grid2[ix[2]];
+        
+        double Eint_val=tg3_Fint.get_data()[i]+
+          T_MeV*tg3_Sint.get_data()[i];
+        tg3_Eint.get(ix[0],ix[1],ix[2])=Eint_val;
+      }
     }
   }
   
@@ -5417,19 +5437,21 @@ int eos_nuclei::stats(std::vector<std::string> &sv,
 	  ti_count++;
           if (ti_count<1000) {
             cout << "Therm. ident. doens't hold (ti_count,i,"
-                 << "nB,Ye,T,ti_check): "
+                 << "nB,Ye,T,ti_check,scale): "
                  << ti_count << " " << i << "\n  "
                  << nB << " " << Ye << " " << T_MeV
-                 << " " << ti_check << endl;
-            if (false) {
+                 << " " << ti_check << " " << scale << endl;
+            if (true) {
+              cout.precision(5);
               cout << tg3_E.get_data()[i]*nB << " "
                    << tg3_P.get_data()[i] << " "
                    << T_MeV*tg3_S.get_data()[i]*nB << " "
                    << nn*tg3_mun.get_data()[i] << " "
                    << np*tg3_mup.get_data()[i] << " "
                    << np*tg3_mue.get_data()[i] << endl;
-              cout << tg3_mue.get_data()[i] << endl;
-              exit(-1);
+              cout.precision(6);
+              char ch;
+              cin >> ch;
             }
           } else if (ti_count==1000) {
 	    cout << "Further Fint warnings suppressed." << endl;
