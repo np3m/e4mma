@@ -7936,6 +7936,119 @@ int eos_nuclei::mcarlo_nuclei2(std::vector<std::string> &sv,
   return 0;
 }
 
+int eos_nuclei::test_neutrino(std::vector<std::string> &sv, 
+                              bool itive_com) {
+
+  
+  double T=10.0/hc_mev_fm;
+  
+  if (true) {
+    skyrme_load(sk,"NRAPR");
+    neutron.n=1.503779e-01;
+    proton.n=9.622062e-03;
+    thermo thxx;
+    sk.calc_temp_e(neutron,proton,10.0/hc_mev_fm,thxx);
+    electron.n=proton.n;
+    fermion_rel fr;
+    fr.calc_density(electron,10.0/hc_mev_fm);
+  }
+  
+  cout << "mun: " << neutron.mu*hc_mev_fm << endl;
+  cout << "mup: " << proton.mu*hc_mev_fm << endl;
+  cout << "msn: " << neutron.ms*hc_mev_fm << endl;
+  cout << "msp: " << proton.ms*hc_mev_fm << endl;
+  cout << "nn: " << neutron.n << endl;
+  cout << "np: " << proton.n << endl;
+  
+  cout << sk.t0 << endl;
+  cout << neutron.inc_rest_mass << endl;
+  
+  double u2eos=neutron.mu*hc_mev_fm-pow(neutron.kf*hc_mev_fm,2.0)/2.0/
+    neutron.ms/hc_mev_fm;
+  cout << "U2: " << u2eos << endl;
+  double u4eos=proton.mu*hc_mev_fm-pow(proton.kf*hc_mev_fm,2.0)/2.0/
+    proton.ms/hc_mev_fm;
+  cout << "U4: " << u4eos << endl;
+  cout << "T*hc_mev_fm: " << T*hc_mev_fm << endl;
+  
+  neutron.ms=751.587/hc_mev_fm;
+  proton.ms=575.792/hc_mev_fm;
+  u2eos=-35.8795;
+  u4eos=-103.247;
+  
+  FluidState betaEoS;
+  betaEoS=FluidState::StateFromDensities
+    (T*hc_mev_fm,neutron.ms*hc_mev_fm,proton.ms*hc_mev_fm,
+     neutron.n*pow(hc_mev_fm,3.0),proton.n*pow(hc_mev_fm,3.0),
+     u2eos,u4eos,electron.m*hc_mev_fm,electron.n*pow(hc_mev_fm,3.0));
+  cout << betaEoS.Mu2 << " " << betaEoS.Mu4 << " "
+       << betaEoS.Mu3 << endl;
+  
+  /*
+    nrparEos: baryon den: 0.16 y_N: 0.939862 n2: 0.150378 n4:
+    0.00962206 M3: 0.511 m2eff: 751.587 m4eff: 575.792 U2:
+    -35.8795 U4: -103.247 deltaU: 67.3676 mu2: 34.2278 Mu4:
+    -88.6003 mu2-mu4 122.828 Mu3: 123.617 n3: 0.00962206 vf:
+    0.000237182 vgt: 0.000146182
+    
+    charged current: 0.16 0.939862 noWm: 0.00072131 Wm: 0.00072131
+    elastic: 0.000949514 elastic1: 0.0752413 noWm/elastc: 0.759663
+    noWm/elastic1: 0.00958663 M3: 0.511 neff/n: 0.938675 pe/Ee:
+    0.0134443 deltaU: 67.3676 mu2-mu4 122.828 ImPi0: -2.27353 
+  */
+  
+  WeakCouplings nscat=WeakCouplings::NeutronScattering();
+  WeakCouplings ncap=WeakCouplings::NuCapture();
+  ncap.F2=0.0;
+  
+  //turn off pauli blocking for NC
+  //Polarization(FluidState st, WeakCouplings wc = WeakCouplings(), 
+  //bool antiNeutrino = false, bool doReddy = false, bool doBlock = false,
+  //int NAngularPoints = 64, int NQ0Points = 256);
+  
+  // Incoming neutrino energy
+  double E1=12.0;
+  
+  betaEoS.Mu2=neutron.mu*hc_mev_fm;
+  betaEoS.Mu4=proton.mu*hc_mev_fm;
+  betaEoS.Mu3=(electron.mu-electron.m)*hc_mev_fm;
+
+  PolarizationNonRel pol(betaEoS, ncap, false, false, true);
+  
+  pol.set_skyrme(sk.t0*hc_mev_fm,sk.t1*hc_mev_fm,
+                 sk.t2*hc_mev_fm,sk.t3*hc_mev_fm,
+                 sk.x0,sk.x1,sk.x2,sk.x3,sk.alpha);
+  
+  pol.current=1;
+  pol.flag=0;
+  double cc_vec_mfp=pol.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
+  cout << cc_vec_mfp << endl;
+  pol.flag=1;
+  double cc_axvec_mfp=pol.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
+  cout << cc_axvec_mfp << endl;
+  pol.flag=0;
+  
+  betaEoS.Mu2=neutron.mu*hc_mev_fm;
+  betaEoS.Mu4=neutron.mu*hc_mev_fm;
+  betaEoS.Mu3=0.0;
+
+  PolarizationNonRel pol_nc(betaEoS, nscat, false, false, true);
+  
+  pol_nc.set_skyrme(sk.t0*hc_mev_fm,sk.t1*hc_mev_fm,
+                 sk.t2*hc_mev_fm,sk.t3*hc_mev_fm,
+                 sk.x0,sk.x1,sk.x2,sk.x3,sk.alpha);
+  
+  pol_nc.current=0;
+  double nc_vec_mfp=pol_nc.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
+  cout << nc_vec_mfp << endl;
+  pol_nc.flag=1;
+  double nc_axvec_mfp=pol_nc.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
+  cout << nc_axvec_mfp << endl;
+  
+      
+  return 0;
+}
+
 int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv, 
 			       bool itive_com) {
   
@@ -7982,7 +8095,11 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
     bool dist_changed=true;
     bool no_nuclei=false;
     
-    //for(size_t iYe=0;iYe<n_Ye2;iYe++) {
+    eos_sn_base eso;
+    eso.include_muons=false;
+    thermo lep;
+
+  //for(size_t iYe=0;iYe<n_Ye2;iYe++) {
     //for(size_t iYe=40;iYe<n_Ye2;iYe++) {
     for(size_t iYe=49;iYe<50;iYe++) {
       double Ye=Ye_grid2[iYe];
@@ -8017,6 +8134,11 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
              << Zbar/(Zbar+Nbar) << " "
              << thx.ed-T*thx.en << endl;
 
+        double mue=electron.m;
+	eso.compute_eg_point(nB_grid2[inB],Ye_grid2[iYe],T_grid2[iT],lep,mue);
+
+        double fr=thx.ed-T*thx.en+lep.ed-T*lep.en;
+        
         if (ret==0 && thx.ed-T*thx.en<fr_Ye) {
           fr_Ye=thx.ed-T*thx.en;
         }
@@ -8067,6 +8189,8 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         thermo thxx;
         sk.calc_temp_e(neutron,proton,10.0/hc_mev_fm,thxx);
         electron.n=proton.n;
+        fermion_rel fr;
+        fr.calc_density(electron,10.0/hc_mev_fm);
       }
       
       cout << "mun: " << neutron.mu*hc_mev_fm << endl;
@@ -8097,7 +8221,11 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         (T*hc_mev_fm,neutron.ms*hc_mev_fm,proton.ms*hc_mev_fm,
          neutron.n*pow(hc_mev_fm,3.0),proton.n*pow(hc_mev_fm,3.0),
          u2eos,u4eos,electron.m*hc_mev_fm,electron.n*pow(hc_mev_fm,3.0));
-      cout << betaEoS.Mu3 << endl;
+      betaEoS.Mu2=neutron.mu*hc_mev_fm;
+      betaEoS.Mu4=proton.mu*hc_mev_fm;
+      betaEoS.Mu3=(electron.mu-electron.m)*hc_mev_fm;
+      cout << betaEoS.Mu2 << " " << betaEoS.Mu4 << " "
+           << betaEoS.Mu3 << endl;
 
       /*
         nrparEos: baryon den: 0.16 y_N: 0.939862 n2: 0.150378 n4:
@@ -8129,10 +8257,14 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
       
       // Incoming neutrino energy
       double E1=12.0;
-      double full=pol.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
+
+      pol.flag=0;
+      double cc_vec_mfp=pol.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
+      pol.flag=1;
+      double cc_axvec_mfp=pol.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
       
-      cout << "full: " << full << endl;
-      exit(-1);
+      //cout << "full: " << full << endl;
+      //exit(-1);
     }
     
     if (ret2==0) {
@@ -8157,7 +8289,7 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
   
   eos::setup_cli(cl);
   
-  static const int nopt=22;
+  static const int nopt=23;
   
   o2scl::comm_option_s options[nopt]=
     {{0,"eos-deriv","compute derivatives",
@@ -8244,6 +8376,10 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
       3,3,"<nB> <T> <filename>",
       "",new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::mcarlo_beta),o2scl::cli::comm_option_both},
+     {0,"test-neutrino","",
+      0,0,"<nB> <T> <filename>",
+      "",new o2scl::comm_option_mfptr<eos_nuclei>
+      (this,&eos_nuclei::test_neutrino),o2scl::cli::comm_option_both},
      {0,"point-nuclei",
       "Compute and/or show EOS results at one (n_B,Y_e,T) point.",
       -1,-1,((string)"<n_B> <Y_e> <T (MeV)> [log(xn) log(xp) Z N] ")+

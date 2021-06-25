@@ -660,6 +660,8 @@ public:
    */
   int mcarlo_beta(std::vector<std::string> &sv, bool itive_com);
   
+  int test_neutrino(std::vector<std::string> &sv, bool itive_com);
+  
   /// Compute the baryon number fractions and put them in \c X
   void compute_X(double nB, ubvector &X);
   

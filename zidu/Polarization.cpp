@@ -86,6 +86,8 @@ Polarization::Polarization(FluidState stPol, WeakCouplings wc, bool antiNeutrino
   cgqf(NNPGL, 5,  0.0, 0.0, 0.0, 1.0, xgl.data(), wgl.data()); 
   for (int i=0; i<NPGJ; ++i) ww[i] = ww[i] * sqrt(1.0 - xx[i]);
   //for (int i=0; i<NPGJ; ++i) wgl[i] = wgl[i] * exp(xgl[i]);
+  flag=0;
+  current=0;
 }
 
 std::array<double, 4> Polarization::CalculateBasePolarizations (
@@ -357,8 +359,11 @@ double Polarization::GetResponse(double E1, double q0, double q) const {
   SetPolarizations(q0, q, &piVV, &piAA, &piTT, &piVA, &piVT, &piAT);
   
   double pi = 0.0;
- // pi += coup.Cv*coup.Cv*FullContract(L, piVV);
-  pi += coup.Ca*coup.Ca*FullContract(L, piAA);
+  if (flag==0) {
+    pi += coup.Cv*coup.Cv*FullContract(L, piVV);
+  } else if (flag==1) {
+    pi += coup.Ca*coup.Ca*FullContract(L, piAA);
+  }
  // delete the last four terms to produce ccOutputT10E10betaRelnoVAVT 
 //  pi += coup.F2*coup.F2*FullContract(L, piTT);
 //  pi += coup.Cv*coup.Ca*FullContract(L, piVA);

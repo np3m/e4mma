@@ -110,6 +110,12 @@ public:
   int NPGJ, NNPGL;
   std::vector<double> xx, ww, xl, wl;
   std::vector<double> xgl, wgl;
+
+  /// flag=0 is vector part, flag=1 is axial part
+  int flag;
+
+  /// current=0 is neutral current, current=1 is charged current
+  int current;
   
 protected:
   virtual void SetPolarizations(double q0, double q, 
