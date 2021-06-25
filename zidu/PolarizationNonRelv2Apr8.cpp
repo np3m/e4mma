@@ -694,13 +694,14 @@ void PolarizationNonRel::SetPolarizations(double q0, double q,
   //<< gpp << " " << kfn << " " << kfp << std::endl;
      
   //for neutral current couplings
-  /*  fnn=fnn/pow(197.3,3);
-      fpp=fpp/pow(197.3,3);
-      gnn=gnn/pow(197.3,3);
-      gpp=gpp/pow(197.3,3);
-      fnp=fnp/pow(197.3,3);
-      gnp=gnp/pow(197.3,3);*/
-   
+  if (current==0) {
+    fnn=fnn/pow(197.3,3);
+    fpp=fpp/pow(197.3,3);
+    gnn=gnn/pow(197.3,3);
+    gpp=gpp/pow(197.3,3);
+    fnp=fnp/pow(197.3,3);
+    gnp=gnp/pow(197.3,3);
+  }
    
    
   //for charged current couplings

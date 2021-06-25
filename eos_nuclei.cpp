@@ -7981,8 +7981,6 @@ int eos_nuclei::test_neutrino(std::vector<std::string> &sv,
     (T*hc_mev_fm,neutron.ms*hc_mev_fm,proton.ms*hc_mev_fm,
      neutron.n*pow(hc_mev_fm,3.0),proton.n*pow(hc_mev_fm,3.0),
      u2eos,u4eos,electron.m*hc_mev_fm,electron.n*pow(hc_mev_fm,3.0));
-  cout << betaEoS.Mu2 << " " << betaEoS.Mu4 << " "
-       << betaEoS.Mu3 << endl;
   
   /*
     nrparEos: baryon den: 0.16 y_N: 0.939862 n2: 0.150378 n4:
@@ -7998,6 +7996,7 @@ int eos_nuclei::test_neutrino(std::vector<std::string> &sv,
   */
   
   WeakCouplings nscat=WeakCouplings::NeutronScattering();
+  nscat.F2=0.0;
   WeakCouplings ncap=WeakCouplings::NuCapture();
   ncap.F2=0.0;
   
@@ -8012,6 +8011,8 @@ int eos_nuclei::test_neutrino(std::vector<std::string> &sv,
   betaEoS.Mu2=neutron.mu*hc_mev_fm;
   betaEoS.Mu4=proton.mu*hc_mev_fm;
   betaEoS.Mu3=(electron.mu-electron.m)*hc_mev_fm;
+  cout << betaEoS.Mu2 << " " << betaEoS.Mu4 << " "
+       << betaEoS.Mu3 << endl;
 
   PolarizationNonRel pol(betaEoS, ncap, false, false, true);
   
@@ -8022,10 +8023,10 @@ int eos_nuclei::test_neutrino(std::vector<std::string> &sv,
   pol.current=1;
   pol.flag=0;
   double cc_vec_mfp=pol.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
-  cout << cc_vec_mfp << endl;
+  cout << "charged current, vector part: " << cc_vec_mfp << endl;
   pol.flag=1;
   double cc_axvec_mfp=pol.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
-  cout << cc_axvec_mfp << endl;
+  cout << "charged current, axial part: " << cc_axvec_mfp << endl;
   pol.flag=0;
   
   betaEoS.Mu2=neutron.mu*hc_mev_fm;
@@ -8035,15 +8036,15 @@ int eos_nuclei::test_neutrino(std::vector<std::string> &sv,
   PolarizationNonRel pol_nc(betaEoS, nscat, false, false, true);
   
   pol_nc.set_skyrme(sk.t0*hc_mev_fm,sk.t1*hc_mev_fm,
-                 sk.t2*hc_mev_fm,sk.t3*hc_mev_fm,
-                 sk.x0,sk.x1,sk.x2,sk.x3,sk.alpha);
+                    sk.t2*hc_mev_fm,sk.t3*hc_mev_fm,
+                    sk.x0,sk.x1,sk.x2,sk.x3,sk.alpha);
   
   pol_nc.current=0;
   double nc_vec_mfp=pol_nc.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
-  cout << nc_vec_mfp << endl;
+  cout << "neutral current, vector part: " << nc_vec_mfp << endl;
   pol_nc.flag=1;
   double nc_axvec_mfp=pol_nc.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
-  cout << nc_axvec_mfp << endl;
+  cout << "neutral current, axial part: " << nc_axvec_mfp << endl;
   
       
   return 0;
