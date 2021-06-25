@@ -504,16 +504,24 @@ int eos_nuclei::add_eg(std::vector<std::string> &sv,
   eos_sn_base eso;
   eso.include_muons=false;
   
-  //for (size_t i=0;i<n_nB2;i++) {
-  for (size_t i=86;i<n_nB2;i++) {
+  for (size_t i=0;i<n_nB2;i++) {
     for (size_t j=0;j<n_Ye2;j++) {
+      double mue_last;
       for (size_t k=0;k<n_T2;k++) {
 	
 	thermo lep;
 	double mue;
         // Note that this function accepts the temperature in MeV
         // and the electron chemical potential is returned in 1/fm.
+        if (k==0) {
+          mue=0.511/197.33;
+        } else {
+          mue=mue_last;
+        }
+        cout << nB_grid2[i] << " " << Ye_grid2[j] << " " << T_grid2[k]
+             << endl;
 	eso.compute_eg_point(nB_grid2[i],Ye_grid2[j],T_grid2[k],lep,mue);
+        mue_last=mue;
 	
 	tg3_F.set(i,j,k,tg3_Fint.get(i,j,k)+
 		  (hc_mev_fm*lep.ed-T_grid2[k]*lep.en)/nB_grid2[i]);
@@ -550,6 +558,7 @@ int eos_nuclei::add_eg(std::vector<std::string> &sv,
                                nn*tg3_mun.get(i,j,k)-
                                np*tg3_mup.get(i,j,k))/scale/nB;
           if (fabs(ti_check)>1.0e-9) {
+            cout << "ti check failed." << endl;
             cout << nB << " " << Ye << " " << T_MeV << " "
                  << ti_check << " " << scale << endl;
             cout << ti_int_check << " " << ti_check2 << " " << Ye*nB << endl;
