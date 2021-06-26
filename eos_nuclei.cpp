@@ -557,18 +557,31 @@ int eos_nuclei::add_eg(std::vector<std::string> &sv,
                                T_MeV*tg3_Sint.get(i,j,k)*nB-
                                nn*tg3_mun.get(i,j,k)-
                                np*tg3_mup.get(i,j,k))/scale/nB;
-          if (fabs(ti_check)>1.0e-9) {
+          if (fabs(ti_check)>1.0e-6) {
             cout << "ti check failed." << endl;
-            cout << nB << " " << Ye << " " << T_MeV << " "
-                 << ti_check << " " << scale << endl;
-            cout << ti_int_check << " " << ti_check2 << " " << Ye*nB << endl;
-            cout << tg3_E.get(i,j,k)*nB << " "
+            cout << "nB,Ye,ti,scale: " << nB << " " << Ye << " "
+                 << T_MeV << " " << ti_check << " " << scale << endl;
+            cout << "ti_int, ti_2, n_e: "
+                 << ti_int_check << " " << ti_check2 << " " << Ye*nB << endl;
+            cout << "terms in ti_check: " << tg3_E.get(i,j,k)*nB << " "
                  << tg3_P.get(i,j,k) << " "
                  << T_MeV*tg3_S.get(i,j,k)*nB << " "
                  << nn*tg3_mun.get(i,j,k) << " "
                  << np*tg3_mup.get(i,j,k) << " "
                  << np*tg3_mue.get(i,j,k) << endl;
-            cout << tg3_mue.get(i,j,k) << endl;
+            cout << "terms in ti_check2: "
+                 << lep.ed << " " << lep.pr << " "
+                 << T_MeV/hc_mev_fm*lep.en << " " << np*mue << endl;
+            cout << "  " << lep.ed+lep.pr << " "
+                 << T_MeV/hc_mev_fm*lep.en+np*mue << endl;
+            cout << "  " << lep.ed+lep.pr-
+              T_MeV/hc_mev_fm*lep.en-np*mue << endl;
+            cout << "  "
+                 << (lep.ed+lep.pr-T_MeV/hc_mev_fm*lep.en-np*mue)/scale/
+              nB*hc_mev_fm << endl;
+            cout << "mue: " << tg3_mue.get(i,j,k) << endl;
+            cout << eso.electron.n << " " << np << endl;
+            cout << eso.electron.mu << " " << mue << endl;
             exit(-1);
           }
           //char ch;
