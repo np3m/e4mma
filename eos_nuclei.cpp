@@ -518,8 +518,10 @@ int eos_nuclei::add_eg(std::vector<std::string> &sv,
         } else {
           mue=mue_last;
         }
-        cout << nB_grid2[i] << " " << Ye_grid2[j] << " " << T_grid2[k]
-             << endl;
+        
+        //cout << nB_grid2[i] << " " << Ye_grid2[j] << " " << T_grid2[k]
+        //<< endl;
+        
 	eso.compute_eg_point(nB_grid2[i],Ye_grid2[j],T_grid2[k],lep,mue);
         mue_last=mue;
 	
