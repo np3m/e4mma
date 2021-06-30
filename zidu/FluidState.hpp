@@ -40,10 +40,13 @@
   /// Structure that contains the properties of 
   ///
   struct FluidState {
+    
     double T, M2, M3, M4, Mu2, Mu3, Mu4, U2, U4;
-    double n2, n3, n4, effectiveDensity; 
-    static constexpr const double tolerance = 1.e-6; 
-    double SensitiveP;//added by zidu, for testing the sensitivity of pol on residual interactions(or any sensitive parameter) 
+    
+    double n2, n3, n4, effectiveDensity;
+    
+    static constexpr const double tolerance = 1.e-6;
+    
     /// Default constructor, which will surely break the Polarization class if 
     /// used 
     FluidState();
@@ -60,7 +63,7 @@
    // static FluidState StateFromDensities(double T, double M2, double M4, 
      //   double n2, double n4, double U2, double U4, double M3, double n3 = 1.e-10);//original one
     static FluidState StateFromDensities(double T, double M2, double M4,
-        double n2, double n4, double U2, double U4, double M3, double n3 = 1.e-10, double SensitiveP =1.e-10);//added by zidu, for testing the sensitivity of pol on residual interactions
+        double n2, double n4, double U2, double U4, double M3, double n3 = 1.e-10);
 
   
     static FluidState BetaEquilibriumConsistentPotential(double T, double M2, 

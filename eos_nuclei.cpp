@@ -1,7 +1,7 @@
 /*
   -------------------------------------------------------------------
   
-  Copyright (C) 2018-2020, Xingfu Du, Zidu Lin, and Andrew W. Steiner
+  Copyright (C) 2018-2021, Xingfu Du, Zidu Lin, and Andrew W. Steiner
   
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -5465,7 +5465,7 @@ int eos_nuclei::stats(std::vector<std::string> &sv,
                  << ti_count << " " << i << "\n  "
                  << nB << " " << Ye << " " << T_MeV
                  << " " << ti_check << " " << scale << endl;
-            if (true) {
+            if (false) {
               cout.precision(5);
               cout << tg3_E.get_data()[i]*nB << " "
                    << tg3_P.get_data()[i] << " "

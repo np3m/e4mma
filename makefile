@@ -75,10 +75,6 @@ zidu/FluidState.o: zidu/FluidState.cpp zidu/FluidState.hpp
 	$(LCXX) $(LCFLAGS) -DNUOPAC_HAS_GSL -o zidu/FluidState.o \
 		-c zidu/FluidState.cpp
 
-zidu/FluidStateReSInt.o: zidu/FluidStateReSInt.cpp
-	$(LCXX) $(LCFLAGS) -DNUOPAC_HAS_GSL -o zidu/FluidStateReSInt.o \
-	-c zidu/FluidStateReSInt.cpp
-
 zidu/FunctionIntegrator.o: zidu/FunctionIntegrator.cpp \
 	zidu/FunctionIntegrator.hpp
 	$(LCXX) $(LCFLAGS) -DNUOPAC_HAS_GSL -o zidu/FunctionIntegrator.o \
@@ -123,11 +119,11 @@ eos_nuclei_nompi: eos_nompi.o main_nompi.o eos_nuclei_nompi.o \
 # A shorthand alias for eos_nuclei_nompi
 enn: eos_nompi.o main_nompi.o eos_nuclei_nompi.o \
 		eos_had_skyrme_ext_nompi.o eos_nompi.o \
-		zidu/Couplings.o zidu/FluidStateReSInt.o \
+		zidu/Couplings.o zidu/FluidState.o \
 		zidu/FunctionIntegrator.o zidu/Polarization.o \
 		zidu/PolarizationNonRelv2Apr8.o zidu/jacobi_rule.o 
 	$(LCXX) $(LCFLAGS) -o enn eos_nompi.o main_nompi.o \
-		zidu/Couplings.o zidu/FluidStateReSInt.o \
+		zidu/Couplings.o zidu/FluidState.o \
 		zidu/FunctionIntegrator.o zidu/Polarization.o \
 		zidu/PolarizationNonRelv2Apr8.o zidu/jacobi_rule.o \
 		eos_nuclei_nompi.o eos_had_skyrme_ext_nompi.o $(LIBS) \

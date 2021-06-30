@@ -36,20 +36,41 @@
 #include "Constants.hpp" 
 
 #ifdef NUOPAC_HAS_GSL 
-  #include "FunctionIntegrator.hpp" 
-  #include "OneDimensionalRoot.hpp" 
+#include "FunctionIntegrator.hpp" 
+#include "OneDimensionalRoot.hpp" 
 #endif
    
 using namespace nuopac;
 
-FluidState::FluidState() : T(0.0), M2(0.0), M3(0.0), M4(0.0), 
-        Mu2(0.0), Mu3(0.0), Mu4(0.0), U2(0.0), U4(0.0),  n2(0.0), 
-        n3(0.0), n4(0.0) {}
+FluidState::FluidState() {
+  T=0.0;
+  M2=0.0;
+  M3=0.0;
+  M4=0.0;
+  Mu2=0.0;
+  Mu3=0.0;
+  Mu4=0.0;
+  U2=0.0;
+  U4=0.0;
+  n2=0.0;
+  n3=0.0;
+  n4=0.0;
+}
 
-FluidState::FluidState(double T, double M2, double M4, 
-    double Mu2, double Mu4, double U2, double U4, double M3, double Mu3) 
-    : T(T), M2(M2), M4(M4), Mu2(Mu2), Mu4(Mu4), U2(U2), U4(U4), 
-    M3(M3), Mu3(Mu3) {
+FluidState::FluidState(double T_, double M2_, double M4_, 
+                       double Mu2_, double Mu4_, double U2_, double U4_,
+                       double M3_, double Mu3_) {
+
+  T=T_;
+  M2=M2_;
+  M4=M4_;
+  Mu2=Mu2_;
+  Mu4=Mu4_;
+  U2=U2_;
+  U4=U4_;
+  M3=M3_;
+  Mu3=Mu3_;
+  
   n2 = GetDensity(T, M2, Mu2, U2, 2.0);
   n3 = GetDensity(T, M3, Mu3, 0.0, 2.0);
   n3 -= GetDensity(T, M3, -Mu3, 0.0, 2.0);
@@ -58,8 +79,9 @@ FluidState::FluidState(double T, double M2, double M4,
   // The expression for charged current type rates 
   effectiveDensity = (n2 - n4)/(1.0 - exp((Mu4 - M4 - U4 - Mu2 + M2 + U2)/T));
   // Expression for scattering rates
-  if (fabs((n2-n4)/n4) < 1.e-5) 
-    effectiveDensity = GetDegenerateElasticReponse(T, M2, Mu2, U2, 2.0); 
+  if (fabs((n2-n4)/n4) < 1.e-5) {
+    effectiveDensity = GetDegenerateElasticReponse(T, M2, Mu2, U2, 2.0);
+  }
 }
 
 // Return a state with reversed partine labels and anti-particles for particle 3
