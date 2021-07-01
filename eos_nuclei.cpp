@@ -7904,8 +7904,8 @@ int eos_nuclei::mcarlo_nuclei2(std::vector<std::string> &sv,
 
   table<> tab;
   tab.line_of_names("log_xn log_xp Z N A ZoA Xnuclei");
-
-  static const int N=1000;
+  
+  static const int N=o2scl::stoi(sv[4]);
   for(int j=0;j<N;j++) {
     std::cout << "j: " << j << endl;
     
@@ -7971,7 +7971,7 @@ int eos_nuclei::mcarlo_nuclei2(std::vector<std::string> &sv,
 
     if (j%100==0) {
       hdf_file hf;
-      hf.open_or_create(sv[4]);
+      hf.open_or_create(sv[5]);
       hdf_output(hf,tab,"mn2");
       hf.close();
     }
@@ -8415,7 +8415,7 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
       "",new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::mcarlo_nuclei),o2scl::cli::comm_option_both},
      {0,"mcarlo-nuclei2","",
-      4,4,"<nB> <Ye> <T> <filename>",
+      5,5,"<nB> <Ye> <T> <N> <filename>",
       "",new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::mcarlo_nuclei2),o2scl::cli::comm_option_both},
      {0,"mcarlo-beta","",
