@@ -502,7 +502,7 @@ int eos_nuclei::add_eg(std::vector<std::string> &sv,
   }
   
   eos_sn_base eso;
-  eso.include_muons=false;
+  eso.include_muons=this->include_muons;
   
   for (size_t i=0;i<n_nB2;i++) {
     for (size_t j=0;j<n_Ye2;j++) {
@@ -514,6 +514,8 @@ int eos_nuclei::add_eg(std::vector<std::string> &sv,
         // Note that this function accepts the temperature in MeV
         // and the electron chemical potential is returned in 1/fm.
         if (k==0) {
+          // For the lowest temperature grid point, give an initial
+          // guess for the electron chemical potential
           mue=0.511/197.33;
         } else {
           mue=mue_last;
@@ -4069,6 +4071,11 @@ int eos_nuclei::write_results(std::string fname) {
   }
 #endif
   
+  if (with_leptons_loaded && !derivs_computed) {
+    O2SCL_ERR("File indicates leptons but no derivatives.",
+              o2scl::exc_eunimpl);
+  }
+  
   cout << "Function write_results(): rank " << mpi_rank
        << " writing file " << fname << endl;
   
@@ -4126,7 +4133,7 @@ int eos_nuclei::write_results(std::string fname) {
   }
   // The parent class has an include_muons bool but this
   // child class doesn't support muons yet
-  hf.seti("include_muons",0);
+  hf.seti("include_muons",this->include_muons);
 
   hf.setd("m_neut",neutron.m*o2scl_const::hc_mev_fm);
   hf.setd("m_prot",proton.m*o2scl_const::hc_mev_fm);
@@ -4143,6 +4150,9 @@ int eos_nuclei::write_results(std::string fname) {
       hdf_output(hf,tg3_P,"P");
       hdf_output(hf,tg3_S,"S");
       hdf_output(hf,tg3_mue,"mue");
+      if (this->include_muons) {
+        hdf_output(hf,tg3_Ymu,"Ymu");
+      }
     }      
   }
 
@@ -4290,13 +4300,21 @@ int eos_nuclei::read_results(std::string fname) {
   hf.geti_def("derivs_computed",0,itmp);
   if (itmp==1) derivs_computed=true;
   else derivs_computed=false;
+
+  if (with_leptons_loaded && !derivs_computed) {
+    O2SCL_ERR("File indicates leptons but no derivatives.",
+              o2scl::exc_eunimpl);
+  }
   
   if (verbose>2) cout << "Reading include_detail." << endl;
   hf.geti_def("detail",0,itmp);
   if (itmp==1) include_detail=true;
   else include_detail=false;
   
-  include_muons=false;
+  if (verbose>2) cout << "Reading include_muons." << endl;
+  hf.geti_def("detail",0,itmp);
+  if (itmp==1) include_muons=true;
+  else include_muons=false;
 
   if (verbose>2) cout << "Reading alg_mode." << endl;
   hf.geti_def("alg_mode",4,alg_mode);
@@ -4433,12 +4451,17 @@ int eos_nuclei::read_results(std::string fname) {
       hdf_input(hf,tg3_S,"S");
       if (verbose>2) cout << "Reading mue." << endl;
       hdf_input(hf,tg3_mue,"mue");
+      if (include_muons) {
+        if (verbose>2) cout << "Reading Ymu." << endl;
+        hdf_input(hf,tg3_Ymu,"Ymu");
+      }
     } else {
       tg3_F.clear();
       tg3_E.clear();
       tg3_P.clear();
       tg3_S.clear();
       tg3_mue.clear();
+      tg3_Ymu.clear();
     }
   } else {
     tg3_Pint.clear();
@@ -4449,6 +4472,7 @@ int eos_nuclei::read_results(std::string fname) {
     tg3_P.clear();
     tg3_S.clear();
     tg3_mue.clear();
+    tg3_Ymu.clear();
   }
 
   if (include_detail) {
@@ -6167,6 +6191,10 @@ int eos_nuclei::edit_data(std::vector<std::string> &sv,
 	vars["A"]=tg3_A.get(inB,iYe,iT);
 	vars["log_xn"]=tg3_log_xn.get(inB,iYe,iT);
 	vars["log_xp"]=tg3_log_xp.get(inB,iYe,iT);
+
+        if (include_muons && with_leptons_loaded) {
+          vars["Ymu"]=tg3_Ymu.get(inB,iYe,iT);
+        }
 	
 	vars["Xn"]=tg3_Xn.get(inB,iYe,iT);
 	vars["Xp"]=tg3_Xp.get(inB,iYe,iT);
@@ -6242,6 +6270,8 @@ int eos_nuclei::edit_data(std::vector<std::string> &sv,
 	      tg3_NmZ_min.get(inB,iYe,iT)=val2;
 	    } else if (tensor_to_change=="NmZ_max") {
 	      tg3_NmZ_max.get(inB,iYe,iT)=val2;
+	    } else if (tensor_to_change=="Ymu") {
+	      tg3_Ymu.get(inB,iYe,iT)=val2;
 	    } else if (tensor_to_change=="Eint") {
 	      tg3_Eint.get(inB,iYe,iT)=val2;
 	    } else if (tensor_to_change=="Pint") {

@@ -377,6 +377,7 @@ public:
   o2scl::tensor_grid3<> tg3_Xp;
   o2scl::tensor_grid3<> tg3_Xalpha;
   o2scl::tensor_grid3<> tg3_Xnuclei;
+  o2scl::tensor_grid3<> tg3_Ymu;
   o2scl::tensor_grid3<> tg3_Xd;
   o2scl::tensor_grid3<> tg3_Xt;
   o2scl::tensor_grid3<> tg3_XHe3;
