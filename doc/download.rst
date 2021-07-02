@@ -1,12 +1,12 @@
 Tables to Download
 ==================
 
-- fiducial.o2
-- large_mmax.o2
-- large_sl.o2
-- large_r.o2
-- small_sl.o2
-- small_r.o2
-- smaller_r.o2
+- `Fiducial <https://isospin.roam.utk.edu/public_data/eos_tables/du21/fid_6_30_21.o2>`_
+- large_mmax
+- large_sl
+- large_r
+- small_sl
+- small_r
+- smaller_r
 
 
