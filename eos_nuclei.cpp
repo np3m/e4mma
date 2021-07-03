@@ -4098,10 +4098,8 @@ int eos_nuclei::write_results(std::string fname) {
   hdf_output(hf,tg3_A,"A");
   hdf_output(hf,tg3_flag,"flag");
   hdf_output(hf,tg3_Fint,"Fint");
-  if (derivs_computed) {
-    hdf_output(hf,tg3_Sint,"Sint");
-    hdf_output(hf,tg3_Eint,"Eint");
-  }
+  hdf_output(hf,tg3_Sint,"Sint");
+  hdf_output(hf,tg3_Eint,"Eint");
   
   hdf_output(hf,tg3_Xn,"Xn");
   hdf_output(hf,tg3_Xp,"Xp");
@@ -4334,7 +4332,6 @@ int eos_nuclei::read_results(std::string fname) {
   if (verbose>2) cout << "Reading Fint." << endl;
   hdf_input(hf,tg3_Fint,"Fint");
 
-  if (derivs_computed) {
     if (hf.find_object_by_name("Sint",type)==0 && type=="tensor_grid") {
       if (verbose>2) cout << "Reading Sint." << endl;
       hdf_input(hf,tg3_Sint,"Sint");
@@ -4365,7 +4362,6 @@ int eos_nuclei::read_results(std::string fname) {
         tg3_Eint.get(ix[0],ix[1],ix[2])=Eint_val;
       }
     }
-  }
   
   if (verbose>2) cout << "Reading Xn." << endl;
   hdf_input(hf,tg3_Xn,"Xn");
