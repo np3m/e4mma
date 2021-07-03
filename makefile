@@ -57,16 +57,6 @@ eos_had_skyrme_ext.o: eos_had_skyrme_ext.cpp virial_solver.h \
 main.o: main.cpp virial_solver.h eos.h 
 	$(LMPI_CXX) $(LMPI_CFLAGS) -o main.o -c main.cpp 
 
-eos_nuclei: eos.o main.o eos_nuclei.o eos_had_skyrme_ext.o \
-		virial_solver_deriv.h
-	$(LMPI_CXX) $(LMPI_CFLAGS) -o eos_nuclei eos.o main.o \
-		 eos_nuclei.o eos_had_skyrme_ext.o $(LIBS) \
-		-lreadline
-
-# ----------------------------------------------------------------
-# Version without MPI
-# ----------------------------------------------------------------
-
 zidu/Couplings.o: zidu/Couplings.cpp zidu/Couplings.hpp
 	$(LCXX) $(LCFLAGS) -DNUOPAC_HAS_GSL -o zidu/Couplings.o \
 		-c zidu/Couplings.cpp
@@ -91,6 +81,48 @@ zidu/PolarizationNonRelv2Apr8.o: zidu/PolarizationNonRelv2Apr8.cpp
 
 zidu/jacobi_rule.o: zidu/jacobi_rule.cpp zidu/jacobi_rule.hpp
 	$(LCXX) $(LCFLAGS) -DNUOPAC_HAS_GSL -o zidu/jacobi_rule.o \
+		-c zidu/jacobi_rule.cpp
+
+eos_nuclei: eos.o main.o eos_nuclei.o eos_had_skyrme_ext.o \
+		virial_solver_deriv.h \
+		zidu/Couplings.o zidu/FluidState.o \
+		zidu/FunctionIntegrator.o zidu/Polarization.o \
+		zidu/PolarizationNonRelv2Apr8.o zidu/jacobi_rule.o 
+	$(LMPI_CXX) $(LMPI_CFLAGS) -o eos_nuclei eos.o main.o \
+		eos_nuclei.o eos_had_skyrme_ext.o \
+		zidu/Couplings.o zidu/FluidState.o \
+		zidu/FunctionIntegrator.o zidu/Polarization.o \
+		zidu/PolarizationNonRelv2Apr8.o zidu/jacobi_rule.o \
+		$(LIBS) -lreadline
+
+# ----------------------------------------------------------------
+# Version without MPI
+# ----------------------------------------------------------------
+
+zidu/Couplings_nompi.o: zidu/Couplings.cpp zidu/Couplings.hpp
+	$(LCXX) $(LCFLAGS) -DNUOPAC_HAS_GSL -o zidu/Couplings_nompi.o \
+		-c zidu/Couplings.cpp
+
+zidu/FluidState_nompi.o: zidu/FluidState.cpp zidu/FluidState.hpp
+	$(LCXX) $(LCFLAGS) -DNUOPAC_HAS_GSL -o zidu/FluidState_nompi.o \
+		-c zidu/FluidState.cpp
+
+zidu/FunctionIntegrator_nompi.o: zidu/FunctionIntegrator.cpp \
+	zidu/FunctionIntegrator.hpp
+	$(LCXX) $(LCFLAGS) -DNUOPAC_HAS_GSL -o zidu/FunctionIntegrator_nompi.o \
+	-c zidu/FunctionIntegrator.cpp
+
+zidu/Polarization_nompi.o: zidu/Polarization.cpp zidu/Polarization.hpp
+	$(LCXX) $(LCFLAGS) -DNUOPAC_HAS_GSL -o zidu/Polarization_nompi.o \
+		-c zidu/Polarization.cpp
+
+zidu/PolarizationNonRelv2Apr8_nompi.o: zidu/PolarizationNonRelv2Apr8.cpp 
+	$(LCXX) $(LCFLAGS) -DNUOPAC_HAS_GSL \
+		-o zidu/PolarizationNonRelv2Apr8_nompi.o \
+		-c zidu/PolarizationNonRelv2Apr8.cpp
+
+zidu/jacobi_rule_nompi.o: zidu/jacobi_rule.cpp zidu/jacobi_rule.hpp
+	$(LCXX) $(LCFLAGS) -DNUOPAC_HAS_GSL -o zidu/jacobi_rule_nompi.o \
 		-c zidu/jacobi_rule.cpp
 
 eos_nompi.o: eos.cpp virial_solver.h eos.h
