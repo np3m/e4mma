@@ -4098,6 +4098,9 @@ int eos_nuclei::write_results(std::string fname) {
   hdf_output(hf,tg3_A,"A");
   hdf_output(hf,tg3_flag,"flag");
   hdf_output(hf,tg3_Fint,"Fint");
+
+  // Note that we write Sint and Eint even if derivs_computed is
+  // false, because the entropy derivative is analytical
   hdf_output(hf,tg3_Sint,"Sint");
   hdf_output(hf,tg3_Eint,"Eint");
   
@@ -4332,7 +4335,10 @@ int eos_nuclei::read_results(std::string fname) {
   if (verbose>2) cout << "Reading Fint." << endl;
   hdf_input(hf,tg3_Fint,"Fint");
 
-    if (hf.find_object_by_name("Sint",type)==0 && type=="tensor_grid") {
+  // Note that we read Sint and Eint even if derivs_computed is
+  // false, because the entropy derivative is analytical
+  
+  if (hf.find_object_by_name("Sint",type)==0 && type=="tensor_grid") {
       if (verbose>2) cout << "Reading Sint." << endl;
       hdf_input(hf,tg3_Sint,"Sint");
     }
