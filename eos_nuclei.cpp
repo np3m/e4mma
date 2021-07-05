@@ -2579,7 +2579,10 @@ int eos_nuclei::eos_fixed_dist
   if (mh_ret!=0) {
     mh_ret=mh.msolve(2,x1,sn_func);
     if (mh_ret==0 && mpi_size==1) {
-      cout << "Rank " << mpi_rank << " finished after initial solve." << endl;
+      if (loc_verbose>0) {
+        cout << "Rank " << mpi_rank
+             << " finished after initial solve." << endl;
+      }
     }
   }
 
@@ -2599,7 +2602,7 @@ int eos_nuclei::eos_fixed_dist
 	     << qual_best << endl;
         cout.precision(6);
       }
-      if (mh_ret==0 && mpi_size==1) {
+      if (mh_ret==0 && mpi_size==1 && loc_verbose>0) {
 	cout << "Rank " << mpi_rank << " finished after solve " << k
 	     << "." << endl;
       }
@@ -2733,7 +2736,7 @@ int eos_nuclei::eos_fixed_dist
 	  // Stop, and set mh_ret to zero to indicate that we're done
 	  k=n_brackets;
 	  mh_ret=0;
-	  if (mpi_size==1) {
+	  if (mpi_size==1 && loc_verbose>0) {
 	    cout << "Rank " << mpi_rank << " finished after "
 		 << k << " brackets." << endl;
 	  }
@@ -2877,7 +2880,7 @@ int eos_nuclei::eos_fixed_dist
       if (iret2==0 && qual<mh.tol_rel) {
 	// Set mh_ret to zero to indicate that we're done
 	mh_ret=0;
-	if (mpi_size==1) {
+	if (mpi_size==1 && loc_verbose>0) {
 	  cout << "Rank " << mpi_rank << " finished after "
 	       << jk << " minimizer calls." << endl;
 	}
@@ -2942,7 +2945,7 @@ int eos_nuclei::eos_fixed_dist
 	       << qual_best << endl;
           cout.precision(6);
 	}
-	if (mh_ret==0 && mpi_size==1) {
+	if (mh_ret==0 && mpi_size==1 && loc_verbose>0) {
 	  cout << "Rank " << mpi_rank << " finished after "
 	       << kk << " random solves." << endl;
 	}
@@ -8057,7 +8060,7 @@ int eos_nuclei::test_neutrino(std::vector<std::string> &sv,
   betaEoS.Mu2=neutron.mu*hc_mev_fm;
   betaEoS.Mu4=proton.mu*hc_mev_fm;
   betaEoS.Mu3=(electron.mu-electron.m)*hc_mev_fm;
-  cout << betaEoS.Mu2 << " " << betaEoS.Mu4 << " "
+  cout << "mu2,mu4,mu3: " << betaEoS.Mu2 << " " << betaEoS.Mu4 << " "
        << betaEoS.Mu3 << endl;
 
   PolarizationNonRel pol(betaEoS, ncap, false, false, true);
@@ -8099,15 +8102,6 @@ int eos_nuclei::test_neutrino(std::vector<std::string> &sv,
 int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv, 
 			       bool itive_com) {
   
-  /*
-    t.line_of_names(((string)"index S L qmc_a qmc_b qmc_alpha ")+
-    "qmc_beta i_ns i_skyrme phi eos_n0 eos_EoA eos_K "+
-    "chi2_ns ns_fit0 ns_fit1 ns_fit2 ns_fit3 ns_fit4 "+
-    "Fint Eint Sint Pint munfull mupfull log_xn log_xp Z A "+
-    "Amin Amax NmZ_max NmZ_min Xn Xp Xalpha Xd Xt XHe3 XLi4 "+
-    "Xnuclei ns_min_cs2 ns_max_cs2 Lambda_bar_14");
-  */
-
   double nB=function_to_double(sv[1]);
   double T=function_to_double(sv[2])/hc_mev_fm;
   
@@ -8121,9 +8115,13 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
   size_t iT=vector_lookup(n_T2,T_grid2,T*hc_mev_fm);
   T=T_grid2[iT]/hc_mev_fm;
 
+  cout << "Using nB = " << nB << " 1/fm^3 and T = " << T*hc_mev_fm
+       << " MeV" << endl;
+  
   table<> tab;
-  tab.line_of_names("log_xn log_xp Z N A ZoA Xnuclei");
-
+  tab.line_of_names("log_xn log_xp Z N A ZoA Xnuclei Ye_best");
+  tab.line_of_names("cc_vec_mfp cc_axvec_mfp nc_vec_mfp nc_axvec_mfp");
+                    
   static const int N=1000;
   for(int j=0;j<N;j++) {
     std::cout << "j: " << j << endl;
@@ -8146,9 +8144,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
     eso.include_muons=false;
     thermo lep;
 
-  //for(size_t iYe=0;iYe<n_Ye2;iYe++) {
-    //for(size_t iYe=40;iYe<n_Ye2;iYe++) {
-    for(size_t iYe=49;iYe<50;iYe++) {
+    for(size_t iYe=0;iYe<n_Ye2;iYe++) {
       double Ye=Ye_grid2[iYe];
       
       if (tg3_flag.get(inB,iYe,iT)<9.9) {
@@ -8164,31 +8160,41 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
       double fr_Ye=1.0e100;
       
       for(size_t k=0;k<10;k++) {
+
+        // Ensure a random initial guess
         
         //log_xn=tg3_log_xn.get(inB,iYe,iT)+(rng.random()*6.0-3.0);
         //log_xp=tg3_log_xp.get(inB,iYe,iT)+(rng.random()*6.0-3.0);
         log_xn=tg3_log_xn.get(inB,iYe,iT)+(rng.random()*0.5-0.25);
         log_xp=tg3_log_xp.get(inB,iYe,iT)+(rng.random()*0.5-0.25);
+
+        // Compute the EOS
         
         map<string,double> vdet;
         int ret=eos_vary_dist(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,
                               thx,mun_full,mup_full,
                               A_min,A_max,NmZ_min,NmZ_max,vdet,
                               dist_changed,no_nuclei);
+        
         cout << "ret,log_xn,log_xp,Z,N,A,Z/A,fr:\n  "
              << ret << " " << log_xn << " " << log_xp << " "
              << Zbar << " " << Nbar << " " << Zbar+Nbar << " " 
              << Zbar/(Zbar+Nbar) << " "
              << thx.ed-T*thx.en << endl;
 
+        // Add the electrons
         double mue=electron.m;
 	eso.compute_eg_point(nB_grid2[inB],Ye_grid2[iYe],T_grid2[iT],lep,mue);
 
+        // Compute the total free energy
         double fr=thx.ed-T*thx.en+lep.ed-T*lep.en;
-        
+
+        // Compute the lowest free energy for this value of Ye
         if (ret==0 && fr<fr_Ye) {
           fr_Ye=fr;
         }
+
+        // Compute the overall lowest free energy
         if (ret==0 && fr<fr_best) {
           fr_best=fr;
           log_xn_best=log_xn;
@@ -8198,11 +8204,15 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         }
         // End of for(size_t k=0;k<10;k++) {
       }
-      cout << "(X) iYe,Ye,fr_Ye: " << iYe << " " << Ye << " "
+
+      cout << "iYe,Ye,fr_Ye: " << iYe << " " << Ye << " "
            << fr_Ye << endl;
+      cout << endl;
       
       // End of loop for(size_t iYe=0;iYe<n_Ye2;iYe++) {
     }
+
+    // Now compute the EOS at the optimal Ye
     
     log_xn=log_xn_best;
     log_xp=log_xp_best;
@@ -8211,7 +8221,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
     int A_max_best=((int)(tg3_A_max.get(inB,iYe_best,iT)));
     int NmZ_min_best=((int)(tg3_NmZ_min.get(inB,iYe_best,iT)));
     int NmZ_max_best=((int)(tg3_NmZ_max.get(inB,iYe_best,iT)));
-    
+
     map<string,double> vdet;
     int ret2=eos_vary_dist(nB,Ye_best,T,log_xn,log_xp,Zbar,Nbar,
 			   thx,mun_full,mup_full,
@@ -8221,34 +8231,19 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
     ubvector X;
     compute_X(nB,X);
     
-    cout << "Beta-eq point: " << ret2 << " " << log_xn << " " << log_xp << " "
+    cout << "Beta-eq point: " << ret2 << " " << Ye_best << " "
+         << log_xn << " " << log_xp << " "
 	 << Zbar << " " << Nbar << " " << Zbar+Nbar << " " 
 	 << Zbar/(Zbar+Nbar) << " " << X[5] << endl;
     
-    if (true) {
+    if (ret2==0) {
 
-      T=10.0/hc_mev_fm;
-      
-      if (true) {
-        skyrme_load(sk,"NRAPR");
-        neutron.n=1.503779e-01;
-        proton.n=9.622062e-03;
-        thermo thxx;
-        sk.calc_temp_e(neutron,proton,10.0/hc_mev_fm,thxx);
-        electron.n=proton.n;
-        fermion_rel fr;
-        fr.calc_density(electron,10.0/hc_mev_fm);
-      }
-      
       cout << "mun: " << neutron.mu*hc_mev_fm << endl;
       cout << "mup: " << proton.mu*hc_mev_fm << endl;
       cout << "msn: " << neutron.ms*hc_mev_fm << endl;
       cout << "msp: " << proton.ms*hc_mev_fm << endl;
       cout << "nn: " << neutron.n << endl;
       cout << "np: " << proton.n << endl;
-
-      cout << sk.t0 << endl;
-      cout << neutron.inc_rest_mass << endl;
       
       double u2eos=neutron.mu*hc_mev_fm-pow(neutron.kf*hc_mev_fm,2.0)/2.0/
         neutron.ms/hc_mev_fm;
@@ -8257,67 +8252,64 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         proton.ms/hc_mev_fm;
       cout << "U4: " << u4eos << endl;
       cout << "T*hc_mev_fm: " << T*hc_mev_fm << endl;
-
-      neutron.ms=751.587/hc_mev_fm;
-      proton.ms=575.792/hc_mev_fm;
-      u2eos=-35.8795;
-      u4eos=-103.247;
       
       FluidState betaEoS;
       betaEoS=FluidState::StateFromDensities
         (T*hc_mev_fm,neutron.ms*hc_mev_fm,proton.ms*hc_mev_fm,
          neutron.n*pow(hc_mev_fm,3.0),proton.n*pow(hc_mev_fm,3.0),
          u2eos,u4eos,electron.m*hc_mev_fm,electron.n*pow(hc_mev_fm,3.0));
-      betaEoS.Mu2=neutron.mu*hc_mev_fm;
-      betaEoS.Mu4=proton.mu*hc_mev_fm;
-      betaEoS.Mu3=(electron.mu-electron.m)*hc_mev_fm;
-      cout << betaEoS.Mu2 << " " << betaEoS.Mu4 << " "
-           << betaEoS.Mu3 << endl;
-
-      /*
-        nrparEos: baryon den: 0.16 y_N: 0.939862 n2: 0.150378 n4:
-        0.00962206 M3: 0.511 m2eff: 751.587 m4eff: 575.792 U2:
-        -35.8795 U4: -103.247 deltaU: 67.3676 mu2: 34.2278 Mu4:
-        -88.6003 mu2-mu4 122.828 Mu3: 123.617 n3: 0.00962206 vf:
-        0.000237182 vgt: 0.000146182
-
-        charged current: 0.16 0.939862 noWm: 0.00072131 Wm: 0.00072131
-        elastic: 0.000949514 elastic1: 0.0752413 noWm/elastc: 0.759663
-        noWm/elastic1: 0.00958663 M3: 0.511 neff/n: 0.938675 pe/Ee:
-        0.0134443 deltaU: 67.3676 mu2-mu4 122.828 ImPi0: -2.27353 
-      */
       
-      //WeakCouplings nscat=WeakCouplings::NeutronScattering();
+      WeakCouplings nscat=WeakCouplings::NeutronScattering();
+      nscat.F2=0.0;
       WeakCouplings ncap=WeakCouplings::NuCapture();
       ncap.F2=0.0;
       
-      //turn off pauli blocking for NC
-      //Polarization(FluidState st, WeakCouplings wc = WeakCouplings(), 
-      //bool antiNeutrino = false, bool doReddy = false, bool doBlock = false,
-      //int NAngularPoints = 64, int NQ0Points = 256);
+      // Incoming neutrino energy
+      double E1=12.0;
+      
+      betaEoS.Mu2=neutron.mu*hc_mev_fm;
+      betaEoS.Mu4=proton.mu*hc_mev_fm;
+      betaEoS.Mu3=(electron.mu-electron.m)*hc_mev_fm;
+      cout << "mu2,mu4,mu3: " << betaEoS.Mu2 << " " << betaEoS.Mu4 << " "
+           << betaEoS.Mu3 << endl;
       
       PolarizationNonRel pol(betaEoS, ncap, false, false, true);
-
+      
       pol.set_skyrme(sk.t0*hc_mev_fm,sk.t1*hc_mev_fm,
                      sk.t2*hc_mev_fm,sk.t3*hc_mev_fm,
                      sk.x0,sk.x1,sk.x2,sk.x3,sk.alpha);
       
-      // Incoming neutrino energy
-      double E1=12.0;
-
+      pol.current=1;
       pol.flag=0;
       double cc_vec_mfp=pol.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
+      cout << "charged current, vector part: " << cc_vec_mfp << endl;
       pol.flag=1;
       double cc_axvec_mfp=pol.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
+      cout << "charged current, axial part: " << cc_axvec_mfp << endl;
+      pol.flag=0;
       
-      //cout << "full: " << full << endl;
-      //exit(-1);
-    }
-    
-    if (ret2==0) {
-      double line[7]={log_xn,log_xp,Zbar,Nbar,Zbar+Nbar,
-		      Zbar/(Zbar+Nbar),X[5]};
-      tab.line_of_data(7,line);
+      betaEoS.Mu2=neutron.mu*hc_mev_fm;
+      betaEoS.Mu4=neutron.mu*hc_mev_fm;
+      betaEoS.Mu3=0.0;
+      
+      PolarizationNonRel pol_nc(betaEoS, nscat, false, false, true);
+      
+      pol_nc.set_skyrme(sk.t0*hc_mev_fm,sk.t1*hc_mev_fm,
+                        sk.t2*hc_mev_fm,sk.t3*hc_mev_fm,
+                        sk.x0,sk.x1,sk.x2,sk.x3,sk.alpha);
+      
+      pol_nc.current=0;
+      double nc_vec_mfp=pol_nc.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
+      cout << "neutral current, vector part: " << nc_vec_mfp << endl;
+      pol_nc.flag=1;
+      double nc_axvec_mfp=pol_nc.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
+      cout << "neutral current, axial part: " << nc_axvec_mfp << endl;
+      exit(-1);
+
+      vector<double> line={log_xn,log_xp,Zbar,Nbar,Zbar+Nbar,
+                           Zbar/(Zbar+Nbar),X[5],Ye_best,
+                           cc_vec_mfp,cc_axvec_mfp,nc_vec_mfp,nc_axvec_mfp};
+      tab.line_of_data(12,line);
     }
 
     if (j%100==0) {
