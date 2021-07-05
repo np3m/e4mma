@@ -8144,7 +8144,8 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
     eso.include_muons=false;
     thermo lep;
 
-    for(size_t iYe=0;iYe<n_Ye2;iYe++) {
+    //for(size_t iYe=0;iYe<n_Ye2;iYe++) {
+    for(size_t iYe=0;iYe<10;iYe++) {
       double Ye=Ye_grid2[iYe];
       
       if (tg3_flag.get(inB,iYe,iT)<9.9) {
@@ -8185,6 +8186,10 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         // Add the electrons
         double mue=electron.m;
 	eso.compute_eg_point(nB_grid2[inB],Ye_grid2[iYe],T_grid2[iT],lep,mue);
+
+        // Copy the electron results to the local electron object
+        electron.n=nB_grid2[inB]*Ye_grid2[iYe];
+        electron.mu=mue;
 
         // Compute the total free energy
         double fr=thx.ed-T*thx.en+lep.ed-T*lep.en;
@@ -8304,7 +8309,6 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
       pol_nc.flag=1;
       double nc_axvec_mfp=pol_nc.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
       cout << "neutral current, axial part: " << nc_axvec_mfp << endl;
-      exit(-1);
 
       vector<double> line={log_xn,log_xp,Zbar,Nbar,Zbar+Nbar,
                            Zbar/(Zbar+Nbar),X[5],Ye_best,
