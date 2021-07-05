@@ -75,9 +75,10 @@ namespace {
 
 using namespace nuopac; 
 
-Polarization::Polarization(FluidState stPol, WeakCouplings wc, bool antiNeutrinoPol, 
-    bool doReddyPol, bool doBlockPol, int NAngularPoints, int NQ0Points) 
-  : xx(NPGJ), ww(NPGJ), xl(NPGJ), wl(NPGJ), xgl(NNPGL), wgl(NNPGL) {
+Polarization::Polarization(FluidState stPol, WeakCouplings wc,
+                           bool antiNeutrinoPol, 
+                           bool doReddyPol, bool doBlockPol,
+                           int NAngularPoints, int NQ0Points) {
 
   coup=wc;
   st=stPol;
@@ -88,6 +89,12 @@ Polarization::Polarization(FluidState stPol, WeakCouplings wc, bool antiNeutrino
   mG2=2.0;
   NPGJ=NAngularPoints;
   NNPGL=NQ0Points;
+  xx.resize(NPGJ);
+  ww.resize(NPGJ);
+  xl.resize(NPGJ);
+  wl.resize(NPGJ);
+  xgl.resize(NNPGL);
+  wgl.resize(NNPGL);
   
   cgqf(NPGJ, 1,  0.0, 0.0, -1.0, 1.0, xl.data(), wl.data()); 
   cgqf(NPGJ, 4, -0.5, 0.0, -1.0, 1.0, xx.data(), ww.data()); 
@@ -319,16 +326,18 @@ double Polarization::CalculateTransportInverseMFP(double E1) const {
 
 double Polarization::CalculateInverseMFP(double E1) const {
   
-  double estar = st.M4 + st.U4 - st.M2 - st.U2;//orig
- // double estar = 0.0 ; //only use this when calculating NC N+P mixture gas
+  double estar;
+  if (current==1) {
+    estar=st.M4 + st.U4 - st.M2 - st.U2;
+  } else {
+    estar=0.0;
+  }
   estar = std::min(estar, E1 - st.M3);
   double integral = 0.0;  
   for (int i=0; i<NNPGL; ++i) {
     double q0 = estar - xgl[i]*st.T;
-    double ee;
     if (abs(q0) > 30.0*st.T) break;
-    ee = log(CalculateDGamDq0(E1, q0)) + xgl[i];
-   // double ee = log(CalculateDGamDq0(E1, q0)) + xgl[i];
+    double ee = log(CalculateDGamDq0(E1, q0)) + xgl[i];
     integral += wgl[i] * exp(ee); 
   }
 
@@ -383,9 +392,14 @@ double Polarization::GetResponse(double E1, double q0, double q) const {
 
 inline double Polarization::GetCsecPrefactor(double E1, double q0) const {
   double p3 = sqrt((E1-q0)*(E1-q0) - st.M3*st.M3); 
-  const double fac = mG2*pow(Constants::GfMeV, 2)/pow(2.0*Constants::Pi, 3)/16.0;
-  double a = E1*(1.0 - exp((st.Mu4 - st.Mu2 - q0)/st.T));
- // double a = E1*(1.0 - exp((0.0 - q0)/st.T));//use this line only when calculating NC N+P mixed gas
+  const double fac = mG2*pow(Constants::GfMeV, 2)/
+    pow(2.0*Constants::Pi, 3)/16.0;
+  double a;
+  if (current==1) {
+    a=E1*(1.0 - exp((st.Mu4 - st.Mu2 - q0)/st.T));
+  } else {
+    a=E1*(1.0 - exp((0.0 - q0)/st.T));
+  }
   if (doBlock) p3 *= 1.0 - 1.0/(exp((E1-q0-st.Mu3)/st.T) + 1.0);
   return fac*p3/a;
 }

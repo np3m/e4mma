@@ -7986,7 +7986,6 @@ int eos_nuclei::mcarlo_nuclei2(std::vector<std::string> &sv,
 int eos_nuclei::test_neutrino(std::vector<std::string> &sv, 
                               bool itive_com) {
 
-  
   double T=10.0/hc_mev_fm;
   
   if (true) {
@@ -8022,7 +8021,7 @@ int eos_nuclei::test_neutrino(std::vector<std::string> &sv,
   proton.ms=575.792/hc_mev_fm;
   u2eos=-35.8795;
   u4eos=-103.247;
-  
+
   FluidState betaEoS;
   betaEoS=FluidState::StateFromDensities
     (T*hc_mev_fm,neutron.ms*hc_mev_fm,proton.ms*hc_mev_fm,
@@ -8187,11 +8186,11 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
 
         double fr=thx.ed-T*thx.en+lep.ed-T*lep.en;
         
-        if (ret==0 && thx.ed-T*thx.en<fr_Ye) {
-          fr_Ye=thx.ed-T*thx.en;
+        if (ret==0 && fr<fr_Ye) {
+          fr_Ye=fr;
         }
-        if (ret==0 && thx.ed-T*thx.en<fr_best) {
-          fr_best=thx.ed-T*thx.en;
+        if (ret==0 && fr<fr_best) {
+          fr_best=fr;
           log_xn_best=log_xn;
           log_xp_best=log_xp;
           iYe_best=iYe;

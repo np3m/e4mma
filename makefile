@@ -220,3 +220,5 @@ mbt:
 		-load ~/data/eos/21/06/20/jun_19d.o2 \
 		-mcarlo-beta 0.14 10.0 temp.o2
 
+nt:
+	enn -test-neutrino
