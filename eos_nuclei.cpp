@@ -54,7 +54,7 @@ eos_nuclei::eos_nuclei() {
   Ye_grid_spec="70,0.01*(i+1)";
   T_grid_spec="160,0.1*1.046^i";
 
-  extend_frdm=true;
+  extend_frdm=false;
   show_all_nuclei=false;
   recompute=false;
   verify_only=false;

@@ -553,8 +553,8 @@ eos::eos() {
   ns_record=false;
   model_selected=false;
   select_cs2_test=true;
-  a_virial=3.0;
-  b_virial=0.0;
+  a_virial=10.0;
+  b_virial=10.0;
 
   // Initial parameter values
   i_ns=-1;
