@@ -5387,6 +5387,45 @@ int eos_nuclei::stats(std::vector<std::string> &sv,
 
   size_t ti_int_count=0, ti_count=0;
   
+  vector<tensor_grid3<> *> ptrs;
+  ptrs.push_back(&tg3_log_xn);
+  ptrs.push_back(&tg3_log_xp);
+  ptrs.push_back(&tg3_flag);
+  if (with_leptons_loaded) {
+    ptrs.push_back(&tg3_F);
+    ptrs.push_back(&tg3_E);
+    ptrs.push_back(&tg3_P);
+    ptrs.push_back(&tg3_S);
+    ptrs.push_back(&tg3_mue);
+  }
+  ptrs.push_back(&tg3_Fint);
+  ptrs.push_back(&tg3_Eint);
+  ptrs.push_back(&tg3_Sint);
+  if (derivs_computed) {
+    ptrs.push_back(&tg3_Pint);
+    ptrs.push_back(&tg3_mun);
+    ptrs.push_back(&tg3_mup);
+  }
+  ptrs.push_back(&tg3_Z);
+  ptrs.push_back(&tg3_A);
+  ptrs.push_back(&tg3_Xn);
+  ptrs.push_back(&tg3_Xp);
+  ptrs.push_back(&tg3_Xalpha);
+  ptrs.push_back(&tg3_Xnuclei);
+  if (include_muons) {
+    ptrs.push_back(&tg3_Ymu);
+  }
+  ptrs.push_back(&tg3_Xd);
+  ptrs.push_back(&tg3_Xt);
+  ptrs.push_back(&tg3_XHe3);
+  ptrs.push_back(&tg3_XLi4);
+  if (alg_mode==2 || alg_mode==3 || alg_mode==4) {
+    ptrs.push_back(&tg3_A_min);
+    ptrs.push_back(&tg3_A_max);
+    ptrs.push_back(&tg3_NmZ_min);
+    ptrs.push_back(&tg3_NmZ_max);
+  }
+  
   for(size_t i=0;i<data.size();i++) {
     
     int iflag=((int)(data[i]*(1.0+1.0e-12)));
@@ -5404,6 +5443,33 @@ int eos_nuclei::stats(std::vector<std::string> &sv,
       double Ye=Ye_grid2[ix[1]];
       double T_MeV=T_grid2[ix[2]];
 
+      // Check grid
+      if (true) {
+        for(size_t kk=0;kk<ptrs.size();kk++) {
+          if (fabs(ptrs[kk]->get_grid(0,ix[0])-nB)/nB>1.0e-6) {
+            std::cout << "Grid broken (nB): " << ptrs[kk]->get_grid(0,ix[0])
+                      << " " << kk << " " << nB << " " << ix[0]
+                      << std::endl;
+            O2SCL_ERR("Baryon density grid broken in "
+                      "eos_nuclei::stats().",o2scl::exc_efailed);
+          }
+          if (fabs(ptrs[kk]->get_grid(1,ix[1])-Ye)/Ye>1.0e-6) {
+            std::cout << "Grid broken (Ye): " << ptrs[kk]->get_grid(1,ix[1])
+                      << " " << kk << " " << Ye << " " << ix[1]
+                      << std::endl;
+            O2SCL_ERR("Electron fraction grid broken in "
+                      "eos_nuclei::stats().",o2scl::exc_efailed);
+          }
+          if (fabs(ptrs[kk]->get_grid(2,ix[2])-T_MeV)/T_MeV>1.0e-6) {
+            std::cout << "Grid broken (T): " << ptrs[kk]->get_grid(2,ix[2])
+                      << " " << kk << " " << T_MeV << " " << ix[2]
+                      << std::endl;
+            O2SCL_ERR("Temperature grid broken in "
+                      "eos_nuclei::stats().",o2scl::exc_efailed);
+          }
+        }
+      }
+      
       // Check that X's add up to 1
       if (true) {
 	double check_X=tg3_Xn.get_data()[i]+tg3_Xp.get_data()[i]+
