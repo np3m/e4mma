@@ -536,6 +536,9 @@ int eos_nuclei::add_eg(std::vector<std::string> &sv,
 	tg3_S.set(i,j,k,tg3_Sint.get(i,j,k)+
 		  lep.en/nB_grid2[i]);
 	tg3_mue.set(i,j,k,hc_mev_fm*mue);
+        if (this->include_muons) {
+          tg3_Ymu.set(i,j,k,eso.muon.n/nB_grid2[i]);
+        }
 
         if (true) {
           
