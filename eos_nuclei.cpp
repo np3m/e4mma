@@ -511,6 +511,8 @@ int eos_nuclei::add_eg(std::vector<std::string> &sv,
 	
 	thermo lep;
 	double mue;
+        double nB=nB_grid2[i];
+        
         // Note that this function accepts the temperature in MeV
         // and the electron chemical potential is returned in 1/fm.
         if (k==0) {
@@ -521,50 +523,61 @@ int eos_nuclei::add_eg(std::vector<std::string> &sv,
           mue=mue_last;
         }
         
-        //cout << nB_grid2[i] << " " << Ye_grid2[j] << " " << T_grid2[k]
+        //cout << nB << " " << Ye_grid2[j] << " " << T_grid2[k]
         //<< endl;
-        
-	eso.compute_eg_point(nB_grid2[i],Ye_grid2[j],T_grid2[k],lep,mue);
+
+        if (nB>0.16 && this->include_muons) {
+          eso.include_muons=true;
+        } else {
+          eso.include_muons=false;
+        }
+	eso.compute_eg_point(nB,Ye_grid2[j],T_grid2[k],lep,mue);
         mue_last=mue;
 	
 	tg3_F.set(i,j,k,tg3_Fint.get(i,j,k)+
-		  (hc_mev_fm*lep.ed-T_grid2[k]*lep.en)/nB_grid2[i]);
+		  (hc_mev_fm*lep.ed-T_grid2[k]*lep.en)/nB);
 	tg3_E.set(i,j,k,tg3_Eint.get(i,j,k)+
-		  hc_mev_fm*lep.ed/nB_grid2[i]);
+		  hc_mev_fm*lep.ed/nB);
 	tg3_P.set(i,j,k,tg3_Pint.get(i,j,k)+
 		  hc_mev_fm*lep.pr);
 	tg3_S.set(i,j,k,tg3_Sint.get(i,j,k)+
-		  lep.en/nB_grid2[i]);
+		  lep.en/nB);
 	tg3_mue.set(i,j,k,hc_mev_fm*mue);
-        if (this->include_muons) {
-          tg3_Ymu.set(i,j,k,eso.muon.n/nB_grid2[i]);
+        double np=nB*Ye_grid2[j];
+        if (nB>0.16 && this->include_muons) {
+          // Set muon density
+          tg3_Ymu.set(i,j,k,eso.muon.n/nB);
+          // Modify proton fraction to be equal to electron plus muon
+          // fraction
+          np=Ye_grid2[j]*nB+eso.muon.n;
+          tg3_Xp.set(i,j,k,np/nB);
         }
 
         if (true) {
           
-          double nB=nB_grid2[i];
           double T_MeV=T_grid2[k];
           double Ye=Ye_grid2[j];
           double nn=nB*(1.0-Ye);
-          double np=nB*Ye;
           double scale=fabs(tg3_E.get(i,j,k));
           if (scale<10.0) scale=10.0;
-          double ti_check=(tg3_E.get(i,j,k)*nB+
-                           tg3_P.get(i,j,k)-
-                           T_MeV*tg3_S.get(i,j,k)*nB-
-                           nn*tg3_mun.get(i,j,k)-
-                           np*tg3_mup.get(i,j,k)-
-                           np*tg3_mue.get(i,j,k))/scale/nB;
-          double ti_check2=(lep.ed*hc_mev_fm+
-                            lep.pr*hc_mev_fm-
-                            T_MeV*lep.en-
-                            np*mue*hc_mev_fm)/scale/nB;
-          double ti_int_check=(tg3_Eint.get(i,j,k)*nB+
-                               tg3_Pint.get(i,j,k)-
-                               T_MeV*tg3_Sint.get(i,j,k)*nB-
-                               nn*tg3_mun.get(i,j,k)-
-                               np*tg3_mup.get(i,j,k))/scale/nB;
+          double ti_check=tg3_E.get(i,j,k)*nB+
+            tg3_P.get(i,j,k)-T_MeV*tg3_S.get(i,j,k)*nB-
+            nn*tg3_mun.get(i,j,k)-np*tg3_mup.get(i,j,k)-
+            Ye*nB*tg3_mue.get(i,j,k);
+          if (nB>0.16 && this->include_muons) {
+            ti_check-=eso.muon.n*tg3_mue.get(i,j,k);
+          }
+          ti_check/=scale*nB;
           if (fabs(ti_check)>1.0e-6) {
+            double ti_check2=(lep.ed*hc_mev_fm+
+                              lep.pr*hc_mev_fm-
+                              T_MeV*lep.en-
+                              np*mue*hc_mev_fm)/scale/nB;
+            double ti_int_check=(tg3_Eint.get(i,j,k)*nB+
+                                 tg3_Pint.get(i,j,k)-
+                                 T_MeV*tg3_Sint.get(i,j,k)*nB-
+                                 nn*tg3_mun.get(i,j,k)-
+                                 np*tg3_mup.get(i,j,k))/scale/nB;
             cout << "ti check failed." << endl;
             cout << "nB,Ye,ti,scale: " << nB << " " << Ye << " "
                  << T_MeV << " " << ti_check << " " << scale << endl;
