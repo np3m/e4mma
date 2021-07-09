@@ -8541,6 +8541,8 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
        << " MeV" << endl;
   
   table<> tab;
+  tab.line_of_names("t0 t1 t2 t3 x0 x1 x2 x3 epsilon msn msp ");
+  tab.line_of_names("mun mup mue U2 U4 ");
   tab.line_of_names("log_xn log_xp Z N A ZoA Xnuclei Ye_best");
   tab.line_of_names("cc_vec_mfp cc_axvec_mfp nc_vec_mfp nc_axvec_mfp");
                     
@@ -8732,7 +8734,16 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
       double nc_axvec_mfp=pol_nc.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
       cout << "neutral current, axial part: " << nc_axvec_mfp << endl;
 
-      vector<double> line={log_xn,log_xp,Zbar,Nbar,Zbar+Nbar,
+      //tab.line_of_names("t0 t1 t2 t3 x0 x1 x2 x3 epsilon msn msp ");
+      //tab.line_of_names("mun mup mue U2 U4 ");
+      vector<double> line={sk.t0*hc_mev_fm,sk.t1*hc_mev_fm,
+                           sk.t2*hc_mev_fm,sk.t3*hc_mev_fm,
+                           sk.x0 ,sk.x1 ,
+                           sk.x2 ,sk.x3 ,
+                           neutron.ms*hc_mev_fm,proton.ms*hc_mev_fm,
+                           neutron.mu*hc_mev_fm,proton.mu*hc_mev_fm,
+                           electron.mu*hc_mev_fm,u2eos,u4eos,
+                           log_xn,log_xp,Zbar,Nbar,Zbar+Nbar,
                            Zbar/(Zbar+Nbar),X[5],Ye_best,
                            cc_vec_mfp,cc_axvec_mfp,nc_vec_mfp,nc_axvec_mfp};
       tab.line_of_data(12,line);
