@@ -219,7 +219,7 @@ mbt:
 		-set fixed_dist_alg 1999 \
 		-set function_verbose 0 \
 		-load ~/data/eos/final/fid_6_30_21.o2 \
-		-mcarlo-beta 0.14 10.0 mb_temp.o2
+		-mcarlo-beta 0.14 10.0 mb_temp.o2 > mbt.out 2>&1 &
 
 nt:
 	enn -test-neutrino
