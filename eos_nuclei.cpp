@@ -4358,35 +4358,35 @@ int eos_nuclei::read_results(std::string fname) {
   // false, because the entropy derivative is analytical
   
   if (hf.find_object_by_name("Sint",type)==0 && type=="tensor_grid") {
-      if (verbose>2) cout << "Reading Sint." << endl;
-      hdf_input(hf,tg3_Sint,"Sint");
-    }
+    if (verbose>2) cout << "Reading Sint." << endl;
+    hdf_input(hf,tg3_Sint,"Sint");
+  }
 
-    // Fix old tables which don't have Eint
-    if (hf.find_object_by_name("Eint",type)==0 && type=="tensor_grid") {    
-      if (verbose>2) cout << "Reading Eint." << endl;
-      hdf_input(hf,tg3_Eint,"Eint");
-    } else if (tg3_Sint.total_size()>0) {
-      cout << "Fixing file with missing Eint." << endl;
-      exit(-1);
-      vector<vector<double> > grid={nB_grid2,Ye_grid2,
-                                    T_grid2};
-      vector<size_t> sz={n_nB2,n_Ye2,n_T2};
-      tg3_Eint.resize(3,sz);
-      tg3_Eint.set_grid(grid);
-      for(size_t i=0;i<tg3_Eint.total_size();i++) {
-        //std::cout << "J: " << i << " " << tg3_Eint.total_size() << endl;
-        size_t ix[3];
-        tg3_Eint.unpack_index(i,ix);
-        //std::cout << "H: " << i << " " << ix[0] << std::endl;
+  // Fix old tables which don't have Eint
+  if (hf.find_object_by_name("Eint",type)==0 && type=="tensor_grid") {    
+    if (verbose>2) cout << "Reading Eint." << endl;
+    hdf_input(hf,tg3_Eint,"Eint");
+  } else if (tg3_Sint.total_size()>0) {
+    cout << "Fixing file with missing Eint." << endl;
+    exit(-1);
+    vector<vector<double> > grid={nB_grid2,Ye_grid2,
+                                  T_grid2};
+    vector<size_t> sz={n_nB2,n_Ye2,n_T2};
+    tg3_Eint.resize(3,sz);
+    tg3_Eint.set_grid(grid);
+    for(size_t i=0;i<tg3_Eint.total_size();i++) {
+      //std::cout << "J: " << i << " " << tg3_Eint.total_size() << endl;
+      size_t ix[3];
+      tg3_Eint.unpack_index(i,ix);
+      //std::cout << "H: " << i << " " << ix[0] << std::endl;
         
-        double T_MeV=T_grid2[ix[2]];
+      double T_MeV=T_grid2[ix[2]];
         
-        double Eint_val=tg3_Fint.get_data()[i]+
-          T_MeV*tg3_Sint.get_data()[i];
-        tg3_Eint.get(ix[0],ix[1],ix[2])=Eint_val;
-      }
+      double Eint_val=tg3_Fint.get_data()[i]+
+        T_MeV*tg3_Sint.get_data()[i];
+      tg3_Eint.get(ix[0],ix[1],ix[2])=Eint_val;
     }
+  }
   
   if (verbose>2) cout << "Reading Xn." << endl;
   hdf_input(hf,tg3_Xn,"Xn");
@@ -5330,9 +5330,9 @@ int eos_nuclei::verify(std::vector<std::string> &sv,
       tg3_flag.get(inB,iYe,iT)=5.0;
       cout << "Verification failed. Computing." << endl;
       ret=eos_vary_dist(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,
-			  thx,mun_full,mup_full,
-			  A_min,A_max,NmZ_min,NmZ_max,
-			  vdet,true,no_nuclei);
+                        thx,mun_full,mup_full,
+                        A_min,A_max,NmZ_min,NmZ_max,
+                        vdet,true,no_nuclei);
 
       if (ret==0) {
 	// Note that Zbar and Nbar aren't computed if verify_only is true
@@ -8145,20 +8145,20 @@ int eos_nuclei::test_neutrino(std::vector<std::string> &sv,
   cout << "mu2,mu4,mu3: " << betaEoS.Mu2 << " " << betaEoS.Mu4 << " "
        << betaEoS.Mu3 << endl;
 
-  PolarizationNonRel pol(betaEoS, ncap, false, false, true);
+  PolarizationNonRel pol_cc(betaEoS, ncap, false, false, true);
   
-  pol.set_skyrme(sk.t0*hc_mev_fm,sk.t1*hc_mev_fm,
-                 sk.t2*hc_mev_fm,sk.t3*hc_mev_fm,
-                 sk.x0,sk.x1,sk.x2,sk.x3,sk.alpha);
+  pol_cc.set_skyrme(sk.t0*hc_mev_fm,sk.t1*hc_mev_fm,
+                    sk.t2*hc_mev_fm,sk.t3*hc_mev_fm,
+                    sk.x0,sk.x1,sk.x2,sk.x3,sk.alpha);
   
-  pol.current=1;
-  pol.flag=0;
-  double cc_vec_mfp=pol.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
+  pol_cc.current=1;
+  pol_cc.flag=0;
+  double cc_vec_mfp=pol_cc.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
   cout << "charged current, vector part: " << cc_vec_mfp << endl;
-  pol.flag=1;
-  double cc_axvec_mfp=pol.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
+  pol_cc.flag=1;
+  double cc_axvec_mfp=pol_cc.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
   cout << "charged current, axial part: " << cc_axvec_mfp << endl;
-  pol.flag=0;
+  pol_cc.flag=0;
   
   betaEoS.Mu2=neutron.mu*hc_mev_fm;
   betaEoS.Mu4=neutron.mu*hc_mev_fm;
@@ -8176,13 +8176,353 @@ int eos_nuclei::test_neutrino(std::vector<std::string> &sv,
   pol_nc.flag=1;
   double nc_axvec_mfp=pol_nc.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
   cout << "neutral current, axial part: " << nc_axvec_mfp << endl;
+
+  // -----------------------------------------------------------------
+  // neutral current dynamic response
+
+  if (false) {
+    
+    double T_MeV=T*hc_mev_fm;
   
+    double vel=sqrt((3.0*T_MeV)/betaEoS.M2);
+    double wmin;
+    double wmax;
+    wmin=-3.0*vel*3*T_MeV-0.00000789;
+    // wmin=-50.0+1.0e-3;
+    wmax=3.0*(vel*3*T_MeV+3*T_MeV*3*T_MeV/(2.0*betaEoS.M2));
+    // wmax=50.0+1.0e-3;
+    double dw=(wmax-wmin)/100;
+
+    ofstream fout("nt_nc_dr.out");
+    fout.setf(ios::scientific);
+
+    fout << "n2 fnn fpp gnn gpp w piLn piLp piLnRe piLpRe piLRPA "
+         << "piLRPAvec FermiF" << endl;
+  
+    for (int k=1;k<100;k++) {
+    
+      double w=wmin+dw*k;
+      // double w=30.0;
+      // piL=pol.GetImPI(w,3*T_MeV);//piL is 2*ImPI0
+      // piLRe=pol.GetImPI2(w, 3*T_MeV);//piLRe is 2*RePI0
+    
+      //**********new version**************
+      //neutral current
+      auto ptN= pol_nc.CalculateBasePolarizationsNeutron(w,3*T_MeV);
+      //neutral current
+      auto ptP= pol_nc.CalculateBasePolarizationsProton(w,3*T_MeV);
+    
+      double piLn=ptN[1];
+      double piLp=ptP[1];
+    
+      //***********PiLRe**********************
+      double piLnRe=pol_nc.GetRePIn(w,3*T_MeV);
+      double piLpRe=pol_nc.GetRePIp(w,3*T_MeV);   
+    
+      //************************************
+    
+      // double vf=(-0.74+2.5)*1.0E-5;
+      // double vgt=4.5*1.0E-5;
+      // double vrpa=vf;
+    
+      double epsilon=1.4416*1.0E-01;
+      double t0=-2.7197*1.0E+03;
+      double t1=4.1764*1.0E+02;
+      double t2=-6.6687*1.0E+01;
+      double t3=1.5042*1.0E+04;
+      double x0=1.6154*1.0E-01;
+      double x1=-4.7986*1.0E-02;
+      double x2=2.717*1.0E-02;
+      double x3=1.3611*1.0E-01;
+    
+      static const double densFac=pow(hc_mev_fm,3.0);
+      double rou=(betaEoS.n2+betaEoS.n4)/densFac;
+      double roun=betaEoS.n2/densFac;
+      double roup=betaEoS.n4/densFac;
+      double kf=pow(0.5*rou*3*3.14159*3.14159,1.0/3.0);
+      double kfn=pow(roun*3*3.14159*3.14159,1.0/3.0);
+      double kfp=pow(roup*3*3.14159*3.14159,1.0/3.0);
+
+
+      //for high density skyrme
+
+      /*
+        double
+        f0=3.0/4.0*t0+3.0/8.0*t1*kf*kf+5.0/8.0*t2*kf*kf+1.0/2.0*t2*x2*kf*kf+(epsilon+1.0)*(epsilon+2.0)/16.0*t3*pow(rou,epsilon);
+        double
+        f0p=-1.0/4.0*t0-1.0/2.0*t0*x0-1.0/8.0*t1*kf*kf-1.0/4.0*t1*x1*kf*kf+1.0/8.0*t2*kf*kf+1.0/4.0*t2*x2*kf*kf-1.0/24.0*t3*pow(rou,epsilon)-1.0/12.0*t3*x3*pow(rou,epsilon);
+        double
+        g0=-1.0/4.0*t0+1.0/2.0*x0*t0-1.0/8.0*t1*kf*kf+1.0/4.0*t1*x1*kf*kf+1.0/8.0*t2*kf*kf+1.0/4.0*t2*x2*kf*kf-1.0/24.0*t3*pow(rou,epsilon)+1.0/12.0*t3*x3*pow(rou,epsilon);
+        double
+        g0p=-1.0/4.0*t0-1.0/8.0*t1*kf*kf+1.0/8.0*t2*kf*kf-1.0/24.0*t3*pow(rou,epsilon);
+      */
+    
+      // double f0n=1.0/2.0*t0-1.0/2.0*t0*x0+1.0/8.0*t1*kfn*kfn-1.0/4.0*t1*x1*kfn*kfn+3.0/4.0*t2*kfn*kfn+3.0/4.0*t2*x2*kfn*kfn+(epsilon+1.0)*(epsilon+2.0)/24.0*t3*pow(rou,epsilon)-(epsilon+1.0)*(epsilon+2.0)/24.0*t3*x3*pow(rou,epsilon);
+      // double g0n=-1.0/2.0*t0+1.0/2.0*t0*x0-1.0/4.0*t1*kfn*kfn+1.0/4.0*t1*x1*kfn*kfn+1.0/4.0*t2*kfn*kfn+1.0/4.0*t2*x2*kfn*kfn-1.0/12.0*t3*pow(rou,epsilon)+1.0/12.0*t3*x3*pow(rou,epsilon);
+    
+      double fnn=0.5*(t0*(1.0-x0)+1.0/6.0*t3*pow(rou,epsilon)*(1.0-x3)+2.0/3.0*epsilon*t3*pow(rou,epsilon-1)*((1+x3/2.0)*rou-(1.0/2.0+x3)*roun)+1.0/6.0*epsilon*(epsilon-1.0)*t3*pow(rou,epsilon-2.0)*((1+x3/2.0)*pow(rou,2.0)-(0.5+x3)*(roun*roun+roup*roup)))+0.25*(t1*(1-x1)+3*t2*(1+x2))*kfn*kfn;
+      double fpp=0.5*(t0*(1.0-x0)+1.0/6.0*t3*pow(rou,epsilon)*(1.0-x3)+2.0/3.0*epsilon*t3*pow(rou,epsilon-1)*((1+x3/2.0)*rou-(1.0/2.0+x3)*roup)+1.0/6.0*epsilon*(epsilon-1.0)*t3*pow(rou,epsilon-2.0)*((1+x3/2.0)*pow(rou,2.0)-(0.5+x3)*(roun*roun+roup*roup)))+0.25*(t1*(1-x1)+3*t2*(1+x2))*kfp*kfp;
+      double gnn=0.5*(t0*(x0-1)+1.0/6.0*t3*pow(rou,epsilon)*(x3-1.0))+0.25*(t1*(x1-1)+t2*(1+x2))*kfn*kfn;
+      double gpp=0.5*(t0*(x0-1)+1.0/6.0*t3*pow(rou,epsilon)*(x3-1.0))+0.25*(t1*(x1-1)+t2*(1+x2))*kfp*kfp;
+      double fnp=0.5*(t0*(2.0+x0)+1.0/6.0*t3*pow(rou,epsilon)*(2.0+x3)+1.0/2.0*epsilon*t3*pow(rou,epsilon)+1.0/6.0*epsilon*(epsilon-1.0)*t3*pow(rou,epsilon-2.0)*((1+x3/2.0)*pow(rou,2.0)-(0.5+x3)*(roun*roun+roup*roup)))+0.5*0.25*(t1*(2.0+x1)+t2*(2.0+x2))*(kfn*kfn+kfp*kfp);
+      double gnp=0.5*(t0*x0+1.0/6.0*t3*pow(rou,epsilon)*x3)+0.5*0.25*(t1*x1+t2*x2)*(kfn*kfn+kfp*kfp);
+    
+      fnn=fnn/pow(197.3,3);
+      fpp=fpp/pow(197.3,3);
+      gnn=gnn/pow(197.3,3);
+      gpp=gpp/pow(197.3,3);
+      fnp=fnp/pow(197.3,3);
+      gnp=gnp/pow(197.3,3);
+    
+    
+      //for low density virial 
+      /*   double fnn;
+           double fpp;
+           double gnn;
+           double gpp;
+           double fnp;
+           double gnp;
+           fnn=fpp=-0.0000844949;
+           gnn=gpp=0.0000759672;
+           fnp=-0.000321676;
+           gnp=-0.0000702146;
+           double f0p=0.000118591;
+           double g0p=0.0000730909;
+         
+           double vf=2.0*f0p;
+           double vgt=2.0*g0p;
+           double vrpa=vf;//already in unit of MeV-2*/
+
+      double piLRPA;
+      double piLRPAvec;
+      double response;
+      double FermiF;
+      double zz;
+    
+      //*************************************
+      zz=(w+0.0)/T_MeV;//neutral current
+      FermiF=1/(1-exp(-zz));
+      // piLRPA=2*(piL/2)/((1-vrpa*(piLRe/2))*(1-vrpa*(piLRe/2))+vrpa*vrpa*(piL/2)*(piL/2))*FermiF;
+      // piLRPA=2*(piL/2)*FermiF;
+      // piLRPA=2*((piLn+piLp)/2+(gnn-gpp)*(piLn/2.0*piLpRe/2.0-piLp/2.0*piLnRe/2.0))/((1-gnn*(piLnRe/2)-gpp*(piLpRe/2))*(1-gnn*(piLnRe/2)-gpp*(piLpRe/2))+(piLn/2.0*gnn+piLp/2.0*gpp)*(piLn/2.0*gnn+piLp/2.0*gpp))*FermiF;
+      // piLRPAvec=2*(piLn/2)/((1-fnn*(piLnRe/2))*(1-fnn*(piLnRe/2))+(piLn/2.0*fnn)*(piLn/2.0*fnn))*FermiF;
+      //piLRPA is s(q0,q)
+      //
+      //
+      //*********************complete version of neutral current n+p gas polarization functions**********************
+      double impin,impip,repin,repip;
+      double pirpaVec,pirpaAx;
+      impin=piLn/2.0;
+      impip=piLp/2.0;
+      repin=piLnRe/2.0;
+      repip=piLpRe/2.0;
+      //vector polarization complete version
+      //********adding coulomb force in fpp only for NC vector part****************
+      double e2,qtf2;
+      double piconst;
+      double coulombf;
+      e2=1.0/137.0*4.0*piconst;
+      piconst=3.1415926;
+      qtf2=4.0*e2*pow(piconst,0.333333)*pow(3.0*rou*densFac,2.0/3.0);
+      coulombf=e2*4.0*piconst/((3.0*T_MeV)*(3.0*T_MeV)+qtf2);
+    
+      fpp=fpp+coulombf;
+    
+      //**************************
+      pirpaVec=(impin+fnp*fnp*impin*impin*impip+fpp*fpp*impin*impip*impip+fnp*fnp*impip*repin*repin-2.0*fpp*impin*repip+fpp*fpp*impin*repip*repip)/((-fnn*impin-fpp*impip-fnp*fnp*impip*repin+fnn*fpp*impip*repin-fnp*fnp*impin*repip+fnn*fpp*impin*repip)*(-fnn*impin-fpp*impip-fnp*fnp*impip*repin+fnn*fpp*impip*repin-fnp*fnp*impin*repip+fnn*fpp*impin*repip)+(1+fnp*fnp*impin*impip-fnn*fpp*impin*impip-fnn*repin-fpp*repip-fnp*fnp*repin*repip+fnn*fpp*repin*repip)*(1+fnp*fnp*impin*impip-fnn*fpp*impin*impip-fnn*repin-fpp*repip-fnp*fnp*repin*repip+fnn*fpp*repin*repip));
+      //
+      //
+      //
+      //axial polarization complete version
+      pirpaAx=((gnn+gnp)*(gnn+gnp)*impin*impin*impip+impip*(-1.0+gnn*repin+gnp*repin)*(-1.0+gnn*repin+gnp*repin)+impin*(1.0-2.0*gnp*repip-2.0*gpp*repip+gnp*gnp*(impip*impip+repip*repip)+2.0*gnp*gpp*(impip*impip+repip*repip)+gpp*gpp*(impip*impip+repip*repip)))/((-gnn*impin-gpp*impip-gnp*gnp*impip*repin+gnn*gpp*impip*repin-gnp*gnp*impin*repip+gnn*gpp*impin*repip)*(-gnn*impin-gpp*impip-gnp*gnp*impip*repin+gnn*gpp*impip*repin-gnp*gnp*impin*repip+gnn*gpp*impin*repip)+(1.0+gnp*gnp*impin*impip-gnn*gpp*impin*impip-gnn*repin-gpp*repip-gnp*gnp*repin*repip+gnn*gpp*repin*repip)*(1.0+gnp*gnp*impin*impip-gnn*gpp*impin*impip-gnn*repin-gpp*repip-gnp*gnp*repin*repip+gnn*gpp*repin*repip));
+    
+      piLRPA=2.0*pirpaAx*FermiF;
+      piLRPAvec=2.0*pirpaVec*FermiF;
+    
+      // std::cout << "neutral current density: " <<betaEoS.n2/densFac<<" vrpa: "<<vrpa<<" full "<< full <<" w "<<w<< " piL(w) " <<piL<<" piLRe(w) "<<piLRe<<" piLRPA "<<piLRPA<<" response "<<response<<" FermiF: "<<FermiF<< std::endl;
+      // datanc << "neutral current density: " <<betaEoS.n2/densFac<<" full "<< full <<" vrpa: "<<vrpa<< " w "<<w<< " piL(w) " <<piL<<" piLRe(w) "<<piLRe<<" piLRPA "<<piLRPA<<" response "<<response<<" FermiF "<<FermiF<< std::endl;
+      //
+      // new version******
+      //   std::cout << "neutral current density: " <<betaEoS.n2/densFac<<" fnn: "<<fnn<<" fpp: "<<fpp<<" gnn: "<<gnn<<" gpp: "<<gpp<<" full "<< full <<" w "<<w<< " piLn(w) " <<piLn<<" piLp(w) " <<piLp<<" piLRen(w) "<<piLnRe<<" piLRep(w) "<<piLpRe<<" piLRPAaxial "<<piLRPA<<" piLRPAvector "<<piLRPAvec<<" FermiF: "<<FermiF<< std::endl;
+    
+      cout << "neutral current density: " << betaEoS.n2/densFac
+           << " fnn: " <<fnn << " fpp: " << fpp << " gnn: " << gnn
+           << " gpp: " << gpp << " w " << w
+           << " piLn(w) " << piLn << " piLp(w) " << piLp
+           << " piLRen(w) " << piLnRe << " piLRep(w) " << piLpRe
+           << " piLRPA " << piLRPA << " piLRPAvector " << piLRPAvec
+           << " FermiF: " << FermiF << std::endl;
+      fout << betaEoS.n2/densFac << " "
+           << fnn << " "
+           << fpp << " "
+           << gnn << " "
+           << gpp << " "
+           << w << " "
+           << piLn << " "
+           << piLp << " "
+           << piLnRe << " "
+           << piLpRe << " "
+           << piLRPA << " "
+           << piLRPAvec << " "
+           << FermiF 
+           << std::endl;
+    
+    }
+
+    fout.close();
+
+  }
+
+  // -----------------------------------------------------------------
+  // charged current dynamic response
+
+  if (true) {
+
+    double T_MeV=T*hc_mev_fm;
+    static const double densFac=pow(hc_mev_fm,3.0);
+    
+    //**********Set integration range***********
+    double wmin;
+    double wmax;
+    wmin=-100.0;
+    wmax=50.0;
+    double dw=(wmax-wmin)/100;
+    //******************************************
+
+    ofstream fout("nt_cc_dr.out");
+    fout << "n2 vgt vf w piL piLRe piLRPA piLRPAVec FermiF" << endl;
+    
+    for (int k=1;k<100;k++) {
       
+      double w=wmin+dw*k;
+      //   **********new version**************
+      //charged current
+      auto pt= pol_cc.CalculateBasePolarizations(w, 10*T_MeV);
+      
+      double piL=pt[1];
+      
+      //  ***********PiLRe**********************
+      double piLRe=pol_cc.GetImPI2(w,10*T_MeV);
+      
+      // piL=pol.GetImPI(w,5*T_MeV);//piL is 2*ImPI0
+      // piLRe=pol.GetImPI2(w, 5*T_MeV);//piLRe is 2*RePI0
+      //vf and vgt for cc comes from arXiv:1205.4066, in unit of MeV^-2, note that in the arxiv paper the unit is wrong, should be fm^2 rather than fm^-2
+      /* double vf=5.1*1.0E-5;
+         double vgt=2.8*1.0E-5;
+         double vrpa=vf;*/
+      
+      // double t0,t1,t2,t3,x0,x1,x2,x3,epsilon;
+      /* //ft7
+         epsilon= 1.6112652355*1.0E-01;
+         t0=-2.8515584390*1.0E+03;
+         t1=2.9926667400*1.0E+02;
+         t2=2.1204461670*1.0E+03;
+         t3=1.7480390049*1.0E+04;
+         x0=9.5708919697*1.0E-02;
+         x1=-5.9493754771*1.0E+00;
+         x2=-1.3211268948 *1.0E+00;
+         x3=3.7117434733*1.0E-02;*/
+      //NRAPR
+      double epsilon= 1.4416*1.0E-01;
+      double t0 = -2.7197*1.0E+03;
+      double t1=4.1764*1.0E+02;
+      double t2= -6.6687*1.0E+01;
+      double t3= 1.5042*1.0E+04;
+      double x0= 1.6154*1.0E-01;
+      double x1= -4.7986*1.0E-02;
+      double x2= 2.717*1.0E-02;
+      double x3= 1.3611*1.0E-01;
+      
+      
+      double rou=(betaEoS.n2+betaEoS.n4)/densFac;
+      double roun=betaEoS.n2/densFac;
+      double roup=betaEoS.n4/densFac;
+      
+      double kfnTest=pow(roun*3*3.14159*3.14159,1.0/3.0);
+      double kfpTest=pow(roup*3*3.14159*3.14159,1.0/3.0);
+      double kf=pow(0.5*rou*3*3.14159*3.14159,1.0/3.0);
+      
+      // double f0p=-1.0/4.0*t0-1.0/2.0*t0*x0-1.0/8.0*t1*kf*kf-1.0/4.0*t1*x1*kf*kf+1.0/8.0*t2*kf*kf+1.0/4.0*t2*x2*kf*kf-1.0/24.0*t3*pow(rou,epsilon)-1.0/12.0*t3*x3*pow(rou,epsilon);
+      // double g0p=-1.0/4.0*t0-1.0/8.0*t1*kf*kf+1.0/8.0*t2*kf*kf-1.0/24.0*t3*pow(rou,epsilon);
+      // double vf=2.0*f0p;// for symmetric nuclear matter
+      // double vgt=2.0*g0p;// for symmetric nuclear matter
+      // double fnn=0.5*(t0*(1.0-x0)+1.0/6.0*t3*pow(rou,epsilon)*(1.0-x3)+2.0/3.0*epsilon*t3*pow(rou,epsilon-1)*((1+x3/2.0)*rou-(1.0/2.0+x3)*roun)+1.0/6.0*epsilon*(epsilon-1.0)*t3*pow(rou,epsilon-2.0)*((1+x3/2.0)*pow(rou,2.0)-(0.5+x3)*(roun*roun+roup*roup)))+0.25*(t1*(1-x1)+3*t2*(1+x2))*kfn*kfn;
+      // double fnp=0.5*(t0*(2.0+x0)+1.0/6.0*t3*pow(rou,epsilon)*(2.0+x3)+1.0/2.0*epsilon*t3*pow(rou,epsilon)+1.0/6.0*epsilon*(epsilon-1.0)*t3*pow(rou,epsilon-2.0)*((1+x3/2.0)*pow(rou,2.0)-(0.5+x3)*(roun*roun+roup*roup)))+0.5*0.25*(t1*(2.0+x1)+t2*(2.0+x2))*(kfn*kfn+kfp*kfp);
+      // double gnn=0.5*(t0*(x0-1)+1.0/6.0*t3*pow(rou,epsilon)*(x3-1.0))+0.25*(t1*(x1-1)+t2*(1+x2))*kfn*kfn;
+      // double gnp=0.5*(t0*x0+1.0/6.0*t3*pow(rou,epsilon)*x3)+0.5*0.25*(t1*x1+t2*x2)*(kfn*kfn+kfp*kfp);
+      //  double vf=fnn-fnp;
+      //  double vgt=gnn-gnp;
+      double w1nnVec,w1npVec,w1nnAx,w1npAx,w2nnVec,w2npVec,w2nnAx,w2npAx;
+      w1nnVec=t0*(1.0-x0)+1.0/6.0*t3*pow(rou,epsilon)*(1.0-x3)+2.0/3.0*epsilon*t3*pow(rou,epsilon-1)*((1+x3/2.0)*rou-(1.0/2.0+x3)*roun)+1.0/6.0*epsilon*(epsilon-1.0)*t3*pow(rou,epsilon-2.0)*((1+x3/2.0)*pow(rou,2.0)-(0.5+x3)*(roun*roun+roup*roup));
+      w1npVec=t0*(2.0+x0)+1.0/6.0*t3*pow(rou,epsilon)*(2.0+x3)+1.0/2.0*epsilon*t3*pow(rou,epsilon)+1.0/6.0*epsilon*(epsilon-1.0)*t3*pow(rou,epsilon-2.0)*((1+x3/2.0)*pow(rou,2.0)-(0.5+x3)*(roun*roun+roup*roup));
+      w1nnAx=t0*(x0-1)+1.0/6.0*t3*pow(rou,epsilon)*(x3-1.0);
+      w1npAx=t0*x0+1.0/6.0*t3*pow(rou,epsilon)*x3;
+      w2nnVec=0.25*(t1*(1-x1)+3*t2*(1+x2));
+      w2npVec=0.25*(t1*(2.0+x1)+t2*(2.0+x2));
+      w2nnAx=0.25*(t1*(x1-1)+t2*(1+x2));
+      w2npAx=0.25*(t1*x1+t2*x2);
+      
+      double vf=0.5*(w1nnVec-w1npVec)+(w2nnVec-w2npVec)*kfnTest*kfnTest;//kf should be the hole momenta at fermi see surface, here the transition is (pn^-1,pn^-1), the hole is neutron hole
+      double vgt=0.5*(w1nnAx-w1npAx)+(w2nnAx-w2npAx)*kfnTest*kfnTest;
+      double vrpa=vgt/pow(197.3,3);//change unit to MeV-2
+      double vrpaVec=vf/pow(197.3,3);//change unit to MeV-2 
+      
+      //virial
+      /*   double fnn;
+           double fpp;
+           double gnn;
+           double gpp;
+           fnn=fpp=-0.0000844949;
+           gnn=gpp=0.0000759672;
+           double f0p=0.000118591;
+           double g0p=0.0000730909;
+           double vf=2.0*f0p;
+           double vgt=2.0*g0p;
+           double vrpa=vgt;//already in unit of MeV-2
+           double vrpaVec=vf; */
+      
+      double piLRPA;
+      
+      double FermiF;
+      double zz;
+      zz=(w+betaEoS.Mu2-betaEoS.Mu4)/T_MeV;
+      // zz=(w+beta.Mu2-beta.Mu4)/T_MeV;
+      FermiF=1/(1-exp(-zz));
+      
+      //      double response=pol.GetResponse( E1, w, 10*T_MeV);
+      
+      piLRPA=2*(piL/2)/((1-vrpa*(piLRe/2))*(1-vrpa*(piLRe/2))+vrpa*vrpa*(piL/2)*(piL/2))*FermiF;//piLRPA is s(q0,q)
+      
+      double piLRPAVec=2*(piL/2)/((1-vrpaVec*(piLRe/2))*(1-vrpaVec*(piLRe/2))+vrpaVec*vrpaVec*(piL/2)*(piL/2))*FermiF;
+      
+      // piLRPA=2*(piL/2)*FermiF;//piLRPA is s(q0,q)
+      // std::cout << "charged current density: " <<n2+n4<<" full "<< Wm <<" w "<<w<< " piL(w) " <<piL<<" piLRe(w) "<<piLRe<<" piLRPA "<<piLRPA<<" piLRPA vector "<<piLRPAVec<<" response "<<response<<" FermiF: "<<FermiF<< std::endl;
+      
+      cout << "charged current density: " << betaEoS.n2
+           << " vgt: " << vgt << " vf: " << vf
+           << " w " << w << " piL(w) " << piL
+           << " piLRe(w) " << piLRe << " piLRPA "
+           << piLRPA << " piLRPA vector " << piLRPAVec
+           << " FermiF " << FermiF << std::endl;
+      fout << betaEoS.n2 << " "
+           << vgt << " "
+           << vf << " "
+           << w << " "
+           << piL << " "
+           << piLRe << " "
+           << piLRPA << " "
+           << piLRPAVec << " "
+           << FermiF << " "
+           << std::endl;
+    }
+    fout.close();
+  }
+  
   return 0;
 }
 
 int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv, 
-			       bool itive_com) {
+                            bool itive_com) {
   
   double nB=function_to_double(sv[1]);
   double T=function_to_double(sv[2])/hc_mev_fm;
@@ -8204,7 +8544,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
   tab.line_of_names("log_xn log_xp Z N A ZoA Xnuclei Ye_best");
   tab.line_of_names("cc_vec_mfp cc_axvec_mfp nc_vec_mfp nc_axvec_mfp");
                     
-  static const int N=1000;
+  static const int N=10000;
   for(int j=0;j<N;j++) {
     std::cout << "j: " << j << endl;
 

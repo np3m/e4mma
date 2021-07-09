@@ -113,9 +113,13 @@ public:
 
   /// flag=0 is vector part, flag=1 is axial part
   int flag;
+  static const int flag_axial=1;
+  static const int flag_vector=0;
 
   /// current=0 is neutral current, current=1 is charged current
   int current;
+  static const int current_charged=1;
+  static const int current_neutral=0;
   
 protected:
   virtual void SetPolarizations(double q0, double q, 

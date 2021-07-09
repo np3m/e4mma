@@ -676,10 +676,18 @@ void PolarizationNonRel::SetPolarizations(double q0, double q,
   double kf=pow(0.5*rou*3*3.14159*3.14159,1.0/3.0);
   double kfn=pow(roun*3*3.14159*3.14159,1.0/3.0);
   double kfp=pow(roup*3*3.14159*3.14159,1.0/3.0);
-  double f0=3.0/4.0*t0+3.0/8.0*t1*kf*kf+5.0/8.0*t2*kf*kf+1.0/2.0*t2*x2*kf*kf+(epsilon+1.0)*(epsilon+2.0)/16.0*t3*pow(rou,epsilon);
-  double f0p=-1.0/4.0*t0-1.0/2.0*t0*x0-1.0/8.0*t1*kf*kf-1.0/4.0*t1*x1*kf*kf+1.0/8.0*t2*kf*kf+1.0/4.0*t2*x2*kf*kf-1.0/24.0*t3*pow(rou,epsilon)-1.0/12.0*t3*x3*pow(rou,epsilon);
-  double g0=-1.0/4.0*t0+1.0/2.0*x0*t0-1.0/8.0*t1*kf*kf+1.0/4.0*t1*x1*kf*kf+1.0/8.0*t2*kf*kf+1.0/4.0*t2*x2*kf*kf-1.0/24.0*t3*pow(rou,epsilon)+1.0/12.0*t3*x3*pow(rou,epsilon);
-  double g0p=-1.0/4.0*t0-1.0/8.0*t1*kf*kf+1.0/8.0*t2*kf*kf-1.0/24.0*t3*pow(rou,epsilon);
+  
+  /*
+    Commented out by AWS on 7/9/21 because these aren't currently
+    being used. They were originally used for the charged current
+    couplings below.
+    
+    double f0=3.0/4.0*t0+3.0/8.0*t1*kf*kf+5.0/8.0*t2*kf*kf+1.0/2.0*t2*x2*kf*kf+(epsilon+1.0)*(epsilon+2.0)/16.0*t3*pow(rou,epsilon);
+    double f0p=-1.0/4.0*t0-1.0/2.0*t0*x0-1.0/8.0*t1*kf*kf-1.0/4.0*t1*x1*kf*kf+1.0/8.0*t2*kf*kf+1.0/4.0*t2*x2*kf*kf-1.0/24.0*t3*pow(rou,epsilon)-1.0/12.0*t3*x3*pow(rou,epsilon);
+    double g0=-1.0/4.0*t0+1.0/2.0*x0*t0-1.0/8.0*t1*kf*kf+1.0/4.0*t1*x1*kf*kf+1.0/8.0*t2*kf*kf+1.0/4.0*t2*x2*kf*kf-1.0/24.0*t3*pow(rou,epsilon)+1.0/12.0*t3*x3*pow(rou,epsilon);
+    double g0p=-1.0/4.0*t0-1.0/8.0*t1*kf*kf+1.0/8.0*t2*kf*kf-1.0/24.0*t3*pow(rou,epsilon);
+  */
+  
   // double f0n=1.0/2.0*t0-1.0/2.0*t0*x0+1.0/8.0*t1*kfn*kfn-1.0/4.0*t1*x1*kfn*kfn+3.0/4.0*t2*kfn*kfn+3.0/4.0*t2*x2*kfn*kfn+(epsilon+1.0)*(epsilon+2.0)/24.0*t3*pow(rou,epsilon)-(epsilon+1.0)*(epsilon+2.0)/24.0*t3*x3*pow(rou,epsilon);
   // double g0n=-1.0/2.0*t0+1.0/2.0*t0*x0-1.0/4.0*t1*kfn*kfn+1.0/4.0*t1*x1*kfn*kfn+1.0/4.0*t2*kfn*kfn+1.0/4.0*t2*x2*kfn*kfn-1.0/12.0*t3*pow(rou,epsilon)+1.0/12.0*t3*x3*pow(rou,epsilon);
   // for neutral current couplings
@@ -721,7 +729,7 @@ void PolarizationNonRel::SetPolarizations(double q0, double q,
   double vgt=0.5*(w1nnAx-w1npAx)+(w2nnAx-w2npAx)*kfn*kfn;
      
   double vrpa;
-  if (current==1) {
+  if (flag==flag_axial) {
     vrpa=vgt/pow(197.3,3);//change unit to MeV-2
   } else {
     vrpa=vf/pow(197.3,3);;
