@@ -8746,7 +8746,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
                            log_xn,log_xp,Zbar,Nbar,Zbar+Nbar,
                            Zbar/(Zbar+Nbar),X[5],Ye_best,
                            cc_vec_mfp,cc_axvec_mfp,nc_vec_mfp,nc_axvec_mfp};
-      tab.line_of_data(12,line);
+      tab.line_of_data(line.size(),line);
     }
 
     if (j%100==0) {
