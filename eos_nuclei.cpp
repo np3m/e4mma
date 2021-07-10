@@ -8160,9 +8160,9 @@ int eos_nuclei::test_neutrino(std::vector<std::string> &sv,
   cout << "charged current, axial part: " << cc_axvec_mfp << endl;
   pol_cc.flag=0;
   
-  betaEoS.Mu2=neutron.mu*hc_mev_fm;
-  betaEoS.Mu4=neutron.mu*hc_mev_fm;
-  betaEoS.Mu3=0.0;
+  //betaEoS.Mu2=neutron.mu*hc_mev_fm;
+  //betaEoS.Mu4=neutron.mu*hc_mev_fm;
+  //betaEoS.Mu3=0.0;
 
   PolarizationNonRel pol_nc(betaEoS, nscat, false, false, true);
   
@@ -8180,7 +8180,7 @@ int eos_nuclei::test_neutrino(std::vector<std::string> &sv,
   // -----------------------------------------------------------------
   // neutral current dynamic response
 
-  if (false) {
+  if (true) {
     
     double T_MeV=T*hc_mev_fm;
   
