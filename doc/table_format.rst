@@ -50,7 +50,10 @@ These are stored as integers.
 Quantities for the solver
 -------------------------
 
-These are all :ref:`o2scl:tensor_grid` objects.
+These are all :ref:`o2scl:tensor_grid` objects. The contents of the
+tensor are stored in an HDF5 dataset named "data" in row-major
+order (the first index is the baryon density, the second is the
+electron fraction, and the third is the temperature).
 
 - ``flag``: A flag indicating if each point is complete, empty, or
   if a guess has been stored (10 means the point is complete).
