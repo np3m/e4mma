@@ -3861,7 +3861,7 @@ int eos_nuclei::select_high_T(int option) {
     cout << skyrme_ext.esym*hc_mev_fm << endl;
     tm.test_abs(skyrme_ext.esym*hc_mev_fm,30.0,5.0,"esym");
     cout << skyrme_ext.msom << endl;
-    tm.test_abs(skyrme_ext.msom,0.8,0.2,"msom");
+    tm.test_abs(skyrme_ext.msom,0.8,0.3,"msom");
     tm.report();
     
   } else if (option==6) {
