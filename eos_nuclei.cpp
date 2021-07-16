@@ -8354,13 +8354,14 @@ int eos_nuclei::test_neutrino(std::vector<std::string> &sv,
   //betaEoS.Mu4=neutron.mu*hc_mev_fm;
   //betaEoS.Mu3=0.0;
 
-  PolarizationNonRel pol_nc(betaEoS, nscat, false, false, true);
+  PolarizationNonRel pol_nc(betaEoS, nscat, false, false, false);
   
   pol_nc.set_skyrme(sk.t0*hc_mev_fm,sk.t1*hc_mev_fm,
                     sk.t2*hc_mev_fm,sk.t3*hc_mev_fm,
                     sk.x0,sk.x1,sk.x2,sk.x3,sk.alpha);
   
   pol_nc.current=0;
+  pol_nc.flag=0;
   double nc_vec_mfp=pol_nc.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
   cout << "neutral current, vector part: " << nc_vec_mfp << endl;
   pol_nc.flag=1;
