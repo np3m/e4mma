@@ -865,6 +865,196 @@ int eos_nuclei::eos_deriv(std::vector<std::string> &sv,
     
 }
 
+int eos_nuclei::eos_deriv_v2(std::vector<std::string> &sv,
+                             bool itive_com) {
+  
+  std::cout << "Computing derivatives." << endl;
+  
+  // -----------------------------------------------------
+  // Read table
+    
+  if (derivs_computed==false) {
+    
+    derivs_computed=true;
+    
+    size_t st[3]={n_nB2,n_Ye2,n_T2};
+    
+    calculator calc;
+    std::map<std::string,double> vars;
+    
+    vector<double> packed;
+    vector<std::string> split_res;
+
+    split_string_delim(nB_grid_spec,split_res,',');
+    n_nB2=stoszt(split_res[0]);
+    
+    calc.compile(split_res[1].c_str());
+    for(size_t i=0;i<n_nB2;i++) {
+      vars["i"]=((double)i);
+      packed.push_back(nB_grid2[i]);
+    }
+    
+    split_string_delim(Ye_grid_spec,split_res,',');
+    n_Ye2=stoszt(split_res[0]);
+    
+    calc.compile(split_res[1].c_str());
+    for(size_t i=0;i<n_Ye2;i++) {
+      vars["i"]=((double)i);
+      packed.push_back(Ye_grid2[i]);
+    }
+    
+    split_string_delim(T_grid_spec,split_res,',');
+    n_T2=stoszt(split_res[0]);
+    
+    calc.compile(split_res[1].c_str());
+    for(size_t i=0;i<n_T2;i++) {
+      vars["i"]=((double)i);
+      packed.push_back(T_grid2[i]);
+    }
+    
+    tg3_Eint.resize(3,st);
+    tg3_Pint.resize(3,st);
+    tg3_Sint.resize(3,st);
+    tg3_mun.resize(3,st);
+    tg3_mup.resize(3,st);
+    
+    tg3_Eint.set_grid_packed(packed);
+    tg3_Pint.set_grid_packed(packed);
+    tg3_Sint.set_grid_packed(packed);
+    tg3_mun.set_grid_packed(packed);
+    tg3_mup.set_grid_packed(packed);
+    
+    tg3_Eint.set_all(0.0);
+    tg3_Pint.set_all(0.0);
+    tg3_Sint.set_all(0.0);
+    tg3_mun.set_all(0.0);
+    tg3_mup.set_all(0.0);
+  }
+
+  tensor_grid3<> tg3_dmundnB;
+  tensor_grid3<> tg3_dmundYe;
+  tensor_grid3<> tg3_dmundT;
+  tensor_grid3<> tg3_dmupdYe;
+  tensor_grid3<> tg3_dmupdT;
+  tensor_grid3<> tg3_dsdT;
+  
+  size_t st[3]={n_nB2,n_Ye2,n_T2};
+  vector<vector<double> > grid={nB_grid2,Ye_grid2,T_grid2};
+  
+  tg3_dmundnB.resize(3,st);
+  tg3_dmundYe.resize(3,st);
+  tg3_dmundT.resize(3,st);
+  tg3_dmupdYe.resize(3,st);
+  tg3_dmupdT.resize(3,st);
+  tg3_dsdT.resize(3,st);
+  
+  tg3_dmundnB.set_grid(grid);
+  tg3_dmundYe.set_grid(grid);
+  tg3_dmundT.set_grid(grid);
+  tg3_dmupdYe.set_grid(grid);
+  tg3_dmupdT.set_grid(grid);
+  tg3_dsdT.set_grid(grid);
+  
+  // Temporary vectors which store the free energy density in
+  // MeV/fm^3
+  ubvector fint_vec_nB(n_nB2), fint_vec_Ye(n_Ye2), fint_vec_T(n_T2);
+
+  // The interpolator
+  interp_steffen<vector<double>,ubvector> itp_stf;
+
+  // Temporary vectors for derivatives in the nB, Ye, and T directions
+  fint_vec_nB.resize(n_nB2);
+  fint_vec_Ye.resize(n_Ye2);
+  fint_vec_T.resize(n_T2);
+
+  // First, compute the temperature derivative, which is just the
+  // entropy times minus one
+  for (size_t i=0;i<n_nB2;i++) {
+    for (size_t j=0;j<n_Ye2;j++) {
+      for(size_t k=0;k<n_T2;k++) {
+	fint_vec_T[k]=tg3_Fint.get(i,j,k)*nB_grid2[i];
+      }
+      itp_stf.set(n_T2,T_grid2,fint_vec_T);
+      for(size_t k=0;k<n_T2;k++) {
+	// Note that fint_vec_T above is stored in MeV/fm^3, so
+	// when we take a derivative wrt to temperature (stored
+	// in MeV), we get the correct units of 1/fm^3, and then
+	// we divide by the baryon density in units of 1/fm^3
+	tg3_Sint.set(i,j,k,-itp_stf.deriv(T_grid2[k])/nB_grid2[i]);
+      }
+    }
+  }
+
+  // Second, compute the electron fraction derivative, which we
+  // temporarily store in tg3_mup
+  for (size_t i=0;i<n_nB2;i++) {
+    for(size_t k=0;k<n_T2;k++) {
+      for (size_t j=0;j<n_Ye2;j++) {
+	fint_vec_Ye[j]=tg3_Fint.get(i,j,k)*nB_grid2[i];
+      }
+      itp_stf.set(n_Ye2,Ye_grid2,fint_vec_Ye);
+      for (size_t j=0;j<n_Ye2;j++) {
+	tg3_mup.set(i,j,k,itp_stf.deriv(Ye_grid2[j]));
+      }
+    }
+  }
+
+  // Third, compute the baryon density derivative, which we
+  // temporarily store in tg3_mun
+  for (size_t j=0;j<n_Ye2;j++) {
+    for(size_t k=0;k<n_T2;k++) {
+      for (size_t i=0;i<n_nB2;i++) {
+	fint_vec_nB[i]=tg3_Fint.get(i,j,k)*nB_grid2[i];
+      }
+      itp_stf.set(n_nB2,nB_grid2,fint_vec_nB);
+      for (size_t i=0;i<n_nB2;i++) {
+	tg3_mun.set(i,j,k,itp_stf.deriv(nB_grid2[i]));
+      }
+    }
+  }
+
+  // Now go through every point and compute the remaining
+  // quantities
+  for (size_t i=0;i<n_nB2;i++) {
+    for (size_t j=0;j<n_Ye2;j++) {
+      for (size_t k=0;k<n_T2;k++) {
+	
+	double en=tg3_Sint.get(i,j,k)*nB_grid2[i];
+	double dfdnB=tg3_mun.get(i,j,k);
+	double dfdYe=tg3_mup.get(i,j,k);
+
+	if (false && nB_grid2[i]>0.3) {
+	  cout << tg3_mun.get(i,j,k) << endl;
+	  cout << tg3_mup.get(i,j,k) << endl;
+	}
+	
+	tg3_mun.get(i,j,k)=dfdnB-dfdYe*Ye_grid2[j]/nB_grid2[i];
+	tg3_mup.get(i,j,k)=dfdnB-dfdYe*(Ye_grid2[j]-1.0)/nB_grid2[i];
+
+	if (false && nB_grid2[i]>0.3) {
+	  cout << tg3_mun.get(i,j,k) << endl;
+	  cout << tg3_mup.get(i,j,k) << endl;
+	  exit(-1);
+	}
+	
+	// E = F + T S
+	tg3_Eint.get(i,j,k)=tg3_Fint.get(i,j,k)+
+	  T_grid2[k]*tg3_Sint.get(i,j,k);
+	
+	// P = - F + mun * nn + mup * np
+	tg3_Pint.get(i,j,k)=-tg3_Fint.get(i,j,k)*nB_grid2[i]+
+	  nB_grid2[i]*(1.0-Ye_grid2[j])*tg3_mun.get(i,j,k)+
+	  nB_grid2[i]*Ye_grid2[j]*tg3_mup.get(i,j,k);
+      }
+    }
+  }
+  
+  std::cout << "Finished computing derivatives." << endl;
+
+  return 0;
+    
+}
+
 int eos_nuclei::eos_second_deriv(std::vector<std::string> &sv,
 				 bool itive_com) {
 

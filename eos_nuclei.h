@@ -540,8 +540,12 @@ public:
   /** \brief Compute derivatives numerically
    */
   int eos_deriv(std::vector<std::string> &sv, bool itive_com);
+  int eos_deriv_v2(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Compute second derivatives numerically
+
+      The derivatives 
+
    */
   int eos_second_deriv(std::vector<std::string> &sv, bool itive_com);
 
