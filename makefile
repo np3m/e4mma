@@ -222,4 +222,4 @@ mbt:
 		-mcarlo-beta 0.14 10.0 mb_temp.o2 > mbt.out 2>&1 &
 
 nt:
-	enn -test-neutrino
+	./enn -test-neutrino
