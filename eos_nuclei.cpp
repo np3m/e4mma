@@ -2371,9 +2371,13 @@ int eos_nuclei::eos_vary_dist
 
     nuc_matter(nB,Ye,T,log_xn2,log_xp2,Zbar2,Nbar2,thx2,mun_full2,
 	       mup_full2,A_min2,A_max2,NmZ_min2,NmZ_max2,vdet2);
-    
+
+    cout << "Comparing: " << thx2.ed-T*thx2.en << " "
+         << thx.ed-T*thx.en << endl;
     if (thx2.ed-T*thx2.en<thx.ed-T*thx.en) {
-      cout << "Nuclear matter preferred." << endl;
+      if (loc_verbose>0) {
+        cout << "Nuclear matter preferred." << endl;
+      }
       log_xn=log_xn2;
       log_xp=log_xp2;
       Zbar=Zbar2;
@@ -4728,6 +4732,75 @@ int eos_nuclei::read_results(std::string fname) {
   }
 #endif
 
+  return 0;
+}
+
+int eos_nuclei::test_random(std::vector<std::string> &sv,
+			     bool itive_com) {
+
+  size_t ntests=o2scl::stoszt(sv[1]);
+
+  rng_gsl rg;
+  rg.clock_seed();
+  
+  for(size_t it=0;it<ntests;it++) {
+
+    size_t inB=rg.random_int(n_nB2);
+    size_t iYe=rg.random_int(n_Ye2);
+    size_t iT=rg.random_int(n_T2);
+    
+    double nB=nB_grid2[inB];
+    double Ye=Ye_grid2[iYe];
+    double T=T_grid2[iT]/hc_mev_fm;
+
+    double log_xn=tg3_log_xn.get(inB,iYe,iT);
+    double log_xp=tg3_log_xp.get(inB,iYe,iT);
+    double A_old=tg3_A.get(inB,iYe,iT);
+    
+    int A_min=5;
+    int A_max=fd_A_max;
+    int NmZ_min=-200;
+    int NmZ_max=200;
+
+    thermo thx;
+    double mun_full, mup_full;
+    
+    derivs_computed=false;
+    with_leptons_loaded=false;
+    
+    double Zbar, Nbar;
+    map<string,double> vdet;
+    double log_xn_old=log_xn;
+    double log_xp_old=log_xp;
+    cout << it+1 << "/" << ntests << " nB,Ye,T[MeV]: "
+         << nB << " " << Ye << " " << T*hc_mev_fm << " log_xn,log_xp: "
+         << log_xn << " " << log_xp << endl;
+    int ret=eos_vary_dist(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,
+                          thx,mun_full,mup_full,
+                          A_min,A_max,NmZ_min,NmZ_max,vdet,
+                          true,false);
+    if (fabs(log_xn-log_xn_old)>1.0e-5 ||
+        fabs(log_xp-log_xp_old)>1.0e-5) {
+      cout << "  nB,Ye,T[MeV]: "
+           << nB << " " << Ye << " " << T*hc_mev_fm << endl;
+      cout << "  ret,log_xn_old,log_xn,log_xp_old,log_xp: "
+           << ret << " " << log_xn_old << " " << log_xn << " "
+           << log_xp_old << " " << log_xp << endl;
+      cout << "  A_old,A: " << A_old << " " << Zbar+Nbar << endl;
+      if (ret==0) {
+        ubvector X;
+        compute_X(nB,X);
+        store_point(inB,iYe,iT,nB,Ye,T,thx,log_xn,log_xp,Zbar,Nbar,
+                    mun_full,mup_full,X,A_min,A_max,NmZ_min,NmZ_max,
+                    10.0,vdet);
+      }
+        
+      char ch;
+      cin >> ch;
+    }
+    
+  }
+  
   return 0;
 }
 
@@ -8956,7 +9029,7 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
   
   eos::setup_cli(cl);
   
-  static const int nopt=23;
+  static const int nopt=24;
   
   o2scl::comm_option_s options[nopt]=
     {{0,"eos-deriv","compute derivatives",
@@ -8989,6 +9062,10 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
       0,1,"[out file]",
       "",new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::generate_table),o2scl::cli::comm_option_both},
+     {0,"test-random","Test an EOS randomly.",
+      1,1,"<n_tests>",
+      "",new o2scl::comm_option_mfptr<eos_nuclei>
+      (this,&eos_nuclei::test_random),o2scl::cli::comm_option_both},
      {0,"load","Load an EOS table.",0,1,"<filename>",
       "",new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::load),o2scl::cli::comm_option_both},

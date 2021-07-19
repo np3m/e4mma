@@ -576,6 +576,8 @@ public:
   /** \brief Compute the EOS at one point
    */
   int point_nuclei(std::vector<std::string> &sv, bool itive_com);
+  
+  int test_random(std::vector<std::string> &sv, bool itive_com);
   //@}
 
   /// \name File I/O functions
