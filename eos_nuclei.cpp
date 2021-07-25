@@ -4745,7 +4745,8 @@ int eos_nuclei::test_random(std::vector<std::string> &sv,
   
   for(size_t it=0;it<ntests;it++) {
 
-    size_t inB=rg.random_int(n_nB2);
+    //size_t inB=rg.random_int(n_nB2);
+    size_t inB=rg.random_int(31)+242;
     size_t iYe=rg.random_int(n_Ye2);
     size_t iT=rg.random_int(n_T2);
     
