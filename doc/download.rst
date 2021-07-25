@@ -8,6 +8,6 @@ Tables to Download
 - `Small SL <https://isospin.roam.utk.edu/public_data/eos_tables/du21/small_sl_7_22_21.o2>`_
 - `Small R <https://isospin.roam.utk.edu/public_data/eos_tables/du21/small_r_7_12_21.o2>`_
 - `Smaller R <https://isospin.roam.utk.edu/public_data/eos_tables/du21/smaller_r_7_15_21.o2>`_
-- `Fiducial w/Lambda=414<https://isospin.roam.utk.edu/public_data/eos_tables/du21/fid_414_7_25_21.o2>`_
+- `Fiducial L414 <https://isospin.roam.utk.edu/public_data/eos_tables/du21/fid_414_7_25_21.o2>`_
 
 
