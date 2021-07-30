@@ -795,7 +795,7 @@ void PolarizationNonRel::SetPolarizations(double q0, double q,
     double coulombf;
     piconst=3.1415926;
     e2=1.0/137.0*4.0*piconst;
-    qtf2=4.0*e2*pow(piconst,0.333333)*pow(3.0*rou*densFac,2.0/3.0);
+    qtf2=4.0*e2*pow(piconst,0.333333)*pow(3.0*roup*densFac,2.0/3.0);
     coulombf=e2*4.0*piconst/(q*q+qtf2);
        
     fpp=fpp+coulombf;

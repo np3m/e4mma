@@ -967,7 +967,7 @@ double eos::free_energy_density
 (fermion &n, fermion &p, double T, thermo &th) {
   double zn, zp;
   double f1, f2, f3, f4;
-  double g_virial, dgvirialdT;
+  double g_virial, dgvirialdT;  
   return free_energy_density_detail(n,p,T,th,zn,zp,f1,f2,f3,f4,
 				    g_virial,dgvirialdT);
 }
@@ -1034,7 +1034,16 @@ double eos::free_energy_density_detail
     sk.err_nonconv=false;
     sk_Tcorr.err_nonconv=false;
   }
-        
+
+  if (n.n<1.0e-11) {
+    n.n=0.6;
+    p.n=0.006;
+    cout << "Here: " << sk_Tcorr.t0 << " " << sk_Tcorr.t0*hc_mev_fm << endl;
+    sk_Tcorr.calc_temp_e(n,p,4.0/hc_mev_fm,th);
+    cout << n.ms << " " << p.ms << endl;
+    exit(-1);
+  }
+  
   n.n=(nn+pn)/2.0;
   p.n=(nn+pn)/2.0;
   n.mu=n.m;

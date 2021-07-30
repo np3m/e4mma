@@ -3969,6 +3969,7 @@ int eos_nuclei::select_high_T(int option) {
 
     if (option==2) {
       // Skchi414 from Lim and Holt (2017)
+    cout << "H1." << endl;
       skyrme_ext.t0=-1734.0261/hc_mev_fm;
       skyrme_ext.t1=255.6550/hc_mev_fm;
       skyrme_ext.t2=-264.0678/hc_mev_fm;
@@ -4005,6 +4006,7 @@ int eos_nuclei::select_high_T(int option) {
       skyrme_ext.W0=106.4288/hc_mev_fm;
     } else if (option==4) {
       // Skchi500 from Lim and Holt (2017)
+    cout << "H3." << endl;
       skyrme_ext.t0=-1747.48258/hc_mev_fm;
       skyrme_ext.t1=241.31968/hc_mev_fm;
       skyrme_ext.t2=-331.04118/hc_mev_fm;
@@ -4060,6 +4062,7 @@ int eos_nuclei::select_high_T(int option) {
     
   } else if (option==6) {
     // Sk chi m*
+    cout << "H2x." << endl;
     sk_Tcorr.t0=-2260.7/hc_mev_fm;
     sk_Tcorr.t1=433.189/hc_mev_fm;
     sk_Tcorr.t2=274.553/hc_mev_fm;
@@ -6707,7 +6710,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	     tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
   }
 #endif
-  
+
   eos_nuclei external;
   if (ext_guess.length()>0) {
     external.read_results(ext_guess);
