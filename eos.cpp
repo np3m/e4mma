@@ -1029,12 +1029,6 @@ double eos::free_energy_density_detail
   // ----------------------------------------------------------------
   // Compute the Skyrme EOS in nuclear matter at T=0
 
-  // AWS: 2/3/20: Why is this here?
-  if (false && old_version==false) {
-    sk.err_nonconv=false;
-    sk_Tcorr.err_nonconv=false;
-  }
-
   n.n=(nn+pn)/2.0;
   p.n=(nn+pn)/2.0;
   n.mu=n.m;
@@ -1058,6 +1052,10 @@ double eos::free_energy_density_detail
   double mu_n_eqden_T, mu_n_eqden_T0; 
   double mu_p_eqden_T, mu_p_eqden_T0; 
   double s_skyrme_T=0.0, s_eqden_T, s_neut_T;
+
+  double msn_Tcorr_T0=0.0, msp_Tcorr_T0=0.0;
+  double msn_Tcorr_T=0.0, msp_Tcorr_T=0.0;
+  double msn_T0=n.ms, msp_T0=p.ms;
   
   if (old_version==false) {
     
@@ -1075,6 +1073,8 @@ double eos::free_energy_density_detail
     mu_p_skyrme_T0=p.mu;
     double P_skyrme_T0=-th.ed+mu_n_skyrme_T0*n.n+mu_p_skyrme_T0*p.n;
     f_skyrme_T0=th.ed;
+    msn_Tcorr_T0=n.ms;
+    msp_Tcorr_T0=p.ms;
     
     // ----------------------------------------------------------------
     // Compute the Skyrme EOS in nuclear matter at finite T for chiral fit
@@ -1091,6 +1091,9 @@ double eos::free_energy_density_detail
     double P_skyrme_T=-th.ed+mu_n_skyrme_T0*n.n+mu_p_skyrme_T0*p.n;
     f_skyrme_T=th.ed-T*th.en;
     s_skyrme_T=th.en;
+    
+    msn_Tcorr_T=n.ms;
+    msp_Tcorr_T=p.ms;
     
     eos_Tcorr->calc_temp_e(n,p,T,th);
     
@@ -1305,11 +1308,15 @@ double eos::free_energy_density_detail
       ddelta2dnp*(f_skyrme_eqden_T-f_skyrme_eqden_T0);    
   }
 
+  // Final chemical potentials
   n.mu=dfvirialdnn*g_virial+f_virial*dgvirialdnn+dfdegdnn*(1.0-g_virial)
     +f_deg*(-dgvirialdnn);
   p.mu=dfvirialdnp*g_virial+f_virial*dgvirialdnp+dfdegdnp*(1.0-g_virial)
     +f_deg*(-dgvirialdnp);
 
+  // Final effective masses
+  n.ms=g_virial+(1.0-g_virial)*(msn_T0+msn_Tcorr_T-msn_Tcorr_T0);
+  p.ms=g_virial+(1.0-g_virial)*(msp_T0+msp_Tcorr_T-msp_Tcorr_T0);
   
   // -------------------------------------------------------------
   // Compute derivatives for entropy

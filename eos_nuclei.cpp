@@ -1586,6 +1586,13 @@ int eos_nuclei::solve_nuclei(size_t nv, const ubvector &x, ubvector &y,
 				 vdet["zp"],vdet["f1"],vdet["f2"],
 				 vdet["f3"],vdet["f4"],
 				 vdet["g"],vdet["dgdT"]);
+      if (include_detail) {
+        vdet["msn"]=neutron.ms*hc_mev_fm;
+        vdet["msp"]=proton.ms*hc_mev_fm;
+        vdet["Un"]=neutron.nu*hc_mev_fm;
+        vdet["Up"]=proton.nu*hc_mev_fm;
+        vdet["dgdT"]/=hc_mev_fm;
+      }
     }
   }
 
@@ -8805,6 +8812,8 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
   cout << "Using nB = " << nB << " 1/fm^3 and T = " << T*hc_mev_fm
        << " MeV" << endl;
   
+  map<string,double> vdet;
+  
   table<> tab;
   tab.line_of_names("i_ns i_skyrme qmc_alpha qmc_a phi ");
   tab.line_of_names("t0 t1 t2 t3 x0 x1 x2 x3 epsilon msn msp");
@@ -8861,7 +8870,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
 
         // Compute the EOS
         
-        map<string,double> vdet;
+        include_detail=true;
         int ret=eos_vary_dist(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,
                               thx,mun_full,mup_full,
                               A_min,A_max,NmZ_min,NmZ_max,vdet,
@@ -8872,7 +8881,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
              << Zbar << " " << Nbar << " " << Zbar+Nbar << " " 
              << Zbar/(Zbar+Nbar) << " "
              << thx.ed-T*thx.en << endl;
-
+        
         // Add the electrons
         double mue=electron.m;
 	eso.compute_eg_point(nB_grid2[inB],Ye_grid2[iYe],T_grid2[iT],lep,mue);
@@ -8917,7 +8926,6 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
     int NmZ_min_best=((int)(tg3_NmZ_min.get(inB,iYe_best,iT)));
     int NmZ_max_best=((int)(tg3_NmZ_max.get(inB,iYe_best,iT)));
 
-    map<string,double> vdet;
     int ret2=eos_vary_dist(nB,Ye_best,T,log_xn,log_xp,Zbar,Nbar,
 			   thx,mun_full,mup_full,
 			   A_min_best,A_max_best,NmZ_min_best,
@@ -8935,22 +8943,23 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
 
       cout << "mun: " << neutron.mu*hc_mev_fm << endl;
       cout << "mup: " << proton.mu*hc_mev_fm << endl;
-      cout << "msn: " << neutron.ms*hc_mev_fm << endl;
-      cout << "msp: " << proton.ms*hc_mev_fm << endl;
+      cout << "msn: " << vdet["msn"] << endl;
+      cout << "msp: " << vdet["msp"] << endl;
       cout << "nn: " << neutron.n << endl;
       cout << "np: " << proton.n << endl;
+      cout << "g: " << vdet["g"] << endl;
       
-      double u2eos=neutron.mu*hc_mev_fm-pow(neutron.kf*hc_mev_fm,2.0)/2.0/
-        neutron.ms/hc_mev_fm;
+      double u2eos=neutron.mu*hc_mev_fm-
+        pow(neutron.kf*hc_mev_fm,2.0)/2.0/vdet["msn"];
       cout << "U2: " << u2eos << endl;
-      double u4eos=proton.mu*hc_mev_fm-pow(proton.kf*hc_mev_fm,2.0)/2.0/
-        proton.ms/hc_mev_fm;
+      double u4eos=proton.mu*hc_mev_fm-
+        pow(proton.kf*hc_mev_fm,2.0)/2.0/vdet["msp"];
       cout << "U4: " << u4eos << endl;
       cout << "T*hc_mev_fm: " << T*hc_mev_fm << endl;
       
       FluidState betaEoS;
       betaEoS=FluidState::StateFromDensities
-        (T*hc_mev_fm,neutron.ms*hc_mev_fm,proton.ms*hc_mev_fm,
+        (T*hc_mev_fm,vdet["msn"],vdet["msp"],
          neutron.n*pow(hc_mev_fm,3.0),proton.n*pow(hc_mev_fm,3.0),
          u2eos,u4eos,electron.m*hc_mev_fm,electron.n*pow(hc_mev_fm,3.0));
       
