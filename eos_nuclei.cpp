@@ -8982,6 +8982,9 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
       pol.set_skyrme(sk.t0*hc_mev_fm,sk.t1*hc_mev_fm,
                      sk.t2*hc_mev_fm,sk.t3*hc_mev_fm,
                      sk.x0,sk.x1,sk.x2,sk.x3,sk.alpha);
+
+      double b_n=ecv.bn_f(T);
+      double b_pn=ecv.bpn_f(T);
       
       pol.current=1;
       pol.flag=0;

@@ -100,7 +100,7 @@ public:
   /// \name Constructor and destructor
   //@{
   eos_nuclei();
-
+  
   virtual ~eos_nuclei();
   //@}
 

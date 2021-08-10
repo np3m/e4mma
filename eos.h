@@ -58,7 +58,65 @@
 class eos_crust_virial_v2 : public o2scl::eos_crust_virial {
   
  public:
+
+  /** \brief Desc
+   */
+  std::vector<double> ba_T;
   
+  /** \brief Desc
+   */
+  std::vector<double> ba;
+  
+  /** \brief Desc
+   */
+  std::vector<double> bpna;
+  
+  /** \brief Desc
+   */
+  o2scl::interp_vec<std::vector<double> > iv_ba;
+  
+  /** \brief Desc
+   */
+  o2scl::interp_vec<std::vector<double> > iv_bpna;
+  
+  /** \brief Desc
+   */
+  double bn_free();
+
+  /** \brief Desc
+   */
+  double bpn_free();
+
+  /** \brief Desc
+   */
+  double bn1_free();
+
+  /** \brief Desc
+   */
+  double bpn1_free();
+
+  /// The temperature must be specified in MeV
+  double bn1(double T);
+
+  /// The temperature must be specified in MeV
+  double bpn1(double T);
+
+  /** \brief Desc
+   */
+  double f0(double lambda, double T);
+
+  /** \brief Desc
+   */
+  double f0p(double lambda, double T);
+
+  /** \brief Desc
+   */
+  double g0(double lambda, double T);
+
+  /** \brief Desc
+   */
+  double g0p(double lambda, double T);
+
   /** \brief The neutron-neutron virial coefficient given the
       function parameters specified in \c par
    */
