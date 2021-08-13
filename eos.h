@@ -96,12 +96,12 @@ class eos_crust_virial_v2 : public o2scl::eos_crust_virial {
   double bpn1_free();
 
   double bn0(double T) {
-    std::cout << "H: " << bn_f(T) << " " << ba(T) << std::endl;
-    return (bn_f(T)-ba(T))/2.0;
+    std::cout << "H: " << bn_f(T) << " " << bna(T) << std::endl;
+    return (bn_f(T)-bna(T))/2.0;
   }
   
   double bn1(double T) {
-    return (bn_f(T)+ba(T))/2.0;
+    return (bn_f(T)+bna(T))/2.0;
   }
   
   double bpn0(double T) {
@@ -109,7 +109,7 @@ class eos_crust_virial_v2 : public o2scl::eos_crust_virial {
   }
   
   double bpn1(double T) {
-    return (bpn_f(T)+ba(T))/2.0;
+    return (bpn_f(T)+bpna(T))/2.0;
   }
   
   /// The temperature must be specified in MeV
