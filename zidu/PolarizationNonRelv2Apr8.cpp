@@ -505,7 +505,7 @@ void PolarizationNonRel::SetPolarizations(double q0, double q,
  
   // Calculate the basic parts of the polarization
   double piL=0.0, piLn=0.0, piLp=0.0;
-  if (current==1) {
+  if (current==current_charged) {
     auto pt = CalculateBasePolarizations(q0, q);//charged current
     piL=pt[1];
   } else {
@@ -519,14 +519,15 @@ void PolarizationNonRel::SetPolarizations(double q0, double q,
   //charged current*********************
   
   double piLRe=0.0;
-  if (current==1) {
-    GetImPI2(q0,q);
+  if (current==current_charged) {
+    piLRe=GetImPI2(q0,q);
   }
+  
   //***************************************
   //neutral current*************
  
   double piLnRe=0.0, piLpRe=0.0;
-  if (current==0) {
+  if (current==current_neutral) {
     piLnRe=GetRePIn( q0, q);
     piLpRe=GetRePIp( q0, q);
   }
@@ -702,7 +703,7 @@ void PolarizationNonRel::SetPolarizations(double q0, double q,
   //<< gpp << " " << kfn << " " << kfp << std::endl;
      
   //for neutral current couplings
-  if (current==0) {
+  if (current==current_neutral) {
     fnn=fnn/pow(197.3,3);
     fpp=fpp/pow(197.3,3);
     gnn=gnn/pow(197.3,3);
@@ -757,7 +758,7 @@ void PolarizationNonRel::SetPolarizations(double q0, double q,
   // *************************************************************
   // charged current piL
 
-  if (current==1) {
+  if (current==current_charged) {
     piL=2*(piL/2)/((1-vrpa*(piLRe/2))*(1-vrpa*(piLRe/2))+vrpa*vrpa*(piL/2)*(piL/2));//piL is 2*Im PI
   }
 
@@ -780,7 +781,7 @@ void PolarizationNonRel::SetPolarizations(double q0, double q,
   // piL=2*((piLn+piLp)/2+(gnn-st.SensitiveP)*(piLn/2.0*piLpRe/2.0-piLp/2.0*piLnRe/2.0))/((1-gnn*(piLnRe/2)-st.SensitiveP*(piLpRe/2))*(1-gnn*(piLnRe/2)-st.SensitiveP*(piLpRe/2))+(piLn/2.0*gnn+piLp/2.0*st.SensitiveP)*(piLn/2.0*gnn+piLp/2.0*st.SensitiveP));
 
   //*********************complete version of neutral current n+p gas polarization functions**********************
-  if (current==0) {
+  if (current==current_neutral) {
     double impin,impip,repin,repip;
     double pirpaVec,pirpaAx;
     impin=piLn/2.0;

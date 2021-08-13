@@ -65,11 +65,11 @@ class eos_crust_virial_v2 : public o2scl::eos_crust_virial {
   
   /** \brief Desc
    */
-  std::vector<double> ba;
+  std::vector<double> vba;
   
   /** \brief Desc
    */
-  std::vector<double> bpna;
+  std::vector<double> vbpna;
   
   /** \brief Desc
    */
@@ -81,11 +81,11 @@ class eos_crust_virial_v2 : public o2scl::eos_crust_virial {
   
   /** \brief Desc
    */
-  double bn_free();
+  double bn0_free();
 
   /** \brief Desc
    */
-  double bpn_free();
+  double bpn0_free();
 
   /** \brief Desc
    */
@@ -95,25 +95,50 @@ class eos_crust_virial_v2 : public o2scl::eos_crust_virial {
    */
   double bpn1_free();
 
+  double bn0(double T) {
+    std::cout << "H: " << bn_f(T) << " " << ba(T) << std::endl;
+    return (bn_f(T)-ba(T))/2.0;
+  }
+  
+  double bn1(double T) {
+    return (bn_f(T)+ba(T))/2.0;
+  }
+  
+  double bpn0(double T) {
+    return (bpn_f(T)-bpna(T))/2.0;
+  }
+  
+  double bpn1(double T) {
+    return (bpn_f(T)+ba(T))/2.0;
+  }
+  
   /// The temperature must be specified in MeV
-  double bn1(double T);
+  double bna(double T);
 
   /// The temperature must be specified in MeV
-  double bpn1(double T);
+  double bpna(double T);
 
   /** \brief Desc
+
+      The temperature should be specified in MeV.
    */
   double f0(double lambda, double T);
 
   /** \brief Desc
+
+      The temperature should be specified in MeV.
    */
   double f0p(double lambda, double T);
 
   /** \brief Desc
+
+      The temperature should be specified in MeV.
    */
   double g0(double lambda, double T);
 
   /** \brief Desc
+
+      The temperature should be specified in MeV.
    */
   double g0p(double lambda, double T);
 
@@ -128,21 +153,29 @@ class eos_crust_virial_v2 : public o2scl::eos_crust_virial {
   double bpn_func(size_t np, const std::vector<double> &par, double T);
 
   /** \brief The neutron-neutron virial coefficient
+
+      The temperature should be specified in MeV.
    */
   double bn_f(double T);
   
   /** \brief The neutron-proton virial coefficient
+
+      The temperature should be specified in MeV.
    */
   double bpn_f(double T);
   
   /** \brief The temperature derivative of the
       neutron-neutron virial coefficient
+
+      The temperature should be specified in MeV.
    */
   double dbndT_f(double T);
   
   /** \brief The temperature derivative of the
       neutron-proton virial coefficient
-   */
+      
+      The temperature should be specified in MeV.
+  */
   double dbpndT_f(double T);
   
   /** \brief The current neutron-neutron virial coefficient parameters

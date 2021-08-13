@@ -53,6 +53,7 @@ class PolarizationNonRel : public Polarization {
 protected:
 
   double xt0, xt1, xt2, xt3, xx0, xx1, xx2, xx3, xepsilon;
+  double xfnn, xfnp, xfpp, xgnn, xgnp, xgpp;
 
 public:
 
@@ -87,6 +88,17 @@ public:
     xx2=xx2_;
     xx3=xx3_;
     xepsilon=xepsilon_;
+    return;
+  }
+
+  void set_residual(double fnn_, double fnp_, double fpp_,
+                    double gnn_, double gnp_, double gpp_) {
+    xfnn=fnn_;
+    xfnp=fnp_;
+    xfpp=fpp_;
+    xgnn=gnn_;
+    xgnp=gnp_;
+    xgpp=gpp_;
     return;
   }
   

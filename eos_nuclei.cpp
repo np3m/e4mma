@@ -8983,8 +8983,34 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
                      sk.t2*hc_mev_fm,sk.t3*hc_mev_fm,
                      sk.x0,sk.x1,sk.x2,sk.x3,sk.alpha);
 
-      double b_n=ecv.bn_f(T);
-      double b_pn=ecv.bpn_f(T);
+      double b_n=ecv.bn_f(T*hc_mev_fm);
+      double b_pn=ecv.bpn_f(T*hc_mev_fm);
+      double lambda=sqrt(4.0*o2scl_const::pi/(neutron.m+proton.m)/T/
+                         hc_mev_fm/hc_mev_fm);
+      double f0=ecv.f0(lambda,T*hc_mev_fm);
+      double f0p=ecv.f0p(lambda,T*hc_mev_fm);
+      double g0=ecv.g0(lambda,T*hc_mev_fm);
+      double g0p=ecv.g0p(lambda,T*hc_mev_fm);
+      cout << lambda << endl;
+      cout << "bn0,bn0free,bn1,bn1free: "
+           << ecv.bn0(T*hc_mev_fm) << " " << ecv.bn0_free() << " "
+           << ecv.bn1(T*hc_mev_fm) << " " << ecv.bn1_free() << endl;
+      cout << "bpn0,bpnfree,bpn1,bpn1free: "
+           << ecv.bpn0(T*hc_mev_fm) << " " << ecv.bpn0_free() << " "
+           << ecv.bpn1(T*hc_mev_fm) << " " << ecv.bpn1_free() << endl;
+      cout << f0 << " " << f0p << " " << g0 << " " << g0p << endl;
+
+      double fnn_virial=f0+f0p;
+      double fnp_virial=f0-f0p;
+      double fpp_virial=fnn_virial;
+      double gnn_virial=f0+f0p;
+      double gnp_virial=f0-f0p;
+      double gpp_virial=gnn_virial;
+      
+      pol.set_residual(fnn_virial,fnp_virial,fpp_virial,
+                       gnn_virial,gnp_virial,gpp_virial);
+
+      exit(-1);
       
       pol.current=1;
       pol.flag=0;

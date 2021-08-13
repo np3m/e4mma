@@ -25,11 +25,11 @@ using namespace o2scl;
 using namespace o2scl_const;
 using namespace o2scl_hdf;
 
-double eos_crust_virial_v2::bn_free() {
+double eos_crust_virial_v2::bn0_free() {
   return 0.0;
 }
 
-double eos_crust_virial_v2::bpn_free() {
+double eos_crust_virial_v2::bpn0_free() {
   return 0.0;
 }
 
@@ -42,16 +42,18 @@ double eos_crust_virial_v2::bpn1_free() {
 }
 
 /// The temperature must be specified in MeV
-double eos_crust_virial_v2::bn1(double T) {
+double eos_crust_virial_v2::bna(double T) {
   if (T<1.0 || T>20.0) {
+    cout << "Problem 1: " << T << endl;
     O2SCL_ERR("Cannot extrapolate spin virial.",o2scl::exc_efailed);
   }
   return iv_ba.eval(T);
 }
 
 /// The temperature must be specified in MeV
-double eos_crust_virial_v2::bpn1(double T) {
+double eos_crust_virial_v2::bpna(double T) {
   if (T<1.0 || T>20.0) {
+    cout << "Problem 2: " << T << endl;
     O2SCL_ERR("Cannot extrapolate spin virial.",o2scl::exc_efailed);
   }
   return iv_bpna.eval(T);
@@ -59,30 +61,26 @@ double eos_crust_virial_v2::bpn1(double T) {
 
 double eos_crust_virial_v2::f0(double lambda, double T) {
   return -lambda*lambda*lambda/2.0*T*
-    (bn_func(bn_np,bn_params,T)-bn_free()+bn1(T)-bn1_free()+
-     bpn_func(bpn_np,bpn_params,T)-bpn_free()+bpn1(T)-bpn1_free());
-  return 0.0;
+    (bn0(T)-bn0_free()+bn1(T)-bn1_free()+
+     bpn0(T)-bpn0_free()+bpn1(T)-bpn1_free());
 }
 
 double eos_crust_virial_v2::f0p(double lambda, double T) {
   return -lambda*lambda*lambda/2.0*T*
-    (bn_func(bn_np,bn_params,T)-bn_free()+bn1(T)-bn1_free()-
-     bpn_func(bpn_np,bpn_params,T)+bpn_free()-bpn1(T)+bpn1_free());
-  return 0.0;
+    (bn0(T)-bn0_free()+bn1(T)-bn1_free()-
+     bpn0(T)+bpn0_free()-bpn1(T)+bpn1_free());
 }
 
 double eos_crust_virial_v2::g0(double lambda, double T) {
   return -lambda*lambda*lambda/2.0*T*
-    (bn_func(bn_np,bn_params,T)-bn_free()-bn1(T)+bn1_free()+
-     bpn_func(bpn_np,bpn_params,T)-bpn_free()-bpn1(T)+bpn1_free());
-  return 0.0;
+    (bn0(T)-bn0_free()-bn1(T)+bn1_free()+
+     bpn0(T)-bpn0_free()-bpn1(T)+bpn1_free());
 }
 
 double eos_crust_virial_v2::g0p(double lambda, double T) {
   return -lambda*lambda*lambda/2.0*T*
-    (bn_func(bn_np,bn_params,T)-bn_free()-bn1(T)+bn1_free()-
-     bpn_func(bpn_np,bpn_params,T)+bpn_free()+bpn1(T)-bpn1_free());
-  return 0.0;
+    (bn0(T)-bn0_free()-bn1(T)+bn1_free()-
+     bpn0(T)+bpn0_free()+bpn1(T)-bpn1_free());
 }
 
 eos_crust_virial_v2::eos_crust_virial_v2() {
@@ -106,14 +104,14 @@ eos_crust_virial_v2::eos_crust_virial_v2() {
   bpn_params[5]=-1.125035495140e+00;
 
   ba_T={1,2,3,4,5,6,7,8,9,10,12,14,16,18,20};
-  ba={-0.638,-0.653,-0.651,-0.648,-0.643,-0.637,
+  vba={-0.638,-0.653,-0.651,-0.648,-0.643,-0.637,
       -0.631,-0.625,-0.620,-0.615,-0.6065,-0.597,
       -0.589,-0.583,-0.577};
-  bpna={6.18,1.74,1.05,0.785,0.640,0.561,
+  vbpna={6.18,1.74,1.05,0.785,0.640,0.561,
         0.504,0.463,0.432,0.408,0.374,0.352,
         0.336,0.324,0.315};
-  iv_ba.set(ba_T.size(),ba_T,ba,itp_steffen);
-  iv_bpna.set(ba_T.size(),ba_T,bpna,itp_steffen);
+  iv_ba.set(ba_T.size(),ba_T,vba,itp_steffen);
+  iv_bpna.set(ba_T.size(),ba_T,vbpna,itp_steffen);
 }
 
 double eos_crust_virial_v2::bn_func(size_t np, const vector<double> &par,
