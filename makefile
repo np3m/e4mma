@@ -143,8 +143,14 @@ main_eos_nompi.o: main_eos.cpp virial_solver.h eos.h
 	$(LCXX) $(LCFLAGS) -o main_eos_nompi.o -c main_eos.cpp 
 
 eos_nuclei_nompi: eos_nompi.o main_nompi.o eos_nuclei_nompi.o \
-		eos_had_skyrme_ext_nompi.o virial_solver_deriv.h
+		eos_had_skyrme_ext_nompi.o virial_solver_deriv.h \
+		zidu/Couplings.o zidu/FluidState.o \
+		zidu/FunctionIntegrator.o zidu/Polarization.o \
+		zidu/PolarizationNonRelv2Apr8.o zidu/jacobi_rule.o 
 	$(LCXX) $(LCFLAGS) -o eos_nuclei_nompi eos_nompi.o main_nompi.o \
+		zidu/Couplings.o zidu/FluidState.o \
+		zidu/FunctionIntegrator.o zidu/Polarization.o \
+		zidu/PolarizationNonRelv2Apr8.o zidu/jacobi_rule.o \
 		 eos_nuclei_nompi.o eos_had_skyrme_ext_nompi.o $(LIBS) \
 		-lreadline
 
