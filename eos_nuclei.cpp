@@ -8418,9 +8418,94 @@ int eos_nuclei::test_neutrino(std::vector<std::string> &sv,
 
   PolarizationNonRel pol_cc(betaEoS, ncap, false, false, true);
   
+#ifndef NEW_RESIDUAL
+  
   pol_cc.set_skyrme(sk.t0*hc_mev_fm,sk.t1*hc_mev_fm,
                     sk.t2*hc_mev_fm,sk.t3*hc_mev_fm,
                     sk.x0,sk.x1,sk.x2,sk.x3,sk.alpha);
+  
+#else
+
+  double fnn_sk=0.5*(sk.t0*(1.0-sk.x0)+
+                     1.0/6.0*sk.t3*pow((neutron.n+proton.n),sk.alpha)*
+                     (1.0-sk.x3)+2.0/3.0*sk.alpha*sk.t3*
+                     pow((neutron.n+proton.n),sk.alpha-1)*
+                     ((1+sk.x3/2.0)*(neutron.n+proton.n)-
+                      (1.0/2.0+sk.x3)*neutron.n)+1.0/6.0*
+                     sk.alpha*(sk.alpha-1.0)*sk.t3*
+                     pow((neutron.n+proton.n),sk.alpha-2.0)*
+                     ((1+sk.x3/2.0)*pow((neutron.n+proton.n),2.0)-
+                      (0.5+sk.x3)*(neutron.n*neutron.n+proton.n*proton.n)))+
+    0.25*(sk.t1*(1-sk.x1)+3*sk.t2*(1+sk.x2))*neutron.kf*neutron.kf;
+  double fpp_sk=0.5*(sk.t0*(1.0-sk.x0)+
+                     1.0/6.0*sk.t3*pow((neutron.n+proton.n),sk.alpha)*
+                     (1.0-sk.x3)+2.0/3.0*sk.alpha*sk.t3*
+                     pow((neutron.n+proton.n),sk.alpha-1)*
+                     ((1+sk.x3/2.0)*(neutron.n+proton.n)-
+                      (1.0/2.0+sk.x3)*proton.n)+1.0/6.0*sk.alpha*
+                     (sk.alpha-1.0)*sk.t3*
+                     pow((neutron.n+proton.n),sk.alpha-2.0)*
+                     ((1+sk.x3/2.0)*pow((neutron.n+proton.n),2.0)-
+                      (0.5+sk.x3)*(neutron.n*neutron.n+proton.n*proton.n)))+
+    0.25*(sk.t1*(1-sk.x1)+3*sk.t2*(1+sk.x2))*proton.kf*proton.kf;
+  double gnn_sk=0.5*(sk.t0*(sk.x0-1)+
+                     1.0/6.0*sk.t3*pow((neutron.n+proton.n),sk.alpha)*
+                     (sk.x3-1.0))+0.25*(sk.t1*(sk.x1-1)+
+                                        sk.t2*(1+sk.x2))*neutron.kf*neutron.kf;
+  double gpp_sk=0.5*(sk.t0*(sk.x0-1)+
+                     1.0/6.0*sk.t3*pow((neutron.n+proton.n),sk.alpha)*
+                     (sk.x3-1.0))+0.25*(sk.t1*(sk.x1-1)+
+                                        sk.t2*(1+sk.x2))*proton.kf*proton.kf;
+  double fnp_sk=0.5*(sk.t0*(2.0+sk.x0)+1.0/6.0*sk.t3*
+                     pow((neutron.n+proton.n),sk.alpha)*(2.0+sk.x3)+
+                     1.0/2.0*sk.alpha*sk.t3*
+                     pow((neutron.n+proton.n),sk.alpha)+
+                     1.0/6.0*sk.alpha*(sk.alpha-1.0)*sk.t3*
+                     pow((neutron.n+proton.n),sk.alpha-2.0)*
+                     ((1+sk.x3/2.0)*pow((neutron.n+proton.n),2.0)-
+                      (0.5+sk.x3)*(neutron.n*neutron.n+proton.n*proton.n)))+
+    0.5*0.25*(sk.t1*(2.0+sk.x1)+sk.t2*(2.0+sk.x2))*
+    (neutron.kf*neutron.kf+proton.kf*proton.kf);
+  double gnp_sk=0.5*(sk.t0*sk.x0+1.0/6.0*sk.t3*
+                     pow((neutron.n+proton.n),sk.alpha)*sk.x3)+
+    0.5*0.25*(sk.t1*sk.x1+sk.t2*sk.x2)*
+    (neutron.kf*neutron.kf+proton.kf*proton.kf);
+  
+  double b_n=ecv.bn_f(T*hc_mev_fm);
+  double b_pn=ecv.bpn_f(T*hc_mev_fm);
+  double lambda=sqrt(4.0*o2scl_const::pi/(neutron.m+proton.m)/T/
+                     hc_mev_fm/hc_mev_fm);
+  double f0=ecv.f0(lambda,T*hc_mev_fm);
+  double f0p=ecv.f0p(lambda,T*hc_mev_fm);
+  double g0=ecv.g0(lambda,T*hc_mev_fm);
+  double g0p=ecv.g0p(lambda,T*hc_mev_fm);
+  cout << lambda << endl;
+  cout << "bn0,bn0free,bn1,bn1free: "
+       << ecv.bn0(T*hc_mev_fm) << " " << ecv.bn0_free() << " "
+       << ecv.bn1(T*hc_mev_fm) << " " << ecv.bn1_free() << endl;
+  cout << "bpn0,bpnfree,bpn1,bpn1free: "
+       << ecv.bpn0(T*hc_mev_fm) << " " << ecv.bpn0_free() << " "
+       << ecv.bpn1(T*hc_mev_fm) << " " << ecv.bpn1_free() << endl;
+  cout << f0 << " " << f0p << " " << g0 << " " << g0p << endl;
+  
+  double fnn_virial=f0+f0p;
+  double fnp_virial=f0-f0p;
+  double fpp_virial=fnn_virial;
+  double gnn_virial=f0+f0p;
+  double gnp_virial=f0-f0p;
+  double gpp_virial=gnn_virial;
+
+  double g_virial=0.0;
+  double fnn=fnn_virial*g_virial+fnn_sk*(1.0-g);
+  double fnp=fnp_virial*g_virial+fnp_sk*(1.0-g);
+  double fpp=fpp_virial*g_virial+fpp_sk*(1.0-g);
+  double gnn=gnn_virial*g_virial+gnn_sk*(1.0-g);
+  double gnp=gnp_virial*g_virial+gnp_sk*(1.0-g);
+  double gpp=gpp_virial*g_virial+gpp_sk*(1.0-g);
+  
+  pol_cc.set_residual(fnn,fnp,fpp,gnn,gnp,gpp);
+  
+#endif
   
   pol_cc.current=1;
   pol_cc.flag=0;

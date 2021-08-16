@@ -692,6 +692,8 @@ void PolarizationNonRel::SetPolarizations(double q0, double q,
   // double f0n=1.0/2.0*t0-1.0/2.0*t0*x0+1.0/8.0*t1*kfn*kfn-1.0/4.0*t1*x1*kfn*kfn+3.0/4.0*t2*kfn*kfn+3.0/4.0*t2*x2*kfn*kfn+(epsilon+1.0)*(epsilon+2.0)/24.0*t3*pow(rou,epsilon)-(epsilon+1.0)*(epsilon+2.0)/24.0*t3*x3*pow(rou,epsilon);
   // double g0n=-1.0/2.0*t0+1.0/2.0*t0*x0-1.0/4.0*t1*kfn*kfn+1.0/4.0*t1*x1*kfn*kfn+1.0/4.0*t2*kfn*kfn+1.0/4.0*t2*x2*kfn*kfn-1.0/12.0*t3*pow(rou,epsilon)+1.0/12.0*t3*x3*pow(rou,epsilon);
   // for neutral current couplings
+
+#ifndef NEW_RESIDUAL  
   double fnn=0.5*(t0*(1.0-x0)+1.0/6.0*t3*pow(rou,epsilon)*(1.0-x3)+2.0/3.0*epsilon*t3*pow(rou,epsilon-1)*((1+x3/2.0)*rou-(1.0/2.0+x3)*roun)+1.0/6.0*epsilon*(epsilon-1.0)*t3*pow(rou,epsilon-2.0)*((1+x3/2.0)*pow(rou,2.0)-(0.5+x3)*(roun*roun+roup*roup)))+0.25*(t1*(1-x1)+3*t2*(1+x2))*kfn*kfn;
   double fpp=0.5*(t0*(1.0-x0)+1.0/6.0*t3*pow(rou,epsilon)*(1.0-x3)+2.0/3.0*epsilon*t3*pow(rou,epsilon-1)*((1+x3/2.0)*rou-(1.0/2.0+x3)*roup)+1.0/6.0*epsilon*(epsilon-1.0)*t3*pow(rou,epsilon-2.0)*((1+x3/2.0)*pow(rou,2.0)-(0.5+x3)*(roun*roun+roup*roup)))+0.25*(t1*(1-x1)+3*t2*(1+x2))*kfp*kfp;
   double gnn=0.5*(t0*(x0-1)+1.0/6.0*t3*pow(rou,epsilon)*(x3-1.0))+0.25*(t1*(x1-1)+t2*(1+x2))*kfn*kfn;
@@ -712,7 +714,15 @@ void PolarizationNonRel::SetPolarizations(double q0, double q,
     gnp=gnp/pow(197.3,3);
   }
    
-   
+#else
+  double fnn=xfnn;
+  double fnp=xfnp;
+  double fpp=xfpp;
+  double gnn=xgnn;
+  double gnp=xgnp;
+  double gpp=xgpp;
+#endif
+
   //for charged current couplings
   //  double vf=2.0*f0p;//for symmetric nuclear matter
   //  double vgt=2.0*g0p;//for symmetric nuclear matter

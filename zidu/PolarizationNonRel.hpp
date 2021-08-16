@@ -52,7 +52,10 @@ class PolarizationNonRel : public Polarization {
 
 protected:
 
+  // FIXME: what units?
   double xt0, xt1, xt2, xt3, xx0, xx1, xx2, xx3, xepsilon;
+
+  // FIXME: what units?
   double xfnn, xfnp, xfpp, xgnn, xgnp, xgpp;
 
 public:
