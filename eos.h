@@ -95,19 +95,27 @@ class eos_crust_virial_v2 : public o2scl::eos_crust_virial {
    */
   double bpn1_free();
 
+  /** \brief Desc
+   */
   double bn0(double T) {
-    std::cout << "H: " << bn_f(T) << " " << bna(T) << std::endl;
     return (bn_f(T)-bna(T))/2.0;
   }
   
+  /** \brief Desc
+   */
   double bn1(double T) {
     return (bn_f(T)+bna(T))/2.0;
   }
   
+  /** \brief Desc
+   */
   double bpn0(double T) {
+    std::cout << "I: " << bpn_f(T) << " " << bpna(T) << std::endl;
     return (bpn_f(T)-bpna(T))/2.0;
   }
   
+  /** \brief Desc
+   */
   double bpn1(double T) {
     return (bpn_f(T)+bpna(T))/2.0;
   }
