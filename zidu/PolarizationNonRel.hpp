@@ -52,11 +52,14 @@ class PolarizationNonRel : public Polarization {
 
 protected:
 
-  // FIXME: what units?
-  double xt0, xt1, xt2, xt3, xx0, xx1, xx2, xx3, xepsilon;
+  /// These all have one power of MeV
+  double xt0, xt1, xt2, xt3;
 
-  // FIXME: what units?
-  double xfnn, xfnp, xfpp, xgnn, xgnp, xgpp;
+  /// These are all unitless
+  double xx0, xx1, xx2, xx3, xepsilon;
+
+  /// These should all be in units of 1/MeV^2
+  double xfnn, xfnp, xfpp, xgnn, xgnp, xgpp, xvf, xvgt;
 
 public:
 
@@ -95,13 +98,16 @@ public:
   }
 
   void set_residual(double fnn_, double fnp_, double fpp_,
-                    double gnn_, double gnp_, double gpp_) {
+                    double gnn_, double gnp_, double gpp_,
+                    double vf_, double vgt_) {
     xfnn=fnn_;
     xfnp=fnp_;
     xfpp=fpp_;
     xgnn=gnn_;
     xgnp=gnp_;
     xgpp=gpp_;
+    xvf=vf_;
+    xvgt=vgt_;
     return;
   }
   
