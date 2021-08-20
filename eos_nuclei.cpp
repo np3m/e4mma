@@ -8342,18 +8342,17 @@ int eos_nuclei::mcarlo_nuclei2(std::vector<std::string> &sv,
 int eos_nuclei::test_neutrino(std::vector<std::string> &sv, 
                               bool itive_com) {
 
+  // Test by using the NRAPR EOS at T=10 MeV
   double T=10.0/hc_mev_fm;
   
-  if (true) {
-    skyrme_load(sk,"NRAPR");
-    neutron.n=1.503779e-01;
-    proton.n=9.622062e-03;
-    thermo thxx;
-    sk.calc_temp_e(neutron,proton,10.0/hc_mev_fm,thxx);
-    electron.n=proton.n;
-    fermion_rel fr;
-    fr.calc_density(electron,10.0/hc_mev_fm);
-  }
+  skyrme_load(sk,"NRAPR");
+  neutron.n=1.503779e-01;
+  proton.n=9.622062e-03;
+  thermo thxx;
+  sk.calc_temp_e(neutron,proton,10.0/hc_mev_fm,thxx);
+  electron.n=proton.n;
+  fermion_rel fr;
+  fr.calc_density(electron,10.0/hc_mev_fm);
   
   cout << "mun: " << neutron.mu*hc_mev_fm << endl;
   cout << "mup: " << proton.mu*hc_mev_fm << endl;
@@ -8377,7 +8376,7 @@ int eos_nuclei::test_neutrino(std::vector<std::string> &sv,
   proton.ms=575.792/hc_mev_fm;
   u2eos=-35.8795;
   u4eos=-103.247;
-
+  
   FluidState betaEoS;
   betaEoS=FluidState::StateFromDensities
     (T*hc_mev_fm,neutron.ms*hc_mev_fm,proton.ms*hc_mev_fm,
@@ -8399,6 +8398,7 @@ int eos_nuclei::test_neutrino(std::vector<std::string> &sv,
   
   WeakCouplings nscat=WeakCouplings::NeutronScattering();
   nscat.F2=0.0;
+  
   WeakCouplings ncap=WeakCouplings::NuCapture();
   ncap.F2=0.0;
   
@@ -8417,16 +8417,25 @@ int eos_nuclei::test_neutrino(std::vector<std::string> &sv,
        << betaEoS.Mu3 << endl;
 
   PolarizationNonRel pol_cc(betaEoS, ncap, false, false, true);
+  pol_cc.current=Polarization::current_charged;
+  PolarizationNonRel pol_nc(betaEoS, nscat, false, false, false);
+  pol_nc.current=Polarization::current_neutral;
   
 #ifndef NEW_RESIDUAL
   
   pol_cc.set_skyrme(sk.t0*hc_mev_fm,sk.t1*hc_mev_fm,
                     sk.t2*hc_mev_fm,sk.t3*hc_mev_fm,
                     sk.x0,sk.x1,sk.x2,sk.x3,sk.alpha);
+
+  pol_nc.set_skyrme(sk.t0*hc_mev_fm,sk.t1*hc_mev_fm,
+                    sk.t2*hc_mev_fm,sk.t3*hc_mev_fm,
+                    sk.x0,sk.x1,sk.x2,sk.x3,sk.alpha);
+  
   
 #else
 
-  double fnn_nc_sk=0.5*(sk.t0*(1.0-sk.x0)+
+  // These all have units of MeV/fm^3
+  double fnn_sk=0.5*(sk.t0*(1.0-sk.x0)+
                      1.0/6.0*sk.t3*pow((neutron.n+proton.n),sk.alpha)*
                      (1.0-sk.x3)+2.0/3.0*sk.alpha*sk.t3*
                      pow((neutron.n+proton.n),sk.alpha-1)*
@@ -8437,7 +8446,7 @@ int eos_nuclei::test_neutrino(std::vector<std::string> &sv,
                      ((1+sk.x3/2.0)*pow((neutron.n+proton.n),2.0)-
                       (0.5+sk.x3)*(neutron.n*neutron.n+proton.n*proton.n)))+
     0.25*(sk.t1*(1-sk.x1)+3*sk.t2*(1+sk.x2))*neutron.kf*neutron.kf;
-  double fpp_nc_sk=0.5*(sk.t0*(1.0-sk.x0)+
+  double fpp_sk=0.5*(sk.t0*(1.0-sk.x0)+
                      1.0/6.0*sk.t3*pow((neutron.n+proton.n),sk.alpha)*
                      (1.0-sk.x3)+2.0/3.0*sk.alpha*sk.t3*
                      pow((neutron.n+proton.n),sk.alpha-1)*
@@ -8448,15 +8457,15 @@ int eos_nuclei::test_neutrino(std::vector<std::string> &sv,
                      ((1+sk.x3/2.0)*pow((neutron.n+proton.n),2.0)-
                       (0.5+sk.x3)*(neutron.n*neutron.n+proton.n*proton.n)))+
     0.25*(sk.t1*(1-sk.x1)+3*sk.t2*(1+sk.x2))*proton.kf*proton.kf;
-  double gnn_nc_sk=0.5*(sk.t0*(sk.x0-1)+
+  double gnn_sk=0.5*(sk.t0*(sk.x0-1)+
                      1.0/6.0*sk.t3*pow((neutron.n+proton.n),sk.alpha)*
                      (sk.x3-1.0))+0.25*(sk.t1*(sk.x1-1)+
                                         sk.t2*(1+sk.x2))*neutron.kf*neutron.kf;
-  double gpp_nc_sk=0.5*(sk.t0*(sk.x0-1)+
+  double gpp_sk=0.5*(sk.t0*(sk.x0-1)+
                      1.0/6.0*sk.t3*pow((neutron.n+proton.n),sk.alpha)*
                      (sk.x3-1.0))+0.25*(sk.t1*(sk.x1-1)+
                                         sk.t2*(1+sk.x2))*proton.kf*proton.kf;
-  double fnp_nc_sk=0.5*(sk.t0*(2.0+sk.x0)+1.0/6.0*sk.t3*
+  double fnp_sk=0.5*(sk.t0*(2.0+sk.x0)+1.0/6.0*sk.t3*
                      pow((neutron.n+proton.n),sk.alpha)*(2.0+sk.x3)+
                      1.0/2.0*sk.alpha*sk.t3*
                      pow((neutron.n+proton.n),sk.alpha)+
@@ -8466,19 +8475,31 @@ int eos_nuclei::test_neutrino(std::vector<std::string> &sv,
                       (0.5+sk.x3)*(neutron.n*neutron.n+proton.n*proton.n)))+
     0.5*0.25*(sk.t1*(2.0+sk.x1)+sk.t2*(2.0+sk.x2))*
     (neutron.kf*neutron.kf+proton.kf*proton.kf);
-  double gnp_nc_sk=0.5*(sk.t0*sk.x0+1.0/6.0*sk.t3*
+  double gnp_sk=0.5*(sk.t0*sk.x0+1.0/6.0*sk.t3*
                      pow((neutron.n+proton.n),sk.alpha)*sk.x3)+
     0.5*0.25*(sk.t1*sk.x1+sk.t2*sk.x2)*
     (neutron.kf*neutron.kf+proton.kf*proton.kf);
+
+  // Convert these to 1/MeV^2 by dividing by (hbar*c)^3
+  fnn_sk/=pow(hc_mev_fm,3);
+  fnp_sk/=pow(hc_mev_fm,3);
+  fpp_sk/=pow(hc_mev_fm,3);
+  gnn_sk/=pow(hc_mev_fm,3);
+  gnp_sk/=pow(hc_mev_fm,3);
+  gpp_sk/=pow(hc_mev_fm,3);
   
   double b_n=ecv.bn_f(T*hc_mev_fm);
   double b_pn=ecv.bpn_f(T*hc_mev_fm);
+  
+  // This has units of 1/MeV
   double lambda=sqrt(4.0*o2scl_const::pi/(neutron.m+proton.m)/T/
                      hc_mev_fm/hc_mev_fm);
+  
   double f0=ecv.f0(lambda,T*hc_mev_fm);
   double f0p=ecv.f0p(lambda,T*hc_mev_fm);
   double g0=ecv.g0(lambda,T*hc_mev_fm);
   double g0p=ecv.g0p(lambda,T*hc_mev_fm);
+  
   cout << lambda << endl;
   cout << "bn0,bn0free,bn1,bn1free: "
        << ecv.bn0(T*hc_mev_fm) << " " << ecv.bn0_free() << " "
@@ -8488,21 +8509,21 @@ int eos_nuclei::test_neutrino(std::vector<std::string> &sv,
        << ecv.bpn1(T*hc_mev_fm) << " " << ecv.bpn1_free() << endl;
   cout << f0 << " " << f0p << " " << g0 << " " << g0p << endl;
   
-  double fnn_nc_virial=f0+f0p;
-  double fnp_nc_virial=f0-f0p;
-  double fpp_nc_virial=fnn_virial;
-  double gnn_nc_virial=f0+f0p;
-  double gnp_nc_virial=f0-f0p;
-  double gpp_nc_virial=gnn_virial;
+  double fnn_virial=f0+f0p;
+  double fnp_virial=f0-f0p;
+  double fpp_virial=fnn_virial;
+  double gnn_virial=f0+f0p;
+  double gnp_virial=f0-f0p;
+  double gpp_virial=gnn_virial;
 
   double g_virial=0.0;
   
-  double fnn_nc=fnn_nc_virial*g_virial+fnn_nc_sk*(1.0-g_virial);
-  double fnp_nc=fnp_nc_virial*g_virial+fnp_nc_sk*(1.0-g_virial);
-  double fpp_nc=fpp_nc_virial*g_virial+fpp_nc_sk*(1.0-g_virial);
-  double gnn_nc=gnn_nc_virial*g_virial+gnn_nc_sk*(1.0-g_virial);
-  double gnp_nc=gnp_nc_virial*g_virial+gnp_nc_sk*(1.0-g_virial);
-  double gpp_nc=gpp_nc_virial*g_virial+gpp_nc_sk*(1.0-g_virial);
+  double fnn=fnn_virial*g_virial+fnn_sk*(1.0-g_virial);
+  double fnp=fnp_virial*g_virial+fnp_sk*(1.0-g_virial);
+  double fpp=fpp_virial*g_virial+fpp_sk*(1.0-g_virial);
+  double gnn=gnn_virial*g_virial+gnn_sk*(1.0-g_virial);
+  double gnp=gnp_virial*g_virial+gnp_sk*(1.0-g_virial);
+  double gpp=gpp_virial*g_virial+gpp_sk*(1.0-g_virial);
   
   // //update for w1nnVec and w1npVec, since only for symmetric matter
   // we have w1_CE=w1nn_vec-w1np_vec, have to delete the 3rd term of
@@ -8510,66 +8531,73 @@ int eos_nuclei::test_neutrino(std::vector<std::string> &sv,
   // 327-342, however, the relationship of w_CE=w_nn-w_np is true for
   // w2_CE^vec, w1_CE^ax and w2_CE^ax
   
-  double w1nnVec=t0*(1.0-x0)+1.0/6.0*t3*pow(rou,epsilon)*(1.0-x3)+
-    1.0/6.0*epsilon*(epsilon-1.0)*t3*pow(rou,epsilon-2.0)*
-    ((1+x3/2.0)*pow(rou,2.0)-(0.5+x3)*(roun*roun+roup*roup));
-  double w1npVec=t0*(2.0+x0)+1.0/6.0*t3*pow(rou,epsilon)*(2.0+x3)+
-    1.0/6.0*epsilon*(epsilon-1.0)*t3*pow(rou,epsilon-2.0)*
-    ((1+x3/2.0)*pow(rou,2.0)-(0.5+x3)*(roun*roun+roup*roup));
+  double w1nnVec=sk.t0*(1.0-sk.x0)+
+    1.0/6.0*sk.t3*pow((neutron.n+proton.n),sk.alpha)*(1.0-sk.x3)+
+    1.0/6.0*sk.alpha*(sk.alpha-1.0)*
+    sk.t3*pow((neutron.n+proton.n),sk.alpha-2.0)*
+    ((1+sk.x3/2.0)*pow((neutron.n+proton.n),2.0)-(0.5+sk.x3)*
+     (neutron.n*neutron.n+proton.n*proton.n));
+  double w1npVec=sk.t0*(2.0+sk.x0)+
+    1.0/6.0*sk.t3*pow((neutron.n+proton.n),sk.alpha)*(2.0+sk.x3)+
+    1.0/6.0*sk.alpha*(sk.alpha-1.0)*
+    sk.t3*pow((neutron.n+proton.n),sk.alpha-2.0)*
+    ((1+sk.x3/2.0)*pow((neutron.n+proton.n),2.0)-(0.5+sk.x3)*
+     (neutron.n*neutron.n+proton.n*proton.n));
 
-  double w1nnAx=t0*(x0-1)+1.0/6.0*t3*pow(rou,epsilon)*(x3-1.0);
-  double w1npAx=t0*x0+1.0/6.0*t3*pow(rou,epsilon)*x3;
-  double w2nnVec=0.25*(t1*(1-x1)+3*t2*(1+x2));
-  double w2npVec=0.25*(t1*(2.0+x1)+t2*(2.0+x2));
-  double w2nnAx=0.25*(t1*(x1-1)+t2*(1+x2));
-  double w2npAx=0.25*(t1*x1+t2*x2);
+  double w1nnAx=sk.t0*(sk.x0-1)+1.0/6.0*sk.t3*
+    pow((neutron.n+proton.n),sk.alpha)*(sk.x3-1.0);
+  double w1npAx=sk.t0*sk.x0+1.0/6.0*sk.t3*
+    pow((neutron.n+proton.n),sk.alpha)*sk.x3;
+  double w2nnVec=0.25*(sk.t1*(1-sk.x1)+3*sk.t2*(1+sk.x2));
+  double w2npVec=0.25*(sk.t1*(2.0+sk.x1)+sk.t2*(2.0+sk.x2));
+  double w2nnAx=0.25*(sk.t1*(sk.x1-1)+sk.t2*(1+sk.x2));
+  double w2npAx=0.25*(sk.t1*sk.x1+sk.t2*sk.x2);
 
-  //kf should be the hole momenta at fermi see surface, here the
-  //transition is (pn^-1,pn^-1), the hole is neutron hole
-  double vf_sk=0.5*(w1nnVec-w1npVec)+(w2nnVec-w2npVec)*kfn*kfn;
-  double vgt_sk=0.5*(w1nnAx-w1npAx)+(w2nnAx-w2npAx)*kfn*kfn;
+  // kf should be the hole momenta at fermi see surface, here the
+  // transition is (pn^-1,pn^-1), the hole is neutron hole
+  
+  double vf_sk=0.5*(w1nnVec-w1npVec)+(w2nnVec-w2npVec)*neutron.kf*neutron.kf;
+  double vgt_sk=0.5*(w1nnAx-w1npAx)+(w2nnAx-w2npAx)*neutron.kf*neutron.kf;
+  
+  // Convert these to 1/MeV^2 by dividing by (hbar*c)^3
+  vf_sk/=pow(hc_mev_fm,3);
+  vgt_sk/=pow(hc_mev_fm,3);
 
   // Charged current from virial expansion
-  double vf_vir=2.0*f0p;
-  double vgt_vir=2.0*g0p;
+  double vf_virial=2.0*f0p;
+  double vgt_virial=2.0*g0p;
 
   double vf=vf_virial*g_virial+vf_sk*(1.0-g_virial);
   double vgt=vgt_virial*g_virial+vgt_sk*(1.0-g_virial);
   
-  pol_nc.set_residual(fnn_nc,fnp_nc,fpp,gnn_nc,gnp_nc,gpp_nc,vf,vgt);
-  pol_nc.current=Polarization::current_neutral;
- 
-  pol_cc.set_residual(fnn_nc,fnp_nc,fpp,gnn_nc,gnp_nc,gpp_nc,vf,vgt);
-  pol_cc.current=Polarization::current_charged;
+  pol_nc.set_residual(fnn,fnp,fpp,gnn,gnp,gpp,vf,vgt);
+  
+  pol_cc.set_residual(fnn,fnp,fpp,gnn,gnp,gpp,vf,vgt);
   
 #endif
   
-  pol_cc.flag=0;
-  double cc_vec_mfp=pol_cc.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
-  cout << "charged current, vector part: " << cc_vec_mfp << endl;
-  pol_cc.flag=1;
-  double cc_axvec_mfp=pol_cc.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
-  cout << "charged current, axial part: " << cc_axvec_mfp << endl;
-  pol_cc.flag=0;
-  
-  //betaEoS.Mu2=neutron.mu*hc_mev_fm;
-  //betaEoS.Mu4=neutron.mu*hc_mev_fm;
-  //betaEoS.Mu3=0.0;
+  // -----------------------------------------------------------------
+  // Neutral current mean free path
 
-  PolarizationNonRel pol_nc(betaEoS, nscat, false, false, false);
-  
-  pol_nc.set_skyrme(sk.t0*hc_mev_fm,sk.t1*hc_mev_fm,
-                    sk.t2*hc_mev_fm,sk.t3*hc_mev_fm,
-                    sk.x0,sk.x1,sk.x2,sk.x3,sk.alpha);
-  
-  pol_nc.current=0;
-  pol_nc.flag=0;
+  pol_nc.flag=Polarization::flag_vector;
   double nc_vec_mfp=pol_nc.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
   cout << "neutral current, vector part: " << nc_vec_mfp << endl;
-  pol_nc.flag=1;
+  
+  pol_nc.flag=Polarization::flag_axial;
   double nc_axvec_mfp=pol_nc.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
   cout << "neutral current, axial part: " << nc_axvec_mfp << endl;
 
+  // -----------------------------------------------------------------
+  // Charged current mean free path
+
+  pol_cc.flag=Polarization::flag_vector;
+  double cc_vec_mfp=pol_cc.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
+  cout << "charged current, vector part: " << cc_vec_mfp << endl;
+  
+  pol_cc.flag=Polarization::flag_axial;
+  double cc_axvec_mfp=pol_cc.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
+  cout << "charged current, axial part: " << cc_axvec_mfp << endl;
+  
   // -----------------------------------------------------------------
   // neutral current dynamic response
 
@@ -8595,150 +8623,119 @@ int eos_nuclei::test_neutrino(std::vector<std::string> &sv,
     for (int k=1;k<100;k++) {
     
       double w=wmin+dw*k;
+      
       // double w=30.0;
       // piL=pol.GetImPI(w,3*T_MeV);//piL is 2*ImPI0
       // piLRe=pol.GetImPI2(w, 3*T_MeV);//piLRe is 2*RePI0
     
-      //**********new version**************
-      //neutral current
-      auto ptN= pol_nc.CalculateBasePolarizationsNeutron(w,3*T_MeV);
-      //neutral current
-      auto ptP= pol_nc.CalculateBasePolarizationsProton(w,3*T_MeV);
+      // New version
+      
+      // neutral current
+      std::array<double, 4> ptN=pol_nc.CalculateBasePolarizationsNeutron
+        (w,3*T_MeV);
+      
+      // neutral current
+      std::array<double, 4> ptP= pol_nc.CalculateBasePolarizationsProton
+        (w,3*T_MeV);
     
       double piLn=ptN[1];
       double piLp=ptP[1];
     
-      //***********PiLRe**********************
+      // PiLRe           
+      
       double piLnRe=pol_nc.GetRePIn(w,3*T_MeV);
       double piLpRe=pol_nc.GetRePIp(w,3*T_MeV);   
     
-      //************************************
-    
-      // double vf=(-0.74+2.5)*1.0E-5;
-      // double vgt=4.5*1.0E-5;
-      // double vrpa=vf;
-    
-      double epsilon=1.4416*1.0E-01;
-      double t0=-2.7197*1.0E+03;
-      double t1=4.1764*1.0E+02;
-      double t2=-6.6687*1.0E+01;
-      double t3=1.5042*1.0E+04;
-      double x0=1.6154*1.0E-01;
-      double x1=-4.7986*1.0E-02;
-      double x2=2.717*1.0E-02;
-      double x3=1.3611*1.0E-01;
-    
       static const double densFac=pow(hc_mev_fm,3.0);
       double rou=(betaEoS.n2+betaEoS.n4)/densFac;
-      double roun=betaEoS.n2/densFac;
-      double roup=betaEoS.n4/densFac;
-      double kf=pow(0.5*rou*3*3.14159*3.14159,1.0/3.0);
-      double kfn=pow(roun*3*3.14159*3.14159,1.0/3.0);
-      double kfp=pow(roup*3*3.14159*3.14159,1.0/3.0);
-
-
-      //for high density skyrme
-
-      /*
-        double
-        f0=3.0/4.0*t0+3.0/8.0*t1*kf*kf+5.0/8.0*t2*kf*kf+1.0/2.0*t2*x2*kf*kf+(epsilon+1.0)*(epsilon+2.0)/16.0*t3*pow(rou,epsilon);
-        double
-        f0p=-1.0/4.0*t0-1.0/2.0*t0*x0-1.0/8.0*t1*kf*kf-1.0/4.0*t1*x1*kf*kf+1.0/8.0*t2*kf*kf+1.0/4.0*t2*x2*kf*kf-1.0/24.0*t3*pow(rou,epsilon)-1.0/12.0*t3*x3*pow(rou,epsilon);
-        double
-        g0=-1.0/4.0*t0+1.0/2.0*x0*t0-1.0/8.0*t1*kf*kf+1.0/4.0*t1*x1*kf*kf+1.0/8.0*t2*kf*kf+1.0/4.0*t2*x2*kf*kf-1.0/24.0*t3*pow(rou,epsilon)+1.0/12.0*t3*x3*pow(rou,epsilon);
-        double
-        g0p=-1.0/4.0*t0-1.0/8.0*t1*kf*kf+1.0/8.0*t2*kf*kf-1.0/24.0*t3*pow(rou,epsilon);
-      */
-    
-      // double f0n=1.0/2.0*t0-1.0/2.0*t0*x0+1.0/8.0*t1*kfn*kfn-1.0/4.0*t1*x1*kfn*kfn+3.0/4.0*t2*kfn*kfn+3.0/4.0*t2*x2*kfn*kfn+(epsilon+1.0)*(epsilon+2.0)/24.0*t3*pow(rou,epsilon)-(epsilon+1.0)*(epsilon+2.0)/24.0*t3*x3*pow(rou,epsilon);
-      // double g0n=-1.0/2.0*t0+1.0/2.0*t0*x0-1.0/4.0*t1*kfn*kfn+1.0/4.0*t1*x1*kfn*kfn+1.0/4.0*t2*kfn*kfn+1.0/4.0*t2*x2*kfn*kfn-1.0/12.0*t3*pow(rou,epsilon)+1.0/12.0*t3*x3*pow(rou,epsilon);
-    
-
-      fnn=0.5*(t0*(1.0-x0)+1.0/6.0*t3*pow(rou,epsilon)*(1.0-x3)+2.0/3.0*epsilon*t3*pow(rou,epsilon-1)*((1+x3/2.0)*rou-(1.0/2.0+x3)*roun)+1.0/6.0*epsilon*(epsilon-1.0)*t3*pow(rou,epsilon-2.0)*((1+x3/2.0)*pow(rou,2.0)-(0.5+x3)*(roun*roun+roup*roup)))+0.25*(t1*(1-x1)+3*t2*(1+x2))*kfn*kfn;
-      fpp=0.5*(t0*(1.0-x0)+1.0/6.0*t3*pow(rou,epsilon)*(1.0-x3)+2.0/3.0*epsilon*t3*pow(rou,epsilon-1)*((1+x3/2.0)*rou-(1.0/2.0+x3)*roup)+1.0/6.0*epsilon*(epsilon-1.0)*t3*pow(rou,epsilon-2.0)*((1+x3/2.0)*pow(rou,2.0)-(0.5+x3)*(roun*roun+roup*roup)))+0.25*(t1*(1-x1)+3*t2*(1+x2))*kfp*kfp;
-      gnn=0.5*(t0*(x0-1)+1.0/6.0*t3*pow(rou,epsilon)*(x3-1.0))+0.25*(t1*(x1-1)+t2*(1+x2))*kfn*kfn;
-      gpp=0.5*(t0*(x0-1)+1.0/6.0*t3*pow(rou,epsilon)*(x3-1.0))+0.25*(t1*(x1-1)+t2*(1+x2))*kfp*kfp;
-      fnp=0.5*(t0*(2.0+x0)+1.0/6.0*t3*pow(rou,epsilon)*(2.0+x3)+1.0/2.0*epsilon*t3*pow(rou,epsilon)+1.0/6.0*epsilon*(epsilon-1.0)*t3*pow(rou,epsilon-2.0)*((1+x3/2.0)*pow(rou,2.0)-(0.5+x3)*(roun*roun+roup*roup)))+0.5*0.25*(t1*(2.0+x1)+t2*(2.0+x2))*(kfn*kfn+kfp*kfp);
-      gnp=0.5*(t0*x0+1.0/6.0*t3*pow(rou,epsilon)*x3)+0.5*0.25*(t1*x1+t2*x2)*(kfn*kfn+kfp*kfp);
-    
-      fnn=fnn/pow(197.3,3);
-      fpp=fpp/pow(197.3,3);
-      gnn=gnn/pow(197.3,3);
-      gpp=gpp/pow(197.3,3);
-      fnp=fnp/pow(197.3,3);
-      gnp=gnp/pow(197.3,3);
-    
-    
-      //for low density virial 
-      /*   double fnn;
-           double fpp;
-           double gnn;
-           double gpp;
-           double fnp;
-           double gnp;
-           fnn=fpp=-0.0000844949;
-           gnn=gpp=0.0000759672;
-           fnp=-0.000321676;
-           gnp=-0.0000702146;
-           double f0p=0.000118591;
-           double g0p=0.0000730909;
-         
-           double vf=2.0*f0p;
-           double vgt=2.0*g0p;
-           double vrpa=vf;//already in unit of MeV-2*/
 
       double piLRPA;
       double piLRPAvec;
       double response;
       double FermiF;
       double zz;
-    
-      //*************************************
-      zz=(w+0.0)/T_MeV;//neutral current
+
+      //neutral current
+      zz=(w+0.0)/T_MeV;
       FermiF=1/(1-exp(-zz));
-      // piLRPA=2*(piL/2)/((1-vrpa*(piLRe/2))*(1-vrpa*(piLRe/2))+vrpa*vrpa*(piL/2)*(piL/2))*FermiF;
-      // piLRPA=2*(piL/2)*FermiF;
-      // piLRPA=2*((piLn+piLp)/2+(gnn-gpp)*(piLn/2.0*piLpRe/2.0-piLp/2.0*piLnRe/2.0))/((1-gnn*(piLnRe/2)-gpp*(piLpRe/2))*(1-gnn*(piLnRe/2)-gpp*(piLpRe/2))+(piLn/2.0*gnn+piLp/2.0*gpp)*(piLn/2.0*gnn+piLp/2.0*gpp))*FermiF;
-      // piLRPAvec=2*(piLn/2)/((1-fnn*(piLnRe/2))*(1-fnn*(piLnRe/2))+(piLn/2.0*fnn)*(piLn/2.0*fnn))*FermiF;
-      //piLRPA is s(q0,q)
-      //
-      //
-      //*********************complete version of neutral current n+p gas polarization functions**********************
-      double impin,impip,repin,repip;
-      double pirpaVec,pirpaAx;
+      
+      // complete version of neutral current n+p gas polarization
+      // functions
+      double impin, impip, repin, repip;
+      double pirpaVec, pirpaAx;
       impin=piLn/2.0;
       impip=piLp/2.0;
       repin=piLnRe/2.0;
       repip=piLpRe/2.0;
-      //vector polarization complete version
-      //********adding coulomb force in fpp only for NC vector part****************
-      double e2,qtf2;
-      double piconst;
+      
+      // vector polarization complete version
+      // adding coulomb force in fpp only for NC vector part
+      
+      double e2, qtf2;
       double coulombf;
-      e2=1.0/137.0*4.0*piconst;
-      piconst=3.1415926;
-      qtf2=4.0*e2*pow(piconst,0.333333)*pow(3.0*rou*densFac,2.0/3.0);
-      coulombf=e2*4.0*piconst/((3.0*T_MeV)*(3.0*T_MeV)+qtf2);
-    
+      e2=1.0/137.0*4.0*pi;
+      qtf2=4.0*e2*cbrt(pi)*pow(3.0*rou*densFac,2.0/3.0);
+      coulombf=e2*4.0*pi/((3.0*T_MeV)*(3.0*T_MeV)+qtf2);
+      
       fpp=fpp+coulombf;
     
-      //**************************
-      pirpaVec=(impin+fnp*fnp*impin*impin*impip+fpp*fpp*impin*impip*impip+fnp*fnp*impip*repin*repin-2.0*fpp*impin*repip+fpp*fpp*impin*repip*repip)/((-fnn*impin-fpp*impip-fnp*fnp*impip*repin+fnn*fpp*impip*repin-fnp*fnp*impin*repip+fnn*fpp*impin*repip)*(-fnn*impin-fpp*impip-fnp*fnp*impip*repin+fnn*fpp*impip*repin-fnp*fnp*impin*repip+fnn*fpp*impin*repip)+(1+fnp*fnp*impin*impip-fnn*fpp*impin*impip-fnn*repin-fpp*repip-fnp*fnp*repin*repip+fnn*fpp*repin*repip)*(1+fnp*fnp*impin*impip-fnn*fpp*impin*impip-fnn*repin-fpp*repip-fnp*fnp*repin*repip+fnn*fpp*repin*repip));
-      //
-      //
-      //
-      //axial polarization complete version
-      pirpaAx=((gnn+gnp)*(gnn+gnp)*impin*impin*impip+impip*(-1.0+gnn*repin+gnp*repin)*(-1.0+gnn*repin+gnp*repin)+impin*(1.0-2.0*gnp*repip-2.0*gpp*repip+gnp*gnp*(impip*impip+repip*repip)+2.0*gnp*gpp*(impip*impip+repip*repip)+gpp*gpp*(impip*impip+repip*repip)))/((-gnn*impin-gpp*impip-gnp*gnp*impip*repin+gnn*gpp*impip*repin-gnp*gnp*impin*repip+gnn*gpp*impin*repip)*(-gnn*impin-gpp*impip-gnp*gnp*impip*repin+gnn*gpp*impip*repin-gnp*gnp*impin*repip+gnn*gpp*impin*repip)+(1.0+gnp*gnp*impin*impip-gnn*gpp*impin*impip-gnn*repin-gpp*repip-gnp*gnp*repin*repip+gnn*gpp*repin*repip)*(1.0+gnp*gnp*impin*impip-gnn*gpp*impin*impip-gnn*repin-gpp*repip-gnp*gnp*repin*repip+gnn*gpp*repin*repip));
+      pirpaVec=(impin+
+                fnp*fnp*impin*impin*impip+
+                fpp*fpp*impin*impip*impip+
+                fnp*fnp*impip*repin*repin-
+                2.0*fpp*impin*repip+
+                fpp*fpp*impin*repip*repip)/
+        ((-fnn*impin-
+          fpp*impip-
+          fnp*fnp*impip*repin+
+          fnn*fpp*impip*repin-
+          fnp*fnp*impin*repip+
+          fnn*fpp*impin*repip)*
+         (-fnn*impin-
+          fpp*impip-
+          fnp*fnp*impip*repin+
+          fnn*fpp*impip*repin-
+          fnp*fnp*impin*repip+
+          fnn*fpp*impin*repip)+
+         (1+
+          fnp*fnp*impin*impip-
+          fnn*fpp*impin*impip-
+          fnn*repin-
+          fpp*repip-
+          fnp*fnp*repin*repip+
+          fnn*fpp*repin*repip)*
+         (1+
+          fnp*fnp*impin*impip-
+          fnn*fpp*impin*impip-
+          fnn*repin-
+          fpp*repip-
+          fnp*fnp*repin*repip+
+          fnn*fpp*repin*repip));
+
+      // Axial polarization complete version
+      pirpaAx=((gnn+gnp)*(gnn+gnp)*impin*impin*impip+impip*
+               (-1.0+gnn*repin+gnp*repin)*
+               (-1.0+gnn*repin+gnp*repin)+impin*
+               (1.0-2.0*gnp*repip-
+                2.0*gpp*repip+gnp*gnp*(impip*impip+repip*repip)+
+                2.0*gnp*gpp*(impip*impip+repip*repip)+
+                gpp*gpp*(impip*impip+repip*repip)))/
+        ((-gnn*impin-gpp*impip-gnp*gnp*impip*repin+
+          gnn*gpp*impip*repin-gnp*gnp*impin*repip+
+          gnn*gpp*impin*repip)*
+         (-gnn*impin-gpp*impip-gnp*gnp*impip*repin+
+          gnn*gpp*impip*repin-gnp*gnp*impin*repip+
+          gnn*gpp*impin*repip)+
+         (1.0+gnp*gnp*impin*impip-gnn*gpp*impin*impip-
+          gnn*repin-gpp*repip-gnp*gnp*repin*repip+
+          gnn*gpp*repin*repip)*
+         (1.0+gnp*gnp*impin*impip-gnn*gpp*impin*impip-
+          gnn*repin-gpp*repip-gnp*gnp*repin*repip+
+          gnn*gpp*repin*repip));
     
       piLRPA=2.0*pirpaAx*FermiF;
       piLRPAvec=2.0*pirpaVec*FermiF;
-    
-      // std::cout << "neutral current density: " <<betaEoS.n2/densFac<<" vrpa: "<<vrpa<<" full "<< full <<" w "<<w<< " piL(w) " <<piL<<" piLRe(w) "<<piLRe<<" piLRPA "<<piLRPA<<" response "<<response<<" FermiF: "<<FermiF<< std::endl;
-      // datanc << "neutral current density: " <<betaEoS.n2/densFac<<" full "<< full <<" vrpa: "<<vrpa<< " w "<<w<< " piL(w) " <<piL<<" piLRe(w) "<<piLRe<<" piLRPA "<<piLRPA<<" response "<<response<<" FermiF "<<FermiF<< std::endl;
-      //
-      // new version******
-      //   std::cout << "neutral current density: " <<betaEoS.n2/densFac<<" fnn: "<<fnn<<" fpp: "<<fpp<<" gnn: "<<gnn<<" gpp: "<<gpp<<" full "<< full <<" w "<<w<< " piLn(w) " <<piLn<<" piLp(w) " <<piLp<<" piLRen(w) "<<piLnRe<<" piLRep(w) "<<piLpRe<<" piLRPAaxial "<<piLRPA<<" piLRPAvector "<<piLRPAvec<<" FermiF: "<<FermiF<< std::endl;
-    
+      
       cout << "neutral current density: " << betaEoS.n2/densFac
            << " fnn: " <<fnn << " fpp: " << fpp << " gnn: " << gnn
            << " gpp: " << gpp << " w " << w
@@ -8775,13 +8772,13 @@ int eos_nuclei::test_neutrino(std::vector<std::string> &sv,
     double T_MeV=T*hc_mev_fm;
     static const double densFac=pow(hc_mev_fm,3.0);
     
-    //**********Set integration range***********
+    // Set integration range
+    
     double wmin;
     double wmax;
     wmin=-100.0;
     wmax=50.0;
     double dw=(wmax-wmin)/100;
-    //******************************************
 
     ofstream fout("nt_cc_dr.out");
     fout << "n2 vgt vf w piL piLRe piLRPA piLRPAVec FermiF" << endl;
@@ -8789,108 +8786,31 @@ int eos_nuclei::test_neutrino(std::vector<std::string> &sv,
     for (int k=1;k<100;k++) {
       
       double w=wmin+dw*k;
-      //   **********new version**************
-      //charged current
-      auto pt= pol_cc.CalculateBasePolarizations(w, 10*T_MeV);
+      std::array<double, 4> pt=pol_cc.CalculateBasePolarizations
+        (w,10*T_MeV);
       
       double piL=pt[1];
       
-      //  ***********PiLRe**********************
+      // PiLRe
       double piLRe=pol_cc.GetImPI2(w,10*T_MeV);
       
-      // piL=pol.GetImPI(w,5*T_MeV);//piL is 2*ImPI0
-      // piLRe=pol.GetImPI2(w, 5*T_MeV);//piLRe is 2*RePI0
-      //vf and vgt for cc comes from arXiv:1205.4066, in unit of MeV^-2, note that in the arxiv paper the unit is wrong, should be fm^2 rather than fm^-2
-      /* double vf=5.1*1.0E-5;
-         double vgt=2.8*1.0E-5;
-         double vrpa=vf;*/
-      
-      // double t0,t1,t2,t3,x0,x1,x2,x3,epsilon;
-      /* //ft7
-         epsilon= 1.6112652355*1.0E-01;
-         t0=-2.8515584390*1.0E+03;
-         t1=2.9926667400*1.0E+02;
-         t2=2.1204461670*1.0E+03;
-         t3=1.7480390049*1.0E+04;
-         x0=9.5708919697*1.0E-02;
-         x1=-5.9493754771*1.0E+00;
-         x2=-1.3211268948 *1.0E+00;
-         x3=3.7117434733*1.0E-02;*/
-      //NRAPR
-      double epsilon= 1.4416*1.0E-01;
-      double t0 = -2.7197*1.0E+03;
-      double t1=4.1764*1.0E+02;
-      double t2= -6.6687*1.0E+01;
-      double t3= 1.5042*1.0E+04;
-      double x0= 1.6154*1.0E-01;
-      double x1= -4.7986*1.0E-02;
-      double x2= 2.717*1.0E-02;
-      double x3= 1.3611*1.0E-01;
-      
-      
-      double rou=(betaEoS.n2+betaEoS.n4)/densFac;
-      double roun=betaEoS.n2/densFac;
-      double roup=betaEoS.n4/densFac;
-      
-      double kfnTest=pow(roun*3*3.14159*3.14159,1.0/3.0);
-      double kfpTest=pow(roup*3*3.14159*3.14159,1.0/3.0);
-      double kf=pow(0.5*rou*3*3.14159*3.14159,1.0/3.0);
-      
-      // double f0p=-1.0/4.0*t0-1.0/2.0*t0*x0-1.0/8.0*t1*kf*kf-1.0/4.0*t1*x1*kf*kf+1.0/8.0*t2*kf*kf+1.0/4.0*t2*x2*kf*kf-1.0/24.0*t3*pow(rou,epsilon)-1.0/12.0*t3*x3*pow(rou,epsilon);
-      // double g0p=-1.0/4.0*t0-1.0/8.0*t1*kf*kf+1.0/8.0*t2*kf*kf-1.0/24.0*t3*pow(rou,epsilon);
-      // double vf=2.0*f0p;// for symmetric nuclear matter
-      // double vgt=2.0*g0p;// for symmetric nuclear matter
-      // double fnn=0.5*(t0*(1.0-x0)+1.0/6.0*t3*pow(rou,epsilon)*(1.0-x3)+2.0/3.0*epsilon*t3*pow(rou,epsilon-1)*((1+x3/2.0)*rou-(1.0/2.0+x3)*roun)+1.0/6.0*epsilon*(epsilon-1.0)*t3*pow(rou,epsilon-2.0)*((1+x3/2.0)*pow(rou,2.0)-(0.5+x3)*(roun*roun+roup*roup)))+0.25*(t1*(1-x1)+3*t2*(1+x2))*kfn*kfn;
-      // double fnp=0.5*(t0*(2.0+x0)+1.0/6.0*t3*pow(rou,epsilon)*(2.0+x3)+1.0/2.0*epsilon*t3*pow(rou,epsilon)+1.0/6.0*epsilon*(epsilon-1.0)*t3*pow(rou,epsilon-2.0)*((1+x3/2.0)*pow(rou,2.0)-(0.5+x3)*(roun*roun+roup*roup)))+0.5*0.25*(t1*(2.0+x1)+t2*(2.0+x2))*(kfn*kfn+kfp*kfp);
-      // double gnn=0.5*(t0*(x0-1)+1.0/6.0*t3*pow(rou,epsilon)*(x3-1.0))+0.25*(t1*(x1-1)+t2*(1+x2))*kfn*kfn;
-      // double gnp=0.5*(t0*x0+1.0/6.0*t3*pow(rou,epsilon)*x3)+0.5*0.25*(t1*x1+t2*x2)*(kfn*kfn+kfp*kfp);
-      //  double vf=fnn-fnp;
-      //  double vgt=gnn-gnp;
-      double w1nnVec,w1npVec,w1nnAx,w1npAx,w2nnVec,w2npVec,w2nnAx,w2npAx;
-      w1nnVec=t0*(1.0-x0)+1.0/6.0*t3*pow(rou,epsilon)*(1.0-x3)+2.0/3.0*epsilon*t3*pow(rou,epsilon-1)*((1+x3/2.0)*rou-(1.0/2.0+x3)*roun)+1.0/6.0*epsilon*(epsilon-1.0)*t3*pow(rou,epsilon-2.0)*((1+x3/2.0)*pow(rou,2.0)-(0.5+x3)*(roun*roun+roup*roup));
-      w1npVec=t0*(2.0+x0)+1.0/6.0*t3*pow(rou,epsilon)*(2.0+x3)+1.0/2.0*epsilon*t3*pow(rou,epsilon)+1.0/6.0*epsilon*(epsilon-1.0)*t3*pow(rou,epsilon-2.0)*((1+x3/2.0)*pow(rou,2.0)-(0.5+x3)*(roun*roun+roup*roup));
-      w1nnAx=t0*(x0-1)+1.0/6.0*t3*pow(rou,epsilon)*(x3-1.0);
-      w1npAx=t0*x0+1.0/6.0*t3*pow(rou,epsilon)*x3;
-      w2nnVec=0.25*(t1*(1-x1)+3*t2*(1+x2));
-      w2npVec=0.25*(t1*(2.0+x1)+t2*(2.0+x2));
-      w2nnAx=0.25*(t1*(x1-1)+t2*(1+x2));
-      w2npAx=0.25*(t1*x1+t2*x2);
-      
-      double vf=0.5*(w1nnVec-w1npVec)+(w2nnVec-w2npVec)*kfnTest*kfnTest;//kf should be the hole momenta at fermi see surface, here the transition is (pn^-1,pn^-1), the hole is neutron hole
-      double vgt=0.5*(w1nnAx-w1npAx)+(w2nnAx-w2npAx)*kfnTest*kfnTest;
-      double vrpa=vgt/pow(197.3,3);//change unit to MeV-2
-      double vrpaVec=vf/pow(197.3,3);//change unit to MeV-2 
-      
-      //virial
-      /*   double fnn;
-           double fpp;
-           double gnn;
-           double gpp;
-           fnn=fpp=-0.0000844949;
-           gnn=gpp=0.0000759672;
-           double f0p=0.000118591;
-           double g0p=0.0000730909;
-           double vf=2.0*f0p;
-           double vgt=2.0*g0p;
-           double vrpa=vgt;//already in unit of MeV-2
-           double vrpaVec=vf; */
+      double vrpa=vgt/pow(hc_mev_fm,3);//change unit to MeV-2
+      double vrpaVec=vf/pow(hc_mev_fm,3);//change unit to MeV-2 
       
       double piLRPA;
       
       double FermiF;
       double zz;
       zz=(w+betaEoS.Mu2-betaEoS.Mu4)/T_MeV;
-      // zz=(w+beta.Mu2-beta.Mu4)/T_MeV;
       FermiF=1/(1-exp(-zz));
       
-      //      double response=pol.GetResponse( E1, w, 10*T_MeV);
+      //piLRPA is s(q0,q)
+      piLRPA=2*(piL/2)/((1-vrpa*(piLRe/2))*(1-vrpa*(piLRe/2))+
+                        vrpa*vrpa*(piL/2)*(piL/2))*FermiF;
       
-      piLRPA=2*(piL/2)/((1-vrpa*(piLRe/2))*(1-vrpa*(piLRe/2))+vrpa*vrpa*(piL/2)*(piL/2))*FermiF;//piLRPA is s(q0,q)
-      
-      double piLRPAVec=2*(piL/2)/((1-vrpaVec*(piLRe/2))*(1-vrpaVec*(piLRe/2))+vrpaVec*vrpaVec*(piL/2)*(piL/2))*FermiF;
-      
-      // piLRPA=2*(piL/2)*FermiF;//piLRPA is s(q0,q)
-      // std::cout << "charged current density: " <<n2+n4<<" full "<< Wm <<" w "<<w<< " piL(w) " <<piL<<" piLRe(w) "<<piLRe<<" piLRPA "<<piLRPA<<" piLRPA vector "<<piLRPAVec<<" response "<<response<<" FermiF: "<<FermiF<< std::endl;
+      double piLRPAVec=2*(piL/2)/((1-vrpaVec*(piLRe/2))*
+                                  (1-vrpaVec*(piLRe/2))+
+                                  vrpaVec*vrpaVec*(piL/2)*(piL/2))*FermiF;
       
       cout << "charged current density: " << betaEoS.n2
            << " vgt: " << vgt << " vf: " << vf
@@ -9130,8 +9050,8 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
       double gpp_virial=gnn_virial;
       
       pol.set_residual(fnn_virial,fnp_virial,fpp_virial,
-                       gnn_virial,gnp_virial,gpp_virial);
-
+                       gnn_virial,gnp_virial,gpp_virial,0.0,0.0);
+      
       exit(-1);
       
       pol.current=1;
