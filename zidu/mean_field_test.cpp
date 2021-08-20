@@ -3,7 +3,7 @@
 #include <vector>
 #include<fstream>
 
-#include "Tensor.hpp"
+#include "tensor.h"
 #include "Polarization.hpp"
 #include "PolarizationNonRel.hpp"
 #include "constants.h"

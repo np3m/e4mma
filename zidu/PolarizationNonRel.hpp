@@ -34,7 +34,7 @@
 #include <iostream>
 #include <array> 
 #include "FluidState.hpp"
-#include "Tensor.hpp"
+#include "tensor.h"
 #include "Polarization.hpp" 
 
 namespace nuopac {

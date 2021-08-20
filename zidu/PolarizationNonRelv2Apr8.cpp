@@ -30,7 +30,7 @@
 #include <math.h> 
 #include <limits> 
 
-#include "Tensor.hpp" 
+#include "tensor.h" 
 #include "PolarizationNonRel.hpp"
 #include "constants.h"
 #include "FunctionIntegrator.hpp"

@@ -34,7 +34,7 @@
 //#include "OneDimensionalRoot.hpp" 
 #include "jacobi_rule.hpp" 
 #include "Polarization.hpp"
-#include "Tensor.hpp" 
+#include "tensor.h" 
 #include "constants.h"
 
 // Use unnamed namespace so these methods are only locally available

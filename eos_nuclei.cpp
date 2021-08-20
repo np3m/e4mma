@@ -19,7 +19,7 @@
   -------------------------------------------------------------------
 */
 #include "eos_nuclei.h"
-#include "zidu/Tensor.hpp"
+#include "zidu/tensor.h"
 #include "zidu/Polarization.hpp"
 #include "zidu/PolarizationNonRel.hpp"
 #include "zidu/constants.h"

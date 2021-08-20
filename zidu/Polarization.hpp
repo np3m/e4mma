@@ -34,7 +34,7 @@
 #include <iostream>
 #include <array> 
 #include "FluidState.hpp"
-#include "Tensor.hpp"
+#include "tensor.h"
 #include "Couplings.hpp" 
 
 // Going much lower than 64 seems to degrade accuracy at a few percent level
