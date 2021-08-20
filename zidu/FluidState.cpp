@@ -33,7 +33,7 @@
 #include <exception> 
 
 #include "FluidState.hpp"
-#include "Constants.hpp" 
+#include "constants.h" 
 
 #ifdef NUOPAC_HAS_GSL 
 #include "FunctionIntegrator.hpp" 

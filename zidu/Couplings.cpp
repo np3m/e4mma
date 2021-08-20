@@ -32,7 +32,7 @@
 #include <iostream>
 
 #include "Couplings.hpp" 
-#include "Constants.hpp" 
+#include "constants.h" 
 
 using namespace nuopac;
 

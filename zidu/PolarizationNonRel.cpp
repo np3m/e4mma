@@ -32,7 +32,7 @@
 
 #include "Tensor.hpp" 
 #include "PolarizationNonRel.hpp"
-#include "Constants.hpp"
+#include "constants.h"
 #include "FunctionIntegrator.hpp"
 
 using namespace nuopac; 

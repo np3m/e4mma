@@ -35,7 +35,7 @@
 #include "jacobi_rule.hpp" 
 #include "Polarization.hpp"
 #include "Tensor.hpp" 
-#include "Constants.hpp"
+#include "constants.h"
 
 // Use unnamed namespace so these methods are only locally available
 namespace {

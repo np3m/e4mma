@@ -22,7 +22,7 @@
 #include "zidu/Tensor.hpp"
 #include "zidu/Polarization.hpp"
 #include "zidu/PolarizationNonRel.hpp"
-#include "zidu/Constants.hpp"
+#include "zidu/constants.h"
 
 #include <o2scl/root_brent_gsl.h>
 #include <o2scl/classical.h>
