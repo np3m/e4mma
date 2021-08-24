@@ -110,7 +110,6 @@ class eos_crust_virial_v2 : public o2scl::eos_crust_virial {
   /** \brief Desc
    */
   double bpn0(double T) {
-    std::cout << "I: " << bpn_f(T) << " " << bpna(T) << std::endl;
     return (bpn_f(T)-bpna(T))/2.0;
   }
   
@@ -128,26 +127,30 @@ class eos_crust_virial_v2 : public o2scl::eos_crust_virial {
 
   /** \brief Desc
 
-      The temperature should be specified in MeV.
+      The value of lambda should be in 1/MeV and the 
+      temperature should be specified in MeV.
    */
   double f0(double lambda, double T);
 
   /** \brief Desc
 
-      The temperature should be specified in MeV.
+      The value of lambda should be in 1/MeV and the 
+      temperature should be specified in MeV.
    */
   double f0p(double lambda, double T);
 
   /** \brief Desc
 
-      The temperature should be specified in MeV.
+      The value of lambda should be in 1/MeV and the 
+      temperature should be specified in MeV.
    */
   double g0(double lambda, double T);
 
   /** \brief Desc
 
-      The temperature should be specified in MeV.
-   */
+      The value of lambda should be in 1/MeV and the 
+      temperature should be specified in MeV.
+  */
   double g0p(double lambda, double T);
 
   /** \brief The neutron-neutron virial coefficient given the

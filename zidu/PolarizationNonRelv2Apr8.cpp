@@ -553,14 +553,16 @@ void PolarizationNonRel::SetPolarizations(double q0, double q,
   double piLRe=0.0;
   if (current==current_charged) {
     piLRe=GetImPI2(q0,q);
+    //std::cout << "piLRe: " << piLRe << std::endl;
   }
-  
+
   // neutral current
  
   double piLnRe=0.0, piLpRe=0.0;
   if (current==current_neutral) {
     piLnRe=GetRePIn(q0,q);
     piLpRe=GetRePIp(q0,q);
+    //std::cout << "piLnRe,piLpRe: " << piLnRe << " " << piLpRe << std::endl;
   }
   
   // PiL
@@ -595,6 +597,8 @@ void PolarizationNonRel::SetPolarizations(double q0, double q,
     //piL is 2*Im PI
     piL=2*(piL/2)/((1-vrpa*(piLRe/2))*(1-vrpa*(piLRe/2))+
                    vrpa*vrpa*(piL/2)*(piL/2));
+    //std::cout << "vf,vgt,vrpa,piL: " << xvf << " " << xvgt << " "
+    //<< vrpa << " " << piL << std::endl;
   }
 
   // complete version of neutral current n+p gas polarization
@@ -617,11 +621,7 @@ void PolarizationNonRel::SetPolarizations(double q0, double q,
     piconst=3.1415926;
     e2=1.0/137.0*4.0*piconst;
 
-    std::cout << "fixme." << std::endl;
-    exit(-1);
-    double roup=0.0;
-    
-    qtf2=4.0*e2*pow(piconst,0.333333)*pow(3.0*roup*densFac,2.0/3.0);
+    qtf2=4.0*e2*pow(piconst,0.333333)*pow(3.0*xn_proton*densFac,2.0/3.0);
     coulombf=e2*4.0*piconst/(q*q+qtf2);
     
     double xfpp2=xfpp+coulombf;

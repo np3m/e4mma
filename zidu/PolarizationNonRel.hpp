@@ -59,7 +59,7 @@ protected:
   double xx0, xx1, xx2, xx3, xepsilon;
 
   /// These should all be in units of 1/MeV^2
-  double xfnn, xfnp, xfpp, xgnn, xgnp, xgpp, xvf, xvgt;
+  double xfnn, xfnp, xfpp, xgnn, xgnp, xgpp, xvf, xvgt, xn_proton;
 
 public:
 
@@ -99,7 +99,7 @@ public:
 
   void set_residual(double fnn_, double fnp_, double fpp_,
                     double gnn_, double gnp_, double gpp_,
-                    double vf_, double vgt_) {
+                    double vf_, double vgt_, double n_proton) {
     xfnn=fnn_;
     xfnp=fnp_;
     xfpp=fpp_;
@@ -108,6 +108,7 @@ public:
     xgpp=gpp_;
     xvf=vf_;
     xvgt=vgt_;
+    xn_proton=n_proton;
     return;
   }
   
