@@ -35,6 +35,8 @@
 #include "constants.h"
 #include "FunctionIntegrator.hpp"
 
+#include <o2scl/constants.h>
+
 using namespace nuopac; 
 
 // Use unnamed namespace so these methods are only locally available
@@ -533,9 +535,31 @@ void PolarizationNonRel::SetPolarizations(double q0, double q,
                                           Tensor<double>* piVA, 
                                           Tensor<double>* piVT, 
                                           Tensor<double>* piAT) const {
+  double piL;
+  double piLn;
+  double piLp;
+  double piLRe;
+  double piLnRe;
+  double piLpRe;
+  double pirpaVec;
+  double pirpaAx;
+  SetPolarizations_detail(q0,q,piVV,piAA,piTT,piVA,piVT,piAT,piL,
+                          piLn,piLp,piLRe,piLnRe,piLpRe,piLRPA,
+                          pirpaVec,pirpaAx);
+  return; 
+}
  
+void PolarizationNonRel::SetPolarizations_detail
+(double q0, double q,
+ Tensor<double>* piVV, Tensor<double>* piAA, Tensor<double>* piTT, 
+ Tensor<double>* piVA, Tensor<double>* piVT, Tensor<double>* piAT,
+ double &piL, double &piLn, double &piLp, double &piLRe,
+ double &piLnRe, double &piLpRe, double &pirpaVec, double &pirpaAx) const {
+
   // Calculate the basic parts of the polarization
-  double piL=0.0, piLn=0.0, piLp=0.0;
+  piL=0.0;
+  piLn=0.0;
+  piLp=0.0;
   if (current==current_charged) {
     std::array<double, 4> pt=CalculateBasePolarizations(q0,q);
     piL=pt[1];
@@ -550,7 +574,7 @@ void PolarizationNonRel::SetPolarizations(double q0, double q,
   
   // charged current
   
-  double piLRe=0.0;
+  piLRe=0.0;
   if (current==current_charged) {
     piLRe=GetImPI2(q0,q);
     //std::cout << "piLRe: " << piLRe << std::endl;
@@ -558,7 +582,8 @@ void PolarizationNonRel::SetPolarizations(double q0, double q,
 
   // neutral current
  
-  double piLnRe=0.0, piLpRe=0.0;
+  piLnRe=0.0;
+  piLpRe=0.0;
   if (current==current_neutral) {
     piLnRe=GetRePIn(q0,q);
     piLpRe=GetRePIp(q0,q);
@@ -616,48 +641,47 @@ void PolarizationNonRel::SetPolarizations(double q0, double q,
     
     // adding coulomb force in fpp only for NC vector part
     double e2,qtf2;
-    double piconst;
     double coulombf;
-    piconst=3.1415926;
-    e2=1.0/137.0*4.0*piconst;
+    e2=1.0/137.0*4.0*o2scl_const::pi;
 
-    qtf2=4.0*e2*pow(piconst,0.333333)*pow(3.0*xn_proton*densFac,2.0/3.0);
-    coulombf=e2*4.0*piconst/(q*q+qtf2);
+    qtf2=4.0*e2*cbrt(o2scl_const::pi)*
+      pow(3.0*xn_proton*densFac,2.0/3.0);
+    coulombf=e2*4.0*o2scl_const::pi/(q*q+qtf2);
     
-    double xfpp2=xfpp+coulombf;
+    double xfppCoul=xfpp+coulombf;
     
     pirpaVec=(impin+
               xfnp*xfnp*impin*impin*impip+
-              xfpp2*xfpp2*impin*impip*impip+
+              xfppCoul*xfppCoul*impin*impip*impip+
               xfnp*xfnp*impip*repin*repin-
-              2.0*xfpp2*impin*repip+
-              xfpp2*xfpp2*impin*repip*repip)/
+              2.0*xfppCoul*impin*repip+
+              xfppCoul*xfppCoul*impin*repip*repip)/
       ((-xfnn*impin-
-        xfpp2*impip-
+        xfppCoul*impip-
         xfnp*xfnp*impip*repin+
-        xfnn*xfpp2*impip*repin-
+        xfnn*xfppCoul*impip*repin-
         xfnp*xfnp*impin*repip+
-        xfnn*xfpp2*impin*repip)*
+        xfnn*xfppCoul*impin*repip)*
        (-xfnn*impin-
-        xfpp2*impip-
+        xfppCoul*impip-
         xfnp*xfnp*impip*repin+
-        xfnn*xfpp2*impip*repin-
+        xfnn*xfppCoul*impip*repin-
         xfnp*xfnp*impin*repip+
-        xfnn*xfpp2*impin*repip)+
+        xfnn*xfppCoul*impin*repip)+
        (1+
         xfnp*xfnp*impin*impip-
-        xfnn*xfpp2*impin*impip-
+        xfnn*xfppCoul*impin*impip-
         xfnn*repin-
-        xfpp2*repip-
+        xfppCoul*repip-
         xfnp*xfnp*repin*repip+
-        xfnn*xfpp2*repin*repip)*
+        xfnn*xfppCoul*repin*repip)*
        (1+
         xfnp*xfnp*impin*impip-
-        xfnn*xfpp2*impin*impip-
+        xfnn*xfppCoul*impin*impip-
         xfnn*repin-
-        xfpp2*repip-
+        xfppCoul*repip-
         xfnp*xfnp*repin*repip+
-        xfnn*xfpp2*repin*repip));
+        xfnn*xfppCoul*repin*repip));
 
     // Axial polarization complete version
     pirpaAx=((xgnn+xgnp)*(xgnn+xgnp)*impin*impin*impip+impip*

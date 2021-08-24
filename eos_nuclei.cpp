@@ -8342,6 +8342,9 @@ int eos_nuclei::mcarlo_nuclei2(std::vector<std::string> &sv,
 int eos_nuclei::test_neutrino(std::vector<std::string> &sv, 
                               bool itive_com) {
 
+  test_mgr t;
+  t.set_output_level(2);
+  
   // Test by using the NRAPR EOS at T=10 MeV
   double T=10.0/hc_mev_fm;
   
@@ -8582,10 +8585,12 @@ int eos_nuclei::test_neutrino(std::vector<std::string> &sv,
   pol_cc.flag=Polarization::flag_vector;
   double cc_vec_mfp=pol_cc.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
   cout << "charged current, vector part: " << cc_vec_mfp << endl;
+  t.test_rel(cc_vec_mfp,4.866481e-5,1.0e-6,"cc_vec_mfp");
   
   pol_cc.flag=Polarization::flag_axial;
   double cc_axvec_mfp=pol_cc.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
   cout << "charged current, axial part: " << cc_axvec_mfp << endl;
+  t.test_rel(cc_axvec_mfp,5.441516e-4,1.0e-6,"cc_axvec_mfp");
 
   // -----------------------------------------------------------------
   // Neutral current mean free path
@@ -8593,13 +8598,13 @@ int eos_nuclei::test_neutrino(std::vector<std::string> &sv,
   pol_nc.flag=Polarization::flag_vector;
   double nc_vec_mfp=pol_nc.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
   cout << "neutral current, vector part: " << nc_vec_mfp << endl;
+  t.test_rel(nc_vec_mfp,2.286836e-5,1.0e-6,"nc_vec_mfp");
   
   pol_nc.flag=Polarization::flag_axial;
   double nc_axvec_mfp=pol_nc.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
   cout << "neutral current, axial part: " << nc_axvec_mfp << endl;
+  t.test_rel(nc_axvec_mfp,1.271258e-4,1.0e-6,"nc_axvec_mfp");
 
-  exit(-1);
-  
   // -----------------------------------------------------------------
   // neutral current dynamic response
 
@@ -8625,34 +8630,14 @@ int eos_nuclei::test_neutrino(std::vector<std::string> &sv,
     for (int k=1;k<100;k++) {
     
       double w=wmin+dw*k;
-      
-      // double w=30.0;
-      // piL=pol.GetImPI(w,3*T_MeV);//piL is 2*ImPI0
-      // piLRe=pol.GetImPI2(w, 3*T_MeV);//piLRe is 2*RePI0
-    
-      // New version
-      
-      // neutral current
-      std::array<double, 4> ptN=pol_nc.CalculateBasePolarizationsNeutron
-        (w,3*T_MeV);
-      
-      // neutral current
-      std::array<double, 4> ptP= pol_nc.CalculateBasePolarizationsProton
-        (w,3*T_MeV);
-    
-      double piLn=ptN[1];
-      double piLp=ptP[1];
-    
-      // PiLRe           
-      
-      double piLnRe=pol_nc.GetRePIn(w,3*T_MeV);
-      double piLpRe=pol_nc.GetRePIp(w,3*T_MeV);   
-    
-      static const double densFac=pow(hc_mev_fm,3.0);
-      double rou=(betaEoS.n2+betaEoS.n4)/densFac;
 
-      double piLRPA;
-      double piLRPAvec;
+      Tensor<double> piVV, piAA, piTT, piVA, piVT, piAT;
+      double piL, piLn, piLp, piLRe, piLnRe, piLpRe, piLRPA, piLRPAvec;
+      
+      pol_nc.SetPolarizations_detail(piVV,piAA,piTT,piVA,piVT,piAT,
+                                     piL,piLn,piLp,piLRe,piLnRe,piLpRe,
+                                     piLRPA,piLRPAvec);
+                                     
       double response;
       double FermiF;
       double zz;
@@ -8670,50 +8655,6 @@ int eos_nuclei::test_neutrino(std::vector<std::string> &sv,
       repin=piLnRe/2.0;
       repip=piLpRe/2.0;
       
-      // vector polarization complete version
-      // adding coulomb force in fpp only for NC vector part
-      
-      double e2, qtf2;
-      double coulombf;
-      e2=1.0/137.0*4.0*pi;
-      qtf2=4.0*e2*cbrt(pi)*pow(3.0*rou*densFac,2.0/3.0);
-      coulombf=e2*4.0*pi/((3.0*T_MeV)*(3.0*T_MeV)+qtf2);
-      
-      fpp=fpp+coulombf;
-    
-      pirpaVec=(impin+
-                fnp*fnp*impin*impin*impip+
-                fpp*fpp*impin*impip*impip+
-                fnp*fnp*impip*repin*repin-
-                2.0*fpp*impin*repip+
-                fpp*fpp*impin*repip*repip)/
-        ((-fnn*impin-
-          fpp*impip-
-          fnp*fnp*impip*repin+
-          fnn*fpp*impip*repin-
-          fnp*fnp*impin*repip+
-          fnn*fpp*impin*repip)*
-         (-fnn*impin-
-          fpp*impip-
-          fnp*fnp*impip*repin+
-          fnn*fpp*impip*repin-
-          fnp*fnp*impin*repip+
-          fnn*fpp*impin*repip)+
-         (1+
-          fnp*fnp*impin*impip-
-          fnn*fpp*impin*impip-
-          fnn*repin-
-          fpp*repip-
-          fnp*fnp*repin*repip+
-          fnn*fpp*repin*repip)*
-         (1+
-          fnp*fnp*impin*impip-
-          fnn*fpp*impin*impip-
-          fnn*repin-
-          fpp*repip-
-          fnp*fnp*repin*repip+
-          fnn*fpp*repin*repip));
-
       // Axial polarization complete version
       pirpaAx=((gnn+gnp)*(gnn+gnp)*impin*impin*impip+impip*
                (-1.0+gnn*repin+gnp*repin)*
