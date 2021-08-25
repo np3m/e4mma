@@ -8605,6 +8605,8 @@ int eos_nuclei::test_neutrino(std::vector<std::string> &sv,
   cout << "neutral current, axial part: " << nc_axvec_mfp << endl;
   t.test_rel(nc_axvec_mfp,1.271258e-4,1.0e-6,"nc_axvec_mfp");
 
+  cout << endl;
+  
   // -----------------------------------------------------------------
   // neutral current dynamic response
 
@@ -8626,86 +8628,47 @@ int eos_nuclei::test_neutrino(std::vector<std::string> &sv,
 
     fout << "n2 fnn fpp gnn gpp w piLn piLp piLnRe piLpRe piLRPA "
          << "piLRPAvec FermiF" << endl;
-  
+
+    cout << "Neutral current response: " << endl;
+    cout << "n2 fnn fpp gnn gpp w piLn piLp piLnRe piLpRe "
+         << "piRPAvec piRPAax FermiF " << endl;
+    
     for (int k=1;k<100;k++) {
     
       double w=wmin+dw*k;
 
       Tensor<double> piVV, piAA, piTT, piVA, piVT, piAT;
-      double piL, piLn, piLp, piLRe, piLnRe, piLpRe, piLRPA, piLRPAvec;
+      double piL, piLn, piLp, piLnRe, piLpRe, piRPAax, piRPAvec;
       
-      pol_nc.SetPolarizations_detail(piVV,piAA,piTT,piVA,piVT,piAT,
-                                     piL,piLn,piLp,piLRe,piLnRe,piLpRe,
-                                     piLRPA,piLRPAvec);
+      pol_nc.SetPolarizations_neutral(w,3*T_MeV,
+                                      &piVV,&piAA,&piTT,&piVA,&piVT,&piAT,
+                                      piLn,piLp,piLnRe,piLpRe,
+                                      piRPAvec,piRPAax,piL);
                                      
-      double response;
-      double FermiF;
-      double zz;
-
       //neutral current
-      zz=(w+0.0)/T_MeV;
-      FermiF=1/(1-exp(-zz));
+      double zz=(w+0.0)/T_MeV;
+      double FermiF=1/(1-exp(-zz));
       
-      // complete version of neutral current n+p gas polarization
-      // functions
-      double impin, impip, repin, repip;
-      double pirpaVec, pirpaAx;
-      impin=piLn/2.0;
-      impip=piLp/2.0;
-      repin=piLnRe/2.0;
-      repip=piLpRe/2.0;
+      piRPAax=2.0*piRPAax*FermiF;
+      piRPAvec=2.0*piRPAvec*FermiF;
       
-      // Axial polarization complete version
-      pirpaAx=((gnn+gnp)*(gnn+gnp)*impin*impin*impip+impip*
-               (-1.0+gnn*repin+gnp*repin)*
-               (-1.0+gnn*repin+gnp*repin)+impin*
-               (1.0-2.0*gnp*repip-
-                2.0*gpp*repip+gnp*gnp*(impip*impip+repip*repip)+
-                2.0*gnp*gpp*(impip*impip+repip*repip)+
-                gpp*gpp*(impip*impip+repip*repip)))/
-        ((-gnn*impin-gpp*impip-gnp*gnp*impip*repin+
-          gnn*gpp*impip*repin-gnp*gnp*impin*repip+
-          gnn*gpp*impin*repip)*
-         (-gnn*impin-gpp*impip-gnp*gnp*impip*repin+
-          gnn*gpp*impip*repin-gnp*gnp*impin*repip+
-          gnn*gpp*impin*repip)+
-         (1.0+gnp*gnp*impin*impip-gnn*gpp*impin*impip-
-          gnn*repin-gpp*repip-gnp*gnp*repin*repip+
-          gnn*gpp*repin*repip)*
-         (1.0+gnp*gnp*impin*impip-gnn*gpp*impin*impip-
-          gnn*repin-gpp*repip-gnp*gnp*repin*repip+
-          gnn*gpp*repin*repip));
-    
-      piLRPA=2.0*pirpaAx*FermiF;
-      piLRPAvec=2.0*pirpaVec*FermiF;
-      
-      cout << "neutral current density: " << betaEoS.n2/densFac
-           << " fnn: " <<fnn << " fpp: " << fpp << " gnn: " << gnn
-           << " gpp: " << gpp << " w " << w
-           << " piLn(w) " << piLn << " piLp(w) " << piLp
-           << " piLRen(w) " << piLnRe << " piLRep(w) " << piLpRe
-           << " piLRPA " << piLRPA << " piLRPAvector " << piLRPAvec
-           << " FermiF: " << FermiF << std::endl;
-      fout << betaEoS.n2/densFac << " "
-           << fnn << " "
-           << fpp << " "
-           << gnn << " "
-           << gpp << " "
-           << w << " "
-           << piLn << " "
-           << piLp << " "
-           << piLnRe << " "
-           << piLpRe << " "
-           << piLRPA << " "
-           << piLRPAvec << " "
-           << FermiF 
-           << std::endl;
+      cout << betaEoS.n2/pow(o2scl_const::hc_mev_fm,3) << " "
+           << fnn << " " << fpp << " " << gnn << " " << gpp << " "
+           << w << " " << piLn << " " << piLp << " "
+           << piLnRe << " " << piLpRe << " " << piRPAvec << " "
+           << piRPAax << " " << FermiF << endl;
+      fout << betaEoS.n2/pow(o2scl_const::hc_mev_fm,3)  << " "
+           << fnn << " " << fpp << " " << gnn << " " << gpp << " "
+           << w << " " << piLn << " " << piLp << " "
+           << piLnRe << " " << piLpRe << " " << piRPAvec << " "
+           << piRPAax << " " << FermiF << endl;
     
     }
 
     fout.close();
 
   }
+  cout << endl;
 
   // -----------------------------------------------------------------
   // charged current dynamic response
@@ -8724,53 +8687,37 @@ int eos_nuclei::test_neutrino(std::vector<std::string> &sv,
     double dw=(wmax-wmin)/100;
 
     ofstream fout("nt_cc_dr.out");
-    fout << "n2 vgt vf w piL piLRe piLRPA piLRPAVec FermiF" << endl;
+    fout << "n2 vgt vf w piLRe FermiF" << endl;
+    cout << "Charged current response" << endl;
+    cout << "n2 vgt vf w piLRe FermiF" << endl;
     
     for (int k=1;k<100;k++) {
       
       double w=wmin+dw*k;
-      std::array<double, 4> pt=pol_cc.CalculateBasePolarizations
-        (w,10*T_MeV);
+      Tensor<double> piVV, piAA, piTT, piVA, piVT, piAT;
+      double piL, piLRe;
       
-      double piL=pt[1];
+      pol_nc.SetPolarizations_charged(w,10*T_MeV,
+                                      &piVV,&piAA,&piTT,&piVA,&piVT,&piAT,
+                                      piLRe,piL);
       
-      // PiLRe
-      double piLRe=pol_cc.GetImPI2(w,10*T_MeV);
+      double zz=(w+betaEoS.Mu2-betaEoS.Mu4)/T_MeV;
+      double FermiF=1/(1-exp(-zz));
       
-      double vrpa=vgt/pow(hc_mev_fm,3);//change unit to MeV-2
-      double vrpaVec=vf/pow(hc_mev_fm,3);//change unit to MeV-2 
-      
-      double piLRPA;
-      
-      double FermiF;
-      double zz;
-      zz=(w+betaEoS.Mu2-betaEoS.Mu4)/T_MeV;
-      FermiF=1/(1-exp(-zz));
-      
-      //piLRPA is s(q0,q)
-      piLRPA=2*(piL/2)/((1-vrpa*(piLRe/2))*(1-vrpa*(piLRe/2))+
-                        vrpa*vrpa*(piL/2)*(piL/2))*FermiF;
-      
-      double piLRPAVec=2*(piL/2)/((1-vrpaVec*(piLRe/2))*
-                                  (1-vrpaVec*(piLRe/2))+
-                                  vrpaVec*vrpaVec*(piL/2)*(piL/2))*FermiF;
-      
-      cout << "charged current density: " << betaEoS.n2
-           << " vgt: " << vgt << " vf: " << vf
-           << " w " << w << " piL(w) " << piL
-           << " piLRe(w) " << piLRe << " piLRPA "
-           << piLRPA << " piLRPA vector " << piLRPAVec
-           << " FermiF " << FermiF << std::endl;
-      fout << betaEoS.n2 << " "
+      fout << betaEoS.n2/pow(o2scl_const::hc_mev_fm,3)  << " "
            << vgt << " "
            << vf << " "
            << w << " "
-           << piL << " "
            << piLRe << " "
-           << piLRPA << " "
-           << piLRPAVec << " "
            << FermiF << " "
-           << std::endl;
+           << endl;
+      cout << betaEoS.n2/pow(o2scl_const::hc_mev_fm,3)  << " "
+           << vgt << " "
+           << vf << " "
+           << w << " "
+           << piLRe << " "
+           << FermiF << " "
+           << endl;
     }
     fout.close();
   }

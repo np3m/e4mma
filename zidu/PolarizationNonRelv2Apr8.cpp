@@ -535,80 +535,140 @@ void PolarizationNonRel::SetPolarizations(double q0, double q,
                                           Tensor<double>* piVA, 
                                           Tensor<double>* piVT, 
                                           Tensor<double>* piAT) const {
-  double piL;
-  double piLn;
-  double piLp;
-  double piLRe;
-  double piLnRe;
-  double piLpRe;
-  double pirpaVec;
-  double pirpaAx;
-  SetPolarizations_detail(q0,q,piVV,piAA,piTT,piVA,piVT,piAT,piL,
-                          piLn,piLp,piLRe,piLnRe,piLpRe,piLRPA,
-                          pirpaVec,pirpaAx);
+  if (current==current_neutral) {
+    double piLn;
+    double piLp;
+    double piLnRe;
+    double piLpRe;
+    double piRPAvec;
+    double piRPAax;
+    double piL;
+    SetPolarizations_neutral(q0,q,piVV,piAA,piTT,piVA,piVT,piAT,
+                             piLn,piLp,piLnRe,piLpRe,
+                             piRPAvec,piRPAax,piL);
+  } else {
+    double piLRe;
+    double piL;
+    SetPolarizations_charged(q0,q,piVV,piAA,piTT,piVA,piVT,piAT,
+                             piLRe,piL);
+  }
+  
   return; 
 }
  
-void PolarizationNonRel::SetPolarizations_detail
+void PolarizationNonRel::SetPolarizations_neutral
 (double q0, double q,
  Tensor<double>* piVV, Tensor<double>* piAA, Tensor<double>* piTT, 
  Tensor<double>* piVA, Tensor<double>* piVT, Tensor<double>* piAT,
- double &piL, double &piLn, double &piLp, double &piLRe,
- double &piLnRe, double &piLpRe, double &pirpaVec, double &pirpaAx) const {
+ double &piLn, double &piLp, double &piLnRe, double &piLpRe,
+ double &piRPAvec, double &piRPAax, double &piL) const {
 
   // Calculate the basic parts of the polarization
-  piL=0.0;
-  piLn=0.0;
-  piLp=0.0;
-  if (current==current_charged) {
-    std::array<double, 4> pt=CalculateBasePolarizations(q0,q);
-    piL=pt[1];
+  std::array<double,4> ptN=CalculateBasePolarizationsNeutron(q0,q);
+  std::array<double,4> ptP=CalculateBasePolarizationsProton(q0,q);
+  
+  piLn=ptN[1];
+  piLp=ptP[1];
+  
+  piLnRe=GetRePIn(q0,q);
+  piLpRe=GetRePIp(q0,q);
+  
+  double impin, impip, repin, repip;
+  double pirpaVec, pirpaAx;
+  
+  impin=piLn/2.0;
+  impip=piLp/2.0;
+  repin=piLnRe/2.0;
+  repip=piLpRe/2.0;
+  
+  // Coulomb correction for fpp
+  double e2=1.0/137.0*4.0*o2scl_const::pi;
+  double qtf2=4.0*e2*cbrt(o2scl_const::pi)*
+    pow(3.0*xn_proton*pow(o2scl_const::hc_mev_fm,3),2.0/3.0);
+  double coulombf=e2*4.0*o2scl_const::pi/(q*q+qtf2);
+
+  double xfppCoul=xfpp+coulombf;
+  
+  // Vector polarization
+  piRPAvec=(impin+
+            xfnp*xfnp*impin*impin*impip+
+            xfppCoul*xfppCoul*impin*impip*impip+
+            xfnp*xfnp*impip*repin*repin-
+            2.0*xfppCoul*impin*repip+
+            xfppCoul*xfppCoul*impin*repip*repip)/
+    ((-xfnn*impin-
+      xfppCoul*impip-
+      xfnp*xfnp*impip*repin+
+      xfnn*xfppCoul*impip*repin-
+      xfnp*xfnp*impin*repip+
+      xfnn*xfppCoul*impin*repip)*
+     (-xfnn*impin-
+      xfppCoul*impip-
+      xfnp*xfnp*impip*repin+
+      xfnn*xfppCoul*impip*repin-
+      xfnp*xfnp*impin*repip+
+      xfnn*xfppCoul*impin*repip)+
+     (1+
+      xfnp*xfnp*impin*impip-
+      xfnn*xfppCoul*impin*impip-
+      xfnn*repin-
+      xfppCoul*repip-
+      xfnp*xfnp*repin*repip+
+      xfnn*xfppCoul*repin*repip)*
+     (1+
+      xfnp*xfnp*impin*impip-
+      xfnn*xfppCoul*impin*impip-
+      xfnn*repin-
+      xfppCoul*repip-
+      xfnp*xfnp*repin*repip+
+      xfnn*xfppCoul*repin*repip));
+  
+  // Axial polarization
+  piRPAax=((xgnn+xgnp)*(xgnn+xgnp)*impin*impin*impip+impip*
+           (-1.0+xgnn*repin+xgnp*repin)*
+           (-1.0+xgnn*repin+xgnp*repin)+impin*
+           (1.0-2.0*xgnp*repip-
+            2.0*xgpp*repip+xgnp*xgnp*(impip*impip+repip*repip)+
+            2.0*xgnp*xgpp*(impip*impip+repip*repip)+
+            xgpp*xgpp*(impip*impip+repip*repip)))/
+    ((-xgnn*impin-xgpp*impip-xgnp*xgnp*impip*repin+
+      xgnn*xgpp*impip*repin-xgnp*xgnp*impin*repip+
+      xgnn*xgpp*impin*repip)*
+     (-xgnn*impin-xgpp*impip-xgnp*xgnp*impip*repin+
+      xgnn*xgpp*impip*repin-xgnp*xgnp*impin*repip+
+      xgnn*xgpp*impin*repip)+
+     (1.0+xgnp*xgnp*impin*impip-xgnn*xgpp*impin*impip-
+      xgnn*repin-xgpp*repip-xgnp*xgnp*repin*repip+
+      xgnn*xgpp*repin*repip)*
+     (1.0+xgnp*xgnp*impin*impip-xgnn*xgpp*impin*impip-
+      xgnn*repin-xgpp*repip-xgnp*xgnp*repin*repip+
+      xgnn*xgpp*repin*repip));
+
+  if (flag==flag_vector) {
+    piL=2.0*piRPAvec;
   } else {
-    std::array<double, 4> ptN=CalculateBasePolarizationsNeutron(q0,q);
-    std::array<double, 4> ptP=CalculateBasePolarizationsProton(q0,q); 
-    piLn=ptN[1];
-    piLp=ptP[1];
-  }
-  
-  // PiLRe
-  
-  // charged current
-  
-  piLRe=0.0;
-  if (current==current_charged) {
-    piLRe=GetImPI2(q0,q);
-    //std::cout << "piLRe: " << piLRe << std::endl;
+    piL=2.0*piRPAax;
   }
 
-  // neutral current
- 
-  piLnRe=0.0;
-  piLpRe=0.0;
-  if (current==current_neutral) {
-    piLnRe=GetRePIn(q0,q);
-    piLpRe=GetRePIp(q0,q);
-    //std::cout << "piLnRe,piLpRe: " << piLnRe << " " << piLpRe << std::endl;
-  }
+  // Set the different parts of the polarization 
+  piVV->L=piL; 
+  piAA->Tp=0.5*piL; 
+
+  return;
+}
+
+void PolarizationNonRel::SetPolarizations_charged
+(double q0, double q,
+ Tensor<double>* piVV, Tensor<double>* piAA, Tensor<double>* piTT, 
+ Tensor<double>* piVA, Tensor<double>* piVT, Tensor<double>* piAT,
+ double &piLRe, double &piL) const {
+
+  // Calculate the basic parts of the polarization
+  std::array<double, 4> pt=CalculateBasePolarizations(q0,q);
+  piL=pt[1];
   
-  // PiL
-  double piQ=0.0;  
-  double piM=0.0; 
-  double piT=0.0;
+  piLRe=GetImPI2(q0,q);
 
-  double densFac = pow(Constants::HBCFmMeV,3);
-
-  /*
-    double rou=(st.n2+st.n4)/densFac;
-    double roun=st.n2/densFac;
-    double roup=st.n4/densFac;
-  */
-
-  /*
-    double kf=pow(0.5*rou*3*3.14159*3.14159,1.0/3.0);
-    double kfn=pow(roun*3*3.14159*3.14159,1.0/3.0);
-    double kfp=pow(roup*3*3.14159*3.14159,1.0/3.0);
-  */
-  
   double vrpa;
   if (flag==flag_axial) {
     vrpa=xvgt;
@@ -616,106 +676,15 @@ void PolarizationNonRel::SetPolarizations_detail
     vrpa=xvf;
   }
 
-  // charged current piL
-
-  if (current==current_charged) {
-    //piL is 2*Im PI
-    piL=2*(piL/2)/((1-vrpa*(piLRe/2))*(1-vrpa*(piLRe/2))+
-                   vrpa*vrpa*(piL/2)*(piL/2));
-    //std::cout << "vf,vgt,vrpa,piL: " << xvf << " " << xvgt << " "
-    //<< vrpa << " " << piL << std::endl;
-  }
-
-  // complete version of neutral current n+p gas polarization
-  // functions
-  
-  if (current==current_neutral) {
-    double impin,impip,repin,repip;
-    double pirpaVec,pirpaAx;
-    impin=piLn/2.0;
-    impip=piLp/2.0;
-    repin=piLnRe/2.0;
-    repip=piLpRe/2.0;
-    
-    //vector polarization complete version
-    
-    // adding coulomb force in fpp only for NC vector part
-    double e2,qtf2;
-    double coulombf;
-    e2=1.0/137.0*4.0*o2scl_const::pi;
-
-    qtf2=4.0*e2*cbrt(o2scl_const::pi)*
-      pow(3.0*xn_proton*densFac,2.0/3.0);
-    coulombf=e2*4.0*o2scl_const::pi/(q*q+qtf2);
-    
-    double xfppCoul=xfpp+coulombf;
-    
-    pirpaVec=(impin+
-              xfnp*xfnp*impin*impin*impip+
-              xfppCoul*xfppCoul*impin*impip*impip+
-              xfnp*xfnp*impip*repin*repin-
-              2.0*xfppCoul*impin*repip+
-              xfppCoul*xfppCoul*impin*repip*repip)/
-      ((-xfnn*impin-
-        xfppCoul*impip-
-        xfnp*xfnp*impip*repin+
-        xfnn*xfppCoul*impip*repin-
-        xfnp*xfnp*impin*repip+
-        xfnn*xfppCoul*impin*repip)*
-       (-xfnn*impin-
-        xfppCoul*impip-
-        xfnp*xfnp*impip*repin+
-        xfnn*xfppCoul*impip*repin-
-        xfnp*xfnp*impin*repip+
-        xfnn*xfppCoul*impin*repip)+
-       (1+
-        xfnp*xfnp*impin*impip-
-        xfnn*xfppCoul*impin*impip-
-        xfnn*repin-
-        xfppCoul*repip-
-        xfnp*xfnp*repin*repip+
-        xfnn*xfppCoul*repin*repip)*
-       (1+
-        xfnp*xfnp*impin*impip-
-        xfnn*xfppCoul*impin*impip-
-        xfnn*repin-
-        xfppCoul*repip-
-        xfnp*xfnp*repin*repip+
-        xfnn*xfppCoul*repin*repip));
-
-    // Axial polarization complete version
-    pirpaAx=((xgnn+xgnp)*(xgnn+xgnp)*impin*impin*impip+impip*
-             (-1.0+xgnn*repin+xgnp*repin)*
-             (-1.0+xgnn*repin+xgnp*repin)+impin*
-             (1.0-2.0*xgnp*repip-
-              2.0*xgpp*repip+xgnp*xgnp*(impip*impip+repip*repip)+
-              2.0*xgnp*xgpp*(impip*impip+repip*repip)+
-              xgpp*xgpp*(impip*impip+repip*repip)))/
-      ((-xgnn*impin-xgpp*impip-xgnp*xgnp*impip*repin+
-        xgnn*xgpp*impip*repin-xgnp*xgnp*impin*repip+
-        xgnn*xgpp*impin*repip)*
-       (-xgnn*impin-xgpp*impip-xgnp*xgnp*impip*repin+
-        xgnn*xgpp*impip*repin-xgnp*xgnp*impin*repip+
-        xgnn*xgpp*impin*repip)+
-       (1.0+xgnp*xgnp*impin*impip-xgnn*xgpp*impin*impip-
-        xgnn*repin-xgpp*repip-xgnp*xgnp*repin*repip+
-        xgnn*xgpp*repin*repip)*
-       (1.0+xgnp*xgnp*impin*impip-xgnn*xgpp*impin*impip-
-        xgnn*repin-xgpp*repip-xgnp*xgnp*repin*repip+
-        xgnn*xgpp*repin*repip));
-
-    if (flag==flag_vector) {
-      piL=2.0*pirpaVec;
-    } else {
-      piL=2.0*pirpaAx;
-    }
-  }
-
+  //piL is 2*Im PI
+  piL=2*(piL/2)/((1-vrpa*(piLRe/2))*(1-vrpa*(piLRe/2))+
+                 vrpa*vrpa*(piL/2)*(piL/2));
 
   // Set the different parts of the polarization 
   piVV->L=piL; 
-  piAA->Tp=0.5*piL; 
+  piAA->Tp=0.5*piL;
 
+  return;
 }
 
 void PolarizationNonRel::SetLeptonTensor(double E1, double q0, double q,

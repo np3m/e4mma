@@ -118,15 +118,23 @@ namespace nuopac {
     (double q0, double q, Tensor<double>* piVV, 
      Tensor<double>* piAA, Tensor<double>* piTT, Tensor<double>* piVA, 
      Tensor<double>* piVT, Tensor<double>* piAT) const;
+    
+  public:
+    
+    void SetPolarizations_neutral
+    (double q0, double q,
+     Tensor<double>* piVV, Tensor<double>* piAA, Tensor<double>* piTT, 
+     Tensor<double>* piVA, Tensor<double>* piVT, Tensor<double>* piAT,
+     double &piLn, double &piLp, double &piLnRe, double &piLpRe,
+     double &piRPAvec, double &piRPAax, double &piL) const;
 
-    void SetPolarizations_detail
-    (double q0, double q, Tensor<double>* piVV, 
-     Tensor<double>* piAA, Tensor<double>* piTT, Tensor<double>* piVA, 
-     Tensor<double>* piVT, Tensor<double>* piAT, double &piL,
-     double &piLn, double &piLp, double &piLRe,
-     double &piLnRe, double &piLpRe, double &pirpaVec,
-     double &pirpaAx) const;
-  
+    void SetPolarizations_charged
+    (double q0, double q,
+     Tensor<double>* piVV, Tensor<double>* piAA, Tensor<double>* piTT, 
+     Tensor<double>* piVA, Tensor<double>* piVT, Tensor<double>* piAT,
+     double &piLRe, double &piL) const;
+
+    
     void SetLeptonTensor(double E1, double q0, double q,
                          Tensor<double>* L) const;
   
