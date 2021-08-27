@@ -81,17 +81,22 @@ public:
 
 /** \brief Solve for the EOS including nuclei
 
-    \todo Rename n_nB2 to n_nB, etc.
-    \todo Make child of eos_sn_base
-    \todo Use \c loaded instead of testing n_nB2==0
-    \todo Move select_high_T to the parent
+    \verbatim embed:rst
 
-    \future Allow different form for the NS fit
+    .. todo::
 
-    \future Allow user to specify where data files are
-    located or to manually specify the nuclear model?
+       Class eos_nuclei:
 
-    \future Allow RMF rather than just Skyrme.
+       - Rename n_nB2 to n_nB, etc.
+       - Make child of eos_sn_base
+       - Use \c loaded instead of testing n_nB2==0
+       - Move select_high_T to the parent
+       - Future: Allow different form for the NS fit
+       - Future: Allow user to specify where data files are
+         located or to manually specify the nuclear model?
+       - Future: Allow RMF rather than just Skyrme.
+
+    \endverbatim
 */
 class eos_nuclei : public eos {
 

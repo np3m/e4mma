@@ -28,7 +28,8 @@ More documentation will be added as time permits.
    download	      
    table_format
    eos_nuclei
-   class_doc	      
+   class_doc
+   todos
 
 * :ref:`genindex`
 * :ref:`modindex`

@@ -192,6 +192,9 @@ doc: empty
 	cd doc; doxygen doxyfile
 	cd doc; make html
 
+open-doc:
+	open doc/build/html/index.html
+
 sync-doc:
 	rsync -Cavzu doc/build/html/* $(STATIC_DOC_DIR)/eos
 
@@ -241,3 +244,8 @@ mbt2:
 
 nt:
 	./enn -test-neutrino
+
+nt2:
+	./enn -test-neutrino > tn_new.out
+	 head -n 170 tn.out | tail -n 10
+	 head -n 40 tn_new.out | tail -n 12

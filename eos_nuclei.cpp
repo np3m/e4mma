@@ -8353,9 +8353,12 @@ int eos_nuclei::test_neutrino(std::vector<std::string> &sv,
   proton.n=9.622062e-03;
   thermo thxx;
   sk.calc_temp_e(neutron,proton,10.0/hc_mev_fm,thxx);
-  // Make sure to compute kf
+  
+  // Make sure to compute kf, which is not always computed at
+  // finite temperature
   sk.def_fet.kf_from_density(neutron);
   sk.def_fet.kf_from_density(proton);
+  
   electron.n=proton.n;
   fermion_rel fr;
   fr.calc_density(electron,10.0/hc_mev_fm);
@@ -8528,12 +8531,16 @@ int eos_nuclei::test_neutrino(std::vector<std::string> &sv,
   // These are in units of fm^2
   double w1nnVec=sk.t0*(1.0-sk.x0)+
     1.0/6.0*sk.t3*pow((neutron.n+proton.n),sk.alpha)*(1.0-sk.x3)+
+    2.0/3.0*sk.alpha*sk.t3*pow((neutron.n+proton.n),sk.alpha-1.0)*
+    ((1.0+sk.x3/2.0)*(neutron.n+proton.n)-(1.0/2.0+sk.x3)*neutron.n)+
     1.0/6.0*sk.alpha*(sk.alpha-1.0)*
     sk.t3*pow((neutron.n+proton.n),sk.alpha-2.0)*
     ((1+sk.x3/2.0)*pow((neutron.n+proton.n),2.0)-(0.5+sk.x3)*
      (neutron.n*neutron.n+proton.n*proton.n));
+
   double w1npVec=sk.t0*(2.0+sk.x0)+
     1.0/6.0*sk.t3*pow((neutron.n+proton.n),sk.alpha)*(2.0+sk.x3)+
+    1.0/2.0*sk.alpha*sk.t3*pow((neutron.n+proton.n),sk.alpha)+
     1.0/6.0*sk.alpha*(sk.alpha-1.0)*
     sk.t3*pow((neutron.n+proton.n),sk.alpha-2.0)*
     ((1+sk.x3/2.0)*pow((neutron.n+proton.n),2.0)-(0.5+sk.x3)*
@@ -8562,6 +8569,10 @@ int eos_nuclei::test_neutrino(std::vector<std::string> &sv,
   
   double vf_sk=0.5*(w1nnVec-w1npVec)+(w2nnVec-w2npVec)*neutron.kf*neutron.kf;
   double vgt_sk=0.5*(w1nnAx-w1npAx)+(w2nnAx-w2npAx)*neutron.kf*neutron.kf;
+  //cout << w1nnVec*hc_mev_fm << " " << w1npVec*hc_mev_fm << " "
+  //<< w2nnVec*hc_mev_fm << " " << w2npVec*hc_mev_fm << endl;
+  //cout << "Here: " << vf_sk*hc_mev_fm << endl;
+  //exit(-1);
   
   // Convert these to 1/MeV^2 by dividing by (hbar*c)^2
   vf_sk/=pow(hc_mev_fm,2);
@@ -8639,6 +8650,13 @@ int eos_nuclei::test_neutrino(std::vector<std::string> &sv,
 
       Tensor<double> piVV, piAA, piTT, piVA, piVT, piAT;
       double piL, piLn, piLp, piLnRe, piLpRe, piRPAax, piRPAvec;
+
+      // Coulomb correction for fpp
+      double e2=1.0/137.0*4.0*o2scl_const::pi;
+      double qtf2=4.0*e2*cbrt(o2scl_const::pi)*
+        pow(3.0*proton.n*pow(o2scl_const::hc_mev_fm,3),2.0/3.0);
+      double q=3*T_MeV;
+      double coulombf=e2*4.0*o2scl_const::pi/(q*q+qtf2);
       
       pol_nc.SetPolarizations_neutral(w,3*T_MeV,
                                       &piVV,&piAA,&piTT,&piVA,&piVT,&piAT,
@@ -8653,7 +8671,7 @@ int eos_nuclei::test_neutrino(std::vector<std::string> &sv,
       piRPAvec=2.0*piRPAvec*FermiF;
       
       cout << betaEoS.n2/pow(o2scl_const::hc_mev_fm,3) << " "
-           << fnn << " " << fpp << " " << gnn << " " << gpp << " "
+           << fnn << " " << fpp+coulombf << " " << gnn << " " << gpp << " "
            << w << " " << piLn << " " << piLp << " "
            << piLnRe << " " << piLpRe << " " << piRPAvec << " "
            << piRPAax << " " << FermiF << endl;
@@ -8687,9 +8705,9 @@ int eos_nuclei::test_neutrino(std::vector<std::string> &sv,
     double dw=(wmax-wmin)/100;
 
     ofstream fout("nt_cc_dr.out");
-    fout << "n2 vgt vf w piLRe FermiF" << endl;
+    fout << "n2 vgt vf w piLRe FermiF response" << endl;
     cout << "Charged current response" << endl;
-    cout << "n2 vgt vf w piLRe FermiF" << endl;
+    cout << "n2 vgt vf w piLRe piL piRPAvec FermiF response" << endl;
     
     for (int k=1;k<100;k++) {
       
@@ -8703,21 +8721,30 @@ int eos_nuclei::test_neutrino(std::vector<std::string> &sv,
       
       double zz=(w+betaEoS.Mu2-betaEoS.Mu4)/T_MeV;
       double FermiF=1/(1-exp(-zz));
+
+      double vrpa_vec=vf;
+      double piRPAvec=2*(piL/2)/((1-vrpa_vec*(piLRe/2))*
+                                 (1-vrpa_vec*(piLRe/2))+
+                                 vrpa_vec*vrpa_vec*(piL/2)*(piL/2))*FermiF;
+      
+      
+      double response=pol_cc.GetResponse(E1,w,10*T_MeV);   
       
       fout << betaEoS.n2/pow(o2scl_const::hc_mev_fm,3)  << " "
-           << vgt << " "
-           << vf << " "
+           << vgt*pow(hc_mev_fm,3) << " "
+           << vf*pow(hc_mev_fm,3) << " "
            << w << " "
            << piLRe << " "
-           << FermiF << " "
+           << FermiF << " " << response 
            << endl;
       cout << betaEoS.n2/pow(o2scl_const::hc_mev_fm,3)  << " "
-           << vgt << " "
-           << vf << " "
+           << vgt*pow(hc_mev_fm,3) << " "
+           << vf*pow(hc_mev_fm,3) << " "
            << w << " "
-           << piLRe << " "
-           << FermiF << " "
+           << piLRe << " " << piL << " " << piRPAvec << " "
+           << FermiF << " " << response
            << endl;
+      if (k==10) exit(-1);
     }
     fout.close();
   }

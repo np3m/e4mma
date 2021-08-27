@@ -37,6 +37,7 @@
 
 #include <o2scl/constants.h>
 
+using namespace std; 
 using namespace nuopac; 
 
 // Use unnamed namespace so these methods are only locally available
@@ -535,6 +536,7 @@ void PolarizationNonRel::SetPolarizations(double q0, double q,
                                           Tensor<double>* piVA, 
                                           Tensor<double>* piVT, 
                                           Tensor<double>* piAT) const {
+  
   if (current==current_neutral) {
     double piLn;
     double piLp;
@@ -679,7 +681,7 @@ void PolarizationNonRel::SetPolarizations_charged
   //piL is 2*Im PI
   piL=2*(piL/2)/((1-vrpa*(piLRe/2))*(1-vrpa*(piLRe/2))+
                  vrpa*vrpa*(piL/2)*(piL/2));
-
+  
   // Set the different parts of the polarization 
   piVV->L=piL; 
   piAA->Tp=0.5*piL;
