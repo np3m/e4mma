@@ -31,6 +31,7 @@
 #include <o2scl/vector.h>
 #include <o2scl/mmin_bfgs2.h>
 #include <o2scl/diff_evo_adapt.h>
+#include <o2scl/rng.h>
 
 using namespace std;
 using namespace o2scl;
@@ -4747,7 +4748,7 @@ int eos_nuclei::test_random(std::vector<std::string> &sv,
 
   size_t ntests=o2scl::stoszt(sv[1]);
 
-  rng_gsl rg;
+  o2scl::rng<> rg;
   rg.clock_seed();
   
   for(size_t it=0;it<ntests;it++) {

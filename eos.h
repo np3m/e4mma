@@ -43,7 +43,7 @@
 #include <o2scl/nucmass_densmat.h>
 #include <o2scl/eos_sn.h>
 #include <o2scl/cloud_file.h>
-#include <o2scl/rng_gsl.h>
+#include <o2scl/rng.h>
 #include <o2scl/root_brent_gsl.h>
 #include <o2scl/smooth_func.h>
 #include <o2scl/deriv_gsl.h>
@@ -339,7 +339,7 @@ class eos {
   bool model_selected;
   
   /// Random number generator
-  o2scl::rng_gsl rng;
+  o2scl::rng<> rng;
   //@}
   
   /// \name EOS outputs
