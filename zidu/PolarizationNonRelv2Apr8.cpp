@@ -412,8 +412,7 @@ double PolarizationNonRel::GetImPI( double q0, double q) const {
   return piL;
 }
 
-double PolarizationNonRel::GetImPI2( double q0, double q) const {
-  
+double PolarizationNonRel::GetRePI( double q0, double q) const {
 
   gsl_integration_workspace * w 
     = gsl_integration_workspace_alloc (1024);
@@ -550,9 +549,11 @@ void PolarizationNonRel::SetPolarizations(double q0, double q,
                              piRPAvec,piRPAax,piL);
   } else {
     double piLRe;
+    double piRPAvec;
+    double piRPAax;
     double piL;
     SetPolarizations_charged(q0,q,piVV,piAA,piTT,piVA,piVT,piAT,
-                             piLRe,piL);
+                             piLRe,piRPAvec,piRPAax,piL);
   }
   
   return; 
@@ -663,24 +664,26 @@ void PolarizationNonRel::SetPolarizations_charged
 (double q0, double q,
  Tensor<double>* piVV, Tensor<double>* piAA, Tensor<double>* piTT, 
  Tensor<double>* piVA, Tensor<double>* piVT, Tensor<double>* piAT,
- double &piLRe, double &piL) const {
+ double &piLRe, double &piRPAvec, double &piRPAax, double &piL) const {
 
   // Calculate the basic parts of the polarization
   std::array<double, 4> pt=CalculateBasePolarizations(q0,q);
   piL=pt[1];
   
-  piLRe=GetImPI2(q0,q);
+  piLRe=GetRePI(q0,q);
 
-  double vrpa;
-  if (flag==flag_axial) {
-    vrpa=xvgt;
-  } else {
-    vrpa=xvf;
-  }
-
+  piRPAvec=(piL/2)/((1-xvf*(piLRe/2))*(1-xvf*(piLRe/2))+
+                      xvf*xvf*(piL/2)*(piL/2));
+  
+  piRPAax=(piL/2)/((1-xvgt*(piLRe/2))*(1-xvgt*(piLRe/2))+
+                     xvgt*xvgt*(piL/2)*(piL/2));
+  
   //piL is 2*Im PI
-  piL=2*(piL/2)/((1-vrpa*(piLRe/2))*(1-vrpa*(piLRe/2))+
-                 vrpa*vrpa*(piL/2)*(piL/2));
+  if (flag==flag_axial) {
+    piL=2*piRPAvec;
+  } else {
+    piL=2*piRPAax;
+  }
   
   // Set the different parts of the polarization 
   piVV->L=piL; 

@@ -71,7 +71,7 @@ namespace nuopac {
     std::array<double, 4> CalculateBasePolarizationsNeutron(double q0, double q) const;
     std::array<double, 4> CalculateBasePolarizationsProton(double q0, double q) const;
     double GetImPI( double q0, double q) const;
-    double GetImPI2(  double q0, double q) const;
+    double GetRePI(  double q0, double q) const;
     double GetRePIn( double q0, double q) const;
     double GetRePIp(  double q0, double q) const;
     void PrintGetImPI2(  double q0, double q) const;
@@ -132,7 +132,7 @@ namespace nuopac {
     (double q0, double q,
      Tensor<double>* piVV, Tensor<double>* piAA, Tensor<double>* piTT, 
      Tensor<double>* piVA, Tensor<double>* piVT, Tensor<double>* piAT,
-     double &piLRe, double &piL) const;
+     double &piLRe, double &piRPAvec, double &piRPAax, double &piL) const;
 
     
     void SetLeptonTensor(double E1, double q0, double q,

@@ -8620,12 +8620,12 @@ int eos_nuclei::test_neutrino(std::vector<std::string> &sv,
   cout << endl;
   
   // -----------------------------------------------------------------
-  // neutral current dynamic response
+  // Neutral current dynamic response at q0=w, q=3*T
 
   if (true) {
     
     double T_MeV=T*hc_mev_fm;
-  
+
     double vel=sqrt((3.0*T_MeV)/betaEoS.M2);
     double wmin;
     double wmax;
@@ -8690,7 +8690,7 @@ int eos_nuclei::test_neutrino(std::vector<std::string> &sv,
   cout << endl;
 
   // -----------------------------------------------------------------
-  // charged current dynamic response
+  // Charged current dynamic response, at q0=w, q=10*T
 
   if (true) {
 
@@ -8714,20 +8714,14 @@ int eos_nuclei::test_neutrino(std::vector<std::string> &sv,
       
       double w=wmin+dw*k;
       Tensor<double> piVV, piAA, piTT, piVA, piVT, piAT;
-      double piL, piLRe;
-      
+      double piL, piLRe, piRPAax, piRPAvec;
+
       pol_nc.SetPolarizations_charged(w,10*T_MeV,
                                       &piVV,&piAA,&piTT,&piVA,&piVT,&piAT,
-                                      piLRe,piL);
+                                      piLRe,piRPAvec,piRPAax,piL);
       
       double zz=(w+betaEoS.Mu2-betaEoS.Mu4)/T_MeV;
       double FermiF=1/(1-exp(-zz));
-
-      double vrpa_vec=vf;
-      double piRPAvec=2*(piL/2)/((1-vrpa_vec*(piLRe/2))*
-                                 (1-vrpa_vec*(piLRe/2))+
-                                 vrpa_vec*vrpa_vec*(piL/2)*(piL/2))*FermiF;
-      
       
       double response=pol_cc.GetResponse(E1,w,10*T_MeV);   
       
@@ -8735,17 +8729,16 @@ int eos_nuclei::test_neutrino(std::vector<std::string> &sv,
            << vgt*pow(hc_mev_fm,3) << " "
            << vf*pow(hc_mev_fm,3) << " "
            << w << " "
-           << piLRe << " "
+           << piLRe << " " << piRPAvec << " " << piRPAax << " " 
            << FermiF << " " << response 
            << endl;
       cout << betaEoS.n2/pow(o2scl_const::hc_mev_fm,3)  << " "
            << vgt*pow(hc_mev_fm,3) << " "
            << vf*pow(hc_mev_fm,3) << " "
            << w << " "
-           << piLRe << " " << piL << " " << piRPAvec << " "
+           << piLRe << " " << piRPAvec << " " << piRPAax << " "
            << FermiF << " " << response
            << endl;
-      if (k==10) exit(-1);
     }
     fout.close();
   }

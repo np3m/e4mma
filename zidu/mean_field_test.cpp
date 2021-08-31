@@ -232,7 +232,7 @@ for (int i=0; i<10; i++)
  // piL=pol.GetImPI(-30,30);
   
   
- // piLRe=pol.GetImPI2(0, 30);
+ // piLRe=pol.GetRePI(0, 30);
  
 
 //**************test rpa ph interactions*************************************
@@ -290,7 +290,7 @@ for (int i=0; i<10; i++)
 
 //***********conclusion*******************************
 
- // piLRe=pol.GetImPI2(wmin+1.0E-6, 30);
+ // piLRe=pol.GetRePI(wmin+1.0E-6, 30);
  
  // std::cout << "Neutral current: "  <<st.n2/densFac<<" full: "<< full << " elastic: " << elastic << " elastic1: "
    //   <<elastic1<<" full/elastic:"<< full/elastic<< " full/elastic1: "<< full/elastic1<<" M3 " <<st.M3<<" piL "<< piL<<" piLRPA "<<piLRe<<" w "<<wmin<<std::endl;
@@ -318,7 +318,7 @@ for (int i=0; i<10; i++)
   double w=wmin+dw*k;
  // double w=30.0;
  // piL=pol.GetImPI(w,3*T);//piL is 2*ImPI0
- // piLRe=pol.GetImPI2(w, 3*T);//piLRe is 2*RePI0
+ // piLRe=pol.GetRePI(w, 3*T);//piLRe is 2*RePI0
  //**********new version**************
     auto ptN= pol.CalculateBasePolarizationsNeutron(w, 3*T);//neutral current
     auto ptP= pol.CalculateBasePolarizationsProton(w, 3*T); //neutral current
@@ -781,11 +781,11 @@ datacc <<"charged current: "<<(betaEoS.n2+betaEoS.n4)/densFac<<" "<<betaEoS.n2/(
     piL=pt[1];
    
 //  ***********PiLRe**********************
-    piLRe=pol.GetImPI2(w,10*T);
+    piLRe=pol.GetRePI(w,10*T);
  
 
  // piL=pol.GetImPI(w,5*T);//piL is 2*ImPI0
- // piLRe=pol.GetImPI2(w, 5*T);//piLRe is 2*RePI0
+ // piLRe=pol.GetRePI(w, 5*T);//piLRe is 2*RePI0
   //vf and vgt for cc comes from arXiv:1205.4066, in unit of MeV^-2, note that in the arxiv paper the unit is wrong, should be fm^2 rather than fm^-2
  /* double vf=5.1*1.0E-5;
   double vgt=2.8*1.0E-5;
@@ -896,7 +896,7 @@ datacc <<"charged current: "<<(betaEoS.n2+betaEoS.n4)/densFac<<" "<<betaEoS.n2/(
                   w=w+1.0;
                   qq = pol.GetqFromMu13(E1, w, cos);
                   piL=pol.GetImPI(w,qq);//piL is 2*ImPI0
-                 // piLRe=pol.GetImPI2(w, qq);//piLRe is 2*RePI0
+                 // piLRe=pol.GetRePI(w, qq);//piLRe is 2*RePI0
 		  double zz;
                   zz=(w+betaEoS.Mu2-betaEoS.Mu4)/T;
                   FermiF=1/(1-exp(-zz));
@@ -1011,7 +1011,7 @@ datacc <<"charged current: "<<(betaEoS.n2+betaEoS.n4)/densFac<<" "<<betaEoS.n2/(
      double vrpa=vgt;
 
      double piL=pol.GetImPI(q0,pol.GetqFromMu13(E1, q0, mu));//piL is 2*ImPI0
-     double piLRe=pol.GetImPI2(q0, pol.GetqFromMu13(E1, q0, mu));//piLRe is 2*RePI0
+     double piLRe=pol.GetRePI(q0, pol.GetqFromMu13(E1, q0, mu));//piLRe is 2*RePI0
      double piLmod=2*(piL/2)/((1-vrpa*(piLRe/2))*(1-vrpa*(piLRe/2))+vrpa*vrpa*(piL/2)*(piL/2));
 
       datacc <<" q: "<<pol.GetqFromMu13(E1, q0, mu)<<" q0: "<<q0<<" cos: "<<mu<<" Response: "<< pol.GetResponse(E1, q0, pol.GetqFromMu13(E1, q0, mu)) <<" piL: "<<piL<<" piLRe: "<<piLRe<<" PiLmod: "<<piLmod<<std::endl;
