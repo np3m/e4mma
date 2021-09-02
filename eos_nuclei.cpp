@@ -8741,6 +8741,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
     Todos:
     1) check nucleon masses
     2) Make sure the Ye-loop is not in debug mode
+    3) make sure g and the residual interaction is set correctly
    */
   
   map<string,double> vdet;
@@ -8820,9 +8821,9 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
       eos_sn_base eso;
       eso.include_muons=false;
       thermo lep;
-
-      //for(size_t iYe=0;iYe<n_Ye2;iYe++) {
-      for(size_t iYe=0;iYe<10;iYe++) {
+      
+      for(size_t iYe=0;iYe<n_Ye2;iYe++) {
+        //for(size_t iYe=0;iYe<10;iYe++) {
         double Ye=Ye_grid2[iYe];
       
         if (tg3_flag.get(inB,iYe,iT)<9.9) {
@@ -9247,7 +9248,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
 
     cout << tab.get_ncolumns() << endl;
     cout << "Here: " << line.size() << endl;
-    for(size_t ij=0;ij<lines.size();ij++) {
+    for(size_t ij=0;ij<line.size();ij++) {
       cout << tab.get_column_name(ij) << " " << line[ij] << endl;
     }
     exit(-1);
