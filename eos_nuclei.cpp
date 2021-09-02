@@ -8729,6 +8729,20 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
     return 2;
   }
 
+  /*
+    Questions for Zidu:
+    1) is there really a vec and axvec mfp? does it make sense to
+    combine them?
+    2) in the NC response, I do piRPAvec=2*piRPAvec*fermiF, should I
+    do that in CC as well?
+    3) Check virial result
+    4) Make sure we're tabulating the right response functions
+
+    Todos:
+    1) check nucleon masses
+    2) Make sure the Ye-loop is not in debug mode
+   */
+  
   map<string,double> vdet;
   
   table<> tab;
@@ -8744,6 +8758,18 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
     for(size_t ik=0;ik<col_list.size();ik++) {
     std:string temp=col_list[ik]+"_"+o2scl::szttos(ipoint);
       tab.new_column(temp);
+    }
+    for(size_t ik=0;ik<100;ik++) {
+      tab.new_column(((string)"nc_piRPAvec_")+o2scl::szttos(ik)+"_"+
+                     o2scl::szttos(ipoint));
+      tab.new_column(((string)"nc_piRPAax_")+o2scl::szttos(ik)+"_"+
+                     o2scl::szttos(ipoint));
+    }
+    for(size_t ik=0;ik<100;ik++) {
+      tab.new_column(((string)"cc_piRPAvec_")+o2scl::szttos(ik)+"_"+
+                     o2scl::szttos(ipoint));
+      tab.new_column(((string)"cc_piRPAax_")+o2scl::szttos(ik)+"_"+
+                     o2scl::szttos(ipoint));
     }
   }
   
@@ -8901,7 +8927,6 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         cout << "nn: " << neutron.n << endl;
         cout << "np: " << proton.n << endl;
         cout << "g: " << vdet["g"] << endl;
-        exit(-1);
 
         double u2eos=neutron.mu*hc_mev_fm-
           pow(neutron.kf*hc_mev_fm,2.0)/2.0/vdet["msn"];
@@ -9132,10 +9157,100 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         line.push_back(cc_axvec_mfp);
         line.push_back(nc_vec_mfp);
         line.push_back(nc_axvec_mfp);
+        
+        // -----------------------------------------------------------------
+        // Neutral current dynamic response at q0=w, q=3*T
+        
+        if (true) {
+          
+          double T_MeV=T*hc_mev_fm;
+          
+          double vel=sqrt((3.0*T_MeV)/betaEoS.M2);
+          double wmin;
+          double wmax;
+          wmin=-3.0*vel*3*T_MeV-0.00000789;
+          // wmin=-50.0+1.0e-3;
+          wmax=3.0*(vel*3*T_MeV+3*T_MeV*3*T_MeV/(2.0*betaEoS.M2));
+          // wmax=50.0+1.0e-3;
+          double dw=(wmax-wmin)/99;
+          
+          for (int k=0;k<100;k++) {
+            
+            double w=wmin+dw*k;
+            
+            Tensor<double> piVV, piAA, piTT, piVA, piVT, piAT;
+            double piL, piLn, piLp, piLnRe, piLpRe, piRPAax, piRPAvec;
+            
+            // Coulomb correction for fpp
+            double e2=1.0/137.0*4.0*o2scl_const::pi;
+            double qtf2=4.0*e2*cbrt(o2scl_const::pi)*
+              pow(3.0*proton.n*pow(o2scl_const::hc_mev_fm,3),2.0/3.0);
+            double q=3*T_MeV;
+            double coulombf=e2*4.0*o2scl_const::pi/(q*q+qtf2);
+            
+            pol_nc.SetPolarizations_neutral(w,3*T_MeV,&piVV,&piAA,
+                                            &piTT,&piVA,&piVT,&piAT,
+                                            piLn,piLp,piLnRe,piLpRe,
+                                            piRPAvec,piRPAax,piL);
+            
+            //neutral current
+            double zz=(w+0.0)/T_MeV;
+            double FermiF=1/(1-exp(-zz));
+            
+            piRPAvec=2.0*piRPAvec*FermiF;
+            piRPAax=2.0*piRPAax*FermiF;
+            
+            line.push_back(piRPAvec);
+            line.push_back(piRPAax);
+          }
+          
+        }
+        
+        // -----------------------------------------------------------------
+        // Charged current dynamic response, at q0=w, q=3*T
+        
+        if (true) {
+          
+          double T_MeV=T*hc_mev_fm;
+          static const double densFac=pow(hc_mev_fm,3.0);
+          
+          // Set integration range
+          
+          double wmin;
+          double wmax;
+          wmin=-100.0;
+          wmax=50.0;
+          double dw=(wmax-wmin)/99;
+          
+          for (int k=0;k<100;k++) {
+            
+            double w=wmin+dw*k;
+            Tensor<double> piVV, piAA, piTT, piVA, piVT, piAT;
+            double piL, piLRe, piRPAax, piRPAvec;
+            
+            pol_nc.SetPolarizations_charged(w,3*T_MeV,&piVV,&piAA,&piTT,
+                                            &piVA,&piVT,&piAT,
+                                            piLRe,piRPAvec,piRPAax,piL);
+            
+            double zz=(w+betaEoS.Mu2-betaEoS.Mu4)/T_MeV;
+            double FermiF=1/(1-exp(-zz));
+            
+            double response=pol_cc.GetResponse(E1,w,10*T_MeV);   
+            
+            line.push_back(piRPAvec);
+            line.push_back(piRPAax);
+          }
+        }
       }
-
+      
     }
 
+    cout << tab.get_ncolumns() << endl;
+    cout << "Here: " << line.size() << endl;
+    for(size_t ij=0;ij<lines.size();ij++) {
+      cout << tab.get_column_name(ij) << " " << line[ij] << endl;
+    }
+    exit(-1);
     tab.line_of_data(line.size(),line);
     
     if (j%100==0) {
