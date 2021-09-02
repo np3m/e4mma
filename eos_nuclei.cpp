@@ -9050,7 +9050,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         double gnp_virial=f0-f0p;
         double gpp_virial=gnn_virial;
       
-        double g_virial=0.0;
+        double g_virial=vdet["g"];
       
         double fnn=fnn_virial*g_virial+fnn_sk*(1.0-g_virial);
         double fnp=fnp_virial*g_virial+fnp_sk*(1.0-g_virial);
@@ -9175,9 +9175,12 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
           // wmax=50.0+1.0e-3;
           double dw=(wmax-wmin)/99;
           
+          vector<double> w_nc;
+          
           for (int k=0;k<100;k++) {
             
             double w=wmin+dw*k;
+            w_nc.push_back(w);
             
             Tensor<double> piVV, piAA, piTT, piVA, piVT, piAT;
             double piL, piLn, piLp, piLnRe, piLpRe, piRPAax, piRPAvec;
@@ -9204,6 +9207,13 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
             line.push_back(piRPAvec);
             line.push_back(piRPAax);
           }
+
+          if (j==0) {
+            hdf_file hf;
+            hf.open_or_create(sv[1]);
+            hf.setd_vec("w_nc",w_nc);
+            hf.close();
+          }
           
         }
         
@@ -9223,9 +9233,13 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
           wmax=50.0;
           double dw=(wmax-wmin)/99;
           
+          vector<double> w_cc;
+          
           for (int k=0;k<100;k++) {
             
             double w=wmin+dw*k;
+            w_cc.push_back(w);
+            
             Tensor<double> piVV, piAA, piTT, piVA, piVT, piAT;
             double piL, piLRe, piRPAax, piRPAvec;
             
@@ -9241,17 +9255,22 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
             line.push_back(piRPAvec);
             line.push_back(piRPAax);
           }
+
+          if (j==0) {
+            hdf_file hf;
+            hf.open_or_create(sv[1]);
+            hf.setd_vec("w_cc",w_cc);
+            hf.close();
+          }
+          
         }
       }
       
     }
 
-    cout << tab.get_ncolumns() << endl;
-    cout << "Here: " << line.size() << endl;
-    for(size_t ij=0;ij<line.size();ij++) {
-      cout << tab.get_column_name(ij) << " " << line[ij] << endl;
+    if (tab.get_ncolumns()!=line.size()) {
+      O2SCL_ERR("Mismatch of columns.",o2scl::exc_einval);
     }
-    exit(-1);
     tab.line_of_data(line.size(),line);
     
     if (j%100==0) {
