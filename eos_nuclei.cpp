@@ -9402,7 +9402,7 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
       "",new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::mcarlo_nuclei2),o2scl::cli::comm_option_both},
      {0,"mcarlo-beta","",
-      3,3,"<nB> <T> <filename>",
+      1,1,"<filename>",
       "",new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::mcarlo_beta),o2scl::cli::comm_option_both},
      {0,"test-neutrino","",
