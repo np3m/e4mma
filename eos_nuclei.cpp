@@ -8850,17 +8850,42 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
           // Compute the EOS
         
           include_detail=true;
+          
           int ret=eos_vary_dist(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,
                                 thx,mun_full,mup_full,
                                 A_min,A_max,NmZ_min,NmZ_max,vdet,
                                 dist_changed,no_nuclei);
-        
+
           cout << "ret,log_xn,log_xp,Z,N,A,Z/A,fr:\n  "
                << ret << " " << log_xn << " " << log_xp << " "
                << Zbar << " " << Nbar << " " << Zbar+Nbar << " " 
                << Zbar/(Zbar+Nbar) << " "
                << thx.ed-T*thx.en << endl;
         
+          // Compute the number density of free neutrons and protons
+          double n_fraction, p_fraction;
+          if (nB<0.16) {
+            double xn=0.0;
+            if (log_xn>-300.0) {
+              xn=pow(10.0,log_xn);
+            }
+            double xp=0.0;
+            if (log_xp>-300.0) {
+              xp=pow(10.0,log_xp);
+            }
+            double n0=0.16;
+            neutron.n=xn*(1.0-nB/n0)/(1.0-nB*xn/n0-nB*xp/n0)*nB;
+            proton.n=xp*(1.0-nB/n0)/(1.0-nB*xn/n0-nB*xp/n0)*nB;    
+          } else {
+            neutron.n=(1.0-Ye)*nB;
+            proton.n=Ye*nB;
+          }
+
+          // Make sure to compute kf, which is not always computed at
+          // finite temperature
+          sk.def_fet.kf_from_density(neutron);
+          sk.def_fet.kf_from_density(proton);
+          
           // Add the electrons
           double mue=electron.m;
           eso.compute_eg_point(nB_grid2[inB],Ye_grid2[iYe],
