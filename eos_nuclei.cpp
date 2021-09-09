@@ -8749,7 +8749,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
   table<> tab;
   tab.line_of_names("i_ns i_skyrme qmc_alpha qmc_a phi ");
   tab.line_of_names("t0 t1 t2 t3 x0 x1 x2 x3 epsilon ");
-  vector<string> col_list={"msn","msp","mun","mup","mue",
+  vector<string> col_list={"g","msn","msp","mun","mup","mue",
                            "U2","U4","log_xn","log_xp","Z","N",
                            "A","ZoA","Xnuclei","Ye_best",
                            "cc_vec_mfp","cc_axvec_mfp",
@@ -9164,6 +9164,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         double nc_axvec_mfp=pol_nc.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
         cout << "neutral current, axial part: " << nc_axvec_mfp << endl;
 
+        line.push_back(vdet["g"]);
         line.push_back(neutron.ms*hc_mev_fm);
         line.push_back(proton.ms*hc_mev_fm);
         line.push_back(neutron.mu*hc_mev_fm);
