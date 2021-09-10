@@ -8739,9 +8739,12 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
     4) Make sure we're tabulating the right response functions
 
     Todos:
-    1) check nucleon masses
-    2) Make sure the Ye-loop is not in debug mode
-    3) make sure g and the residual interaction is set correctly
+    0) Fix the nucleon effective masses at low density
+    1) Make sure the Ye-loop is not in debug mode
+    2) make sure g and the residual interaction is set correctly
+    3) Add the residual interactions to the data file
+    4) Add the baryon and individual densities to the data file
+    5) Add units to the data files
    */
   
   map<string,double> vdet;
@@ -8749,6 +8752,8 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
   table<> tab;
   tab.line_of_names("i_ns i_skyrme qmc_alpha qmc_a phi ");
   tab.line_of_names("t0 t1 t2 t3 x0 x1 x2 x3 epsilon ");
+  //tab.line_of_units(((string)". . MeV MeV . 1/fm^4 1/fm^4 1/fm^4 1/fm^4 ")+
+  //". . . . .");
   vector<string> col_list={"g","msn","msp","mun","mup","mue",
                            "U2","U4","log_xn","log_xp","Z","N",
                            "A","ZoA","Xnuclei","Ye_best",
@@ -8765,11 +8770,19 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
                      o2scl::szttos(ipoint));
       tab.new_column(((string)"nc_piRPAax_")+o2scl::szttos(ik)+"_"+
                      o2scl::szttos(ipoint));
+      tab.new_column(((string)"nc_resp_RPAvec_")+o2scl::szttos(ik)+"_"+
+                     o2scl::szttos(ipoint));
+      tab.new_column(((string)"nc_resp_RPAax_")+o2scl::szttos(ik)+"_"+
+                     o2scl::szttos(ipoint));
     }
     for(size_t ik=0;ik<100;ik++) {
       tab.new_column(((string)"cc_piRPAvec_")+o2scl::szttos(ik)+"_"+
                      o2scl::szttos(ipoint));
       tab.new_column(((string)"cc_piRPAax_")+o2scl::szttos(ik)+"_"+
+                     o2scl::szttos(ipoint));
+      tab.new_column(((string)"cc_resp_RPAvec_")+o2scl::szttos(ik)+"_"+
+                     o2scl::szttos(ipoint));
+      tab.new_column(((string)"cc_resp_RPAax_")+o2scl::szttos(ik)+"_"+
                      o2scl::szttos(ipoint));
     }
   }
@@ -8822,7 +8835,20 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
       eso.include_muons=false;
       thermo lep;
       
-      for(size_t iYe=0;iYe<n_Ye2;iYe++) {
+      size_t Ye_min, Ye_max;
+      if (ipoint==0) {
+        Ye_min=30;
+        Ye_max=40;
+      } else if (ipoint==1) {
+        Ye_min=2;
+        Ye_max=12;
+      } else {
+        Ye_min=0;
+        Ye_max=10;
+      }
+          
+      for(size_t iYe=Ye_min;iYe<Ye_max;iYe++) {
+
         //for(size_t iYe=0;iYe<10;iYe++) {
         double Ye=Ye_grid2[iYe];
       
@@ -8909,8 +8935,9 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
             log_xn_best=log_xn;
             log_xp_best=log_xp;
             iYe_best=iYe;
-            cout << "iYe_best: " << iYe << endl;
           }
+          cout << "iYe_best: " << iYe_best << endl;
+          
           // End of for(size_t k=0;k<10;k++) {
         }
 
@@ -8936,6 +8963,43 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
                              A_min_best,A_max_best,NmZ_min_best,
                              NmZ_max_best,vdet,
                              dist_changed,no_nuclei);
+
+      // Compute the number density of free neutrons and protons
+      double n_fraction, p_fraction;
+      if (nB<0.16) {
+        double xn=0.0;
+        if (log_xn>-300.0) {
+          xn=pow(10.0,log_xn);
+        }
+        double xp=0.0;
+        if (log_xp>-300.0) {
+          xp=pow(10.0,log_xp);
+        }
+        double n0=0.16;
+        neutron.n=xn*(1.0-nB/n0)/(1.0-nB*xn/n0-nB*xp/n0)*nB;
+        proton.n=xp*(1.0-nB/n0)/(1.0-nB*xn/n0-nB*xp/n0)*nB;    
+      } else {
+        neutron.n=(1.0-Ye_best)*nB;
+        proton.n=Ye_best*nB;
+      }
+      
+      // Make sure to compute kf, which is not always computed at
+      // finite temperature
+      sk.def_fet.kf_from_density(neutron);
+      sk.def_fet.kf_from_density(proton);
+      
+      // Add the electrons
+      double mue=electron.m;
+      eso.compute_eg_point(nB,Ye_best,T,lep,mue);
+      
+      // Copy the electron results to the local electron object
+      electron.n=nB*Ye_best;
+      electron.mu=mue;
+      cout << "mue: " << Ye_best << " " << mue << endl;
+      
+      // Compute the total free energy
+      double fr=thx.ed-T*thx.en+lep.ed-T*lep.en;
+      
       ubvector X;
       compute_X(nB,X);
     
@@ -8956,6 +9020,10 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
 
         double u2eos=neutron.mu*hc_mev_fm-
           pow(neutron.kf*hc_mev_fm,2.0)/2.0/vdet["msn"];
+        cout << neutron.mu*hc_mev_fm << " "
+             << pow(neutron.kf*hc_mev_fm,2.0)/2.0/vdet["msn"] << " "
+             << vdet["msn"] << endl;
+        exit(-1);
         cout << "U2: " << u2eos << endl;
         double u4eos=proton.mu*hc_mev_fm-
           pow(proton.kf*hc_mev_fm,2.0)/2.0/vdet["msp"];
@@ -9227,11 +9295,13 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
             double zz=(w+0.0)/T_MeV;
             double FermiF=1/(1-exp(-zz));
             
-            piRPAvec=2.0*piRPAvec*FermiF;
-            piRPAax=2.0*piRPAax*FermiF;
+            double resp_RPAvec=2.0*piRPAvec*FermiF;
+            double resp_RPAax=2.0*piRPAax*FermiF;
             
             line.push_back(piRPAvec);
             line.push_back(piRPAax);
+            line.push_back(resp_RPAvec);
+            line.push_back(resp_RPAax);
           }
 
           if (j==0) {
@@ -9278,8 +9348,13 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
             
             double response=pol_cc.GetResponse(E1,w,10*T_MeV);   
             
+            double resp_RPAvec=2.0*piRPAvec*FermiF;
+            double resp_RPAax=2.0*piRPAax*FermiF;
+            
             line.push_back(piRPAvec);
             line.push_back(piRPAax);
+            line.push_back(resp_RPAvec);
+            line.push_back(resp_RPAax);
           }
 
           if (j==0) {
@@ -9296,6 +9371,13 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
 
     if (tab.get_ncolumns()!=line.size()) {
       O2SCL_ERR("Mismatch of columns.",o2scl::exc_einval);
+    }
+    if (true) {
+      for(size_t jj=0;jj<line.size();jj++) {
+        cout << tab.get_column_name(jj) << " ";
+        cout << line[jj] << endl;
+      }
+      exit(-1);
     }
     tab.line_of_data(line.size(),line);
     
