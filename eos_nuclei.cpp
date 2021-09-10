@@ -8740,30 +8740,50 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
 
     Todos:
     0) Fix the nucleon effective masses at low density
-    1) Make sure the Ye-loop is not in debug mode
-    2) make sure g and the residual interaction is set correctly
-    3) Add the residual interactions to the data file
-    4) Add the baryon and individual densities to the data file
-    5) Add units to the data files
-   */
+  */
   
   map<string,double> vdet;
   
-  table<> tab;
+  table_units<> tab;
   tab.line_of_names("i_ns i_skyrme qmc_alpha qmc_a phi ");
   tab.line_of_names("t0 t1 t2 t3 x0 x1 x2 x3 epsilon ");
-  //tab.line_of_units(((string)". . MeV MeV . 1/fm^4 1/fm^4 1/fm^4 1/fm^4 ")+
-  //". . . . .");
-  vector<string> col_list={"g","msn","msp","mun","mup","mue",
+  tab.line_of_units(((string)". . MeV MeV . 1/fm^2 1/fm^4 1/fm^4 ")+
+                    "1/fm^(3*a+1) . . . . .");
+  
+  vector<string> col_list={"nB","nn","np",
+                           "g","msn","msp","mun","mup","mue",
                            "U2","U4","log_xn","log_xp","Z","N",
                            "A","ZoA","Xnuclei","Ye_best",
+                           "fnn_sk","fpp_sk","fnp_sk",
+                           "gnn_sk","gpp_sk","gnp_sk",
+                           "fnn_virial","fpp_virial","fnp_virial",
+                           "gnn_virial","gpp_virial","gnp_virial",
+                           "fnn","fpp","fnp",
+                           "gnn","gpp","gnp",
+                           "vf_sk","vgt_sk","vf_virial",
+                           "vgt_virial","vf","vgt",
                            "cc_vec_mfp","cc_axvec_mfp",
                            "nc_vec_mfp","nc_axvec_mfp"};
+  
+  vector<string> unit_list={"1/fm^3","1/fm^3","1/fm^3",
+                            "","MeV","MeV","MeV","MeV","MeV",
+                            "MeV","MeV","","","","",
+                            "","","","",
+                            "1/MeV^2","1/MeV^2","1/MeV^2",
+                            "1/MeV^2","1/MeV^2","1/MeV^2",
+                            "1/MeV^2","1/MeV^2","1/MeV^2",
+                            "1/MeV^2","1/MeV^2","1/MeV^2",
+                            "1/MeV^2","1/MeV^2","1/MeV^2",
+                            "1/MeV^2","1/MeV^2","1/MeV^2",
+                            "1/MeV^2","1/MeV^2","1/MeV^2",
+                            "1/MeV^2","1/MeV^2","1/MeV^2",
+                            "fm","fm","fm","fm"};
   
   for(size_t ipoint=0;ipoint<3;ipoint++) {
     for(size_t ik=0;ik<col_list.size();ik++) {
     std:string temp=col_list[ik]+"_"+o2scl::szttos(ipoint);
       tab.new_column(temp);
+      tab.set_unit(temp,unit_list[ik]);
     }
     for(size_t ik=0;ik<100;ik++) {
       tab.new_column(((string)"nc_piRPAvec_")+o2scl::szttos(ik)+"_"+
@@ -9232,6 +9252,9 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         double nc_axvec_mfp=pol_nc.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
         cout << "neutral current, axial part: " << nc_axvec_mfp << endl;
 
+        line.push_back(nB);
+        line.push_back(neutron.n);
+        line.push_back(proton.n);
         line.push_back(vdet["g"]);
         line.push_back(neutron.ms*hc_mev_fm);
         line.push_back(proton.ms*hc_mev_fm);
@@ -9248,6 +9271,30 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         line.push_back(Zbar/(Zbar+Nbar));
         line.push_back(X[5]);
         line.push_back(Ye_best);
+        line.push_back(fnn_sk);
+        line.push_back(fpp_sk);
+        line.push_back(fnp_sk);
+        line.push_back(gnn_sk);
+        line.push_back(gpp_sk);
+        line.push_back(gnp_sk);
+        line.push_back(fnn_virial);
+        line.push_back(fpp_virial);
+        line.push_back(fnp_virial);
+        line.push_back(gnn_virial);
+        line.push_back(gpp_virial);
+        line.push_back(gnp_virial);
+        line.push_back(fnn);
+        line.push_back(fpp);
+        line.push_back(fnp);
+        line.push_back(gnn);
+        line.push_back(gpp);
+        line.push_back(gnp);
+        line.push_back(vf_sk);
+        line.push_back(vgt_sk);
+        line.push_back(vf_virial);
+        line.push_back(vgt_virial);
+        line.push_back(vf);
+        line.push_back(vgt);
         line.push_back(cc_vec_mfp);
         line.push_back(cc_axvec_mfp);
         line.push_back(nc_vec_mfp);
