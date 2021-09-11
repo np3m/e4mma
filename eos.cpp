@@ -1383,13 +1383,16 @@ double eos::free_energy_density_detail
     +f_deg*(-dgvirialdnp);
 
   // Final effective masses
-  n.ms=g_virial+(1.0-g_virial)*(msn_T0+msn_Tcorr_T-msn_Tcorr_T0);
-  p.ms=g_virial+(1.0-g_virial)*(msp_T0+msp_Tcorr_T-msp_Tcorr_T0);
+  //cout << "Here: " << g_virial << " " << msn_T0 << " "
+  //<< msn_Tcorr_T << " " << msn_Tcorr_T0 << endl;
+  n.ms=neutron.m*g_virial+(1.0-g_virial)*(msn_T0+msn_Tcorr_T-msn_Tcorr_T0);
+  p.ms=proton.m*g_virial+(1.0-g_virial)*(msp_T0+msp_Tcorr_T-msp_Tcorr_T0);
   
   // -------------------------------------------------------------
   // Compute derivatives for entropy
 
-  dgvirialdT=-(1.0/pow(1.0+a_virial*zn*zn+a_virial*zp*zp+b_virial*zn*zp,2.0))*
+  dgvirialdT=-(1.0/pow(1.0+a_virial*zn*zn+a_virial*zp*zp+
+                       b_virial*zn*zp,2.0))*
     (2.0*a_virial*zn*zn*dmundT/T-2.0*a_virial*zn*zn*mu_n_virial/T/T
      +2.0*a_virial*zp*zp*dmupdT/T-2.0*a_virial*zp*zp*mu_p_virial/T/T
      +b_virial*zn*zp*dmundT/T+b_virial*zn*zp*dmupdT/T-

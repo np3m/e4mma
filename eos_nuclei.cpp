@@ -8748,7 +8748,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
   tab.line_of_names("i_ns i_skyrme qmc_alpha qmc_a phi ");
   tab.line_of_names("t0 t1 t2 t3 x0 x1 x2 x3 epsilon ");
   tab.line_of_units(((string)". . MeV MeV . 1/fm^2 1/fm^4 1/fm^4 ")+
-                    "1/fm^(3*a+1) . . . . .");
+                    "1/fm^(3*a+2) . . . . .");
   
   vector<string> col_list={"nB","nn","np",
                            "g","msn","msp","mun","mup","mue",
@@ -8762,8 +8762,8 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
                            "gnn","gpp","gnp",
                            "vf_sk","vgt_sk","vf_virial",
                            "vgt_virial","vf","vgt",
-                           "cc_vec_mfp","cc_axvec_mfp",
-                           "nc_vec_mfp","nc_axvec_mfp"};
+                           "cc_vec_imfp","cc_axvec_imfp",
+                           "nc_vec_imfp","nc_axvec_imfp"};
   
   vector<string> unit_list={"1/fm^3","1/fm^3","1/fm^3",
                             "","MeV","MeV","MeV","MeV","MeV",
@@ -8777,7 +8777,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
                             "1/MeV^2","1/MeV^2","1/MeV^2",
                             "1/MeV^2","1/MeV^2","1/MeV^2",
                             "1/MeV^2","1/MeV^2","1/MeV^2",
-                            "fm","fm","fm","fm"};
+                            "1/cm","1/cm","1/cm","1/cm"};
   
   for(size_t ipoint=0;ipoint<3;ipoint++) {
     for(size_t ik=0;ik<col_list.size();ik++) {
@@ -9043,7 +9043,6 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         cout << neutron.mu*hc_mev_fm << " "
              << pow(neutron.kf*hc_mev_fm,2.0)/2.0/vdet["msn"] << " "
              << vdet["msn"] << endl;
-        exit(-1);
         cout << "U2: " << u2eos << endl;
         double u4eos=proton.mu*hc_mev_fm-
           pow(proton.kf*hc_mev_fm,2.0)/2.0/vdet["msp"];
