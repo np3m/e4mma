@@ -8729,6 +8729,11 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
     return 2;
   }
 
+  size_t n_point=3;
+  if (sv.size()>=3) {
+    n_point=stoszt(sv[2]);
+  }
+  
   /*
     Questions for Zidu:
     1) is there really a vec and axvec mfp? does it make sense to
@@ -8779,39 +8784,51 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
                             "1/MeV^2","1/MeV^2","1/MeV^2",
                             "1/cm","1/cm","1/cm","1/cm"};
   
-  for(size_t ipoint=0;ipoint<3;ipoint++) {
+  for(size_t ipoint=0;ipoint<n_point;ipoint++) {
     for(size_t ik=0;ik<col_list.size();ik++) {
     std:string temp=col_list[ik]+"_"+o2scl::szttos(ipoint);
       tab.new_column(temp);
       tab.set_unit(temp,unit_list[ik]);
     }
-    for(size_t ik=0;ik<100;ik++) {
-      tab.new_column(((string)"nc_piRPAvec_")+o2scl::szttos(ik)+"_"+
-                     o2scl::szttos(ipoint));
-      tab.new_column(((string)"nc_piRPAax_")+o2scl::szttos(ik)+"_"+
-                     o2scl::szttos(ipoint));
-      tab.new_column(((string)"nc_resp_RPAvec_")+o2scl::szttos(ik)+"_"+
-                     o2scl::szttos(ipoint));
-      tab.new_column(((string)"nc_resp_RPAax_")+o2scl::szttos(ik)+"_"+
-                     o2scl::szttos(ipoint));
-    }
-    for(size_t ik=0;ik<100;ik++) {
-      tab.new_column(((string)"cc_piRPAvec_")+o2scl::szttos(ik)+"_"+
-                     o2scl::szttos(ipoint));
-      tab.new_column(((string)"cc_piRPAax_")+o2scl::szttos(ik)+"_"+
-                     o2scl::szttos(ipoint));
-      tab.new_column(((string)"cc_resp_RPAvec_")+o2scl::szttos(ik)+"_"+
-                     o2scl::szttos(ipoint));
-      tab.new_column(((string)"cc_resp_RPAax_")+o2scl::szttos(ik)+"_"+
-                     o2scl::szttos(ipoint));
+    if (n_point<5) {
+      for(size_t ik=0;ik<100;ik++) {
+        tab.new_column(((string)"nc_piRPAvec_")+o2scl::szttos(ik)+"_"+
+                       o2scl::szttos(ipoint));
+        tab.new_column(((string)"nc_piRPAax_")+o2scl::szttos(ik)+"_"+
+                       o2scl::szttos(ipoint));
+        tab.new_column(((string)"nc_resp_RPAvec_")+o2scl::szttos(ik)+"_"+
+                       o2scl::szttos(ipoint));
+        tab.new_column(((string)"nc_resp_RPAax_")+o2scl::szttos(ik)+"_"+
+                       o2scl::szttos(ipoint));
+      }
+      for(size_t ik=0;ik<100;ik++) {
+        tab.new_column(((string)"cc_piRPAvec_")+o2scl::szttos(ik)+"_"+
+                       o2scl::szttos(ipoint));
+        tab.new_column(((string)"cc_piRPAax_")+o2scl::szttos(ik)+"_"+
+                       o2scl::szttos(ipoint));
+        tab.new_column(((string)"cc_resp_RPAvec_")+o2scl::szttos(ik)+"_"+
+                       o2scl::szttos(ipoint));
+        tab.new_column(((string)"cc_resp_RPAax_")+o2scl::szttos(ik)+"_"+
+                       o2scl::szttos(ipoint));
+      }
     }
   }
   
   // 1.0e-4 is well into the virial region, 5.0e-3 gives g \approx 0.6,
   // and 0.15 is near saturation density and far from the virial region
   
-  vector<double> nB_list={1.0e-4,5.0e-3,0.15};
+  //vector<double> nB_list={1.0e-4,5.0e-3,0.15};
+  vector<double> nB_list={2.0e-4,5.0e-3,0.15};
   vector<double> TMeV_list={10,10,10};
+
+  if (n_point>5) {
+    nB_list.clear();
+    TMeV_list.clear();
+    for(size_t j=0;j<100;j++) {
+      nB_list.push_back(1.0e-4*pow(0.15/1.0e-4,99.0));
+      TMeV_list.push_back(10.0);
+    }
+  }
   
   static const int N=10000;
   for(int j=0;j<N;j++) {
@@ -8828,7 +8845,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
                          sk.t2*hc_mev_fm,sk.t3*hc_mev_fm,
                          sk.x0,sk.x1,sk.x2,sk.x3,sk.alpha};
 
-    for(size_t ipoint=0;ipoint<3;ipoint++) {
+    for(size_t ipoint=0;ipoint<n_point;ipoint++) {
       
       double nB=nB_list[ipoint];
       double T=TMeV_list[ipoint]/hc_mev_fm;
@@ -8857,7 +8874,8 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
       
       size_t Ye_min, Ye_max;
       if (ipoint==0) {
-        Ye_min=30;
+        //Ye_min=30;
+        Ye_min=20;
         Ye_max=40;
       } else if (ipoint==1) {
         Ye_min=2;
@@ -8931,6 +8949,10 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
           // finite temperature
           sk.def_fet.kf_from_density(neutron);
           sk.def_fet.kf_from_density(proton);
+          //
+          cout << "mu2-mu4: " << mun_full*hc_mev_fm << " "
+               << mup_full*hc_mev_fm << " "
+               << (mun_full-mup_full)*hc_mev_fm << endl;
           
           // Add the electrons
           double mue=electron.m;
@@ -8940,6 +8962,8 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
           // Copy the electron results to the local electron object
           electron.n=nB_grid2[inB]*Ye_grid2[iYe];
           electron.mu=mue;
+
+          cout << "mue: " << mue*hc_mev_fm << endl;
 
           // Compute the total free energy
           double fr=thx.ed-T*thx.en+lep.ed-T*lep.en;
@@ -9027,7 +9051,23 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
            << log_xn << " " << log_xp << " "
            << Zbar << " " << Nbar << " " << Zbar+Nbar << " " 
            << Zbar/(Zbar+Nbar) << " " << X[5] << endl;
-    
+
+      double mu_n_nonint, mu_p_nonint;
+      if (true) {
+        // Noninteracting fermions, but with the same mass as the
+        // effective mass of the original neutron and proton
+        fermion n2(neutron.ms,2.0), p2(proton.ms,2.0);
+        n2.n=neutron.n;
+        p2.n=proton.n;
+        n2.inc_rest_mass=false;
+        p2.inc_rest_mass=false;
+        fermion_nonrel fnr;
+        fnr.calc_density(n2,T);
+        fnr.calc_density(p2,T);
+        mu_n_nonint=n2.mu;
+        mu_p_nonint=p2.mu;
+      }
+      
       if (ret2==0) {
 
         cout << "mun: " << neutron.mu*hc_mev_fm << endl;
@@ -9038,14 +9078,9 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         cout << "np: " << proton.n << endl;
         cout << "g: " << vdet["g"] << endl;
 
-        double u2eos=neutron.mu*hc_mev_fm-
-          pow(neutron.kf*hc_mev_fm,2.0)/2.0/vdet["msn"];
-        cout << neutron.mu*hc_mev_fm << " "
-             << pow(neutron.kf*hc_mev_fm,2.0)/2.0/vdet["msn"] << " "
-             << vdet["msn"] << endl;
+        double u2eos=neutron.mu*hc_mev_fm-mu_n_nonint*hc_mev_fm;
         cout << "U2: " << u2eos << endl;
-        double u4eos=proton.mu*hc_mev_fm-
-          pow(proton.kf*hc_mev_fm,2.0)/2.0/vdet["msp"];
+        double u4eos=proton.mu*hc_mev_fm-mu_p_nonint*hc_mev_fm;
         cout << "U4: " << u4eos << endl;
         cout << "T*hc_mev_fm: " << T*hc_mev_fm << endl;
       
@@ -9062,7 +9097,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         ncap.F2=0.0;
       
         // Incoming neutrino energy
-        double E1=12.0;
+        double E1=30.0;
       
         betaEoS.Mu2=neutron.mu*hc_mev_fm;
         betaEoS.Mu4=proton.mu*hc_mev_fm;
@@ -9250,6 +9285,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         pol_nc.flag=Polarization::flag_axial;
         double nc_axvec_mfp=pol_nc.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
         cout << "neutral current, axial part: " << nc_axvec_mfp << endl;
+        exit(-1);
 
         line.push_back(nB);
         line.push_back(neutron.n);
@@ -9302,7 +9338,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         // -----------------------------------------------------------------
         // Neutral current dynamic response at q0=w, q=3*T
         
-        if (true) {
+        if (n_point<5) {
           
           double T_MeV=T*hc_mev_fm;
           
@@ -9362,7 +9398,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         // -----------------------------------------------------------------
         // Charged current dynamic response, at q0=w, q=3*T
         
-        if (true) {
+        if (n_point<5) {
           
           double T_MeV=T*hc_mev_fm;
           static const double densFac=pow(hc_mev_fm,3.0);

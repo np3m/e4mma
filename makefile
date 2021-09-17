@@ -230,6 +230,18 @@ mbtest:
 		-load ~/data/eos/final/fid_6_30_21.o2 \
 		-mcarlo-beta mb_temp1.o2
 
+mbtestd:
+	enn \
+		-set select_cs2_test 0 \
+		-select-model $(P_FIDUCIAL) \
+		-set a_virial 10 -set b_virial 10 \
+		-set extend_frdm 0 \
+		-set fd_A_max 600 -set max_ratio 7.0 \
+		-set fixed_dist_alg 1999 \
+		-set function_verbose 0 \
+		-load ~/data/eos/final/fid_6_30_21.o2 \
+		-mcarlo-beta mb_temp1.o2 100
+
 mbt1:
 	eos_nuclei \
 		-set select_cs2_test 0 \
