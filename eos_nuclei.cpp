@@ -8828,7 +8828,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
     nB_list.clear();
     TMeV_list.clear();
     for(size_t j=0;j<100;j++) {
-      nB_list.push_back(1.0e-4*pow(0.15/1.0e-4,99.0));
+      nB_list.push_back(1.0e-4*pow(0.15/1.0e-4,((double)j)/99.0));
       TMeV_list.push_back(10.0);
     }
   }
@@ -8851,6 +8851,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
     for(size_t ipoint=0;ipoint<n_point;ipoint++) {
 
       double nB=nB_list[ipoint];
+      //cout << "nBX: " << nB << endl;
       double T=TMeV_list[ipoint]/hc_mev_fm;
       
       size_t inB=vector_lookup(n_nB2,nB_grid2,nB);
@@ -9004,7 +9005,9 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
 
         cout << "iYe,Ye,iYe_best,fr_Ye: " << iYe << " " << Ye << " "
              << iYe_best << " " << fr_Ye << endl;
-        cout << endl;
+        if (false) {
+          cout << endl;
+        }
       
         // End of loop for(size_t iYe=0;iYe<n_Ye2;iYe++) {
       }
@@ -9490,7 +9493,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
     if (tab.get_ncolumns()!=line.size()) {
       O2SCL_ERR("Mismatch of columns.",o2scl::exc_einval);
     }
-    if (true) {
+    if (false) {
       for(size_t jj=0;jj<line.size();jj++) {
         cout << tab.get_column_name(jj) << " ";
         cout << line[jj] << endl;
