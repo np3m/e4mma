@@ -8821,8 +8821,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
   // 1.0e-4 is well into the virial region, 5.0e-3 gives g \approx 0.6,
   // and 0.15 is near saturation density and far from the virial region
   
-  //vector<double> nB_list={1.0e-4,5.0e-3,0.15};
-  vector<double> nB_list={2.0e-4,5.0e-3,0.15};
+  vector<double> nB_list={1.0e-4,5.0e-3,0.15};
   vector<double> TMeV_list={10,10,10};
 
   if (n_point>5) {
@@ -8850,7 +8849,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
                          sk.x0,sk.x1,sk.x2,sk.x3,sk.alpha};
 
     for(size_t ipoint=0;ipoint<n_point;ipoint++) {
-      
+
       double nB=nB_list[ipoint];
       double T=TMeV_list[ipoint]/hc_mev_fm;
       
@@ -8860,7 +8859,8 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
       T=T_grid2[iT]/hc_mev_fm;
       
       cout << "Using nB = " << nB << " 1/fm^3 and T = " << T*hc_mev_fm
-           << " MeV" << endl;
+           << " MeV for ipoint = " << ipoint << " out of total "
+           << n_point << endl;
       
       double log_xn_best=0.0, log_xp_best=0.0;
       double fr_best=1.0e10;
@@ -8882,8 +8882,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         Ye_max=40;
       } else {
         if (ipoint==0) {
-          //Ye_min=30;
-          Ye_min=20;
+          Ye_min=30;
           Ye_max=40;
         } else if (ipoint==1) {
           Ye_min=2;
@@ -8929,11 +8928,13 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
                                 A_min,A_max,NmZ_min,NmZ_max,vdet,
                                 dist_changed,no_nuclei);
 
-          cout << "ret,log_xn,log_xp,Z,N,A,Z/A,fr:\n  "
-               << ret << " " << log_xn << " " << log_xp << " "
-               << Zbar << " " << Nbar << " " << Zbar+Nbar << " " 
-               << Zbar/(Zbar+Nbar) << " "
-               << thx.ed-T*thx.en << endl;
+          if (false) {
+            cout << "ret,log_xn,log_xp,Z,N,A,Z/A,fr:\n  "
+                 << ret << " " << log_xn << " " << log_xp << " "
+                 << Zbar << " " << Nbar << " " << Zbar+Nbar << " " 
+                 << Zbar/(Zbar+Nbar) << " "
+                 << thx.ed-T*thx.en << endl;
+          }
         
           // Compute the number density of free neutrons and protons
           double n_fraction, p_fraction;
@@ -8961,10 +8962,12 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
           // finite temperature
           sk.def_fet.kf_from_density(neutron);
           sk.def_fet.kf_from_density(proton);
-          //
-          cout << "mu2,mu4,mu2-mu4: " << mun_hom*hc_mev_fm << " "
-               << mup_hom*hc_mev_fm << " "
-               << (mun_hom-mup_hom)*hc_mev_fm << endl;
+
+          if (false) {
+            cout << "mu2,mu4,mu2-mu4: " << mun_hom*hc_mev_fm << " "
+            << mup_hom*hc_mev_fm << " "
+            << (mun_hom-mup_hom)*hc_mev_fm << endl;
+          }
           
           // Add the electrons
           double mue=electron.m;
@@ -8975,7 +8978,9 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
           electron.n=nB_grid2[inB]*Ye_grid2[iYe];
           electron.mu=mue;
 
-          cout << "mue: " << mue*hc_mev_fm << endl;
+          if (false) {
+            cout << "mue: " << mue*hc_mev_fm << endl;
+          }
 
           // Compute the total free energy
           double fr=thx.ed-T*thx.en+lep.ed-T*lep.en;
@@ -8992,13 +8997,13 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
             log_xp_best=log_xp;
             iYe_best=iYe;
           }
-          cout << "iYe_best: " << iYe_best << endl;
+          //cout << "iYe_best: " << iYe_best << endl;
           
           // End of for(size_t k=0;k<10;k++) {
         }
 
-        cout << "iYe,Ye,fr_Ye: " << iYe << " " << Ye << " "
-             << fr_Ye << endl;
+        cout << "iYe,Ye,iYe_best,fr_Ye: " << iYe << " " << Ye << " "
+             << iYe_best << " " << fr_Ye << endl;
         cout << endl;
       
         // End of loop for(size_t iYe=0;iYe<n_Ye2;iYe++) {
@@ -9101,7 +9106,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         cout << "U4: " << u4eos << endl;
         cout << "T*hc_mev_fm: " << T*hc_mev_fm << endl;
 
-        if (true) {
+        if (false) {
           vdet["msn"]=neutron.m*hc_mev_fm;
           vdet["msp"]=proton.m*hc_mev_fm;
           neutron.n=0.721726*0.0002;
@@ -9317,7 +9322,6 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         pol_nc.flag=Polarization::flag_axial;
         double nc_axvec_mfp=pol_nc.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
         cout << "neutral current, axial part: " << nc_axvec_mfp << endl;
-        exit(-1);
 
         line.push_back(nB);
         line.push_back(neutron.n);
@@ -9495,7 +9499,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
     }
     tab.line_of_data(line.size(),line);
     
-    if (j%100==0) {
+    if (true || j%100==0) {
       hdf_file hf;
       hf.open_or_create(sv[1]);
       hdf_output(hf,tab,"mb");
