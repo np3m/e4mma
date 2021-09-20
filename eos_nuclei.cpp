@@ -3459,6 +3459,10 @@ int eos_nuclei::eos_fixed_dist
   // Perform a final call to solve_nuclei() to ensure
   // the chemical potentials are updated
   sn_func(2,x1,y1);
+
+  // Store the chemical potentials for homogeneous matter
+  vdet["mun_hom"]=mun_gas;
+  vdet["mup_hom"]=mup_gas;
   
   if (mpi_size==1 && loc_verbose>1) {
     sn_func(2,x1,y1);
@@ -8873,16 +8877,21 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
       thermo lep;
       
       size_t Ye_min, Ye_max;
-      if (ipoint==0) {
-        //Ye_min=30;
-        Ye_min=20;
-        Ye_max=40;
-      } else if (ipoint==1) {
-        Ye_min=2;
-        Ye_max=12;
-      } else {
+      if (n_points>5) {
         Ye_min=0;
-        Ye_max=10;
+        Ye_max=40;
+      } else {
+        if (ipoint==0) {
+          //Ye_min=30;
+          Ye_min=20;
+          Ye_max=40;
+        } else if (ipoint==1) {
+          Ye_min=2;
+          Ye_max=12;
+        } else {
+          Ye_min=0;
+          Ye_max=10;
+        }
       }
           
       for(size_t iYe=Ye_min;iYe<Ye_max;iYe++) {
@@ -8944,15 +8953,18 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
             neutron.n=(1.0-Ye)*nB;
             proton.n=Ye*nB;
           }
-
+          
+          double mun_hom=vdet["mun_hom"];
+          double mup_hom=vdet["mup_hom"];
+          
           // Make sure to compute kf, which is not always computed at
           // finite temperature
           sk.def_fet.kf_from_density(neutron);
           sk.def_fet.kf_from_density(proton);
           //
-          cout << "mu2-mu4: " << mun_full*hc_mev_fm << " "
-               << mup_full*hc_mev_fm << " "
-               << (mun_full-mup_full)*hc_mev_fm << endl;
+          cout << "mu2,mu4,mu2-mu4: " << mun_hom*hc_mev_fm << " "
+               << mup_hom*hc_mev_fm << " "
+               << (mun_hom-mup_hom)*hc_mev_fm << endl;
           
           // Add the electrons
           double mue=electron.m;
@@ -9026,6 +9038,11 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         neutron.n=(1.0-Ye_best)*nB;
         proton.n=Ye_best*nB;
       }
+
+      double mun_hom=vdet["mun_hom"];
+      double mup_hom=vdet["mup_hom"];
+      cout << "mun, mup: " << mun_hom*hc_mev_fm << " "
+           << mup_hom*hc_mev_fm << endl;
       
       // Make sure to compute kf, which is not always computed at
       // finite temperature
@@ -9034,12 +9051,12 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
       
       // Add the electrons
       double mue=electron.m;
-      eso.compute_eg_point(nB,Ye_best,T,lep,mue);
+      eso.compute_eg_point(nB,Ye_best,T*hc_mev_fm,lep,mue);
       
       // Copy the electron results to the local electron object
       electron.n=nB*Ye_best;
       electron.mu=mue;
-      cout << "mue: " << Ye_best << " " << mue << endl;
+      cout << "mue: " << Ye_best << " " << mue*hc_mev_fm << endl;
       
       // Compute the total free energy
       double fr=thx.ed-T*thx.en+lep.ed-T*lep.en;
@@ -9053,7 +9070,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
            << Zbar/(Zbar+Nbar) << " " << X[5] << endl;
 
       double mu_n_nonint, mu_p_nonint;
-      if (true) {
+      if (false) {
         // Noninteracting fermions, but with the same mass as the
         // effective mass of the original neutron and proton
         fermion n2(neutron.ms,2.0), p2(proton.ms,2.0);
@@ -9083,7 +9100,21 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         double u4eos=proton.mu*hc_mev_fm-mu_p_nonint*hc_mev_fm;
         cout << "U4: " << u4eos << endl;
         cout << "T*hc_mev_fm: " << T*hc_mev_fm << endl;
-      
+
+        if (false) {
+          vdet["msn"]=neutron.m*hc_mev_fm;
+          vdet["msp"]=proton.m*hc_mev_fm;
+          neutron.n=0.721726*0.0002;
+          proton.n=0.0002-neutron.n;
+          cout << neutron.n << " " << proton.n << endl;
+          u2eos=-0.230804;
+          u4eos=-0.392108;
+          neutron.mu=-46.6625*hc_mev_fm;
+          proton.mu=-56.375*hc_mev_fm;
+          electron.mu=9.7124*hc_mev_fm;
+          electron.n=proton.n;
+        }
+        
         FluidState betaEoS;
         betaEoS=FluidState::StateFromDensities
           (T*hc_mev_fm,vdet["msn"],vdet["msp"],
@@ -9567,7 +9598,7 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
       "",new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::mcarlo_nuclei2),o2scl::cli::comm_option_both},
      {0,"mcarlo-beta","",
-      1,1,"<filename>",
+      1,2,"<filename> [n_points]",
       "",new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::mcarlo_beta),o2scl::cli::comm_option_both},
      {0,"test-neutrino","",
