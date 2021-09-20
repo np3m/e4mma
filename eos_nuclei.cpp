@@ -9110,9 +9110,9 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
           cout << neutron.n << " " << proton.n << endl;
           u2eos=-0.230804;
           u4eos=-0.392108;
-          neutron.mu=-46.6625;
-          proton.mu=-56.375;
-          electron.mu=9.7124;
+          neutron.mu=-46.6625/hc_mev_fm;
+          proton.mu=-56.375/hc_mev_fm;
+          electron.mu=9.7124/hc_mev_fm;
           electron.n=proton.n;
         }
         
