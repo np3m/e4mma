@@ -8877,7 +8877,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
       thermo lep;
       
       size_t Ye_min, Ye_max;
-      if (n_points>5) {
+      if (n_point>5) {
         Ye_min=0;
         Ye_max=40;
       } else {
@@ -9070,7 +9070,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
            << Zbar/(Zbar+Nbar) << " " << X[5] << endl;
 
       double mu_n_nonint, mu_p_nonint;
-      if (false) {
+      if (true) {
         // Noninteracting fermions, but with the same mass as the
         // effective mass of the original neutron and proton
         fermion n2(neutron.ms,2.0), p2(proton.ms,2.0);
@@ -9101,17 +9101,18 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         cout << "U4: " << u4eos << endl;
         cout << "T*hc_mev_fm: " << T*hc_mev_fm << endl;
 
-        if (false) {
+        if (true) {
           vdet["msn"]=neutron.m*hc_mev_fm;
           vdet["msp"]=proton.m*hc_mev_fm;
           neutron.n=0.721726*0.0002;
           proton.n=0.0002-neutron.n;
+          cout << "neutron.n proton.n: ";
           cout << neutron.n << " " << proton.n << endl;
           u2eos=-0.230804;
           u4eos=-0.392108;
-          neutron.mu=-46.6625*hc_mev_fm;
-          proton.mu=-56.375*hc_mev_fm;
-          electron.mu=9.7124*hc_mev_fm;
+          neutron.mu=-46.6625;
+          proton.mu=-56.375;
+          electron.mu=9.7124;
           electron.n=proton.n;
         }
         
@@ -9598,7 +9599,7 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
       "",new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::mcarlo_nuclei2),o2scl::cli::comm_option_both},
      {0,"mcarlo-beta","",
-      1,2,"<filename> [n_points]",
+      1,2,"<filename> [n_point]",
       "",new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::mcarlo_beta),o2scl::cli::comm_option_both},
      {0,"test-neutrino","",
