@@ -9081,7 +9081,8 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
       if (true) {
         // Noninteracting fermions, but with the same mass as the
         // effective mass of the original neutron and proton
-        fermion n2(neutron.ms,2.0), p2(proton.ms,2.0);
+        //fermion n2(neutron.ms,2.0), p2(proton.ms,2.0);
+        fermion n2(vdet["msn"],2.0), p2(vdet["msp"],2.0);
         n2.n=neutron.n;
         p2.n=proton.n;
         n2.inc_rest_mass=false;
