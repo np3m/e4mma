@@ -242,7 +242,7 @@ mbtestd:
 		-load ~/data/eos/final/fid_6_30_21.o2 \
 		-mcarlo-beta mb_temp1.o2 100
 
-mbt1:
+mb1:
 	eos_nuclei \
 		-set select_cs2_test 0 \
 		-select-model $(P_FIDUCIAL) \
@@ -252,9 +252,9 @@ mbt1:
 		-set fixed_dist_alg 1999 \
 		-set function_verbose 0 \
 		-load ~/data/eos/final/fid_6_30_21.o2 \
-		-mcarlo-beta mb_temp1.o2 > mbt1.out 2>&1 &
+		-mcarlo-beta mb1.o2 > mb1.out 2>&1 &
 
-mbt1d:
+mb1d:
 	eos_nuclei \
 		-set select_cs2_test 0 \
 		-select-model $(P_FIDUCIAL) \
@@ -264,7 +264,7 @@ mbt1d:
 		-set fixed_dist_alg 1999 \
 		-set function_verbose 0 \
 		-load ~/data/eos/final/fid_6_30_21.o2 \
-		-mcarlo-beta mb_temp1d.o2 100 > mbt1d.out 2>&1 &
+		-mcarlo-beta mb1d.o2 100 > mb1d.out 2>&1 &
 
 mbt2:
 	eos_nuclei \
