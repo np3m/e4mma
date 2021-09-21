@@ -8879,13 +8879,14 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
       
       size_t Ye_min, Ye_max;
       if (n_point>5) {
-        double Ye_min_d=0.05+0.29*exp(-((double)ipoint)/24.0)-5.0;
-        double Ye_max_d=0.05+0.29*exp(-((double)ipoint)/24.0)+5.0;
+        double Ye_min_d=29.0*exp(-((double)(ipoint))/24.0);
+        double Ye_max_d=10.0+29.0*exp(-((double)(ipoint))/24.0);
         if (Ye_min_d<0.0) Ye_min_d=0.0;
-        if (Ye_max_d>40.0) Ye_min_d=40.0;
+        if (Ye_max_d>40.0) Ye_max_d=40.0;
         Ye_min=((size_t)Ye_min_d);
-        Ye_max=((size_t)Ye_min_d);
-        cout << ipoint << " " << Ye_min << " " << Ye_max << endl;
+        Ye_max=((size_t)Ye_max_d);
+        cout << ipoint << " " << Ye_min_d << " " << Ye_max_d << " "
+             << Ye_min << " " << Ye_max << endl;
       } else {
         if (ipoint==0) {
           Ye_min=30;
@@ -9088,7 +9089,8 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
       if (true) {
         // Noninteracting fermions, but with the same mass as the
         // effective mass of the original neutron and proton
-        fermion n2(vdet["msn"],2.0), p2(vdet["msp"],2.0);
+        fermion n2(vdet["msn"]/hc_mev_fm,2.0),
+          p2(vdet["msp"]/hc_mev_fm,2.0);
         n2.n=neutron.n;
         p2.n=proton.n;
         n2.inc_rest_mass=false;
