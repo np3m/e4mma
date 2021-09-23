@@ -72,13 +72,13 @@ double eos_crust_virial_v2::f0p(double lambda, double T) {
 }
 
 double eos_crust_virial_v2::g0(double lambda, double T) {
-  return -lambda*lambda*lambda/2.0*T*
+  return lambda*lambda*lambda/2.0*T*
     (bn0(T)-bn0_free()-bn1(T)+bn1_free()+
      bpn0(T)-bpn0_free()-bpn1(T)+bpn1_free());
 }
 
 double eos_crust_virial_v2::g0p(double lambda, double T) {
-  return -lambda*lambda*lambda/2.0*T*
+  return lambda*lambda*lambda/2.0*T*
     (bn0(T)-bn0_free()-bn1(T)+bn1_free()-
      bpn0(T)+bpn0_free()+bpn1(T)-bpn1_free());
 }
@@ -112,6 +112,8 @@ eos_crust_virial_v2::eos_crust_virial_v2() {
         0.336,0.324,0.315};
   iv_ba.set(ba_T.size(),ba_T,vba,itp_steffen);
   iv_bpna.set(ba_T.size(),ba_T,vbpna,itp_steffen);
+
+  include_deuteron=false;
 }
 
 double eos_crust_virial_v2::bn_func(size_t np, const vector<double> &par,
@@ -122,8 +124,12 @@ double eos_crust_virial_v2::bn_func(size_t np, const vector<double> &par,
 
 double eos_crust_virial_v2::bpn_func(size_t np, const vector<double> &par,
 				     double T) {
-  return par[0]*exp(-par[1]*(T+par[2])*(T+par[2]))+
+  double ret=par[0]*exp(-par[1]*(T+par[2])*(T+par[2]))+
     par[3]*exp(-par[4]*(T+par[5]));
+  if (include_deuteron) {
+    ret+=3.0/sqrt(2.0)*(exp(2.22/T)-1.0);
+  }
+  return ret;
 }
 
 double eos_crust_virial_v2::bn_f(double T) {
@@ -1384,6 +1390,10 @@ double eos::free_energy_density_detail
   //<< msn_Tcorr_T << " " << msn_Tcorr_T0 << endl;
   n.ms=neutron.m*g_virial+(1.0-g_virial)*(msn_T0+msn_Tcorr_T-msn_Tcorr_T0);
   p.ms=proton.m*g_virial+(1.0-g_virial)*(msp_T0+msp_Tcorr_T-msp_Tcorr_T0);
+  cout << "msn: " << neutron.m << " " << g_virial << " "
+       << msn_T0 << " " << msn_Tcorr_T << " " << msn_Tcorr_T0 << endl;
+  cout << "msp: " << proton.m << " " << g_virial << " "
+       << msp_T0 << " " << msp_Tcorr_T << " " << msp_Tcorr_T0 << endl;
   
   // -------------------------------------------------------------
   // Compute derivatives for entropy

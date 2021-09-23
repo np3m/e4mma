@@ -8848,7 +8848,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
                          sk.t2*hc_mev_fm,sk.t3*hc_mev_fm,
                          sk.x0,sk.x1,sk.x2,sk.x3,sk.alpha};
 
-    for(size_t ipoint=0;ipoint<n_point;ipoint++) {
+    for(size_t ipoint=2;ipoint<n_point;ipoint++) {
 
       double nB=nB_list[ipoint];
       //cout << "nBX: " << nB << endl;
@@ -9111,6 +9111,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         cout << "nn: " << neutron.n << endl;
         cout << "np: " << proton.n << endl;
         cout << "g: " << vdet["g"] << endl;
+        exit(-1);
 
         double u2eos=neutron.mu*hc_mev_fm-mu_n_nonint*hc_mev_fm;
         cout << "U2: " << u2eos << endl;
@@ -9216,7 +9217,8 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         gnn_sk/=pow(hc_mev_fm,2);
         gnp_sk/=pow(hc_mev_fm,2);
         gpp_sk/=pow(hc_mev_fm,2);
-      
+
+        ecv.include_deuteron=true;
         double b_n=ecv.bn_f(T*hc_mev_fm);
         double b_pn=ecv.bpn_f(T*hc_mev_fm);
       
@@ -9238,16 +9240,24 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
              << ecv.bpn1(T*hc_mev_fm) << " " << ecv.bpn1_free() << endl;
         cout << "f0,f0p,g0,g0p: " << f0 << " " << f0p << " " << g0 << " "
              << g0p << endl;
+        ecv.include_deuteron=false;
       
         double fnn_virial=f0+f0p;
         double fnp_virial=f0-f0p;
         double fpp_virial=fnn_virial;
-        double gnn_virial=f0+f0p;
-        double gnp_virial=f0-f0p;
+        double gnn_virial=g0+g0p;
+        double gnp_virial=g0-g0p;
         double gpp_virial=gnn_virial;
       
         double g_virial=vdet["g"];
       
+        // Coulomb correction for fpp
+        double e2=1.0/137.0*4.0*o2scl_const::pi;
+        double qtf2=4.0*e2*cbrt(o2scl_const::pi)*
+          pow(3.0*proton.n*pow(o2scl_const::hc_mev_fm,3),2.0/3.0);
+        double q=3*T*hc_mev_fm;
+        double coulombf=e2*4.0*o2scl_const::pi/(q*q+qtf2);
+        
         double fnn=fnn_virial*g_virial+fnn_sk*(1.0-g_virial);
         double fnp=fnp_virial*g_virial+fnp_sk*(1.0-g_virial);
         double fpp=fpp_virial*g_virial+fpp_sk*(1.0-g_virial);
@@ -9304,6 +9314,9 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         // Charged current from virial expansion
         double vf_virial=2.0*f0p;
         double vgt_virial=2.0*g0p;
+        //cout << "f0p,g0p,vf_virial,vgt_virial: "
+        //<< f0p << " " << g0p << " " << vf_virial << " " << vgt_virial
+        //<< endl;
       
         double vf=vf_virial*g_virial+vf_sk*(1.0-g_virial);
         double vgt=vgt_virial*g_virial+vgt_sk*(1.0-g_virial);
@@ -9355,19 +9368,19 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         line.push_back(X[5]);
         line.push_back(Ye_best);
         line.push_back(fnn_sk);
-        line.push_back(fpp_sk);
+        line.push_back(fpp_sk+coulombf);
         line.push_back(fnp_sk);
         line.push_back(gnn_sk);
         line.push_back(gpp_sk);
         line.push_back(gnp_sk);
         line.push_back(fnn_virial);
-        line.push_back(fpp_virial);
+        line.push_back(fpp_virial+coulombf);
         line.push_back(fnp_virial);
         line.push_back(gnn_virial);
         line.push_back(gpp_virial);
         line.push_back(gnp_virial);
         line.push_back(fnn);
-        line.push_back(fpp);
+        line.push_back(fpp+coulombf);
         line.push_back(fnp);
         line.push_back(gnn);
         line.push_back(gpp);
@@ -9408,13 +9421,6 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
             
             Tensor<double> piVV, piAA, piTT, piVA, piVT, piAT;
             double piL, piLn, piLp, piLnRe, piLpRe, piRPAax, piRPAvec;
-            
-            // Coulomb correction for fpp
-            double e2=1.0/137.0*4.0*o2scl_const::pi;
-            double qtf2=4.0*e2*cbrt(o2scl_const::pi)*
-              pow(3.0*proton.n*pow(o2scl_const::hc_mev_fm,3),2.0/3.0);
-            double q=3*T_MeV;
-            double coulombf=e2*4.0*o2scl_const::pi/(q*q+qtf2);
             
             pol_nc.SetPolarizations_neutral(w,3*T_MeV,&piVV,&piAA,
                                             &piTT,&piVA,&piVT,&piAT,
@@ -9502,7 +9508,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
     if (tab.get_ncolumns()!=line.size()) {
       O2SCL_ERR("Mismatch of columns.",o2scl::exc_einval);
     }
-    if (false) {
+    if (true) {
       for(size_t jj=0;jj<line.size();jj++) {
         cout << tab.get_column_name(jj) << " ";
         cout << line[jj] << endl;

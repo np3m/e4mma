@@ -59,6 +59,8 @@ class eos_crust_virial_v2 : public o2scl::eos_crust_virial {
   
  public:
 
+  bool include_deuteron;
+  
   /** \brief Desc
    */
   std::vector<double> ba_T;
