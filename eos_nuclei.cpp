@@ -8823,6 +8823,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
   
   vector<double> nB_list={1.0e-4,5.0e-3,0.15};
   vector<double> TMeV_list={10,10,10};
+  include_detail=true;
 
   if (n_point>5) {
     nB_list.clear();
@@ -8848,7 +8849,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
                          sk.t2*hc_mev_fm,sk.t3*hc_mev_fm,
                          sk.x0,sk.x1,sk.x2,sk.x3,sk.alpha};
 
-    for(size_t ipoint=2;ipoint<n_point;ipoint++) {
+    for(size_t ipoint=0;ipoint<n_point;ipoint++) {
 
       double nB=nB_list[ipoint];
       //cout << "nBX: " << nB << endl;
@@ -8899,142 +8900,157 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
           Ye_max=10;
         }
       }
-          
-      for(size_t iYe=Ye_min;iYe<Ye_max;iYe++) {
 
-        //for(size_t iYe=0;iYe<10;iYe++) {
-        double Ye=Ye_grid2[iYe];
-      
-        if (tg3_flag.get(inB,iYe,iT)<9.9) {
-          cerr << "Point not converged." << endl;
-          return 3;
-        }
-      
-        int A_min=((int)(tg3_A_min.get(inB,iYe,iT)));
-        int A_max=((int)(tg3_A_max.get(inB,iYe,iT)));
-        int NmZ_min=((int)(tg3_NmZ_min.get(inB,iYe,iT)));
-        int NmZ_max=((int)(tg3_NmZ_max.get(inB,iYe,iT)));
-
-        double fr_Ye=1.0e100;
-      
-        for(size_t k=0;k<10;k++) {
-
-          // Ensure a random initial guess
+      double Ye_best;
+      if (false) {
         
-          //log_xn=tg3_log_xn.get(inB,iYe,iT)+(rng.random()*6.0-3.0);
-          //log_xp=tg3_log_xp.get(inB,iYe,iT)+(rng.random()*6.0-3.0);
-          log_xn=tg3_log_xn.get(inB,iYe,iT)+(rng.random()*0.5-0.25);
-          log_xp=tg3_log_xp.get(inB,iYe,iT)+(rng.random()*0.5-0.25);
-
-          // Compute the EOS
-        
-          include_detail=true;
+        for(size_t iYe=Ye_min;iYe<Ye_max;iYe++) {
           
-          int ret=eos_vary_dist(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,
-                                thx,mun_full,mup_full,
-                                A_min,A_max,NmZ_min,NmZ_max,vdet,
-                                dist_changed,no_nuclei);
-
-          if (false) {
-            cout << "ret,log_xn,log_xp,Z,N,A,Z/A,fr:\n  "
-                 << ret << " " << log_xn << " " << log_xp << " "
-                 << Zbar << " " << Nbar << " " << Zbar+Nbar << " " 
-                 << Zbar/(Zbar+Nbar) << " "
-                 << thx.ed-T*thx.en << endl;
+          //for(size_t iYe=0;iYe<10;iYe++) {
+          double Ye=Ye_grid2[iYe];
+          
+          if (tg3_flag.get(inB,iYe,iT)<9.9) {
+            cerr << "Point not converged." << endl;
+            return 3;
           }
-        
-          // Compute the number density of free neutrons and protons
-          double n_fraction, p_fraction;
-          if (nB<0.16) {
-            double xn=0.0;
-            if (log_xn>-300.0) {
-              xn=pow(10.0,log_xn);
+          
+          int A_min=((int)(tg3_A_min.get(inB,iYe,iT)));
+          int A_max=((int)(tg3_A_max.get(inB,iYe,iT)));
+          int NmZ_min=((int)(tg3_NmZ_min.get(inB,iYe,iT)));
+          int NmZ_max=((int)(tg3_NmZ_max.get(inB,iYe,iT)));
+          
+          double fr_Ye=1.0e100;
+          
+          for(size_t k=0;k<10;k++) {
+            
+            // Ensure a random initial guess
+            
+            //log_xn=tg3_log_xn.get(inB,iYe,iT)+(rng.random()*6.0-3.0);
+            //log_xp=tg3_log_xp.get(inB,iYe,iT)+(rng.random()*6.0-3.0);
+            log_xn=tg3_log_xn.get(inB,iYe,iT)+(rng.random()*0.5-0.25);
+            log_xp=tg3_log_xp.get(inB,iYe,iT)+(rng.random()*0.5-0.25);
+            
+            // Compute the EOS
+            
+            int ret=eos_vary_dist(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,
+                                  thx,mun_full,mup_full,
+                                  A_min,A_max,NmZ_min,NmZ_max,vdet,
+                                  dist_changed,no_nuclei);
+            
+            if (false) {
+              cout << "ret,log_xn,log_xp,Z,N,A,Z/A,fr:\n  "
+                   << ret << " " << log_xn << " " << log_xp << " "
+                   << Zbar << " " << Nbar << " " << Zbar+Nbar << " " 
+                   << Zbar/(Zbar+Nbar) << " "
+                   << thx.ed-T*thx.en << endl;
             }
-            double xp=0.0;
-            if (log_xp>-300.0) {
-              xp=pow(10.0,log_xp);
+            
+            // Compute the number density of free neutrons and protons
+            double n_fraction, p_fraction;
+            if (nB<0.16) {
+              double xn=0.0;
+              if (log_xn>-300.0) {
+                xn=pow(10.0,log_xn);
+              }
+              double xp=0.0;
+              if (log_xp>-300.0) {
+                xp=pow(10.0,log_xp);
+              }
+              double n0=0.16;
+              neutron.n=xn*(1.0-nB/n0)/(1.0-nB*xn/n0-nB*xp/n0)*nB;
+              proton.n=xp*(1.0-nB/n0)/(1.0-nB*xn/n0-nB*xp/n0)*nB;    
+            } else {
+              neutron.n=(1.0-Ye)*nB;
+              proton.n=Ye*nB;
             }
-            double n0=0.16;
-            neutron.n=xn*(1.0-nB/n0)/(1.0-nB*xn/n0-nB*xp/n0)*nB;
-            proton.n=xp*(1.0-nB/n0)/(1.0-nB*xn/n0-nB*xp/n0)*nB;    
-          } else {
-            neutron.n=(1.0-Ye)*nB;
-            proton.n=Ye*nB;
+            
+            double mun_hom=vdet["mun_hom"];
+            double mup_hom=vdet["mup_hom"];
+            
+            // Make sure to compute kf, which is not always computed at
+            // finite temperature
+            sk.def_fet.kf_from_density(neutron);
+            sk.def_fet.kf_from_density(proton);
+            
+            if (false) {
+              cout << "mu2,mu4,mu2-mu4: " << mun_hom*hc_mev_fm << " "
+                   << mup_hom*hc_mev_fm << " "
+                   << (mun_hom-mup_hom)*hc_mev_fm << endl;
+            }
+            
+            // Add the electrons
+            double mue=electron.m;
+            eso.compute_eg_point(nB_grid2[inB],Ye_grid2[iYe],
+                                 T_grid2[iT],lep,mue);
+            
+            // Copy the electron results to the local electron object
+            electron.n=nB_grid2[inB]*Ye_grid2[iYe];
+            electron.mu=mue;
+            
+            if (false) {
+              cout << "mue: " << mue*hc_mev_fm << endl;
+            }
+            
+            // Compute the total free energy
+            double fr=thx.ed-T*thx.en+lep.ed-T*lep.en;
+            
+            // Compute the lowest free energy for this value of Ye
+            if (ret==0 && fr<fr_Ye) {
+              fr_Ye=fr;
+            }
+            
+            // Compute the overall lowest free energy
+            if (ret==0 && fr<fr_best) {
+              fr_best=fr;
+              log_xn_best=log_xn;
+              log_xp_best=log_xp;
+              iYe_best=iYe;
+            }
+            //cout << "iYe_best: " << iYe_best << endl;
+            
+            // End of for(size_t k=0;k<10;k++) {
           }
           
-          double mun_hom=vdet["mun_hom"];
-          double mup_hom=vdet["mup_hom"];
-          
-          // Make sure to compute kf, which is not always computed at
-          // finite temperature
-          sk.def_fet.kf_from_density(neutron);
-          sk.def_fet.kf_from_density(proton);
-
+          cout << "iYe,Ye,iYe_best,fr_Ye: " << iYe << " " << Ye << " "
+               << iYe_best << " " << fr_Ye << endl;
+          cout << ipoint << " " << Ye_min << " " << Ye_max << " "
+               << iYe_best << endl;
           if (false) {
-            cout << "mu2,mu4,mu2-mu4: " << mun_hom*hc_mev_fm << " "
-            << mup_hom*hc_mev_fm << " "
-            << (mun_hom-mup_hom)*hc_mev_fm << endl;
+            cout << endl;
           }
           
-          // Add the electrons
-          double mue=electron.m;
-          eso.compute_eg_point(nB_grid2[inB],Ye_grid2[iYe],
-                               T_grid2[iT],lep,mue);
-
-          // Copy the electron results to the local electron object
-          electron.n=nB_grid2[inB]*Ye_grid2[iYe];
-          electron.mu=mue;
-
-          if (false) {
-            cout << "mue: " << mue*hc_mev_fm << endl;
-          }
-
-          // Compute the total free energy
-          double fr=thx.ed-T*thx.en+lep.ed-T*lep.en;
-
-          // Compute the lowest free energy for this value of Ye
-          if (ret==0 && fr<fr_Ye) {
-            fr_Ye=fr;
-          }
-
-          // Compute the overall lowest free energy
-          if (ret==0 && fr<fr_best) {
-            fr_best=fr;
-            log_xn_best=log_xn;
-            log_xp_best=log_xp;
-            iYe_best=iYe;
-          }
-          //cout << "iYe_best: " << iYe_best << endl;
-          
-          // End of for(size_t k=0;k<10;k++) {
+          // End of loop for(size_t iYe=0;iYe<n_Ye2;iYe++) {
         }
-
-        cout << "iYe,Ye,iYe_best,fr_Ye: " << iYe << " " << Ye << " "
-             << iYe_best << " " << fr_Ye << endl;
-        cout << ipoint << " " << Ye_min << " " << Ye_max << " "
-             << iYe_best << endl;
-        if (false) {
-          cout << endl;
-        }
-      
-        // End of loop for(size_t iYe=0;iYe<n_Ye2;iYe++) {
+        
+        Ye_best=Ye_grid2[iYe_best];
+      } else {
+        double ii=log10(nB)*31.485+126;
+        Ye_best=0.05+0.28*exp(-ii/24.0);
+        iYe_best=((size_t)(Ye_best*100.0-1.0));
+        cout << "iYe_best,Ye_best: " << iYe_best << " " << Ye_best << endl;
       }
-
+      
       // Now compute the EOS at the optimal Ye
-    
-      log_xn=log_xn_best;
-      log_xp=log_xp_best;
-      double Ye_best=Ye_grid2[iYe_best];
+      
       int A_min_best=((int)(tg3_A_min.get(inB,iYe_best,iT)));
       int A_max_best=((int)(tg3_A_max.get(inB,iYe_best,iT)));
       int NmZ_min_best=((int)(tg3_NmZ_min.get(inB,iYe_best,iT)));
       int NmZ_max_best=((int)(tg3_NmZ_max.get(inB,iYe_best,iT)));
 
-      int ret2=eos_vary_dist(nB,Ye_best,T,log_xn,log_xp,Zbar,Nbar,
-                             thx,mun_full,mup_full,
-                             A_min_best,A_max_best,NmZ_min_best,
-                             NmZ_max_best,vdet,
-                             dist_changed,no_nuclei);
+      int ret2=10;
+      for(size_t k=0;k<10 && ret2!=0;k++) {
+        log_xn=tg3_log_xn.get(inB,iYe_best,iT)+(rng.random()*0.5-0.25);
+        log_xp=tg3_log_xp.get(inB,iYe_best,iT)+(rng.random()*0.5-0.25);
+        ret2=eos_vary_dist(nB,Ye_best,T,log_xn,log_xp,Zbar,Nbar,
+                           thx,mun_full,mup_full,
+                           A_min_best,A_max_best,NmZ_min_best,
+                           NmZ_max_best,vdet,
+                           dist_changed,no_nuclei);
+      }
+      if (ret2!=0) {
+        cout << "Point failed." << endl;
+        exit(-1);
+      }
 
       // Compute the number density of free neutrons and protons
       double n_fraction, p_fraction;
@@ -9066,7 +9082,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
       sk.def_fet.kf_from_density(proton);
       
       // Add the electrons
-      double mue=electron.m;
+      double mue=mun_hom-mup_hom;
       eso.compute_eg_point(nB,Ye_best,T*hc_mev_fm,lep,mue);
       
       // Copy the electron results to the local electron object
@@ -9093,6 +9109,8 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
           p2(vdet["msp"]/hc_mev_fm,2.0);
         n2.n=neutron.n;
         p2.n=proton.n;
+        n2.mu=mun_hom;
+        p2.mu=mup_hom;
         n2.inc_rest_mass=false;
         p2.inc_rest_mass=false;
         fermion_nonrel fnr;
@@ -9111,7 +9129,6 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         cout << "nn: " << neutron.n << endl;
         cout << "np: " << proton.n << endl;
         cout << "g: " << vdet["g"] << endl;
-        exit(-1);
 
         double u2eos=neutron.mu*hc_mev_fm-mu_n_nonint*hc_mev_fm;
         cout << "U2: " << u2eos << endl;
@@ -9508,7 +9525,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
     if (tab.get_ncolumns()!=line.size()) {
       O2SCL_ERR("Mismatch of columns.",o2scl::exc_einval);
     }
-    if (true) {
+    if (false) {
       for(size_t jj=0;jj<line.size();jj++) {
         cout << tab.get_column_name(jj) << " ";
         cout << line[jj] << endl;

@@ -297,3 +297,14 @@ nt2:
 	./enn -test-neutrino > tn_new.out
 	 head -n 170 tn.out | tail -n 10
 	 head -n 40 tn_new.out | tail -n 12
+
+yetest:
+	o2graph -set logx 1 \
+		-plotv "grid:1.0e-4,0.15,(0.15/1.0e-4)^(1/99),log" \
+		"hdf5:~awsteiner/data/21/09/23/mb1d.o2:mb:0:Ye_best_*" \
+		-create table x \
+		"grid:1.0e-4,0.15,(0.15/1.0e-4)^(1/99),log" \
+		-function "log10(x)*31.485+126" i \
+		-function "0.05+0.28*exp(-i/24)" ye2 \
+		-plot x ye2 \
+		-show

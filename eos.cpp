@@ -1097,6 +1097,15 @@ double eos::free_energy_density_detail
     g_virial=0.0;
   }
 
+  // Compute the T=0 effective masses by computing the asymmetric
+  // Skyrme EOS at T=0:
+  
+  n.n=nn;
+  p.n=pn;
+  sk.calc_e(n,p,th);
+  
+  double msn_T0=n.ms, msp_T0=p.ms;
+  
   // ----------------------------------------------------------------
   // Compute the Skyrme EOS in nuclear matter at T=0
 
@@ -1126,7 +1135,6 @@ double eos::free_energy_density_detail
 
   double msn_Tcorr_T0=0.0, msp_Tcorr_T0=0.0;
   double msn_Tcorr_T=0.0, msp_Tcorr_T=0.0;
-  double msn_T0=n.ms, msp_T0=p.ms;
   
   if (old_version==false) {
     
@@ -1386,14 +1394,8 @@ double eos::free_energy_density_detail
     +f_deg*(-dgvirialdnp);
 
   // Final effective masses
-  //cout << "Here: " << g_virial << " " << msn_T0 << " "
-  //<< msn_Tcorr_T << " " << msn_Tcorr_T0 << endl;
   n.ms=neutron.m*g_virial+(1.0-g_virial)*(msn_T0+msn_Tcorr_T-msn_Tcorr_T0);
   p.ms=proton.m*g_virial+(1.0-g_virial)*(msp_T0+msp_Tcorr_T-msp_Tcorr_T0);
-  cout << "msn: " << neutron.m << " " << g_virial << " "
-       << msn_T0 << " " << msn_Tcorr_T << " " << msn_Tcorr_T0 << endl;
-  cout << "msp: " << proton.m << " " << g_virial << " "
-       << msp_T0 << " " << msp_Tcorr_T << " " << msp_Tcorr_T0 << endl;
   
   // -------------------------------------------------------------
   // Compute derivatives for entropy
@@ -3274,6 +3276,13 @@ int eos::select_internal(int i_ns_loc, int i_skyrme_loc,
 			   Crdr0/hc_mev_fm,Crdr1/hc_mev_fm,
 			   CrdJ0/hc_mev_fm,CrdJ1/hc_mev_fm);
 
+  /*
+    sk.saturation();
+    cout << "Here " << 0.15 << " " << rho0 << " "
+    << sk.f_effm_neut(0.15,(0.1441255-0.00758352)/0.15) << " "
+    << sk.f_effm_prot(0.15,(0.1441255-0.00758352)/0.15) << endl;
+  */
+  
   // Test to make sure dineutrons are not bound
   for(double nb=0.01;nb<0.16;nb+=0.001) {
     neutron.n=nb;
