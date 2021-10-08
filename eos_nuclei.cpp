@@ -19,10 +19,10 @@
   -------------------------------------------------------------------
 */
 #include "eos_nuclei.h"
-#include "zidu/tensor.h"
-#include "zidu/Polarization.hpp"
-#include "zidu/PolarizationNonRel.hpp"
-#include "zidu/constants.h"
+#include "neutrino/tensor.h"
+#include "neutrino/Polarization.hpp"
+#include "neutrino/PolarizationNonRel.hpp"
+#include "neutrino/constants.h"
 
 #include <o2scl/root_brent_gsl.h>
 #include <o2scl/classical.h>

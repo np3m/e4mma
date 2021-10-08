@@ -57,73 +57,73 @@ eos_had_skyrme_ext.o: eos_had_skyrme_ext.cpp virial_solver.h \
 main.o: main.cpp virial_solver.h eos.h 
 	$(LMPI_CXX) $(LMPI_CFLAGS) -o main.o -c main.cpp 
 
-zidu/Couplings.o: zidu/Couplings.cpp zidu/Couplings.hpp
-	$(LCXX) $(LCFLAGS) -DNUOPAC_HAS_GSL -o zidu/Couplings.o \
-		-c zidu/Couplings.cpp
+neutrino/Couplings.o: neutrino/Couplings.cpp neutrino/Couplings.hpp
+	$(LCXX) $(LCFLAGS) -DNUOPAC_HAS_GSL -o neutrino/Couplings.o \
+		-c neutrino/Couplings.cpp
 
-zidu/FluidState.o: zidu/FluidState.cpp zidu/FluidState.hpp
-	$(LCXX) $(LCFLAGS) -DNUOPAC_HAS_GSL -o zidu/FluidState.o \
-		-c zidu/FluidState.cpp
+neutrino/FluidState.o: neutrino/FluidState.cpp neutrino/FluidState.hpp
+	$(LCXX) $(LCFLAGS) -DNUOPAC_HAS_GSL -o neutrino/FluidState.o \
+		-c neutrino/FluidState.cpp
 
-zidu/FunctionIntegrator.o: zidu/FunctionIntegrator.cpp \
-	zidu/FunctionIntegrator.hpp
-	$(LCXX) $(LCFLAGS) -DNUOPAC_HAS_GSL -o zidu/FunctionIntegrator.o \
-	-c zidu/FunctionIntegrator.cpp
+neutrino/FunctionIntegrator.o: neutrino/FunctionIntegrator.cpp \
+	neutrino/FunctionIntegrator.hpp
+	$(LCXX) $(LCFLAGS) -DNUOPAC_HAS_GSL -o neutrino/FunctionIntegrator.o \
+	-c neutrino/FunctionIntegrator.cpp
 
-zidu/Polarization.o: zidu/Polarization.cpp zidu/Polarization.hpp
-	$(LCXX) $(LCFLAGS) -DNUOPAC_HAS_GSL -o zidu/Polarization.o \
-		-c zidu/Polarization.cpp
+neutrino/Polarization.o: neutrino/Polarization.cpp neutrino/Polarization.hpp
+	$(LCXX) $(LCFLAGS) -DNUOPAC_HAS_GSL -o neutrino/Polarization.o \
+		-c neutrino/Polarization.cpp
 
-zidu/PolarizationNonRelv2Apr8.o: zidu/PolarizationNonRelv2Apr8.cpp 
+neutrino/PolarizationNonRelv2Apr8.o: neutrino/PolarizationNonRelv2Apr8.cpp 
 	$(LCXX) $(LCFLAGS) -DNUOPAC_HAS_GSL \
-		-o zidu/PolarizationNonRelv2Apr8.o \
-		-c zidu/PolarizationNonRelv2Apr8.cpp
+		-o neutrino/PolarizationNonRelv2Apr8.o \
+		-c neutrino/PolarizationNonRelv2Apr8.cpp
 
-zidu/jacobi_rule.o: zidu/jacobi_rule.cpp zidu/jacobi_rule.hpp
-	$(LCXX) $(LCFLAGS) -DNUOPAC_HAS_GSL -o zidu/jacobi_rule.o \
-		-c zidu/jacobi_rule.cpp
+neutrino/jacobi_rule.o: neutrino/jacobi_rule.cpp neutrino/jacobi_rule.hpp
+	$(LCXX) $(LCFLAGS) -DNUOPAC_HAS_GSL -o neutrino/jacobi_rule.o \
+		-c neutrino/jacobi_rule.cpp
 
 eos_nuclei: eos.o main.o eos_nuclei.o eos_had_skyrme_ext.o \
 		virial_solver_deriv.h \
-		zidu/Couplings.o zidu/FluidState.o \
-		zidu/FunctionIntegrator.o zidu/Polarization.o \
-		zidu/PolarizationNonRelv2Apr8.o zidu/jacobi_rule.o 
+		neutrino/Couplings.o neutrino/FluidState.o \
+		neutrino/FunctionIntegrator.o neutrino/Polarization.o \
+		neutrino/PolarizationNonRelv2Apr8.o neutrino/jacobi_rule.o 
 	$(LMPI_CXX) $(LMPI_CFLAGS) -o eos_nuclei eos.o main.o \
 		eos_nuclei.o eos_had_skyrme_ext.o \
-		zidu/Couplings.o zidu/FluidState.o \
-		zidu/FunctionIntegrator.o zidu/Polarization.o \
-		zidu/PolarizationNonRelv2Apr8.o zidu/jacobi_rule.o \
+		neutrino/Couplings.o neutrino/FluidState.o \
+		neutrino/FunctionIntegrator.o neutrino/Polarization.o \
+		neutrino/PolarizationNonRelv2Apr8.o neutrino/jacobi_rule.o \
 		$(LIBS) -lreadline
 
 # ----------------------------------------------------------------
 # Version without MPI
 # ----------------------------------------------------------------
 
-zidu/Couplings_nompi.o: zidu/Couplings.cpp zidu/Couplings.hpp
-	$(LCXX) $(LCFLAGS) -DNUOPAC_HAS_GSL -o zidu/Couplings_nompi.o \
-		-c zidu/Couplings.cpp
+neutrino/Couplings_nompi.o: neutrino/Couplings.cpp neutrino/Couplings.hpp
+	$(LCXX) $(LCFLAGS) -DNUOPAC_HAS_GSL -o neutrino/Couplings_nompi.o \
+		-c neutrino/Couplings.cpp
 
-zidu/FluidState_nompi.o: zidu/FluidState.cpp zidu/FluidState.hpp
-	$(LCXX) $(LCFLAGS) -DNUOPAC_HAS_GSL -o zidu/FluidState_nompi.o \
-		-c zidu/FluidState.cpp
+neutrino/FluidState_nompi.o: neutrino/FluidState.cpp neutrino/FluidState.hpp
+	$(LCXX) $(LCFLAGS) -DNUOPAC_HAS_GSL -o neutrino/FluidState_nompi.o \
+		-c neutrino/FluidState.cpp
 
-zidu/FunctionIntegrator_nompi.o: zidu/FunctionIntegrator.cpp \
-	zidu/FunctionIntegrator.hpp
-	$(LCXX) $(LCFLAGS) -DNUOPAC_HAS_GSL -o zidu/FunctionIntegrator_nompi.o \
-	-c zidu/FunctionIntegrator.cpp
+neutrino/FunctionIntegrator_nompi.o: neutrino/FunctionIntegrator.cpp \
+	neutrino/FunctionIntegrator.hpp
+	$(LCXX) $(LCFLAGS) -DNUOPAC_HAS_GSL -o neutrino/FunctionIntegrator_nompi.o \
+	-c neutrino/FunctionIntegrator.cpp
 
-zidu/Polarization_nompi.o: zidu/Polarization.cpp zidu/Polarization.hpp
-	$(LCXX) $(LCFLAGS) -DNUOPAC_HAS_GSL -o zidu/Polarization_nompi.o \
-		-c zidu/Polarization.cpp
+neutrino/Polarization_nompi.o: neutrino/Polarization.cpp neutrino/Polarization.hpp
+	$(LCXX) $(LCFLAGS) -DNUOPAC_HAS_GSL -o neutrino/Polarization_nompi.o \
+		-c neutrino/Polarization.cpp
 
-zidu/PolarizationNonRelv2Apr8_nompi.o: zidu/PolarizationNonRelv2Apr8.cpp 
+neutrino/PolarizationNonRelv2Apr8_nompi.o: neutrino/PolarizationNonRelv2Apr8.cpp 
 	$(LCXX) $(LCFLAGS) -DNUOPAC_HAS_GSL \
-		-o zidu/PolarizationNonRelv2Apr8_nompi.o \
-		-c zidu/PolarizationNonRelv2Apr8.cpp
+		-o neutrino/PolarizationNonRelv2Apr8_nompi.o \
+		-c neutrino/PolarizationNonRelv2Apr8.cpp
 
-zidu/jacobi_rule_nompi.o: zidu/jacobi_rule.cpp zidu/jacobi_rule.hpp
-	$(LCXX) $(LCFLAGS) -DNUOPAC_HAS_GSL -o zidu/jacobi_rule_nompi.o \
-		-c zidu/jacobi_rule.cpp
+neutrino/jacobi_rule_nompi.o: neutrino/jacobi_rule.cpp neutrino/jacobi_rule.hpp
+	$(LCXX) $(LCFLAGS) -DNUOPAC_HAS_GSL -o neutrino/jacobi_rule_nompi.o \
+		-c neutrino/jacobi_rule.cpp
 
 eos_nompi.o: eos.cpp virial_solver.h eos.h
 	$(LCXX) $(LCFLAGS) -o eos_nompi.o -c eos.cpp
@@ -144,26 +144,26 @@ main_eos_nompi.o: main_eos.cpp virial_solver.h eos.h
 
 eos_nuclei_nompi: eos_nompi.o main_nompi.o eos_nuclei_nompi.o \
 		eos_had_skyrme_ext_nompi.o virial_solver_deriv.h \
-		zidu/Couplings.o zidu/FluidState.o \
-		zidu/FunctionIntegrator.o zidu/Polarization.o \
-		zidu/PolarizationNonRelv2Apr8.o zidu/jacobi_rule.o 
+		neutrino/Couplings.o neutrino/FluidState.o \
+		neutrino/FunctionIntegrator.o neutrino/Polarization.o \
+		neutrino/PolarizationNonRelv2Apr8.o neutrino/jacobi_rule.o 
 	$(LCXX) $(LCFLAGS) -o eos_nuclei_nompi eos_nompi.o main_nompi.o \
-		zidu/Couplings.o zidu/FluidState.o \
-		zidu/FunctionIntegrator.o zidu/Polarization.o \
-		zidu/PolarizationNonRelv2Apr8.o zidu/jacobi_rule.o \
+		neutrino/Couplings.o neutrino/FluidState.o \
+		neutrino/FunctionIntegrator.o neutrino/Polarization.o \
+		neutrino/PolarizationNonRelv2Apr8.o neutrino/jacobi_rule.o \
 		 eos_nuclei_nompi.o eos_had_skyrme_ext_nompi.o $(LIBS) \
 		-lreadline
 
 # A shorthand alias for eos_nuclei_nompi
 enn: eos_nompi.o main_nompi.o eos_nuclei_nompi.o \
 		eos_had_skyrme_ext_nompi.o eos_nompi.o \
-		zidu/Couplings.o zidu/FluidState.o \
-		zidu/FunctionIntegrator.o zidu/Polarization.o \
-		zidu/PolarizationNonRelv2Apr8.o zidu/jacobi_rule.o 
+		neutrino/Couplings.o neutrino/FluidState.o \
+		neutrino/FunctionIntegrator.o neutrino/Polarization.o \
+		neutrino/PolarizationNonRelv2Apr8.o neutrino/jacobi_rule.o 
 	$(LCXX) $(LCFLAGS) -o enn eos_nompi.o main_nompi.o \
-		zidu/Couplings.o zidu/FluidState.o \
-		zidu/FunctionIntegrator.o zidu/Polarization.o \
-		zidu/PolarizationNonRelv2Apr8.o zidu/jacobi_rule.o \
+		neutrino/Couplings.o neutrino/FluidState.o \
+		neutrino/FunctionIntegrator.o neutrino/Polarization.o \
+		neutrino/PolarizationNonRelv2Apr8.o neutrino/jacobi_rule.o \
 		eos_nuclei_nompi.o eos_had_skyrme_ext_nompi.o $(LIBS) \
 		-lreadline
 
@@ -202,7 +202,7 @@ test-sync:
 	rsync -Cavzun doc/build/html/* $(STATIC_DOC_DIR)/eos
 
 clean:
-	rm -f *.o eos_nuclei eos_nuclei_nompi eos eos_nompi zidu/*.o
+	rm -f *.o eos_nuclei eos_nuclei_nompi eos eos_nompi neutrino/*.o
 
 # ----------------------------------------------------------------
 # New EOS parameter sets
