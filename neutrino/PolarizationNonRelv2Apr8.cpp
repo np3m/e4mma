@@ -90,6 +90,7 @@ namespace {
     double beta = 1.0 + (M2*M2 - M4*M4)/qa2t;
     double arg = beta*beta - 4.0*M2*M2/qa2t;
     if (arg<0.0) return 0.0;
+    
     double em = std::max(-0.5*beta*q0t + 0.5*q*sqrt(arg), M2);
     double delta2 = (Mu2 - U2 - em)/T;
     double delta4 = (Mu4 - U4 - em - q0t)/T;
@@ -98,6 +99,7 @@ namespace {
     //thesis, for non-rel+interacting gas
     double chi=1-M4/M2;
     double c=q0+U2-U4-q*q/(2*M4);
+    
     //the minimum E2 for NC reaction
     double emNC=std::max((-c*M2/q)*(-c*M2/q)/(2*M2),0.0); 
 

@@ -60,9 +60,6 @@
 #include "constants.h"
 
 #include <o2scl/funct.h>
-#include <o2scl/inte_qag_gsl.h>
-#include <o2scl/inte_qagiu_gsl.h>
-#include <o2scl/inte_qags_gsl.h>
 
 using namespace o2scl;
 
@@ -125,7 +122,7 @@ Polarization::Polarization(FluidState stPol, WeakCouplings wc,
   wl.resize(NPGJ);
   xgl.resize(NNPGL);
   wgl.resize(NNPGL);
-  
+    
   cgqf(NPGJ, 1,  0.0, 0.0, -1.0, 1.0, xl.data(), wl.data()); 
   cgqf(NPGJ, 4, -0.5, 0.0, -1.0, 1.0, xx.data(), ww.data()); 
   cgqf(NNPGL, 5,  0.0, 0.0, 0.0, 1.0, xgl.data(), wgl.data());
@@ -135,11 +132,16 @@ Polarization::Polarization(FluidState stPol, WeakCouplings wc,
   current=0;
   integ_method_mu=integ_base;
   integ_method_q0=integ_base;
+  qags.tol_rel=1.0e-4;
+  qags.tol_abs=1.0e-4;
+  qag.tol_rel=1.0e-4;
+  qag.tol_abs=1.0e-4;
+  
 }
 
 std::array<double, 4> Polarization::CalculateBasePolarizations
 (double q0, double q) const {
-
+  
   //void Polarization::SetPolarizations(double q0, double q) {
   // Calculate some kinematic factors
   double q0t = q0 + st.U2 - st.U4;
@@ -155,18 +157,19 @@ std::array<double, 4> Polarization::CalculateBasePolarizations
   double delta2 = (st.Mu2 - st.U2 - em)/st.T;
   double delta4 = (st.Mu4 - st.U4 - em - q0t)/st.T;
 
-  // Now just need to include some method for calculating these
-  // At least at low density, Gamma0 should be the dominant term
-  // which looks like the non-relativistic response function 
-  // Under non-degenerate conditions (i.e. delta2, delta4 << 0), 
-  // Gamma0 = Gamma1 = 0.5*Gamma2 
+  // Now just need to include some method for calculating these At
+  // least at low density, Gamma0 should be the dominant term which
+  // looks like the non-relativistic response function Under
+  // non-degenerate conditions (i.e. delta2, delta4 << 0), Gamma0 =
+  // Gamma1 = 0.5*Gamma2
   // This is exact 
   double Gamma0 = Fermi0(delta2) - Fermi0(delta4);
   double Gamma1 = Fermi1(delta2) - Fermi1(delta4);
   double Gamma2 = Fermi2(delta2) - Fermi2(delta4);
   
-  // We expect a >> 1 because em ~ M, which means that terms proportional to 
-  // Gamma0 are dominant except for under extreme degeneracy 
+  // We expect a >> 1 because em ~ M, which means that terms
+  // proportional to Gamma0 are dominant except for under extreme
+  // degeneracy
   if (doReddy) {
     q0t = q0;
     qa2t = q0*q0 - q*q;
@@ -264,9 +267,10 @@ void Polarization::SetLeptonTensor(double E1, double q0, double q,
   L->L = 8.0*(-2.0*p1dotnt*p1dotnt + 2.0*p1dotnt*qdotnt + qa2t*p1dotq)/qa2t;
   L->Q = 8.0*(2.0*p1dotqt*p1dotqt - 2.0*p1dotqt*qdotqt + qa2t*p1dotq)/qa2t; 
   L->Mp = 8.0*(qdotnt*p1dotqt + p1dotnt*(qdotqt - 2.0*p1dotqt))/qa2t; 
-  L->Mm = 0.0; // This is actually non-zero, but there is no contribution here 
-  // from the polarization tensor in the mean field limit, need to
-  // include the actual value here for RPA
+  // This is actually non-zero, but there is no contribution here from
+  // the polarization tensor in the mean field limit, need to include
+  // the actual value here for RPA
+  L->Mm = 0.0;
   L->Tm = 8.0*(p1dotnt*qdotqt-qdotnt*p1dotqt)/qa2t; 
   
   if (antiNeutrino) {
@@ -281,7 +285,7 @@ double Polarization::CalculateDGamDq0Dmu13(double E1, double q0,
   return GetResponse(E1, q0, q)*2.0*Constants::Pi*GetCsecPrefactor(E1, q0); 
 }
   
-double Polarization::CalculateDGamDq0(double E1, double q0) const { 
+double Polarization::CalculateDGamDq0(double E1, double q0) { 
   
   // Only integrate over angles for which |q0| < q
   double p3 = sqrt((E1-q0)*(E1-q0) - st.M3*st.M3);
@@ -294,14 +298,11 @@ double Polarization::CalculateDGamDq0(double E1, double q0) const {
   if (integ_method_mu==integ_o2scl || integ_method_mu==integ_compare) {
     
     funct f=std::bind(std::mem_fn<double(double,double,double,double,
-                                         double) const>
+                                         double)>
                       (&Polarization::GetResponse_mu),
                       this,E1,q0,std::placeholders::_1,delta,avg);
     
-    inte_qags_gsl<> it;
-    it.tol_rel=1.0e-4;
-    it.tol_abs=1.0e-4;
-    integral=it.integ(f,-1.0,1.0);
+    integral=qag.integ(f,-1.0,1.0);
     if (integ_method_mu==integ_compare) {
       cout << "O2scl: " << integral << " ";
     }
@@ -320,16 +321,21 @@ double Polarization::CalculateDGamDq0(double E1, double q0) const {
   
   integral *= delta;
   double fac = GetCsecPrefactor(E1, q0);
+  
+  // Added by Zidu
   double crx=2.0*Constants::Pi*fac*integral;
+
+  if (crx<0.0) crx=0.0;
+
+  // Added by zidu, at high q0, the crx can be small and
+  // negative, which might result from calculation
+  // accuracy. a negative crx will result in a "nan" of the
+  // code output.
   
-  if (crx<0.0) crx=0.0;//added by zidu
-  
-  return crx; //added by zidu, at high q0, the crx can be small and
-              //negative, which might result from calculation
-              //accuracy. a negative crx will result in a "nan" of the
-              //code output.
-  
-  // return 2.0*Constants::Pi*fac*integral; //orig
+  return crx; 
+
+  // Original nuopac
+  // return 2.0*Constants::Pi*fac*integral;
 }
 
 void Polarization::CalculateDGamDq0l(double E1, double q0, double* S0, 
@@ -342,7 +348,8 @@ void Polarization::CalculateDGamDq0l(double E1, double q0, double* S0,
   double avg = (mu13cross - 1.0) / 2.0;
   
   double integral0 = 0.0; 
-  double integral1 = 0.0; 
+  double integral1 = 0.0;
+  
   for (int i=0; i<NPGJ; ++i) { 
     double mu = xx[i]*delta + avg;
     double r = GetResponse(E1, q0, GetqFromMu13(E1, q0, mu));
@@ -355,6 +362,8 @@ void Polarization::CalculateDGamDq0l(double E1, double q0, double* S0,
   double fac = GetCsecPrefactor(E1, q0);
   *S0 = 2.0*Constants::Pi*fac*integral0/2.0;
   *S1 = 2.0*Constants::Pi*fac*integral1*3.0/2.0;
+
+  return;
 }
 
 double Polarization::CalculateTransportInverseMFP(double E1) const {
@@ -374,16 +383,19 @@ double Polarization::CalculateTransportInverseMFP(double E1) const {
       double sgnG1 = (G1 > 0) - (G1 < 0); 
       double emq0 = exp(-q0/st.T); 
       double a1 = exp((E1 - st.Mu3)/st.T); 
-      double a3 = exp((E1 - q0 - st.Mu3)/st.T); 
+      double a3 = exp((E1 - q0 - st.Mu3)/st.T);
+      
       // fac0 = 1 - f^0_3(1-e^(-q_0/T))
       // fac1 = f_3^1/f_1^1 e^(-q_0/T)(1 - f^0_1(1-e^(q_0/T)))
       // See Pons et al. (1999) eq. 25 or hera++ notes eq. 62 (Feb 12, 2020)
       double fac0 = (1.0+1.0/a1)/(1.0 + 1.0/(a1*emq0));
-      double fac1 = 1.0/fac0; // This assumes ratio of f_1^1/f_3^1 = e^(-q_0/T)
-                              // where f_i^l is the lth Legendre moment of the 
-                              // distribution function at E_i.
-                              // At q0 = 0, fac0 = fac1 = 1, and this clearly 
-                              // returns the inelastic transport opacity
+
+      // This assumes ratio of f_1^1/f_3^1 = e^(-q_0/T) where f_i^l is
+      // the lth Legendre moment of the distribution function at E_i.
+      // At q0 = 0, fac0 = fac1 = 1, and this clearly returns the
+      // inelastic transport opacity.
+      double fac1 = 1.0/fac0;
+      
       integral += wgl[i] * (fac0*exp(e0) - fac1*sgnG1*exp(e1)/3.0); 
     }
   }
@@ -392,21 +404,19 @@ double Polarization::CalculateTransportInverseMFP(double E1) const {
 }
 
 double Polarization::dgamdq0_intl(double E1, double x, double estar,
-                                  int sign) const {
+                                  int sign) {
+  
   double q0=estar+sign*x*st.T;
-  if (q0>E1-st.M3) return 0.0;
-  double ret=exp(log(CalculateDGamDq0(E1, q0))+x);
-  /*
-    if (sign==-1) {
-    cout << "1b: " << x << " " << ret << endl;
-    } else {
-    cout << "2b: " << x << " " << ret << endl;
-    }
-  */
+  
+  if (sign==-1 && abs(q0) > 30.0*st.T) return 0.0;
+  if (sign==1 && q0>E1-st.M3) return 0.0;
+  
+  double ret=CalculateDGamDq0(E1, q0);
+  
   return ret;
 }
 
-double Polarization::CalculateInverseMFP(double E1) const {
+double Polarization::CalculateInverseMFP(double E1) {
   
   double estar;
   if (current==current_charged) {
@@ -416,43 +426,43 @@ double Polarization::CalculateInverseMFP(double E1) const {
   }
   estar = std::min(estar, E1 - st.M3);
   
-  double integral = 0.0;
+  double integral=0.0;
   
   if (integ_method_q0==integ_base || integ_method_q0==integ_compare) {
     for (int i=0; i<NNPGL; ++i) {
       double q0 = estar - xgl[i]*st.T;
       if (abs(q0) > 30.0*st.T) break;
       double ee = log(CalculateDGamDq0(E1, q0)) + xgl[i];
-      //cout << "1: " << NNPGL << " " << xgl[i] << " " << exp(ee) << endl;
       integral += wgl[i] * exp(ee); 
     }
     
-    // This is maybe not the best idea  
+    // [nuopac] This is maybe not the best idea  
     for (int i=0; i<NNPGL; ++i) {
       double q0 = estar + xgl[i]*st.T; 
       if (q0>E1 - st.M3) break; 
       double ee = log(CalculateDGamDq0(E1, q0)) + xgl[i];
-      //cout << "2: " << xgl[i] << " " << exp(ee) << endl;
       integral += wgl[i] * exp(ee); 
     }
     if (integ_method_q0==integ_compare) {
-      cout << "Base: " << integral << " ";
+      cout << "q0 integral, Base: " << integral << " ";
     }
 
   }
 
   if (integ_method_q0==integ_o2scl || integ_method_q0==integ_compare) {
-    inte_qagiu_gsl<> it;
+
+    integral=0.0;
     
-    funct f=std::bind(std::mem_fn<double(double,double,double,int) const>
+    funct f=std::bind(std::mem_fn<double(double,double,double,int)>
                       (&Polarization::dgamdq0_intl),
                       this,E1,std::placeholders::_1,estar,-1);
-    integral+=it.integ(f,0.0,0.0);
+    integral+=qagiu.integ(f,0.0,0.0);
     
-    funct f2=std::bind(std::mem_fn<double(double,double,double,int) const>
+    funct f2=std::bind(std::mem_fn<double(double,double,double,int)>
                        (&Polarization::dgamdq0_intl),
                        this,E1,std::placeholders::_1,estar,+1);
-    integral+=it.integ(f2,0.0,0.0);
+    integral+=qagiu.integ(f2,0.0,0.0);
+    
     if (integ_method_q0==integ_compare) {
       cout << "O2scl: " << integral << endl;
       char ch;
@@ -501,7 +511,7 @@ double Polarization::GetResponse(double E1, double q0, double q) const {
 }
 
 double Polarization::GetResponse_mu(double E1, double q0, double x,
-                                    double delta, double avg) const {
+                                    double delta, double avg) {
   double mu=x*delta+avg;
   double q=GetqFromMu13(E1,q0,mu);
   double ret=GetResponse(E1,q0,q);

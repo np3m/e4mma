@@ -55,9 +55,14 @@
 
 #include <iostream>
 #include <array> 
+
 #include "FluidState.hpp"
 #include "tensor.h"
 #include "Couplings.hpp" 
+
+#include <o2scl/inte_qag_gsl.h>
+#include <o2scl/inte_qagiu_gsl.h>
+#include <o2scl/inte_qags_gsl.h>
 
 // Going much lower than 64 seems to degrade accuracy at a few percent level
 //#define NPGJ 64
@@ -101,7 +106,7 @@ namespace nuopac {
     /// in energy transfer q0 and electron/neutrino scattering angle
     /// mu13 integrated over) with the medium as a function of neutrino
     /// energy E1
-    double CalculateDGamDq0(double E1, double q0) const;
+    double CalculateDGamDq0(double E1, double q0);
   
     /// Return Legendre moment of the the differential interaction rate
     /// (with the differential in energy transfer q0 and
@@ -117,7 +122,7 @@ namespace nuopac {
     double CalculateTransportInverseMFP(double E1) const;
   
     /// Calculate the inverse mean free path for a neutrino of energy E1  
-    double CalculateInverseMFP(double E1) const;
+    double CalculateInverseMFP(double E1);
   
     /// Calculate the momentum transfer from a given neutrino/electron 
     /// scattering angle 
@@ -136,12 +141,12 @@ namespace nuopac {
     /** \brief Desc 
      */
     double GetResponse_mu(double E1, double q0, double x, double delta,
-                          double avg) const;
+                          double avg);
 
     /** \brief Desc 
      */
     double dgamdq0_intl(double E1, double x, double estar,
-                                      int sign) const;
+                                      int sign);
     /** \brief Desc 
      */
     void SetCurrentConservation(bool cons){doCurrentConservation=cons;} 
@@ -197,11 +202,23 @@ namespace nuopac {
     static const int current_charged=1;
     static const int current_neutral=0;
 
+    /// \name Choose integration method
+    //@{
     int integ_method_q0, integ_method_mu;
     static const int integ_base=0;
     static const int integ_o2scl=1;
     static const int integ_compare=2;
-  
+    //@}
+
+    /// Adaptive integrator with singularities
+    o2scl::inte_qags_gsl<> qags;
+
+    /// Adaptive integrator
+    o2scl::inte_qags_gsl<> qag;
+
+    /// Adaptive integrator with infinite upper limit
+    o2scl::inte_qagiu_gsl<> qagiu;
+    
   protected:
 
     /** \brief Desc 
