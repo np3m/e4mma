@@ -1,25 +1,47 @@
+/*
+  -------------------------------------------------------------------
+  
+  This code is based on nuopac, which was developed originally by Luke
+  Roberts. Modifications of nuopac are Copyright (C) 2020-2021, Zidu
+  Lin and Andrew W. Steiner.
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+  
+  This program is distributed in the hope that it will be useful, but
+  WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  General Public License for more details.
+  
+  You should have received a copy of the GNU General Public License
+  along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+  -------------------------------------------------------------------
+*/
 /***********************************************************************
-* Copyright (c) 2016 Luke F. Roberts.
-* 
-* Permission is hereby granted, free of charge, to any person obtaining
-* a copy of this software and associated documentation files (the
-* "Software"), to deal in the Software without restriction, including
-* without limitation the rights to use, copy, modify, merge, publish,
-* distribute, sublicense, and/or sell copies of the Software, and to
-* permit persons to whom the Software is furnished to do so, subject to
-* the following conditions:
-* 
-* The above copyright notice and this permission notice shall be
-* included in all copies or substantial portions of the Software.
-* 
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-* NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
-* LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-* OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-* WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-***********************************************************************/
+ * Copyright (c) 2016 Luke F. Roberts.
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+ * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ ***********************************************************************/
 /// \file Polarization.cpp
 /// \author lroberts
 /// \since Apr 02, 2016
@@ -37,6 +59,13 @@
 #include "tensor.h" 
 #include "constants.h"
 
+#include <o2scl/funct.h>
+#include <o2scl/inte_qag_gsl.h>
+#include <o2scl/inte_qagiu_gsl.h>
+#include <o2scl/inte_qags_gsl.h>
+
+using namespace o2scl;
+
 // Use unnamed namespace so these methods are only locally available
 namespace {
   
@@ -47,29 +76,30 @@ namespace {
   }
 
   // Use the approximations of Takahashi, El Eid, and Hillebrandt 1978
-  // These functions have maximum errors of ~0.3%, but are much better away from 
-  // delta ~ 0. Additionally, these functions are sub-dominant for large masses 
-  // so the error induced in the cross sections will be very small  
+  // These functions have maximum errors of ~0.3%, but are much better
+  // away from delta ~ 0. Additionally, these functions are
+  // sub-dominant for large masses so the error induced in the cross
+  // sections will be very small
   inline double Fermi1(double eta) { 
     if (eta>1.e-3) 
-        return (pow(eta, 2)*0.5 + 1.6449)/(1.0 + exp(-1.6855*eta));
+      return (pow(eta, 2)*0.5 + 1.6449)/(1.0 + exp(-1.6855*eta));
     return exp(eta)/(1.0 + 0.2159*exp(0.8857*eta));
   }
 
   inline double Fermi2(double eta) { 
     if (eta>1.e-3) 
-        return (pow(eta, 3)/3.0 + 3.2899*eta)/(1.0 - exp(-1.8246*eta)); 
+      return (pow(eta, 3)/3.0 + 3.2899*eta)/(1.0 - exp(-1.8246*eta)); 
     return 2.0*exp(eta)/(1.0 + 0.1092*exp(0.8908*eta));
   }
   inline std::array<double, 3> FermiAll(double eta) {
     double expeta = exp(eta); 
     if (eta>1.e-3)  
       return {log(expeta + 1.0), 
-          (pow(eta, 2)*0.5 + 1.6449)/(1.0 + exp(-1.6855*eta)),
-          (pow(eta, 3)/3.0 + 3.2899*eta)/(1.0 - exp(-1.8246*eta))};
+              (pow(eta, 2)*0.5 + 1.6449)/(1.0 + exp(-1.6855*eta)),
+              (pow(eta, 3)/3.0 + 3.2899*eta)/(1.0 - exp(-1.8246*eta))};
     return {log(expeta + 1.0),
-           expeta/(1.0 + 0.2159*exp(0.8857*eta)),
-           2.0*expeta/(1.0 + 0.1092*exp(0.8908*eta))};
+            expeta/(1.0 + 0.2159*exp(0.8857*eta)),
+            2.0*expeta/(1.0 + 0.1092*exp(0.8908*eta))};
   }
 }
 
@@ -98,16 +128,19 @@ Polarization::Polarization(FluidState stPol, WeakCouplings wc,
   
   cgqf(NPGJ, 1,  0.0, 0.0, -1.0, 1.0, xl.data(), wl.data()); 
   cgqf(NPGJ, 4, -0.5, 0.0, -1.0, 1.0, xx.data(), ww.data()); 
-  cgqf(NNPGL, 5,  0.0, 0.0, 0.0, 1.0, xgl.data(), wgl.data()); 
+  cgqf(NNPGL, 5,  0.0, 0.0, 0.0, 1.0, xgl.data(), wgl.data());
   for (int i=0; i<NPGJ; ++i) ww[i] = ww[i] * sqrt(1.0 - xx[i]);
   //for (int i=0; i<NPGJ; ++i) wgl[i] = wgl[i] * exp(xgl[i]);
   flag=0;
   current=0;
+  integ_method_mu=integ_base;
+  integ_method_q0=integ_base;
 }
 
-std::array<double, 4> Polarization::CalculateBasePolarizations (
-    double q0, double q) const {
-//void Polarization::SetPolarizations(double q0, double q) {
+std::array<double, 4> Polarization::CalculateBasePolarizations
+(double q0, double q) const {
+
+  //void Polarization::SetPolarizations(double q0, double q) {
   // Calculate some kinematic factors
   double q0t = q0 + st.U2 - st.U4;
   double qa2t = q0t*q0t - q*q; 
@@ -142,7 +175,7 @@ std::array<double, 4> Polarization::CalculateBasePolarizations (
   double PI = Constants::Pi; 
   double piQ = qa2t*st.T/(4.0*PI*q)*Gamma0; 
   double piL = -qa2t*pow(st.T/q, 3)/(4.0*PI) 
-      * (a*a*Gamma0 + 4.0*a*Gamma1 + 4.0*Gamma2);
+    * (a*a*Gamma0 + 4.0*a*Gamma1 + 4.0*Gamma2);
   double piM = -qa2t*pow(st.T/q, 2)/(4.0*PI)*(a*Gamma0 + 2.0*Gamma1);
   double piT = -0.5*piL + (2.0*st.M2*st.M2/qa2t - 0.5*beta*beta)*piQ;
   
@@ -150,12 +183,12 @@ std::array<double, 4> Polarization::CalculateBasePolarizations (
 }
 
 void Polarization::SetPolarizations(double q0, double q,
-      Tensor<double>* piVV, 
-      Tensor<double>* piAA, 
-      Tensor<double>* piTT, 
-      Tensor<double>* piVA, 
-      Tensor<double>* piVT, 
-      Tensor<double>* piAT) const {
+                                    Tensor<double>* piVV, 
+                                    Tensor<double>* piAA, 
+                                    Tensor<double>* piTT, 
+                                    Tensor<double>* piVA, 
+                                    Tensor<double>* piVT, 
+                                    Tensor<double>* piAT) const {
   // Calculate the basic parts of the polarization 
   auto pt = CalculateBasePolarizations(q0, q); 
   double piQ = pt[0]; 
@@ -195,9 +228,9 @@ void Polarization::SetPolarizations(double q0, double q,
   piAA->Mp = lambda * piM;
 
   piTT->L  = qa2/(4.0*st.M2*st.M2)*((sigmam - beta*beta 
-      + 4.0*st.M2*st.M2*qa2i)*piQ - piL);
+                                     + 4.0*st.M2*st.M2*qa2i)*piQ - piL);
   piTT->Tp = qa2/(4.0*st.M2*st.M2)*((sigmam - beta*beta 
-      + 4.0*st.M2*st.M2*qa2i)*piQ - piT);
+                                     + 4.0*st.M2*st.M2*qa2i)*piQ - piT);
   
   piVT->L  = (2.0 + Delta*beta) * piQ; 
   piVT->Tp = (2.0 + Delta*beta) * piQ;
@@ -208,7 +241,9 @@ void Polarization::SetPolarizations(double q0, double q,
   piAT->Tm = (2.0 + Delta) * piM;
 }
 
-void Polarization::SetLeptonTensor(double E1, double q0, double q, Tensor<double>* L) const {
+void Polarization::SetLeptonTensor(double E1, double q0, double q,
+                                   Tensor<double>* L) const {
+  
   double qa2 = q0*q0 - q*q;
   double E3 = E1 - q0;
   double DeltaU = st.U2 - st.U4; 
@@ -224,13 +259,14 @@ void Polarization::SetLeptonTensor(double E1, double q0, double q, Tensor<double
   double qdotqt = q0*(q0 + DeltaU) - q*q; 
   double qdotnt = -q*DeltaU;
   
-  L->Tp = 8.0*(p1dotnt*p1dotnt - p1dotnt*qdotnt + p1dotqt*(qdotqt - p1dotqt))/qa2t; 
+  L->Tp = 8.0*(p1dotnt*p1dotnt - p1dotnt*qdotnt +
+               p1dotqt*(qdotqt - p1dotqt))/qa2t; 
   L->L = 8.0*(-2.0*p1dotnt*p1dotnt + 2.0*p1dotnt*qdotnt + qa2t*p1dotq)/qa2t;
   L->Q = 8.0*(2.0*p1dotqt*p1dotqt - 2.0*p1dotqt*qdotqt + qa2t*p1dotq)/qa2t; 
   L->Mp = 8.0*(qdotnt*p1dotqt + p1dotnt*(qdotqt - 2.0*p1dotqt))/qa2t; 
   L->Mm = 0.0; // This is actually non-zero, but there is no contribution here 
-              // from the polarization tensor in the mean field limit, need to
-              // include the actual value here for RPA
+  // from the polarization tensor in the mean field limit, need to
+  // include the actual value here for RPA
   L->Tm = 8.0*(p1dotnt*qdotqt-qdotnt*p1dotqt)/qa2t; 
   
   if (antiNeutrino) {
@@ -239,7 +275,8 @@ void Polarization::SetLeptonTensor(double E1, double q0, double q, Tensor<double
   } 
 }
   
-double Polarization::CalculateDGamDq0Dmu13(double E1, double q0, double mu13) const {
+double Polarization::CalculateDGamDq0Dmu13(double E1, double q0,
+                                           double mu13) const {
   double q = GetqFromMu13(E1, q0, mu13); 
   return GetResponse(E1, q0, q)*2.0*Constants::Pi*GetCsecPrefactor(E1, q0); 
 }
@@ -251,36 +288,66 @@ double Polarization::CalculateDGamDq0(double E1, double q0) const {
   double mu13cross = std::max((E1*E1 + p3*p3 - q0*q0)/(2.0*E1*p3), -1.0);
   double delta = (mu13cross + 1.0) / 2.0; 
   double avg = (mu13cross - 1.0) / 2.0;
-   
-  double integral = 0.0; 
-  for (int i=0; i<NPGJ; ++i) { 
+
+  double integral=0.0;
+
+  if (integ_method_mu==integ_o2scl || integ_method_mu==integ_compare) {
+    
+    funct f=std::bind(std::mem_fn<double(double,double,double,double,
+                                         double) const>
+                      (&Polarization::GetResponse_mu),
+                      this,E1,q0,std::placeholders::_1,delta,avg);
+    
+    inte_qags_gsl<> it;
+    it.tol_rel=1.0e-4;
+    it.tol_abs=1.0e-4;
+    integral=it.integ(f,-1.0,1.0);
+    if (integ_method_mu==integ_compare) {
+      cout << "O2scl: " << integral << " ";
+    }
+  }
+  
+  if (integ_method_mu==integ_base || integ_method_mu==integ_compare) {
+    integral = 0.0; 
+    for (int i=0; i<NPGJ; ++i) { 
       double mu = xx[i]*delta + avg; 
       integral += ww[i] * GetResponse(E1, q0, GetqFromMu13(E1, q0, mu));
+    }
+    if (integ_method_mu==integ_compare) {
+      cout << "base: " << integral << endl;
+    }
   }
+  
   integral *= delta;
   double fac = GetCsecPrefactor(E1, q0);
   double crx=2.0*Constants::Pi*fac*integral;
+  
   if (crx<0.0) crx=0.0;//added by zidu
-  return crx; //added by zidu, at high q0, the crx can be small and negative, which might result from calculation accuracy. a negative crx will result in a "nan" of the code output.
- // return 2.0*Constants::Pi*fac*integral; //orig
+  
+  return crx; //added by zidu, at high q0, the crx can be small and
+              //negative, which might result from calculation
+              //accuracy. a negative crx will result in a "nan" of the
+              //code output.
+  
+  // return 2.0*Constants::Pi*fac*integral; //orig
 }
 
 void Polarization::CalculateDGamDq0l(double E1, double q0, double* S0, 
-    double* S1) const { 
+                                     double* S1) const { 
   
   // Only integrate over angles for which |q0| < q
   double p3 = sqrt((E1-q0)*(E1-q0) - st.M3*st.M3);
   double mu13cross = std::max((E1*E1 + p3*p3 - q0*q0)/(2.0*E1*p3), -1.0);
   double delta = (mu13cross + 1.0) / 2.0; 
   double avg = (mu13cross - 1.0) / 2.0;
-   
+  
   double integral0 = 0.0; 
   double integral1 = 0.0; 
   for (int i=0; i<NPGJ; ++i) { 
-      double mu = xx[i]*delta + avg;
-      double r = GetResponse(E1, q0, GetqFromMu13(E1, q0, mu));
-      integral0 += ww[i] * r;
-      integral1 += ww[i] * mu * r;
+    double mu = xx[i]*delta + avg;
+    double r = GetResponse(E1, q0, GetqFromMu13(E1, q0, mu));
+    integral0 += ww[i] * r;
+    integral1 += ww[i] * mu * r;
   }
   integral0 *= delta;
   integral1 *= delta;
@@ -324,29 +391,73 @@ double Polarization::CalculateTransportInverseMFP(double E1) const {
   
 }
 
+double Polarization::dgamdq0_intl(double E1, double x, double estar,
+                                  int sign) const {
+  double q0=estar+sign*x*st.T;
+  if (q0>E1-st.M3) return 0.0;
+  double ret=exp(log(CalculateDGamDq0(E1, q0))+x);
+  /*
+    if (sign==-1) {
+    cout << "1b: " << x << " " << ret << endl;
+    } else {
+    cout << "2b: " << x << " " << ret << endl;
+    }
+  */
+  return ret;
+}
+
 double Polarization::CalculateInverseMFP(double E1) const {
   
   double estar;
-  if (current==1) {
+  if (current==current_charged) {
     estar=st.M4 + st.U4 - st.M2 - st.U2;
   } else {
     estar=0.0;
   }
   estar = std::min(estar, E1 - st.M3);
-  double integral = 0.0;  
-  for (int i=0; i<NNPGL; ++i) {
-    double q0 = estar - xgl[i]*st.T;
-    if (abs(q0) > 30.0*st.T) break;
-    double ee = log(CalculateDGamDq0(E1, q0)) + xgl[i];
-    integral += wgl[i] * exp(ee); 
+  
+  double integral = 0.0;
+  
+  if (integ_method_q0==integ_base || integ_method_q0==integ_compare) {
+    for (int i=0; i<NNPGL; ++i) {
+      double q0 = estar - xgl[i]*st.T;
+      if (abs(q0) > 30.0*st.T) break;
+      double ee = log(CalculateDGamDq0(E1, q0)) + xgl[i];
+      //cout << "1: " << NNPGL << " " << xgl[i] << " " << exp(ee) << endl;
+      integral += wgl[i] * exp(ee); 
+    }
+    
+    // This is maybe not the best idea  
+    for (int i=0; i<NNPGL; ++i) {
+      double q0 = estar + xgl[i]*st.T; 
+      if (q0>E1 - st.M3) break; 
+      double ee = log(CalculateDGamDq0(E1, q0)) + xgl[i];
+      //cout << "2: " << xgl[i] << " " << exp(ee) << endl;
+      integral += wgl[i] * exp(ee); 
+    }
+    if (integ_method_q0==integ_compare) {
+      cout << "Base: " << integral << " ";
+    }
+
   }
 
-  // This is maybe not the best idea  
-  for (int i=0; i<NNPGL; ++i) {
-    double q0 = estar + xgl[i]*st.T; 
-    if (q0>E1 - st.M3) break; 
-    double ee = log(CalculateDGamDq0(E1, q0)) + xgl[i];
-    integral += wgl[i] * exp(ee); 
+  if (integ_method_q0==integ_o2scl || integ_method_q0==integ_compare) {
+    inte_qagiu_gsl<> it;
+    
+    funct f=std::bind(std::mem_fn<double(double,double,double,int) const>
+                      (&Polarization::dgamdq0_intl),
+                      this,E1,std::placeholders::_1,estar,-1);
+    integral+=it.integ(f,0.0,0.0);
+    
+    funct f2=std::bind(std::mem_fn<double(double,double,double,int) const>
+                       (&Polarization::dgamdq0_intl),
+                       this,E1,std::placeholders::_1,estar,+1);
+    integral+=it.integ(f2,0.0,0.0);
+    if (integ_method_q0==integ_compare) {
+      cout << "O2scl: " << integral << endl;
+      char ch;
+      cin >> ch;
+    }
   }
   
   return st.T*integral; 
@@ -381,12 +492,21 @@ double Polarization::GetResponse(double E1, double q0, double q) const {
   } else if (flag==1) {
     pi += coup.Ca*coup.Ca*FullContract(L, piAA);
   }
- // delete the last four terms to produce ccOutputT10E10betaRelnoVAVT 
-//  pi += coup.F2*coup.F2*FullContract(L, piTT);
-//  pi += coup.Cv*coup.Ca*FullContract(L, piVA);
- // pi += coup.Cv*coup.F2*FullContract(L, piVT);
- // pi += coup.Ca*coup.F2*FullContract(L, piAT);
+  // delete the last four terms to produce ccOutputT10E10betaRelnoVAVT 
+  //  pi += coup.F2*coup.F2*FullContract(L, piTT);
+  //  pi += coup.Cv*coup.Ca*FullContract(L, piVA);
+  // pi += coup.Cv*coup.F2*FullContract(L, piVT);
+  // pi += coup.Ca*coup.F2*FullContract(L, piAT);
   return pi;
+}
+
+double Polarization::GetResponse_mu(double E1, double q0, double x,
+                                    double delta, double avg) const {
+  double mu=x*delta+avg;
+  double q=GetqFromMu13(E1,q0,mu);
+  double ret=GetResponse(E1,q0,q);
+  //cout << "H: " << E1 << " " << q0 << " " << x << " " << ret << endl;
+  return ret;
 }
 
 
