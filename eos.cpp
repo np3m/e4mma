@@ -3624,9 +3624,15 @@ int eos::vir_fit(std::vector<std::string> &sv,
   return 0;
 }
 
+int eos::skalt_model(std::vector<std::string> &sv,
+                     bool itive_com) {
+  o2scl_hdf::skyrme_load(sk_alt,sv[1]);
+  return 0;
+}
+
 void eos::setup_cli(o2scl::cli &cl) {
  
-  static const int nopt=13;
+  static const int nopt=14;
   o2scl::comm_option_s options[nopt]=
     {{0,"test-deriv","Test the first derivatives of the free energy.",
       0,0,"","",new o2scl::comm_option_mfptr<eos>
@@ -3669,7 +3675,10 @@ void eos::setup_cli(o2scl::cli &cl) {
       (this,&eos::test_eg),o2scl::cli::comm_option_both},
      {0,"vir-comp","Compare the virial and full EOS.",0,0,"","",
       new o2scl::comm_option_mfptr<eos>
-      (this,&eos::vir_comp),o2scl::cli::comm_option_both}
+      (this,&eos::vir_comp),o2scl::cli::comm_option_both},
+     {0,"skalt-model","",1,1,"","",
+      new o2scl::comm_option_mfptr<eos>
+      (this,&eos::skalt_model),o2scl::cli::comm_option_both}
     };
   cl.set_comm_option_vec(nopt,options);
   

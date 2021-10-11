@@ -8839,9 +8839,19 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
     
     std::cout << "j: " << j << endl;
 
-    // Create a random EOS
-    std::vector<std::string> obj;
-    random(obj,false);
+    if (j==0) {
+      use_skalt=true;
+      vector<string> args={"skalt-model","NRAPR"};
+      skalt_model(args,true);
+    } else if (j==1) {
+      use_skalt=true;
+      vector<string> args={"skalt-model","SGII"};
+      skalt_model(args,true);
+    } else {
+      // Create a random EOS
+      std::vector<std::string> obj;
+      random(obj,false);
+    }
 
     vector<double> line={((double)i_ns),((double)i_skyrme),
                          qmc_alpha,qmc_a,phi,
@@ -9347,8 +9357,8 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         // Charged current mean free path
       
         pol_cc.flag=Polarization::flag_vector;
-        pol_cc.integ_method_mu=Polarization::integ_base;
-        pol_cc.integ_method_q0=Polarization::integ_compare;
+        pol_cc.integ_method_mu=Polarization::integ_o2scl;
+        pol_cc.integ_method_q0=Polarization::integ_o2scl;
         double cc_vec_mfp=pol_cc.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
         cout << "charged current, vector part: " << cc_vec_mfp << endl;
       

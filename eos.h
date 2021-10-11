@@ -605,7 +605,7 @@ class eos {
       combined EOS
    */
   bool use_skalt;
-  
+
   /** \brief If true, test the neutron star speed of sound 
       (default true)
    */
@@ -651,6 +651,9 @@ class eos {
   /** \brief Construct a table at fixed electron fraction
    */
   int table_Ye(std::vector<std::string> &sv,
+	       bool itive_com);
+  
+  int skalt_model(std::vector<std::string> &sv,
 	       bool itive_com);
 
   /** \brief Construct a table at fixed baryon density

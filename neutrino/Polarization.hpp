@@ -61,6 +61,7 @@
 #include "Couplings.hpp" 
 
 #include <o2scl/inte_qag_gsl.h>
+#include <o2scl/inte_qng_gsl.h>
 #include <o2scl/inte_qagiu_gsl.h>
 #include <o2scl/inte_qags_gsl.h>
 
@@ -141,7 +142,8 @@ namespace nuopac {
     /** \brief Desc 
      */
     double GetResponse_mu(double E1, double q0, double x, double delta,
-                          double avg);
+                          double avg, std::vector<double> &xv,
+                          std::vector<double> &yv);
 
     /** \brief Desc 
      */
@@ -214,7 +216,10 @@ namespace nuopac {
     o2scl::inte_qags_gsl<> qags;
 
     /// Adaptive integrator
-    o2scl::inte_qags_gsl<> qag;
+    o2scl::inte_qag_gsl<> qag;
+
+    /// Nonadaptive integrator
+    o2scl::inte_qng_gsl<> qng;
 
     /// Adaptive integrator with infinite upper limit
     o2scl::inte_qagiu_gsl<> qagiu;

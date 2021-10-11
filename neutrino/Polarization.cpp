@@ -60,8 +60,10 @@
 #include "constants.h"
 
 #include <o2scl/funct.h>
+#include <o2scl/hdf_io.h>
 
 using namespace o2scl;
+using namespace o2scl_hdf;
 
 // Use unnamed namespace so these methods are only locally available
 namespace {
@@ -134,9 +136,13 @@ Polarization::Polarization(FluidState stPol, WeakCouplings wc,
   integ_method_q0=integ_base;
   qags.tol_rel=1.0e-4;
   qags.tol_abs=1.0e-4;
+  qags.err_nonconv=false;
   qag.tol_rel=1.0e-4;
   qag.tol_abs=1.0e-4;
-  
+  qag.err_nonconv=false;
+  qng.tol_rel=1.0e-4;
+  qng.tol_abs=1.0e-4;
+  qng.err_nonconv=false;
 }
 
 std::array<double, 4> Polarization::CalculateBasePolarizations
@@ -296,13 +302,52 @@ double Polarization::CalculateDGamDq0(double E1, double q0) {
   double integral=0.0;
 
   if (integ_method_mu==integ_o2scl || integ_method_mu==integ_compare) {
-    
+
+    vector<double> vx, vy;
     funct f=std::bind(std::mem_fn<double(double,double,double,double,
-                                         double)>
+                                         double,vector<double> &,
+                                         vector<double> &)>
                       (&Polarization::GetResponse_mu),
-                      this,E1,q0,std::placeholders::_1,delta,avg);
-    
-    integral=qag.integ(f,-1.0,1.0);
+                      this,E1,q0,std::placeholders::_1,delta,avg,
+                      std::ref(vx),std::ref(vy));
+
+    cout << "Here." << endl;
+    double err;
+    int iret=qags.integ_err(f,-1.0,1.0,integral,err);
+    if (iret!=0) {
+      hdf_file hfx;
+      hfx.open_or_create("mu_integrand.o2");
+      hfx.setd_vec("vx",vx);
+      hfx.setd_vec("vy",vy);
+      hfx.close();
+      O2SCL_ERR("Integration over mu failed.",o2scl::exc_einval);
+      
+      /*
+      inte_workspace_gsl &w=qags.get_workspace();
+      table_units<> t;
+      w.make_table(t);
+      hdf5_write_file(t,"temp.o2");
+      cout << "Wrote table." << endl;
+      char ch;
+      cin >> ch;
+      */
+      
+      /*
+        iret=qag.integ_err(f,-1.0,1.0,integral,err);
+        if (iret!=0) {
+        iret=qng.integ_err(f,-1.0,1.0,integral,err);
+        if (iret!=0) {
+        hdf_file hfx;
+        hfx.open_or_create("t.o2");
+        hfx.setd_vec("vx",vx);
+        hfx.setd_vec("vy",vy);
+        hfx.close();
+        O2SCL_ERR("Integration over mu failed.",o2scl::exc_einval);
+        }
+        }
+      */
+    }
+    cout << "Here2." << endl;
     if (integ_method_mu==integ_compare) {
       cout << "O2scl: " << integral << " ";
     }
@@ -452,7 +497,8 @@ double Polarization::CalculateInverseMFP(double E1) {
   if (integ_method_q0==integ_o2scl || integ_method_q0==integ_compare) {
 
     integral=0.0;
-    
+
+    cout << "Here3." << endl;
     funct f=std::bind(std::mem_fn<double(double,double,double,int)>
                       (&Polarization::dgamdq0_intl),
                       this,E1,std::placeholders::_1,estar,-1);
@@ -462,6 +508,7 @@ double Polarization::CalculateInverseMFP(double E1) {
                        (&Polarization::dgamdq0_intl),
                        this,E1,std::placeholders::_1,estar,+1);
     integral+=qagiu.integ(f2,0.0,0.0);
+    cout << "Here4." << endl;
     
     if (integ_method_q0==integ_compare) {
       cout << "O2scl: " << integral << endl;
@@ -511,10 +558,15 @@ double Polarization::GetResponse(double E1, double q0, double q) const {
 }
 
 double Polarization::GetResponse_mu(double E1, double q0, double x,
-                                    double delta, double avg) {
+                                    double delta, double avg,
+                                    vector<double> &xv,
+                                    vector<double> &yv) {
   double mu=x*delta+avg;
   double q=GetqFromMu13(E1,q0,mu);
   double ret=GetResponse(E1,q0,q);
+  xv.push_back(x);
+  yv.push_back(ret);
+  
   //cout << "H: " << E1 << " " << q0 << " " << x << " " << ret << endl;
   return ret;
 }
