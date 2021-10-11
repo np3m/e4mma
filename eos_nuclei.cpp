@@ -1582,21 +1582,28 @@ int eos_nuclei::solve_nuclei(size_t nv, const ubvector &x, ubvector &y,
     
     if (use_skalt) {
       eosp_alt->calc_temp_e(neutron,proton,T,th_gas);
+      if (include_detail) {
+        vdet["dgdT"]=0.0;
+      }
     } else {
       free_energy_density_detail(neutron,proton,T,th_gas,vdet["zn"],
 				 vdet["zp"],vdet["f1"],vdet["f2"],
 				 vdet["f3"],vdet["f4"],
 				 vdet["g"],vdet["dgdT"]);
       if (include_detail) {
-        vdet["msn"]=neutron.ms*hc_mev_fm;
-        vdet["msp"]=proton.ms*hc_mev_fm;
-        vdet["Un"]=neutron.nu*hc_mev_fm;
-        vdet["Up"]=proton.nu*hc_mev_fm;
         vdet["dgdT"]/=hc_mev_fm;
       }
     }
+    
   }
 
+  if (include_detail) {
+    vdet["msn"]=neutron.ms*hc_mev_fm;
+    vdet["msp"]=proton.ms*hc_mev_fm;
+    vdet["Un"]=neutron.nu*hc_mev_fm;
+    vdet["Up"]=proton.nu*hc_mev_fm;
+  }
+    
   mun_gas=neutron.mu;
   mup_gas=proton.mu;
   double nn=nn_prime*xi;
@@ -8871,7 +8878,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
       T=T_grid2[iT]/hc_mev_fm;
       
       cout << "Using nB = " << nB << " 1/fm^3 and T = " << T*hc_mev_fm
-           << " MeV for ipoint = " << ipoint << " out of total "
+           << " MeV for\n  ipoint = " << ipoint << " out of total "
            << n_point << endl;
       
       double log_xn_best=0.0, log_xp_best=0.0;
@@ -9106,10 +9113,12 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
       ubvector X;
       compute_X(nB,X);
     
-      cout << "Beta-eq point: " << ret2 << " " << Ye_best << " "
-           << log_xn << " " << log_xp << " "
-           << Zbar << " " << Nbar << " " << Zbar+Nbar << " " 
-           << Zbar/(Zbar+Nbar) << " " << X[5] << endl;
+      cout << "Beta-eq point (ret2,Ye_best): " << ret2 << " "
+           << Ye_best << " " << "\n  log_xn,log_xp: " 
+           << log_xn << " " << log_xp
+           << "\n  Zbar,Nbar: " << Zbar << " " << Nbar
+           << "\n  Abar,Yebar,Xnuclei:"
+           << Zbar+Nbar << " " << Zbar/(Zbar+Nbar) << " " << X[5] << endl;
 
       double mu_n_nonint, mu_p_nonint;
       if (true) {
