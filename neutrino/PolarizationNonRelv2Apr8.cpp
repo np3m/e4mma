@@ -571,6 +571,8 @@ void PolarizationNonRel::SetPolarizations(double q0, double q,
     SetPolarizations_neutral(q0,q,piVV,piAA,piTT,piVA,piVT,piAT,
                              piLn,piLp,piLnRe,piLpRe,
                              piRPAvec,piRPAax,piL);
+    tempy=piL;
+    
   } else {
     double piLRe;
     double piRPAvec;
@@ -578,8 +580,9 @@ void PolarizationNonRel::SetPolarizations(double q0, double q,
     double piL;
     SetPolarizations_charged(q0,q,piVV,piAA,piTT,piVA,piVT,piAT,
                              piLRe,piRPAvec,piRPAax,piL);
+    tempy=piL;
   }
-  
+
   return; 
 }
  

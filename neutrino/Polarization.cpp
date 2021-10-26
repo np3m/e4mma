@@ -65,6 +65,8 @@
 using namespace o2scl;
 using namespace o2scl_hdf;
 
+double tempy;
+
 // Use unnamed namespace so these methods are only locally available
 namespace {
   
@@ -204,7 +206,7 @@ void Polarization::SetPolarizations(double q0, double q,
   double piL = pt[1]; 
   double piM = pt[2]; 
   double piT = pt[3]; 
-  
+
   // Calculate various kinematic factors
   double q0t = q0 + st.U2 - st.U4; 
   double qa2 = q0t*q0t - q*q; 
@@ -542,7 +544,7 @@ double Polarization::GetResponse(double E1, double q0, double q) const {
   SetLeptonTensor(E1, q0, q, &L);
   Tensor<double> piVV, piAA, piTT, piVA, piVT, piAT;   
   SetPolarizations(q0, q, &piVV, &piAA, &piTT, &piVA, &piVT, &piAT);
-  
+
   double pi = 0.0;
   if (flag==0) {
     pi += coup.Cv*coup.Cv*FullContract(L, piVV);
@@ -565,7 +567,7 @@ double Polarization::GetResponse_mu(double E1, double q0, double x,
   double q=GetqFromMu13(E1,q0,mu);
   double ret=GetResponse(E1,q0,q);
   xv.push_back(x);
-  yv.push_back(ret);
+  yv.push_back(tempy);
   
   //cout << "H: " << E1 << " " << q0 << " " << x << " " << ret << endl;
   return ret;

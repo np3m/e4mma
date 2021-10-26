@@ -69,6 +69,8 @@
 //#define NPGJ 64
 //#define NNPGL 128
 
+extern double tempy;
+
 namespace nuopac {
 
   /// Class for calculating polarization tensors and interaction rates
@@ -169,7 +171,7 @@ namespace nuopac {
     /** \brief Desc 
      */
     int NNPGL;
-  
+
     /** \brief Desc 
      */
     std::vector<double> xx;

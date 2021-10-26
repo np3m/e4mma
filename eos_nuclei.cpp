@@ -1549,11 +1549,7 @@ int eos_nuclei::solve_nuclei(size_t nv, const ubvector &x, ubvector &y,
     // Compute chemical potential shift at a fiducial proton density
     proton.n=1.0e-100;
 
-    if (use_skalt) {
-      eosp_alt->calc_temp_e(neutron,proton,T,th2);
-    } else {
-      free_energy_density(neutron,proton,T,th2);
-    }
+    free_energy_density(neutron,proton,T,th2);
     double mup_shift=proton.mu-
       T*log(1.0/proton.g*pow(2.0*pi/proton.ms/T,1.5))+100.0*T*log(10.0);
 
@@ -1566,11 +1562,7 @@ int eos_nuclei::solve_nuclei(size_t nv, const ubvector &x, ubvector &y,
     // Compute chemical potential shift at a fiducial neutron density
     neutron.n=1.0e-100;
 
-    if (use_skalt) {
-      eosp_alt->calc_temp_e(neutron,proton,T,th2);
-    } else {
-      free_energy_density(neutron,proton,T,th2);
-    }
+    free_energy_density(neutron,proton,T,th2);
     double mun_shift=neutron.mu-
       T*log(1.0/neutron.g*pow(2.0*pi/neutron.ms/T,1.5))+100.0*T*log(10.0);
 
@@ -1580,19 +1572,12 @@ int eos_nuclei::solve_nuclei(size_t nv, const ubvector &x, ubvector &y,
     
   } else {
     
-    if (use_skalt) {
-      eosp_alt->calc_temp_e(neutron,proton,T,th_gas);
-      if (include_detail) {
-        vdet["dgdT"]=0.0;
-      }
-    } else {
-      free_energy_density_detail(neutron,proton,T,th_gas,vdet["zn"],
-				 vdet["zp"],vdet["f1"],vdet["f2"],
-				 vdet["f3"],vdet["f4"],
-				 vdet["g"],vdet["dgdT"]);
-      if (include_detail) {
-        vdet["dgdT"]/=hc_mev_fm;
-      }
+    free_energy_density_detail(neutron,proton,T,th_gas,vdet["zn"],
+                               vdet["zp"],vdet["f1"],vdet["f2"],
+                               vdet["f3"],vdet["f4"],
+                               vdet["g"],vdet["dgdT"]);
+    if (include_detail) {
+      vdet["dgdT"]/=hc_mev_fm;
     }
     
   }
@@ -2164,24 +2149,20 @@ int eos_nuclei::nuc_matter(double nB, double Ye, double T,
   }
 
   // Now compute the full EOS
-  if (use_skalt) {
-    eosp_alt->calc_temp_e(neutron,proton,T,thx);
-  } else {
-    double f1, f2, f3, f4;
-    free_energy_density_detail(neutron,proton,T,thx,vdet["zn"],
-			       vdet["zp"],f1,f2,f3,f4,vdet["g"],
-			       vdet["dgdT"]);
-    if (include_detail) {
-      vdet["F1"]=f1/nB*hc_mev_fm;
-      vdet["F2"]=f2/nB*hc_mev_fm;
-      vdet["F3"]=f3/nB*hc_mev_fm;
-      vdet["F4"]=f4/nB*hc_mev_fm;
-      vdet["msn"]=neutron.ms*hc_mev_fm;
-      vdet["msp"]=proton.ms*hc_mev_fm;
-      vdet["Un"]=neutron.nu*hc_mev_fm;
-      vdet["Up"]=proton.nu*hc_mev_fm;
-      vdet["dgdT"]/=hc_mev_fm;
-    }
+  double f1, f2, f3, f4;
+  free_energy_density_detail(neutron,proton,T,thx,vdet["zn"],
+                             vdet["zp"],f1,f2,f3,f4,vdet["g"],
+                             vdet["dgdT"]);
+  if (include_detail) {
+    vdet["F1"]=f1/nB*hc_mev_fm;
+    vdet["F2"]=f2/nB*hc_mev_fm;
+    vdet["F3"]=f3/nB*hc_mev_fm;
+    vdet["F4"]=f4/nB*hc_mev_fm;
+    vdet["msn"]=neutron.ms*hc_mev_fm;
+    vdet["msp"]=proton.ms*hc_mev_fm;
+    vdet["Un"]=neutron.nu*hc_mev_fm;
+    vdet["Up"]=proton.nu*hc_mev_fm;
+    vdet["dgdT"]/=hc_mev_fm;
   }
   
   mun_full=neutron.mu;
@@ -8197,13 +8178,8 @@ int eos_nuclei::mcarlo_nuclei(std::vector<std::string> &sv, bool itive_com) {
       neutron.n=nB_arr[k]*(1.0-Ye_arr[k]);
       proton.n=nB_arr[k]*Ye_arr[k];
       double T=T_arr[k]/hc_mev_fm;
-      if (use_skalt) {
-	line.push_back(eosp_alt->calc_temp_e(neutron,proton,T,th2)/
-		       nB_arr[k]*hc_mev_fm);
-      } else {
-	line.push_back(free_energy_density(neutron,proton,T,th2)/
-		       nB_arr[k]*hc_mev_fm);
-      }
+      line.push_back(free_energy_density(neutron,proton,T,th2)/
+                     nB_arr[k]*hc_mev_fm);
     }
 
     double ns_min_cs2, ns_max_cs2;
@@ -9368,6 +9344,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         pol_cc.flag=Polarization::flag_vector;
         pol_cc.integ_method_mu=Polarization::integ_o2scl;
         pol_cc.integ_method_q0=Polarization::integ_o2scl;
+        cout << "Computing charged current, vector part: " << endl;
         double cc_vec_mfp=pol_cc.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
         cout << "charged current, vector part: " << cc_vec_mfp << endl;
       
