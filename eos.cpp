@@ -2822,7 +2822,7 @@ int eos::solve_Ye(size_t nv, const ubvector &x, ubvector &y,
     if (neutron.ms<0.0 || proton.ms<0.0) return 1;
     if (neutron.n<0.0 || proton.n<0.0) return 2;
   }
-  
+
   free_energy_density(neutron,proton,T,th2);
   
   photon.massless_calc(T);
