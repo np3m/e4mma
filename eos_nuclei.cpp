@@ -9341,9 +9341,10 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         // -----------------------------------------------------------------
         // Charged current mean free path
       
-        pol_cc.flag=Polarization::flag_vector;
         pol_cc.integ_method_mu=Polarization::integ_compare;
         pol_cc.integ_method_q0=Polarization::integ_compare;
+        
+        pol_cc.flag=Polarization::flag_vector;
         cout << "Computing charged current, vector part: " << endl;
         double cc_vec_mfp=pol_cc.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
         cout << "charged current, vector part: " << cc_vec_mfp << endl;
@@ -9355,6 +9356,9 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         // -----------------------------------------------------------------
         // Neutral current mean free path
       
+        pol_nc.integ_method_mu=Polarization::integ_compare;
+        pol_nc.integ_method_q0=Polarization::integ_compare;
+        
         pol_nc.flag=Polarization::flag_vector;
         double nc_vec_mfp=pol_nc.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
         cout << "neutral current, vector part: " << nc_vec_mfp << endl;
@@ -9362,7 +9366,6 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         pol_nc.flag=Polarization::flag_axial;
         double nc_axvec_mfp=pol_nc.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
         cout << "neutral current, axial part: " << nc_axvec_mfp << endl;
-        exit(-1);
 
         line.push_back(nB);
         line.push_back(neutron.n);
