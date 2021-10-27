@@ -9342,8 +9342,8 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         // Charged current mean free path
       
         pol_cc.flag=Polarization::flag_vector;
-        pol_cc.integ_method_mu=Polarization::integ_o2scl;
-        pol_cc.integ_method_q0=Polarization::integ_o2scl;
+        pol_cc.integ_method_mu=Polarization::integ_compare;
+        pol_cc.integ_method_q0=Polarization::integ_compare;
         cout << "Computing charged current, vector part: " << endl;
         double cc_vec_mfp=pol_cc.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
         cout << "charged current, vector part: " << cc_vec_mfp << endl;

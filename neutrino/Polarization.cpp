@@ -59,6 +59,7 @@
 #include "tensor.h" 
 #include "constants.h"
 
+#include <o2scl/constants.h>
 #include <o2scl/funct.h>
 #include <o2scl/hdf_io.h>
 
@@ -66,6 +67,7 @@ using namespace o2scl;
 using namespace o2scl_hdf;
 
 double tempy;
+bool integral_debug;
 
 // Use unnamed namespace so these methods are only locally available
 namespace {
@@ -183,7 +185,7 @@ std::array<double, 4> Polarization::CalculateBasePolarizations
     qa2t = q0*q0 - q*q;
   }
   double a = (beta*q0t + 2.0*em)/st.T;
-  double PI = Constants::Pi; 
+  double PI = o2scl_const::pi;//Constants::Pi; 
   double piQ = qa2t*st.T/(4.0*PI*q)*Gamma0; 
   double piL = -qa2t*pow(st.T/q, 3)/(4.0*PI) 
     * (a*a*Gamma0 + 4.0*a*Gamma1 + 4.0*Gamma2);
@@ -290,7 +292,7 @@ void Polarization::SetLeptonTensor(double E1, double q0, double q,
 double Polarization::CalculateDGamDq0Dmu13(double E1, double q0,
                                            double mu13) const {
   double q = GetqFromMu13(E1, q0, mu13); 
-  return GetResponse(E1, q0, q)*2.0*Constants::Pi*GetCsecPrefactor(E1, q0); 
+  return GetResponse(E1, q0, q)*2.0*o2scl_const::pi*GetCsecPrefactor(E1, q0); 
 }
   
 double Polarization::CalculateDGamDq0(double E1, double q0) { 
@@ -301,8 +303,20 @@ double Polarization::CalculateDGamDq0(double E1, double q0) {
   double delta = (mu13cross + 1.0) / 2.0; 
   double avg = (mu13cross - 1.0) / 2.0;
 
-  double integral=0.0;
+  double integral=0.0, integral_base=0.0, integral_o2scl=0.0;
 
+  if (integ_method_mu==integ_base || integ_method_mu==integ_compare) {
+    integral = 0.0; 
+    for (int i=0; i<NPGJ; ++i) { 
+      double mu = xx[i]*delta + avg; 
+      integral += ww[i] * GetResponse(E1, q0, GetqFromMu13(E1, q0, mu));
+    }
+    integral_base=integral;
+    if (integ_method_mu==integ_compare) {
+      cout << "mu integral, q0: " << q0 << " base: " << integral << " ";
+    }
+  }
+  
   if (integ_method_mu==integ_o2scl || integ_method_mu==integ_compare) {
 
     vector<double> vx, vy;
@@ -313,10 +327,66 @@ double Polarization::CalculateDGamDq0(double E1, double q0) {
                       this,E1,q0,std::placeholders::_1,delta,avg,
                       std::ref(vx),std::ref(vy));
 
-    cout << "Here." << endl;
     double err;
-    int iret=qags.integ_err(f,-1.0,1.0,integral,err);
+    integral_debug=false;
+    int iret;
+    
+    /*
+      qags.tol_rel=1.0e-8;
+      qags.tol_abs=1.0e-8;
+      cout << "1." << endl;
+      int iret=qags.integ_err(f,-1.0,1.0,integral,err);
+      
+      if (iret!=0) {
+      qags.tol_rel=1.0e-6;
+      qags.tol_abs=1.0e-6;
+      cout << "2." << endl;
+      iret=qags.integ_err(f,-1.0,1.0,integral,err);
+      }
+      
+      if (iret!=0) {
+    */
+    qags.set_limit(100);
+    qags.tol_rel=1.0e-4;
+    qags.tol_abs=1.0e-4;
+    cout << "3";
+    iret=qags.integ_err(f,-1.0,1.0,integral,err);
+    //}
+    
     if (iret!=0) {
+      qags.tol_rel=1.0e-2;
+      qags.tol_abs=1.0e-2;
+      cout << "4";
+      iret=qags.integ_err(f,-1.0,1.0,integral,err);
+    }
+    
+    if (iret!=0) {
+      qng.tol_rel=1.0e-4;
+      qng.tol_abs=1.0e-4;
+      cout << "5";
+      iret=qng.integ_err(f,-1.0,1.0,integral,err);
+    }
+    
+    if (iret!=0) {
+      qng.tol_rel=1.0e-2;
+      qng.tol_abs=1.0e-2;
+      cout << "6";
+      iret=qng.integ_err(f,-1.0,1.0,integral,err);
+    }
+
+    if (iret!=0) {
+      cout << "7";
+      integral=0.0;
+      err=0.0;
+    }
+    
+    if (false && iret!=0) {
+      cout << "iret: " << iret << endl;
+      integral_debug=true;
+      vx.clear();
+      vy.clear();
+      iret=qags.integ_err(f,-1.0,1.0,integral,err);
+      cout << "iret: " << iret << endl;
       hdf_file hfx;
       hfx.open_or_create("mu_integrand.o2");
       hfx.setd_vec("vx",vx);
@@ -349,20 +419,11 @@ double Polarization::CalculateDGamDq0(double E1, double q0) {
         }
       */
     }
-    cout << "Here2." << endl;
+    integral_o2scl=integral;
     if (integ_method_mu==integ_compare) {
-      cout << "O2scl: " << integral << " ";
-    }
-  }
-  
-  if (integ_method_mu==integ_base || integ_method_mu==integ_compare) {
-    integral = 0.0; 
-    for (int i=0; i<NPGJ; ++i) { 
-      double mu = xx[i]*delta + avg; 
-      integral += ww[i] * GetResponse(E1, q0, GetqFromMu13(E1, q0, mu));
-    }
-    if (integ_method_mu==integ_compare) {
-      cout << "base: " << integral << endl;
+      cout << " O2scl: " << integral << " "
+           << fabs(integral_base-integral_o2scl)/fabs(integral_base)
+           << endl;
     }
   }
   
@@ -370,7 +431,7 @@ double Polarization::CalculateDGamDq0(double E1, double q0) {
   double fac = GetCsecPrefactor(E1, q0);
   
   // Added by Zidu
-  double crx=2.0*Constants::Pi*fac*integral;
+  double crx=2.0*o2scl_const::pi*fac*integral;
 
   if (crx<0.0) crx=0.0;
 
@@ -382,7 +443,7 @@ double Polarization::CalculateDGamDq0(double E1, double q0) {
   return crx; 
 
   // Original nuopac
-  // return 2.0*Constants::Pi*fac*integral;
+  // return 2.0*o2scl_const::pi*fac*integral;
 }
 
 void Polarization::CalculateDGamDq0l(double E1, double q0, double* S0, 
@@ -407,8 +468,8 @@ void Polarization::CalculateDGamDq0l(double E1, double q0, double* S0,
   integral1 *= delta;
 
   double fac = GetCsecPrefactor(E1, q0);
-  *S0 = 2.0*Constants::Pi*fac*integral0/2.0;
-  *S1 = 2.0*Constants::Pi*fac*integral1*3.0/2.0;
+  *S0 = 2.0*o2scl_const::pi*fac*integral0/2.0;
+  *S1 = 2.0*o2scl_const::pi*fac*integral1*3.0/2.0;
 
   return;
 }
@@ -459,7 +520,7 @@ double Polarization::dgamdq0_intl(double E1, double x, double estar,
   if (sign==1 && q0>E1-st.M3) return 0.0;
   
   double ret=CalculateDGamDq0(E1, q0);
-  
+
   return ret;
 }
 
@@ -473,7 +534,7 @@ double Polarization::CalculateInverseMFP(double E1) {
   }
   estar = std::min(estar, E1 - st.M3);
   
-  double integral=0.0;
+  double integral=0.0, integral_base=0.0, integral_o2scl=0.0;
   
   if (integ_method_q0==integ_base || integ_method_q0==integ_compare) {
     for (int i=0; i<NNPGL; ++i) {
@@ -490,8 +551,9 @@ double Polarization::CalculateInverseMFP(double E1) {
       double ee = log(CalculateDGamDq0(E1, q0)) + xgl[i];
       integral += wgl[i] * exp(ee); 
     }
+    integral_base=integral;
     if (integ_method_q0==integ_compare) {
-      cout << "q0 integral, Base: " << integral << " ";
+      cout << "q0 integral, Base: " << integral << endl;
     }
 
   }
@@ -500,22 +562,24 @@ double Polarization::CalculateInverseMFP(double E1) {
 
     integral=0.0;
 
-    cout << "Here3." << endl;
     funct f=std::bind(std::mem_fn<double(double,double,double,int)>
                       (&Polarization::dgamdq0_intl),
                       this,E1,std::placeholders::_1,estar,-1);
+    qagiu.verbose=1;
     integral+=qagiu.integ(f,0.0,0.0);
     
     funct f2=std::bind(std::mem_fn<double(double,double,double,int)>
                        (&Polarization::dgamdq0_intl),
                        this,E1,std::placeholders::_1,estar,+1);
     integral+=qagiu.integ(f2,0.0,0.0);
-    cout << "Here4." << endl;
-    
+
+    integral_o2scl=integral;
     if (integ_method_q0==integ_compare) {
-      cout << "O2scl: " << integral << endl;
-      char ch;
-      cin >> ch;
+      cout << "q0 integral, O2scl: " << integral << " "
+           << fabs(integral_base-integral_o2scl)/fabs(integral_base)
+           << endl;
+      //char ch;
+      //cin >> ch;
     }
   }
   
@@ -566,8 +630,8 @@ double Polarization::GetResponse_mu(double E1, double q0, double x,
   double mu=x*delta+avg;
   double q=GetqFromMu13(E1,q0,mu);
   double ret=GetResponse(E1,q0,q);
-  xv.push_back(x);
-  yv.push_back(tempy);
+  //xv.push_back(x);
+  //yv.push_back(tempy);
   
   //cout << "H: " << E1 << " " << q0 << " " << x << " " << ret << endl;
   return ret;
@@ -577,7 +641,7 @@ double Polarization::GetResponse_mu(double E1, double q0, double x,
 inline double Polarization::GetCsecPrefactor(double E1, double q0) const {
   double p3 = sqrt((E1-q0)*(E1-q0) - st.M3*st.M3); 
   const double fac = mG2*pow(Constants::GfMeV, 2)/
-    pow(2.0*Constants::Pi, 3)/16.0;
+    pow(2.0*o2scl_const::pi, 3)/16.0;
   double a;
   if (current==1) {
     a=E1*(1.0 - exp((st.Mu4 - st.Mu2 - q0)/st.T));

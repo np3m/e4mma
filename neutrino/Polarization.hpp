@@ -70,6 +70,7 @@
 //#define NNPGL 128
 
 extern double tempy;
+extern bool integral_debug;
 
 namespace nuopac {
 

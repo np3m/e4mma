@@ -67,7 +67,7 @@ namespace {
   
   // Exact expression
   inline double Fermi0(double eta) {
-    if (eta>40.0) return eta;  
+    if (eta>50.0) return eta;  
     return log(exp(eta) + 1.0);
   }
 
@@ -127,9 +127,13 @@ namespace {
     double ximaxCC=Fermi0(-delta2maxCC) - Fermi0(-delta4maxCC); 
 
     double Gamma0 = Fermi0(delta2) - Fermi0(delta4);
-    double PI = Constants::Pi;
+    double PI = o2scl_const::pi;//Constants::Pi;
     // double piL = M2*M4*T/(PI*q)*Gamma0;//orig one
 
+    //if (this->current==this->current_neutral) {
+    //O2SCL_ERR("Invalid current 4.",o2scl::exc_efailed);
+    //}
+    
     //neutral current consistent with Reddy's thesis
     //  double piL= M2*M4*T/(PI*q)*(xiNC+q0t/T);
 
@@ -168,6 +172,10 @@ namespace {
     //following is the new em completely consistent with Redddy's
     //thesis, for non-rel+interacting gas
 
+    //if (this->current==this->current_charged) {
+    //O2SCL_ERR("Invalid current 4.",o2scl::exc_efailed);
+    //}
+
     double c=q0+U2-U2-q*q/(2*M2);
     //the minimum E2 for NC reaction
     double emNC=std::max((-c*M2/q)*(-c*M2/q)/(2*M2),0.0); 
@@ -175,7 +183,7 @@ namespace {
     double delta4NC=(Mu2 - U2 - emNC-q0t)/T;
     // reddy nc current
     double xiNC=Fermi0(-delta2NC) - Fermi0(-delta4NC);  
-    double PI = Constants::Pi;
+    double PI = o2scl_const::pi;//Constants::Pi;
     //neutral current Neutron PiL consistent with Reddy's thesis
     double piLN= M2*M2*T/(PI*q)*(xiNC+q0t/T);
     return piLN;
@@ -214,27 +222,29 @@ namespace {
     double delta4NC=(Mu4 - U4 - emNC-q0t)/T;
     // reddy nc current
     double xiNC=Fermi0(-delta2NC) - Fermi0(-delta4NC);  
-    double PI = Constants::Pi;
+    double PI = o2scl_const::pi;//Constants::Pi;
     //neutral current Proton PiL consistent with Reddy's thesis
     double piLP= M4*M4*T/(PI*q)*(xiNC+q0t/T);
 
+    //if (this->current==this->current_charged) {
+    //O2SCL_ERR("Invalid current 5.",o2scl::exc_efailed);
+    //}
+    
     return piLP;
   }
-
 
 }
 
 std::array<double, 4> PolarizationNonRel::CalculateBasePolarizations
 (double q0, double q) const {
   
-  //void Polarization::SetPolarizations(double q0, double q) {
   // Calculate some kinematic factors
  
   double q0t = q0 + st.U2 - st.U4;//orig one
  
   double qa2t = q0t*q0t - q*q;
   
-  // I don't completely understand this condition, but it seems to be
+  // [LR]: I don't completely understand this condition, but it seems to be
   // necessary to suppress noise at larger q_0
   
   //orig one
@@ -273,7 +283,7 @@ std::array<double, 4> PolarizationNonRel::CalculateBasePolarizations
   double delta2maxCC=(st.Mu2 - st.U2 - emaxCC)/st.T;
   double delta4maxCC=(st.Mu4 - st.U4 - emaxCC-q0t)/st.T;
  
-  // Now just need to include some method for calculating these
+  // [LR]: Now just need to include some method for calculating these
   // At least at low density, Gamma0 should be the dominant term
   // which looks like the non-relativistic response function 
   // Under non-degenerate conditions (i.e. delta2, delta4 << 0), 
@@ -288,7 +298,11 @@ std::array<double, 4> PolarizationNonRel::CalculateBasePolarizations
   //Reddy cc current
   double ximaxCC=Fermi0(-delta2maxCC) - Fermi0(-delta4maxCC); 
 
-  double PI = Constants::Pi; 
+  //if (current==current_neutral) {
+  //O2SCL_ERR("Invalid current 1.",o2scl::exc_efailed);
+  //}
+  
+  double PI = o2scl_const::pi;//Constants::Pi; 
   // double piL = st.M2*st.M4*st.T/(PI*q)*Gamma0;//orig one
 
   //neutral current consistent with Reddy's thesis
@@ -297,6 +311,13 @@ std::array<double, 4> PolarizationNonRel::CalculateBasePolarizations
   //charged current consistent with Reddy's thesis
   double piL= st.M2*st.M4*st.T/(PI*q)*(ximinCC-ximaxCC);
 
+  tempy=piL;
+  if (integral_debug) {
+    cout << "XX: " << q << " " << q0 << " " << st.M2 << " " << st.M4 << " "
+         << em << " "
+         << delta2minCC << " " << ximinCC-ximaxCC << " " << tempy << endl;
+  }
+  
   double piQ = 0.0; 
   double piM = 0.0;
   double piT = 0.0;
@@ -350,12 +371,16 @@ std::array<double, 4> PolarizationNonRel::CalculateBasePolarizationsNeutron
   double xiNC=Fermi0(-delta2NC) - Fermi0(-delta4NC);  
 
 
-  double PI = Constants::Pi;
+  double PI = o2scl_const::pi;//Constants::Pi;
   // double piL = st.M2*st.M2*st.T/(PI*q)*Gamma0;//orig one
 
   //neutral current consistent with Reddy's thesis
   double piL= st.M2*st.M2*st.T/(PI*q)*(xiNC+q0t/st.T);
 
+  if (current==current_charged) {
+    O2SCL_ERR("Invalid current 2.",o2scl::exc_efailed);
+  }
+  
   double piQ = 0.0;
   double piM = 0.0;
   double piT = 0.0;
@@ -404,12 +429,16 @@ std::array<double, 4> PolarizationNonRel::CalculateBasePolarizationsProton
   // reddy nc current
   double xiNC=Fermi0(-delta2NC) - Fermi0(-delta4NC);  
 
-  double PI = Constants::Pi;
+  double PI = o2scl_const::pi;//Constants::Pi;
   // double piL = st.M2*st.M2*st.T/(PI*q)*Gamma0;//orig one
 
   //neutral current consistent with Reddy's thesis
   double piL= st.M4*st.M4*st.T/(PI*q)*(xiNC+q0t/st.T);
 
+  if (current==current_charged) {
+    O2SCL_ERR("Invalid current 3.",o2scl::exc_efailed);
+  }
+  
   double piQ = 0.0;
   double piM = 0.0;
   double piT = 0.0;
@@ -458,7 +487,7 @@ double PolarizationNonRel::GetRePI( double q0, double q) const {
 
 
   // ******************************************************
-  double piLRe=-result/Constants::Pi;
+  double piLRe=-result/o2scl_const::pi;//Constants::Pi;
 
   gsl_integration_workspace_free (w);
 
@@ -488,7 +517,7 @@ double PolarizationNonRel::GetRePIn( double q0, double q) const {
 
 
   // ******************************************************
-  double  piLRe=-result/Constants::Pi;
+  double  piLRe=-result/o2scl_const::pi;//Constants::Pi;
 
   gsl_integration_workspace_free (w);
 
@@ -519,7 +548,7 @@ double PolarizationNonRel::GetRePIp( double q0, double q) const {
   // gsl_integration_qags (&F, 0, 1, 0, 1e-7, 1000,
   //                         w, &result, &error);
 
-  double piLRe=-result/Constants::Pi;
+  double piLRe=-result/o2scl_const::pi;//Constants::Pi;
 
   gsl_integration_workspace_free (w);
 
@@ -571,8 +600,6 @@ void PolarizationNonRel::SetPolarizations(double q0, double q,
     SetPolarizations_neutral(q0,q,piVV,piAA,piTT,piVA,piVT,piAT,
                              piLn,piLp,piLnRe,piLpRe,
                              piRPAvec,piRPAax,piL);
-    tempy=piL;
-    
   } else {
     double piLRe;
     double piRPAvec;
@@ -580,7 +607,6 @@ void PolarizationNonRel::SetPolarizations(double q0, double q,
     double piL;
     SetPolarizations_charged(q0,q,piVV,piAA,piTT,piVA,piVT,piAT,
                              piLRe,piRPAvec,piRPAax,piL);
-    tempy=piL;
   }
 
   return; 
