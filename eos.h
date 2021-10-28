@@ -442,7 +442,7 @@ class eos {
   o2scl::cli::parameter_bool p_include_muons;
   o2scl::cli::parameter_bool p_select_cs2_test;
   o2scl::cli::parameter_bool p_test_ns_cs2;
-  o2scl::cli::parameter_bool p_use_skalt;
+  o2scl::cli::parameter_bool p_use_alt_eos;
   o2scl::cli::parameter_double p_a_virial;
   o2scl::cli::parameter_double p_b_virial;
   //@}
@@ -604,7 +604,7 @@ class eos {
   /** \brief Use a Skyrme model rather than the Du et al. 
       combined EOS
    */
-  bool use_skalt;
+  bool use_alt_eos;
 
   /** \brief If true, test the neutron star speed of sound 
       (default true)

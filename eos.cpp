@@ -668,7 +668,7 @@ eos::eos() {
   o2scl_hdf::hdf_input(hf,UNEDF_tab,name);
   hf.close();
 
-  use_skalt=false;
+  use_alt_eos=false;
 #ifdef O2SCL_CORI
   o2scl_hdf::skyrme_load(sk_alt,"data/NRAPR.o2",true,1);
 #else
@@ -933,8 +933,10 @@ int eos::new_ns_eos(double nb, fermion &n,
 
   // -----------------------------------------------------
   // Solve for a1l and a2l
-  
+
+  bool success=true;
   mroot_hybrids<> mh;
+  mh.err_nonconv=false;
 
   // Initial guess for a1l and a2l
   ubvector mx(2), my(2);
@@ -965,7 +967,9 @@ int eos::new_ns_eos(double nb, fermion &n,
 	 this,std::placeholders::_1,
 	 std::placeholders::_2,
 	 std::placeholders::_3,ns_nb_max,cs_ns_2,cs_ns_last);
-      mh.msolve(2,mx,mfbig);
+      int mret=mh.msolve(2,mx,mfbig);
+      if (mret!=0) success=false;
+      
       a1l=mx[0];
       a2l=mx[1];
       
@@ -992,7 +996,8 @@ int eos::new_ns_eos(double nb, fermion &n,
 	 this,std::placeholders::_1,
 	 std::placeholders::_2,
 	 std::placeholders::_3,ns_nb_max,cs_ns_2,cs_ns_last);
-      mh.msolve(2,mx,mfsmall);
+      int mret=mh.msolve(2,mx,mfsmall);
+      if (mret!=0) success=false;
       a1l=mx[0];
       a2l=mx[1];
       
@@ -1031,6 +1036,10 @@ int eos::new_ns_eos(double nb, fermion &n,
     }
   }
 
+  if (success==false) {
+    cout << "Warning NS EOS solver failing." << endl;
+    return 1;
+  }
   return 0;
 }
 
@@ -1049,7 +1058,7 @@ double eos::free_energy_density_detail
  double &f1, double &f2, double &f3, double &f4,
  double &g_virial, double &dgvirialdT) {
 
-  if (use_skalt) {
+  if (use_alt_eos) {
     eosp_alt->calc_temp_e(n,p,T,th);
     zn=0.0;
     zp=0.0;
@@ -2816,7 +2825,7 @@ int eos::solve_Ye(size_t nv, const ubvector &x, ubvector &y,
   neutron.n=nb*(1.0-Ye);
   proton.n=nb*Ye;
 
-  if (use_skalt==false) {
+  if (use_alt_eos==false) {
     double t1, t2;
     sk.eff_mass(neutron,proton,t1,t2);
     if (neutron.ms<0.0 || proton.ms<0.0) return 1;
@@ -2858,7 +2867,7 @@ int eos::solve_fixed_sonb_YL(size_t nv, const ubvector &x, ubvector &y,
   double T2=T;
   if (sonb==0.0) T2=0.0;
 
-  if (use_skalt==false) {
+  if (use_alt_eos==false) {
     double t1, t2;
     sk.eff_mass(neutron,proton,t1,t2);
     if (neutron.ms<0.0 || proton.ms<0.0) return 1;
@@ -2905,7 +2914,7 @@ int eos::solve_T(size_t nv, const ubvector &x, ubvector &y,
   neutron.n=nb*(1.0-Ye);
   proton.n=nb*Ye;
 
-  if (use_skalt==false) {
+  if (use_alt_eos==false) {
     double t1, t2;
     sk.eff_mass(neutron,proton,t1,t2);
     if (neutron.ms<0.0 || proton.ms<0.0) return 1;
@@ -3563,6 +3572,7 @@ int eos::vir_fit(std::vector<std::string> &sv,
 int eos::skalt_model(std::vector<std::string> &sv,
                      bool itive_com) {
   o2scl_hdf::skyrme_load(sk_alt,sv[1]);
+  eosp_alt=&sk_alt;
   return 0;
 }
 
@@ -3643,10 +3653,10 @@ void eos::setup_cli(o2scl::cli &cl) {
     "speed of sound (default false).";
   cl.par_list.insert(make_pair("test_ns_cs2",&p_test_ns_cs2));
 
-  p_use_skalt.b=&use_skalt;
-  p_use_skalt.help=((std::string)"Use the alternate Skyrme model ")+
+  p_use_alt_eos.b=&use_alt_eos;
+  p_use_alt_eos.help=((std::string)"Use the alternate Skyrme model ")+
     "(default false).";
-  cl.par_list.insert(make_pair("use_skalt",&p_use_skalt));
+  cl.par_list.insert(make_pair("use_alt_eos",&p_use_alt_eos));
 
   p_a_virial.d=&a_virial;
   p_a_virial.help="Virial coefficient a (default 3.0).";

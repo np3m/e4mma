@@ -8823,18 +8823,31 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
     std::cout << "j: " << j << endl;
 
     if (j==0) {
-      use_skalt=true;
+      use_alt_eos=true;
       vector<string> args={"skalt-model","NRAPR"};
       skalt_model(args,true);
     } else if (j==1) {
-      use_skalt=true;
+      use_alt_eos=true;
       vector<string> args={"skalt-model","SGII"};
       skalt_model(args,true);
     } else {
-      use_skalt=false;
+      use_alt_eos=false;
       // Create a random EOS
       std::vector<std::string> obj;
       random(obj,false);
+    }
+    if (use_alt_eos) {
+      // Copy the couplings to the 'sk' object so we can use
+      // those for the Fermi Liquid parameters
+      sk.t0=sk_alt.t0;
+      sk.t1=sk_alt.t1;
+      sk.t2=sk_alt.t2;
+      sk.t3=sk_alt.t3;
+      sk.x0=sk_alt.x0;
+      sk.x1=sk_alt.x1;
+      sk.x2=sk_alt.x2;
+      sk.x3=sk_alt.x3;
+      sk.alpha=sk_alt.alpha;
     }
 
     vector<double> line={((double)i_ns),((double)i_skyrme),
