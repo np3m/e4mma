@@ -1047,16 +1047,18 @@ double eos::free_energy_density
 (fermion &n, fermion &p, double T, thermo &th) {
   double zn, zp;
   double f1, f2, f3, f4;
-  double g_virial, dgvirialdT;  
+  double g_virial, dgvirialdT, dgdnn, dgdnp;  
   return free_energy_density_detail(n,p,T,th,zn,zp,f1,f2,f3,f4,
-				    g_virial,dgvirialdT);
+				    g_virial,dgvirialdT,
+                                    dgdnn,dgdnp);
 }
 
 double eos::free_energy_density_detail
 (o2scl::fermion &n, o2scl::fermion &p, double T, o2scl::thermo &th,
  double &zn, double &zp,
  double &f1, double &f2, double &f3, double &f4,
- double &g_virial, double &dgvirialdT) {
+ double &g_virial, double &dgvirialdT, double &dgvirialdnn,
+ double &dgvirialdnp) {
 
   if (use_alt_eos) {
     eosp_alt->calc_temp_e(n,p,T,th);
@@ -1350,12 +1352,12 @@ double eos::free_energy_density_detail
   // Compute derivatives for chemical potentials
  
   
-  double dgvirialdnn=-(1.0/pow(a_virial*zn*zn+a_virial*zp*zp
+  dgvirialdnn=-(1.0/pow(a_virial*zn*zn+a_virial*zp*zp
 			       +b_virial*zn*zp+1.0,2.0))*
     (2.0*a_virial*zn*zn/T*dmundnn
      +2.0*a_virial*zp*zp/T*dmupdnn+b_virial*zn*zp/T*dmundnn
      +b_virial*zn*zp/T*dmupdnn);
-  double dgvirialdnp=-(1.0/pow(a_virial*zn*zn+a_virial*zp*zp
+  dgvirialdnp=-(1.0/pow(a_virial*zn*zn+a_virial*zp*zp
 			       +b_virial*zn*zp+1.0,2.0))*
     (2.0*a_virial*zn*zn/T*dmundnp
      +2.0*a_virial*zp*zp/T*dmupdnp+b_virial*zn*zp/T*dmundnp

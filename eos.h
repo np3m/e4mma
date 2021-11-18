@@ -61,35 +61,35 @@ class eos_crust_virial_v2 : public o2scl::eos_crust_virial {
 
   bool include_deuteron;
   
-  /** \brief Desc
+  /** \brief Temperature grid for alpha-nucleon virial coefficients
    */
   std::vector<double> ba_T;
   
-  /** \brief Desc
+  /** \brief Alpha-nucleon virial coefficient
    */
   std::vector<double> vba;
   
-  /** \brief Desc
+  /** \brief Isospin alpha-nucleon virial coefficient
    */
   std::vector<double> vbpna;
   
-  /** \brief Desc
+  /** \brief Interpolator for alpha-nucleon virial coefficient
    */
   o2scl::interp_vec<std::vector<double> > iv_ba;
   
-  /** \brief Desc
+  /** \brief Interpolator for isospin alpha-nucleon virial coefficient
    */
   o2scl::interp_vec<std::vector<double> > iv_bpna;
   
-  /** \brief Desc
+  /** \brief Free nucleon virial coefficient
    */
   double bn0_free();
 
-  /** \brief Desc
+  /** \brief Free isospin nucleon virial coefficient
    */
   double bpn0_free();
 
-  /** \brief Desc
+  /** \brief Free spin nucleon virial coefficient
    */
   double bn1_free();
 
@@ -275,7 +275,7 @@ class eos {
   (o2scl::fermion &n, o2scl::fermion &p, double T, o2scl::thermo &th,
    double &zn, double &zp,
    double &f1, double &f2, double &f3, double &f4, 
-   double &g_virial, double &dgvirialdT);
+   double &g_virial, double &dgvirialdT, double &dgdnn, double &dgdnp);
 
   /** \brief Compute the free energy density using the virial 
       expansion including derivative information

@@ -216,7 +216,7 @@ public:
   */
   int fd_A_max;
 
-  /// Desc
+  /// If true, extend FRDM beyond neutron/proton drip (default false)
   bool extend_frdm;
   
   /// The maximum value of \f$ N/Z \f$ or \f$ Z/N \f$ (default 2.25)
@@ -287,7 +287,8 @@ public:
   */
   bool propagate_points;
 
-  /// Desc
+  /** \brief If true survey the nB and Ye equations (default false)
+   */
   bool survey_eqs;
 
   /** \brief If true, output all of the data necessary for a full EOS
@@ -652,11 +653,11 @@ public:
    */
   int increase_density(std::vector<std::string> &sv, bool itive_com);
 
-  /** \brief Desc
+  /** \brief Fix the core-crust transition
    */
   int fix_cc(std::vector<std::string> &sv, bool itive_com);
   
-  /** \brief Desc
+  /** \brief Verify the EOS
    */
   int verify(std::vector<std::string> &sv, bool itive_com);
 
@@ -671,7 +672,9 @@ public:
   /** \brief Monte Carlo results in beta equilibrium
    */
   int mcarlo_beta(std::vector<std::string> &sv, bool itive_com);
-  
+
+  /** \brief Test the neutrino opacities
+   */
   int test_neutrino(std::vector<std::string> &sv, bool itive_com);
   
   /// Compute the baryon number fractions and put them in \c X

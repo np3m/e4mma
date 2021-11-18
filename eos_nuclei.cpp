@@ -1575,7 +1575,8 @@ int eos_nuclei::solve_nuclei(size_t nv, const ubvector &x, ubvector &y,
     free_energy_density_detail(neutron,proton,T,th_gas,vdet["zn"],
                                vdet["zp"],vdet["f1"],vdet["f2"],
                                vdet["f3"],vdet["f4"],
-                               vdet["g"],vdet["dgdT"]);
+                               vdet["g"],vdet["dgdT"],
+                               vdet["dgdnn"],vdet["dgdnp"]);
     if (include_detail) {
       vdet["dgdT"]/=hc_mev_fm;
     }
@@ -2152,7 +2153,8 @@ int eos_nuclei::nuc_matter(double nB, double Ye, double T,
   double f1, f2, f3, f4;
   free_energy_density_detail(neutron,proton,T,thx,vdet["zn"],
                              vdet["zp"],f1,f2,f3,f4,vdet["g"],
-                             vdet["dgdT"]);
+                             vdet["dgdT"],vdet["dgdnn"],
+                             vdet["dgdnp"]);
   if (include_detail) {
     vdet["F1"]=f1/nB*hc_mev_fm;
     vdet["F2"]=f2/nB*hc_mev_fm;
