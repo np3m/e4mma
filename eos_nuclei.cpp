@@ -8863,6 +8863,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
       double nB=nB_list[ipoint];
       //cout << "nBX: " << nB << endl;
       double T=TMeV_list[ipoint]/hc_mev_fm;
+      double T_MeV=TMeV_list[ipoint];
       
       size_t inB=vector_lookup(n_nB2,nB_grid2,nB);
       nB=nB_grid2[inB];
@@ -9188,7 +9189,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
       
         PolarizationNonRel pol_nc(betaEoS, nscat, false, false, false);
         pol_nc.current=Polarization::current_neutral;
-      
+
         // These all have units of fm^2
         double fnn_sk=0.5*(sk.t0*(1.0-sk.x0)+
                            1.0/6.0*sk.t3*pow((neutron.n+proton.n),sk.alpha)*
@@ -9253,6 +9254,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         // This has units of 1/MeV
         double lambda=sqrt(4.0*o2scl_const::pi/(neutron.m+proton.m)/T/
                            hc_mev_fm/hc_mev_fm);
+        double lambda3=lambda*lambda*lambda;
       
         double f0=ecv.f0(lambda,T*hc_mev_fm);
         double f0p=ecv.f0p(lambda,T*hc_mev_fm);
@@ -9278,17 +9280,66 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         double gpp_virial=gnn_virial;
       
         double g_virial=vdet["g"];
-      
+
+        double bn0_hat=ecv.bn0(T_MeV)-ecv.bn0_free();
+        double bn1_hat=ecv.bn1(T_MeV)-ecv.bn1_free();
+        double bpn0_hat=ecv.bpn0(T_MeV)-ecv.bpn0_free();
+        double bpn1_hat=ecv.bpn1(T_MeV)-ecv.bpn1_free();
+        double dUdnn_vir=-bpn0_hat*T_MeV*lambda3*proton.n-
+          bpn1_hat*T_MeV*lambda3*proton.n-
+          bn0_hat*T_MeV*lambda3*neutron.n-
+          bn1_hat*T_MeV*lambda3*neutron.n;
+        double dUdnp_vir=-bpn0_hat*T_MeV*lambda3*neutron.n-
+          bpn1_hat*T_MeV*lambda3*neutron.n-
+          bn0_hat*T_MeV*lambda3*proton.n-
+          bn1_hat*T_MeV*lambda3*proton.n;
+        double dtau_dtaun_vir=1.0/neutron.m;
+        double dtau_dtaup_vir=1.0/proton.m;
+        double dUdnn_sk=(neutron.n+proton.n)*sk.t0*(1.0+sk.t0/2.0)-
+          neutron.n*sk.t0*(0.5+sk.t0)-
+          neutron.n*pow(neutron.n+proton.n,sk.alpha)/6.0*sk.t3*(0.5+sk.x3)-
+          pow(neutron.n+proton.n,-1.0+sk.alpha)/12.0*sk.t3*(0.5+sk.x3)*
+          alpha*(neutron.n*neutron.n+proton.n*proton.n)+
+          pow(neutron.n+proton.n,1.0+sk.alpha)/12.0*sk.t3*(0.5+sk.x3)*
+          (2.0+alpha);
+        double dUdnp_sk=(neutron.n+proton.n)*sk.t0*(1.0+sk.t0/2.0)-
+          proton.n*sk.t0*(0.5+sk.t0)-
+          proton.n*pow(neutron.n+proton.n,sk.alpha)/6.0*sk.t3*(0.5+sk.x3)-
+          pow(neutron.n+proton.n,-1.0+sk.alpha)/12.0*sk.t3*(0.5+sk.x3)*
+          alpha*(neutron.n*neutron.n+proton.n*proton.n)+
+          pow(neutron.n+proton.n,1.0+sk.alpha)/12.0*sk.t3*(0.5+sk.x3)*
+          (2.0+alpha);
+        double dtau_dtaun_sk=1.0/neutron.m+
+          2.0*(0.25*(neutron.n+proton.n)*(sk.t1*(1.0+sk.x1/2.0)+
+                                          sk.t2*(1.0+sk.x2/2.0))+
+               0.25*neutron.n*(-sk.t1*(0.5+sk.x1)+sk.t2*(0.5+sk.x2)));
+        double dtau_dtaup_sk=1.0/proton.m+
+          2.0*(0.25*(neutron.n+proton.n)*(sk.t1*(1.0+sk.x1/2.0)+
+                                          sk.t2*(1.0+sk.x2/2.0))+
+               0.25*proton.n*(-sk.t1*(0.5+sk.x1)+sk.t2*(0.5+sk.x2)));
+        
         // Coulomb correction for fpp
         double e2=1.0/137.0*4.0*o2scl_const::pi;
         double qtf2=4.0*e2*cbrt(o2scl_const::pi)*
           pow(3.0*proton.n*pow(o2scl_const::hc_mev_fm,3),2.0/3.0);
-        double q=3*T*hc_mev_fm;
+        double q=3*T_MeV;
         double coulombf=e2*4.0*o2scl_const::pi/(q*q+qtf2);
         
-        double fnn=fnn_virial*g_virial+fnn_sk*(1.0-g_virial);
-        double fnp=fnp_virial*g_virial+fnp_sk*(1.0-g_virial);
-        double fpp=fpp_virial*g_virial+fpp_sk*(1.0-g_virial);
+        double fnn=fnn_virial*g_virial+fnn_sk*(1.0-g_virial)+
+          2.0*vdet["dgdnn"]*dUdnn_vir-2.0*vdet["dgdnn"]*dUdnn_sk+
+          (-vdet["dgdnn"]*dtau_dtaun_sk+vdet["dgdnn"]*dtau_dtaun_vir)*
+          neutron.kf*neutron.kf;
+        double fnp=fnp_virial*g_virial+fnp_sk*(1.0-g_virial)+
+          vdet["dgdnn"]*(dUdnp_vir-dUdnp_sk)+
+          vdet["dgdnp"]*(dUdnn_vir-dUdnn_sk)+
+          0.5*(vdet["dgdnn"]*(dtau_dtaup_vir-dtau_dtaup_sk)*
+               proton.kf*proton.kf+
+               vdet["dgdnp"]*(dtau_dtaun_vir-dtau_dtaun_sk)*
+               neutron.kf*neutron.kf);
+        double fpp=fpp_virial*g_virial+fpp_sk*(1.0-g_virial)
+          2.0*vdet["dgdnp"]*dUdnp_vir-2.0*vdet["dgdnp"]*dUdnp_sk+
+          (-vdet["dgdnp"]*dtau_dtaun_sk+vdet["dgdnp"]*dtau_dtaun_vir)*
+          proton.kf*proton.kf;
         double gnn=gnn_virial*g_virial+gnn_sk*(1.0-g_virial);
         double gnp=gnp_virial*g_virial+gnp_sk*(1.0-g_virial);
         double gpp=gpp_virial*g_virial+gpp_sk*(1.0-g_virial);
@@ -9329,25 +9380,36 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
       
         // kf should be the hole momenta at fermi see surface, here the
         // transition is (pn^-1,pn^-1), the hole is neutron hole
-      
-        double vf_sk=0.5*(w1nnVec-w1npVec)+
-          (w2nnVec-w2npVec)*neutron.kf*neutron.kf;
-        double vgt_sk=0.5*(w1nnAx-w1npAx)+
-          (w2nnAx-w2npAx)*neutron.kf*neutron.kf;
+
+        // Rearrangement terms
+        double rea=sk.alpha/3.0*pow(neutron.n+proton.n,sk.alpha-1.0)*
+          ((neutron.n+proton.n)*(1.0+sk.x3/2.0)-
+           neutron.n*(sk.x3+0.5));
+        double reb=sk.t3*sk.alpha/12.0*pow(neutron.n+proton.n,sk.alpha-1.0)*
+          (pow(neutron.n+proton.n,2.0)*(1.0+sk.x3/2.0)-
+           (neutron.n*neutron.n+proton.n*proton.n)*(sk.x3+0.5));
+        
+        //double vf_sk=0.5*(w1nnVec-w1npVec)+
+        //(w2nnVec-w2npVec)*neutron.kf*neutron.kf;
+        //double vgt_sk=0.5*(w1nnAx-w1npAx)+
+        //(w2nnAx-w2npAx)*neutron.kf*neutron.kf;
+        double fnn_tilde=fnn-rea+vdet["dgdnn"]*reb*2.0;
+        double vf=fnn_tilde-fnp;
+        double vgt=gnn-gnp;
       
         // Convert these to 1/MeV^2 by dividing by (hbar*c)^2
-        vf_sk/=pow(hc_mev_fm,2);
-        vgt_sk/=pow(hc_mev_fm,2);
+        vf/=pow(hc_mev_fm,2);
+        vgt/=pow(hc_mev_fm,2);
       
         // Charged current from virial expansion
-        double vf_virial=2.0*f0p;
-        double vgt_virial=2.0*g0p;
+        //double vf_virial=2.0*f0p;
+        //double vgt_virial=2.0*g0p;
         //cout << "f0p,g0p,vf_virial,vgt_virial: "
         //<< f0p << " " << g0p << " " << vf_virial << " " << vgt_virial
         //<< endl;
       
-        double vf=vf_virial*g_virial+vf_sk*(1.0-g_virial);
-        double vgt=vgt_virial*g_virial+vgt_sk*(1.0-g_virial);
+        //double vf=vf_virial*g_virial+vf_sk*(1.0-g_virial);
+        //double vgt=vgt_virial*g_virial+vgt_sk*(1.0-g_virial);
         //cout << "vf,vgt: " << vf << " " << vgt << endl;
       
         pol_nc.set_residual(fnn,fnp,fpp,gnn,gnp,gpp,vf,vgt,proton.n);

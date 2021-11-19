@@ -2834,17 +2834,13 @@ int eos::solve_Ye(size_t nv, const ubvector &x, ubvector &y,
     if (neutron.n<0.0 || proton.n<0.0) return 2;
   }
 
-  cout << "A3." << endl;
   free_energy_density(neutron,proton,T,th2);
-  cout << "A4." << endl;
   
   photon.massless_calc(T);
 
   electron.n=proton.n;
   electron.mu=electron.m; 
-  cout << "A5." << endl;
   relf.pair_density(electron,T);
-  cout << "A6." << endl;
   
   y[0]=neutron.mu-proton.mu-electron.mu+muL+neutron.m-proton.m;
   return 0;
@@ -3312,9 +3308,7 @@ int eos::select_internal(int i_ns_loc, int i_skyrme_loc,
     mroot_hybrids<> mh;
     mh.err_nonconv=false;
     mh.def_jac.err_nonconv=false;
-    cout << "A1." << endl;
     int ret=mh.msolve(1,Ye_trial,mf);
-    cout << "A2." << endl;
     if (ret!=0) {
       model_selected=false;
       return 8;

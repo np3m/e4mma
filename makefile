@@ -255,7 +255,7 @@ mb1:
 		-mcarlo-beta mb1.o2 > mb1.out 2>&1 &
 
 mb1d:
-	eos_nuclei \
+	enn \
 		-set select_cs2_test 0 \
 		-select-model $(P_FIDUCIAL) \
 		-set a_virial 10 -set b_virial 10 \
