@@ -8817,6 +8817,8 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
       nB_list.push_back(1.0e-4*pow(0.15/1.0e-4,((double)j)/99.0));
       TMeV_list.push_back(10.0);
     }
+    vector_out(cout,nB_list,true);
+    exit(-1);
   }
   
   static const int N=10000;
@@ -8912,6 +8914,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
       }
 
       double Ye_best;
+      
       if (false) {
         
         for(size_t iYe=Ye_min;iYe<Ye_max;iYe++) {
