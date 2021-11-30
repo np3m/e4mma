@@ -8754,8 +8754,9 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
                            "gnn_virial","gpp_virial","gnp_virial",
                            "fnn","fpp","fnp",
                            "gnn","gpp","gnp",
-                           "vf_sk","vgt_sk","vf_virial",
-                           "vgt_virial","vf","vgt",
+                           //"vf_sk","vgt_sk","vf_virial",
+                           //"vgt_virial",
+                           "vf","vgt",
                            "cc_vec_imfp","cc_axvec_imfp",
                            "nc_vec_imfp","nc_axvec_imfp"};
   
@@ -9303,16 +9304,16 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
           neutron.n*sk.t0*(0.5+sk.t0)-
           neutron.n*pow(neutron.n+proton.n,sk.alpha)/6.0*sk.t3*(0.5+sk.x3)-
           pow(neutron.n+proton.n,-1.0+sk.alpha)/12.0*sk.t3*(0.5+sk.x3)*
-          alpha*(neutron.n*neutron.n+proton.n*proton.n)+
+          sk.alpha*(neutron.n*neutron.n+proton.n*proton.n)+
           pow(neutron.n+proton.n,1.0+sk.alpha)/12.0*sk.t3*(0.5+sk.x3)*
-          (2.0+alpha);
+          (2.0+sk.alpha);
         double dUdnp_sk=(neutron.n+proton.n)*sk.t0*(1.0+sk.t0/2.0)-
           proton.n*sk.t0*(0.5+sk.t0)-
           proton.n*pow(neutron.n+proton.n,sk.alpha)/6.0*sk.t3*(0.5+sk.x3)-
           pow(neutron.n+proton.n,-1.0+sk.alpha)/12.0*sk.t3*(0.5+sk.x3)*
-          alpha*(neutron.n*neutron.n+proton.n*proton.n)+
+          sk.alpha*(neutron.n*neutron.n+proton.n*proton.n)+
           pow(neutron.n+proton.n,1.0+sk.alpha)/12.0*sk.t3*(0.5+sk.x3)*
-          (2.0+alpha);
+          (2.0+sk.alpha);
         double dtau_dtaun_sk=1.0/neutron.m+
           2.0*(0.25*(neutron.n+proton.n)*(sk.t1*(1.0+sk.x1/2.0)+
                                           sk.t2*(1.0+sk.x2/2.0))+
@@ -9340,7 +9341,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
                proton.kf*proton.kf+
                vdet["dgdnp"]*(dtau_dtaun_vir-dtau_dtaun_sk)*
                neutron.kf*neutron.kf);
-        double fpp=fpp_virial*g_virial+fpp_sk*(1.0-g_virial)
+        double fpp=fpp_virial*g_virial+fpp_sk*(1.0-g_virial)+
           2.0*vdet["dgdnp"]*dUdnp_vir-2.0*vdet["dgdnp"]*dUdnp_sk+
           (-vdet["dgdnp"]*dtau_dtaun_sk+vdet["dgdnp"]*dtau_dtaun_vir)*
           proton.kf*proton.kf;
@@ -9488,10 +9489,10 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         line.push_back(gnn);
         line.push_back(gpp);
         line.push_back(gnp);
-        line.push_back(vf_sk);
-        line.push_back(vgt_sk);
-        line.push_back(vf_virial);
-        line.push_back(vgt_virial);
+        //line.push_back(vf_sk);
+        //line.push_back(vgt_sk);
+        //line.push_back(vf_virial);
+        //line.push_back(vgt_virial);
         line.push_back(vf);
         line.push_back(vgt);
         line.push_back(cc_vec_mfp);
@@ -9504,7 +9505,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         
         if (n_point<5) {
           
-          double T_MeV=T*hc_mev_fm;
+          //double T_MeV=T*hc_mev_fm;
           
           double vel=sqrt((3.0*T_MeV)/betaEoS.M2);
           double wmin;
@@ -9557,7 +9558,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         
         if (n_point<5) {
           
-          double T_MeV=T*hc_mev_fm;
+          //double T_MeV=T*hc_mev_fm;
           static const double densFac=pow(hc_mev_fm,3.0);
           
           // Set integration range
