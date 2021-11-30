@@ -9051,6 +9051,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
       for(size_t k=0;k<10 && ret2!=0;k++) {
         log_xn=tg3_log_xn.get(inB,iYe_best,iT)+(rng.random()*0.5-0.25);
         log_xp=tg3_log_xp.get(inB,iYe_best,iT)+(rng.random()*0.5-0.25);
+        no_nuclei=true;
         ret2=eos_vary_dist(nB,Ye_best,T,log_xn,log_xp,Zbar,Nbar,
                            thx,mun_full,mup_full,
                            A_min_best,A_max_best,NmZ_min_best,
@@ -9064,7 +9065,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
 
       // Compute the number density of free neutrons and protons
       double n_fraction, p_fraction;
-      if (nB<0.16) {
+      if (false && nB<0.16) {
         double xn=0.0;
         if (log_xn>-300.0) {
           xn=pow(10.0,log_xn);
