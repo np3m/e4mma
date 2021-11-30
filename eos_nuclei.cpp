@@ -8818,8 +8818,6 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
       nB_list.push_back(1.0e-4*pow(0.15/1.0e-4,((double)j)/99.0));
       TMeV_list.push_back(10.0);
     }
-    vector_out(cout,nB_list,true);
-    exit(-1);
   }
   
   static const int N=10000;
@@ -8867,11 +8865,11 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
       //cout << "nBX: " << nB << endl;
       double T=TMeV_list[ipoint]/hc_mev_fm;
       double T_MeV=TMeV_list[ipoint];
-      
+
       size_t inB=vector_lookup(n_nB2,nB_grid2,nB);
-      nB=nB_grid2[inB];
+      //nB=nB_grid2[inB];
       size_t iT=vector_lookup(n_T2,T_grid2,T*hc_mev_fm);
-      T=T_grid2[iT]/hc_mev_fm;
+      //T=T_grid2[iT]/hc_mev_fm;
       
       cout << "Using nB = " << nB << " 1/fm^3 and T = " << T*hc_mev_fm
            << " MeV for\n  ipoint = " << ipoint << " out of total "
