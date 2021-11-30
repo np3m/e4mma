@@ -347,15 +347,15 @@ double Polarization::CalculateDGamDq0(double E1, double q0) {
       if (iret!=0) {
     */
     qags.set_limit(100);
-    qags.tol_rel=1.0e-4;
-    qags.tol_abs=1.0e-4;
+    qags.tol_rel=1.0e-6;
+    qags.tol_abs=1.0e-6;
     cout << "3";
     iret=qags.integ_err(f,-1.0,1.0,integral,err);
     //}
     
     if (iret!=0) {
-      qags.tol_rel=1.0e-2;
-      qags.tol_abs=1.0e-2;
+      qags.tol_rel=1.0e-3;
+      qags.tol_abs=1.0e-3;
       cout << "4";
       iret=qags.integ_err(f,-1.0,1.0,integral,err);
     }
