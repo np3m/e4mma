@@ -9142,7 +9142,8 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         cout << "msp: " << vdet["msp"] << endl;
         cout << "nn: " << neutron.n << endl;
         cout << "np: " << proton.n << endl;
-        cout << "g: " << vdet["g"] << endl;
+        cout << "g,dgdnn [fm^3],dgdnp [fm^3]: " << vdet["g"] << " "
+             << vdet["dgdnn"] << " " << vdet["dgdnp"] << endl;
 
         double u2eos=neutron.mu*hc_mev_fm-mu_n_nonint*hc_mev_fm;
         cout << "U2: " << u2eos << endl;

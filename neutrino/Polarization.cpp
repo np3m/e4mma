@@ -581,8 +581,8 @@ double Polarization::CalculateInverseMFP(double E1) {
       cout << "q0 integral, O2scl: " << integral << " "
            << fabs(integral_base-integral_o2scl)/fabs(integral_base)
            << endl;
-      char ch;
-      cin >> ch;
+      //char ch;
+      //cin >> ch;
     }
   }
   
