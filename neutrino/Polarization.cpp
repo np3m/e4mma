@@ -147,6 +147,9 @@ Polarization::Polarization(FluidState stPol, WeakCouplings wc,
   qng.tol_rel=1.0e-4;
   qng.tol_abs=1.0e-4;
   qng.err_nonconv=false;
+  qagiu.tol_rel=1.0e-4;
+  qagiu.tol_abs=1.0e-4;
+  qagiu.err_nonconv=false;
 }
 
 std::array<double, 4> Polarization::CalculateBasePolarizations
@@ -578,8 +581,8 @@ double Polarization::CalculateInverseMFP(double E1) {
       cout << "q0 integral, O2scl: " << integral << " "
            << fabs(integral_base-integral_o2scl)/fabs(integral_base)
            << endl;
-      //char ch;
-      //cin >> ch;
+      char ch;
+      cin >> ch;
     }
   }
   

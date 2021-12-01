@@ -8745,34 +8745,36 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
                     "1/fm^(3*a+2) . . . . .");
   
   vector<string> col_list={"nB","nn","np",
-                           "g","msn","msp","mun","mup","mue",
-                           "U2","U4","log_xn","log_xp","Z","N",
-                           "A","ZoA","Xnuclei","Ye_best",
-                           "fnn_sk","fpp_sk","fnp_sk",
-                           "gnn_sk","gpp_sk","gnp_sk",
-                           "fnn_virial","fpp_virial","fnp_virial",
-                           "gnn_virial","gpp_virial","gnp_virial",
-                           "fnn","fpp","fnp",
-                           "gnn","gpp","gnp",
-                           //"vf_sk","vgt_sk","vf_virial",
-                           //"vgt_virial",
-                           "vf","vgt",
-                           "cc_vec_imfp","cc_axvec_imfp",
-                           "nc_vec_imfp","nc_axvec_imfp"};
+    "g","msn","msp","mun","mup","mu_n_nonint",
+    "mu_p_nonint","mue",
+    "U2","U4","log_xn","log_xp","Z","N",
+    "A","ZoA","Xnuclei","Ye_best",
+    "fnn_sk","fpp_sk","fnp_sk",
+    "gnn_sk","gpp_sk","gnp_sk",
+    "fnn_virial","fpp_virial","fnp_virial",
+    "gnn_virial","gpp_virial","gnp_virial",
+    "fnn","fpp","fnp",
+    "gnn","gpp","gnp",
+    //"vf_sk","vgt_sk","vf_virial",
+    //"vgt_virial",
+    "vf","vgt",
+    "cc_vec_imfp","cc_axvec_imfp",
+    "nc_vec_imfp","nc_axvec_imfp"};
   
   vector<string> unit_list={"1/fm^3","1/fm^3","1/fm^3",
-                            "","MeV","MeV","MeV","MeV","MeV",
-                            "MeV","MeV","","","","",
-                            "","","","",
-                            "1/MeV^2","1/MeV^2","1/MeV^2",
-                            "1/MeV^2","1/MeV^2","1/MeV^2",
-                            "1/MeV^2","1/MeV^2","1/MeV^2",
-                            "1/MeV^2","1/MeV^2","1/MeV^2",
-                            "1/MeV^2","1/MeV^2","1/MeV^2",
-                            "1/MeV^2","1/MeV^2","1/MeV^2",
-                            "1/MeV^2","1/MeV^2","1/MeV^2",
-                            "1/MeV^2","1/MeV^2","1/MeV^2",
-                            "1/cm","1/cm","1/cm","1/cm"};
+    "","MeV","MeV","MeV","MeV","MeV",
+    "MeV","MeV",
+    "MeV","MeV","","","","",
+    "","","","",
+    "1/MeV^2","1/MeV^2","1/MeV^2",
+    "1/MeV^2","1/MeV^2","1/MeV^2",
+    "1/MeV^2","1/MeV^2","1/MeV^2",
+    "1/MeV^2","1/MeV^2","1/MeV^2",
+    "1/MeV^2","1/MeV^2","1/MeV^2",
+    "1/MeV^2","1/MeV^2","1/MeV^2",
+    "1/MeV^2","1/MeV^2","1/MeV^2",
+    "1/MeV^2","1/MeV^2","1/MeV^2",
+    "1/cm","1/cm","1/cm","1/cm"};
   
   for(size_t ipoint=0;ipoint<n_point;ipoint++) {
     for(size_t ik=0;ik<col_list.size();ik++) {
@@ -8859,10 +8861,10 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
                          sk.t2*hc_mev_fm,sk.t3*hc_mev_fm,
                          sk.x0,sk.x1,sk.x2,sk.x3,sk.alpha};
 
-    for(size_t ipoint=0;ipoint<n_point;ipoint++) {
+    //for(size_t ipoint=0;ipoint<n_point;ipoint++) {
+    for(size_t ipoint=94;ipoint<n_point;ipoint++) {
 
       double nB=nB_list[ipoint];
-      //cout << "nBX: " << nB << endl;
       double T=TMeV_list[ipoint]/hc_mev_fm;
       double T_MeV=TMeV_list[ipoint];
 
@@ -8948,6 +8950,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
                                   thx,mun_full,mup_full,
                                   A_min,A_max,NmZ_min,NmZ_max,vdet,
                                   dist_changed,no_nuclei);
+            
             
             if (false) {
               cout << "ret,log_xn,log_xp,Z,N,A,Z/A,fr:\n  "
@@ -9421,11 +9424,11 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
       
         // -----------------------------------------------------------------
         // Charged current mean free path
-      
-        //pol_cc.integ_method_mu=Polarization::integ_compare;
-        //pol_cc.integ_method_q0=Polarization::integ_compare;
-        pol_cc.integ_method_mu=Polarization::integ_o2scl;
-        pol_cc.integ_method_q0=Polarization::integ_o2scl;
+        
+        pol_cc.integ_method_mu=Polarization::integ_compare;
+        pol_cc.integ_method_q0=Polarization::integ_compare;
+        //pol_cc.integ_method_mu=Polarization::integ_o2scl;
+        //pol_cc.integ_method_q0=Polarization::integ_o2scl;
         
         pol_cc.flag=Polarization::flag_vector;
         cout << "Computing charged current, vector part: " << endl;
@@ -9458,6 +9461,8 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         line.push_back(proton.ms*hc_mev_fm);
         line.push_back(neutron.mu*hc_mev_fm);
         line.push_back(proton.mu*hc_mev_fm);
+        line.push_back(mu_n_nonint*hc_mev_fm);
+        line.push_back(mu_p_nonint*hc_mev_fm);
         line.push_back(electron.mu*hc_mev_fm);
         line.push_back(u2eos);
         line.push_back(u4eos);
