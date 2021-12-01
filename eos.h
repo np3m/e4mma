@@ -130,28 +130,32 @@ class eos_crust_virial_v2 : public o2scl::eos_crust_virial {
   /** \brief Desc
 
       The value of lambda should be in 1/MeV and the 
-      temperature should be specified in MeV.
+      temperature should be specified in MeV. The result
+      is returned in units of 1/MeV^2.
    */
   double f0(double lambda, double T);
 
   /** \brief Desc
 
       The value of lambda should be in 1/MeV and the 
-      temperature should be specified in MeV.
+      temperature should be specified in MeV. The result
+      is returned in units of 1/MeV^2.
    */
   double f0p(double lambda, double T);
 
   /** \brief Desc
 
       The value of lambda should be in 1/MeV and the 
-      temperature should be specified in MeV.
+      temperature should be specified in MeV. The result
+      is returned in units of 1/MeV^2.
    */
   double g0(double lambda, double T);
 
   /** \brief Desc
 
       The value of lambda should be in 1/MeV and the 
-      temperature should be specified in MeV.
+      temperature should be specified in MeV. The result
+      is returned in units of 1/MeV^2.
   */
   double g0p(double lambda, double T);
 
