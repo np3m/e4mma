@@ -9275,7 +9275,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
              << g0p << endl;
         ecv.include_deuteron=false;
 
-        // FIXME: check that these are 1/MeV^2
+        // These are in units of 1/MeV^2
         double fnn_virial=f0+f0p;
         double fnp_virial=f0-f0p;
         double fpp_virial=fnn_virial;
@@ -9369,42 +9369,6 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         double gnp=gnp_virial*g_virial+gnp_sk*(1.0-g_virial);
         double gpp=gpp_virial*g_virial+gpp_sk*(1.0-g_virial);
       
-        // [ZL]: Update for w1nnVec and w1npVec, since only for symmetric
-        // matter we have w1_CE=w1nn_vec-w1np_vec, have to delete the 3rd
-        // term of w1nnvec and w1npvec to agree with w1_ce^vec in NPA 658
-        // 1999 327-342, however, the relationship of w_CE=w_nn-w_np is true
-        // for w2_CE^vec, w1_CE^ax and w2_CE^ax.
-
-        /*
-        // These are in units of fm^2
-        double w1nnVec=sk.t0*(1.0-sk.x0)+
-          1.0/6.0*sk.t3*pow((neutron.n+proton.n),sk.alpha)*(1.0-sk.x3)+
-          2.0/3.0*sk.alpha*sk.t3*pow((neutron.n+proton.n),sk.alpha-1.0)*
-          ((1.0+sk.x3/2.0)*(neutron.n+proton.n)-(1.0/2.0+sk.x3)*neutron.n)+
-          1.0/6.0*sk.alpha*(sk.alpha-1.0)*
-          sk.t3*pow((neutron.n+proton.n),sk.alpha-2.0)*
-          ((1+sk.x3/2.0)*pow((neutron.n+proton.n),2.0)-(0.5+sk.x3)*
-           (neutron.n*neutron.n+proton.n*proton.n));
-      
-        double w1npVec=sk.t0*(2.0+sk.x0)+
-          1.0/6.0*sk.t3*pow((neutron.n+proton.n),sk.alpha)*(2.0+sk.x3)+
-          1.0/2.0*sk.alpha*sk.t3*pow((neutron.n+proton.n),sk.alpha)+
-          1.0/6.0*sk.alpha*(sk.alpha-1.0)*
-          sk.t3*pow((neutron.n+proton.n),sk.alpha-2.0)*
-          ((1+sk.x3/2.0)*pow((neutron.n+proton.n),2.0)-(0.5+sk.x3)*
-           (neutron.n*neutron.n+proton.n*proton.n));
-      
-        // These are in units of fm^2
-        double w1nnAx=sk.t0*(sk.x0-1)+1.0/6.0*sk.t3*
-          pow((neutron.n+proton.n),sk.alpha)*(sk.x3-1.0);
-        double w1npAx=sk.t0*sk.x0+1.0/6.0*sk.t3*
-          pow((neutron.n+proton.n),sk.alpha)*sk.x3;
-        double w2nnVec=0.25*(sk.t1*(1-sk.x1)+3*sk.t2*(1+sk.x2));
-        double w2npVec=0.25*(sk.t1*(2.0+sk.x1)+sk.t2*(2.0+sk.x2));
-        double w2nnAx=0.25*(sk.t1*(sk.x1-1)+sk.t2*(1+sk.x2));
-        double w2npAx=0.25*(sk.t1*sk.x1+sk.t2*sk.x2);
-        */
-      
         // kf should be the hole momenta at fermi see surface, here the
         // transition is (pn^-1,pn^-1), the hole is neutron hole
 
@@ -9415,11 +9379,6 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         double reb=sk.t3*sk.alpha/12.0*pow(neutron.n+proton.n,sk.alpha-1.0)*
           (pow(neutron.n+proton.n,2.0)*(1.0+sk.x3/2.0)-
            (neutron.n*neutron.n+proton.n*proton.n)*(sk.x3+0.5));
-        
-        //double vf_sk=0.5*(w1nnVec-w1npVec)+
-        //(w2nnVec-w2npVec)*neutron.kf*neutron.kf;
-        //double vgt_sk=0.5*(w1nnAx-w1npAx)+
-        //(w2nnAx-w2npAx)*neutron.kf*neutron.kf;
         
         double fnn_tilde=fnn-(1.0-g_virial)*rea+vdet["dgdnn"]/reb*2.0;
         double vf=fnn_tilde-fnp;
