@@ -147,8 +147,8 @@ Polarization::Polarization(FluidState stPol, WeakCouplings wc,
   qng.tol_rel=1.0e-6;
   qng.tol_abs=1.0e-6;
   qng.err_nonconv=false;
-  qagiu.tol_rel=1.0e-4;
-  qagiu.tol_abs=1.0e-4;
+  qagiu.tol_rel=1.0e-6;
+  qagiu.tol_abs=1.0e-20;
   qagiu.err_nonconv=false;
 }
 
