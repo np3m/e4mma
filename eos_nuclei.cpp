@@ -8859,8 +8859,8 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
                          sk.t2*hc_mev_fm,sk.t3*hc_mev_fm,
                          sk.x0,sk.x1,sk.x2,sk.x3,sk.alpha};
 
-    for(size_t ipoint=0;ipoint<n_point;ipoint++) {
-
+    for(size_t ipoint=0;ipoint<n_point;ipoint++) {      
+      
       double nB=nB_list[ipoint];
       double T=TMeV_list[ipoint]/hc_mev_fm;
       double T_MeV=TMeV_list[ipoint];
@@ -9053,7 +9053,6 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
       for(size_t k=0;k<10 && ret2!=0;k++) {
         log_xn=tg3_log_xn.get(inB,iYe_best,iT)+(rng.random()*0.5-0.25);
         log_xp=tg3_log_xp.get(inB,iYe_best,iT)+(rng.random()*0.5-0.25);
-        no_nuclei=true;
         ret2=eos_vary_dist(nB,Ye_best,T,log_xn,log_xp,Zbar,Nbar,
                            thx,mun_full,mup_full,
                            A_min_best,A_max_best,NmZ_min_best,
@@ -9067,7 +9066,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
 
       // Compute the number density of free neutrons and protons
       double n_fraction, p_fraction;
-      if (false && nB<0.16) {
+      if (nB<0.16) {
         double xn=0.0;
         if (log_xn>-300.0) {
           xn=pow(10.0,log_xn);
@@ -9189,10 +9188,18 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
 
         PolarizationNonRel pol_cc(betaEoS, ncap, false, false, true);
         pol_cc.current=Polarization::current_charged;
-      
+        
         PolarizationNonRel pol_nc(betaEoS, nscat, false, false, false);
         pol_nc.current=Polarization::current_neutral;
 
+        if (n_point>5 && ipoint>50) {
+          pol_nc.qagiu.tol_abs=1.0e-20;
+          pol_cc.qagiu.tol_abs=1.0e-20;
+        } else {
+          pol_nc.qagiu.tol_abs=1.0e-10;
+          pol_cc.qagiu.tol_abs=1.0e-10;
+        }
+          
         // These all have units of fm^2
         double fnn_sk=0.5*(sk.t0*(1.0-sk.x0)+
                            1.0/6.0*sk.t3*pow((neutron.n+proton.n),sk.alpha)*
@@ -9368,6 +9375,10 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         double gnn=gnn_virial*g_virial+gnn_sk*(1.0-g_virial);
         double gnp=gnp_virial*g_virial+gnp_sk*(1.0-g_virial);
         double gpp=gpp_virial*g_virial+gpp_sk*(1.0-g_virial);
+        cout << "fnn [1/MeV^2], fnp [1/MeV^2], fpp [1/MeV^2]: "
+             << fnn << " " << fnp << " " << fpp << endl;
+        cout << "gnn [1/MeV^2], gnp [1/MeV^2], gpp [1/MeV^2]: "
+             << gnn << " " << gnp << " " << gpp << endl;
       
         // kf should be the hole momenta at fermi see surface, here the
         // transition is (pn^-1,pn^-1), the hole is neutron hole
@@ -9383,7 +9394,8 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         double fnn_tilde=fnn-(1.0-g_virial)*rea+vdet["dgdnn"]/reb*2.0;
         double vf=fnn_tilde-fnp;
         double vgt=gnn-gnp;
-      
+        cout << "vf [1/MeV^2], vgt [1/MeV^2]: " << vf << " " << vgt << endl;
+        
         // Convert these to 1/MeV^2 by dividing by (hbar*c)^2
         //vf/=pow(hc_mev_fm,2);
         //vgt/=pow(hc_mev_fm,2);
@@ -9406,10 +9418,10 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         // -----------------------------------------------------------------
         // Charged current mean free path
         
-        //pol_cc.integ_method_mu=Polarization::integ_compare;
-        //pol_cc.integ_method_q0=Polarization::integ_compare;
-        pol_cc.integ_method_mu=Polarization::integ_o2scl;
-        pol_cc.integ_method_q0=Polarization::integ_o2scl;
+        pol_cc.integ_method_mu=Polarization::integ_compare;
+        pol_cc.integ_method_q0=Polarization::integ_compare;
+        //pol_cc.integ_method_mu=Polarization::integ_o2scl;
+        //pol_cc.integ_method_q0=Polarization::integ_o2scl;
         
         pol_cc.flag=Polarization::flag_vector;
         cout << "Computing charged current, vector part: " << endl;
