@@ -8861,8 +8861,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
                          sk.t2*hc_mev_fm,sk.t3*hc_mev_fm,
                          sk.x0,sk.x1,sk.x2,sk.x3,sk.alpha};
 
-    //for(size_t ipoint=0;ipoint<n_point;ipoint++) {
-    for(size_t ipoint=94;ipoint<n_point;ipoint++) {
+    for(size_t ipoint=0;ipoint<n_point;ipoint++) {
 
       double nB=nB_list[ipoint];
       double T=TMeV_list[ipoint]/hc_mev_fm;
