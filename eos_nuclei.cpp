@@ -9194,8 +9194,8 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         pol_nc.current=Polarization::current_neutral;
 
         if (n_point>5 && ipoint>50) {
-          pol_nc.qagiu.tol_abs=1.0e-20;
-          pol_cc.qagiu.tol_abs=1.0e-20;
+          pol_nc.qagiu.tol_abs=4.0e-19;
+          pol_cc.qagiu.tol_abs=4.0e-19;
         } else {
           pol_nc.qagiu.tol_abs=1.0e-10;
           pol_cc.qagiu.tol_abs=1.0e-10;

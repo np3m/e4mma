@@ -148,7 +148,7 @@ Polarization::Polarization(FluidState stPol, WeakCouplings wc,
   qng.tol_abs=1.0e-6;
   qng.err_nonconv=false;
   qagiu.tol_rel=1.0e-6;
-  qagiu.tol_abs=1.0e-20;
+  qagiu.tol_abs=4.0e-19;
   qagiu.err_nonconv=false;
 }
 
@@ -357,15 +357,15 @@ double Polarization::CalculateDGamDq0(double E1, double q0) {
     //}
     
     if (iret!=0) {
-      qags.tol_rel=1.0e-3;
-      qags.tol_abs=1.0e-3;
+      qags.tol_rel=1.0e-4;
+      qags.tol_abs=1.0e-4;
       cout << "4";
       iret=qags.integ_err(f,-1.0,1.0,integral,err);
     }
     
     if (iret!=0) {
-      qng.tol_rel=1.0e-4;
-      qng.tol_abs=1.0e-4;
+      qng.tol_rel=1.0e-6;
+      qng.tol_abs=1.0e-6;
       cout << "5";
       iret=qng.integ_err(f,-1.0,1.0,integral,err);
     }
