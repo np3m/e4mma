@@ -9095,18 +9095,14 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
       sk.def_fet.kf_from_density(neutron);
       sk.def_fet.kf_from_density(proton);
       
-      // Add the electrons
+      // Set the electron chemical potential (with the electron rest mass)
       double mue=mun_hom+neutron.m-mup_hom-proton.m;
-      eso.compute_eg_point(nB,Ye_best,T*hc_mev_fm,lep,mue);
       
       // Copy the electron results to the local electron object
       electron.n=nB*Ye_best;
       electron.mu=mue;
       cout << "Ye_best, mue (with rest mass) [MeV]: " << Ye_best << " "
            << mue*hc_mev_fm << endl;
-      
-      // Compute the total free energy
-      double fr=thx.ed-T*thx.en+lep.ed-T*lep.en;
       
       ubvector X;
       compute_X(nB,X);
