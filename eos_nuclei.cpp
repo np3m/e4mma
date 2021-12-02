@@ -9035,7 +9035,9 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         }
         
         Ye_best=Ye_grid2[iYe_best];
+        
       } else {
+        
         double ii=log10(nB)*31.485+126;
         Ye_best=0.05+0.28*exp(-ii/24.0);
         iYe_best=((size_t)(Ye_best*100.0-1.0));
@@ -9085,7 +9087,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
 
       double mun_hom=vdet["mun_hom"];
       double mup_hom=vdet["mup_hom"];
-      cout << "mun, mup: " << mun_hom*hc_mev_fm << " "
+      cout << "mun_hom [MeV], mup_hom [MeV]: " << mun_hom*hc_mev_fm << " "
            << mup_hom*hc_mev_fm << endl;
       
       // Make sure to compute kf, which is not always computed at
@@ -9094,13 +9096,14 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
       sk.def_fet.kf_from_density(proton);
       
       // Add the electrons
-      double mue=mun_hom-mup_hom;
+      double mue=mun_hom+neutron.m-mup_hom-proton.m;
       eso.compute_eg_point(nB,Ye_best,T*hc_mev_fm,lep,mue);
       
       // Copy the electron results to the local electron object
       electron.n=nB*Ye_best;
       electron.mu=mue;
-      cout << "mue: " << Ye_best << " " << mue*hc_mev_fm << endl;
+      cout << "Ye_best,mue [1/fm]: " << Ye_best << " "
+           << mue*hc_mev_fm << endl;
       
       // Compute the total free energy
       double fr=thx.ed-T*thx.en+lep.ed-T*lep.en;
@@ -9146,10 +9149,10 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
              << vdet["dgdnn"] << " " << vdet["dgdnp"] << endl;
 
         double u2eos=neutron.mu*hc_mev_fm-mu_n_nonint*hc_mev_fm;
-        cout << "U2: " << u2eos << endl;
+        cout << "U2 [MeV]: " << u2eos << endl;
         double u4eos=proton.mu*hc_mev_fm-mu_p_nonint*hc_mev_fm;
-        cout << "U4: " << u4eos << endl;
-        cout << "T*hc_mev_fm: " << T*hc_mev_fm << endl;
+        cout << "U4 [MeV]: " << u4eos << endl;
+        cout << "T [MeV]: " << T*hc_mev_fm << endl;
         
         if (false) {
           vdet["msn"]=neutron.m*hc_mev_fm;
@@ -9184,7 +9187,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         betaEoS.Mu2=neutron.mu*hc_mev_fm;
         betaEoS.Mu4=proton.mu*hc_mev_fm;
         betaEoS.Mu3=(electron.mu-electron.m)*hc_mev_fm;
-        cout << "mu2,mu4,mu3: " << betaEoS.Mu2 << " "
+        cout << "mu2 [MeV], mu4 [MeV], mu3 [MeV]: " << betaEoS.Mu2 << " "
              << betaEoS.Mu4 << " " << betaEoS.Mu3 << endl;
 
         PolarizationNonRel pol_cc(betaEoS, ncap, false, false, true);
