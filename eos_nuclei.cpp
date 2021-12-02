@@ -9102,7 +9102,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
       // Copy the electron results to the local electron object
       electron.n=nB*Ye_best;
       electron.mu=mue;
-      cout << "Ye_best,mue [1/fm]: " << Ye_best << " "
+      cout << "Ye_best, mue (with rest mass) [MeV]: " << Ye_best << " "
            << mue*hc_mev_fm << endl;
       
       // Compute the total free energy
@@ -9187,7 +9187,8 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         betaEoS.Mu2=neutron.mu*hc_mev_fm;
         betaEoS.Mu4=proton.mu*hc_mev_fm;
         betaEoS.Mu3=(electron.mu-electron.m)*hc_mev_fm;
-        cout << "mu2 [MeV], mu4 [MeV], mu3 [MeV]: " << betaEoS.Mu2 << " "
+        cout << "mu2 [MeV], mu4 [MeV], mu3 [MeV] (without rest mass): "
+             << betaEoS.Mu2 << " "
              << betaEoS.Mu4 << " " << betaEoS.Mu3 << endl;
 
         PolarizationNonRel pol_cc(betaEoS, ncap, false, false, true);
@@ -9388,15 +9389,24 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         // transition is (pn^-1,pn^-1), the hole is neutron hole
 
         // Rearrangement terms
-        double rea=sk.alpha/3.0*pow(neutron.n+proton.n,sk.alpha-1.0)*
+
+        // Units of 1/MeV^2
+        double rea=(sk.t3*sk.alpha/3.0*pow(neutron.n+proton.n,sk.alpha-1.0)*
           ((neutron.n+proton.n)*(1.0+sk.x3/2.0)-
-           neutron.n*(sk.x3+0.5));
-        double reb=sk.t3*sk.alpha/12.0*pow(neutron.n+proton.n,sk.alpha-1.0)*
-          (pow(neutron.n+proton.n,2.0)*(1.0+sk.x3/2.0)-
-           (neutron.n*neutron.n+proton.n*proton.n)*(sk.x3+0.5));
+           neutron.n*(sk.x3+0.5)))/pow(hc_mev_fm,2.0);
+        // Units of MeV
+        double reb=(sk.t3*sk.alpha/12.0*pow(neutron.n+proton.n,sk.alpha-1.0)*
+                    (pow(neutron.n+proton.n,2.0)*(1.0+sk.x3/2.0)-
+                     (neutron.n*neutron.n+proton.n*proton.n)*(sk.x3+0.5)))*
+          hc_mev_fm;
+        // Units of 1/MeV^2
+        double rec=(0.25*sk.alpha*sk.t3*pow(neutron.n+proton.n,sk.alpha))/
+          pow(hc_mev_fm,2.0);
         
-        double fnn_tilde=fnn-(1.0-g_virial)*rea+vdet["dgdnn"]/reb*2.0;
-        double vf=fnn_tilde-fnp;
+        double fnn_tilde=fnn-(1.0-g_virial)*rea+vdet["dgdnn"]*reb*2.0;
+        double fnp_tilde=fnp-(1.0-g_virial)*rec+
+          (vdet["dgdnn"]+vdet["dgdnp"])*reb;
+        double vf=fnn_tilde-fnp_tilde;
         double vgt=gnn-gnp;
         cout << "vf [1/MeV^2], vgt [1/MeV^2]: " << vf << " " << vgt << endl;
         
