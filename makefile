@@ -266,6 +266,18 @@ mb1d:
 		-load ~/data/eos/final/fid_6_30_21.o2 \
 		-mcarlo-beta mb1d.o2 100 > mb1d.out 2>&1 &
 
+mb2d:
+	enn \
+		-set select_cs2_test 0 \
+		-select-model $(P_FIDUCIAL) \
+		-set a_virial 10 -set b_virial 10 \
+		-set extend_frdm 0 \
+		-set fd_A_max 600 -set max_ratio 7.0 \
+		-set fixed_dist_alg 1999 \
+		-set function_verbose 0 \
+		-load ~/data/eos/final/fid_6_30_21.o2 \
+		-mcarlo-beta mb2d.o2 100 > mb2d.out 2>&1 &
+
 mbt2:
 	eos_nuclei \
 		-set select_cs2_test 0 \
