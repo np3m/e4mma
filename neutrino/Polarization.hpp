@@ -292,7 +292,7 @@ namespace nuopac {
   } integration_params;
   
   int integrand_new(unsigned ndim, const double *x, void *fdata,
-                       unsigned fdim, double *fval);
+                    unsigned fdim, double *fval);
   
 }
 #endif // POLARIZATION_HPP_

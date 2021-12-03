@@ -312,7 +312,7 @@ double Polarization::CalculateDGamDq0(double E1, double q0) {
 
   if (integ_method_mu==integ_base || integ_method_mu==integ_compare) {
     integral = 0.0; 
-    for (int i=0; i<NPGJ; ++i) { 
+    for (int i=0; i<NPGJ; ++i) {
       double mu = xx[i]*delta + avg; 
       integral += ww[i] * GetResponse(E1, q0, GetqFromMu13(E1, q0, mu));
     }
@@ -518,8 +518,10 @@ double Polarization::CalculateTransportInverseMFP(double E1) const {
 
 double Polarization::dgamdq0_intl(double E1, double x, double estar,
                                   int sign) {
-  
+
   double q0=estar+sign*x*st.T;
+  cout << "x,E1,estar,sign,q0: " << x << " " << E1 << " " << estar << " "
+       << sign << " " << q0 << endl;
   
   if (sign==-1 && abs(q0) > 30.0*st.T) return 0.0;
   if (sign==1 && q0>E1-st.M3) return 0.0;
@@ -529,18 +531,25 @@ double Polarization::dgamdq0_intl(double E1, double x, double estar,
   return ret;
 }
 
-int integrand_new(unsigned ndim, const double *xi, void *fdata,
-                  unsigned fdim, double *fval) {
+int nuopac::integrand_new(unsigned ndim, const double *xi, void *fdata,
+                          unsigned fdim, double *fval) {
   
   integration_params &ip=*((integration_params *)fdata);
   Polarization &p=*(ip.p);
 
+  cout << "Here." << endl;
+  
   double t=xi[0];
   double x=ip.E1+t/(1.0-t);
   double dxdt=1.0/(1.0-t)/(1.0-t);
   double x2=xi[1];
   
   double q0=ip.estar+ip.sign*x*p.st.T;
+
+  cout << "t,x,E1,estar,sign,q0: " << t << " " << x << " " << ip.E1
+       << " " << ip.estar << " "
+       << ip.sign << " " << q0 << endl;
+  exit(-1);
   
   // Only integrate over angles for which |q0| < q
   double p3 = sqrt((ip.E1-q0)*(ip.E1-q0) - p.st.M3*p.st.M3);
@@ -575,7 +584,7 @@ int integrand_new(unsigned ndim, const double *xi, void *fdata,
 }
 
 double Polarization::CalculateInverseMFP(double E1) {
-  
+
   double estar;
   if (current==current_charged) {
     estar=st.M4 + st.U4 - st.M2 - st.U2;
@@ -585,6 +594,7 @@ double Polarization::CalculateInverseMFP(double E1) {
   estar = std::min(estar, E1 - st.M3);
   
   double integral=0.0, integral_base=0.0, integral_o2scl=0.0;
+  double integral_cubature=0.0;
   
   if (integ_method_q0==integ_base || integ_method_q0==integ_compare) {
     for (int i=0; i<NNPGL; ++i) {
@@ -616,6 +626,7 @@ double Polarization::CalculateInverseMFP(double E1) {
                       (&Polarization::dgamdq0_intl),
                       this,E1,std::placeholders::_1,estar,-1);
     qagiu.verbose=1;
+    std::cout << "o2scl integrating: " << E1 << " to infty." << std::endl;
     integral+=qagiu.integ(f,0.0,0.0);
     
     funct f2=std::bind(std::mem_fn<double(double,double,double,int)>
@@ -627,14 +638,16 @@ double Polarization::CalculateInverseMFP(double E1) {
     if (integ_method_q0==integ_compare) {
       cout << "q0 integral, O2scl: " << integral << " "
            << fabs(integral_base-integral_o2scl)/fabs(integral_base)
-           << endl;
+           << " ";
       //char ch;
       //cin >> ch;
     }
     
-  } else if (integ_method_q0==integ_cubature) {
-
-    double xmin[2]={E1,1.0e100};
+  }
+  
+  if (integ_method_q0==integ_cubature || integ_method_q0==integ_compare) {
+    
+    double xmin[2]={0.0,1.0};
     double xmax[2]={-1.0,1.0};
     double val, err;
     integration_params ip;
@@ -647,12 +660,28 @@ double Polarization::CalculateInverseMFP(double E1) {
     
     hcubature(1,integrand_new,0,2,xmin,xmax,0,0,1.0e-8,
               ERROR_INDIVIDUAL,&val,&err);
+    integral=val;
+
+    ip.sign=1;
+    hcubature(1,integrand_new,0,2,xmin,xmax,0,0,1.0e-8,
+              ERROR_INDIVIDUAL,&val,&err);
+    integral+=val;
+    
+    integral_cubature=integral;
+    if (integ_method_q0==integ_compare) {
+      cout << "q0 integral, Cubature: " << integral << " "
+           << fabs(integral_base-integral_cubature)/fabs(integral_base)
+           << endl;
+      char ch;
+      cin >> ch;
+    }
+    
   }
   
   return st.T*integral; 
   
 }
- 
+
 void Polarization::PrintResponse(double E1, double q0, double q) const {
   
   Tensor<double> piVV, piAA, piTT, piVA, piVT, piAT;   
