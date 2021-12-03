@@ -59,6 +59,8 @@
 #include "tensor.h" 
 #include "constants.h"
 
+#include <cubature.h>
+
 #include <o2scl/constants.h>
 #include <o2scl/funct.h>
 #include <o2scl/hdf_io.h>
@@ -527,48 +529,48 @@ double Polarization::dgamdq0_intl(double E1, double x, double estar,
   return ret;
 }
 
-#ifdef O2SCL_NEVER_DEFINED
-
-double integrand_new(unsigned ndim, const double *x, void *fdata,
-                     unsigned fdim, double *fval) {
+int integrand_new(unsigned ndim, const double *xi, void *fdata,
+                  unsigned fdim, double *fval) {
   
-  Polarization &p=*((Polarization *)vp);
+  integration_params &ip=*((integration_params *)fdata);
+  Polarization &p=*(ip.p);
 
-  double x=x[0];
-  double mu=x[1];
+  double x=xi[0];
+  double x2=xi[1];
   
-  double q0=estar+sign*x*p.st.T;
+  double q0=ip.estar+ip.sign*x*p.st.T;
   
   // Only integrate over angles for which |q0| < q
-  double p3 = sqrt((E1-q0)*(E1-q0) - p.st.M3*p.st.M3);
-  double mu13cross = std::max((E1*E1 + p3*p3 - q0*q0)/(2.0*E1*p3), -1.0);
+  double p3 = sqrt((ip.E1-q0)*(ip.E1-q0) - p.st.M3*p.st.M3);
+  double mu13cross = std::max((ip.E1*ip.E1 +
+                               p3*p3 - q0*q0)/(2.0*ip.E1*p3), -1.0);
+  
   double delta = (mu13cross + 1.0) / 2.0; 
   double avg = (mu13cross - 1.0) / 2.0;
   
-  p.GetResponse_mu(E1,q0,x,delta,avg,xv,yv);
+  double integral=p.GetResponse_mu(ip.E1,q0,x2,delta,avg,
+                                   *(ip.xv),*(ip.yv));
   /*
-    double Polarization::GetResponse_mu(double E1, double q0, double x,
+    double Polarization::GetResponse_mu(double ip.E1, double q0, double x,
     double delta, double avg,
     vector<double> &xv,
     vector<double> &yv) {
   */
     
-  integral *= delta;
-  double fac = GetCsecPrefactor(E1, q0);
+  integral*=delta;
+  double fac=p.GetCsecPrefactor(ip.E1, q0);
   
   // Added by Zidu
   double crx=2.0*o2scl_const::pi*fac*integral;
-
-  if (crx<0.0) crx=0.0;
 
   // Added by zidu, at high q0, the crx can be small and
   // negative, which might result from calculation
   // accuracy. a negative crx will result in a "nan" of the
   // code output.
+  if (crx<0.0) crx=0.0;
   
   return crx; 
 }
-#endif
 
 double Polarization::CalculateInverseMFP(double E1) {
   
@@ -627,6 +629,22 @@ double Polarization::CalculateInverseMFP(double E1) {
       //char ch;
       //cin >> ch;
     }
+    
+  } else if (integ_method_q0==integ_cubature) {
+
+    double xmin[2]={E1,1.0e100};
+    double xmax[2]={-1.0,1.0};
+    double val, err;
+    integration_params ip;
+    ip.p=this;
+    ip.estar=estar;
+    ip.sign=-1;
+    ip.E1=E1;
+    //ip.xv=&xv;
+    //ip.yv=&yv;
+    
+    hcubature(1,integrand_new,0,2,xmin,xmax,0,0,1.0e-8,
+              ERROR_INDIVIDUAL,&val,&err);
   }
   
   return st.T*integral; 

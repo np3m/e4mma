@@ -213,6 +213,7 @@ namespace nuopac {
     static const int integ_base=0;
     static const int integ_o2scl=1;
     static const int integ_compare=2;
+    static const int integ_cubature=2;
     //@}
 
     /// Adaptive integrator with singularities
@@ -250,10 +251,14 @@ namespace nuopac {
     /** \brief Desc 
      */
     WeakCouplings coup;
-  
+
+  public:
+    
     /** \brief Desc 
      */
     FluidState st;
+
+  protected:
   
     /** \brief Desc 
      */
@@ -276,5 +281,18 @@ namespace nuopac {
     double mG2;
   
   };
+
+  typedef struct integration_params_s {
+    Polarization *p;
+    double estar;
+    int sign;
+    double E1;
+    std::vector<double> *xv;
+    std::vector<double> *yv;
+  } integration_params;
+  
+  int integrand_new(unsigned ndim, const double *x, void *fdata,
+                       unsigned fdim, double *fval);
+  
 }
 #endif // POLARIZATION_HPP_
