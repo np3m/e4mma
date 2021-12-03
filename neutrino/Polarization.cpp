@@ -535,7 +535,9 @@ int integrand_new(unsigned ndim, const double *xi, void *fdata,
   integration_params &ip=*((integration_params *)fdata);
   Polarization &p=*(ip.p);
 
-  double x=xi[0];
+  double t=xi[0];
+  double x=ip.E1+t/(1.0-t);
+  double dxdt=1.0/(1.0-t)/(1.0-t);
   double x2=xi[1];
   
   double q0=ip.estar+ip.sign*x*p.st.T;
@@ -561,7 +563,7 @@ int integrand_new(unsigned ndim, const double *xi, void *fdata,
   double fac=p.GetCsecPrefactor(ip.E1, q0);
   
   // Added by Zidu
-  double crx=2.0*o2scl_const::pi*fac*integral;
+  double crx=2.0*o2scl_const::pi*fac*integral*dxdt;
 
   // Added by zidu, at high q0, the crx can be small and
   // negative, which might result from calculation
