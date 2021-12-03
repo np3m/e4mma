@@ -527,6 +527,49 @@ double Polarization::dgamdq0_intl(double E1, double x, double estar,
   return ret;
 }
 
+#ifdef O2SCL_NEVER_DEFINED
+
+double integrand_new(unsigned ndim, const double *x, void *fdata,
+                     unsigned fdim, double *fval) {
+  
+  Polarization &p=*((Polarization *)vp);
+
+  double x=x[0];
+  double mu=x[1];
+  
+  double q0=estar+sign*x*p.st.T;
+  
+  // Only integrate over angles for which |q0| < q
+  double p3 = sqrt((E1-q0)*(E1-q0) - p.st.M3*p.st.M3);
+  double mu13cross = std::max((E1*E1 + p3*p3 - q0*q0)/(2.0*E1*p3), -1.0);
+  double delta = (mu13cross + 1.0) / 2.0; 
+  double avg = (mu13cross - 1.0) / 2.0;
+  
+  p.GetResponse_mu(E1,q0,x,delta,avg,xv,yv);
+  /*
+    double Polarization::GetResponse_mu(double E1, double q0, double x,
+    double delta, double avg,
+    vector<double> &xv,
+    vector<double> &yv) {
+  */
+    
+  integral *= delta;
+  double fac = GetCsecPrefactor(E1, q0);
+  
+  // Added by Zidu
+  double crx=2.0*o2scl_const::pi*fac*integral;
+
+  if (crx<0.0) crx=0.0;
+
+  // Added by zidu, at high q0, the crx can be small and
+  // negative, which might result from calculation
+  // accuracy. a negative crx will result in a "nan" of the
+  // code output.
+  
+  return crx; 
+}
+#endif
+
 double Polarization::CalculateInverseMFP(double E1) {
   
   double estar;
