@@ -307,14 +307,24 @@ double Polarization::CalculateDGamDq0(double E1, double q0) {
   double mu13cross = std::max((E1*E1 + p3*p3 - q0*q0)/(2.0*E1*p3), -1.0);
   double delta = (mu13cross + 1.0) / 2.0; 
   double avg = (mu13cross - 1.0) / 2.0;
+  //cout << "p3,mu13cross,delta,avg: " << p3 << " " << mu13cross << " "
+  //<< delta << " " << avg << endl;
 
   double integral=0.0, integral_base=0.0, integral_o2scl=0.0;
 
   if (integ_method_mu==integ_base || integ_method_mu==integ_compare) {
     integral = 0.0; 
     for (int i=0; i<NPGJ; ++i) {
-      double mu = xx[i]*delta + avg; 
+      double mu = xx[i]*delta + avg;
+      /*
+      cout.precision(10);
+      cout << "x,mu,q,E1,q0: " << xx[i] << " " << mu << " "
+           << GetqFromMu13(E1, q0, mu) << " "
+           << E1 << " " << q0 << endl;
+      */
       integral += ww[i] * GetResponse(E1, q0, GetqFromMu13(E1, q0, mu));
+      //cout << "val: " << GetResponse(E1, q0, GetqFromMu13(E1, q0, mu)) << endl;
+      //cout.precision(6);
     }
     integral_base=integral;
     if (integ_method_mu==integ_compare) {
@@ -537,8 +547,6 @@ int nuopac::integrand_new(unsigned ndim, const double *xi, void *fdata,
   integration_params &ip=*((integration_params *)fdata);
   Polarization &p=*(ip.p);
 
-  cout << "Here." << endl;
-  
   double t=xi[0];
   double x=ip.E1+t/(1.0-t);
   double dxdt=1.0/(1.0-t)/(1.0-t);
@@ -546,10 +554,9 @@ int nuopac::integrand_new(unsigned ndim, const double *xi, void *fdata,
   
   double q0=ip.estar+ip.sign*x*p.st.T;
 
-  cout << "t,x,E1,estar,sign,q0: " << t << " " << x << " " << ip.E1
-       << " " << ip.estar << " "
-       << ip.sign << " " << q0 << endl;
-  exit(-1);
+  //cout << "t,x,E1,estar,sign,q0: " << t << " " << x << " " << ip.E1
+  //<< " " << ip.estar << " "
+  //<< ip.sign << " " << q0 << endl;
   
   // Only integrate over angles for which |q0| < q
   double p3 = sqrt((ip.E1-q0)*(ip.E1-q0) - p.st.M3*p.st.M3);
@@ -558,6 +565,9 @@ int nuopac::integrand_new(unsigned ndim, const double *xi, void *fdata,
   
   double delta = (mu13cross + 1.0) / 2.0; 
   double avg = (mu13cross - 1.0) / 2.0;
+  
+  //cout << "p3,mu13cross,delta,avg: " << p3 << " " << mu13cross << " "
+  //<< delta << " " << avg << endl;
   
   double integral=p.GetResponse_mu(ip.E1,q0,x2,delta,avg,
                                    *(ip.xv),*(ip.yv));
@@ -638,7 +648,7 @@ double Polarization::CalculateInverseMFP(double E1) {
     if (integ_method_q0==integ_compare) {
       cout << "q0 integral, O2scl: " << integral << " "
            << fabs(integral_base-integral_o2scl)/fabs(integral_base)
-           << " ";
+           << endl;
       //char ch;
       //cin >> ch;
     }
@@ -647,23 +657,24 @@ double Polarization::CalculateInverseMFP(double E1) {
   
   if (integ_method_q0==integ_cubature || integ_method_q0==integ_compare) {
     
-    double xmin[2]={0.0,1.0};
-    double xmax[2]={-1.0,1.0};
+    double xmin[2]={0.0,-1.0};
+    double xmax[2]={1.0,1.0};
     double val, err;
     integration_params ip;
     ip.p=this;
     ip.estar=estar;
     ip.sign=-1;
     ip.E1=E1;
-    //ip.xv=&xv;
-    //ip.yv=&yv;
-    
-    hcubature(1,integrand_new,0,2,xmin,xmax,0,0,1.0e-8,
+    vector<double> vx, vy;
+    ip.xv=&vx;
+    ip.yv=&vy;
+
+    hcubature(1,integrand_new,&ip,2,xmin,xmax,0,0,1.0e-8,
               ERROR_INDIVIDUAL,&val,&err);
     integral=val;
 
     ip.sign=1;
-    hcubature(1,integrand_new,0,2,xmin,xmax,0,0,1.0e-8,
+    hcubature(1,integrand_new,&ip,2,xmin,xmax,0,0,1.0e-8,
               ERROR_INDIVIDUAL,&val,&err);
     integral+=val;
     
@@ -722,9 +733,17 @@ double Polarization::GetResponse_mu(double E1, double q0, double x,
                                     double delta, double avg,
                                     vector<double> &xv,
                                     vector<double> &yv) {
+
   double mu=x*delta+avg;
   double q=GetqFromMu13(E1,q0,mu);
+  /*
+  cout.precision(10);
+  cout << "x,mu,q,E1,q0: " << x << " " << mu << " " << q << " "
+       << E1 << " " << q0 << endl;
+  */
   double ret=GetResponse(E1,q0,q);
+  //cout << "val2: " << ret << endl;
+  //exit(-1);
   //xv.push_back(x);
   //yv.push_back(tempy);
   
