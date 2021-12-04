@@ -530,8 +530,8 @@ double Polarization::dgamdq0_intl(double E1, double x, double estar,
                                   int sign) {
 
   double q0=estar+sign*x*st.T;
-  cout << "x,E1,estar,sign,q0: " << x << " " << E1 << " " << estar << " "
-       << sign << " " << q0 << endl;
+  //cout << "x,E1,estar,sign,q0: " << x << " " << E1 << " " << estar << " "
+  //<< sign << " " << q0 << endl;
   
   if (sign==-1 && abs(q0) > 30.0*st.T) return 0.0;
   if (sign==1 && q0>E1-st.M3) return 0.0;
@@ -583,12 +583,19 @@ int nuopac::integrand_new(unsigned ndim, const double *xi, void *fdata,
   
   // Added by Zidu
   double crx=2.0*o2scl_const::pi*fac*integral*dxdt;
+  
+  //char ch;
+  //cin >> ch;
 
   // Added by zidu, at high q0, the crx can be small and
   // negative, which might result from calculation
   // accuracy. a negative crx will result in a "nan" of the
   // code output.
   if (crx<0.0) crx=0.0;
+
+  cout.setf(ios::showpos);
+  cout << t << " " << x << " " << x2 << " " << dxdt << " " << crx << endl;
+  cout.unsetf(ios::showpos);
   
   return crx; 
 }
@@ -669,13 +676,17 @@ double Polarization::CalculateInverseMFP(double E1) {
     ip.xv=&vx;
     ip.yv=&vy;
 
-    hcubature(1,integrand_new,&ip,2,xmin,xmax,0,0,1.0e-8,
-              ERROR_INDIVIDUAL,&val,&err);
+    cout << "Starting cubature." << endl;
+    int ret=hcubature(1,integrand_new,&ip,2,xmin,xmax,0,0,1.0e-4,
+                      ERROR_INDIVIDUAL,&val,&err);
+    cout << "ret,val: " << ret << " " << val << endl;
     integral=val;
 
     ip.sign=1;
-    hcubature(1,integrand_new,&ip,2,xmin,xmax,0,0,1.0e-8,
-              ERROR_INDIVIDUAL,&val,&err);
+    ret=hcubature(1,integrand_new,&ip,2,xmin,xmax,0,0,1.0e-4,
+                  ERROR_INDIVIDUAL,&val,&err);
+    cout << "ret,val: " << ret << " " << val << endl;
+    exit(-1);
     integral+=val;
     
     integral_cubature=integral;
