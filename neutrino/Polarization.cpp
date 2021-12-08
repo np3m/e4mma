@@ -75,7 +75,7 @@ bool integral_debug;
 namespace {
   
   // Exact expression
-  inline double Fermi0(double eta) {
+  template<class fp_t> fp_t Fermi0(fp_t eta) {
     if (eta>150.0) return eta;  
     return log(exp(eta) + 1.0);
   }
