@@ -65,12 +65,6 @@ using namespace nuopac;
 // Use unnamed namespace so these methods are only locally available
 namespace {
   
-  // Exact expression
-  inline double Fermi0(double eta) {
-    if (eta>50.0) return eta;  
-    return log(exp(eta) + 1.0);
-  }
-
   double f (double x, void * params) {
     double q0=x;
     // double q0fix = ((double *)params)[0];

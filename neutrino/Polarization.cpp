@@ -74,12 +74,6 @@ bool integral_debug;
 // Use unnamed namespace so these methods are only locally available
 namespace {
   
-  // Exact expression
-  template<class fp_t> fp_t Fermi0(fp_t eta) {
-    if (eta>150.0) return eta;  
-    return log(exp(eta) + 1.0);
-  }
-
   // Use the approximations of Takahashi, El Eid, and Hillebrandt 1978
   // These functions have maximum errors of ~0.3%, but are much better
   // away from delta ~ 0. Additionally, these functions are
@@ -323,7 +317,8 @@ double Polarization::CalculateDGamDq0(double E1, double q0) {
            << E1 << " " << q0 << endl;
       */
       integral += ww[i] * GetResponse(E1, q0, GetqFromMu13(E1, q0, mu));
-      //cout << "val: " << GetResponse(E1, q0, GetqFromMu13(E1, q0, mu)) << endl;
+      //cout << "val: " << GetResponse(E1, q0,
+      //GetqFromMu13(E1, q0, mu)) << endl;
       //cout.precision(6);
     }
     integral_base=integral;
@@ -799,20 +794,6 @@ double Polarization::GetResponse_mu(double E1, double q0, double x,
   return ret;
 }
 
-
-inline double Polarization::GetCsecPrefactor(double E1, double q0) const {
-  double p3 = sqrt((E1-q0)*(E1-q0) - st.M3*st.M3); 
-  const double fac = mG2*pow(Constants::GfMeV, 2)/
-    pow(2.0*o2scl_const::pi, 3)/16.0;
-  double a;
-  if (current==1) {
-    a=E1*(1.0 - exp((st.Mu4 - st.Mu2 - q0)/st.T));
-  } else {
-    a=E1*(1.0 - exp((0.0 - q0)/st.T));
-  }
-  if (doBlock) p3 *= 1.0 - 1.0/(exp((E1-q0-st.Mu3)/st.T) + 1.0);
-  return fac*p3/a;
-}
 
 double Polarization::CalculateDifGam(double E1, double q0, double q) const {
   double fac = GetCsecPrefactor(E1, q0);

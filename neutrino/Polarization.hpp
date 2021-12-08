@@ -59,6 +59,7 @@
 #include "FluidState.hpp"
 #include "tensor.h"
 #include "Couplings.hpp" 
+#include "constants.h"
 
 #include <o2scl/inte_qag_gsl.h>
 #include <o2scl/inte_qng_gsl.h>
@@ -74,6 +75,12 @@ extern bool integral_debug;
 
 namespace nuopac {
 
+  // Exact expression
+  template<class fp_t> fp_t Fermi0(fp_t eta) {
+    if (eta>150.0) return eta;  
+    return log(exp(eta) + 1.0);
+  }
+  
   /// Class for calculating polarization tensors and interaction rates
   /// with a medium at the mean field level.
   class Polarization {
@@ -163,7 +170,19 @@ namespace nuopac {
 
     /** \brief Desc 
      */
-    inline double GetCsecPrefactor(double E1, double q0) const;
+    template<class fp_t> fp_t GetCsecPrefactor(fp_t E1, fp_t q0) const {
+      fp_t p3=sqrt((E1-q0)*(E1-q0)-st.M3*st.M3); 
+      const fp_t fac=mG2*pow(Constants::GfMeV, 2)/
+        pow(2.0*o2scl_const::pi, 3)/16.0;
+      fp_t a;
+      if (current==1) {
+        a=E1*(1.0-exp((st.Mu4-st.Mu2-q0)/st.T));
+      } else {
+        a=E1*(1.0-exp((-q0)/st.T));
+      }
+      if (doBlock) p3 *= 1.0 - 1.0/(exp((E1-q0-st.Mu3)/st.T) + 1.0);
+      return fac*p3/a;
+    }
 
     /** \brief Desc 
      */
