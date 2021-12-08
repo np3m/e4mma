@@ -65,6 +65,7 @@
 #include <o2scl/inte_qng_gsl.h>
 #include <o2scl/inte_qagiu_gsl.h>
 #include <o2scl/inte_qags_gsl.h>
+#include <o2scl/inte_adapt_cern.h>
 
 // Going much lower than 64 seems to degrade accuracy at a few percent level
 //#define NPGJ 64
@@ -161,7 +162,10 @@ namespace nuopac {
                                       int sign);
     /** \brief Desc 
      */
-    void SetCurrentConservation(bool cons){doCurrentConservation=cons;} 
+    void SetCurrentConservation(bool cons) {
+      doCurrentConservation=cons;
+      return;
+    } 
     
     /** \brief Desc 
      */
@@ -173,7 +177,7 @@ namespace nuopac {
     template<class fp_t> fp_t GetCsecPrefactor(fp_t E1, fp_t q0) const {
       fp_t p3=sqrt((E1-q0)*(E1-q0)-st.M3*st.M3); 
       const fp_t fac=mG2*pow(Constants::GfMeV, 2)/
-        pow(2.0*o2scl_const::pi, 3)/16.0;
+        pow(2.0*o2scl_const::pi,3)/16.0;
       fp_t a;
       if (current==1) {
         a=E1*(1.0-exp((st.Mu4-st.Mu2-q0)/st.T));
@@ -237,6 +241,8 @@ namespace nuopac {
 
     /// Adaptive integrator with singularities
     o2scl::inte_qags_gsl<> qags;
+    
+    o2scl::inte_adapt_cern<> iac;
 
     /// Adaptive integrator
     o2scl::inte_qag_gsl<> qag;
