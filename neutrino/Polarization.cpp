@@ -361,7 +361,6 @@ double Polarization::CalculateDGamDq0(double E1, double q0) {
       
       if (iret!=0) {
     */
-    qags.set_limit(100);
     qags.tol_rel=1.0e-6;
     qags.tol_abs=1.0e-6;
     cout << "3";
@@ -644,12 +643,49 @@ double Polarization::CalculateInverseMFP(double E1) {
                       this,E1,std::placeholders::_1,estar,-1);
     qagiu.verbose=1;
     std::cout << "o2scl integrating: " << E1 << " to infty." << std::endl;
-    integral+=qagiu.integ(f,0.0,0.0);
+    //qagiu.err_nonconv=false;
+    double val, err;
+    qagiu.tol_rel=1.0e-6;
+    qagiu.tol_abs=4.0e-19;
+    int iret=qagiu.integ(f,0.0,0.0,val,err);
+    if (iret!=0) {
+      qagiu.tol_rel=1.0e-5;
+      qagiu.tol_abs=4.0e-18;
+      iret=qagiu.integ(f,0.0,0.0,val,err);
+    }
+    if (iret!=0) {
+      qagiu.tol_rel=1.0e-4;
+      qagiu.tol_abs=4.0e-17;
+      iret=qagiu.integ(f,0.0,0.0,val,err);
+    }
+    if (iret!=0) {
+      O2SCL_ERR("First qagiu integral failed in polarization.",
+                o2scl::exc_einval);
+    }
+    integral=val;
     
     funct f2=std::bind(std::mem_fn<double(double,double,double,int)>
                        (&Polarization::dgamdq0_intl),
                        this,E1,std::placeholders::_1,estar,+1);
-    integral+=qagiu.integ(f2,0.0,0.0);
+
+    qagiu.tol_rel=1.0e-6;
+    qagiu.tol_abs=4.0e-19;
+    int iret=qagiu.integ(f2,0.0,0.0,val,err);
+    if (iret!=0) {
+      qagiu.tol_rel=1.0e-5;
+      qagiu.tol_abs=4.0e-18;
+      iret=qagiu.integ(f2,0.0,0.0,val,err);
+    }
+    if (iret!=0) {
+      qagiu.tol_rel=1.0e-4;
+      qagiu.tol_abs=4.0e-17;
+      iret=qagiu.integ(f2,0.0,0.0,val,err);
+    }
+    if (iret!=0) {
+      O2SCL_ERR("Second qagiu integral failed in polarization.",
+                o2scl::exc_einval);
+    }
+    integral+=val;
 
     integral_o2scl=integral;
     if (integ_method_q0==integ_compare) {
