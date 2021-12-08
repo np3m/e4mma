@@ -359,7 +359,7 @@ double Polarization::CalculateDGamDq0(double E1, double q0) {
       
       if (iret!=0) {
     */
-    qags.set_limit(250);
+    qags.set_limit(100);
     qags.tol_rel=1.0e-6;
     qags.tol_abs=1.0e-6;
     cout << "3";
@@ -652,7 +652,7 @@ double Polarization::CalculateInverseMFP(double E1) {
     double val, err;
     qagiu.tol_rel=1.0e-6;
     qagiu.tol_abs=4.0e-19;
-    qagiu.set_limit(100);
+    qagiu.set_limit(250);
     int iret=qagiu.integ_err(f,0.0,0.0,val,err);
     if (iret!=0) {
       qagiu.tol_rel=1.0e-5;
