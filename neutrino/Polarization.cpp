@@ -333,13 +333,12 @@ double Polarization::CalculateDGamDq0(double E1, double q0) {
   
   if (integ_method_mu==integ_o2scl || integ_method_mu==integ_compare) {
 
-    vector<double> vx, vy;
+    E1=30.0;
+    q0=-68.0;
     funct f=std::bind(std::mem_fn<double(double,double,double,double,
-                                         double,vector<double> &,
-                                         vector<double> &)>
+                                         double)>
                       (&Polarization::GetResponse_mu),
-                      this,E1,q0,std::placeholders::_1,delta,avg,
-                      std::ref(vx),std::ref(vy));
+                      this,E1,q0,std::placeholders::_1,delta,avg);
 
     double err;
     integral_debug=false;
@@ -404,16 +403,8 @@ double Polarization::CalculateDGamDq0(double E1, double q0) {
     if (false && iret!=0) {
       cout << "iret: " << iret << endl;
       integral_debug=true;
-      vx.clear();
-      vy.clear();
       iret=qags.integ_err(f,-1.0,1.0,integral,err);
       cout << "iret: " << iret << endl;
-      hdf_file hfx;
-      hfx.open_or_create("mu_integrand.o2");
-      hfx.setd_vec("vx",vx);
-      hfx.setd_vec("vy",vy);
-      hfx.close();
-      O2SCL_ERR("Integration over mu failed.",o2scl::exc_einval);
       
       /*
       inte_workspace_gsl &w=qags.get_workspace();
@@ -575,14 +566,7 @@ int nuopac::integrand_new(unsigned ndim, const double *xi, void *fdata,
   //cout << "p3,mu13cross,delta,avg: " << p3 << " " << mu13cross << " "
   //<< delta << " " << avg << endl;
   
-  double integral=p.GetResponse_mu(ip.E1,q0,x2,delta,avg,
-                                   *(ip.xv),*(ip.yv));
-  /*
-    double Polarization::GetResponse_mu(double ip.E1, double q0, double x,
-    double delta, double avg,
-    vector<double> &xv,
-    vector<double> &yv) {
-  */
+  double integral=p.GetResponse_mu(ip.E1,q0,x2,delta,avg);
     
   integral*=delta;
   double fac=p.GetCsecPrefactor(ip.E1, q0);
@@ -716,9 +700,6 @@ double Polarization::CalculateInverseMFP(double E1) {
     ip.estar=estar;
     ip.sign=-1;
     ip.E1=E1;
-    vector<double> vx, vy;
-    ip.xv=&vx;
-    ip.yv=&vy;
 
     cout << "Starting cubature." << endl;
     int ret=hcubature(1,integrand_new,&ip,2,xmin,xmax,0,0,1.0e-4,
@@ -781,13 +762,15 @@ double Polarization::GetResponse(double E1, double q0, double q) const {
   //  pi += coup.Cv*coup.Ca*FullContract(L, piVA);
   // pi += coup.Cv*coup.F2*FullContract(L, piVT);
   // pi += coup.Ca*coup.F2*FullContract(L, piAT);
+
+  //cout << pi << endl;
+  //cout << L.L << endl;
+  
   return pi;
 }
 
 double Polarization::GetResponse_mu(double E1, double q0, double x,
-                                    double delta, double avg,
-                                    vector<double> &xv,
-                                    vector<double> &yv) {
+                                    double delta, double avg) {
 
   double mu=x*delta+avg;
   double q=GetqFromMu13(E1,q0,mu);
@@ -796,13 +779,11 @@ double Polarization::GetResponse_mu(double E1, double q0, double x,
   cout << "x,mu,q,E1,q0: " << x << " " << mu << " " << q << " "
        << E1 << " " << q0 << endl;
   */
+  cout << "H: " << x << " " << flush;
   double ret=GetResponse(E1,q0,q);
   //cout << "val2: " << ret << endl;
   //exit(-1);
-  //xv.push_back(x);
-  //yv.push_back(tempy);
   
-  //cout << "H: " << E1 << " " << q0 << " " << x << " " << ret << endl;
   return ret;
 }
 

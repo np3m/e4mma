@@ -154,8 +154,7 @@ namespace nuopac {
     /** \brief Desc 
      */
     double GetResponse_mu(double E1, double q0, double x, double delta,
-                          double avg, std::vector<double> &xv,
-                          std::vector<double> &yv);
+                          double avg);
 
     /** \brief Desc 
      */

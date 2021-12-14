@@ -306,6 +306,8 @@ std::array<double, 4> PolarizationNonRel::CalculateBasePolarizations
   double piL= st.M2*st.M4*st.T/(PI*q)*(ximinCC-ximaxCC);
 
   tempy=piL;
+  cout << ximinCC-ximaxCC << endl;
+  
   if (integral_debug) {
     cout << "XX: " << q << " " << q0 << " " << st.M2 << " " << st.M4 << " "
          << em << " "
