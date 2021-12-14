@@ -28,6 +28,7 @@
 #include <o2scl/inte_qags_gsl.h>
 #include <o2scl/inte_qng_gsl.h>
 #include <o2scl/inte_adapt_cern.h>
+#include <o2scl/inte_kronrod_boost.h>
 #include <o2scl/hdf_file.h>
 #include <o2scl/hdf_io.h>
 
@@ -40,15 +41,15 @@ namespace o2scl {
 
   protected:
 
-  inte_kronrod_boost kb;
+  inte_kronrod_boost<> kb;
   
-  inte_qag_gsl qag;
+  inte_qag_gsl<> qag;
   
-  inte_qags_gsl qags;
+  inte_qags_gsl<> qags;
   
-  inte_qng_gsl qng;
+  inte_qng_gsl<> qng;
   
-  inte_adapt_cern ac;
+  inte_adapt_cern<> ac;
   
   func_t *fp;
 
@@ -60,7 +61,7 @@ namespace o2scl {
     }
     double ret=(*fp)(x);
     if (record) {
-      vector<double> line={x,ret};
+      std::vector<double> line={x,ret};
       t.line_of_data(line.size(),line);
     }
     return ret;
@@ -92,13 +93,14 @@ namespace o2scl {
     funct f=std::bind(std::mem_fn<double(double)>
                       (&inte_custom::funct_wrapper),this,
                       std::placeholders::_1);
+    std::cout << "H1." << std::endl;
     int ret1=qags.integ_err(f,a,b,res,err);
     if (ret1!=0) {
       record=true;
       t.clear();
       t.line_of_names("x y");
       ret1=qags.integ_err(f,a,b,res,err);
-      cout << "Integration failed. Writing file." << endl;
+      std::cout << "Integration failed. Writing file." << std::endl;
       o2scl_hdf::hdf_file hf;
       hf.open_or_create("inte_custom.o2");
       hdf_output(hf,t,"table");

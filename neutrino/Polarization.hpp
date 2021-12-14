@@ -243,6 +243,7 @@ namespace nuopac {
     /// Adaptive integrator with singularities
     o2scl::inte_qags_gsl<> qags;
     
+    /// Desc
     o2scl::inte_adapt_cern<> iac;
 
     /// Adaptive integrator
@@ -254,7 +255,8 @@ namespace nuopac {
     /// Adaptive integrator with infinite upper limit
     o2scl::inte_qagiu_gsl<> qagiu;
 
-    inte_custom ic;
+    /// Desc
+    o2scl::inte_custom<> ic;
     
   protected:
 
