@@ -64,6 +64,7 @@
 #include <o2scl/constants.h>
 #include <o2scl/funct.h>
 #include <o2scl/hdf_io.h>
+#include "../inte_custom.h"
 
 using namespace o2scl;
 using namespace o2scl_hdf;
@@ -362,8 +363,9 @@ double Polarization::CalculateDGamDq0(double E1, double q0) {
     qags.set_limit(100);
     qags.tol_rel=1.0e-6;
     qags.tol_abs=1.0e-6;
-    cout << "3";
-    iret=qags.integ_err(f,-1.0,1.0,integral,err);
+    cout << "3" << endl;
+    iret=ic.integ_err(f,-1.0,1.0,integral,err);
+    //iret=qags.integ_err(f,-1.0,1.0,integral,err);
     if (iret!=0) {
       iac.tol_rel=1.0e-6;
       iac.tol_abs=1.0e-6;
