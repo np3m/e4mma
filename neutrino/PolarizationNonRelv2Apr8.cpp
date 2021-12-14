@@ -229,6 +229,7 @@ namespace {
 
 }
 
+/*
 std::array<double, 4> PolarizationNonRel::CalculateBasePolarizations
 (double q0, double q) const {
   
@@ -320,6 +321,7 @@ std::array<double, 4> PolarizationNonRel::CalculateBasePolarizations
   
   return {piQ, piL, piM, piT};
 }
+*/
 
 // only used when calculating NC mixed gas (n+p) axial part,neutron
 // basic polarization use m2 and u2; proton basic polarization use m4

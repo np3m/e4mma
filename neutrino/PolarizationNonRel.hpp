@@ -67,7 +67,7 @@ namespace nuopac {
                        bool antiNeutrinoNR = false, bool doReddyNR = false, bool doBlockNR = false) 
       : Polarization(stNR, wc, antiNeutrinoNR, doReddyNR, doBlockNR) {} 
    
-    std::array<double, 4> CalculateBasePolarizations(double q0, double q) const;
+    //std::array<double, 4> CalculateBasePolarizations(double q0, double q) const;
     std::array<double, 4> CalculateBasePolarizationsNeutron(double q0, double q) const;
     std::array<double, 4> CalculateBasePolarizationsProton(double q0, double q) const;
     double GetImPI( double q0, double q) const;

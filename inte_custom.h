@@ -96,7 +96,6 @@ namespace o2scl {
     std::cout << "H1." << std::endl;
     int ret1=qags.integ_err(f,a,b,res,err);
     std::cout << "X: " << ret1 << std::endl;
-    exit(-1);
     if (ret1!=0) {
       record=true;
       t.clear();

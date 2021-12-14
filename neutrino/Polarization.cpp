@@ -152,6 +152,7 @@ Polarization::Polarization(FluidState stPol, WeakCouplings wc,
   qagiu.err_nonconv=false;
 }
 
+/*
 std::array<double, 4> Polarization::CalculateBasePolarizations
 (double q0, double q) const {
   
@@ -197,6 +198,7 @@ std::array<double, 4> Polarization::CalculateBasePolarizations
   
   return {piQ, piL, piM, piT};
 }
+*/
 
 void Polarization::SetPolarizations(double q0, double q,
                                     Tensor<double>* piVV, 
@@ -333,8 +335,6 @@ double Polarization::CalculateDGamDq0(double E1, double q0) {
   
   if (integ_method_mu==integ_o2scl || integ_method_mu==integ_compare) {
 
-    E1=30.0;
-    q0=-68.0;
     funct f=std::bind(std::mem_fn<double(double,double,double,double,
                                          double)>
                       (&Polarization::GetResponse_mu),
@@ -779,7 +779,7 @@ double Polarization::GetResponse_mu(double E1, double q0, double x,
   cout << "x,mu,q,E1,q0: " << x << " " << mu << " " << q << " "
        << E1 << " " << q0 << endl;
   */
-  cout << "H: " << x << " " << flush;
+  //cout << "H: " << x << " " << flush;
   double ret=GetResponse(E1,q0,q);
   //cout << "val2: " << ret << endl;
   //exit(-1);
