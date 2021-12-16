@@ -8773,7 +8773,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
     "1/MeV^2","1/MeV^2","1/MeV^2",
     "1/MeV^2","1/MeV^2","1/MeV^2",
     "1/cm","1/cm","1/cm","1/cm"};
-  
+
   for(size_t ipoint=0;ipoint<n_point;ipoint++) {
     for(size_t ik=0;ik<col_list.size();ik++) {
     std:string temp=col_list[ik]+"_"+o2scl::szttos(ipoint);
@@ -8822,7 +8822,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
   
   static const int N=10000;
   for(int j=0;j<N;j++) {
-    
+
     std::cout << "j: " << j << endl;
 
     if (j==0) {
@@ -8851,6 +8851,11 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
       sk.x2=sk_alt.x2;
       sk.x3=sk_alt.x3;
       sk.alpha=sk_alt.alpha;
+      cout << "t0,t1: " << sk.t0*hc_mev_fm << " " << sk.t1*hc_mev_fm << endl;
+      cout << "t2,t3: " << sk.t2*hc_mev_fm << " " << sk.t3*hc_mev_fm << endl;
+      cout << "x0,x1: " << sk.x0 << " " << sk.x1 << endl;
+      cout << "x2,x3: " << sk.x2 << " " << sk.x3 << endl;
+      cout << "alpha: " << sk.alpha << endl;
     }
 
     vector<double> line={((double)i_ns),((double)i_skyrme),
@@ -9612,7 +9617,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
           
         }
       }
-      
+
     }
 
     if (tab.get_ncolumns()!=line.size()) {
