@@ -365,7 +365,7 @@ double Polarization::CalculateDGamDq0(double E1, double q0) {
     cout << "3";
     //iret=ic.integ_err(f,-1.0,1.0,integral,err);
     iret=qags.integ_err(f,-1.0,1.0,integral,err);
-    if (iret!=0) {
+    if (false && iret!=0) {
       iac.tol_rel=1.0e-6;
       iac.tol_abs=1.0e-6;
       cout << "2";
