@@ -229,7 +229,6 @@ namespace {
 
 }
 
-/*
 std::array<double, 4> PolarizationNonRel::CalculateBasePolarizations
 (double q0, double q) const {
   
@@ -307,7 +306,6 @@ std::array<double, 4> PolarizationNonRel::CalculateBasePolarizations
   double piL= st.M2*st.M4*st.T/(PI*q)*(ximinCC-ximaxCC);
 
   tempy=piL;
-  cout << ximinCC-ximaxCC << endl;
   
   if (integral_debug) {
     cout << "XX: " << q << " " << q0 << " " << st.M2 << " " << st.M4 << " "
@@ -321,7 +319,6 @@ std::array<double, 4> PolarizationNonRel::CalculateBasePolarizations
   
   return {piQ, piL, piM, piT};
 }
-*/
 
 // only used when calculating NC mixed gas (n+p) axial part,neutron
 // basic polarization use m2 and u2; proton basic polarization use m4
@@ -718,7 +715,13 @@ void PolarizationNonRel::SetPolarizations_charged
  double &piLRe, double &piRPAvec, double &piRPAax, double &piL) const {
 
   // Calculate the basic parts of the polarization
-  std::array<double, 4> pt=CalculateBasePolarizations(q0,q);
+  std::array<double, 4> pt;
+  if (false) {
+    pt=CalculateBasePolarizations(q0,q);
+  } else {
+    pt=base_polarization_new<>(q0,q);
+  }
+  
   piL=pt[1];
   
   piLRe=GetRePI(q0,q);

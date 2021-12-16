@@ -169,14 +169,20 @@ namespace nuopac {
     
     /** \brief Desc 
      */
-    template<class fp_t=double>
-    std::array<double, 4> CalculateBasePolarizations(double q0,
-                                                     double q) const {
+    std::array<double, 4> CalculateBasePolarizations
+    (double q0, double q) const;
+    
+    /** \brief Desc 
+     */
+    template<class fp_t=long double>
+    std::array<double, 4> base_polarization_new
+    (double q0, double q) const {
+      
       // Calculate some kinematic factors
       
-      long double q0t = q0 + st.U2 - st.U4;//orig one
+      fp_t q0t = q0 + st.U2 - st.U4;//orig one
       
-      long double qa2t = q0t*q0t - q*q;
+      fp_t qa2t = q0t*q0t - q*q;
       
       // [LR]: I don't completely understand this condition, but it seems to be
       // necessary to suppress noise at larger q_0
@@ -185,47 +191,47 @@ namespace nuopac {
       if (qa2t > pow(st.M2 - st.M4, 2)*0.0) return {0.0, 0.0, 0.0, 0.0};
       
       if (qa2t < 1.e-1 && qa2t >= 0.0) return {0.0, 0.0, 0.0, 0.0}; 
-      long double beta = 1.0 + (st.M2*st.M2 - st.M4*st.M4)/qa2t;//orig
+      fp_t beta = 1.0 + (st.M2*st.M2 - st.M4*st.M4)/qa2t;//orig
       
-     long double arg = beta*beta - 4.0*st.M2*st.M2/qa2t;
+     fp_t arg = beta*beta - 4.0*st.M2*st.M2/qa2t;
       if (arg<0.0) return {0.0, 0.0, 0.0, 0.0};
-      long double em;
+      fp_t em;
       if (-0.5*beta*q0t + 0.5*q*sqrt(arg)>st.M2) {
         em=-0.5*beta*q0t + 0.5*q*sqrt(arg);
       } else {
         em=st.M2;
       }
-      //long double em = std::max(-0.5*beta*q0t + 0.5*q*sqrt(arg), st.M2);
-      long double delta2 = (st.Mu2 - st.U2 - em)/st.T;
-      long double delta4 = (st.Mu4 - st.U4 - em - q0t)/st.T;//orig one
+      //fp_t em = std::max(-0.5*beta*q0t + 0.5*q*sqrt(arg), st.M2);
+      fp_t delta2 = (st.Mu2 - st.U2 - em)/st.T;
+      fp_t delta4 = (st.Mu4 - st.U4 - em - q0t)/st.T;//orig one
       
       // following is the new em completely consistent with Redddy's
       // thesis, for non-rel+interacting gas
-      long double chi=1-st.M4/st.M2; //orig
+      fp_t chi=1-st.M4/st.M2; //orig
       
-      long double c=q0+st.U2-st.U4-q*q/(2*st.M4);
+      fp_t c=q0+st.U2-st.U4-q*q/(2*st.M4);
       //the minimum E2 for NC reaction
-      //long double emNC=std::max((-c*st.M2/q)*(-c*st.M2/q)/(2*st.M2),0.0); 
-      long double emNC=(-c*st.M2/q)*(-c*st.M2/q)/(2*st.M2);
+      //fp_t emNC=std::max((-c*st.M2/q)*(-c*st.M2/q)/(2*st.M2),0.0); 
+      fp_t emNC=(-c*st.M2/q)*(-c*st.M2/q)/(2*st.M2);
       if (emNC>0.0) emNC=0.0;
           
-      long double argCC=1+2*chi*st.M4*c/(q*q);
+      fp_t argCC=1+2*chi*st.M4*c/(q*q);
       if (argCC<0.0) return {0.0, 0.0, 0.0, 0.0};
       //the minimum E2 for CC reaction
-      long double eminCC=2*q*q/(chi*chi)*(1+chi*st.M4*c/
+      fp_t eminCC=2*q*q/(chi*chi)*(1+chi*st.M4*c/
                                           (q*q)-sqrt(argCC))/(2*st.M2);
       //the maximum E2 for CC reaction
-      long double emaxCC=2*q*q/(chi*chi)*(1+chi*st.M4*c/
+      fp_t emaxCC=2*q*q/(chi*chi)*(1+chi*st.M4*c/
                                           (q*q)+sqrt(argCC))/(2*st.M2); 
       
-      long double delta2NC=(st.Mu2-st.U2-emNC)/st.T;
-      long double delta4NC=(st.Mu4-st.U4-emNC-q0t)/st.T;
+      fp_t delta2NC=(st.Mu2-st.U2-emNC)/st.T;
+      fp_t delta4NC=(st.Mu4-st.U4-emNC-q0t)/st.T;
       
-      long double delta2minCC=(st.Mu2-st.U2-eminCC)/st.T;
-      long double delta4minCC=(st.Mu4-st.U4-eminCC-q0t)/st.T;
+      fp_t delta2minCC=(st.Mu2-st.U2-eminCC)/st.T;
+      fp_t delta4minCC=(st.Mu4-st.U4-eminCC-q0t)/st.T;
       
-      long double delta2maxCC=(st.Mu2-st.U2-emaxCC)/st.T;
-      long double delta4maxCC=(st.Mu4-st.U4-emaxCC-q0t)/st.T;
+      fp_t delta2maxCC=(st.Mu2-st.U2-emaxCC)/st.T;
+      fp_t delta4maxCC=(st.Mu4-st.U4-emaxCC-q0t)/st.T;
       
       // [LR]: Now just need to include some method for calculating these
       // At least at low density, Gamma0 should be the dominant term
@@ -233,14 +239,14 @@ namespace nuopac {
       // Under non-degenerate conditions (i.e. delta2, delta4 << 0), 
       // Gamma0 = Gamma1 = 0.5*Gamma2 
       // This is exact 
-      long double Gamma0 = Fermi0(delta2) - Fermi0(delta4);
+      fp_t Gamma0 = Fermi0(delta2) - Fermi0(delta4);
       
       // reddy nc current
-      long double xiNC=Fermi0(-delta2NC) - Fermi0(-delta4NC);
+      fp_t xiNC=Fermi0(-delta2NC) - Fermi0(-delta4NC);
       //Reddy cc current
-      long double ximinCC=Fermi0(-delta2minCC) - Fermi0(-delta4minCC);
+      fp_t ximinCC=Fermi0(-delta2minCC) - Fermi0(-delta4minCC);
       //Reddy cc current
-      long double ximaxCC=Fermi0(-delta2maxCC) - Fermi0(-delta4maxCC); 
+      fp_t ximaxCC=Fermi0(-delta2maxCC) - Fermi0(-delta4maxCC); 
       
       //if (current==current_neutral) {
       //O2SCL_ERR("Invalid current 1.",o2scl::exc_efailed);
@@ -266,9 +272,9 @@ namespace nuopac {
                   << tempy << std::endl;
       }
       
-      long double piQ = 0.0; 
-      long double piM = 0.0;
-      long double piT = 0.0;
+      fp_t piQ = 0.0; 
+      fp_t piM = 0.0;
+      fp_t piT = 0.0;
       
       return {(double)piQ, (double)piL, (double)piM, (double)piT};
     }

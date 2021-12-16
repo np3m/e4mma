@@ -152,7 +152,6 @@ Polarization::Polarization(FluidState stPol, WeakCouplings wc,
   qagiu.err_nonconv=false;
 }
 
-/*
 std::array<double, 4> Polarization::CalculateBasePolarizations
 (double q0, double q) const {
   
@@ -198,7 +197,6 @@ std::array<double, 4> Polarization::CalculateBasePolarizations
   
   return {piQ, piL, piM, piT};
 }
-*/
 
 void Polarization::SetPolarizations(double q0, double q,
                                     Tensor<double>* piVV, 
@@ -690,7 +688,8 @@ double Polarization::CalculateInverseMFP(double E1) {
     
   }
   
-  if (integ_method_q0==integ_cubature || integ_method_q0==integ_compare) {
+  if (false &&
+      (integ_method_q0==integ_cubature || integ_method_q0==integ_compare)) {
     
     double xmin[2]={0.0,-1.0};
     double xmax[2]={1.0,1.0};

@@ -8722,6 +8722,8 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
   if (sv.size()>=3) {
     n_point=stoszt(sv[2]);
   }
+
+  bool sg2_debug=true;
   
   /*
     Questions for Zidu:
@@ -8775,6 +8777,9 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
     "1/cm","1/cm","1/cm","1/cm"};
 
   for(size_t ipoint=0;ipoint<n_point;ipoint++) {
+    
+    if (sg2_debug) ipoint=n_point-1;
+    
     for(size_t ik=0;ik<col_list.size();ik++) {
     std:string temp=col_list[ik]+"_"+o2scl::szttos(ipoint);
       tab.new_column(temp);
@@ -8823,6 +8828,8 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
   static const int N=10000;
   for(int j=0;j<N;j++) {
 
+    if (sg2_debug) j=1;
+    
     std::cout << "j: " << j << endl;
 
     if (j==0) {
@@ -8865,6 +8872,10 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
                          sk.x0,sk.x1,sk.x2,sk.x3,sk.alpha};
 
     for(size_t ipoint=0;ipoint<n_point;ipoint++) {      
+
+      if (sg2_debug) {
+        ipoint=n_point-1;
+      }
       
       double nB=nB_list[ipoint];
       double T=TMeV_list[ipoint]/hc_mev_fm;
@@ -9639,6 +9650,10 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
       hf.close();
     }
 
+    if (sg2_debug) {
+      exit(-1);
+    }
+    
   }
 
   return 0;
