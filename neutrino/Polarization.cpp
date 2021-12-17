@@ -52,8 +52,6 @@
 #include <math.h> 
 #include <limits> 
 
-//#include "FunctionIntegrator.hpp" 
-//#include "OneDimensionalRoot.hpp" 
 #include "jacobi_rule.hpp" 
 #include "Polarization.hpp"
 #include "tensor.h" 
@@ -741,8 +739,6 @@ void Polarization::PrintResponse(double E1, double q0, double q) const {
   std::cout << "VT: " << FullContract(L, piVT) << std::endl;
   std::cout << "AT: " << FullContract(L, piAT) << std::endl;
 }
-  
-  
 
 double Polarization::GetResponse(double E1, double q0, double q) const {
   Tensor<double> L;
