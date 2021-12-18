@@ -325,7 +325,9 @@ double Polarization::CalculateDGamDq0(double E1, double q0) {
     }
     integral_base=integral;
     if (integ_method_mu==integ_compare) {
+      cout.setf(ios::showpos);
       cout << "mu integral, q0: " << q0 << " base: " << integral << " ";
+      cout.unsetf(ios::showpos);
     }
   }
   
@@ -357,13 +359,13 @@ double Polarization::CalculateDGamDq0(double E1, double q0) {
     */
     qags.set_limit(100);
     qags.tol_rel=1.0e-6;
-    qags.tol_abs=1.0e-6;
+    qags.tol_abs=0.0;
     cout << "3";
     //iret=ic.integ_err(f,-1.0,1.0,integral,err);
     iret=qags.integ_err(f,-1.0,1.0,integral,err);
     if (false && iret!=0) {
       iac.tol_rel=1.0e-6;
-      iac.tol_abs=1.0e-6;
+      iac.tol_abs=0.0;
       cout << "2";
       iret=iac.integ_err(f,-1.0,1.0,integral,err);
     }
@@ -371,21 +373,21 @@ double Polarization::CalculateDGamDq0(double E1, double q0) {
     
     if (iret!=0) {
       qags.tol_rel=1.0e-4;
-      qags.tol_abs=1.0e-4;
+      qags.tol_abs=0.0;
       cout << "4";
       iret=qags.integ_err(f,-1.0,1.0,integral,err);
     }
     
     if (iret!=0) {
       qng.tol_rel=1.0e-6;
-      qng.tol_abs=1.0e-6;
+      qng.tol_abs=0.0;
       cout << "5";
       iret=qng.integ_err(f,-1.0,1.0,integral,err);
     }
     
     if (iret!=0) {
       qng.tol_rel=1.0e-2;
-      qng.tol_abs=1.0e-2;
+      qng.tol_abs=0.0;
       cout << "6";
       iret=qng.integ_err(f,-1.0,1.0,integral,err);
     }
@@ -429,9 +431,16 @@ double Polarization::CalculateDGamDq0(double E1, double q0) {
     }
     integral_o2scl=integral;
     if (integ_method_mu==integ_compare) {
-      cout << " O2scl: " << integral << " "
-           << fabs(integral_base-integral_o2scl)/fabs(integral_base)
-           << endl;
+      cout.setf(ios::showpos);
+      cout << " O2scl: " << integral << " ";
+      if (integral_base!=0.0) {
+        cout << fabs(integral_base-integral_o2scl)/fabs(integral_base);
+      } else {
+        cout << 0.0;
+      }
+      cout.unsetf(ios::showpos);
+      cout << endl;
+      integral=integral_base;
     }
   }
   
@@ -597,14 +606,15 @@ double Polarization::CalculateInverseMFP(double E1) {
   estar = std::min(estar, E1 - st.M3);
   
   double integral=0.0, integral_base=0.0, integral_o2scl=0.0;
-  double integral_cubature=0.0;
+  double integral_o2scl1=0.0, integral_o2scl2=0.0;
+  double integral_cubature=0.0, integral_base1=0.0, integral_base2=0.0;
   
   if (integ_method_q0==integ_base || integ_method_q0==integ_compare) {
     for (int i=0; i<NNPGL; ++i) {
       double q0 = estar - xgl[i]*st.T;
       if (abs(q0) > 30.0*st.T) break;
       double ee = log(CalculateDGamDq0(E1, q0)) + xgl[i];
-      integral += wgl[i] * exp(ee); 
+      integral_base1 += wgl[i] * exp(ee); 
     }
     
     // [nuopac] This is maybe not the best idea  
@@ -612,11 +622,13 @@ double Polarization::CalculateInverseMFP(double E1) {
       double q0 = estar + xgl[i]*st.T; 
       if (q0>E1 - st.M3) break; 
       double ee = log(CalculateDGamDq0(E1, q0)) + xgl[i];
-      integral += wgl[i] * exp(ee); 
+      integral_base2 += wgl[i] * exp(ee); 
     }
-    integral_base=integral;
+    integral_base=integral_base1+integral_base2;
+    integral=integral_base;
     if (integ_method_q0==integ_compare) {
-      cout << "q0 integral, Base: " << integral << endl;
+      cout << "q0 integral, Base: " << integral << " "
+           << integral_base1 << " " << integral_base2 << endl;
     }
 
   }
@@ -633,21 +645,21 @@ double Polarization::CalculateInverseMFP(double E1) {
     //qagiu.err_nonconv=false;
     double val, err;
     qagiu.tol_rel=1.0e-6;
-    qagiu.tol_abs=4.0e-19;
+    qagiu.tol_abs=0.0;
     //qagiu.set_limit(250);
     int iret=qagiu.integ_err(f,0.0,0.0,val,err);
     if (iret!=0) {
       qagiu.tol_rel=1.0e-5;
-      qagiu.tol_abs=4.0e-18;
+      qagiu.tol_abs=0.0;
       iret=qagiu.integ_err(f,0.0,0.0,val,err);
     }
     if (iret!=0) {
       qagiu.tol_rel=1.0e-4;
-      qagiu.tol_abs=4.0e-17;
+      qagiu.tol_abs=1.0e-30;
       iret=qagiu.integ_err(f,0.0,0.0,val,err);
     }
     if (iret!=0) {
-      O2SCL_ERR("First qagiu integral failed in polarization.",
+      O2SCL_ERR("The qagiu integral failed in polarization.",
                 o2scl::exc_einval);
     }
     integral=val;
@@ -657,16 +669,16 @@ double Polarization::CalculateInverseMFP(double E1) {
                        this,E1,std::placeholders::_1,estar,+1);
 
     qagiu.tol_rel=1.0e-6;
-    qagiu.tol_abs=4.0e-19;
+    qagiu.tol_abs=0.0;
     iret=qagiu.integ_err(f2,0.0,0.0,val,err);
     if (iret!=0) {
       qagiu.tol_rel=1.0e-5;
-      qagiu.tol_abs=4.0e-18;
+      qagiu.tol_abs=0.0;
       iret=qagiu.integ_err(f2,0.0,0.0,val,err);
     }
     if (iret!=0) {
       qagiu.tol_rel=1.0e-4;
-      qagiu.tol_abs=4.0e-17;
+      qagiu.tol_abs=0.0;
       iret=qagiu.integ_err(f2,0.0,0.0,val,err);
     }
     if (iret!=0) {
@@ -677,9 +689,14 @@ double Polarization::CalculateInverseMFP(double E1) {
 
     integral_o2scl=integral;
     if (integ_method_q0==integ_compare) {
-      cout << "q0 integral, O2scl: " << integral << " "
-           << fabs(integral_base-integral_o2scl)/fabs(integral_base)
-           << endl;
+      cout << "q0 integral, O2scl: " << integral << " ";
+      if (integral_base!=0.0) {
+        cout << fabs(integral_base-integral_o2scl)/fabs(integral_base);
+      } else {
+        cout << 0.0;
+      }
+      cout << endl;
+      integral=integral_base;
       //char ch;
       //cin >> ch;
     }

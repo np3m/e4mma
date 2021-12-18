@@ -9448,6 +9448,8 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         //pol_cc.integ_method_q0=Polarization::integ_compare;
         pol_cc.integ_method_mu=Polarization::integ_o2scl;
         pol_cc.integ_method_q0=Polarization::integ_o2scl;
+        //pol_cc.integ_method_mu=Polarization::integ_base;
+        //pol_cc.integ_method_q0=Polarization::integ_base;
         
         pol_cc.flag=Polarization::flag_vector;
         cout << "Computing charged current, vector part: " << endl;
