@@ -83,6 +83,7 @@ namespace o2scl {
       qags.set_limit(250);
       mv.n_points=3000;
       mv.tol_rel=1.0e-6;
+      mv.verbose=0;
     }
       
     virtual ~inte_custom() {
@@ -100,31 +101,31 @@ namespace o2scl {
                         std::placeholders::_1);
       int ret;
       
-      cout << "1";
+      std::cout << "1";
       qags.tol_rel=1.0e-6;
       ret=qags.integ_err(f,a,b,res,err);
       if (ret!=0) {
-        cout << "2";
+        std::cout << "2";
         mv.tol_rel=1.0e-6;
         ret=mv.integ_err(f,a,b,res,err);
       }
       if (ret!=0) {
-        cout << "3";
+        std::cout << "3";
         qags.tol_rel=1.0e-4;
         ret=qags.integ_err(f,a,b,res,err);
       }
       if (ret!=0) {
-        cout << "4";
+        std::cout << "4";
         mv.tol_rel=1.0e-4;
         ret=mv.integ_err(f,a,b,res,err);
       }
       if (ret!=0) {
-        cout << "5";
+        std::cout << "5";
         qng.tol_rel=1.0e-6;
         ret=qng.integ_err(f,a,b,res,err);
       }
       if (ret!=0) {
-        cout << "6";
+        std::cout << "6";
         qng.tol_rel=1.0e-4;
         ret=qng.integ_err(f,a,b,res,err);
       }

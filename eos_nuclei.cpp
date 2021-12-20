@@ -8723,7 +8723,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
     n_point=stoszt(sv[2]);
   }
 
-  bool sg2_debug=true;
+  bool sg2_debug=false;
   
   /*
     Questions for Zidu:
