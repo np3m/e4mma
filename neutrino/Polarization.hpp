@@ -342,7 +342,8 @@ namespace nuopac {
     static const int integ_base=0;
     static const int integ_o2scl=1;
     static const int integ_compare=2;
-    static const int integ_cubature=2;
+    static const int integ_cubature=3;
+    static const int integ_mc=4;
     //@}
 
     /// Adaptive integrator with singularities
@@ -414,7 +415,13 @@ namespace nuopac {
     /** \brief Desc 
      */
     double mG2;
-  
+
+    /** \brief Desc 
+     */
+    double integrand_mc(size_t ndim,
+                        const boost::numeric::ublas::vector<double> &xi,
+                        void *fdata);
+    
   };
 
   typedef struct integration_params_s {
@@ -428,6 +435,6 @@ namespace nuopac {
   
   int integrand_new(unsigned ndim, const double *x, void *fdata,
                     unsigned fdim, double *fval);
-  
+
 }
 #endif // POLARIZATION_HPP_

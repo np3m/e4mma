@@ -62,6 +62,7 @@
 #include <o2scl/constants.h>
 #include <o2scl/funct.h>
 #include <o2scl/hdf_io.h>
+#include <o2scl/mcarlo_miser.h>
 #include "../inte_custom.h"
 
 using namespace o2scl;
@@ -69,6 +70,8 @@ using namespace o2scl_hdf;
 
 double tempy;
 bool integral_debug;
+
+typedef boost::numeric::ublas::vector<double> ubvector;
 
 // Use unnamed namespace so these methods are only locally available
 namespace {
@@ -592,9 +595,63 @@ int nuopac::integrand_new(unsigned ndim, const double *xi, void *fdata,
   // code output.
   if (crx<0.0) crx=0.0;
 
-  cout.setf(ios::showpos);
-  cout << t << " " << x << " " << x2 << " " << dxdt << " " << crx << endl;
-  cout.unsetf(ios::showpos);
+  //cout.setf(ios::showpos);
+  //cout << t << " " << x << " " << x2 << " " << dxdt << " " << crx << endl;
+  //cout.unsetf(ios::showpos);
+
+  fval[0]=crx;
+  
+  return 0;
+}
+
+double Polarization::integrand_mc(size_t ndim, const ubvector &xi,
+                                  void *fdata) {
+  
+  integration_params &ip=*((integration_params *)fdata);
+  Polarization &p=*(ip.p);
+
+  double t=xi[0];
+  double x=ip.E1+t/(1.0-t);
+  double dxdt=1.0/(1.0-t)/(1.0-t);
+  double x2=xi[1];
+  
+  double q0=ip.estar+ip.sign*x*p.st.T;
+
+  //cout << "t,x,E1,estar,sign,q0: " << t << " " << x << " " << ip.E1
+  //<< " " << ip.estar << " "
+  //<< ip.sign << " " << q0 << endl;
+  
+  // Only integrate over angles for which |q0| < q
+  double p3 = sqrt((ip.E1-q0)*(ip.E1-q0) - p.st.M3*p.st.M3);
+  double mu13cross = std::max((ip.E1*ip.E1 +
+                               p3*p3 - q0*q0)/(2.0*ip.E1*p3), -1.0);
+  
+  double delta = (mu13cross + 1.0) / 2.0; 
+  double avg = (mu13cross - 1.0) / 2.0;
+  
+  //cout << "p3,mu13cross,delta,avg: " << p3 << " " << mu13cross << " "
+  //<< delta << " " << avg << endl;
+  
+  double integral=p.GetResponse_mu(ip.E1,q0,x2,delta,avg);
+    
+  integral*=delta;
+  double fac=p.GetCsecPrefactor(ip.E1, q0);
+  
+  // Added by Zidu
+  double crx=2.0*o2scl_const::pi*fac*integral*dxdt;
+  
+  //char ch;
+  //cin >> ch;
+
+  // Added by zidu, at high q0, the crx can be small and
+  // negative, which might result from calculation
+  // accuracy. a negative crx will result in a "nan" of the
+  // code output.
+  if (crx<0.0) crx=0.0;
+
+  //cout.setf(ios::showpos);
+  //cout << t << " " << x << " " << x2 << " " << dxdt << " " << crx << endl;
+  //cout.unsetf(ios::showpos);
   
   return crx; 
 }
@@ -612,7 +669,8 @@ double Polarization::CalculateInverseMFP(double E1) {
   double integral=0.0, integral_base=0.0, integral_o2scl=0.0;
   double integral_o2scl1=0.0, integral_o2scl2=0.0;
   double integral_cubature=0.0, integral_base1=0.0, integral_base2=0.0;
-  
+  double integral_mc=0.0;
+
   if (integ_method_q0==integ_base || integ_method_q0==integ_compare) {
     for (int i=0; i<NNPGL; ++i) {
       double q0 = estar - xgl[i]*st.T;
@@ -707,7 +765,7 @@ double Polarization::CalculateInverseMFP(double E1) {
     
   }
   
-  if (false &&
+  if (true &&
       (integ_method_q0==integ_cubature || integ_method_q0==integ_compare)) {
     
     double xmin[2]={0.0,-1.0};
@@ -736,6 +794,53 @@ double Polarization::CalculateInverseMFP(double E1) {
     if (integ_method_q0==integ_compare) {
       cout << "q0 integral, Cubature: " << integral << " "
            << fabs(integral_base-integral_cubature)/fabs(integral_base)
+           << endl;
+      char ch;
+      cin >> ch;
+    }
+    
+  }
+  
+  if (true &&
+      (integ_method_q0==integ_mc || integ_method_q0==integ_compare)) {
+
+    ubvector xmin(2), xmax(2);
+    xmin[0]=0.0;
+    xmin[1]=-1.0;
+    xmax[0]=1.0;
+    xmax[1]=1.0;
+    
+    double val, err;
+    integration_params ip;
+    ip.p=this;
+    ip.estar=estar;
+    ip.sign=-1;
+    ip.E1=E1;
+    mcarlo_miser<> mm;
+    mm.verbose=2;
+    mm.tol_rel=1.0e-6;
+
+    multi_funct mf=std::bind(std::mem_fn<double(size_t,const ubvector &,
+                                                void *)>
+                             (&Polarization::integrand_mc),
+                             this,std::placeholders::_1,
+                             std::placeholders::_2,&ip);
+    
+    cout << "Starting mcarlo." << endl;
+    int ret=mm.minteg_err(mf,2,xmin,xmax,val,err);
+    cout << "ret,val: " << ret << " " << val << endl;
+    integral=val;
+
+    ip.sign=1;
+    ret=mm.minteg_err(mf,2,xmin,xmax,val,err);
+    cout << "ret,val: " << ret << " " << val << endl;
+    //exit(-1);
+    integral+=val;
+    
+    integral_mc=integral;
+    if (integ_method_q0==integ_compare) {
+      cout << "q0 integral, Mc: " << integral << " "
+           << fabs(integral_base-integral_mc)/fabs(integral_base)
            << endl;
       char ch;
       cin >> ch;
