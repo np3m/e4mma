@@ -557,12 +557,15 @@ int nuopac::integrand_new(unsigned ndim, const double *xi, void *fdata,
   Polarization &p=*(ip.p);
 
   double t=xi[0];
-  double x=ip.E1+t/(1.0-t);
+  double x=t/(1.0-t);
   double dxdt=1.0/(1.0-t)/(1.0-t);
   double x2=xi[1];
   
   double q0=ip.estar+ip.sign*x*p.st.T;
 
+  if (ip.sign<-0.5 && abs(q0) > 30.0*p.st.T) return 0.0;
+  if (ip.sign>0.5 && q0>ip.E1-p.st.M3) return 0.0;
+  
   //cout << "t,x,E1,estar,sign,q0: " << t << " " << x << " " << ip.E1
   //<< " " << ip.estar << " "
   //<< ip.sign << " " << q0 << endl;
@@ -611,12 +614,15 @@ double Polarization::integrand_mc(size_t ndim, const ubvector &xi,
   Polarization &p=*(ip.p);
 
   double t=xi[0];
-  double x=ip.E1+t/(1.0-t);
+  double x=t/(1.0-t);
   double dxdt=1.0/(1.0-t)/(1.0-t);
   double x2=xi[1];
   
   double q0=ip.estar+ip.sign*x*p.st.T;
 
+  if (ip.sign<-0.5 && abs(q0) > 30.0*p.st.T) return 0.0;
+  if (ip.sign>0.5 && q0>ip.E1-p.st.M3) return 0.0;
+  
   //cout << "t,x,E1,estar,sign,q0: " << t << " " << x << " " << ip.E1
   //<< " " << ip.estar << " "
   //<< ip.sign << " " << q0 << endl;
@@ -649,6 +655,15 @@ double Polarization::integrand_mc(size_t ndim, const ubvector &xi,
   // code output.
   if (crx<0.0) crx=0.0;
 
+  if (!std::isfinite(crx)) {
+    cout << "Pere: " << q0 << " " << ip.E1 << " " << p.st.M3 << " "
+         << p3 << " " << mu13cross << endl;
+    cout << "Here: " << integral << " " << fac << " " << delta << " "
+         << avg << " " << ip.E1 << " " << q0 << " " << x << " " << x2 << " "
+         << crx << endl;
+    exit(-1);
+  }
+  
   //cout.setf(ios::showpos);
   //cout << t << " " << x << " " << x2 << " " << dxdt << " " << crx << endl;
   //cout.unsetf(ios::showpos);
@@ -696,14 +711,14 @@ double Polarization::CalculateInverseMFP(double E1) {
   }
 
   if (integ_method_q0==integ_o2scl || integ_method_q0==integ_compare) {
-
+    
     integral=0.0;
 
     funct f=std::bind(std::mem_fn<double(double,double,double,int)>
                       (&Polarization::dgamdq0_intl),
                       this,E1,std::placeholders::_1,estar,-1);
     qagiu.verbose=1;
-    //std::cout << "o2scl integrating: " << E1 << " to infty." << std::endl;
+    //std::cout << "o2scl integrating 0 to infty." << std::endl;
     //qagiu.err_nonconv=false;
     double val, err;
     qagiu.tol_rel=1.0e-6;
@@ -780,13 +795,13 @@ double Polarization::CalculateInverseMFP(double E1) {
     cout << "Starting cubature." << endl;
     int ret=hcubature(1,integrand_new,&ip,2,xmin,xmax,0,0,1.0e-4,
                       ERROR_INDIVIDUAL,&val,&err);
-    cout << "ret,val: " << ret << " " << val << endl;
+    cout << "ret,err,val: " << ret << " " << val << " " << err << endl;
     integral=val;
 
     ip.sign=1;
     ret=hcubature(1,integrand_new,&ip,2,xmin,xmax,0,0,1.0e-4,
                   ERROR_INDIVIDUAL,&val,&err);
-    cout << "ret,val: " << ret << " " << val << endl;
+    cout << "ret,err,val: " << ret << " " << val << " " << err << endl;
     exit(-1);
     integral+=val;
     
@@ -817,8 +832,12 @@ double Polarization::CalculateInverseMFP(double E1) {
     ip.sign=-1;
     ip.E1=E1;
     mcarlo_miser<> mm;
-    mm.verbose=2;
+    //mm.verbose=2;
     mm.tol_rel=1.0e-6;
+    mm.n_points*=100;
+    mcarlo_miser<> mv;
+    mv.tol_rel=1.0e-6;
+    mv.n_points*=100;
 
     multi_funct mf=std::bind(std::mem_fn<double(size_t,const ubvector &,
                                                 void *)>
@@ -826,15 +845,13 @@ double Polarization::CalculateInverseMFP(double E1) {
                              this,std::placeholders::_1,
                              std::placeholders::_2,&ip);
     
-    cout << "Starting mcarlo." << endl;
     int ret=mm.minteg_err(mf,2,xmin,xmax,val,err);
-    cout << "ret,val: " << ret << " " << val << endl;
+    cout << "MC ret,val,err: " << ret << " " << val << " " << err << endl;
     integral=val;
 
     ip.sign=1;
     ret=mm.minteg_err(mf,2,xmin,xmax,val,err);
-    cout << "ret,val: " << ret << " " << val << endl;
-    //exit(-1);
+    cout << "MC ret,val,err: " << ret << " " << val << " " << err << endl;
     integral+=val;
     
     integral_mc=integral;

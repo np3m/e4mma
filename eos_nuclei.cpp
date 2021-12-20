@@ -9444,10 +9444,12 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         // -----------------------------------------------------------------
         // Charged current mean free path
         
-        //pol_cc.integ_method_mu=Polarization::integ_mc;
-        //pol_cc.integ_method_q0=Polarization::integ_mc;
-        pol_cc.integ_method_mu=Polarization::integ_o2scl;
-        pol_cc.integ_method_q0=Polarization::integ_o2scl;
+        pol_cc.integ_method_mu=Polarization::integ_mc;
+        pol_cc.integ_method_q0=Polarization::integ_mc;
+        //pol_cc.integ_method_mu=Polarization::integ_cubature;
+        //pol_cc.integ_method_q0=Polarization::integ_cubature;
+        //pol_cc.integ_method_mu=Polarization::integ_o2scl;
+        //pol_cc.integ_method_q0=Polarization::integ_o2scl;
         //pol_cc.integ_method_mu=Polarization::integ_base;
         //pol_cc.integ_method_q0=Polarization::integ_base;
         
@@ -9463,8 +9465,8 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         // -----------------------------------------------------------------
         // Neutral current mean free path
       
-        pol_nc.integ_method_mu=Polarization::integ_o2scl;
-        pol_nc.integ_method_q0=Polarization::integ_o2scl;
+        pol_nc.integ_method_mu=Polarization::integ_mc;
+        pol_nc.integ_method_q0=Polarization::integ_mc;
         
         pol_nc.flag=Polarization::flag_vector;
         double nc_vec_mfp=pol_nc.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
