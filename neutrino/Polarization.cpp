@@ -622,12 +622,12 @@ double Polarization::integrand_mc(size_t ndim, const ubvector &xi,
   //<< ip.sign << " " << q0 << endl;
   
   // Only integrate over angles for which |q0| < q
-  double p3 = sqrt((ip.E1-q0)*(ip.E1-q0) - p.st.M3*p.st.M3);
-  double mu13cross = std::max((ip.E1*ip.E1 +
-                               p3*p3 - q0*q0)/(2.0*ip.E1*p3), -1.0);
+  double p3=sqrt((ip.E1-q0)*(ip.E1-q0)-p.st.M3*p.st.M3);
+  double mu13cross=std::max((ip.E1*ip.E1+
+                             p3*p3-q0*q0)/(2.0*ip.E1*p3),-1.0);
   
-  double delta = (mu13cross + 1.0) / 2.0; 
-  double avg = (mu13cross - 1.0) / 2.0;
+  double delta=(mu13cross+1.0)/2.0; 
+  double avg=(mu13cross-1.0)/2.0;
   
   //cout << "p3,mu13cross,delta,avg: " << p3 << " " << mu13cross << " "
   //<< delta << " " << avg << endl;
@@ -635,7 +635,7 @@ double Polarization::integrand_mc(size_t ndim, const ubvector &xi,
   double integral=p.GetResponse_mu(ip.E1,q0,x2,delta,avg);
     
   integral*=delta;
-  double fac=p.GetCsecPrefactor(ip.E1, q0);
+  double fac=p.GetCsecPrefactor(ip.E1,q0);
   
   // Added by Zidu
   double crx=2.0*o2scl_const::pi*fac*integral*dxdt;
@@ -839,7 +839,7 @@ double Polarization::CalculateInverseMFP(double E1) {
     
     integral_mc=integral;
     if (integ_method_q0==integ_compare) {
-      cout << "q0 integral, Mc: " << integral << " "
+      cout << "q0 integral, MC: " << integral << " "
            << fabs(integral_base-integral_mc)/fabs(integral_base)
            << endl;
       char ch;
