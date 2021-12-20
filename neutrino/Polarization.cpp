@@ -357,45 +357,48 @@ double Polarization::CalculateDGamDq0(double E1, double q0) {
       
       if (iret!=0) {
     */
-    qags.set_limit(100);
-    qags.tol_rel=1.0e-6;
-    qags.tol_abs=0.0;
-    cout << "3";
-    //iret=ic.integ_err(f,-1.0,1.0,integral,err);
-    iret=qags.integ_err(f,-1.0,1.0,integral,err);
-    if (false && iret!=0) {
-      iac.tol_rel=1.0e-6;
-      iac.tol_abs=0.0;
-      cout << "2";
-      iret=iac.integ_err(f,-1.0,1.0,integral,err);
-    }
-    //}
+    iret=ic.integ_err(f,-1.0,1.0,integral,err);
     
-    if (iret!=0) {
-      qags.tol_rel=1.0e-4;
+    if (false) {
+      qags.set_limit(100);
+      qags.tol_rel=1.0e-6;
       qags.tol_abs=0.0;
-      cout << "4";
-      iret=qags.integ_err(f,-1.0,1.0,integral,err);
-    }
-    
-    if (iret!=0) {
-      qng.tol_rel=1.0e-6;
-      qng.tol_abs=0.0;
-      cout << "5";
-      iret=qng.integ_err(f,-1.0,1.0,integral,err);
-    }
-    
-    if (iret!=0) {
-      qng.tol_rel=1.0e-2;
-      qng.tol_abs=0.0;
-      cout << "6";
-      iret=qng.integ_err(f,-1.0,1.0,integral,err);
-    }
-
-    if (iret!=0) {
-      cout << "7";
-      integral=0.0;
-      err=0.0;
+      cout << "3";
+      //iret=qags.integ_err(f,-1.0,1.0,integral,err);
+      if (false && iret!=0) {
+        iac.tol_rel=1.0e-6;
+        iac.tol_abs=0.0;
+        cout << "2";
+        iret=iac.integ_err(f,-1.0,1.0,integral,err);
+      }
+      //}
+      
+      if (iret!=0) {
+        qags.tol_rel=1.0e-4;
+        qags.tol_abs=0.0;
+        cout << "4";
+        iret=qags.integ_err(f,-1.0,1.0,integral,err);
+      }
+      
+      if (iret!=0) {
+        qng.tol_rel=1.0e-6;
+        qng.tol_abs=0.0;
+        cout << "5";
+        iret=qng.integ_err(f,-1.0,1.0,integral,err);
+      }
+      
+      if (iret!=0) {
+        qng.tol_rel=1.0e-2;
+        qng.tol_abs=0.0;
+        cout << "6";
+        iret=qng.integ_err(f,-1.0,1.0,integral,err);
+      }
+      
+      if (iret!=0) {
+        cout << "7";
+        integral=0.0;
+        err=0.0;
+      }
     }
     
     if (false && iret!=0) {
@@ -429,6 +432,7 @@ double Polarization::CalculateDGamDq0(double E1, double q0) {
         }
       */
     }
+    
     integral_o2scl=integral;
     if (integ_method_mu==integ_compare) {
       cout.setf(ios::showpos);
@@ -655,11 +659,11 @@ double Polarization::CalculateInverseMFP(double E1) {
     }
     if (iret!=0) {
       qagiu.tol_rel=1.0e-4;
-      qagiu.tol_abs=1.0e-30;
+      qagiu.tol_abs=0.0;
       iret=qagiu.integ_err(f,0.0,0.0,val,err);
     }
     if (iret!=0) {
-      O2SCL_ERR("The qagiu integral failed in polarization.",
+      O2SCL_ERR("First qagiu integral failed in polarization.",
                 o2scl::exc_einval);
     }
     integral=val;

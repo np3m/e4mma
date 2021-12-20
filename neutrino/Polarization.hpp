@@ -262,7 +262,6 @@ namespace nuopac {
       double piL= ((double)(st.M2*st.M4*st.T/(PI*q)*(ximinCC-ximaxCC)));
       
       tempy=piL;
-      //std::cout << ximinCC-ximaxCC << std::endl;
       
       if (integral_debug) {
         std::cout << "XX: " << q << " " << q0 << " " << st.M2 << " " << st.M4

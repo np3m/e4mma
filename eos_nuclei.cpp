@@ -9453,8 +9453,8 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         
         pol_cc.flag=Polarization::flag_vector;
         cout << "Computing charged current, vector part: " << endl;
-        double cc_vec_mfp=pol_cc.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
-        cout << "charged current, vector part: " << cc_vec_mfp << endl;
+        double cc_vec_mfp=0.0;//pol_cc.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
+        //cout << "charged current, vector part: " << cc_vec_mfp << endl;
       
         pol_cc.flag=Polarization::flag_axial;
         double cc_axvec_mfp=pol_cc.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;

@@ -27,6 +27,7 @@
 #include <o2scl/inte_qag_gsl.h>
 #include <o2scl/inte_qags_gsl.h>
 #include <o2scl/inte_qng_gsl.h>
+#include <o2scl/mcarlo_vegas.h>
 #include <o2scl/inte_adapt_cern.h>
 #include <o2scl/inte_kronrod_boost.h>
 #include <o2scl/hdf_file.h>
@@ -40,80 +41,113 @@ namespace o2scl {
     public inte<func_t> {
 
   protected:
-
-  inte_kronrod_boost<> kb;
-  
-  inte_qag_gsl<> qag;
-  
-  inte_qags_gsl<> qags;
-  
-  inte_qng_gsl<> qng;
-  
-  inte_adapt_cern<> ac;
-  
-  func_t *fp;
-
-  bool record;
-  
-  double funct_wrapper(double x) {
-    if (fp==0) {
-      O2SCL_ERR("Function pointer not set.",o2scl::exc_einval);
+    
+    inte_kronrod_boost<> kb;
+    
+    inte_qag_gsl<> qag;
+    
+    inte_qags_gsl<> qags;
+    
+    inte_qng_gsl<> qng;
+    
+    inte_adapt_cern<> ac;
+    
+    mcarlo_vegas<> mv;
+    
+    func_t *fp;
+    
+    bool record;
+    
+    double funct_wrapper(double x) {
+      if (fp==0) {
+        O2SCL_ERR("Function pointer not set.",o2scl::exc_einval);
+      }
+      double ret=(*fp)(x);
+      if (record) {
+        std::vector<double> line={x,ret};
+        t.line_of_data(line.size(),line);
+      }
+      return ret;
     }
-    double ret=(*fp)(x);
-    if (record) {
-      std::vector<double> line={x,ret};
-      t.line_of_data(line.size(),line);
-    }
-    return ret;
-  }
 
-  table<> t;
+    table<> t;
   
   public:
 
-  inte_custom() {
-    fp=0;
-    record=false;
-    qags.tol_rel=1.0e-6;
-    qags.tol_abs=1.0e-6;
-    qags.err_nonconv=false;
-    qags.set_limit(100);
-  }
-      
-  virtual ~inte_custom() {
-  }
-
-  /** \brief Integrate function \c func from \c a to \c b and place
-      the result in \c res and the error in \c err
-  */
-  virtual int integ_err(func_t &func, double a, double b, 
-                        double &res, double &err) {
-
-    fp=&func;
-    funct f=std::bind(std::mem_fn<double(double)>
-                      (&inte_custom::funct_wrapper),this,
-                      std::placeholders::_1);
-    std::cout << "H1." << std::endl;
-    int ret1=qags.integ_err(f,a,b,res,err);
-    std::cout << "X: " << ret1 << std::endl;
-    if (ret1!=0) {
-      record=true;
-      t.clear();
-      t.line_of_names("x y");
-      ret1=qags.integ_err(f,a,b,res,err);
-      std::cout << "Integration failed. Writing file." << std::endl;
-      o2scl_hdf::hdf_file hf;
-      hf.open_or_create("inte_custom.o2");
-      hdf_output(hf,t,"table");
-      hf.close();
+    inte_custom() {
+      fp=0;
       record=false;
-      exit(-1);
+      qags.tol_rel=1.0e-6;
+      qags.tol_abs=0.0;
+      qags.err_nonconv=false;
+      qags.set_limit(250);
+      mv.n_points=3000;
+      mv.tol_rel=1.0e-6;
     }
-    return 0;
-  }
+      
+    virtual ~inte_custom() {
+    }
+
+    /** \brief Integrate function \c func from \c a to \c b and place
+        the result in \c res and the error in \c err
+    */
+    virtual int integ_err(func_t &func, double a, double b, 
+                          double &res, double &err) {
+
+      fp=&func;
+      funct f=std::bind(std::mem_fn<double(double)>
+                        (&inte_custom::funct_wrapper),this,
+                        std::placeholders::_1);
+      int ret;
+      
+      cout << "1";
+      qags.tol_rel=1.0e-6;
+      ret=qags.integ_err(f,a,b,res,err);
+      if (ret!=0) {
+        cout << "2";
+        mv.tol_rel=1.0e-6;
+        ret=mv.integ_err(f,a,b,res,err);
+      }
+      if (ret!=0) {
+        cout << "3";
+        qags.tol_rel=1.0e-4;
+        ret=qags.integ_err(f,a,b,res,err);
+      }
+      if (ret!=0) {
+        cout << "4";
+        mv.tol_rel=1.0e-4;
+        ret=mv.integ_err(f,a,b,res,err);
+      }
+      if (ret!=0) {
+        cout << "5";
+        qng.tol_rel=1.0e-6;
+        ret=qng.integ_err(f,a,b,res,err);
+      }
+      if (ret!=0) {
+        cout << "6";
+        qng.tol_rel=1.0e-4;
+        ret=qng.integ_err(f,a,b,res,err);
+      }
+      if (ret!=0) {
+        std::cout << "Failed." << std::endl;
+        exit(-1);
+        record=true;
+        t.clear();
+        t.line_of_names("x y");
+        ret=qags.integ_err(f,a,b,res,err);
+        std::cout << "Integration failed. Writing file." << std::endl;
+        o2scl_hdf::hdf_file hf;
+        hf.open_or_create("inte_custom.o2");
+        hdf_output(hf,t,"table");
+        hf.close();
+        record=false;
+        exit(-1);
+      }
+      return 0;
+    }
            
-  /// Return string denoting type ("inte_custom")
-  const char *type() { return "inte_custom"; }
+    /// Return string denoting type ("inte_custom")
+    const char *type() { return "inte_custom"; }
   
   };
   
