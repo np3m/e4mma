@@ -835,10 +835,12 @@ double Polarization::CalculateInverseMFP(double E1) {
     //mm.verbose=2;
     mm.tol_rel=1.0e-6;
     mm.n_points*=100;
-    mcarlo_miser<> mv;
-    mv.tol_rel=1.0e-6;
-    mv.n_points*=100;
-
+    /*
+      mcarlo_miser<> mv;
+      mv.tol_rel=1.0e-6;
+      mv.n_points*=100;
+    */
+    
     multi_funct mf=std::bind(std::mem_fn<double(size_t,const ubvector &,
                                                 void *)>
                              (&Polarization::integrand_mc),
@@ -846,11 +848,23 @@ double Polarization::CalculateInverseMFP(double E1) {
                              std::placeholders::_2,&ip);
     
     int ret=mm.minteg_err(mf,2,xmin,xmax,val,err);
+    if (fabs(err)/fabs(val)>1.0e-3) {
+      mm.n_points*=10;
+      cout << "Round two." << endl;
+      ret=mm.minteg_err(mf,2,xmin,xmax,val,err);
+      mm.n_points/=10;
+    }
     cout << "MC ret,val,err: " << ret << " " << val << " " << err << endl;
     integral=val;
 
     ip.sign=1;
     ret=mm.minteg_err(mf,2,xmin,xmax,val,err);
+    if (fabs(err)/fabs(val)>1.0e-3) {
+      mm.n_points*=10;
+      cout << "Round two." << endl;
+      ret=mm.minteg_err(mf,2,xmin,xmax,val,err);
+      mm.n_points/=10;
+    }
     cout << "MC ret,val,err: " << ret << " " << val << " " << err << endl;
     integral+=val;
     
