@@ -323,3 +323,24 @@ yetest:
 		-function "0.05+0.28*exp(-i/24)" ye2 \
 		-plot x ye2 \
 		-show
+
+imfps:
+	o2graph -subplots 2 2 -set logx 1 -set logy 1 \
+		-selax 0 \
+		-plotv "grid:1.0e-4,0.15,(0.15/1.0e-4)^(1/99),log" \
+		"hdf5:~awsteiner/mb2d.o2:mb:0-7:cc_vec_imfp" \
+		-ttext 0.3 0.8 "CC,vec" \
+		-selax 1 \
+		-plotv "grid:1.0e-4,0.15,(0.15/1.0e-4)^(1/99),log" \
+		"hdf5:~awsteiner/mb2d.o2:mb:0-7:cc_axvec_imfp" \
+		-ttext 0.2 0.8 "CC,ax" \
+		-selax 2 \
+		-plotv "grid:1.0e-4,0.15,(0.15/1.0e-4)^(1/99),log" \
+		"hdf5:~awsteiner/mb2d.o2:mb:0-7:nc_vec_imfp" \
+		-ttext 0.65 0.8 "NC,vec" \
+		-selax 3 \
+		-plotv "grid:1.0e-4,0.15,(0.15/1.0e-4)^(1/99),log" \
+		"hdf5:~awsteiner/mb2d.o2:mb:0-7:nc_axvec_imfp" \
+		-ttext 0.3 0.8 "NC,ax" \
+		-subadj "left=0.12,right=0.99,top=0.99,bottom=0.09,wspace=0.27,hspace=0.17" \
+		-save imfps.pdf -show
