@@ -852,9 +852,13 @@ double Polarization::CalculateInverseMFP(double E1) {
       mm.n_points*=10;
       cout << "Round two." << endl;
       ret=mm.minteg_err(mf,2,xmin,xmax,val,err);
+      if (fabs(err)/fabs(val)>1.0e-3) {
+        cout << "Still inaccurate." << endl;
+      }
       mm.n_points/=10;
     }
-    cout << "MC ret,val,err: " << ret << " " << val << " " << err << endl;
+    cout << "MC ret,val,err: " << ret << " " << val << " " << err << " "
+         << fabs(err)/fabs(val) << endl;
     integral=val;
 
     ip.sign=1;
@@ -863,9 +867,13 @@ double Polarization::CalculateInverseMFP(double E1) {
       mm.n_points*=10;
       cout << "Round two." << endl;
       ret=mm.minteg_err(mf,2,xmin,xmax,val,err);
+      if (fabs(err)/fabs(val)>1.0e-3) {
+        cout << "Still inaccurate." << endl;
+      }
       mm.n_points/=10;
     }
-    cout << "MC ret,val,err: " << ret << " " << val << " " << err << endl;
+    cout << "MC ret,val,err: " << ret << " " << val << " " << err << " "
+         << fabs(err)/fabs(val) << endl;
     integral+=val;
     
     integral_mc=integral;
