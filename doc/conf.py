@@ -67,7 +67,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'eos'
-copyright = '2017-2020, Xingfu Du and Andrew W. Steiner'
+copyright = '2017-2022, Xingfu Du and Andrew W. Steiner'
 author = 'Xingfu Du and Andrew W. Steiner'
 
 # The version info for the project you're documenting, acts as replacement for

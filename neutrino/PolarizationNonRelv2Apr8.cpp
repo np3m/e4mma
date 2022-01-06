@@ -2,7 +2,7 @@
   -------------------------------------------------------------------
   
   This code is based on nuopac, which was developed originally by Luke
-  Roberts. Modifications of nuopac are Copyright (C) 2020-2021, Zidu
+  Roberts. Modifications of nuopac are Copyright (C) 2020-2022, Zidu
   Lin and Andrew W. Steiner.
 
   This program is free software: you can redistribute it and/or modify
