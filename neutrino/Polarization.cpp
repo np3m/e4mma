@@ -910,11 +910,11 @@ double Polarization::GetResponse(double E1, double q0, double q) const {
   SetLeptonTensor(E1, q0, q, &L);
   Tensor<double> piVV, piAA, piTT, piVA, piVT, piAT;   
   SetPolarizations(q0, q, &piVV, &piAA, &piTT, &piVA, &piVT, &piAT);
-
+  
   double pi = 0.0;
-  if (flag==0) {
+  if (flag==flag_vector) {
     pi += coup.Cv*coup.Cv*FullContract(L, piVV);
-  } else if (flag==1) {
+  } else if (flag==flag_axial) {
     pi += coup.Ca*coup.Ca*FullContract(L, piAA);
   }
   // delete the last four terms to produce ccOutputT10E10betaRelnoVAVT 

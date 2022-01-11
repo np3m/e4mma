@@ -9596,6 +9596,19 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
           double dw=(wmax-wmin)/99;
           
           vector<double> w_cc;
+
+          {
+            double w=-90.8929;
+            double dcos=2.0/30.0;
+            for(double ii=0.0;ii<30.1;ii+=1.0) {
+              double mu=-1.0+dcos*ii;
+              pol_cc.flag=Polarization::flag_axial;
+              double rtue=pol_cc.GetResponse(E1,w,pol_cc.GetqFromMu13(E1,w,mu));
+              cout << ii << " " << mu << " " << rtue << endl;
+            }
+            exit(-1);
+
+          }
           
           for (int k=0;k<100;k++) {
             
@@ -9657,7 +9670,8 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
     if (sg2_debug) {
       exit(-1);
     }
-    
+
+    exit(-1);
   }
 
   return 0;
