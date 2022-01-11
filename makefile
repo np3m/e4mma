@@ -29,7 +29,7 @@ include $(UTKNA_MAKEFILE)
 
 # UTK configuration
 LIBS = $(UTKNA_PYTHON_LDFLAGS) $(UTKNA_O2SCL_LIBS) \
-	-L$(UTKNA_CUBATURE) -lcubature 
+	-L$(UTKNA_CUBATURE) -lcubature -lpython3.9
 LCXX = $(UTKNA_CXX) 
 LMPI_CXX = $(UTKNA_MPI_CXX)
 EOS_DIR = $(UTKNA_EOS_DIR)
