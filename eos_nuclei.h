@@ -114,12 +114,15 @@ public:
   size_t n_nB2;
   size_t n_Ye2;
   size_t n_T2;
+  size_t n_S2;
   std::vector<double> nB_grid2;
   std::vector<double> Ye_grid2;
   std::vector<double> T_grid2;
+  std::vector<double> S_grid2;
   std::string nB_grid_spec;
   std::string Ye_grid_spec;
   std::string T_grid_spec;
+  std::string S_grid_spec;
   //@}
 
   /// \name Nuclear masses and their fits
@@ -301,6 +304,10 @@ public:
   /** \brief Always true, for consistency with o2scl::eos_sn_base
    */
   bool baryons_only_loaded;
+
+  /** \brief If true, strangeness is included
+   */
+  bool strangeness;
   
   /** \brief If true, include electrons and photons
 
@@ -363,6 +370,37 @@ public:
   
   /// \name Main EOS table storage
   //@{
+#ifdef STRANGENESS
+  o2scl::tensor_grid3<> tg_log_xn;
+  o2scl::tensor_grid3<> tg_log_xp;
+  o2scl::tensor_grid3<> tg_flag;
+  o2scl::tensor_grid3<> tg_F;
+  o2scl::tensor_grid3<> tg_E;
+  o2scl::tensor_grid3<> tg_P;
+  o2scl::tensor_grid3<> tg_S;
+  o2scl::tensor_grid3<> tg_Fint;
+  o2scl::tensor_grid3<> tg_Eint;
+  o2scl::tensor_grid3<> tg_Pint;
+  o2scl::tensor_grid3<> tg_Sint;
+  o2scl::tensor_grid3<> tg_mun;
+  o2scl::tensor_grid3<> tg_mup;
+  o2scl::tensor_grid3<> tg_mue;
+  o2scl::tensor_grid3<> tg_Z;
+  o2scl::tensor_grid3<> tg_A;
+  o2scl::tensor_grid3<> tg_Xn;
+  o2scl::tensor_grid3<> tg_Xp;
+  o2scl::tensor_grid3<> tg_Xalpha;
+  o2scl::tensor_grid3<> tg_Xnuclei;
+  o2scl::tensor_grid3<> tg_Ymu;
+  o2scl::tensor_grid3<> tg_Xd;
+  o2scl::tensor_grid3<> tg_Xt;
+  o2scl::tensor_grid3<> tg_XHe3;
+  o2scl::tensor_grid3<> tg_XLi4;
+  o2scl::tensor_grid3<> tg_A_min;
+  o2scl::tensor_grid3<> tg_A_max;
+  o2scl::tensor_grid3<> tg_NmZ_min;
+  o2scl::tensor_grid3<> tg_NmZ_max;
+#else
   o2scl::tensor_grid3<> tg3_log_xn;
   o2scl::tensor_grid3<> tg3_log_xp;
   o2scl::tensor_grid3<> tg3_flag;
@@ -392,11 +430,26 @@ public:
   o2scl::tensor_grid3<> tg3_A_max;
   o2scl::tensor_grid3<> tg3_NmZ_min;
   o2scl::tensor_grid3<> tg3_NmZ_max;
+#endif
   //@}
 
   /// \name Detail storage
   //@{
   bool include_detail;
+#ifdef STRANGENESS
+  o2scl::tensor_grid3<> tg_zn;
+  o2scl::tensor_grid3<> tg_zp;
+  o2scl::tensor_grid3<> tg_F1;
+  o2scl::tensor_grid3<> tg_F2;
+  o2scl::tensor_grid3<> tg_F3;
+  o2scl::tensor_grid3<> tg_F4;
+  o2scl::tensor_grid3<> tg_Un;
+  o2scl::tensor_grid3<> tg_Up;
+  o2scl::tensor_grid3<> tg_msn;
+  o2scl::tensor_grid3<> tg_msp;
+  o2scl::tensor_grid3<> tg_g;
+  o2scl::tensor_grid3<> tg_dgdT;
+#else
   o2scl::tensor_grid3<> tg3_zn;
   o2scl::tensor_grid3<> tg3_zp;
   o2scl::tensor_grid3<> tg3_F1;
@@ -409,6 +462,7 @@ public:
   o2scl::tensor_grid3<> tg3_msp;
   o2scl::tensor_grid3<> tg3_g;
   o2scl::tensor_grid3<> tg3_dgdT;
+#endif
   //@}
   
   /// \name Other parameter objects
@@ -427,6 +481,7 @@ public:
   o2scl::cli::parameter_bool p_include_eg;
   o2scl::cli::parameter_bool p_propagate_points;
   o2scl::cli::parameter_bool p_include_detail;
+  o2scl::cli::parameter_bool p_strangeness;
   o2scl::cli::parameter_double p_mh_tol_rel;
   o2scl::cli::parameter_double p_max_time;
   o2scl::cli::parameter_string p_nucleon_func;

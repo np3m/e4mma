@@ -54,6 +54,9 @@ eos_nuclei::eos_nuclei() {
   nB_grid_spec="301,10^(i*0.04-12)*2.0";
   Ye_grid_spec="70,0.01*(i+1)";
   T_grid_spec="160,0.1*1.046^i";
+#ifdef STRANGENESS
+  S_grid=spec="5,0.1*i";
+#endif
 
   extend_frdm=false;
   show_all_nuclei=false;
@@ -121,6 +124,7 @@ eos_nuclei::eos_nuclei() {
   n_nB2=0;
   n_Ye2=0;
   n_T2=0;
+  n_S2=0;
 
   ext_guess="";
   include_detail=false;
@@ -4502,6 +4506,18 @@ int eos_nuclei::read_results(std::string fname) {
   // Flags
 
   int itmp;
+  if (verbose>2) cout << "Reading strangeness." << endl;
+  hf.geti_def("strangeness",0,itmp);
+  if (itmp==1) strangeness=true;
+  else strangeness=false;
+
+  if (strangeness==true) {
+    hf.get_szt("n_S",n_S2);
+    hf.getd_vec("S_grid",S_grid2);
+  } else {
+    n_S2=0;
+  }
+  
   if (verbose>2) cout << "Reading baryons_only." << endl;
   hf.geti_def("baryons_only",1,itmp);
   if (itmp==1) baryons_only_loaded=true;
@@ -4536,6 +4552,23 @@ int eos_nuclei::read_results(std::string fname) {
   hf.geti_def("alg_mode",4,alg_mode);
 
   // Main data
+
+#ifdef STRANGENESS
+  
+  if (verbose>2) cout << "Reading log_xn." << endl;
+  hdf_input(hf,tg_log_xn,"log_xn");
+  if (verbose>2) cout << "Reading log_xp." << endl;
+  hdf_input(hf,tg_log_xp,"log_xp");
+  if (verbose>2) cout << "Reading Z." << endl;
+  hdf_input(hf,tg_Z,"Z");
+  if (verbose>2) cout << "Reading A." << endl;
+  hdf_input(hf,tg_A,"A");
+  if (verbose>2) cout << "Reading flag." << endl;
+  hdf_input(hf,tg_flag,"flag");
+  if (verbose>2) cout << "Reading Fint." << endl;
+  hdf_input(hf,tg_Fint,"Fint");
+  
+#else
   
   if (verbose>2) cout << "Reading log_xn." << endl;
   hdf_input(hf,tg3_log_xn,"log_xn");
@@ -4549,6 +4582,8 @@ int eos_nuclei::read_results(std::string fname) {
   hdf_input(hf,tg3_flag,"flag");
   if (verbose>2) cout << "Reading Fint." << endl;
   hdf_input(hf,tg3_Fint,"Fint");
+  
+#endif
 
   // Note that we read Sint and Eint even if derivs_computed is
   // false, because the entropy derivative is analytical
@@ -6349,6 +6384,11 @@ void eos_nuclei::new_table() {
   n_nB2=301;
   n_Ye2=70;
   n_T2=160;
+#ifdef STRANGENESS
+  n_S2=5;
+#else
+  n_S2=0;
+#endif
   cout << "Beginning new table." << endl;
 
   calculator calc;
@@ -6387,6 +6427,77 @@ void eos_nuclei::new_table() {
     packed.push_back(T_grid2[i]);
   }
 
+#ifdef STRANGENESS
+  split_string_delim(S_grid_spec,split_res,',');
+  n_S2=stoszt(split_res[0]);
+
+  calc.compile(split_res[1].c_str());
+  for(size_t i=0;i<n_S2;i++) {
+    vars["i"]=((double)i);
+    S_grid2.push_back(calc.eval(&vars));
+    packed.push_back(S_grid2[i]);
+  }
+#endif
+  
+#ifdef STRANGENESS
+  
+  size_t st[4]={n_nB2,n_Ye2,n_T2,n_S2};
+  tg_log_xn.resize(4,st);
+  tg_log_xp.resize(4,st);
+  tg_Z.resize(4,st);
+  tg_A.resize(4,st);
+  tg_flag.resize(4,st);
+  tg_Fint.resize(4,st);
+  tg_Sint.resize(4,st);
+  tg_Eint.resize(4,st);
+  
+  tg_Xn.resize(4,st);
+  tg_Xp.resize(4,st);
+  tg_Xalpha.resize(4,st);
+  tg_Xnuclei.resize(4,st);
+  tg_Xd.resize(4,st);
+  tg_Xt.resize(4,st);
+  tg_XHe3.resize(4,st);
+  tg_XLi4.resize(4,st);
+  
+  tg_log_xn.set_grid_packed(packed);
+  tg_log_xp.set_grid_packed(packed);
+  tg_Z.set_grid_packed(packed);
+  tg_A.set_grid_packed(packed);
+  tg_flag.set_grid_packed(packed);
+  tg_Fint.set_grid_packed(packed);
+  tg_Sint.set_grid_packed(packed);
+  tg_Eint.set_grid_packed(packed);
+  
+  tg_Xn.set_grid_packed(packed);
+  tg_Xp.set_grid_packed(packed);
+  tg_Xalpha.set_grid_packed(packed);
+  tg_Xnuclei.set_grid_packed(packed);
+  tg_Xd.set_grid_packed(packed);
+  tg_Xt.set_grid_packed(packed);
+  tg_XHe3.set_grid_packed(packed);
+  tg_XLi4.set_grid_packed(packed);
+
+  tg_log_xn.set_all(0.0);
+  tg_log_xp.set_all(0.0);
+  tg_Z.set_all(0.0);
+  tg_A.set_all(0.0);
+  tg_flag.set_all(0.0);
+  tg_Fint.set_all(0.0);
+  tg_Sint.set_all(0.0);
+  tg_Eint.set_all(0.0);
+
+  tg_Xn.set_all(0.0);
+  tg_Xp.set_all(0.0);
+  tg_Xalpha.set_all(0.0);
+  tg_Xnuclei.set_all(0.0);
+  tg_Xd.set_all(0.0);
+  tg_Xt.set_all(0.0);
+  tg_XHe3.set_all(0.0);
+  tg_XLi4.set_all(0.0);
+  
+#else
+  
   size_t st[3]={n_nB2,n_Ye2,n_T2};
   tg3_log_xn.resize(3,st);
   tg3_log_xp.resize(3,st);
@@ -6405,7 +6516,7 @@ void eos_nuclei::new_table() {
   tg3_Xt.resize(3,st);
   tg3_XHe3.resize(3,st);
   tg3_XLi4.resize(3,st);
-
+  
   tg3_log_xn.set_grid_packed(packed);
   tg3_log_xp.set_grid_packed(packed);
   tg3_Z.set_grid_packed(packed);
@@ -6441,8 +6552,29 @@ void eos_nuclei::new_table() {
   tg3_Xt.set_all(0.0);
   tg3_XHe3.set_all(0.0);
   tg3_XLi4.set_all(0.0);
+  
+#endif
 
   if (alg_mode==2 || alg_mode==3 || alg_mode==4) {
+
+#ifdef STRANGENESS
+    
+    tg_A_min.resize(4,st);
+    tg_A_max.resize(4,st);
+    tg_NmZ_min.resize(4,st);
+    tg_NmZ_max.resize(4,st);
+    
+    tg_A_min.set_grid_packed(packed);
+    tg_A_max.set_grid_packed(packed);
+    tg_NmZ_min.set_grid_packed(packed);
+    tg_NmZ_max.set_grid_packed(packed);
+    
+    tg_A_min.set_all(0.0);
+    tg_A_max.set_all(0.0);
+    tg_NmZ_min.set_all(0.0);
+    tg_NmZ_max.set_all(0.0);
+
+#else
     
     tg3_A_min.resize(3,st);
     tg3_A_max.resize(3,st);
@@ -6458,10 +6590,27 @@ void eos_nuclei::new_table() {
     tg3_A_max.set_all(0.0);
     tg3_NmZ_min.set_all(0.0);
     tg3_NmZ_max.set_all(0.0);
+
+#endif
   
   }
   
   if (derivs_computed) {
+    
+#ifdef STRANGENESS
+    
+    tg_Pint.resize(4,st);
+    tg_Pint.set_grid_packed(packed);
+    tg_Pint.set_all(0.0);
+    tg_mun.resize(4,st);
+    tg_mun.set_grid_packed(packed);
+    tg_mun.set_all(0.0);
+    tg_mup.resize(4,st);
+    tg_mup.set_grid_packed(packed);
+    tg_mup.set_all(0.0);
+
+#else
+
     tg3_Pint.resize(3,st);
     tg3_Pint.set_grid_packed(packed);
     tg3_Pint.set_all(0.0);
@@ -6471,7 +6620,31 @@ void eos_nuclei::new_table() {
     tg3_mup.resize(3,st);
     tg3_mup.set_grid_packed(packed);
     tg3_mup.set_all(0.0);
+
+#endif
+    
     if (with_leptons_loaded) {
+      
+#ifdef STRANGENESS
+      
+      tg_E.resize(4,st);
+      tg_E.set_grid_packed(packed);
+      tg_E.set_all(0.0);
+      tg_P.resize(4,st);
+      tg_P.set_grid_packed(packed);
+      tg_P.set_all(0.0);
+      tg_S.resize(4,st);
+      tg_S.set_grid_packed(packed);
+      tg_S.set_all(0.0);
+      tg_F.resize(4,st);
+      tg_F.set_grid_packed(packed);
+      tg_F.set_all(0.0);
+      tg_mue.resize(4,st);
+      tg_mue.set_grid_packed(packed);
+      tg_mue.set_all(0.0);
+      
+#else
+      
       tg3_E.resize(3,st);
       tg3_E.set_grid_packed(packed);
       tg3_E.set_all(0.0);
@@ -6487,6 +6660,9 @@ void eos_nuclei::new_table() {
       tg3_mue.resize(3,st);
       tg3_mue.set_grid_packed(packed);
       tg3_mue.set_all(0.0);
+      
+#endif
+      
     }
   }
 
@@ -9795,7 +9971,14 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
      {0,"increase-density",
       "Increase nB to optimize the phase transition.",7,7,
       "<nB low> <nB high> <Ye low> <Ye high> <T low> <T high> <output file>",
-      "",new o2scl::comm_option_mfptr<eos_nuclei>
+      ((std::string)"This function computes the EOS at higher densities ")+
+      "using initial guess from lower densities. It is particularly "+
+      "helpful in getting the phase transition between nuclei and "+
+      "nuclear matter correct. The outermost loop is temperature, the "+
+      "second loop is electron fraction and the inner loop is density. "+
+      "This function requires a table has been loaded and the EOS is "+
+      "specified. It has no parallelization support.",
+      new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::increase_density),o2scl::cli::comm_option_both},
      {0,"fix-cc",
       "Increase nB to optimize the phase transition.",1,1,
@@ -9953,5 +10136,9 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
   p_include_detail.b=&include_detail;
   p_include_detail.help="";
   cl.par_list.insert(make_pair("include_detail",&p_include_detail));
+
+  p_strangeness.b=&strangeness;
+  p_strangeness.help="If true, include strangeness";
+  cl.par_list.insert(make_pair("strangeness",&p_strangeness));
 
 }

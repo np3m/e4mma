@@ -733,7 +733,7 @@ void PolarizationNonRel::SetPolarizations_charged
                      xvgt*xvgt*(piL/2)*(piL/2));
   
   //piL is 2*Im PI
-  if (flag==flag_axial) {
+  if (flag==flag_vector) {
     piL=2*piRPAvec;
   } else {
     piL=2*piRPAax;

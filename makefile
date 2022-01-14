@@ -28,17 +28,16 @@ ifdef UTKNA_MAKEFILE
 include $(UTKNA_MAKEFILE)
 
 # UTK configuration
-LIBS = $(UTKNA_PYTHON_LDFLAGS) $(UTKNA_O2SCL_LIBS) \
-	-L$(UTKNA_CUBATURE) -lcubature -lpython3.9
+LIBS = $(UTKNA_O2SCL_LIBS)
 LCXX = $(UTKNA_CXX) 
 LMPI_CXX = $(UTKNA_MPI_CXX)
 EOS_DIR = $(UTKNA_EOS_DIR)
-LCFLAGS = -ggdb $(UTKNA_O2SCL_INCS) $(UTKNA_CFLAGS) -DNO_MPI -DTEMP_UPDATES \
-        -I$(EOS_DIR) $(UTKNA_OPENMP_FLAGS) -I$(UTKNA_CUBATURE) \
+LCFLAGS = $(UTKNA_O2SCL_INCS) $(UTKNA_CFLAGS) -DNO_MPI \
+        $(UTKNA_OPENMP_FLAGS) \
 	-DO2SCL_NEW_BOOST_INTEGRATION
-LMPI_CFLAGS = -ggdb $(UTKNA_O2SCL_INCS) $(UTKNA_MPI_CFLAGS) -DTEMP_UPDATES \
-        -I$(EOS_DIR) -DO2SCL_MPI $(UTKNA_OPENMP_FLAGS) \
-	-I$(UTKNA_CUBATURE) -DO2SCL_NEW_BOOST_INTEGRATION
+LMPI_CFLAGS = $(UTKNA_O2SCL_INCS) $(UTKNA_MPI_CFLAGS) \
+        -DO2SCL_MPI $(UTKNA_OPENMP_FLAGS) \
+	-DO2SCL_NEW_BOOST_INTEGRATION
 
 
 endif
@@ -112,15 +111,18 @@ neutrino/FluidState_nompi.o: neutrino/FluidState.cpp neutrino/FluidState.hpp
 		-c neutrino/FluidState.cpp
 
 neutrino/FunctionIntegrator_nompi.o: neutrino/FunctionIntegrator.cpp \
-	neutrino/FunctionIntegrator.hpp
-	$(LCXX) $(LCFLAGS) -DNUOPAC_HAS_GSL -o neutrino/FunctionIntegrator_nompi.o \
+		neutrino/FunctionIntegrator.hpp
+	$(LCXX) $(LCFLAGS) -DNUOPAC_HAS_GSL -o \
+	neutrino/FunctionIntegrator_nompi.o \
 	-c neutrino/FunctionIntegrator.cpp
 
-neutrino/Polarization_nompi.o: neutrino/Polarization.cpp neutrino/Polarization.hpp
+neutrino/Polarization_nompi.o: neutrino/Polarization.cpp \
+		neutrino/Polarization.hpp
 	$(LCXX) $(LCFLAGS) -DNUOPAC_HAS_GSL -o neutrino/Polarization_nompi.o \
 		-c neutrino/Polarization.cpp
 
-neutrino/PolarizationNonRelv2Apr8_nompi.o: neutrino/PolarizationNonRelv2Apr8.cpp 
+neutrino/PolarizationNonRelv2Apr8_nompi.o: \
+		neutrino/PolarizationNonRelv2Apr8.cpp 
 	$(LCXX) $(LCFLAGS) -DNUOPAC_HAS_GSL \
 		-o neutrino/PolarizationNonRelv2Apr8_nompi.o \
 		-c neutrino/PolarizationNonRelv2Apr8.cpp
