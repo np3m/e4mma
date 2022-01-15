@@ -2374,10 +2374,12 @@ int eos_nuclei::eos_vary_dist
     nuc_matter(nB,Ye,T,log_xn2,log_xp2,Zbar2,Nbar2,thx2,mun_full2,
 	       mup_full2,A_min2,A_max2,NmZ_min2,NmZ_max2,vdet2);
 
-    cout << "Comparing: " << thx2.ed-T*thx2.en << " "
-         << thx.ed-T*thx.en << endl;
+    if (loc_verbose>1) {
+      cout << "Comparing: " << thx2.ed-T*thx2.en << " "
+           << thx.ed-T*thx.en << endl;
+    }
     if (thx2.ed-T*thx2.en<thx.ed-T*thx.en) {
-      if (loc_verbose>0) {
+      if (loc_verbose>1) {
         cout << "Nuclear matter preferred." << endl;
       }
       log_xn=log_xn2;
@@ -2791,7 +2793,7 @@ int eos_nuclei::eos_fixed_dist
   if (mh_ret!=0) {
     mh_ret=mh.msolve(2,x1,sn_func);
     if (mh_ret==0 && mpi_size==1) {
-      if (loc_verbose>0) {
+      if (loc_verbose>1) {
         cout << "Rank " << mpi_rank
              << " finished after initial solve." << endl;
       }
@@ -4779,6 +4781,10 @@ int eos_nuclei::test_random(std::vector<std::string> &sv,
 
   o2scl::rng<> rg;
   rg.clock_seed();
+
+  int n_changed=0;
+
+  vector<double> nB_kist, Ye_kist, T_kist;
   
   for(size_t it=0;it<ntests;it++) {
 
@@ -4810,7 +4816,7 @@ int eos_nuclei::test_random(std::vector<std::string> &sv,
     map<string,double> vdet;
     double log_xn_old=log_xn;
     double log_xp_old=log_xp;
-    cout << it+1 << "/" << ntests << " nB,Ye,T[MeV]: "
+    cout << it+1 << "/" << ntests << ": nB,Ye,T[MeV]: "
          << nB << " " << Ye << " " << T*hc_mev_fm << " log_xn,log_xp: "
          << log_xn << " " << log_xp << endl;
     int ret=eos_vary_dist(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,
@@ -4819,8 +4825,6 @@ int eos_nuclei::test_random(std::vector<std::string> &sv,
                           true,false);
     if (fabs(log_xn-log_xn_old)>1.0e-5 ||
         fabs(log_xp-log_xp_old)>1.0e-5) {
-      cout << "  nB,Ye,T[MeV]: "
-           << nB << " " << Ye << " " << T*hc_mev_fm << endl;
       cout << "  ret,log_xn_old,log_xn,log_xp_old,log_xp: "
            << ret << " " << log_xn_old << " " << log_xn << " "
            << log_xp_old << " " << log_xp << endl;
@@ -4831,12 +4835,27 @@ int eos_nuclei::test_random(std::vector<std::string> &sv,
         store_point(inB,iYe,iT,nB,Ye,T,thx,log_xn,log_xp,Zbar,Nbar,
                     mun_full,mup_full,X,A_min,A_max,NmZ_min,NmZ_max,
                     10.0,vdet);
+        n_changed++;
+        if (nB_kist.size()<10) {
+          nB_kist.push_back(nB);
+          Ye_kist.push_back(Ye);
+          T_kist.push_back(T);
+        }
       }
         
-      char ch;
-      cin >> ch;
+      //char ch;
+      //cin >> ch;
     }
     
+  }
+
+  cout << n_changed << " points changed." << endl;
+  if (nB_kist.size()>0) {
+    cout << "First " << nB_kist.size() << ":" << endl;
+    for(size_t i=0;i<nB_kist.size();i++) {
+      cout << nB_kist[i] << " " << Ye_kist[i] << " "
+           << T_kist[i]*hc_mev_fm << endl;
+    }
   }
   
   return 0;
@@ -9890,9 +9909,14 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
       0,1,"[out file]",
       "",new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::generate_table),o2scl::cli::comm_option_both},
-     {0,"test-random","Test an EOS randomly.",
+     {0,"test-random","Test an EOS at random points in (nB,Ye,T)",
       1,1,"<n_tests>",
-      "",new o2scl::comm_option_mfptr<eos_nuclei>
+      ((std::string)"This function tests the EOS at randomly chosen ")+
+      "points in (nB,Ye,T) space. If the new calculation and the "+
+      "stored result disagree, then the new result is stored in the "+
+      "table.",
+      //and the function waits for a character and <enter>.",
+      new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::test_random),o2scl::cli::comm_option_both},
      {0,"load","Load an EOS table.",0,1,"<filename>",
       "",new o2scl::comm_option_mfptr<eos_nuclei>
@@ -9985,8 +10009,14 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
       "<output file>",
       "",new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::fix_cc),o2scl::cli::comm_option_both},
-     {0,"verify","",1,4,"",
-      "",new o2scl::comm_option_mfptr<eos_nuclei>
+     {0,"verify","Verify the EOS",1,4,
+      ((std::string)"\"random\" <n_tests> <output file> or ")+
+      "\"random_lg\" <n_tests> <output file> or "+
+      "\"all\" <output file> or \"all_lg\" <output file> or "+
+      "\"point\" <output file> <nB> <Ye> <T>",
+      ((std::string)"Verify the EOS, recompute if necessary(?) ")+
+      "and write the results to the specified output file.",
+      new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::verify),o2scl::cli::comm_option_both},
      {0,"select-high-T",
       "Choose the Skyrme model for the finite T corrections.",
