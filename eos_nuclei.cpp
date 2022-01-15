@@ -4783,16 +4783,25 @@ int eos_nuclei::test_random(std::vector<std::string> &sv,
   rg.clock_seed();
 
   int n_changed=0;
+  bool lg=false;
+  if (sv.size()>=3 && sv[2]=="lg") {
+    std::cout << "Liquid-gas only." << std::endl;
+    lg=true;
+  }
 
   vector<double> nB_kist, Ye_kist, T_kist;
   
   for(size_t it=0;it<ntests;it++) {
 
-    //size_t inB=rg.random_int(n_nB2);
-    size_t inB=rg.random_int(31)+242;
+    size_t inB;
+    if (lg) {
+      inB=rg.random_int(31)+242;
+    } else {
+      inB=rg.random_int(n_nB2);
+    }
     size_t iYe=rg.random_int(n_Ye2);
     size_t iT=rg.random_int(n_T2);
-    
+
     double nB=nB_grid2[inB];
     double Ye=Ye_grid2[iYe];
     double T=T_grid2[iT]/hc_mev_fm;
@@ -9910,7 +9919,7 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
       "",new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::generate_table),o2scl::cli::comm_option_both},
      {0,"test-random","Test an EOS at random points in (nB,Ye,T)",
-      1,1,"<n_tests>",
+      1,2,"<n_tests> [\"lg\"]",
       ((std::string)"This function tests the EOS at randomly chosen ")+
       "points in (nB,Ye,T) space. If the new calculation and the "+
       "stored result disagree, then the new result is stored in the "+
