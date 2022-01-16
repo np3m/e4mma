@@ -70,7 +70,9 @@ eos_nuclei::eos_nuclei() {
   mh.ntrial=10000;
   mh.err_nonconv=false;
   mh.def_jac.err_nonconv=false;
+  // Note these two lines are different!
   mh.tol_rel=1.0e-6;
+  mh_tol_rel=1.0e-6;
   rbg.err_nonconv=false;
 
   baryons_only_loaded=true;
@@ -7728,7 +7730,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 
 	    // Determine if the "no_nuclei" flag should be set
 	    output_buffers[proc_index][vi["no_nuclei"]]=0.0;
-	    {
+	    if (false) {
 	      size_t inB_dest=tasks[i*6+3];
 	      size_t iYe_dest=tasks[i*6+4];
 	      size_t iT_dest=tasks[i*6+5];
@@ -7742,8 +7744,9 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 		  X_all_nuclei+=tg3_XHe3.get(inB_dest,iYe_dest,iT_dest-1);
 		  X_all_nuclei+=tg3_XLi4.get(inB_dest,iYe_dest,iT_dest-1);
 		  if (X_all_nuclei<1.0e-20 && nB_grid2[tasks[i*6+3]]<0.02) {
-		    cout << "X_all_nuclei small: " << X_all_nuclei << " "
-			 << T_grid2[iT_dest] << endl;
+		    cout << "X_all_nuclei small (1): " << X_all_nuclei << " "
+			 << T_grid2[iT_dest] << " "
+                         << nB_grid2[tasks[i*6+3]] << endl;
 		    output_buffers[proc_index][vi["no_nuclei"]]=1.0;
 		  }
 		}
@@ -7824,7 +7827,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	  size_t nuc_N1=((size_t)(gtab.get("A",i)+1.0e-12))-nuc_Z1;
 	  bool no_nuclei=false;
 	  
-	  {
+	  if (false) {
 	    if (iT>0) {
 	      if (tg3_flag.get(inB,iYe,iT-1)>9.9) {
 		double X_all_nuclei=0.0;
@@ -7835,7 +7838,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 		X_all_nuclei+=tg3_XHe3.get(inB,iYe,iT-1);
 		X_all_nuclei+=tg3_XLi4.get(inB,iYe,iT-1);
 		if (X_all_nuclei<1.0e-20) {
-		  cout << "X_all_nuclei small: " << X_all_nuclei << " "
+		  cout << "X_all_nuclei small (2): " << X_all_nuclei << " "
 		       << T_grid2[iT] << endl;
 		  no_nuclei=true;
 		}
