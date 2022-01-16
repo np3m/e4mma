@@ -93,6 +93,8 @@ public:
        - Move select_high_T to the parent
        - 1/15/22: I'm not sure if fix_cc() is really useful or 
          not anymore?
+       - 1/15/22: I'm not sure the non-derivative virial solver
+         is needed anymore?
        - Future: Allow different form for the NS fit
        - Future: Allow user to specify where data files are
          located or to manually specify the nuclear model?
@@ -271,7 +273,8 @@ public:
 
   /** \brief Algorithm mode (default 1)
 
-      0 for AWS SNA, 1 for XD SNA, 2 for AWS dist, 3 for XD dist
+      0 for SNA, 1 for old SNA method, 2 for vary dist., 
+      3 for old vary dist., and 4 for fixed dist.
   */
   int alg_mode;
 

@@ -71,7 +71,6 @@ eos_nuclei::eos_nuclei() {
   mh.err_nonconv=false;
   mh.def_jac.err_nonconv=false;
   mh.tol_rel=1.0e-6;
-  mh_tol_rel=1.0e-6;
   rbg.err_nonconv=false;
 
   baryons_only_loaded=true;
@@ -4843,6 +4842,7 @@ int eos_nuclei::test_random(std::vector<std::string> &sv,
                           true,false);
     if (fabs(log_xn-log_xn_old)>1.0e-5 ||
         fabs(log_xp-log_xp_old)>1.0e-5) {
+      cout << inB << " " << iYe << " " << iT << endl;
       cout << "  ret,log_xn_old,log_xn,log_xp_old,log_xp: "
            << ret << " " << log_xn_old << " " << log_xn << " "
            << log_xp_old << " " << log_xp << endl;
@@ -10055,7 +10055,11 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
       (this,&eos_nuclei::verify),o2scl::cli::comm_option_both},
      {0,"select-high-T",
       "Choose the Skyrme model for the finite T corrections.",
-      1,1,"<index>","",new o2scl::comm_option_mfptr<eos_nuclei>
+      1,1,"<index>",
+      ((std::string)"Select 0 for the original DSH fit, 1 for NRAPR, ")+
+      "2 for Sk chi 414, 3 for Skchi450, 4 for Skchi500, 5 for ?, "+
+      "and 6 for Sk chi m* (the default).",
+      new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::select_high_T_cl),o2scl::cli::comm_option_both}
     };
   cl.set_comm_option_vec(nopt,options);
@@ -10086,22 +10090,23 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
   
   p_extend_frdm.b=&extend_frdm;
   p_extend_frdm.help=((string)"If true, attempt to extend FRDM beyond")+
-    "the drip lines.";
+    "the drip lines (default false).";
   cl.par_list.insert(make_pair("extend_frdm",&p_extend_frdm));
   
   p_survey_eqs.b=&survey_eqs;
   p_survey_eqs.help=((string)"If true, survey the EOS near a failed ")+
-    "point.";
+    "point (default false).";
   cl.par_list.insert(make_pair("survey_eqs",&p_survey_eqs));
   
   p_fd_A_max.i=&fd_A_max;
   p_fd_A_max.help=((string)"The maximum value of A for the alg_mode=4 ")+
-    "fixed distribution (default 200).";
+    "fixed distribution (default 600).";
   cl.par_list.insert(make_pair("fd_A_max",&p_fd_A_max));
   
   p_recompute.b=&recompute;
   p_recompute.help=((string)"If true, recompute points in the table ")+
-    "and ignore the flag value (default false).";
+    "and ignore the flag value (default false). This setting is used "+
+    "in point-nuclei and generate-table.";
   cl.par_list.insert(make_pair("recompute",&p_recompute));
   
   p_verify_only.b=&verify_only;
@@ -10129,8 +10134,8 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
   cl.par_list.insert(make_pair("rnuc_less_rws",&p_rnuc_less_rws));
 
   p_propagate_points.b=&propagate_points;
-  p_propagate_points.help=
-    "If true, use previously computed points as guesses for neighbors";
+  p_propagate_points.help=((std::string)"If true, use previously ")+
+    "computed points as guesses for neighbors (default false)";
   cl.par_list.insert(make_pair("propagate_points",&p_propagate_points));
   
   p_mh_tol_rel.d=&mh_tol_rel;
@@ -10150,7 +10155,7 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
 
   p_ext_guess.str=&ext_guess;
   p_ext_guess.help=((string)"Filename containing separate table ")+
-    "to use as a guess for the generate-table command.";
+    "to use as a guess for the generate-table command (default \"\").";
   cl.par_list.insert(make_pair("ext_guess",&p_ext_guess));
 
   p_Ye_list.str=&Ye_list;
@@ -10185,7 +10190,7 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
   cl.par_list.insert(make_pair("function_verbose",&p_function_verbose));
   
   p_max_ratio.d=&max_ratio;
-  p_max_ratio.help="The maximum of N/Z or Z/N (default 2.25).";
+  p_max_ratio.help="The maximum of N/Z or Z/N (default 7.0).";
   cl.par_list.insert(make_pair("max_ratio",&p_max_ratio));
 
   p_file_update_time.d=&file_update_time;
@@ -10201,11 +10206,11 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
   cl.par_list.insert(make_pair("file_update_iters",&p_file_update_iters));
 
   p_include_detail.b=&include_detail;
-  p_include_detail.help="";
+  p_include_detail.help="(default false)";
   cl.par_list.insert(make_pair("include_detail",&p_include_detail));
 
   p_strangeness.b=&strangeness;
-  p_strangeness.help="If true, include strangeness";
+  p_strangeness.help="If true, include strangeness (default false).";
   cl.par_list.insert(make_pair("strangeness",&p_strangeness));
 
 }
