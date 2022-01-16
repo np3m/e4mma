@@ -4282,13 +4282,20 @@ int eos_nuclei::write_results(std::string fname) {
   // Get MPI rank, etc.
   MPI_Comm_rank(MPI_COMM_WORLD,&mpi_rank);
   MPI_Comm_size(MPI_COMM_WORLD,&mpi_size);
-  
+
+  /*
   // Ensure that multiple MPI ranks aren't reading from the
   // filesystem at the same time
   int tag=0, buffer=0;
   if (mpi_size>1 && mpi_rank>=1) {
     MPI_Recv(&buffer,1,MPI_INT,mpi_rank-1,
 	     tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
+  }
+  */
+  if (mpi_size>1 && mpi_rank>0) {
+    cerr << "Shouldn't output multiple ranks to the same file "
+         << "in write_results." << endl;
+    return 2;
   }
 #endif
   
@@ -4446,10 +4453,12 @@ int eos_nuclei::write_results(std::string fname) {
 
 #ifndef NO_MPI
   // Send a message to the next MPI rank
+  /*
   if (mpi_size>1 && mpi_rank<mpi_size-1) {
     MPI_Send(&buffer,1,MPI_INT,mpi_rank+1,
 	     tag,MPI_COMM_WORLD);
   }
+  */
 #endif
 
   return 0;
@@ -6107,10 +6116,13 @@ int eos_nuclei::merge_tables(std::vector<std::string> &sv,
 	  c1++;
 	  cout << "Invalid free energy in table 1 (" << nB << ","
 	       << Ye << "," << T_MeV << ")." << endl;
-	  exit(-1);
+          O2SCL_ERR("Invalid Fint in table 1.",o2scl::exc_einval);
+          
 	}
+        
 	if (fabs(flag2)<0.5 && (Fint2>1.0e90 ||
 				!std::isfinite(Fint2)|| Fint2<(-1.0e10))) {
+          
 	  flag2=0.0;
 	  en2.tg3_flag.set(i,j,k,0.0);
 	  en2.tg3_Fint.set(i,j,k,0.0);
@@ -6120,7 +6132,8 @@ int eos_nuclei::merge_tables(std::vector<std::string> &sv,
 	  en2.tg3_log_xp.set(i,j,k,0.0);
 	  cout << "Invalid free energy in table 2 (" << nB << ","
 	       << Ye << "," << T_MeV << ")." << endl;
-	  exit(-1);
+          O2SCL_ERR("Invalid Fint in table 2.",o2scl::exc_einval);
+          
 	} else if ((flag1>=10.0 && flag2>=10.0 && Fint2<Fint1) ||
 		   (flag1<10.0 && flag2>=10.0) ||
 		   (flag1>0.0 && flag2>0.0 && flag1<10.0 && flag2<0.0 &&
@@ -6175,18 +6188,6 @@ int eos_nuclei::merge_tables(std::vector<std::string> &sv,
 
 	  c2++;
 	}
-	/*
-	  flag1=tg3_flag1.get(i,j,k);
-	  flag2=en2.tg3_flag.get(i,j,k);
-	  Fint1=tg3_Fint1.get(i,j,k);
-	  Fint2=en2.tg3_Fint.get(i,j,k);
-	  if (i==99 && j==39) {
-	  cout << i << " " << j << " " << k << " "
-	  << flag1 << " " << flag2 << " " << Fint1 << " "
-	  << Fint2 << endl;
-	  exit(-1);
-	  }
-	*/
       }
     }
   }
@@ -8231,9 +8232,7 @@ int eos_nuclei::check_virial(std::vector<std::string> &sv,
 
   vector<double> packed, packed2;
   vector<std::string> split_res;
-
-  //o2scl::tensor_grid3<> tg3_zn;
-  //o2scl::tensor_grid3<> tg3_zp;
+  
   o2scl::tensor_grid3<> tg3_zn2;
   o2scl::tensor_grid3<> tg3_zp2;
 
@@ -9911,7 +9910,14 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
       (this,&eos_nuclei::fit_frdm),
       o2scl::cli::comm_option_both},
      {0,"check-virial","Check the virial EOS.",
-      0,0,"","",new o2scl::comm_option_mfptr<eos_nuclei>
+      0,0,"",
+      ((std::string)"This function creates a file 'check_virial.o2' ")+
+      "with four tensor_grid objects which store the neutron and "+
+      "proton fugacities. This file can be plotted with, e.g.,\n\n"+
+      "  o2graph -set logz 1 -read check_virial.o2 zn -set logx 1 "+
+      "-set logy 1 -set colbar 1 -to-table3d 0 2 slice 0.01 "+
+      "-den-plot slice -show",
+      new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::check_virial),
       o2scl::cli::comm_option_both},
      {0,"generate-table","Generate an EOS table.",
@@ -9928,11 +9934,15 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
       new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::test_random),o2scl::cli::comm_option_both},
      {0,"load","Load an EOS table.",0,1,"<filename>",
-      "",new o2scl::comm_option_mfptr<eos_nuclei>
+      ((std::string)"Loads an EOS table in to memory. In the case ")+
+      "where MPI is used, only one MPI rank reads the table at a time.",
+      new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::load),o2scl::cli::comm_option_both},
      {0,"output","Output an EOS table.",
       0,1,"<filename>",
-      "",new o2scl::comm_option_mfptr<eos_nuclei>
+      ((std::string)"Write the EOS table to a file. In the case ")+
+      "where MPI is used...",
+      new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::output),o2scl::cli::comm_option_both},
      {0,"edit-data","Edit data in the EOS tables.",1,4,
       "<select func.> [tensor to modify] [value func.]",
@@ -9946,7 +9956,19 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
       (this,&eos_nuclei::edit_data),o2scl::cli::comm_option_both},
      {0,"merge-tables","Merge two output tables to create a third.",
       3,3,"<input file 1> <input file 2> <output file>",
-      "",new o2scl::comm_option_mfptr<eos_nuclei>
+      ((std::string)"Tables can only be merged if their grids ")+
+      "and settings match. If the Fint table is anomalously small "+
+      "or large or not-finite, then this function calls the error "+
+      "handler. Otherwise, for each point in (nB,Ye,T), there are "+
+      "four reasons for which a point is copied from the second "+
+      "table to the first: (i) they both have flag=10 but the "+
+      "second has a smaller Fint, (ii) the second has flag=10 but "+
+      "the first does not, (iii) they both have flags less than 10 "+
+      "but the second has a non-zero flag with a smaller Fint, or "+
+      "(iv) the second table has a non-zero flag and the first "+
+      "does not. After the merge, the number of points modified "+
+      "is reported.",
+      new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::merge_tables),o2scl::cli::comm_option_both},
      {0,"write-nuclei","Output nuclear masses.",
       1,1,"<output file>",
@@ -9967,7 +9989,11 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
       new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::compare_tables),o2scl::cli::comm_option_both},
      {0,"stats","Output convergence statistics and simple checks.",0,0,"",
-      "",new o2scl::comm_option_mfptr<eos_nuclei>
+      ((std::string)"If an EOS is loaded, this function counts ")+
+      "the number of points with each flag value, checks that "+
+      "the nuclear fractions add up to 1, checks that the free energy "+
+      "internal energy, and entropy are consistent, and checks the "+
+      "thermodynamic identity.",new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::stats),o2scl::cli::comm_option_both},
      {0,"mcarlo-nuclei","",
       0,0,"<file>",
@@ -9988,7 +10014,7 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
      {0,"point-nuclei",
       "Compute and/or show EOS results at one (n_B,Y_e,T) point.",
       -1,-1,((string)"<n_B> <Y_e> <T (MeV)> [log(xn) log(xp) Z N] ")+
-      "[alg_mode 2-3: log(xn) log(xp) A_min A_max NmZ_min NmZ_max] [fname]",
+      "[alg_mode 2-4: log(xn) log(xp) A_min A_max NmZ_min NmZ_max] [fname]",
       ((std::string)"If an EOS is loaded, then the n_B, Y_e, and T ")+
       "values are modified to ensure that they lie on a grid point. "+
       "If an initial guess is specified on the command line, it is "+
@@ -10059,11 +10085,13 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
   cl.par_list.insert(make_pair("show_all_nuclei",&p_show_all_nuclei));
   
   p_extend_frdm.b=&extend_frdm;
-  p_extend_frdm.help=((string)"");
+  p_extend_frdm.help=((string)"If true, attempt to extend FRDM beyond")+
+    "the drip lines.";
   cl.par_list.insert(make_pair("extend_frdm",&p_extend_frdm));
   
   p_survey_eqs.b=&survey_eqs;
-  p_survey_eqs.help=((string)"");
+  p_survey_eqs.help=((string)"If true, survey the EOS near a failed ")+
+    "point.";
   cl.par_list.insert(make_pair("survey_eqs",&p_survey_eqs));
   
   p_fd_A_max.i=&fd_A_max;
