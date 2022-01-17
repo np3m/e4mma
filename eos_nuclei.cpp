@@ -7730,6 +7730,9 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 
 	    // Determine if the "no_nuclei" flag should be set
 	    output_buffers[proc_index][vi["no_nuclei"]]=0.0;
+            // AWS, 1/16/21: I'm taking this out as it is confusing
+            // and can result in incorrect results if not used
+            // carefully
 	    if (false) {
 	      size_t inB_dest=tasks[i*6+3];
 	      size_t iYe_dest=tasks[i*6+4];
@@ -7826,7 +7829,9 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	  size_t nuc_Z1=((size_t)(gtab.get("Z",i)+1.0e-12));
 	  size_t nuc_N1=((size_t)(gtab.get("A",i)+1.0e-12))-nuc_Z1;
 	  bool no_nuclei=false;
-	  
+          
+          // AWS, 1/16/21: I'm taking this out as it is confusing and
+          // can result in incorrect results if not used carefully
 	  if (false) {
 	    if (iT>0) {
 	      if (tg3_flag.get(inB,iYe,iT-1)>9.9) {
