@@ -5604,7 +5604,7 @@ int eos_nuclei::verify(std::vector<std::string> &sv,
     size_t inB=0, iYe=0, iT=0;
 
     if (mode=="all") {
-      vector<size_t> vix;
+      vector<size_t> vix(tg3_A.get_rank());
       tg3_A.unpack_index(j,vix);
       inB=vix[0];
       iYe=vix[1];
@@ -5629,7 +5629,7 @@ int eos_nuclei::verify(std::vector<std::string> &sv,
       iYe=rng.random_int(n_Ye2);
       iT=rng.random_int(n_T2);
     }
-  
+
     double nB=nB_grid2[inB];
     double Ye=Ye_grid2[iYe];
     double T=T_grid2[iT]/hc_mev_fm;
@@ -9917,8 +9917,7 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
       0,0,"","",new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::fit_frdm),
       o2scl::cli::comm_option_both},
-     {0,"check-virial","Check the virial EOS.",
-      0,0,"",
+     {0,"check-virial","Check the virial EOS.",0,0,"",
       ((std::string)"This function creates a file 'check_virial.o2' ")+
       "with four tensor_grid objects which store the neutron and "+
       "proton fugacities. This file can be plotted with, e.g.,\n\n"+
@@ -9938,7 +9937,6 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
       "points in (nB,Ye,T) space. If the new calculation and the "+
       "stored result disagree, then the new result is stored in the "+
       "table.",
-      //and the function waits for a character and <enter>.",
       new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::test_random),o2scl::cli::comm_option_both},
      {0,"load","Load an EOS table.",0,1,"<filename>",
@@ -10057,8 +10055,16 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
       "\"random_lg\" <n_tests> <output file> or "+
       "\"all\" <output file> or \"all_lg\" <output file> or "+
       "\"point\" <output file> <nB> <Ye> <T>",
-      ((std::string)"Verify the EOS, recompute if necessary(?) ")+
-      "and write the results to the specified output file.",
+      ((std::string)"Verify the EOS, recompute if a point fails ")+
+      "and the write final results to the specified output file. This "+
+      "function only verifies that the baryon density and electron "+
+      "fraction equations are solved to within the current tolerance "+
+      "and does not attempt to solve them again. The test-random "+
+      "function is different, it actually re-solves the equations "+
+      "to show the answer is correct. Thus, this function requires "+
+      "a bit less running time at each point. The first argument is a "+
+      "'mode' parameter which determines which points will be "+
+      "verified. ",
       new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::verify),o2scl::cli::comm_option_both},
      {0,"select-high-T",

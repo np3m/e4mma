@@ -99,8 +99,6 @@ public:
        - Future: Allow user to specify where data files are
          located or to manually specify the nuclear model?
        - Future: Allow RMF rather than just Skyrme.
-       - Future: make test-random and verify consistent and/or 
-         remove duplication?
 
     \endverbatim
 */

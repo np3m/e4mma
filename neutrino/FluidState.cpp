@@ -108,22 +108,23 @@ FluidState  FluidState::BetaEquilibriumConsistentPotential(double T, double M2,
   return state;
 }
 
-FluidState FluidState::BetaEquilibriumState(double T, double M2, 
-                                            double M4, double ntot, double U2, double U4, double M3, bool antiParticle,
-                                            bool useCoupling, double coup) {
+FluidState FluidState::BetaEquilibriumState
+(double T, double M2, double M4, double ntot, 
+ double U2, double U4, double M3, bool antiParticle,
+ bool useCoupling, double coup) {
   
   auto func = [T, M2, M3, M4, U2, U4, ntot, antiParticle, useCoupling, coup] 
     (double y) { 
-                double Mu2 = GetChemicalPotential(T, M2, (1-y)*ntot, 0.0, 2.0);  
-                double Mu4 = GetChemicalPotential(T, M4, y*ntot, 0.0, 2.0); 
-                double deltaU = U2 - U4;
-                if (useCoupling) deltaU = coup * ntot * (1.0 - 2.0*y); 
-                double Mu3 = Mu2 - Mu4 + deltaU; 
-                double n3 = GetDensity(T, M3, Mu3, 0.0, 2.0)
-                  - GetDensity(T, M3, -Mu3, 0.0, 2.0); 
-                if (antiParticle) n3 = -n3; 
-                return y - n3/ntot; 
-              };
+    double Mu2 = GetChemicalPotential(T, M2, (1-y)*ntot, 0.0, 2.0);  
+    double Mu4 = GetChemicalPotential(T, M4, y*ntot, 0.0, 2.0); 
+    double deltaU = U2 - U4;
+    if (useCoupling) deltaU = coup * ntot * (1.0 - 2.0*y); 
+    double Mu3 = Mu2 - Mu4 + deltaU; 
+    double n3 = GetDensity(T, M3, Mu3, 0.0, 2.0)
+      - GetDensity(T, M3, -Mu3, 0.0, 2.0); 
+    if (antiParticle) n3 = -n3; 
+    return y - n3/ntot; 
+  };
   
 #ifdef NUOPAC_HAS_GSL
   
@@ -158,7 +159,7 @@ double FluidState::GetChemicalPotential(double T, double M, double n,
                 double ng = GetDensity(T, M, Mu, 0.0, g);
                 ng -= GetDensity(T, M, -Mu, 0.0, g);
                 return 1.0 - ng/n;
-              };
+  };
   
 #ifdef NUOPAC_HAS_GSL
   
