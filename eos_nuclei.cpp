@@ -9441,6 +9441,20 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
                             (0.5+sk.x3)*
                             (neutron.n*neutron.n+proton.n*proton.n)))+
           0.25*(sk.t1*(1-sk.x1)+3*sk.t2*(1+sk.x2))*neutron.kf*neutron.kf;
+        
+        double w1nnVec_sk=(sk.t0*(1.0-sk.x0)+                                   
+                           1.0/6.0*sk.t3*pow((neutron.n+proton.n),sk.alpha)*    
+                           (1.0-sk.x3)+2.0/3.0*sk.alpha*sk.t3*                  
+                           pow((neutron.n+proton.n),sk.alpha-1)*                
+                           ((1+sk.x3/2.0)*(neutron.n+proton.n)-                 
+                            (1.0/2.0+sk.x3)*neutron.n)+1.0/6.0*                 
+                           sk.alpha*(sk.alpha-1.0)*sk.t3*                       
+                           pow((neutron.n+proton.n),sk.alpha-2.0)*              
+                           ((1+sk.x3/2.0)*pow((neutron.n+proton.n),2.0)-        
+                            (0.5+sk.x3)*                                        
+                            (neutron.n*neutron.n+proton.n*proton.n)));          
+        double w2nnVec_sk=0.25*(sk.t1*(1-sk.x1)+3*sk.t2*(1+sk.x2));
+        
         double fpp_sk=0.5*(sk.t0*(1.0-sk.x0)+
                            1.0/6.0*sk.t3*pow((neutron.n+proton.n),sk.alpha)*
                            (1.0-sk.x3)+2.0/3.0*sk.alpha*sk.t3*
@@ -9457,6 +9471,12 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
                            1.0/6.0*sk.t3*pow((neutron.n+proton.n),sk.alpha)*
                            (sk.x3-1.0))+
           0.25*(sk.t1*(sk.x1-1)+sk.t2*(1+sk.x2))*neutron.kf*neutron.kf;
+
+        double w1nnAx_sk=(sk.t0*(sk.x0-1)+
+                          1.0/6.0*sk.t3*pow((neutron.n+proton.n),sk.alpha)*
+                          (sk.x3-1.0));
+        double w2nnAx_sk=0.25*(sk.t1*(sk.x1-1)+sk.t2*(1+sk.x2));       
+        
         double gpp_sk=0.5*(sk.t0*(sk.x0-1)+
                            1.0/6.0*sk.t3*pow((neutron.n+proton.n),sk.alpha)*
                            (sk.x3-1.0))+
@@ -9472,10 +9492,26 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
                             (neutron.n*neutron.n+proton.n*proton.n)))+
           0.5*0.25*(sk.t1*(2.0+sk.x1)+sk.t2*(2.0+sk.x2))*
           (neutron.kf*neutron.kf+proton.kf*proton.kf);
+
+        double w1npVec_sk=(sk.t0*(2.0+sk.x0)+1.0/6.0*sk.t3*
+                           pow((neutron.n+proton.n),sk.alpha)*(2.0+sk.x3)+
+                           1.0/2.0*sk.alpha*sk.t3*
+                           pow((neutron.n+proton.n),sk.alpha)+
+                           1.0/6.0*sk.alpha*(sk.alpha-1.0)*sk.t3*
+                           pow((neutron.n+proton.n),sk.alpha-2.0)*
+                           ((1+sk.x3/2.0)*pow((neutron.n+proton.n),2.0)-
+                            (0.5+sk.x3)*
+                            (neutron.n*neutron.n+proton.n*proton.n)));
+        double w2npVec_sk=0.25*(sk.t1*(2.0+sk.x1)+sk.t2*(2.0+sk.x2));
+        
         double gnp_sk=0.5*(sk.t0*sk.x0+1.0/6.0*sk.t3*
                            pow((neutron.n+proton.n),sk.alpha)*sk.x3)+
           0.5*0.25*(sk.t1*sk.x1+sk.t2*sk.x2)*
           (neutron.kf*neutron.kf+proton.kf*proton.kf);
+
+        double w1npAx_sk=(sk.t0*sk.x0+1.0/6.0*sk.t3*
+                          pow((neutron.n+proton.n),sk.alpha)*sk.x3);
+        double w2npAx_sk=0.25*(sk.t1*sk.x1+sk.t2*sk.x2);
       
         // Convert these to 1/MeV^2 by dividing by (hbar*c)^2
         fnn_sk/=pow(hc_mev_fm,2);
@@ -9589,6 +9625,14 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
           2.0*vdet["dgdnn"]*dUdnn_vir-2.0*vdet["dgdnn"]*dUdnn_sk+
           (-vdet["dgdnn"]*dtau_dtaun_sk+vdet["dgdnn"]*dtau_dtaun_vir)*
           neutron.kf*neutron.kf;
+
+        double fnndg0=fnn_virial*g_virial+fnn_sk*(1.0-g_virial);
+        double w1nnVec_general=2.0*fnn_virial*g_virial+
+          (1.0-g_virial)*w1nnVec_sk/pow(hc_mev_fm,2)+
+          2.0*(2.0*vdet["dgdnn"]*dUdnn_vir-2.0*vdet["dgdnn"]*dUdnn_sk);
+        double w2nnVec_general=(1.0-g_virial)*w2nnVec_sk/pow(hc_mev_fm,2)+
+          (-vdet["dgdnn"]*dtau_dtaun_sk+vdet["dgdnn"]*dtau_dtaun_vir);
+        
         double fnp=fnp_virial*g_virial+fnp_sk*(1.0-g_virial)+
           vdet["dgdnn"]*(dUdnp_vir-dUdnp_sk)+
           vdet["dgdnp"]*(dUdnn_vir-dUdnn_sk)+
@@ -9596,15 +9640,45 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
                proton.kf*proton.kf+
                vdet["dgdnp"]*(dtau_dtaun_vir-dtau_dtaun_sk)*
                neutron.kf*neutron.kf);
+
+        double fnpdg0=fnp_virial*g_virial+fnp_sk*(1.0-g_virial);
+        double w1npVec_general=2.0*fnp_virial*g_virial+
+          (1.0-g_virial)*w1npVec_sk/pow(hc_mev_fm,2)+
+          2.0*(vdet["dgdnn"]*(dUdnp_vir-dUdnp_sk)+
+               vdet["dgdnp"]*(dUdnn_vir-dUdnn_sk));
+        
+        double w2npVec_general=(1.0-g_virial)*w2npVec_sk/pow(hc_mev_fm,2)+
+          vdet["dgdnn"]*(dtau_dtaup_vir-dtau_dtaup_sk)*
+          proton.kf*proton.kf/(proton.kf*proton.kf+neutron.kf*neutron.kf)+
+          vdet["dgdnp"]*(dtau_dtaun_vir-dtau_dtaun_sk)*
+          neutron.kf*neutron.kf/(proton.kf*proton.kf+neutron.kf*neutron.kf);
+ 
         double fpp=fpp_virial*g_virial+fpp_sk*(1.0-g_virial)+
           2.0*vdet["dgdnp"]*dUdnp_vir-2.0*vdet["dgdnp"]*dUdnp_sk+
           (-vdet["dgdnp"]*dtau_dtaun_sk+vdet["dgdnp"]*dtau_dtaun_vir)*
           proton.kf*proton.kf;
+
+        double fppdg0=fpp_virial*g_virial+fpp_sk*(1.0-g_virial);
+        
         double gnn=gnn_virial*g_virial+gnn_sk*(1.0-g_virial);
+
+        double w1nnAx_general=2.0*gnn_virial*g_virial+
+          (1.0-g_virial)*w1nnAx_sk/pow(hc_mev_fm,2);
+        double w2nnAx_general=(1.0-g_virial)*w2nnAx_sk/pow(hc_mev_fm,2);
+ 
         double gnp=gnp_virial*g_virial+gnp_sk*(1.0-g_virial);
+
+        double w1npAx_general=2.0*gnp_virial*g_virial+
+          (1.0-g_virial)*w1npAx_sk/pow(hc_mev_fm,2);
+        double w2npAx_general=(1.0-g_virial)*w2npAx_sk/pow(hc_mev_fm,2);
+        
         double gpp=gpp_virial*g_virial+gpp_sk*(1.0-g_virial);
-        cout << "fnn [1/MeV^2], fnp [1/MeV^2], fpp [1/MeV^2]: "
-             << fnn << " " << fnp << " " << fpp << endl;
+
+        cout << "fnn [1/MeV^2], fnndg0 [1/MeV^2], fnp [1/MeV^2], "
+             << "fnpdg0 [1/MeV^2], fpp [1/MeV^2], fppdg0 [1/MeV^2]: "
+             << fnn << " " << fnndg0 << " " << fnp << " "
+             << fnpdg0 << " " << fpp << " " << fppdg0 << endl;
+
         cout << "gnn [1/MeV^2], gnp [1/MeV^2], gpp [1/MeV^2]: "
              << gnn << " " << gnp << " " << gpp << endl;
       
@@ -9627,12 +9701,46 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
           pow(hc_mev_fm,2.0);
         
         double fnn_tilde=fnn-(1.0-g_virial)*rea+vdet["dgdnn"]*reb*2.0;
+        
+        double w1nnVec_sktilde=w1nnVec_sk/pow(hc_mev_fm,2)-2.0*rea;
+        double w1nnVec_generaltilde=2.0*fnn_virial*g_virial+
+          (1.0-g_virial)*w1nnVec_sktilde+
+          2.0*(2.0*vdet["dgdnn"]*dUdnn_vir-2.0*vdet["dgdnn"]*dUdnn_sk);
+
         double fnp_tilde=fnp-(1.0-g_virial)*rec+
           (vdet["dgdnn"]+vdet["dgdnp"])*reb;
-        double vf=fnn_tilde-fnp_tilde;
-        double vgt=gnn-gnp;
-        cout << "vf [1/MeV^2], vgt [1/MeV^2]: " << vf << " " << vgt << endl;
+
+        double w1npVec_sktilde=w1npVec_sk/pow(hc_mev_fm,2)-2.0*rec;
+        double w1npVec_generaltilde=2.0*fnp_virial*g_virial+
+          (1.0-g_virial)*w1npVec_sktilde+
+          2.0*vdet["dgdnn"]*(dUdnp_vir-dUdnp_sk)+
+          vdet["dgdnp"]*(dUdnn_vir-dUdnn_sk);
         
+        double vf=fnn_tilde-fnp_tilde;
+
+        double vftest=0.5*(w1nnVec_generaltilde-w1npVec_generaltilde)+
+          (vdet["dgdnn"]*reb*2.0-(vdet["dgdnn"]+vdet["dgdnp"])*reb)+
+          (w2nnVec_general-w2npVec_general)*neutron.kf*neutron.kf;
+        double w1nnVec_generaltildedg0=2.0*fnn_virial*g_virial+
+          (1.0-g_virial)*w1nnVec_sktilde;
+        double w1npVec_generaltildedg0=2.0*fnp_virial*g_virial+
+          (1.0-g_virial)*w1npVec_sktilde;
+        double w2nnVec_generaldg0=(1.0-g_virial)*w2nnVec_sk/pow(hc_mev_fm,2);
+        double w2npVec_generaldg0=(1.0-g_virial)*w2npVec_sk/pow(hc_mev_fm,2);
+        double vftestdg0=0.5*(w1nnVec_generaltildedg0-
+                              w1npVec_generaltildedg0)+
+          (w2nnVec_generaldg0-w2npVec_generaldg0)*neutron.kf*neutron.kf;
+        
+        double vgt=gnn-gnp;
+        
+        double vgttest=0.5*(w1nnAx_general-w1npAx_general)+
+          (w2nnAx_general-w2npAx_general)*neutron.kf*neutron.kf;
+
+        cout << "vf [1/MeV^2], vftest [1/MeV^2], "
+             << "vftestdg0 [1/MeV^2], vgt [1/MeV^2], "
+             << "vgtTest [1/MeV^2]: " << vf << " " << vftest << " "
+             << vftestdg0 << " " << vgt << " " << vgttest << endl;
+ 
         // Convert these to 1/MeV^2 by dividing by (hbar*c)^2
         //vf/=pow(hc_mev_fm,2);
         //vgt/=pow(hc_mev_fm,2);
@@ -9650,8 +9758,6 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
       
         pol_nc.set_residual(fnn,fnp,fpp,gnn,gnp,gpp,vf,vgt,proton.n);
       
-        pol_cc.set_residual(fnn,fnp,fpp,gnn,gnp,gpp,vf,vgt,proton.n);
-      
         // -----------------------------------------------------------------
         // Charged current mean free path
         
@@ -9664,10 +9770,16 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         //pol_cc.integ_method_mu=Polarization::integ_base;
         //pol_cc.integ_method_q0=Polarization::integ_base;
         
+        pol_cc.set_residual(fnn,fnp,fpp,gnn,gnp,gpp,
+                            vftestdg0,vgttest,proton.n);
+      
         pol_cc.flag=Polarization::flag_vector;
         cout << "Computing charged current, vector part: " << endl;
         double cc_vec_mfp=pol_cc.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
         cout << "charged current, vector part: " << cc_vec_mfp << endl;
+      
+        pol_cc.set_residual(fnn,fnp,fpp,gnn,gnp,gpp,
+                            vftest,vgttest,proton.n);
       
         pol_cc.flag=Polarization::flag_axial;
         double cc_axvec_mfp=pol_cc.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
