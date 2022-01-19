@@ -9285,13 +9285,14 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         
         // [1/MeV^2]
         double w1nn_vec_general=2.0*fnn_virial*g_virial+
-          (1.0-g_virial)*w1nn_vec_sk/pow(hc_mev_fm,2)+
+          (1.0-g_virial)*w1nn_vec_sk/pow(hc_mev_fm,2.0)+
           2.0*(2.0*vdet["dgdnn"]*dUdnn_vir-2.0*vdet["dgdnn"]*dUdnn_sk);
         
-        // w2 is in [fm^4], dtau_dtau is in [1/MeV], and dgdnn is in
-        // [1/MeV^3], this looks like it's in [fm^2/MeV^6]?
-        double w2nn_vec_general=(1.0-g_virial)*w2nn_vec_sk/pow(hc_mev_fm,2)+
-          (-vdet["dgdnn"]*dtau_dtaun_sk+vdet["dgdnn"]*dtau_dtaun_vir);
+        // [fm^2/MeV^2]
+        double w2nn_vec_general=(1.0-g_virial)*
+          w2nn_vec_sk/pow(hc_mev_fm,2.0)+
+          (-vdet["dgdnn"]*dtau_dtaun_sk+vdet["dgdnn"]*
+           dtau_dtaun_vir)*pow(hc_mev_fm,2.0);
 
         // [1/MeV^2]
         double fnp=fnp_virial*g_virial+fnp_sk*(1.0-g_virial)+
@@ -9307,16 +9308,15 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         
         // [1/MeV^2]
         double w1np_vec_general=2.0*fnp_virial*g_virial+
-          (1.0-g_virial)*w1np_vec_sk/pow(hc_mev_fm,2)+
+          (1.0-g_virial)*w1np_vec_sk/pow(hc_mev_fm,2.0)+
           2.0*(vdet["dgdnn"]*(dUdnp_vir-dUdnp_sk)+
                vdet["dgdnp"]*(dUdnn_vir-dUdnn_sk));
         
-        // w2 is in [fm^4], dtau_dtau is in [1/MeV], and dgdnn is in
-        // [1/MeV^3], this looks like it's in [fm^2/MeV^6]?
-        double w2np_vec_general=(1.0-g_virial)*w2np_vec_sk/pow(hc_mev_fm,2)+
-          vdet["dgdnn"]*(dtau_dtaup_vir-dtau_dtaup_sk)*
+        // [fm^2/MeV^2]
+        double w2np_vec_general=(1.0-g_virial)*w2np_vec_sk/pow(hc_mev_fm,2.0)+
+          vdet["dgdnn"]*(dtau_dtaup_vir-dtau_dtaup_sk)*pow(hc_mev_fm,2.0)*
           proton.kf*proton.kf/(proton.kf*proton.kf+neutron.kf*neutron.kf)+
-          vdet["dgdnp"]*(dtau_dtaun_vir-dtau_dtaun_sk)*
+          vdet["dgdnp"]*(dtau_dtaun_vir-dtau_dtaun_sk)*pow(hc_mev_fm,2.0)*
           neutron.kf*neutron.kf/(proton.kf*proton.kf+neutron.kf*neutron.kf);
  
         // [1/MeV^2]
@@ -9336,7 +9336,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
           (1.0-g_virial)*w1nn_ax_sk;
 
         // [fm^2/MeV^2]
-        double w2nn_ax_general=(1.0-g_virial)*w2nn_ax_sk/pow(hc_mev_fm,2);
+        double w2nn_ax_general=(1.0-g_virial)*w2nn_ax_sk/pow(hc_mev_fm,2.0);
  
         // [1/MeV^2]
         double gnp=gnp_virial*g_virial+gnp_sk*(1.0-g_virial);
@@ -9346,7 +9346,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
           (1.0-g_virial)*w1np_ax_sk;
         
         // [fm^2/MeV^2]
-        double w2np_ax_general=(1.0-g_virial)*w2np_ax_sk/pow(hc_mev_fm,2);
+        double w2np_ax_general=(1.0-g_virial)*w2np_ax_sk/pow(hc_mev_fm,2.0);
         
         // [1/MeV^2]
         double gpp=gpp_virial*g_virial+gpp_sk*(1.0-g_virial);
@@ -9386,7 +9386,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         double w1nn_vec_sktilde=w1nn_vec_sk-2.0*rea;
         
         // Units of 1/MeV^2
-        double w1nn_vec_generaltilde=2.0*fnn_virial*g_virial+
+        double w1nn_vec_general_tilde=2.0*fnn_virial*g_virial+
           (1.0-g_virial)*w1nn_vec_sktilde+
           2.0*(2.0*vdet["dgdnn"]*dUdnn_vir-2.0*vdet["dgdnn"]*dUdnn_sk);
 
@@ -9398,7 +9398,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         double w1np_vec_sktilde=w1np_vec_sk-2.0*rec;
         
         // Units of 1/MeV^2
-        double w1np_vec_generaltilde=2.0*fnp_virial*g_virial+
+        double w1np_vec_general_tilde=2.0*fnp_virial*g_virial+
           (1.0-g_virial)*w1np_vec_sktilde+
           2.0*vdet["dgdnn"]*(dUdnp_vir-dUdnp_sk)+
           vdet["dgdnp"]*(dUdnn_vir-dUdnn_sk);
@@ -9406,33 +9406,36 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         // Units of 1/MeV^2
         double vf=fnn_tilde-fnp_tilde;
 
-        // Units of 1/MeV^2, this suggests that w2nn_vec_general should
-        // have units of fm^2/MeV^2
-        double vftest=0.5*(w1nn_vec_generaltilde-w1np_vec_generaltilde)+
+        // Units of 1/MeV^2
+        double vftest=0.5*(w1nn_vec_general_tilde-w1np_vec_general_tilde)+
           (vdet["dgdnn"]*reb*2.0-(vdet["dgdnn"]+vdet["dgdnp"])*reb)+
           (w2nn_vec_general-w2np_vec_general)*neutron.kf*neutron.kf;
         
         // Units of 1/MeV^2
-        double w1nn_vec_generaltildedg0=2.0*fnn_virial*g_virial+
+        double w1nn_vec_general_tilde_dg0=2.0*fnn_virial*g_virial+
           (1.0-g_virial)*w1nn_vec_sktilde;
         
         // Units of 1/MeV^2
-        double w1np_vec_generaltildedg0=2.0*fnp_virial*g_virial+
+        double w1np_vec_general_tilde_dg0=2.0*fnp_virial*g_virial+
           (1.0-g_virial)*w1np_vec_sktilde;
         
-        double w2nn_vec_generaldg0=(1.0-g_virial)*w2nn_vec_sk/pow(hc_mev_fm,2);
+        // Units of fm^2/MeV^2
+        double w2nn_vec_generaldg0=(1.0-g_virial)*
+          w2nn_vec_sk/pow(hc_mev_fm,2.0);
 
-        double w2np_vec_generaldg0=(1.0-g_virial)*w2np_vec_sk/pow(hc_mev_fm,2);
+        // Units of fm^2/MeV^2
+        double w2np_vec_generaldg0=(1.0-g_virial)*
+          w2np_vec_sk/pow(hc_mev_fm,2.0);
 
-        double vftestdg0=0.5*(w1nn_vec_generaltildedg0-
-                              w1np_vec_generaltildedg0)+
+        // Units of 1/MeV^2
+        double vftestdg0=0.5*(w1nn_vec_general_tilde_dg0-
+                              w1np_vec_general_tilde_dg0)+
           (w2nn_vec_generaldg0-w2np_vec_generaldg0)*neutron.kf*neutron.kf;
         
         // Units of 1/MeV^2
         double vgt=gnn-gnp;
         
-        // Units of 1/MeV^2, this suggests that w2nn_ax_general should
-        // have units of fm^2/MeV^2
+        // Units of 1/MeV^2
         double vgttest=0.5*(w1nn_ax_general-w1np_ax_general)+
           (w2nn_ax_general-w2np_ax_general)*neutron.kf*neutron.kf;
 
