@@ -8577,7 +8577,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
                     "1/fm^(3*a+2) . . . . .");
   
   vector<string> col_list={"nB","nn","np",
-    "g","msn","msp","mun","mup","mu_n_nonint",
+    "g","dgdnn","dgdnp","msn","msp","mun","mup","mu_n_nonint",
     "mu_p_nonint","mue",
     "U2","U4","log_xn","log_xp","Z","N",
     "A","ZoA","Xnuclei","Ye_best",
@@ -8592,7 +8592,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
     "nc_vec_imfp","nc_axvec_imfp"};
   
   vector<string> unit_list={"1/fm^3","1/fm^3","1/fm^3",
-    "","MeV","MeV","MeV","MeV","MeV",
+    "","1/MeV^3","1/MeV^3","MeV","MeV","MeV","MeV","MeV",
     "MeV","MeV",
     "MeV","MeV","","","","",
     "","","","",
@@ -9490,6 +9490,8 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         line.push_back(neutron.n);
         line.push_back(proton.n);
         line.push_back(vdet["g"]);
+        line.push_back(vdet["dgdnn"]);
+        line.push_back(vdet["dgdnp"]);
         line.push_back(neutron.ms*hc_mev_fm);
         line.push_back(proton.ms*hc_mev_fm);
         line.push_back(neutron.mu*hc_mev_fm);
@@ -9691,7 +9693,7 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
   
   eos::setup_cli(cl);
   
-  static const int nopt=24;
+  static const int nopt=23;
   
   o2scl::comm_option_s options[nopt]=
     {{0,"eos-deriv","compute derivatives",
