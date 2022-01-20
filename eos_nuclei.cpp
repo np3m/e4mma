@@ -9407,7 +9407,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         double vf=fnn_tilde-fnp_tilde;
 
         // Units of 1/MeV^2
-        double vftest=0.5*(w1nn_vec_general_tilde-w1np_vec_general_tilde)+
+        double vf_test=0.5*(w1nn_vec_general_tilde-w1np_vec_general_tilde)+
           (vdet["dgdnn"]*reb*2.0-(vdet["dgdnn"]+vdet["dgdnp"])*reb)+
           (w2nn_vec_general-w2np_vec_general)*neutron.kf*neutron.kf;
         
@@ -9420,47 +9420,30 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
           (1.0-g_virial)*w1np_vec_sktilde;
         
         // Units of fm^2/MeV^2
-        double w2nn_vec_generaldg0=(1.0-g_virial)*
+        double w2nn_vec_general_dg0=(1.0-g_virial)*
           w2nn_vec_sk/pow(hc_mev_fm,2.0);
 
         // Units of fm^2/MeV^2
-        double w2np_vec_generaldg0=(1.0-g_virial)*
+        double w2np_vec_general_dg0=(1.0-g_virial)*
           w2np_vec_sk/pow(hc_mev_fm,2.0);
 
         // Units of 1/MeV^2
-        double vftestdg0=0.5*(w1nn_vec_general_tilde_dg0-
+        double vf_test_dg0=0.5*(w1nn_vec_general_tilde_dg0-
                               w1np_vec_general_tilde_dg0)+
-          (w2nn_vec_generaldg0-w2np_vec_generaldg0)*neutron.kf*neutron.kf;
+          (w2nn_vec_general_dg0-w2np_vec_general_dg0)*neutron.kf*neutron.kf;
         
         // Units of 1/MeV^2
         double vgt=gnn-gnp;
         
         // Units of 1/MeV^2
-        double vgttest=0.5*(w1nn_ax_general-w1np_ax_general)+
+        double vgt_test=0.5*(w1nn_ax_general-w1np_ax_general)+
           (w2nn_ax_general-w2np_ax_general)*neutron.kf*neutron.kf;
 
-        cout << "vf [1/MeV^2], vftest [1/MeV^2], "
-             << "vftestdg0 [1/MeV^2], vgt [1/MeV^2], "
-             << "vgtTest [1/MeV^2]: " << vf << " " << vftest << " "
-             << vftestdg0 << " " << vgt << " " << vgttest << endl;
+        cout << "vf [1/MeV^2], vf_test [1/MeV^2], "
+             << "vf_test_dg0 [1/MeV^2], vgt [1/MeV^2], "
+             << "vgt_test [1/MeV^2]: " << vf << " " << vf_test << " "
+             << vf_test_dg0 << " " << vgt << " " << vgt_test << endl;
  
-        // Convert these to 1/MeV^2 by dividing by (hbar*c)^2
-        //vf/=pow(hc_mev_fm,2);
-        //vgt/=pow(hc_mev_fm,2);
-      
-        // Charged current from virial expansion
-        //double vf_virial=2.0*f0p;
-        //double vgt_virial=2.0*g0p;
-        //cout << "f0p,g0p,vf_virial,vgt_virial: "
-        //<< f0p << " " << g0p << " " << vf_virial << " " << vgt_virial
-        //<< endl;
-      
-        //double vf=vf_virial*g_virial+vf_sk*(1.0-g_virial);
-        //double vgt=vgt_virial*g_virial+vgt_sk*(1.0-g_virial);
-        //cout << "vf,vgt: " << vf << " " << vgt << endl;
-      
-        pol_nc.set_residual(fnn,fnp,fpp,gnn,gnp,gpp,vf,vgt,proton.n);
-      
         // -----------------------------------------------------------------
         // Charged current mean free path
         
@@ -9474,15 +9457,14 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         //pol_cc.integ_method_q0=Polarization::integ_base;
         
         pol_cc.set_residual(fnn,fnp,fpp,gnn,gnp,gpp,
-                            vftestdg0,vgttest,proton.n);
-      
+                            vf_test_dg0,vgt_test,proton.n);
+        
         pol_cc.flag=Polarization::flag_vector;
-        cout << "Computing charged current, vector part: " << endl;
         double cc_vec_mfp=pol_cc.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
         cout << "charged current, vector part: " << cc_vec_mfp << endl;
       
         pol_cc.set_residual(fnn,fnp,fpp,gnn,gnp,gpp,
-                            vftest,vgttest,proton.n);
+                            vf_test,vgt_test,proton.n);
       
         pol_cc.flag=Polarization::flag_axial;
         double cc_axvec_mfp=pol_cc.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
@@ -9490,6 +9472,8 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
       
         // -----------------------------------------------------------------
         // Neutral current mean free path
+      
+        pol_nc.set_residual(fnn,fnp,fpp,gnn,gnp,gpp,vf,vgt,proton.n);
       
         pol_nc.integ_method_mu=Polarization::integ_mc;
         pol_nc.integ_method_q0=Polarization::integ_mc;
