@@ -9564,10 +9564,11 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         line.push_back(nc_vec_mfp_dg0);
         line.push_back(nc_axvec_mfp);
 
-        if (line.size()!=col_list.size()) {
-          cout << line.size() << " " << col_list.size() << endl;
-          O2SCL_ERR("table sync 2.",o2scl::exc_einval);
-        }
+        // This counting is wrong
+        //if (line.size()!=col_list.size()) {
+        //cout << line.size() << " " << col_list.size() << endl;
+        //O2SCL_ERR("table sync 2.",o2scl::exc_einval);
+        //}
         
         // -----------------------------------------------------------------
         // Neutral current dynamic response at q0=w, q=3*T
@@ -9646,11 +9647,11 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
             for(double ii=0.0;ii<30.1;ii+=1.0) {
               double mu=-1.0+dcos*ii;
               pol_cc.flag=Polarization::flag_axial;
-              double rtue=pol_cc.GetResponse(E1,w,pol_cc.GetqFromMu13(E1,w,mu));
+              double rtue=pol_cc.GetResponse(E1,w,
+                                             pol_cc.GetqFromMu13(E1,w,mu));
               cout << ii << " " << mu << " " << rtue << endl;
             }
             exit(-1);
-
           }
           
           for (int k=0;k<100;k++) {
@@ -9688,9 +9689,8 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
           
         }
       }
-
     }
-
+    
     if (tab.get_ncolumns()!=line.size()) {
       O2SCL_ERR("Mismatch of columns.",o2scl::exc_einval);
     }
@@ -9714,7 +9714,6 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
       exit(-1);
     }
 
-    exit(-1);
   }
 
   return 0;
