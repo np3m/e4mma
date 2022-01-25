@@ -853,7 +853,13 @@ double Polarization::CalculateInverseMFP(double E1) {
       cout << "Round two." << endl;
       ret=mm.minteg_err(mf,2,xmin,xmax,val,err);
       if (fabs(err)/fabs(val)>1.0e-3) {
-        cout << "Still inaccurate." << endl;
+        cout << "Round three." << endl;
+        mm.n_points*=3;
+        ret=mm.minteg_err(mf,2,xmin,xmax,val,err);
+        if (fabs(err)/fabs(val)>1.0e-3) {
+          cout << "Still inaccurate." << endl;
+        }
+        mm.n_points/=3;
       }
       mm.n_points/=10;
     }
@@ -868,7 +874,13 @@ double Polarization::CalculateInverseMFP(double E1) {
       cout << "Round two." << endl;
       ret=mm.minteg_err(mf,2,xmin,xmax,val,err);
       if (fabs(err)/fabs(val)>1.0e-3) {
-        cout << "Still inaccurate." << endl;
+        cout << "Round three." << endl;
+        mm.n_points*=3;
+        ret=mm.minteg_err(mf,2,xmin,xmax,val,err);
+        if (fabs(err)/fabs(val)>1.0e-3) {
+          cout << "Still inaccurate." << endl;
+        }
+        mm.n_points/=3;
       }
       mm.n_points/=10;
     }

@@ -8675,6 +8675,18 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
       use_alt_eos=true;
       vector<string> args={"skalt-model","SGII"};
       skalt_model(args,true);
+    } else if (j==2) {
+      use_alt_eos=true;
+      vector<string> args={"skalt-model","UNEDF0"};
+      skalt_model(args,true);
+    } else if (j==3) {
+      use_alt_eos=true;
+      vector<string> args={"skalt-model","UNEDF2"};
+      skalt_model(args,true);
+    } else if (j==3) {
+      use_alt_eos=true;
+      vector<string> args={"skalt-model","SV-min"};
+      skalt_model(args,true);
     } else {
       use_alt_eos=false;
       // Create a random EOS
@@ -9036,7 +9048,8 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         betaEoS.Mu3=(electron.mu-electron.m)*hc_mev_fm;
         cout << "mu2 [MeV], mu4 [MeV], mu3 [MeV] (without rest mass): "
              << betaEoS.Mu2 << " "
-             << betaEoS.Mu4 << " " << betaEoS.Mu3 << endl;
+             << betaEoS.Mu4 << " "
+             << betaEoS.Mu3 << endl;
 
         PolarizationNonRel pol_cc(betaEoS, ncap, false, false, true);
         pol_cc.current=Polarization::current_charged;
