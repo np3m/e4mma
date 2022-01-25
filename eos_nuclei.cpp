@@ -9662,7 +9662,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
             Tensor<double> piVV, piAA, piTT, piVA, piVT, piAT;
             double piL, piLRe, piRPAax, piRPAvec;
             
-            pol_nc.SetPolarizations_charged(w,3*T_MeV,&piVV,&piAA,&piTT,
+            pol_cc.SetPolarizations_charged(w,3*T_MeV,&piVV,&piAA,&piTT,
                                             &piVA,&piVT,&piAT,
                                             piLRe,piRPAvec,piRPAax,piL);
             
