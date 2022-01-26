@@ -8718,6 +8718,13 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
                          sk.t2*hc_mev_fm,sk.t3*hc_mev_fm,
                          sk.x0,sk.x1,sk.x2,sk.x3,sk.alpha};
 
+    if (true) {
+      hdf_file hf;
+      hf.open_or_create(sv[1]);
+      hf.setd_vec("nB_list",nB_list);
+      hf.close();
+    }
+    
     for(size_t ipoint=0;ipoint<n_point;ipoint++) {      
 
       if (sg2_debug) {
