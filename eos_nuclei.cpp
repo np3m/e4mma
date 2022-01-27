@@ -8683,7 +8683,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
       use_alt_eos=true;
       vector<string> args={"skalt-model","UNEDF2"};
       skalt_model(args,true);
-    } else if (j==3) {
+    } else if (j==4) {
       use_alt_eos=true;
       vector<string> args={"skalt-model","SV-min"};
       skalt_model(args,true);
