@@ -48,6 +48,7 @@
 #include <o2scl/smooth_func.h>
 #include <o2scl/deriv_gsl.h>
 #include <o2scl/deriv_cern.h>
+#include <o2scl/eos_had_rmf_hyp.h>
 
 #include "virial_solver.h" 
 #include "virial_solver_deriv.h" 
@@ -548,6 +549,12 @@ class eos {
   /// Base EOS model
   o2scl::eos_had_skyrme sk;
 
+  /// Base RMF model
+  o2scl::eos_had_rmf rmf;
+
+  /// Base RMF model
+  o2scl::eos_had_rmf_hyp rmf_hyp;
+
   /// Skyrme model for finite-temperature correction
   o2scl::eos_had_skyrme sk_Tcorr;
 
@@ -610,6 +617,10 @@ class eos {
    */
   bool use_alt_eos;
 
+  /** \brief If true, strangeness is included
+   */
+  bool strangeness;
+  
   /** \brief If true, test the neutron star speed of sound 
       (default true)
    */

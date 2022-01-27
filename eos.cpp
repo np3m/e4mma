@@ -701,6 +701,7 @@ eos::eos() {
 
   eos_Tcorr=&sk_Tcorr;
   eosp_alt=&sk_alt;
+  strangeness=false;
 }
 
 double eos::energy_density_qmc(double nn, double np) {
@@ -1053,13 +1054,42 @@ double eos::free_energy_density
                                     dgdnn,dgdnp);
 }
 
+#ifdef STRANGENESS
+double eos::free_energy_density_detail_s
+(o2scl::fermion &n, o2scl::fermion &p, double Y_s, double T, o2scl::thermo &th,
+ double &zn, double &zp,
+ double &f1, double &f2, double &f3, double &f4,
+ double &g_virial, double &dgvirialdT, double &dgvirialdnn,
+ double &dgvirialdnp) {
+
+  if (use_alt_eos) {
+    if (strangeness) {
+    } else {
+      eosp_alt->calc_temp_e(n,p,T,th);
+    }
+    zn=0.0;
+    zp=0.0;
+    f1=0.0;
+    f2=0.0;
+    f3=0.0;
+    f4=0.0;
+    g_virial=0.0;
+    dgvirialdT=0.0;
+    double fr=th.ed-T*th.en;
+    return fr;
+  }
+  
+  return 0.0;
+}
+#endif
+
 double eos::free_energy_density_detail
 (o2scl::fermion &n, o2scl::fermion &p, double T, o2scl::thermo &th,
  double &zn, double &zp,
  double &f1, double &f2, double &f3, double &f4,
  double &g_virial, double &dgvirialdT, double &dgvirialdnn,
  double &dgvirialdnp) {
-
+  
   if (use_alt_eos) {
     eosp_alt->calc_temp_e(n,p,T,th);
     zn=0.0;
@@ -2530,7 +2560,6 @@ int eos::test_deriv(std::vector<std::string> &sv, bool itive_com) {
 int eos::eos_sn(std::vector<std::string> &sv, bool itive_com) {
 
   eos_sn_oo eso;
-  eos_had_rmf rmf;
   eso.verbose=0;
   hdf_file hf;
 

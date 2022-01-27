@@ -310,10 +310,6 @@ public:
    */
   bool baryons_only_loaded;
 
-  /** \brief If true, strangeness is included
-   */
-  bool strangeness;
-  
   /** \brief If true, include electrons and photons
 
       Requires that derivs_computed is also true
