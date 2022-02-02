@@ -75,9 +75,9 @@ eos_nuclei::eos_nuclei() {
   mh_tol_rel=1.0e-6;
   rbg.err_nonconv=false;
 
-  baryons_only_loaded=true;
+  baryons_only=true;
   derivs_computed=false;
-  with_leptons_loaded=false;
+  with_leptons=false;
 
   //nucleon_func="(nb<0.04)*((i<100)*10+(i>=100)*sqrt(i))+(nb>=0.04)*100";
   nucleon_func="(i<100)*10+(i>=100)*sqrt(i)";
@@ -120,7 +120,7 @@ eos_nuclei::eos_nuclei() {
   slack.set_channel_from_env("O2SCL_SLACK_CHANNEL");
   slack.set_username_from_env("O2SCL_SLACK_USERNAME");
 
-  baryons_only_loaded=true;
+  baryons_only=true;
 
   n_nB2=0;
   n_Ye2=0;
@@ -129,6 +129,7 @@ eos_nuclei::eos_nuclei() {
 
   ext_guess="";
   include_detail=false;
+  rmf_fields=false;
 }
 
 eos_nuclei::~eos_nuclei() {
@@ -429,7 +430,7 @@ int eos_nuclei::maxwell_test(std::vector<std::string> &sv,
   
   read_results(sv[1]);
   
-  if (with_leptons_loaded==false || derivs_computed==false) {
+  if (with_leptons==false || derivs_computed==false) {
     cout << "maxwell_test only works with leptons and derivatives." << endl;
     return 0;
   }
@@ -620,7 +621,7 @@ int eos_nuclei::add_eg(std::vector<std::string> &sv,
     cout << "add_eg(): " << i+1 << "/" << n_nB2 << endl;
   }
 
-  with_leptons_loaded=true;
+  with_leptons=true;
 
   return 0;
 }
@@ -642,7 +643,7 @@ int eos_nuclei::eg_table(std::vector<std::string> &sv,
   
   tensor_grid3<> mu_e;
   tensor_grid3<> E;
-  tensor_grid3<> n_mu;
+  tensor_grid3<> Ymu;
   tensor_grid3<> P;
   tensor_grid3<> S;
   tensor_grid3<> F;
@@ -651,14 +652,14 @@ int eos_nuclei::eg_table(std::vector<std::string> &sv,
   vector<vector<double> > grid={nB_grid2,Ye_grid2,T_grid2};
 
   mu_e.resize(3,st);
-  n_mu.resize(3,st);
+  Ymu.resize(3,st);
   E.resize(3,st);
   P.resize(3,st);
   S.resize(3,st);
   F.resize(3,st);
 
   mu_e.set_grid(grid);
-  n_mu.set_grid(grid);
+  Ymu.set_grid(grid);
   E.set_grid(grid);
   P.set_grid(grid);
   S.set_grid(grid);
@@ -683,7 +684,7 @@ int eos_nuclei::eg_table(std::vector<std::string> &sv,
 	S.set(i,j,k,lep.en/nB);
 	F.set(i,j,k,(lep.ed-T_MeV*lep.en)/nB*o2scl_const::hc_mev_fm);
 	if (include_muons) {
-	  n_mu.set(i,j,k,muon.n*o2scl_const::hc_mev_fm);
+	  Ymu.set(i,j,k,muon.n*o2scl_const::hc_mev_fm/nB);
 	}
       }
     }
@@ -694,7 +695,7 @@ int eos_nuclei::eg_table(std::vector<std::string> &sv,
   hf.open_or_create(sv[1]);
   hdf_output(hf,mu_e,"mue");
   if (include_muons) {
-    hdf_output(hf,n_mu,"nmu");
+    hdf_output(hf,Ymu,"Ymu");
   }
   hdf_output(hf,F,"F");
   hdf_output(hf,E,"E");
@@ -1695,8 +1696,25 @@ int eos_nuclei::solve_nuclei(size_t nv, const ubvector &x, ubvector &y,
     // End of loop over nuclei
   }
 
-  y[0]=nn_tilde/nB/(1.0-Ye)-1.0;
-  y[1]=np_tilde/nB/Ye-1.0;
+  if (include_muons) {
+    
+    eos_sn_base eso;
+    eso.include_muons=true;
+    thermo lep;
+    eso.compute_eg_point(nB,Ye,T*hc_mev_fm,lep,vdet["mue"]);
+    double Ymu=eso.muon.n/nB;
+    
+    // Ensure that we have the correct values of nB and Ye
+    y[0]=nn_tilde/nB/(1.0-Ye-Ymu)-1.0;
+    y[1]=np_tilde/nB/(Ye+Ymu)-1.0;
+
+  } else {
+  
+    // Ensure that we have the correct values of nB and Ye
+    y[0]=nn_tilde/nB/(1.0-Ye)-1.0;
+    y[1]=np_tilde/nB/Ye-1.0;
+
+  }
 
   if (loc_verbose>0) {
     cout << "nn,np: " << nn << " " << np << endl;
@@ -2432,6 +2450,11 @@ int eos_nuclei::eos_fixed_dist
  map<string,double> &vdet, bool dist_changed,
  bool no_nuclei) {
 
+  if (include_muons==true && with_leptons==false) {
+    cerr << "Include muons is true but with leptons is false." << endl;
+    exit(-1);
+  }
+  
   int mpi_rank=0, mpi_size=1;
 #ifndef NO_MPI
   // Get MPI rank, etc.
@@ -3717,6 +3740,8 @@ int eos_nuclei::store_point
 
   int loc_verbose=function_verbose/10000%10;
 
+  vector<size_t> ix={i_nB,i_Ye,i_T};
+  
   double fr=th.ed-T*th.en;
   if (!std::isfinite(fr)) {
     cout << "Free energy not finite in store_point(), (nB,Ye,T)=("
@@ -3867,6 +3892,12 @@ int eos_nuclei::store_point
 
   tg3_Sint.set(i_nB,i_Ye,i_T,th.en/nB);
 
+  if (rmf_fields) {
+    tg_sigma.set(ix,vdet["sigma"]);
+    tg_omega.set(ix,vdet["omega"]);
+    tg_rho.set(ix,vdet["rho"]);
+  }
+  
   if (include_detail) {
     tg3_zn.set(i_nB,i_Ye,i_T,vdet["zn"]);
     tg3_zp.set(i_nB,i_Ye,i_T,vdet["zp"]);
@@ -3900,7 +3931,7 @@ int eos_nuclei::store_point
 	   << mup_full*hc_mev_fm << endl;
     }
     
-    if (with_leptons_loaded) {
+    if (with_leptons) {
       
       electron.n=nB*Ye;
       electron.mu=electron.m;
@@ -4300,7 +4331,7 @@ int eos_nuclei::write_results(std::string fname) {
   }
 #endif
   
-  if (with_leptons_loaded && !derivs_computed) {
+  if (with_leptons && !derivs_computed) {
     O2SCL_ERR("File indicates leptons but no derivatives.",
               o2scl::exc_eunimpl);
   }
@@ -4356,7 +4387,7 @@ int eos_nuclei::write_results(std::string fname) {
   } else {
     hf.seti("derivs_computed",0);
   }
-  if (with_leptons_loaded) {
+  if (with_leptons) {
     hf.seti("with_leptons",1);
   } else {
     hf.seti("with_leptons",0);
@@ -4374,7 +4405,7 @@ int eos_nuclei::write_results(std::string fname) {
     hdf_output(hf,tg3_Pint,"Pint");
     hdf_output(hf,tg3_mun,"mun");
     hdf_output(hf,tg3_mup,"mup");
-    if (with_leptons_loaded) {
+    if (with_leptons) {
       hdf_output(hf,tg3_F,"F");
       hdf_output(hf,tg3_E,"E");
       hdf_output(hf,tg3_P,"P");
@@ -4532,20 +4563,20 @@ int eos_nuclei::read_results(std::string fname) {
   
   if (verbose>2) cout << "Reading baryons_only." << endl;
   hf.geti_def("baryons_only",1,itmp);
-  if (itmp==1) baryons_only_loaded=true;
-  else baryons_only_loaded=false;
+  if (itmp==1) baryons_only=true;
+  else baryons_only=false;
   
   if (verbose>2) cout << "Reading with_leptons." << endl;
   hf.geti_def("with_leptons",0,itmp);
-  if (itmp==1) with_leptons_loaded=true;
-  else with_leptons_loaded=false;
+  if (itmp==1) with_leptons=true;
+  else with_leptons=false;
   
   if (verbose>2) cout << "Reading derivs_computed." << endl;
   hf.geti_def("derivs_computed",0,itmp);
   if (itmp==1) derivs_computed=true;
   else derivs_computed=false;
 
-  if (with_leptons_loaded && !derivs_computed) {
+  if (with_leptons && !derivs_computed) {
     O2SCL_ERR("File indicates leptons but no derivatives.",
               o2scl::exc_eunimpl);
   }
@@ -4679,7 +4710,7 @@ int eos_nuclei::read_results(std::string fname) {
 
   // Derivatives of free energy
 
-  if (with_leptons_loaded && !derivs_computed) {
+  if (with_leptons && !derivs_computed) {
     O2SCL_ERR2("File says leptons are present but derivatives are not ",
 	       "computed.",o2scl::exc_esanity);
   }
@@ -4704,7 +4735,7 @@ int eos_nuclei::read_results(std::string fname) {
     if (verbose>2) cout << "Reading mup." << endl;
     hdf_input(hf,tg3_mup,"mup");
     
-    if (with_leptons_loaded) {
+    if (with_leptons) {
       if (verbose>2) cout << "Reading F." << endl;
       hdf_input(hf,tg3_F,"F");
       if (verbose>2) cout << "Reading E." << endl;
@@ -4829,7 +4860,7 @@ int eos_nuclei::test_random(std::vector<std::string> &sv,
     double mun_full, mup_full;
     
     derivs_computed=false;
-    with_leptons_loaded=false;
+    with_leptons=false;
     
     double Zbar, Nbar;
     map<string,double> vdet;
@@ -5272,7 +5303,7 @@ int eos_nuclei::increase_density(std::vector<std::string> &sv,
   int A_min, A_max, NmZ_min, NmZ_max;
 
   derivs_computed=false;
-  with_leptons_loaded=false;
+  with_leptons=false;
   
   for(size_t iT=iT_start;iT<=iT_end;iT++) {
     
@@ -5426,7 +5457,7 @@ int eos_nuclei::fix_cc(std::vector<std::string> &sv,
   int A_min, A_max, NmZ_min, NmZ_max;
 
   derivs_computed=false;
-  with_leptons_loaded=false;
+  with_leptons=false;
   bool no_nuclei;
   
   for(size_t iT=0;iT<n_T2;iT++) {
@@ -5582,7 +5613,7 @@ int eos_nuclei::verify(std::vector<std::string> &sv,
   int A_min, A_max, NmZ_min, NmZ_max;
 
   derivs_computed=false;
-  with_leptons_loaded=false;
+  with_leptons=false;
   bool no_nuclei;
 
   size_t inB_lo=0, inB_hi=0;
@@ -5732,7 +5763,7 @@ int eos_nuclei::stats(std::vector<std::string> &sv,
   
   cout << endl;
   cout << "derivs_computed: " << derivs_computed << endl;
-  cout << "with_leptons: " << with_leptons_loaded << endl;
+  cout << "with_leptons: " << with_leptons << endl;
   cout << "alg_mode: " << alg_mode << endl;
   cout << endl;
   
@@ -5747,7 +5778,7 @@ int eos_nuclei::stats(std::vector<std::string> &sv,
   ptrs.push_back(&tg3_log_xn);
   ptrs.push_back(&tg3_log_xp);
   ptrs.push_back(&tg3_flag);
-  if (with_leptons_loaded) {
+  if (with_leptons) {
     ptrs.push_back(&tg3_F);
     ptrs.push_back(&tg3_E);
     ptrs.push_back(&tg3_P);
@@ -5935,7 +5966,7 @@ int eos_nuclei::stats(std::vector<std::string> &sv,
       }
 
       // Check that F=E-T*S
-      if (with_leptons_loaded) {
+      if (with_leptons) {
 
 	double scale=fabs(tg3_F.get_data()[i]);
 	if (scale<10.0) scale=10.0;
@@ -5978,7 +6009,7 @@ int eos_nuclei::stats(std::vector<std::string> &sv,
   }
   if (derivs_computed) {
     cout << "ti_int_count: " << ti_int_count << endl;
-    if (with_leptons_loaded) {
+    if (with_leptons) {
       cout << "F_count: " << F_count << endl;
       cout << "ti_count: " << ti_count << endl;
     }
@@ -6070,7 +6101,7 @@ int eos_nuclei::merge_tables(std::vector<std::string> &sv,
     cerr << "derivs_computed doesn't match." << endl;
     return 1;
   }
-  if (en2.with_leptons_loaded!=with_leptons_loaded) {
+  if (en2.with_leptons!=with_leptons) {
     cerr << "with_leptons doesn't match." << endl;
     return 2;
   }
@@ -6179,7 +6210,7 @@ int eos_nuclei::merge_tables(std::vector<std::string> &sv,
 	    tg3_Pint.set(i,j,k,en2.tg3_Pint.get(i,j,k));
 	    tg3_mun.set(i,j,k,en2.tg3_mun.get(i,j,k));
 	    tg3_mup.set(i,j,k,en2.tg3_mup.get(i,j,k));
-	    if (with_leptons_loaded) {
+	    if (with_leptons) {
 	      tg3_F.set(i,j,k,en2.tg3_F.get(i,j,k));
 	      tg3_E.set(i,j,k,en2.tg3_E.get(i,j,k));
 	      tg3_P.set(i,j,k,en2.tg3_P.get(i,j,k));
@@ -6287,7 +6318,7 @@ int eos_nuclei::compare_tables(std::vector<std::string> &sv,
     names.push_back("Pint");
     names.push_back("mun");
     names.push_back("mup");
-    if (with_leptons_loaded) {
+    if (with_leptons) {
       names.push_back("F");
       names.push_back("E");
       names.push_back("P");
@@ -6316,7 +6347,7 @@ int eos_nuclei::compare_tables(std::vector<std::string> &sv,
     ptrs.push_back(&tg3_Pint);
     ptrs.push_back(&tg3_mun);
     ptrs.push_back(&tg3_mup);
-    if (with_leptons_loaded) {
+    if (with_leptons) {
       ptrs.push_back(&tg3_F);
       ptrs.push_back(&tg3_E);
       ptrs.push_back(&tg3_P);
@@ -6345,7 +6376,7 @@ int eos_nuclei::compare_tables(std::vector<std::string> &sv,
     ptrs2.push_back(&en2.tg3_Pint);
     ptrs2.push_back(&en2.tg3_mun);
     ptrs2.push_back(&en2.tg3_mup);
-    if (with_leptons_loaded) {
+    if (with_leptons) {
       ptrs2.push_back(&en2.tg3_F);
       ptrs2.push_back(&en2.tg3_E);
       ptrs2.push_back(&en2.tg3_P);
@@ -6654,7 +6685,7 @@ void eos_nuclei::new_table() {
 
 #endif
     
-    if (with_leptons_loaded) {
+    if (with_leptons) {
       
 #ifdef STRANGENESS
       
@@ -6752,7 +6783,7 @@ int eos_nuclei::edit_data(std::vector<std::string> &sv,
 	vars["log_xn"]=tg3_log_xn.get(inB,iYe,iT);
 	vars["log_xp"]=tg3_log_xp.get(inB,iYe,iT);
 
-        if (include_muons && with_leptons_loaded) {
+        if (include_muons && with_leptons) {
           vars["Ymu"]=tg3_Ymu.get(inB,iYe,iT);
         }
 	
@@ -6872,10 +6903,10 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	 << endl;
     derivs_computed=false;
   }
-  if (with_leptons_loaded) {
+  if (with_leptons) {
     cout << "Function generate-table setting with_leptons to false."
 	 << endl;
-    with_leptons_loaded=false;
+    with_leptons=false;
   }
   
   int mpi_rank=0, mpi_size=1;
@@ -6989,6 +7020,9 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
       double mun_full=0.0, mup_full=0.0;
       int first_ret=0;
       map<string,double> vdet;
+      if (include_muons) {
+        vdet["mue"]=electron.m;
+      }
       if (alg_mode==1) {
 	cerr << "Mode alg_mode=1 no longer supported in generate-table."
 	     << endl;
@@ -7654,6 +7688,9 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 		vdet["zn"]=input_buffers[proc_index][vi["zn"]];
 		vdet["zp"]=input_buffers[proc_index][vi["zp"]];
 	      }
+              if (include_muons) {
+		vdet["mue"]=input_buffers[proc_index][vi["mue"]];
+              }
 	      store_point(tasks[i2],tasks[j2],tasks[k2],
 			  input_buffers[proc_index][vi["nB"]],
 			  input_buffers[proc_index][vi["Ye"]],
@@ -9838,7 +9875,7 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
       "is specified, then only that particular quantitiy is compared. "+
       "Only points for which flag=10 in both tables are compared. "+
       "If derivs_computed is true, then Pint, mun, and "+
-      "mup are available for comparisons. If with_leptons_loaded is "+
+      "mup are available for comparisons. If with_leptons is "+
       "true, then "+
       "F, E, P, and S, are also available for comparisons. Any current "+
       "EOS data stored is cleared before the comparison. If the "+

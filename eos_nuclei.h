@@ -232,6 +232,8 @@ public:
   /// Fiducial value for solver tolerance (default \f$ 10^{-6} \f$)
   double mh_tol_rel;
 
+  bool rmf_fields;
+
   /// File containing external guess
   std::string ext_guess;
   
@@ -306,15 +308,15 @@ public:
   */
   bool derivs_computed;
 
-  /** \brief Always true, for consistency with o2scl::eos_sn_base
+  /** \brief Always true, included for consistency with o2scl::eos_sn_base
    */
-  bool baryons_only_loaded;
+  bool baryons_only;
 
   /** \brief If true, include electrons and photons
 
       Requires that derivs_computed is also true
    */
-  bool with_leptons_loaded;
+  bool with_leptons;
   //@}
 
   /// \name Other internal objects
@@ -372,35 +374,35 @@ public:
   /// \name Main EOS table storage
   //@{
 #ifdef STRANGENESS
-  o2scl::tensor_grid3<> tg_log_xn;
-  o2scl::tensor_grid3<> tg_log_xp;
-  o2scl::tensor_grid3<> tg_flag;
-  o2scl::tensor_grid3<> tg_F;
-  o2scl::tensor_grid3<> tg_E;
-  o2scl::tensor_grid3<> tg_P;
-  o2scl::tensor_grid3<> tg_S;
-  o2scl::tensor_grid3<> tg_Fint;
-  o2scl::tensor_grid3<> tg_Eint;
-  o2scl::tensor_grid3<> tg_Pint;
-  o2scl::tensor_grid3<> tg_Sint;
-  o2scl::tensor_grid3<> tg_mun;
-  o2scl::tensor_grid3<> tg_mup;
-  o2scl::tensor_grid3<> tg_mue;
-  o2scl::tensor_grid3<> tg_Z;
-  o2scl::tensor_grid3<> tg_A;
-  o2scl::tensor_grid3<> tg_Xn;
-  o2scl::tensor_grid3<> tg_Xp;
-  o2scl::tensor_grid3<> tg_Xalpha;
-  o2scl::tensor_grid3<> tg_Xnuclei;
-  o2scl::tensor_grid3<> tg_Ymu;
-  o2scl::tensor_grid3<> tg_Xd;
-  o2scl::tensor_grid3<> tg_Xt;
-  o2scl::tensor_grid3<> tg_XHe3;
-  o2scl::tensor_grid3<> tg_XLi4;
-  o2scl::tensor_grid3<> tg_A_min;
-  o2scl::tensor_grid3<> tg_A_max;
-  o2scl::tensor_grid3<> tg_NmZ_min;
-  o2scl::tensor_grid3<> tg_NmZ_max;
+  o2scl::tensor_grid<> tg_log_xn;
+  o2scl::tensor_grid<> tg_log_xp;
+  o2scl::tensor_grid<> tg_flag;
+  o2scl::tensor_grid<> tg_F;
+  o2scl::tensor_grid<> tg_E;
+  o2scl::tensor_grid<> tg_P;
+  o2scl::tensor_grid<> tg_S;
+  o2scl::tensor_grid<> tg_Fint;
+  o2scl::tensor_grid<> tg_Eint;
+  o2scl::tensor_grid<> tg_Pint;
+  o2scl::tensor_grid<> tg_Sint;
+  o2scl::tensor_grid<> tg_mun;
+  o2scl::tensor_grid<> tg_mup;
+  o2scl::tensor_grid<> tg_mue;
+  o2scl::tensor_grid<> tg_Z;
+  o2scl::tensor_grid<> tg_A;
+  o2scl::tensor_grid<> tg_Xn;
+  o2scl::tensor_grid<> tg_Xp;
+  o2scl::tensor_grid<> tg_Xalpha;
+  o2scl::tensor_grid<> tg_Xnuclei;
+  o2scl::tensor_grid<> tg_Ymu;
+  o2scl::tensor_grid<> tg_Xd;
+  o2scl::tensor_grid<> tg_Xt;
+  o2scl::tensor_grid<> tg_XHe3;
+  o2scl::tensor_grid<> tg_XLi4;
+  o2scl::tensor_grid<> tg_A_min;
+  o2scl::tensor_grid<> tg_A_max;
+  o2scl::tensor_grid<> tg_NmZ_min;
+  o2scl::tensor_grid<> tg_NmZ_max;
 #else
   o2scl::tensor_grid3<> tg3_log_xn;
   o2scl::tensor_grid3<> tg3_log_xp;
@@ -438,18 +440,18 @@ public:
   //@{
   bool include_detail;
 #ifdef STRANGENESS
-  o2scl::tensor_grid3<> tg_zn;
-  o2scl::tensor_grid3<> tg_zp;
-  o2scl::tensor_grid3<> tg_F1;
-  o2scl::tensor_grid3<> tg_F2;
-  o2scl::tensor_grid3<> tg_F3;
-  o2scl::tensor_grid3<> tg_F4;
-  o2scl::tensor_grid3<> tg_Un;
-  o2scl::tensor_grid3<> tg_Up;
-  o2scl::tensor_grid3<> tg_msn;
-  o2scl::tensor_grid3<> tg_msp;
-  o2scl::tensor_grid3<> tg_g;
-  o2scl::tensor_grid3<> tg_dgdT;
+  o2scl::tensor_grid<> tg_zn;
+  o2scl::tensor_grid<> tg_zp;
+  o2scl::tensor_grid<> tg_F1;
+  o2scl::tensor_grid<> tg_F2;
+  o2scl::tensor_grid<> tg_F3;
+  o2scl::tensor_grid<> tg_F4;
+  o2scl::tensor_grid<> tg_Un;
+  o2scl::tensor_grid<> tg_Up;
+  o2scl::tensor_grid<> tg_msn;
+  o2scl::tensor_grid<> tg_msp;
+  o2scl::tensor_grid<> tg_g;
+  o2scl::tensor_grid<> tg_dgdT;
 #else
   o2scl::tensor_grid3<> tg3_zn;
   o2scl::tensor_grid3<> tg3_zp;
@@ -466,6 +468,10 @@ public:
 #endif
   //@}
   
+  o2scl::tensor_grid<> tg_sigma;
+  o2scl::tensor_grid<> tg_omega;
+  o2scl::tensor_grid<> tg_rho;
+
   /// \name Other parameter objects
   //@{
   o2scl::cli::parameter_bool p_survey_eqs;
