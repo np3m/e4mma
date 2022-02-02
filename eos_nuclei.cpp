@@ -4344,6 +4344,19 @@ int eos_nuclei::write_results(std::string fname) {
   wordexp_single_file(fname);
   
   hf.open_or_create(fname);
+
+  if (false) {
+    hid_t id=hf.open_group("model");
+    hf.seti("alt_eos",use_alt_eos);
+    hf.seti("i_ns",i_ns);
+    hf.seti("i_skyrme",i_skyrme);
+    hf.setd("alpha",qmc_alpha);
+    hf.setd("a",qmc_a);
+    hf.setd("S",eos_S);
+    hf.setd("L",eos_L);
+    hf.setd("phi",phi);
+    hf.close_group(id);
+  }
   
   hf.set_szt("n_nB",n_nB2);
   hf.set_szt("n_Ye",n_Ye2);
@@ -8624,7 +8637,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
     "gnn_virial","gpp_virial","gnp_virial",
     "fnn","fpp","fnp","fnn_dg0","fpp_dg0","fnp_dg0",
     "gnn","gpp","gnp",
-    "vf","vgt","vf_dg0",
+    "vf","vf_dg0","vgt",
     "cc_vec_imfp","cc_vec_imfp_dg0","cc_axvec_imfp",
     "nc_vec_imfp","nc_vec_imfp_dg0","nc_axvec_imfp"};
   
@@ -8706,24 +8719,24 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
 
     if (j==0) {
       use_alt_eos=true;
-      vector<string> args={"skalt-model","NRAPR"};
-      skalt_model(args,true);
+      vector<string> args={"alt-model","Skyrme","NRAPR"};
+      alt_model(args,true);
     } else if (j==1) {
       use_alt_eos=true;
-      vector<string> args={"skalt-model","SGII"};
-      skalt_model(args,true);
+      vector<string> args={"alt-model","Skyrme","SGII"};
+      alt_model(args,true);
     } else if (j==2) {
       use_alt_eos=true;
-      vector<string> args={"skalt-model","UNEDF0"};
-      skalt_model(args,true);
+      vector<string> args={"alt-model","Skyrme","UNEDF0"};
+      alt_model(args,true);
     } else if (j==3) {
       use_alt_eos=true;
-      vector<string> args={"skalt-model","UNEDF2"};
-      skalt_model(args,true);
+      vector<string> args={"alt-model","Skyrme","UNEDF2"};
+      alt_model(args,true);
     } else if (j==4) {
       use_alt_eos=true;
-      vector<string> args={"skalt-model","SV-min"};
-      skalt_model(args,true);
+      vector<string> args={"alt-model","Skyrme","SV-min"};
+      alt_model(args,true);
     } else {
       use_alt_eos=false;
       // Create a random EOS

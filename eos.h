@@ -667,8 +667,10 @@ class eos {
    */
   int table_Ye(std::vector<std::string> &sv,
 	       bool itive_com);
-  
-  int skalt_model(std::vector<std::string> &sv,
+
+  /** \brief Select an alternate EOS model
+   */
+  int alt_model(std::vector<std::string> &sv,
 	       bool itive_com);
 
   /** \brief Construct a table at fixed baryon density

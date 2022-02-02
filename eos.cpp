@@ -3594,10 +3594,29 @@ int eos::vir_fit(std::vector<std::string> &sv,
   return 0;
 }
 
-int eos::skalt_model(std::vector<std::string> &sv,
+int eos::alt_model(std::vector<std::string> &sv,
                      bool itive_com) {
-  o2scl_hdf::skyrme_load(sk_alt,sv[1]);
-  eosp_alt=&sk_alt;
+
+  if (sv.size()<2) {
+    cout << "Not enough parameters for alt-model." << endl;
+  }
+  
+  if (sv[1]=="Skyrme") {
+    if (sv.size()<3) {
+      cout << "Not enough parameters for alt-model of type Skyrme." << endl;
+    }
+    o2scl_hdf::skyrme_load(sk_alt,sv[2]);
+    eosp_alt=&sk_alt;
+  } else if (sv[1]=="RMF") {
+    o2scl_hdf::rmf_load(rmf,sv[2]);
+    eosp_alt=&rmf;
+  } else if (sv[1]=="RMFH") {
+    o2scl_hdf::rmf_load(rmf_hyp,sv[2]);
+    eosp_alt=&rmf;
+  } else {
+    cerr << "Model " << sv[1] << " not understood." << endl;
+    return 2;
+  }
   return 0;
 }
 
@@ -3647,9 +3666,9 @@ void eos::setup_cli(o2scl::cli &cl) {
      {0,"vir-comp","Compare the virial and full EOS.",0,0,"","",
       new o2scl::comm_option_mfptr<eos>
       (this,&eos::vir_comp),o2scl::cli::comm_option_both},
-     {0,"skalt-model","",1,1,"","",
+     {0,"alt-model","",1,2,"","",
       new o2scl::comm_option_mfptr<eos>
-      (this,&eos::skalt_model),o2scl::cli::comm_option_both}
+      (this,&eos::alt_model),o2scl::cli::comm_option_both}
     };
   cl.set_comm_option_vec(nopt,options);
   
