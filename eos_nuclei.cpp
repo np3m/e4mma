@@ -4346,16 +4346,37 @@ int eos_nuclei::write_results(std::string fname) {
   hf.open_or_create(fname);
 
   if (false) {
-    hid_t id=hf.open_group("model");
-    hf.seti("alt_eos",use_alt_eos);
-    hf.seti("i_ns",i_ns);
-    hf.seti("i_skyrme",i_skyrme);
-    hf.setd("alpha",qmc_alpha);
-    hf.setd("a",qmc_a);
-    hf.setd("S",eos_S);
-    hf.setd("L",eos_L);
-    hf.setd("phi",phi);
-    hf.close_group(id);
+    std::string eos_str;
+    if (use_alt_eos==false) {
+      eos_str=((string)"0 ");
+      eos_str+=o2scl::itos(i_ns)+" ";
+      eos_str+=o2scl::itos(i_skyrme)+" ";
+      eos_str+=o2scl::dtos(qmc_a,
+                           std::numeric_limits<double>::max_digits10)+" ";
+      eos_str+=o2scl::dtos(qmc_alpha,
+                           std::numeric_limits<double>::max_digits10)+" ";
+      eos_str+=o2scl::dtos(eos_S,
+                           std::numeric_limits<double>::max_digits10)+" ";
+      eos_str+=o2scl::dtos(eos_L,
+                           std::numeric_limits<double>::max_digits10)+" ";
+      eos_str+=o2scl::dtos(phi,
+                           std::numeric_limits<double>::max_digits10);
+    } else {
+      bool matched=false;
+      eos_str=((string)"0 ");
+      eos_had_skyrme *skp=dynamic_cast<eos_had_skyrme *>(eosp_alt);
+      if (skp!=0) {
+        matched=true;
+      }
+      eos_had_rmf *rmfp=dynamic_cast<eos_had_rmf *>(eosp_alt);
+      if (rmfp!=0) {
+        matched=true;
+      }
+      if (matched==false) {
+        O2SCL_ERR("Couldn't determine EOS.",o2scl::exc_esanity);
+      }
+    }
+    hf.sets("model",eos_str);
   }
   
   hf.set_szt("n_nB",n_nB2);
