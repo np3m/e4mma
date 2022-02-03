@@ -4345,22 +4345,17 @@ int eos_nuclei::write_results(std::string fname) {
   
   hf.open_or_create(fname);
 
-  if (false) {
+  if (true) {
     std::string eos_str;
     if (use_alt_eos==false) {
       eos_str=((string)"0 ");
       eos_str+=o2scl::itos(i_ns)+" ";
       eos_str+=o2scl::itos(i_skyrme)+" ";
-      eos_str+=o2scl::dtos(qmc_a,
-                           std::numeric_limits<double>::max_digits10)+" ";
-      eos_str+=o2scl::dtos(qmc_alpha,
-                           std::numeric_limits<double>::max_digits10)+" ";
-      eos_str+=o2scl::dtos(eos_S,
-                           std::numeric_limits<double>::max_digits10)+" ";
-      eos_str+=o2scl::dtos(eos_L,
-                           std::numeric_limits<double>::max_digits10)+" ";
-      eos_str+=o2scl::dtos(phi,
-                           std::numeric_limits<double>::max_digits10);
+      eos_str+=o2scl::dtos(qmc_a,-1,true)+" ";
+      eos_str+=o2scl::dtos(qmc_alpha,-1,true)+" ";
+      eos_str+=o2scl::dtos(eos_S,-1,true)+" ";
+      eos_str+=o2scl::dtos(eos_L,-1,true)+" ";
+      eos_str+=o2scl::dtos(phi,-1,true);
     } else {
       bool matched=false;
       eos_str=((string)"0 ");
@@ -4376,6 +4371,7 @@ int eos_nuclei::write_results(std::string fname) {
         O2SCL_ERR("Couldn't determine EOS.",o2scl::exc_esanity);
       }
     }
+    cout << "eos_str: " << eos_str << endl;
     hf.sets("model",eos_str);
   }
   
