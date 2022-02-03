@@ -702,6 +702,7 @@ eos::eos() {
   eos_Tcorr=&sk_Tcorr;
   eosp_alt=&sk_alt;
   strangeness=false;
+  alt_name="";
 }
 
 double eos::energy_density_qmc(double nn, double np) {

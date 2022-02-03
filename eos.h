@@ -569,6 +569,9 @@ class eos {
 
   /// Pointer to alternative model
   o2scl::eos_had_temp_base *eosp_alt;
+
+  /// Name of the alternate EOS
+  std::string alt_name;
   //@}
 
   /// \name The parameters for the QMC energy density [protected]

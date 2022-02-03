@@ -4346,6 +4346,7 @@ int eos_nuclei::write_results(std::string fname) {
   hf.open_or_create(fname);
 
   if (true) {
+    bool matched=false;
     std::string eos_str;
     if (use_alt_eos==false) {
       eos_str=((string)"0 ");
@@ -4356,20 +4357,58 @@ int eos_nuclei::write_results(std::string fname) {
       eos_str+=o2scl::dtos(eos_S,-1,true)+" ";
       eos_str+=o2scl::dtos(eos_L,-1,true)+" ";
       eos_str+=o2scl::dtos(phi,-1,true);
+      matched=true;
     } else {
-      bool matched=false;
       eos_str=((string)"0 ");
       eos_had_skyrme *skp=dynamic_cast<eos_had_skyrme *>(eosp_alt);
       if (skp!=0) {
         matched=true;
+        if (alt_name.length()==0) {
+          eos_str+="skyrme "+alt_name;
+        } else {
+          eos_str+="skyrme ";
+          eos_str+=o2scl::dtos(sk.t0*hc_mev_fm,-1,true)+" ";
+          eos_str+=o2scl::dtos(sk.t1*hc_mev_fm,-1,true)+" ";
+          eos_str+=o2scl::dtos(sk.t2*hc_mev_fm,-1,true)+" ";
+          eos_str+=o2scl::dtos(sk.t3*hc_mev_fm,-1,true)+" ";
+          eos_str+=o2scl::dtos(sk.x0,-1,true)+" ";
+          eos_str+=o2scl::dtos(sk.x1,-1,true)+" ";
+          eos_str+=o2scl::dtos(sk.x2,-1,true)+" ";
+          eos_str+=o2scl::dtos(sk.x3,-1,true)+" ";
+          eos_str+=o2scl::dtos(sk.alpha,-1,true);
+        }
       }
       eos_had_rmf *rmfp=dynamic_cast<eos_had_rmf *>(eosp_alt);
       if (rmfp!=0) {
         matched=true;
+        if (alt_name.length()==0) {
+          eos_str+="rmf "+alt_name;
+        } else {
+          eos_str+="rmf ";
+          eos_str+=o2scl::dtos(rmf.cs,-1,true)+" ";
+          eos_str+=o2scl::dtos(rmf.cw,-1,true)+" ";
+          eos_str+=o2scl::dtos(rmf.cr,-1,true)+" ";
+          eos_str+=o2scl::dtos(rmf.b,-1,true)+" ";
+          eos_str+=o2scl::dtos(rmf.c,-1,true)+" ";
+          eos_str+=o2scl::dtos(rmf.ms*hc_mev_fm,-1,true)+" ";
+          eos_str+=o2scl::dtos(rmf.mw*hc_mev_fm,-1,true)+" ";
+          eos_str+=o2scl::dtos(rmf.mr*hc_mev_fm,-1,true)+" ";
+          eos_str+=o2scl::dtos(rmf.zeta,-1,true)+" ";
+          eos_str+=o2scl::dtos(rmf.xi,-1,true)+" ";
+          eos_str+=o2scl::dtos(rmf.a1,-1,true)+" ";
+          eos_str+=o2scl::dtos(rmf.a2,-1,true)+" ";
+          eos_str+=o2scl::dtos(rmf.a3,-1,true)+" ";
+          eos_str+=o2scl::dtos(rmf.a4,-1,true)+" ";
+          eos_str+=o2scl::dtos(rmf.a5,-1,true)+" ";
+          eos_str+=o2scl::dtos(rmf.a6,-1,true)+" ";
+          eos_str+=o2scl::dtos(rmf.b1,-1,true)+" ";
+          eos_str+=o2scl::dtos(rmf.b2,-1,true)+" ";
+          eos_str+=o2scl::dtos(rmf.b3,-1,true);
+        }
       }
-      if (matched==false) {
-        O2SCL_ERR("Couldn't determine EOS.",o2scl::exc_esanity);
-      }
+    }
+    if (matched==false) {
+      eos_str="<unknown>";
     }
     cout << "eos_str: " << eos_str << endl;
     hf.sets("model",eos_str);
