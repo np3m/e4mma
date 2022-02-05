@@ -3892,6 +3892,10 @@ int eos_nuclei::store_point
 
   tg3_Sint.set(i_nB,i_Ye,i_T,th.en/nB);
 
+  if (include_muons) {
+    tg3_mue.set(i_nB,i_Ye,IT,vdet["mue"]);
+  }
+  
   if (rmf_fields) {
     tg_sigma.set(ix,vdet["sigma"]);
     tg_omega.set(ix,vdet["omega"]);
@@ -3937,7 +3941,6 @@ int eos_nuclei::store_point
       electron.mu=electron.m;
       relf.pair_density(electron,T);
       photon.massless_calc(T);
-      
 
       tg3_F.set(i_nB,i_Ye,i_T,(fr+electron.ed+photon.ed-
 			       T*(electron.en+photon.en))/nB*hc_mev_fm);
@@ -4359,7 +4362,7 @@ int eos_nuclei::write_results(std::string fname) {
       eos_str+=o2scl::dtos(phi,-1,true);
       matched=true;
     } else {
-      eos_str=((string)"0 ");
+      eos_str=((string)"1 ");
       eos_had_skyrme *skp=dynamic_cast<eos_had_skyrme *>(eosp_alt);
       if (skp!=0) {
         matched=true;
@@ -4442,7 +4445,14 @@ int eos_nuclei::write_results(std::string fname) {
   hdf_output(hf,tg3_XHe3,"XHe3");
   hdf_output(hf,tg3_XLi4,"XLi4");
 
-  if (alg_mode==2 || alg_mode==3 || alg_mode==4) {
+  if (alg_mode==2 || alg_mode==3) {
+    hdf_output(hf,tg3_A_min,"A_min");
+    hdf_output(hf,tg3_A_max,"A_max");
+    hdf_output(hf,tg3_NmZ_min,"NmZ_min");
+    hdf_output(hf,tg3_NmZ_max,"NmZ_max");
+  }
+  
+  if (false && alg_mode==4) {
     hdf_output(hf,tg3_A_min,"A_min");
     hdf_output(hf,tg3_A_max,"A_max");
     hdf_output(hf,tg3_NmZ_min,"NmZ_min");
@@ -4592,6 +4602,34 @@ int eos_nuclei::read_results(std::string fname) {
 
   hf.open(fname);
 
+  if (true) {
+    
+    std::string mod_str;
+    hf.gets_def("model","",mod_str);
+    
+    if (mod_str.length()>0) {
+      
+      vector<string> vs;
+      split_string(mod_str,vs);
+      
+      if (sv[0]=="1") {
+        
+        i_ns=o2scl::stoi(vs[1]);
+        i_skyrme=o2scl::stoi(vs[2]);
+        qmc_a=o2scl::stod(vs[3]);
+        qmc_alpha=o2scl::stod(vs[4]);
+        eos_S=o2scl::stod(vs[5]);
+        eos_L=o2scl::stod(vs[6]);
+        phi=o2scl::stod(vs[7]);
+
+        select_internal(i_ns,i_skyrme,qmc_alpha,qmc_a,
+                        eos_L,eos_S,phi);
+        
+      }
+    }
+  }
+                
+  
   // nB, Ye, T grid
 
   if (verbose>2) cout << "Reading n_nB." << endl;
