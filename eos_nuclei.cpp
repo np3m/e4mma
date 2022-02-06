@@ -3893,7 +3893,7 @@ int eos_nuclei::store_point
   tg3_Sint.set(i_nB,i_Ye,i_T,th.en/nB);
 
   if (include_muons) {
-    tg3_mue.set(i_nB,i_Ye,IT,vdet["mue"]);
+    tg3_mue.set(i_nB,i_Ye,i_T,vdet["mue"]);
   }
   
   if (rmf_fields) {
@@ -4609,18 +4609,18 @@ int eos_nuclei::read_results(std::string fname) {
     
     if (mod_str.length()>0) {
       
-      vector<string> vs;
-      split_string(mod_str,vs);
+      vector<string> vs2;
+      split_string(mod_str,vs2);
       
-      if (sv[0]=="1") {
+      if (vs2[0]=="1") {
         
-        i_ns=o2scl::stoi(vs[1]);
-        i_skyrme=o2scl::stoi(vs[2]);
-        qmc_a=o2scl::stod(vs[3]);
-        qmc_alpha=o2scl::stod(vs[4]);
-        eos_S=o2scl::stod(vs[5]);
-        eos_L=o2scl::stod(vs[6]);
-        phi=o2scl::stod(vs[7]);
+        i_ns=o2scl::stoi(vs2[1]);
+        i_skyrme=o2scl::stoi(vs2[2]);
+        qmc_a=o2scl::stod(vs2[3]);
+        qmc_alpha=o2scl::stod(vs2[4]);
+        eos_S=o2scl::stod(vs2[5]);
+        eos_L=o2scl::stod(vs2[6]);
+        phi=o2scl::stod(vs2[7]);
 
         select_internal(i_ns,i_skyrme,qmc_alpha,qmc_a,
                         eos_L,eos_S,phi);
@@ -4788,7 +4788,7 @@ int eos_nuclei::read_results(std::string fname) {
 
   // Nuclear distribution
   
-  if (alg_mode==2 || alg_mode==3 || alg_mode==4) {
+  if (alg_mode==2 || alg_mode==3 || (alg_mode==4 && false)) {
     if (hf.find_object_by_name("A_min",type)!=0 || type!="tensor_grid") {
       O2SCL_ERR("Couldn't find tensor A_min in file.",
 		o2scl::exc_enotfound);
