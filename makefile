@@ -187,14 +187,8 @@ empty:
 
 doc: empty
 	cd doc; cp ~/o2scl/doc/o2scl/o2scl.tag .
-	cd doc; cp ~/o2scl/doc/o2scl/part/o2scl_part.tag .
-	cd doc; cp ~/o2scl/doc/o2scl/eos/o2scl_eos.tag .
-	cd doc; cp ~/o2scl/doc/o2scl/sphinx/build/html/objects.inv \
+	cd doc; cp ~/o2scl/doc/o2scl/html/objects.inv \
 		o2scl_objects.inv
-	cd doc; cp ~/o2scl/doc/o2scl/part/sphinx/build/html/objects.inv \
-		o2scl_part_objects.inv
-	cd doc; cp ~/o2scl/doc/o2scl/eos/sphinx/build/html/objects.inv \
-		o2scl_eos_objects.inv
 	cd doc; doxygen doxyfile
 	cd doc; make html
 
