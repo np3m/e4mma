@@ -138,3 +138,42 @@ NmZ_max``. The second, ``oth_units``, contains a set of empty strings
 because none of the tensors referred to in the ``oth_names`` list have
 any units. The unsigned integer ``n_oth`` contains the size of the
 ``oth_names`` array.
+
+Electron and photon table
+-------------------------
+
+The electron and photon table, contains five :ref:`o2scl:tensor_grid`
+objects which includes electrons, positrons, and photons, 
+
+- ``F``: the free energy per baryon
+  (in :math:`\mathrm{MeV}`)
+- ``S``: the entropy per baryon
+- ``E``: the internal energy per baryon
+  (in :math:`\mathrm{MeV}`)
+- ``P``: the pressure 
+  (in :math:`\mathrm{MeV}/\mathrm{fm}^3`)
+- ``mue``: the electron chemical potential
+  (in :math:`\mathrm{MeV}`)
+
+Nuclear masses table
+--------------------
+
+The nuclear massses table, contains five :ref:`o2scl:table`
+object. This table has 
+
+- ``Z``: the proton number
+- ``N``: the neutron number
+- ``g``: the spin degeneracy
+- ``m``: the total mass
+  (in :math:`\mathrm{MeV}`)
+- ``be``: the binding energy
+  (in :math:`\mathrm{MeV}`)
+- ``Sn``: the neutron separation energy
+  (in :math:`\mathrm{MeV}`)
+- ``Sp``: the proton separation energy
+  (in :math:`\mathrm{MeV}`)
+- ``mass_type``: 1 for light nucleus, 2 for AME, 3 for FRDM, and
+  4 for extrapolated FRDM results
+- ``spin_type``: 1 for light nucleus, 2 for Jexp from HFB fit, 3
+  for Jth from HFB fit, 4 for simple ansatz
+
