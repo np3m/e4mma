@@ -4452,7 +4452,7 @@ int eos_nuclei::write_results(std::string fname) {
     hdf_output(hf,tg3_NmZ_max,"NmZ_max");
   }
   
-  if (false && alg_mode==4) {
+  if (true && alg_mode==4) {
     hdf_output(hf,tg3_A_min,"A_min");
     hdf_output(hf,tg3_A_max,"A_max");
     hdf_output(hf,tg3_NmZ_min,"NmZ_min");
@@ -4788,7 +4788,7 @@ int eos_nuclei::read_results(std::string fname) {
 
   // Nuclear distribution
   
-  if (alg_mode==2 || alg_mode==3 || (alg_mode==4 && false)) {
+  if (alg_mode==2 || alg_mode==3 || (alg_mode==4 && true)) {
     if (hf.find_object_by_name("A_min",type)!=0 || type!="tensor_grid") {
       O2SCL_ERR("Couldn't find tensor A_min in file.",
 		o2scl::exc_enotfound);
