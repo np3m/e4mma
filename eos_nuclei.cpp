@@ -1724,6 +1724,7 @@ int eos_nuclei::solve_nuclei(size_t nv, const ubvector &x, ubvector &y,
     thermo lep;
     eso.compute_eg_point(nB,Ye,T*hc_mev_fm,lep,vdet["mue"]);
     Ymu=eso.muon.n/nB;
+    vdet["Ymu"]=Ymu;
 
     /*
       cout << "e,mu: " << eso.electron.mu << " " << eso.electron.m << " "
