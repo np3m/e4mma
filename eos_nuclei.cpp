@@ -54,9 +54,7 @@ eos_nuclei::eos_nuclei() {
   nB_grid_spec="301,10^(i*0.04-12)*2.0";
   Ye_grid_spec="70,0.01*(i+1)";
   T_grid_spec="160,0.1*1.046^i";
-#ifdef STRANGENESS
-  S_grid=spec="5,0.1*i";
-#endif
+  S_grid_spec="5,0.1*i";
 
   extend_frdm=false;
   show_all_nuclei=false;
@@ -83,11 +81,11 @@ eos_nuclei::eos_nuclei() {
   nucleon_func="(i<100)*10+(i>=100)*sqrt(i)";
   
   vi.append({"msg","index","flag","nB","Ye","T","log_xn","log_xp",
-	     "Z","N","fr","ed","pr","en","mun","mup","no_nuclei",
-	     "inB","iYe","iT","A_min","A_max","NmZ_min","NmZ_max",
-	     "Xalpha","Xd","Xt","XHe3","XLi4","Xnuclei",
-	     "zn","zp","F1","F2","F3","F4","Un","Up","msn",
-	     "msp","g","dgdT"});
+      "Z","N","fr","ed","pr","en","mun","mup","no_nuclei",
+      "inB","iYe","iT","A_min","A_max","NmZ_min","NmZ_max",
+      "Xalpha","Xd","Xt","XHe3","XLi4","Xnuclei",
+      "zn","zp","F1","F2","F3","F4","Un","Up","msn",
+      "msp","g","dgdT"});
 
   select_high_T(6);
   
@@ -375,19 +373,19 @@ double eos_nuclei::f_min_search(size_t nvar,const ubvector &x,
   double rA_heavy=cbrt(3.0*nuclei[5].A/4.0/pi/n0);
   double xx_heavy=cbrt(nb*ye/n0*nuclei[5].A/nuclei[5].Z);
   double Echeavy=-0.6*nuclei[5].Z*nuclei[5].Z*fine_structure
-	    /rA_heavy*(3.0/2.0*xx_heavy
-		       -1.0/2.0*pow(xx_heavy,3.0));
+    /rA_heavy*(3.0/2.0*xx_heavy
+               -1.0/2.0*pow(xx_heavy,3.0));
   double lambda_heavy=sqrt(2.0*pi/nuclei[5].m/T);
 	  
   f_total1+=xi1*fnp-T*(log(vomega[5]/nheavy
 			   /pow(lambda_heavy,3.0))+1.0)*
-	    nheavy-T*log(kappa1)*nheavy
-	    +Echeavy*nheavy+nuclei[5].be*nheavy
-	    -T*(log(vomega[0]/nalpha
-		    /pow(lambda_alpha,3.0))+1.0)*nalpha-
-	    T*log(kappa1)*nalpha
-	    +Ecalpha*nalpha+nuclei[0].be*nalpha
-	    +f_c-T*sum_nuc*log(kappa1);
+    nheavy-T*log(kappa1)*nheavy
+    +Echeavy*nheavy+nuclei[5].be*nheavy
+    -T*(log(vomega[0]/nalpha
+            /pow(lambda_alpha,3.0))+1.0)*nalpha-
+    T*log(kappa1)*nalpha
+    +Ecalpha*nalpha+nuclei[0].be*nalpha
+    +f_c-T*sum_nuc*log(kappa1);
   return f_total1;
 
 }
@@ -2197,6 +2195,10 @@ int eos_nuclei::nuc_matter(double nB, double Ye, double T,
     if (mret!=0) {
       O2SCL_ERR("nuc matter muons failed.",o2scl::exc_einval);
     }
+
+    // Ensure the last function evaluation stores the correct values
+    // in 'vdet':
+    nm_func(2,x,y);
     
     neutron.n=x[0];
     proton.n=x[1];
@@ -2274,6 +2276,7 @@ int eos_nuclei::nuc_matter_muons(size_t nv, const ubvector &x, ubvector &y,
 
   y[0]=(neutron.n+proton.n)/nB-1.0;
   y[1]=(eso.electron.n+eso.muon.n-proton.n)/proton.n;
+  vdet["Ymu"]=eso.muon.n/nB;
   
   return 0;
 }
@@ -4285,9 +4288,9 @@ void eos_nuclei::write_nuclei(std::string fname) {
     double Sp=-(nuclei[i].be-nuc_temp.be)*hc_mev_fm;
     
     double line[9]={((double)nuclei[i].Z),
-		    ((double)nuclei[i].N),
-		    nuclei[i].g,nuclei[i].m*hc_mev_fm,
-		    nuclei[i].be*hc_mev_fm,Sn,Sp,1,1};
+      ((double)nuclei[i].N),
+      nuclei[i].g,nuclei[i].m*hc_mev_fm,
+      nuclei[i].be*hc_mev_fm,Sn,Sp,1,1};
     t.line_of_data(9,line);
   }
   
@@ -4405,8 +4408,8 @@ int eos_nuclei::write_results(std::string fname) {
   // filesystem at the same time
   int tag=0, buffer=0;
   if (mpi_size>1 && mpi_rank>=1) {
-    MPI_Recv(&buffer,1,MPI_INT,mpi_rank-1,
-	     tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
+  MPI_Recv(&buffer,1,MPI_INT,mpi_rank-1,
+  tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
   }
   */
   if (mpi_size>1 && mpi_rank>0) {
@@ -4579,7 +4582,7 @@ int eos_nuclei::write_results(std::string fname) {
   }
 
   vector<string> oth_names={"Xd","Xt","XHe3","XLi4","flag",
-			    "log_xn","log_xp"};
+    "log_xn","log_xp"};
   if (alg_mode==2 || alg_mode==3 || alg_mode==4) {
     oth_names.push_back("A_min");
     oth_names.push_back("A_max");
@@ -4647,10 +4650,10 @@ int eos_nuclei::write_results(std::string fname) {
 #ifndef NO_MPI
   // Send a message to the next MPI rank
   /*
-  if (mpi_size>1 && mpi_rank<mpi_size-1) {
+    if (mpi_size>1 && mpi_rank<mpi_size-1) {
     MPI_Send(&buffer,1,MPI_INT,mpi_rank+1,
-	     tag,MPI_COMM_WORLD);
-  }
+    tag,MPI_COMM_WORLD);
+    }
   */
 #endif
 
@@ -4694,7 +4697,7 @@ int eos_nuclei::read_results(std::string fname) {
       vector<string> vs2;
       split_string(mod_str,vs2);
       
-      if (vs2[0]=="1") {
+      if (vs2[0]=="0") {
         
         i_ns=o2scl::stoi(vs2[1]);
         i_skyrme=o2scl::stoi(vs2[2]);
@@ -4704,6 +4707,7 @@ int eos_nuclei::read_results(std::string fname) {
         eos_L=o2scl::stod(vs2[6]);
         phi=o2scl::stod(vs2[7]);
 
+        cout << "Selecting model: " << mod_str << endl;
         select_internal(i_ns,i_skyrme,qmc_alpha,qmc_a,
                         eos_L,eos_S,phi);
         
@@ -4711,8 +4715,9 @@ int eos_nuclei::read_results(std::string fname) {
     }
   }
                 
-  
-  // nB, Ye, T grid
+
+  // ----------------------------------------------------------------
+  // nB, Ye, T grid (the strangeness grid is taken care of later)
 
   if (verbose>2) cout << "Reading n_nB." << endl;
   hf.get_szt("n_nB",n_nB2);
@@ -4723,6 +4728,8 @@ int eos_nuclei::read_results(std::string fname) {
   if (n_nB2==0 || n_Ye2==0 || n_T2==0) {
     O2SCL_ERR("One of the grid counts is zero.",o2scl::exc_efailed);
   }
+  
+  
   if (verbose>2) cout << "Reading nB_grid." << endl;
   hf.getd_vec("nB_grid",nB_grid2);
   if (verbose>2) cout << "Reading Ye_grid." << endl;
@@ -4730,11 +4737,7 @@ int eos_nuclei::read_results(std::string fname) {
   if (verbose>2) cout << "Reading T_grid." << endl;
   hf.getd_vec("T_grid",T_grid2);
   
-  if (hf.find_object_by_name("log_xn",type)!=0 || type!="tensor_grid") {
-    O2SCL_ERR("Couldn't find tensor log_xn in file.",
-	      o2scl::exc_enotfound);
-  }
-
+  // ----------------------------------------------------------------
   // Flags
 
   int itmp;
@@ -4744,8 +4747,13 @@ int eos_nuclei::read_results(std::string fname) {
   else strangeness=false;
 
   if (strangeness==true) {
-    hf.get_szt("n_S",n_S2);
-    hf.getd_vec("S_grid",S_grid2);
+    hf.get_szt_def("n_S",0,n_S2);
+    if (n_S2>0) {
+      hf.getd_vec("S_grid",S_grid2);
+    } else {
+      cerr << "Strangeness is 1 but n_S2=0." << endl;
+      exit(-1);
+    }
   } else {
     n_S2=0;
   }
@@ -4783,10 +4791,13 @@ int eos_nuclei::read_results(std::string fname) {
   if (verbose>2) cout << "Reading alg_mode." << endl;
   hf.geti_def("alg_mode",4,alg_mode);
 
+  // ----------------------------------------------------------------
   // Main data
 
-#ifdef STRANGENESS
-  
+  if (hf.find_object_by_name("log_xn",type)!=0 || type!="tensor_grid") {
+    O2SCL_ERR("Couldn't find tensor log_xn in file.",
+	      o2scl::exc_enotfound);
+  }
   if (verbose>2) cout << "Reading log_xn." << endl;
   hdf_input(hf,tg_log_xn,"log_xn");
   if (verbose>2) cout << "Reading log_xp." << endl;
@@ -4800,56 +4811,13 @@ int eos_nuclei::read_results(std::string fname) {
   if (verbose>2) cout << "Reading Fint." << endl;
   hdf_input(hf,tg_Fint,"Fint");
   
-#else
-  
-  if (verbose>2) cout << "Reading log_xn." << endl;
-  hdf_input(hf,tg_log_xn,"log_xn");
-  if (verbose>2) cout << "Reading log_xp." << endl;
-  hdf_input(hf,tg_log_xp,"log_xp");
-  if (verbose>2) cout << "Reading Z." << endl;
-  hdf_input(hf,tg_Z,"Z");
-  if (verbose>2) cout << "Reading A." << endl;
-  hdf_input(hf,tg_A,"A");
-  if (verbose>2) cout << "Reading flag." << endl;
-  hdf_input(hf,tg_flag,"flag");
-  if (verbose>2) cout << "Reading Fint." << endl;
-  hdf_input(hf,tg_Fint,"Fint");
-  
-#endif
-
   // Note that we read Sint and Eint even if derivs_computed is
   // false, because the entropy derivative is analytical
   
-  if (hf.find_object_by_name("Sint",type)==0 && type=="tensor_grid") {
-    if (verbose>2) cout << "Reading Sint." << endl;
-    hdf_input(hf,tg_Sint,"Sint");
-  }
-
-  // Fix old tables which don't have Eint
-  if (hf.find_object_by_name("Eint",type)==0 && type=="tensor_grid") {    
-    if (verbose>2) cout << "Reading Eint." << endl;
-    hdf_input(hf,tg_Eint,"Eint");
-  } else if (tg_Sint.total_size()>0) {
-    cout << "Fixing file with missing Eint." << endl;
-    exit(-1);
-    vector<vector<double> > grid={nB_grid2,Ye_grid2,
-                                  T_grid2};
-    vector<size_t> sz={n_nB2,n_Ye2,n_T2};
-    tg_Eint.resize(3,sz);
-    tg_Eint.set_grid(grid);
-    for(size_t i=0;i<tg_Eint.total_size();i++) {
-      //std::cout << "J: " << i << " " << tg_Eint.total_size() << endl;
-      size_t ix[3];
-      tg_Eint.unpack_index(i,ix);
-      //std::cout << "H: " << i << " " << ix[0] << std::endl;
-        
-      double T_MeV=T_grid2[ix[2]];
-        
-      double Eint_val=tg_Fint.get_data()[i]+
-        T_MeV*tg_Sint.get_data()[i];
-      tg_Eint.get(ix)=Eint_val;
-    }
-  }
+  if (verbose>2) cout << "Reading Eint." << endl;
+  hdf_input(hf,tg_Eint,"Eint");
+  if (verbose>2) cout << "Reading Sint." << endl;
+  hdf_input(hf,tg_Sint,"Sint");
   
   if (verbose>2) cout << "Reading Xn." << endl;
   hdf_input(hf,tg_Xn,"Xn");
@@ -4868,6 +4836,7 @@ int eos_nuclei::read_results(std::string fname) {
   if (verbose>2) cout << "Reading XLi4." << endl;
   hdf_input(hf,tg_XLi4,"XLi4");
 
+  // ----------------------------------------------------------------
   // Nuclear distribution
   
   if (alg_mode==2 || alg_mode==3 || (alg_mode==4 && true)) {
@@ -4897,11 +4866,25 @@ int eos_nuclei::read_results(std::string fname) {
     hdf_input(hf,tg_NmZ_max,"NmZ_max");
   }
 
-  // Derivatives of free energy
+  // ----------------------------------------------------------------
+  // Derivatives of free energy and leptons
 
   if (with_leptons && !derivs_computed) {
     O2SCL_ERR2("File says leptons are present but derivatives are not ",
 	       "computed.",o2scl::exc_esanity);
+  }
+
+  if (with_leptons || include_muons) {
+    if (verbose>2) cout << "Reading mue." << endl;
+    hdf_input(hf,tg_mue,"mue");
+    if (include_muons) {
+      if (verbose>2) cout << "Reading Ymu." << endl;
+      hdf_input(hf,tg_Ymu,"Ymu");
+    } else {
+      tg_Ymu.clear();
+    }
+  } else {
+    tg_mue.clear();
   }
   
   if (derivs_computed) {
@@ -4933,19 +4916,11 @@ int eos_nuclei::read_results(std::string fname) {
       hdf_input(hf,tg_P,"P");
       if (verbose>2) cout << "Reading S." << endl;
       hdf_input(hf,tg_S,"S");
-      if (verbose>2) cout << "Reading mue." << endl;
-      hdf_input(hf,tg_mue,"mue");
-      if (include_muons) {
-        if (verbose>2) cout << "Reading Ymu." << endl;
-        hdf_input(hf,tg_Ymu,"Ymu");
-      }
     } else {
       tg_F.clear();
       tg_E.clear();
       tg_P.clear();
       tg_S.clear();
-      tg_mue.clear();
-      tg_Ymu.clear();
     }
   } else {
     tg_Pint.clear();
@@ -4955,10 +4930,11 @@ int eos_nuclei::read_results(std::string fname) {
     tg_E.clear();
     tg_P.clear();
     tg_S.clear();
-    tg_mue.clear();
-    tg_Ymu.clear();
   }
 
+  // ----------------------------------------------------------------
+  // Detail
+  
   if (include_detail) {
     if (verbose>2) cout << "Reading zn." << endl;
     hdf_input(hf,tg_zn,"zn");
@@ -5120,7 +5096,7 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
   bool guess_provided=false;
   int flag=0;
   size_t inB=0, iYe=0, iT=0;
-  vector<size_t> ix;
+  vector<size_t> ix, ix_left, ix_right;
 
   // -------------------------------------------------------------------
   // If a table is loaded, then fix the density, electron fraction,
@@ -5135,6 +5111,12 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
     iT=vector_lookup(n_T2,T_grid2,T*hc_mev_fm);
     T=T_grid2[iT]/hc_mev_fm;
     ix={inB,iYe,iT};
+    if (inB>0) {
+      ix_left={inB-1,iYe,iT};
+    }
+    if (inB<n_nB2-1) {
+      ix_right={inB+1,iYe,iT};
+    }
     
     flag=((int)(tg_flag.get(ix)+1.0e-10));
     
@@ -5205,22 +5187,22 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
 	guess_provided=true;
       }
       
-    } else if (inB>0 && tg_flag.get3(inB-1,iYe,iT)>9.9 && alg_mode==4) {
+    } else if (inB>0 && tg_flag.get(ix_left)>9.9 && alg_mode==4) {
 
       // Otherwise if there is a good guess from the adjacent point
       // at lower baryon density
       
       cout << "Reading guess from lower baryon density point." << endl;
-      log_xn=tg_log_xn.get3(inB-1,iYe,iT);
-      log_xp=tg_log_xp.get3(inB-1,iYe,iT);
-      A_min=((int)(tg_A_min.get3(inB-1,iYe,iT)));
-      A_max=((int)(tg_A_max.get3(inB-1,iYe,iT)));
-      NmZ_min=((int)(tg_NmZ_min.get3(inB-1,iYe,iT)));
-      NmZ_max=((int)(tg_NmZ_max.get3(inB-1,iYe,iT)));
+      log_xn=tg_log_xn.get(ix_left);
+      log_xp=tg_log_xp.get(ix_left);
+      A_min=((int)(tg_A_min.get(ix_left)));
+      A_max=((int)(tg_A_max.get(ix_left)));
+      NmZ_min=((int)(tg_NmZ_min.get(ix_left)));
+      NmZ_max=((int)(tg_NmZ_max.get(ix_left)));
       cout << "  log_xn,log_xp,Z,A: "
 	   << log_xn << " " << log_xp << " ";
-      cout << tg_Z.get3(inB-1,iYe,iT) << " ";
-      cout << tg_A.get3(inB-1,iYe,iT) << endl;
+      cout << tg_Z.get(ix_left) << " ";
+      cout << tg_A.get(ix_left) << endl;
       cout << "  A_min,A_Max,NmZ_min,NmZ_max: ";
       cout << A_min << " "
 	   << A_max << " " << NmZ_min << " " << NmZ_max << endl;
@@ -5271,15 +5253,15 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
     }
 
     if (loaded && inB>0 && inB<n_nB2-1 &&
-	tg_flag.get3(inB-1,iYe,iT)>9.9 &&
-	tg_flag.get3(inB+1,iYe,iT)>9.9) {
+	tg_flag.get(ix_left)>9.9 &&
+	tg_flag.get(ix_right)>9.9) {
       cout << "Automatically setting ranges for log_xn and log_xp "
            << "from neighboring points." << endl;
       fd_rand_ranges.resize(4);
-      fd_rand_ranges[0]=tg_log_xn.get3(inB-1,iYe,iT);
-      fd_rand_ranges[1]=tg_log_xn.get3(inB+1,iYe,iT);
-      fd_rand_ranges[2]=tg_log_xp.get3(inB-1,iYe,iT);
-      fd_rand_ranges[3]=tg_log_xp.get3(inB+1,iYe,iT);
+      fd_rand_ranges[0]=tg_log_xn.get(ix_left);
+      fd_rand_ranges[1]=tg_log_xn.get(ix_right);
+      fd_rand_ranges[2]=tg_log_xp.get(ix_left);
+      fd_rand_ranges[3]=tg_log_xp.get(ix_right);
       cout << "  ";
       vector_out(cout,fd_rand_ranges,true);
     }
@@ -6647,11 +6629,12 @@ void eos_nuclei::new_table() {
   n_nB2=301;
   n_Ye2=70;
   n_T2=160;
-#ifdef STRANGENESS
-  n_S2=5;
-#else
-  n_S2=0;
-#endif
+
+  if (strangeness) {
+    n_S2=5;
+  } else {
+    n_S2=0;
+  }
   cout << "Beginning new table." << endl;
 
   calc_utf8<> calc;
@@ -6690,38 +6673,61 @@ void eos_nuclei::new_table() {
     packed.push_back(T_grid2[i]);
   }
 
-#ifdef STRANGENESS
-  split_string_delim(S_grid_spec,split_res,',');
-  n_S2=stoszt(split_res[0]);
-
-  calc.compile(split_res[1].c_str());
-  for(size_t i=0;i<n_S2;i++) {
-    vars["i"]=((double)i);
-    S_grid2.push_back(calc.eval(&vars));
-    packed.push_back(S_grid2[i]);
+  if (strangeness) {
+    split_string_delim(S_grid_spec,split_res,',');
+    n_S2=stoszt(split_res[0]);
+    
+    calc.compile(split_res[1].c_str());
+    for(size_t i=0;i<n_S2;i++) {
+      vars["i"]=((double)i);
+      S_grid2.push_back(calc.eval(&vars));
+      packed.push_back(S_grid2[i]);
+    }
   }
-#endif
   
-#ifdef STRANGENESS
+  if (strangeness) {
+    
+    size_t st[4]={n_nB2,n_Ye2,n_T2,n_S2};
+    tg_log_xn.resize(4,st);
+    tg_log_xp.resize(4,st);
+    tg_Z.resize(4,st);
+    tg_A.resize(4,st);
+    tg_flag.resize(4,st);
+    tg_Fint.resize(4,st);
+    tg_Sint.resize(4,st);
+    tg_Eint.resize(4,st);
   
-  size_t st[4]={n_nB2,n_Ye2,n_T2,n_S2};
-  tg_log_xn.resize(4,st);
-  tg_log_xp.resize(4,st);
-  tg_Z.resize(4,st);
-  tg_A.resize(4,st);
-  tg_flag.resize(4,st);
-  tg_Fint.resize(4,st);
-  tg_Sint.resize(4,st);
-  tg_Eint.resize(4,st);
+    tg_Xn.resize(4,st);
+    tg_Xp.resize(4,st);
+    tg_Xalpha.resize(4,st);
+    tg_Xnuclei.resize(4,st);
+    tg_Xd.resize(4,st);
+    tg_Xt.resize(4,st);
+    tg_XHe3.resize(4,st);
+    tg_XLi4.resize(4,st);
+
+  } else {
+    
+    size_t st[3]={n_nB2,n_Ye2,n_T2};
+    tg_log_xn.resize(3,st);
+    tg_log_xp.resize(3,st);
+    tg_Z.resize(3,st);
+    tg_A.resize(3,st);
+    tg_flag.resize(3,st);
+    tg_Fint.resize(3,st);
+    tg_Sint.resize(3,st);
+    tg_Eint.resize(3,st);
   
-  tg_Xn.resize(4,st);
-  tg_Xp.resize(4,st);
-  tg_Xalpha.resize(4,st);
-  tg_Xnuclei.resize(4,st);
-  tg_Xd.resize(4,st);
-  tg_Xt.resize(4,st);
-  tg_XHe3.resize(4,st);
-  tg_XLi4.resize(4,st);
+    tg_Xn.resize(3,st);
+    tg_Xp.resize(3,st);
+    tg_Xalpha.resize(3,st);
+    tg_Xnuclei.resize(3,st);
+    tg_Xd.resize(3,st);
+    tg_Xt.resize(3,st);
+    tg_XHe3.resize(3,st);
+    tg_XLi4.resize(3,st);
+
+  }
   
   tg_log_xn.set_grid_packed(packed);
   tg_log_xp.set_grid_packed(packed);
@@ -6759,73 +6765,25 @@ void eos_nuclei::new_table() {
   tg_XHe3.set_all(0.0);
   tg_XLi4.set_all(0.0);
   
-#else
-  
-  size_t st[3]={n_nB2,n_Ye2,n_T2};
-  tg_log_xn.resize(3,st);
-  tg_log_xp.resize(3,st);
-  tg_Z.resize(3,st);
-  tg_A.resize(3,st);
-  tg_flag.resize(3,st);
-  tg_Fint.resize(3,st);
-  tg_Sint.resize(3,st);
-  tg_Eint.resize(3,st);
-  
-  tg_Xn.resize(3,st);
-  tg_Xp.resize(3,st);
-  tg_Xalpha.resize(3,st);
-  tg_Xnuclei.resize(3,st);
-  tg_Xd.resize(3,st);
-  tg_Xt.resize(3,st);
-  tg_XHe3.resize(3,st);
-  tg_XLi4.resize(3,st);
-  
-  tg_log_xn.set_grid_packed(packed);
-  tg_log_xp.set_grid_packed(packed);
-  tg_Z.set_grid_packed(packed);
-  tg_A.set_grid_packed(packed);
-  tg_flag.set_grid_packed(packed);
-  tg_Fint.set_grid_packed(packed);
-  tg_Sint.set_grid_packed(packed);
-  tg_Eint.set_grid_packed(packed);
-  
-  tg_Xn.set_grid_packed(packed);
-  tg_Xp.set_grid_packed(packed);
-  tg_Xalpha.set_grid_packed(packed);
-  tg_Xnuclei.set_grid_packed(packed);
-  tg_Xd.set_grid_packed(packed);
-  tg_Xt.set_grid_packed(packed);
-  tg_XHe3.set_grid_packed(packed);
-  tg_XLi4.set_grid_packed(packed);
-
-  tg_log_xn.set_all(0.0);
-  tg_log_xp.set_all(0.0);
-  tg_Z.set_all(0.0);
-  tg_A.set_all(0.0);
-  tg_flag.set_all(0.0);
-  tg_Fint.set_all(0.0);
-  tg_Sint.set_all(0.0);
-  tg_Eint.set_all(0.0);
-
-  tg_Xn.set_all(0.0);
-  tg_Xp.set_all(0.0);
-  tg_Xalpha.set_all(0.0);
-  tg_Xnuclei.set_all(0.0);
-  tg_Xd.set_all(0.0);
-  tg_Xt.set_all(0.0);
-  tg_XHe3.set_all(0.0);
-  tg_XLi4.set_all(0.0);
-  
-#endif
-
   if (alg_mode==2 || alg_mode==3 || alg_mode==4) {
 
-#ifdef STRANGENESS
+    if (strangeness) {
     
-    tg_A_min.resize(4,st);
-    tg_A_max.resize(4,st);
-    tg_NmZ_min.resize(4,st);
-    tg_NmZ_max.resize(4,st);
+      size_t st[4]={n_nB2,n_Ye2,n_T2,n_S2};
+      tg_A_min.resize(4,st);
+      tg_A_max.resize(4,st);
+      tg_NmZ_min.resize(4,st);
+      tg_NmZ_max.resize(4,st);
+
+    } else {
+
+      size_t st[3]={n_nB2,n_Ye2,n_T2};
+      tg_A_min.resize(3,st);
+      tg_A_max.resize(3,st);
+      tg_NmZ_min.resize(3,st);
+      tg_NmZ_max.resize(3,st);
+    
+    }
     
     tg_A_min.set_grid_packed(packed);
     tg_A_max.set_grid_packed(packed);
@@ -6837,77 +6795,63 @@ void eos_nuclei::new_table() {
     tg_NmZ_min.set_all(0.0);
     tg_NmZ_max.set_all(0.0);
 
-#else
-    
-    tg_A_min.resize(3,st);
-    tg_A_max.resize(3,st);
-    tg_NmZ_min.resize(3,st);
-    tg_NmZ_max.resize(3,st);
-    
-    tg_A_min.set_grid_packed(packed);
-    tg_A_max.set_grid_packed(packed);
-    tg_NmZ_min.set_grid_packed(packed);
-    tg_NmZ_max.set_grid_packed(packed);
-    
-    tg_A_min.set_all(0.0);
-    tg_A_max.set_all(0.0);
-    tg_NmZ_min.set_all(0.0);
-    tg_NmZ_max.set_all(0.0);
-
-#endif
-  
   }
 
   if ((derivs_computed || include_muons) && with_leptons) {
     
-#ifdef STRANGENESS
+    if (strangeness) {
     
-    tg_mue.resize(4,st);
-    tg_mue.set_grid_packed(packed);
-    tg_mue.set_all(0.0);
+      size_t st[4]={n_nB2,n_Ye2,n_T2,n_S2};
+      tg_mue.resize(4,st);
+      tg_mue.set_grid_packed(packed);
+      tg_mue.set_all(0.0);
+      
+    } else {
+      
+      size_t st[3]={n_nB2,n_Ye2,n_T2};
+      tg_mue.resize(3,st);
+      tg_mue.set_grid_packed(packed);
+      tg_mue.set_all(0.0);
 
-#else
-    
-    tg_mue.resize(3,st);
-    tg_mue.set_grid_packed(packed);
-    tg_mue.set_all(0.0);
-    
-#endif
+    }
     
   }
   
   if (derivs_computed) {
     
-#ifdef STRANGENESS
-    
-    tg_Pint.resize(4,st);
-    tg_Pint.set_grid_packed(packed);
-    tg_Pint.set_all(0.0);
-    tg_mun.resize(4,st);
-    tg_mun.set_grid_packed(packed);
-    tg_mun.set_all(0.0);
-    tg_mup.resize(4,st);
-    tg_mup.set_grid_packed(packed);
-    tg_mup.set_all(0.0);
+    if (strangeness) {
+      
+      size_t st[4]={n_nB2,n_Ye2,n_T2,n_S2};
+      tg_Pint.resize(4,st);
+      tg_Pint.set_grid_packed(packed);
+      tg_Pint.set_all(0.0);
+      tg_mun.resize(4,st);
+      tg_mun.set_grid_packed(packed);
+      tg_mun.set_all(0.0);
+      tg_mup.resize(4,st);
+      tg_mup.set_grid_packed(packed);
+      tg_mup.set_all(0.0);
 
-#else
+    } else {
 
-    tg_Pint.resize(3,st);
-    tg_Pint.set_grid_packed(packed);
-    tg_Pint.set_all(0.0);
-    tg_mun.resize(3,st);
-    tg_mun.set_grid_packed(packed);
-    tg_mun.set_all(0.0);
-    tg_mup.resize(3,st);
-    tg_mup.set_grid_packed(packed);
-    tg_mup.set_all(0.0);
+      size_t st[3]={n_nB2,n_Ye2,n_T2};
+      tg_Pint.resize(3,st);
+      tg_Pint.set_grid_packed(packed);
+      tg_Pint.set_all(0.0);
+      tg_mun.resize(3,st);
+      tg_mun.set_grid_packed(packed);
+      tg_mun.set_all(0.0);
+      tg_mup.resize(3,st);
+      tg_mup.set_grid_packed(packed);
+      tg_mup.set_all(0.0);
 
-#endif
+    }
     
     if (with_leptons) {
       
-#ifdef STRANGENESS
+      if (strangeness) {
       
+      size_t st[4]={n_nB2,n_Ye2,n_T2,n_S2};
       tg_E.resize(4,st);
       tg_E.set_grid_packed(packed);
       tg_E.set_all(0.0);
@@ -6921,8 +6865,9 @@ void eos_nuclei::new_table() {
       tg_F.set_grid_packed(packed);
       tg_F.set_all(0.0);
       
-#else
+      } else {
       
+      size_t st[3]={n_nB2,n_Ye2,n_T2};
       tg_E.resize(3,st);
       tg_E.set_grid_packed(packed);
       tg_E.set_all(0.0);
@@ -6936,7 +6881,7 @@ void eos_nuclei::new_table() {
       tg_F.set_grid_packed(packed);
       tg_F.set_all(0.0);
       
-#endif
+      }
       
     }
   }
@@ -7443,19 +7388,19 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 
 	      if (alg_mode>=2) {
 		double line[8]={tg_log_xn.get(ix),
-				tg_log_xp.get(ix),
-				0.0,0.0,
-				tg_A_min.get(ix),
-				tg_A_max.get(ix),
-				tg_NmZ_min.get(ix),
-				tg_NmZ_max.get(ix)};
+                  tg_log_xp.get(ix),
+                  0.0,0.0,
+                  tg_A_min.get(ix),
+                  tg_A_max.get(ix),
+                  tg_NmZ_min.get(ix),
+                  tg_NmZ_max.get(ix)};
 		gtab.line_of_data(8,line);
 	      } else {
 		double line[8]={tg_log_xn.get(ix),
-				tg_log_xp.get(ix),
-				tg_Z.get(ix),
-				tg_A.get(ix),
-				0.0,0.0,0.0,0.0};
+                  tg_log_xp.get(ix),
+                  tg_Z.get(ix),
+                  tg_A.get(ix),
+                  0.0,0.0,0.0,0.0};
 		gtab.line_of_data(8,line);
 	      }	
 	      
@@ -7474,19 +7419,19 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	      tasks.push_back(iT);
 	      if (alg_mode>=2) {
 		double line[8]={external.tg_log_xn.get(ix),
-				external.tg_log_xp.get(ix),
-				0.0,0.0,
-				external.tg_A_min.get(ix),
-				external.tg_A_max.get(ix),
-				external.tg_NmZ_min.get(ix),
-				external.tg_NmZ_max.get(ix)};
+                  external.tg_log_xp.get(ix),
+                  0.0,0.0,
+                  external.tg_A_min.get(ix),
+                  external.tg_A_max.get(ix),
+                  external.tg_NmZ_min.get(ix),
+                  external.tg_NmZ_max.get(ix)};
 		gtab.line_of_data(8,line);
 	      } else {
 		double line[8]={external.tg_log_xn.get(ix),
-				external.tg_log_xp.get(ix),
-				external.tg_Z.get(ix),
-				external.tg_A.get(ix),
-				0.0,0.0,0.0,0.0};
+                  external.tg_log_xp.get(ix),
+                  external.tg_Z.get(ix),
+                  external.tg_A.get(ix),
+                  0.0,0.0,0.0,0.0};
 		gtab.line_of_data(8,line);
 	      }
 	      guess_found=true;
@@ -7521,34 +7466,34 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 			tg_flag.get3(inB+1,iYe,iT)>9.9) {
 		      double line[8]={(tg_log_xn.get3(inB-1,iYe,iT)+
 				       tg_log_xn.get3(inB+1,iYe,iT))/2.0,
-				      (tg_log_xp.get3(inB-1,iYe,iT)+
-				       tg_log_xp.get3(inB-1,iYe,iT))/2.0,
-				      0.0,0.0,
-				      (tg_A_min.get3(inB-1,iYe,iT)+
-				       tg_A_min.get3(inB-1,iYe,iT))/2.0,
-				      (tg_A_max.get3(inB-1,iYe,iT)+
-				       tg_A_max.get3(inB-1,iYe,iT))/2.0,
-				      (tg_NmZ_min.get3(inB-1,iYe,iT)+
-				       tg_NmZ_min.get3(inB-1,iYe,iT))/2.0,
-				      (tg_NmZ_max.get3(inB-1,iYe,iT)+
-				       tg_NmZ_max.get3(inB-1,iYe,iT))/2.0};
+                        (tg_log_xp.get3(inB-1,iYe,iT)+
+                         tg_log_xp.get3(inB-1,iYe,iT))/2.0,
+                        0.0,0.0,
+                        (tg_A_min.get3(inB-1,iYe,iT)+
+                         tg_A_min.get3(inB-1,iYe,iT))/2.0,
+                        (tg_A_max.get3(inB-1,iYe,iT)+
+                         tg_A_max.get3(inB-1,iYe,iT))/2.0,
+                        (tg_NmZ_min.get3(inB-1,iYe,iT)+
+                         tg_NmZ_min.get3(inB-1,iYe,iT))/2.0,
+                        (tg_NmZ_max.get3(inB-1,iYe,iT)+
+                         tg_NmZ_max.get3(inB-1,iYe,iT))/2.0};
 		      gtab.line_of_data(8,line);
 		    } else {
 		      double line[8]={tg_log_xn.get3(inB-1,iYe,iT),
-				      tg_log_xp.get3(inB-1,iYe,iT),
-				      0.0,0.0,
-				      tg_A_min.get3(inB-1,iYe,iT),
-				      tg_A_max.get3(inB-1,iYe,iT),
-				      tg_NmZ_min.get3(inB-1,iYe,iT),
-				      tg_NmZ_max.get3(inB-1,iYe,iT)};
+                        tg_log_xp.get3(inB-1,iYe,iT),
+                        0.0,0.0,
+                        tg_A_min.get3(inB-1,iYe,iT),
+                        tg_A_max.get3(inB-1,iYe,iT),
+                        tg_NmZ_min.get3(inB-1,iYe,iT),
+                        tg_NmZ_max.get3(inB-1,iYe,iT)};
 		      gtab.line_of_data(8,line);
 		    }
 		  } else {
 		    double line[8]={tg_log_xn.get3(inB-1,iYe,iT),
-				    tg_log_xp.get3(inB-1,iYe,iT),
-				    tg_Z.get3(inB-1,iYe,iT),
-				    tg_A.get3(inB-1,iYe,iT),
-				    0.0,0.0,0.0,0.0};
+                      tg_log_xp.get3(inB-1,iYe,iT),
+                      tg_Z.get3(inB-1,iYe,iT),
+                      tg_A.get3(inB-1,iYe,iT),
+                      0.0,0.0,0.0,0.0};
 		    gtab.line_of_data(8,line);
 		  }	
 		  
@@ -7570,19 +7515,19 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 		  
 		  if (alg_mode>=2) {
 		    double line[8]={tg_log_xn.get3(inB,iYe-1,iT),
-				    tg_log_xp.get3(inB,iYe-1,iT),
-				    0.0,0.0,
-				    tg_A_min.get3(inB,iYe-1,iT),
-				    tg_A_max.get3(inB,iYe-1,iT),
-				    tg_NmZ_min.get3(inB,iYe-1,iT),
-				    tg_NmZ_max.get3(inB,iYe-1,iT)};
+                      tg_log_xp.get3(inB,iYe-1,iT),
+                      0.0,0.0,
+                      tg_A_min.get3(inB,iYe-1,iT),
+                      tg_A_max.get3(inB,iYe-1,iT),
+                      tg_NmZ_min.get3(inB,iYe-1,iT),
+                      tg_NmZ_max.get3(inB,iYe-1,iT)};
 		    gtab.line_of_data(8,line);
 		  } else {
 		    double line[8]={tg_log_xn.get3(inB,iYe-1,iT),
-				    tg_log_xp.get3(inB,iYe-1,iT),
-				    tg_Z.get3(inB,iYe-1,iT),
-				    tg_A.get3(inB,iYe-1,iT),
-				    0.0,0.0,0.0,0.0};
+                      tg_log_xp.get3(inB,iYe-1,iT),
+                      tg_Z.get3(inB,iYe-1,iT),
+                      tg_A.get3(inB,iYe-1,iT),
+                      0.0,0.0,0.0,0.0};
 		    gtab.line_of_data(8,line);
 		  }	
 		  
@@ -7603,19 +7548,19 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 
 		  if (alg_mode>=2) {
 		    double line[8]={tg_log_xn.get3(inB,iYe,iT-1),
-				    tg_log_xp.get3(inB,iYe,iT-1),
-				    0.0,0.0,
-				    tg_A_min.get3(inB,iYe,iT-1),
-				    tg_A_max.get3(inB,iYe,iT-1),
-				    tg_NmZ_min.get3(inB,iYe,iT-1),
-				    tg_NmZ_max.get3(inB,iYe,iT-1)};
+                      tg_log_xp.get3(inB,iYe,iT-1),
+                      0.0,0.0,
+                      tg_A_min.get3(inB,iYe,iT-1),
+                      tg_A_max.get3(inB,iYe,iT-1),
+                      tg_NmZ_min.get3(inB,iYe,iT-1),
+                      tg_NmZ_max.get3(inB,iYe,iT-1)};
 		    gtab.line_of_data(8,line);
 		  } else {
 		    double line[8]={tg_log_xn.get3(inB,iYe,iT-1),
-				    tg_log_xp.get3(inB,iYe,iT-1),
-				    tg_Z.get3(inB,iYe,iT-1),
-				    tg_A.get3(inB,iYe,iT-1),
-				    0.0,0.0,0.0,0.0};
+                      tg_log_xp.get3(inB,iYe,iT-1),
+                      tg_Z.get3(inB,iYe,iT-1),
+                      tg_A.get3(inB,iYe,iT-1),
+                      0.0,0.0,0.0,0.0};
 		    gtab.line_of_data(8,line);
 		  }	
 		  
@@ -7639,34 +7584,34 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 			tg_flag.get3(inB-1,iYe,iT)>9.9) {
 		      double line[8]={(tg_log_xn.get3(inB-1,iYe,iT)+
 				       tg_log_xn.get3(inB+1,iYe,iT))/2.0,
-				      (tg_log_xp.get3(inB-1,iYe,iT)+
-				       tg_log_xp.get3(inB-1,iYe,iT))/2.0,
-				      0.0,0.0,
-				      (tg_A_min.get3(inB-1,iYe,iT)+
-				       tg_A_min.get3(inB-1,iYe,iT))/2.0,
-				      (tg_A_max.get3(inB-1,iYe,iT)+
-				       tg_A_max.get3(inB-1,iYe,iT))/2.0,
-				      (tg_NmZ_min.get3(inB-1,iYe,iT)+
-				       tg_NmZ_min.get3(inB-1,iYe,iT))/2.0,
-				      (tg_NmZ_max.get3(inB-1,iYe,iT)+
-				       tg_NmZ_max.get3(inB-1,iYe,iT))/2.0};
+                        (tg_log_xp.get3(inB-1,iYe,iT)+
+                         tg_log_xp.get3(inB-1,iYe,iT))/2.0,
+                        0.0,0.0,
+                        (tg_A_min.get3(inB-1,iYe,iT)+
+                         tg_A_min.get3(inB-1,iYe,iT))/2.0,
+                        (tg_A_max.get3(inB-1,iYe,iT)+
+                         tg_A_max.get3(inB-1,iYe,iT))/2.0,
+                        (tg_NmZ_min.get3(inB-1,iYe,iT)+
+                         tg_NmZ_min.get3(inB-1,iYe,iT))/2.0,
+                        (tg_NmZ_max.get3(inB-1,iYe,iT)+
+                         tg_NmZ_max.get3(inB-1,iYe,iT))/2.0};
 		      gtab.line_of_data(8,line);
 		    } else {
 		      double line[8]={tg_log_xn.get3(inB+1,iYe,iT),
-				      tg_log_xp.get3(inB+1,iYe,iT),
-				      0.0,0.0,
-				      tg_A_min.get3(inB+1,iYe,iT),
-				      tg_A_max.get3(inB+1,iYe,iT),
-				      tg_NmZ_min.get3(inB+1,iYe,iT),
-				      tg_NmZ_max.get3(inB+1,iYe,iT)};
+                        tg_log_xp.get3(inB+1,iYe,iT),
+                        0.0,0.0,
+                        tg_A_min.get3(inB+1,iYe,iT),
+                        tg_A_max.get3(inB+1,iYe,iT),
+                        tg_NmZ_min.get3(inB+1,iYe,iT),
+                        tg_NmZ_max.get3(inB+1,iYe,iT)};
 		      gtab.line_of_data(8,line);
 		    }
 		  } else {
 		    double line[8]={tg_log_xn.get3(inB+1,iYe,iT),
-				    tg_log_xp.get3(inB+1,iYe,iT),
-				    tg_Z.get3(inB+1,iYe,iT),
-				    tg_A.get3(inB+1,iYe,iT),
-				    0.0,0.0,0.0,0.0};
+                      tg_log_xp.get3(inB+1,iYe,iT),
+                      tg_Z.get3(inB+1,iYe,iT),
+                      tg_A.get3(inB+1,iYe,iT),
+                      0.0,0.0,0.0,0.0};
 		    gtab.line_of_data(8,line);
 		  }	
 		  
@@ -7687,19 +7632,19 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 
 		  if (alg_mode>=2) {
 		    double line[8]={tg_log_xn.get3(inB,iYe+1,iT),
-				    tg_log_xp.get3(inB,iYe+1,iT),
-				    0.0,0.0,
-				    tg_A_min.get3(inB,iYe+1,iT),
-				    tg_A_max.get3(inB,iYe+1,iT),
-				    tg_NmZ_min.get3(inB,iYe+1,iT),
-				    tg_NmZ_max.get3(inB,iYe+1,iT)};
+                      tg_log_xp.get3(inB,iYe+1,iT),
+                      0.0,0.0,
+                      tg_A_min.get3(inB,iYe+1,iT),
+                      tg_A_max.get3(inB,iYe+1,iT),
+                      tg_NmZ_min.get3(inB,iYe+1,iT),
+                      tg_NmZ_max.get3(inB,iYe+1,iT)};
 		    gtab.line_of_data(8,line);
 		  } else {
 		    double line[8]={tg_log_xn.get3(inB,iYe+1,iT),
-				    tg_log_xp.get3(inB,iYe+1,iT),
-				    tg_Z.get3(inB,iYe+1,iT),
-				    tg_A.get3(inB,iYe+1,iT),
-				    0.0,0.0,0.0,0.0};
+                      tg_log_xp.get3(inB,iYe+1,iT),
+                      tg_Z.get3(inB,iYe+1,iT),
+                      tg_A.get3(inB,iYe+1,iT),
+                      0.0,0.0,0.0,0.0};
 		    gtab.line_of_data(8,line);
 		  }	
 		  
@@ -7720,19 +7665,19 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 
 		  if (alg_mode>=2) {
 		    double line[8]={tg_log_xn.get3(inB,iYe,iT+1),
-				    tg_log_xp.get3(inB,iYe,iT+1),
-				    0.0,0.0,
-				    tg_A_min.get3(inB,iYe,iT+1),
-				    tg_A_max.get3(inB,iYe,iT+1),
-				    tg_NmZ_min.get3(inB,iYe,iT+1),
-				    tg_NmZ_max.get3(inB,iYe,iT+1)};
+                      tg_log_xp.get3(inB,iYe,iT+1),
+                      0.0,0.0,
+                      tg_A_min.get3(inB,iYe,iT+1),
+                      tg_A_max.get3(inB,iYe,iT+1),
+                      tg_NmZ_min.get3(inB,iYe,iT+1),
+                      tg_NmZ_max.get3(inB,iYe,iT+1)};
 		    gtab.line_of_data(8,line);
 		  } else {
 		    double line[8]={tg_log_xn.get3(inB,iYe,iT+1),
-				    tg_log_xp.get3(inB,iYe,iT+1),
-				    tg_Z.get3(inB,iYe,iT+1),
-				    tg_A.get3(inB,iYe,iT+1),
-				    0.0,0.0,0.0,0.0};
+                      tg_log_xp.get3(inB,iYe,iT+1),
+                      tg_Z.get3(inB,iYe,iT+1),
+                      tg_A.get3(inB,iYe,iT+1),
+                      0.0,0.0,0.0,0.0};
 		    gtab.line_of_data(8,line);
 		  }	
 		  
@@ -7779,19 +7724,19 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 			
 			if (alg_mode>=2) {
 			  double line[8]={tg_log_xn.get3(jnB,jYe,jT),
-					  tg_log_xp.get3(jnB,jYe,jT),
-					  0.0,0.0,
-					  tg_A_min.get3(jnB,jYe,jT),
-					  tg_A_max.get3(jnB,jYe,jT),
-					  tg_NmZ_min.get3(jnB,jYe,jT),
-					  tg_NmZ_max.get3(jnB,jYe,jT)};
+                            tg_log_xp.get3(jnB,jYe,jT),
+                            0.0,0.0,
+                            tg_A_min.get3(jnB,jYe,jT),
+                            tg_A_max.get3(jnB,jYe,jT),
+                            tg_NmZ_min.get3(jnB,jYe,jT),
+                            tg_NmZ_max.get3(jnB,jYe,jT)};
 			  gtab.line_of_data(8,line);
 			} else {
 			  double line[8]={tg_log_xn.get3(jnB,jYe,jT),
-					  tg_log_xp.get3(jnB,jYe,jT),
-					  tg_Z.get3(jnB,jYe,jT),
-					  tg_A.get3(jnB,jYe,jT),
-					  0.0,0.0,0.0,0.0};
+                            tg_log_xp.get3(jnB,jYe,jT),
+                            tg_Z.get3(jnB,jYe,jT),
+                            tg_A.get3(jnB,jYe,jT),
+                            0.0,0.0,0.0,0.0};
 			  gtab.line_of_data(8,line);
 			}	
 		  
@@ -8639,10 +8584,10 @@ int eos_nuclei::mcarlo_nuclei(std::vector<std::string> &sv, bool itive_com) {
     }
 
     vector<double> line={((double)j),eos_S,eos_L,qmc_a,qmc_b,qmc_alpha,
-			 qmc_beta,((double)i_ns),((double)i_skyrme),phi,
-			 eos_n0,eos_EoA,eos_K,chi2_ns,ns_fit_parms[0],
-			 ns_fit_parms[1],ns_fit_parms[2],ns_fit_parms[3],
-			 ns_fit_parms[4]};
+      qmc_beta,((double)i_ns),((double)i_skyrme),phi,
+      eos_n0,eos_EoA,eos_K,chi2_ns,ns_fit_parms[0],
+      ns_fit_parms[1],ns_fit_parms[2],ns_fit_parms[3],
+      ns_fit_parms[4]};
     
     for(size_t k=0;k<6;k++) {
       neutron.n=nB_arr[k]*(1.0-Ye_arr[k]);
@@ -8782,7 +8727,7 @@ int eos_nuclei::mcarlo_nuclei2(std::vector<std::string> &sv,
     
     if (ret2==0) {
       double line[7]={log_xn,log_xp,Zbar,Nbar,Zbar+Nbar,
-		      Zbar/(Zbar+Nbar),X[5]};
+        Zbar/(Zbar+Nbar),X[5]};
       tab.line_of_data(7,line);
     }
 
@@ -8971,10 +8916,10 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
     }
 
     vector<double> line={((double)i_ns),((double)i_skyrme),
-                         qmc_alpha,qmc_a,phi,
-                         sk.t0*hc_mev_fm,sk.t1*hc_mev_fm,
-                         sk.t2*hc_mev_fm,sk.t3*hc_mev_fm,
-                         sk.x0,sk.x1,sk.x2,sk.x3,sk.alpha};
+      qmc_alpha,qmc_a,phi,
+      sk.t0*hc_mev_fm,sk.t1*hc_mev_fm,
+      sk.t2*hc_mev_fm,sk.t3*hc_mev_fm,
+      sk.x0,sk.x1,sk.x2,sk.x3,sk.alpha};
 
     if (true) {
       hdf_file hf;
@@ -9351,13 +9296,13 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
                                               sk.alpha)*    
                             (1.0-sk.x3)+2.0/3.0*sk.alpha*sk.t3*
                             pow((neutron.n+proton.n),sk.alpha-1)* 
-                           ((1+sk.x3/2.0)*(neutron.n+proton.n)-                 
-                            (1.0/2.0+sk.x3)*neutron.n)+1.0/6.0*                 
-                           sk.alpha*(sk.alpha-1.0)*sk.t3*                       
-                           pow((neutron.n+proton.n),sk.alpha-2.0)*              
-                           ((1+sk.x3/2.0)*pow((neutron.n+proton.n),2.0)-        
-                            (0.5+sk.x3)*                                        
-                            (neutron.n*neutron.n+proton.n*proton.n)));
+                            ((1+sk.x3/2.0)*(neutron.n+proton.n)-                 
+                             (1.0/2.0+sk.x3)*neutron.n)+1.0/6.0*                 
+                            sk.alpha*(sk.alpha-1.0)*sk.t3*                       
+                            pow((neutron.n+proton.n),sk.alpha-2.0)*              
+                            ((1+sk.x3/2.0)*pow((neutron.n+proton.n),2.0)-        
+                             (0.5+sk.x3)*                                        
+                             (neutron.n*neutron.n+proton.n*proton.n)));
         
         // [fm^4]
         double w2nn_vec_sk=0.25*(sk.t1*(1-sk.x1)+3*sk.t2*(1+sk.x2));
@@ -9384,8 +9329,8 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
 
         // [fm^2]
         double w1nn_ax_sk=(sk.t0*(sk.x0-1)+
-                          1.0/6.0*sk.t3*pow((neutron.n+proton.n),sk.alpha)*
-                          (sk.x3-1.0));
+                           1.0/6.0*sk.t3*pow((neutron.n+proton.n),sk.alpha)*
+                           (sk.x3-1.0));
         
         // [fm^4]
         double w2nn_ax_sk=0.25*(sk.t1*(sk.x1-1)+sk.t2*(1+sk.x2));       
@@ -9411,14 +9356,14 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
 
         // [fm^2]
         double w1np_vec_sk=(sk.t0*(2.0+sk.x0)+1.0/6.0*sk.t3*
-                           pow((neutron.n+proton.n),sk.alpha)*(2.0+sk.x3)+
-                           1.0/2.0*sk.alpha*sk.t3*
-                           pow((neutron.n+proton.n),sk.alpha)+
-                           1.0/6.0*sk.alpha*(sk.alpha-1.0)*sk.t3*
-                           pow((neutron.n+proton.n),sk.alpha-2.0)*
-                           ((1+sk.x3/2.0)*pow((neutron.n+proton.n),2.0)-
-                            (0.5+sk.x3)*
-                            (neutron.n*neutron.n+proton.n*proton.n)));
+                            pow((neutron.n+proton.n),sk.alpha)*(2.0+sk.x3)+
+                            1.0/2.0*sk.alpha*sk.t3*
+                            pow((neutron.n+proton.n),sk.alpha)+
+                            1.0/6.0*sk.alpha*(sk.alpha-1.0)*sk.t3*
+                            pow((neutron.n+proton.n),sk.alpha-2.0)*
+                            ((1+sk.x3/2.0)*pow((neutron.n+proton.n),2.0)-
+                             (0.5+sk.x3)*
+                             (neutron.n*neutron.n+proton.n*proton.n)));
         
         // [fm^4]
         double w2np_vec_sk=0.25*(sk.t1*(2.0+sk.x1)+sk.t2*(2.0+sk.x2));
@@ -9431,7 +9376,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         
         // [fm^2]
         double w1np_ax_sk=(sk.t0*sk.x0+1.0/6.0*sk.t3*
-                          pow((neutron.n+proton.n),sk.alpha)*sk.x3);
+                           pow((neutron.n+proton.n),sk.alpha)*sk.x3);
         
         // [fm^4]
         double w2np_ax_sk=0.25*(sk.t1*sk.x1+sk.t2*sk.x2);
@@ -9652,8 +9597,8 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
 
         // Units of 1/MeV^2
         double rea=(sk.t3*sk.alpha/3.0*pow(neutron.n+proton.n,sk.alpha-1.0)*
-          ((neutron.n+proton.n)*(1.0+sk.x3/2.0)-
-           neutron.n*(sk.x3+0.5)))/pow(hc_mev_fm,2.0);
+                    ((neutron.n+proton.n)*(1.0+sk.x3/2.0)-
+                     neutron.n*(sk.x3+0.5)))/pow(hc_mev_fm,2.0);
         
         // Units of MeV
         double reb=(sk.t3*sk.alpha/12.0*pow(neutron.n+proton.n,sk.alpha-1.0)*
@@ -9715,7 +9660,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
 
         // Units of 1/MeV^2
         double vf_dg0=0.5*(w1nn_vec_general_tilde_dg0-
-                              w1np_vec_general_tilde_dg0)+
+                           w1np_vec_general_tilde_dg0)+
           (w2nn_vec_general_dg0-w2np_vec_general_dg0)*neutron.kf*neutron.kf;
         
         // Units of 1/MeV^2
@@ -10006,10 +9951,10 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
   
   o2scl::comm_option_s options[nopt]=
     {{0,"eos-deriv","compute derivatives",
-      0,0,"<file in> <file out>","",
-      new o2scl::comm_option_mfptr<eos_nuclei>
-      (this,&eos_nuclei::eos_deriv),
-      o2scl::cli::comm_option_both},
+       0,0,"<file in> <file out>","",
+       new o2scl::comm_option_mfptr<eos_nuclei>
+       (this,&eos_nuclei::eos_deriv),
+       o2scl::cli::comm_option_both},
      {0,"add-eg","Add electrons and photons.",
       0,0,"","",new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::add_eg),
