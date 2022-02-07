@@ -2535,11 +2535,6 @@ int eos_nuclei::eos_fixed_dist
  map<string,double> &vdet, bool dist_changed,
  bool no_nuclei) {
 
-  if (include_muons==true && with_leptons==false) {
-    cerr << "Include muons is true but with leptons is false." << endl;
-    exit(-1);
-  }
-  
   int mpi_rank=0, mpi_size=1;
 #ifndef NO_MPI
   // Get MPI rank, etc.
@@ -3977,7 +3972,7 @@ int eos_nuclei::store_point
   tg_Sint.set(ix,th.en/nB);
 
   if (include_muons || with_leptons) {
-    tg_mue.set(ix,vdet["mue"]);
+    tg_mue.set(ix,vdet["mue"]*hc_mev_fm);
   }
   if (include_muons) {
     tg_Ymu.set(ix,vdet["Ymu"]);
@@ -4421,11 +4416,6 @@ int eos_nuclei::write_results(std::string fname) {
   }
 #endif
   
-  if (with_leptons && !derivs_computed) {
-    O2SCL_ERR("File indicates leptons but no derivatives.",
-              o2scl::exc_eunimpl);
-  }
-  
   cout << "Function write_results(): rank " << mpi_rank
        << " writing file " << fname << endl;
   
@@ -4500,7 +4490,7 @@ int eos_nuclei::write_results(std::string fname) {
     if (matched==false) {
       eos_str="<unknown>";
     }
-    cout << "eos_str: " << eos_str << endl;
+    cout << "write_results(), model string: " << eos_str << endl;
     hf.sets("model",eos_str);
   }
   
@@ -4699,6 +4689,7 @@ int eos_nuclei::read_results(std::string fname) {
       
       vector<string> vs2;
       split_string(mod_str,vs2);
+      cout << "read_results(): model string: " << mod_str << endl;
       
       if (vs2[0]=="0") {
         
@@ -4710,7 +4701,7 @@ int eos_nuclei::read_results(std::string fname) {
         eos_L=o2scl::stod(vs2[6]);
         phi=o2scl::stod(vs2[7]);
 
-        cout << "Selecting model: " << mod_str << endl;
+        cout << "read_results(): selecting model: " << mod_str << endl;
         select_internal(i_ns,i_skyrme,qmc_alpha,qmc_a,
                         eos_L,eos_S,phi);
         
@@ -4787,7 +4778,7 @@ int eos_nuclei::read_results(std::string fname) {
   else include_detail=false;
   
   if (verbose>2) cout << "Reading include_muons." << endl;
-  hf.geti_def("detail",0,itmp);
+  hf.geti_def("include_muons",0,itmp);
   if (itmp==1) include_muons=true;
   else include_muons=false;
 
@@ -5243,11 +5234,6 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
     }
   }
 
-  // Desc
-  if (include_muons) {
-    with_leptons=true;
-  }
-  
   // -------------------------------------------------------------------
   // If necessary and possible, compute the point
   
@@ -5369,6 +5355,23 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
     cout << "XLi4: " << tg_XLi4.get(ix) << endl;
     cout << "Xalpha: " << tg_Xalpha.get(ix) << endl;
     cout << "Xnuclei: " << tg_Xnuclei.get(ix) << endl;
+    if (include_muons) {
+      cout << "Ymu: " << tg_Ymu.get(ix) << endl;
+    }
+    if (include_muons || with_leptons) {
+      cout << "mue: " << tg_mue.get(ix) << endl;
+    }
+    if (derivs_computed) {
+      cout << "Pint: " << tg_Pint.get(ix) << endl;
+      cout << "mun: " << tg_mun.get(ix) << endl;
+      cout << "mup: " << tg_mup.get(ix) << endl;
+      if (with_leptons) {
+        cout << "F: " << tg_F.get(ix) << endl;
+        cout << "E: " << tg_E.get(ix) << endl;
+        cout << "S: " << tg_S.get(ix) << endl;
+        cout << "P: " << tg_P.get(ix) << endl;
+      }
+    }
     if (include_detail) {
       cout << "zn: " << tg_zn.get(ix) << endl;
       cout << "zp: " << tg_zp.get(ix) << endl;
@@ -7396,19 +7399,14 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	      tasks.push_back(iT);
 
 	      if (alg_mode>=2) {
-		double line[8]={tg_log_xn.get(ix),
-                  tg_log_xp.get(ix),
-                  0.0,0.0,
-                  tg_A_min.get(ix),
-                  tg_A_max.get(ix),
-                  tg_NmZ_min.get(ix),
+		vector<double> line={tg_log_xn.get(ix),
+                  tg_log_xp.get(ix),0.0,0.0,
+                  tg_A_min.get(ix),tg_A_max.get(ix),tg_NmZ_min.get(ix),
                   tg_NmZ_max.get(ix)};
 		gtab.line_of_data(8,line);
 	      } else {
-		double line[8]={tg_log_xn.get(ix),
-                  tg_log_xp.get(ix),
-                  tg_Z.get(ix),
-                  tg_A.get(ix),
+		vector<double> line={tg_log_xn.get(ix),
+                  tg_log_xp.get(ix),tg_Z.get(ix),tg_A.get(ix),
                   0.0,0.0,0.0,0.0};
 		gtab.line_of_data(8,line);
 	      }	
@@ -8735,7 +8733,7 @@ int eos_nuclei::mcarlo_nuclei2(std::vector<std::string> &sv,
 	 << Zbar/(Zbar+Nbar) << " " << X[5] << endl;
     
     if (ret2==0) {
-      double line[7]={log_xn,log_xp,Zbar,Nbar,Zbar+Nbar,
+      vector<double> line={log_xn,log_xp,Zbar,Nbar,Zbar+Nbar,
         Zbar/(Zbar+Nbar),X[5]};
       tab.line_of_data(7,line);
     }
