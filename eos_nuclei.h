@@ -28,6 +28,32 @@
 typedef boost::numeric::ublas::vector<double> ubvector;
 typedef boost::numeric::ublas::matrix<double> ubmatrix;
 
+/** \brief temporary glue between tensor_grid3 and tensor_grid
+ */
+class tensor_grid_temp : public o2scl::tensor_grid<> {
+public:
+
+  /// Get the element indexed by \c (ix1,ix2,ix3)
+  double &get3(size_t ix1, size_t ix2, size_t ix3) { 
+    size_t sz[3]={ix1,ix2,ix3};
+    return tensor_grid<std::vector<double>,std::vector<size_t>>::get(sz); 
+  }
+  
+  /// Get the element indexed by \c (ix1,ix2,ix3)
+  const double &get3(size_t ix1, size_t ix2, size_t ix3) const { 
+    size_t sz[3]={ix1,ix2,ix3};
+    return tensor_grid<std::vector<double>,std::vector<size_t>>::get(sz); 
+  }
+  
+  /// Set the element indexed by \c (ix1,ix2,ix3) to value \c val
+  void set3(size_t ix1, size_t ix2, size_t ix3, double val) {
+    size_t sz[3]={ix1,ix2, ix3};
+    tensor_grid<std::vector<double>,std::vector<size_t>>::set(sz,val); 
+    return;
+  }
+  
+};
+
 /** \brief Compute partition functions using Fowler prescription
  */
 class partition_func {
@@ -373,104 +399,56 @@ public:
   
   /// \name Main EOS table storage
   //@{
-#ifdef STRANGENESS
-  o2scl::tensor_grid<> tg_log_xn;
-  o2scl::tensor_grid<> tg_log_xp;
-  o2scl::tensor_grid<> tg_flag;
-  o2scl::tensor_grid<> tg_F;
-  o2scl::tensor_grid<> tg_E;
-  o2scl::tensor_grid<> tg_P;
-  o2scl::tensor_grid<> tg_S;
-  o2scl::tensor_grid<> tg_Fint;
-  o2scl::tensor_grid<> tg_Eint;
-  o2scl::tensor_grid<> tg_Pint;
-  o2scl::tensor_grid<> tg_Sint;
-  o2scl::tensor_grid<> tg_mun;
-  o2scl::tensor_grid<> tg_mup;
-  o2scl::tensor_grid<> tg_mue;
-  o2scl::tensor_grid<> tg_Z;
-  o2scl::tensor_grid<> tg_A;
-  o2scl::tensor_grid<> tg_Xn;
-  o2scl::tensor_grid<> tg_Xp;
-  o2scl::tensor_grid<> tg_Xalpha;
-  o2scl::tensor_grid<> tg_Xnuclei;
-  o2scl::tensor_grid<> tg_Ymu;
-  o2scl::tensor_grid<> tg_Xd;
-  o2scl::tensor_grid<> tg_Xt;
-  o2scl::tensor_grid<> tg_XHe3;
-  o2scl::tensor_grid<> tg_XLi4;
-  o2scl::tensor_grid<> tg_A_min;
-  o2scl::tensor_grid<> tg_A_max;
-  o2scl::tensor_grid<> tg_NmZ_min;
-  o2scl::tensor_grid<> tg_NmZ_max;
-#else
-  o2scl::tensor_grid3<> tg3_log_xn;
-  o2scl::tensor_grid3<> tg3_log_xp;
-  o2scl::tensor_grid3<> tg3_flag;
-  o2scl::tensor_grid3<> tg3_F;
-  o2scl::tensor_grid3<> tg3_E;
-  o2scl::tensor_grid3<> tg3_P;
-  o2scl::tensor_grid3<> tg3_S;
-  o2scl::tensor_grid3<> tg3_Fint;
-  o2scl::tensor_grid3<> tg3_Eint;
-  o2scl::tensor_grid3<> tg3_Pint;
-  o2scl::tensor_grid3<> tg3_Sint;
-  o2scl::tensor_grid3<> tg3_mun;
-  o2scl::tensor_grid3<> tg3_mup;
-  o2scl::tensor_grid3<> tg3_mue;
-  o2scl::tensor_grid3<> tg3_Z;
-  o2scl::tensor_grid3<> tg3_A;
-  o2scl::tensor_grid3<> tg3_Xn;
-  o2scl::tensor_grid3<> tg3_Xp;
-  o2scl::tensor_grid3<> tg3_Xalpha;
-  o2scl::tensor_grid3<> tg3_Xnuclei;
-  o2scl::tensor_grid3<> tg3_Ymu;
-  o2scl::tensor_grid3<> tg3_Xd;
-  o2scl::tensor_grid3<> tg3_Xt;
-  o2scl::tensor_grid3<> tg3_XHe3;
-  o2scl::tensor_grid3<> tg3_XLi4;
-  o2scl::tensor_grid3<> tg3_A_min;
-  o2scl::tensor_grid3<> tg3_A_max;
-  o2scl::tensor_grid3<> tg3_NmZ_min;
-  o2scl::tensor_grid3<> tg3_NmZ_max;
-#endif
+  tensor_grid_temp tg_log_xn;
+  tensor_grid_temp tg_log_xp;
+  tensor_grid_temp tg_flag;
+  tensor_grid_temp tg_F;
+  tensor_grid_temp tg_E;
+  tensor_grid_temp tg_P;
+  tensor_grid_temp tg_S;
+  tensor_grid_temp tg_Fint;
+  tensor_grid_temp tg_Eint;
+  tensor_grid_temp tg_Pint;
+  tensor_grid_temp tg_Sint;
+  tensor_grid_temp tg_mun;
+  tensor_grid_temp tg_mup;
+  tensor_grid_temp tg_mue;
+  tensor_grid_temp tg_Z;
+  tensor_grid_temp tg_A;
+  tensor_grid_temp tg_Xn;
+  tensor_grid_temp tg_Xp;
+  tensor_grid_temp tg_Xalpha;
+  tensor_grid_temp tg_Xnuclei;
+  tensor_grid_temp tg_Ymu;
+  tensor_grid_temp tg_Xd;
+  tensor_grid_temp tg_Xt;
+  tensor_grid_temp tg_XHe3;
+  tensor_grid_temp tg_XLi4;
+  tensor_grid_temp tg_A_min;
+  tensor_grid_temp tg_A_max;
+  tensor_grid_temp tg_NmZ_min;
+  tensor_grid_temp tg_NmZ_max;
   //@}
 
   /// \name Detail storage
   //@{
   bool include_detail;
-#ifdef STRANGENESS
-  o2scl::tensor_grid<> tg_zn;
-  o2scl::tensor_grid<> tg_zp;
-  o2scl::tensor_grid<> tg_F1;
-  o2scl::tensor_grid<> tg_F2;
-  o2scl::tensor_grid<> tg_F3;
-  o2scl::tensor_grid<> tg_F4;
-  o2scl::tensor_grid<> tg_Un;
-  o2scl::tensor_grid<> tg_Up;
-  o2scl::tensor_grid<> tg_msn;
-  o2scl::tensor_grid<> tg_msp;
-  o2scl::tensor_grid<> tg_g;
-  o2scl::tensor_grid<> tg_dgdT;
-#else
-  o2scl::tensor_grid3<> tg3_zn;
-  o2scl::tensor_grid3<> tg3_zp;
-  o2scl::tensor_grid3<> tg3_F1;
-  o2scl::tensor_grid3<> tg3_F2;
-  o2scl::tensor_grid3<> tg3_F3;
-  o2scl::tensor_grid3<> tg3_F4;
-  o2scl::tensor_grid3<> tg3_Un;
-  o2scl::tensor_grid3<> tg3_Up;
-  o2scl::tensor_grid3<> tg3_msn;
-  o2scl::tensor_grid3<> tg3_msp;
-  o2scl::tensor_grid3<> tg3_g;
-  o2scl::tensor_grid3<> tg3_dgdT;
-#endif
+  tensor_grid_temp tg_zn;
+  tensor_grid_temp tg_zp;
+  tensor_grid_temp tg_F1;
+  tensor_grid_temp tg_F2;
+  tensor_grid_temp tg_F3;
+  tensor_grid_temp tg_F4;
+  tensor_grid_temp tg_Un;
+  tensor_grid_temp tg_Up;
+  tensor_grid_temp tg_msn;
+  tensor_grid_temp tg_msp;
+  tensor_grid_temp tg_g;
+  tensor_grid_temp tg_dgdT;
+  tensor_grid_temp tg_sigma;
+  tensor_grid_temp tg_omega;
+  tensor_grid_temp tg_rho;
   //@}
-  
-  o2scl::tensor_grid<> tg_sigma;
-  o2scl::tensor_grid<> tg_omega;
-  o2scl::tensor_grid<> tg_rho;
 
   /// \name Other parameter objects
   //@{
@@ -621,8 +599,7 @@ public:
 
   /** \brief Compute second derivatives numerically
 
-      The derivatives 
-
+      The derivatives ...
    */
   int eos_second_deriv(std::vector<std::string> &sv, bool itive_com);
 

@@ -44,8 +44,7 @@ These are stored as integers.
   and the nucleon chemical potentials are included.
 - ``alg_mode``: an integer representing the algorithm used to
   compute the table
-- ``include_muons``: 0 (false) if muons are not included (always 0
-  for now)
+- ``include_muons``: 0 (false) if muons are not included
   
 Quantities for the solver
 -------------------------
@@ -84,7 +83,8 @@ tensors are included:
 Composition
 -----------
 	
-These are all :ref:`o2scl:tensor_grid` objects.
+These are all :ref:`o2scl:tensor_grid` objects and included for
+all tables.
 
 - ``Xn``: the baryon number fraction of neutrons
 - ``Xp``: the baryon number fraction of protons
@@ -98,13 +98,22 @@ These are all :ref:`o2scl:tensor_grid` objects.
 Thermodynamic quantities
 ------------------------
 
-These are all :ref:`o2scl:tensor_grid` objects.
+In this section, all quantities are stored as
+:ref:`o2scl:tensor_grid` objects.
+
+Three quantities are included for all tables:
 
 - ``Fint``: the baryon part of the free energy per baryon
   (in :math:`\mathrm{MeV}`)
 - ``Sint``: the baryon part of the entropy per baryon
 - ``Eint``: the baryon part of the internal energy per baryon
   (in :math:`\mathrm{MeV}`)
+
+If ``include_muons`` is 1, then ``Ymu``, the muon fraction,
+is also included. If either ``include_muons`` or ``with_leptons``
+is 1, then ``mue``, the electron chemical potential is included.
+The electron chemical potential includes the electron rest mass
+and is in :math:`\mathrm{MeV}`.
 
 If ``derivs_computed`` is 1, then the following quantities are
 also included:
@@ -116,8 +125,9 @@ also included:
 - ``mup``: the proton chemical potential
   (in :math:`\mathrm{MeV}`)
 
-If ``with_leptons`` is 1, then the following quantities are also
-included:
+If ``with_leptons`` is 1, then the electron chemical potential is
+included (as described above) and the following four quantities are
+also included:
 
 - ``F``: the total free energy per baryon
   (in :math:`\mathrm{MeV}`)
