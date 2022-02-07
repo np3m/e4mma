@@ -1696,13 +1696,22 @@ int eos_nuclei::solve_nuclei(size_t nv, const ubvector &x, ubvector &y,
     // End of loop over nuclei
   }
 
+  double Ymu=0.0;
+  
   if (include_muons) {
     
     eos_sn_base eso;
     eso.include_muons=true;
     thermo lep;
     eso.compute_eg_point(nB,Ye,T*hc_mev_fm,lep,vdet["mue"]);
-    double Ymu=eso.muon.n/nB;
+    Ymu=eso.muon.n/nB;
+
+    /*
+      cout << "e,mu: " << eso.electron.mu << " " << eso.electron.m << " "
+      << eso.electron.n << endl;
+      cout << "e,mu: " << eso.muon.mu << " " << eso.muon.m << " "
+      << eso.muon.n << endl;
+    */
     
     // Ensure that we have the correct values of nB and Ye
     y[0]=nn_tilde/nB/(1.0-Ye-Ymu)-1.0;
@@ -1716,6 +1725,13 @@ int eos_nuclei::solve_nuclei(size_t nv, const ubvector &x, ubvector &y,
 
   }
 
+  /*
+    cout << "x,y: " << x[0] << " " << x[1] << " "
+    << y[0] << " " << y[1] << " " << nB << " " << Ye << " " << Ymu << endl;
+    cout << nn_tilde << " " << nB*(1.0-Ye-Ymu) << endl;
+    cout << np_tilde << " " << nB*(Ye+Ymu) << endl;
+  */
+    
   if (loc_verbose>0) {
     cout << "nn,np: " << nn << " " << np << endl;
     cout << "x: " << x[0] << " " << x[1] << endl;
@@ -2141,9 +2157,36 @@ int eos_nuclei::nuc_matter(double nB, double Ye, double T,
 			   int &A_min, int &A_max,
 			   int &NmZ_min, int &NmZ_max,
 			   map<string,double> &vdet) {
+
+  if (include_muons) {
+    
+    mm_funct nm_func=std::bind
+      (std::mem_fn<int(size_t,const ubvector &,ubvector&,double,double,
+                       double,map<string,double> &)>
+       (&eos_nuclei::nuc_matter_muons),this,std::placeholders::_1,
+       std::placeholders::_2,std::placeholders::_3,nB,Ye,T,
+       std::ref(vdet));
+    
+    ubvector x(2), y(2);
+    
+    x[0]=pow(10.0,log_xn)*nB;
+    x[1]=pow(10.0,log_xp)*nB;
+
+    int mret=mh.msolve(2,x,nm_func);
+    if (mret!=0) {
+      O2SCL_ERR("nuc matter muons failed.",o2scl::exc_einval);
+    }
+    
+    neutron.n=x[0];
+    proton.n=x[1];
+    
+  } else {
+    
+    neutron.n=nB*(1.0-Ye);
+    proton.n=nB*Ye;
+    
+  }    
   
-  neutron.n=nB*(1.0-Ye);
-  proton.n=nB*Ye;
   log_xn=log10(neutron.n/nB);
   log_xp=log10(proton.n/nB);
   
@@ -2192,6 +2235,24 @@ int eos_nuclei::nuc_matter(double nB, double Ye, double T,
   
   mun_full=neutron.mu;
   mup_full=proton.mu;
+  
+  return 0;
+}
+
+int eos_nuclei::nuc_matter_muons(size_t nv, const ubvector &x, ubvector &y,
+                                 double nB, double Ye, double T,
+                                 map<string,double> &vdet) {
+
+  neutron.n=x[0];
+  proton.n=x[1];
+  
+  eos_sn_base eso;
+  eso.include_muons=true;
+  thermo lep;
+  eso.compute_eg_point(nB,Ye,T*hc_mev_fm,lep,vdet["mue"]);
+
+  y[0]=(neutron.n+proton.n)/nB-1.0;
+  y[1]=(eso.electron.n+eso.muon.n-proton.n)/proton.n;
   
   return 0;
 }
@@ -5167,6 +5228,11 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
     }
   }
 
+  // Desc
+  if (include_muons) {
+    with_leptons=true;
+  }
+  
   // -------------------------------------------------------------------
   // If necessary and possible, compute the point
   
