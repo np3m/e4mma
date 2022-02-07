@@ -7919,20 +7919,20 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	    output_buffers[proc_index][vi["nB"]]=nB_grid2[tasks[i*6+3]];
 	    output_buffers[proc_index][vi["Ye"]]=Ye_grid2[tasks[i*6+4]];
 	    output_buffers[proc_index][vi["T"]]=T_grid2[tasks[i*6+5]];
-	    output_buffers[proc_index][vi["log_xn"]]=gtab.get3("log_xn",i);
-	    output_buffers[proc_index][vi["log_xp"]]=gtab.get3("log_xp",i);
-	    output_buffers[proc_index][vi["Z"]]=gtab.get3("Z",i);
-	    output_buffers[proc_index][vi["N"]]=gtab.get3("A",i)-
-	      gtab.get3("Z",i);
+	    output_buffers[proc_index][vi["log_xn"]]=gtab.get("log_xn",i);
+	    output_buffers[proc_index][vi["log_xp"]]=gtab.get("log_xp",i);
+	    output_buffers[proc_index][vi["Z"]]=gtab.get("Z",i);
+	    output_buffers[proc_index][vi["N"]]=gtab.get("A",i)-
+	      gtab.get("Z",i);
 	    if (alg_mode==2 || alg_mode==3 || alg_mode==4) {
 	      output_buffers[proc_index][vi["A_min"]]=
-		gtab.get3("A_min",i);
+		gtab.get("A_min",i);
 	      output_buffers[proc_index][vi["A_max"]]=
-		gtab.get3("A_max",i);
+		gtab.get("A_max",i);
 	      output_buffers[proc_index][vi["NmZ_min"]]=
-		gtab.get3("NmZ_min",i);
+		gtab.get("NmZ_min",i);
 	      output_buffers[proc_index][vi["NmZ_max"]]=
-		gtab.get3("NmZ_max",i);
+		gtab.get("NmZ_max",i);
 	    }
 
 	    // Determine if the "no_nuclei" flag should be set
