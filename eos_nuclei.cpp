@@ -3922,14 +3922,14 @@ int eos_nuclei::store_point
     }
   }
     
-  tg_log_xn.set3(i_nB,i_Ye,i_T,log_xn);
-  tg_log_xp.set3(i_nB,i_Ye,i_T,log_xp);
-  tg_Z.set3(i_nB,i_Ye,i_T,Zbar);
-  tg_A.set3(i_nB,i_Ye,i_T,Zbar+Nbar);
-  tg_flag.set3(i_nB,i_Ye,i_T,loc_flag);
-  tg_Fint.set3(i_nB,i_Ye,i_T,(th.ed-T*th.en)/nB*hc_mev_fm);
-  tg_Eint.set3(i_nB,i_Ye,i_T,th.ed/nB*hc_mev_fm);
-  tg_Sint.set3(i_nB,i_Ye,i_T,th.en/nB);
+  tg_log_xn.set(ix,log_xn);
+  tg_log_xp.set(ix,log_xp);
+  tg_Z.set(ix,Zbar);
+  tg_A.set(ix,Zbar+Nbar);
+  tg_flag.set(ix,loc_flag);
+  tg_Fint.set(ix,(th.ed-T*th.en)/nB*hc_mev_fm);
+  tg_Eint.set(ix,th.ed/nB*hc_mev_fm);
+  tg_Sint.set(ix,th.en/nB);
 
   if (loc_verbose>1) {
     cout << "store_point() output:\n  nB, Ye, T [MeV]: "
@@ -3942,16 +3942,15 @@ int eos_nuclei::store_point
 	 << n_fraction << " " << p_fraction << endl;
   }
 
-  //cout << "Storing: " << (th.ed-T*th.en)/nB*hc_mev_fm << endl;
-  tg_Xn.set3(i_nB,i_Ye,i_T,n_fraction);
-  tg_Xp.set3(i_nB,i_Ye,i_T,p_fraction);
+  tg_Xn.set(ix,n_fraction);
+  tg_Xp.set(ix,p_fraction);
 
-  tg_Xalpha.set3(i_nB,i_Ye,i_T,X[0]);
-  tg_Xd.set3(i_nB,i_Ye,i_T,X[1]);
-  tg_Xt.set3(i_nB,i_Ye,i_T,X[2]);
-  tg_XHe3.set3(i_nB,i_Ye,i_T,X[3]);
-  tg_XLi4.set3(i_nB,i_Ye,i_T,X[4]);
-  tg_Xnuclei.set3(i_nB,i_Ye,i_T,X[5]);
+  tg_Xalpha.set(ix,X[0]);
+  tg_Xd.set(ix,X[1]);
+  tg_Xt.set(ix,X[2]);
+  tg_XHe3.set(ix,X[3]);
+  tg_XLi4.set(ix,X[4]);
+  tg_Xnuclei.set(ix,X[5]);
 
   if (loc_verbose>1) {
     cout << "  Xalpha, Xd, Xt: " << X[0] << " " << X[1] << " "
@@ -3961,10 +3960,10 @@ int eos_nuclei::store_point
   }
   
   if (alg_mode==2 || alg_mode==3 || alg_mode==4) {
-    tg_A_min.set3(i_nB,i_Ye,i_T,A_min);
-    tg_A_max.set3(i_nB,i_Ye,i_T,A_max);
-    tg_NmZ_min.set3(i_nB,i_Ye,i_T,NmZ_min);
-    tg_NmZ_max.set3(i_nB,i_Ye,i_T,NmZ_max);
+    tg_A_min.set(ix,A_min);
+    tg_A_max.set(ix,A_max);
+    tg_NmZ_min.set(ix,NmZ_min);
+    tg_NmZ_max.set(ix,NmZ_max);
 
     if (loc_verbose>1) {
       cout << "  A_min, A_max, NmZ_min, NmZ_max: ";
@@ -3975,10 +3974,13 @@ int eos_nuclei::store_point
     }
   }
 
-  tg_Sint.set3(i_nB,i_Ye,i_T,th.en/nB);
+  tg_Sint.set(ix,th.en/nB);
 
+  if (include_muons || with_leptons) {
+    tg_mue.set(ix,vdet["mue"]);
+  }
   if (include_muons) {
-    tg_mue.set3(i_nB,i_Ye,i_T,vdet["mue"]);
+    tg_Ymu.set(ix,vdet["Ymu"]);
   }
   
   if (rmf_fields) {
@@ -3988,32 +3990,32 @@ int eos_nuclei::store_point
   }
   
   if (include_detail) {
-    tg_zn.set3(i_nB,i_Ye,i_T,vdet["zn"]);
-    tg_zp.set3(i_nB,i_Ye,i_T,vdet["zp"]);
-    tg_F1.set3(i_nB,i_Ye,i_T,vdet["f1"]);
-    tg_F2.set3(i_nB,i_Ye,i_T,vdet["f2"]);
-    tg_F3.set3(i_nB,i_Ye,i_T,vdet["f3"]);
-    tg_F4.set3(i_nB,i_Ye,i_T,vdet["f4"]);
-    tg_Un.set3(i_nB,i_Ye,i_T,vdet["Un"]);
-    tg_Up.set3(i_nB,i_Ye,i_T,vdet["Up"]);
-    tg_msn.set3(i_nB,i_Ye,i_T,vdet["msn"]);
-    tg_msp.set3(i_nB,i_Ye,i_T,vdet["msp"]);
-    tg_g.set3(i_nB,i_Ye,i_T,vdet["g"]);
-    tg_dgdT.set3(i_nB,i_Ye,i_T,vdet["dgdT"]);
+    tg_zn.set(ix,vdet["zn"]);
+    tg_zp.set(ix,vdet["zp"]);
+    tg_F1.set(ix,vdet["f1"]);
+    tg_F2.set(ix,vdet["f2"]);
+    tg_F3.set(ix,vdet["f3"]);
+    tg_F4.set(ix,vdet["f4"]);
+    tg_Un.set(ix,vdet["Un"]);
+    tg_Up.set(ix,vdet["Up"]);
+    tg_msn.set(ix,vdet["msn"]);
+    tg_msp.set(ix,vdet["msp"]);
+    tg_g.set(ix,vdet["g"]);
+    tg_dgdT.set(ix,vdet["dgdT"]);
   }
   
   // AWS 8/4/2020: This section is commented out because the code does
   // not correctly analytically compute mun, mup, Eint and Pint
   if (false && derivs_computed) {
     
-    tg_Pint.set3(i_nB,i_Ye,i_T,th.pr*hc_mev_fm);
+    tg_Pint.set(ix,th.pr*hc_mev_fm);
 
     if (loc_verbose>1) {
       cout << "  Eint, Pint, Sint: " << th.ed/nB*hc_mev_fm << " "
 	   << th.pr*hc_mev_fm << " " << th.en/nB << endl;
     }
-    tg_mun.set3(i_nB,i_Ye,i_T,mun_full*hc_mev_fm);
-    tg_mup.set3(i_nB,i_Ye,i_T,mup_full*hc_mev_fm);
+    tg_mun.set(ix,mun_full*hc_mev_fm);
+    tg_mup.set(ix,mup_full*hc_mev_fm);
 
     if (loc_verbose>1) {
       cout << "  mun, mup: " << mun_full*hc_mev_fm << " "
@@ -4027,12 +4029,12 @@ int eos_nuclei::store_point
       relf.pair_density(electron,T);
       photon.massless_calc(T);
 
-      tg_F.set3(i_nB,i_Ye,i_T,(fr+electron.ed+photon.ed-
+      tg_F.set(ix,(fr+electron.ed+photon.ed-
 			       T*(electron.en+photon.en))/nB*hc_mev_fm);
-      tg_E.set3(i_nB,i_Ye,i_T,(th.ed+electron.ed+photon.ed)/nB*hc_mev_fm);
-      tg_P.set3(i_nB,i_Ye,i_T,(th.pr+electron.pr+photon.pr)*hc_mev_fm);
-      tg_S.set3(i_nB,i_Ye,i_T,(th.en+electron.en+photon.en)/nB);
-      tg_mue.set3(i_nB,i_Ye,i_T,electron.mu*hc_mev_fm);
+      tg_E.set(ix,(th.ed+electron.ed+photon.ed)/nB*hc_mev_fm);
+      tg_P.set(ix,(th.pr+electron.pr+photon.pr)*hc_mev_fm);
+      tg_S.set(ix,(th.en+electron.en+photon.en)/nB);
+      tg_mue.set(ix,electron.mu*hc_mev_fm);
       
     }
     
@@ -4564,6 +4566,11 @@ int eos_nuclei::write_results(std::string fname) {
   hf.setd("m_prot",proton.m*o2scl_const::hc_mev_fm);
   hf.setd("hc",o2scl_const::hc_mev_fm);
   hf.setd("alpha_em",o2scl_const::fine_structure);
+
+  if (with_leptons || include_muons) {
+    hdf_output(hf,tg_mue,"mue");
+    hdf_output(hf,tg_Ymu,"Ymu");
+  }
   
   if (derivs_computed) {
     hdf_output(hf,tg_Pint,"Pint");
@@ -4574,10 +4581,6 @@ int eos_nuclei::write_results(std::string fname) {
       hdf_output(hf,tg_E,"E");
       hdf_output(hf,tg_P,"P");
       hdf_output(hf,tg_S,"S");
-      hdf_output(hf,tg_mue,"mue");
-      if (this->include_muons) {
-        hdf_output(hf,tg_Ymu,"Ymu");
-      }
     }      
   }
 
@@ -4791,6 +4794,11 @@ int eos_nuclei::read_results(std::string fname) {
   if (verbose>2) cout << "Reading alg_mode." << endl;
   hf.geti_def("alg_mode",4,alg_mode);
 
+  if (verbose>2) cout << "Reading rmf_fields." << endl;
+  hf.geti_def("rmf_fields",0,itmp);
+  if (itmp==1) rmf_fields=true;
+  else rmf_fields=false;
+  
   // ----------------------------------------------------------------
   // Main data
 
@@ -4877,14 +4885,15 @@ int eos_nuclei::read_results(std::string fname) {
   if (with_leptons || include_muons) {
     if (verbose>2) cout << "Reading mue." << endl;
     hdf_input(hf,tg_mue,"mue");
-    if (include_muons) {
-      if (verbose>2) cout << "Reading Ymu." << endl;
-      hdf_input(hf,tg_Ymu,"Ymu");
-    } else {
-      tg_Ymu.clear();
-    }
   } else {
     tg_mue.clear();
+  }
+  
+  if (include_muons) {
+    if (verbose>2) cout << "Reading Ymu." << endl;
+    hdf_input(hf,tg_Ymu,"Ymu");
+  } else {
+    tg_Ymu.clear();
   }
   
   if (derivs_computed) {
