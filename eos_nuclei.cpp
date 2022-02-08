@@ -7346,7 +7346,8 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 
       // Store initial guesses in a table, one row for each task
       table<> gtab;
-      gtab.line_of_names("log_xn log_xp Z A A_min A_max NmZ_min NmZ_max");
+      gtab.line_of_names(((string)"log_xn log_xp Z A A_min ")+
+                         "A_max NmZ_min NmZ_max mue");
 
       size_t nB_step=0;
       size_t Ye_step=0;
@@ -7400,16 +7401,20 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	      tasks.push_back(iT);
 
 	      if (alg_mode>=2) {
+                double mue=0.0;
+                if (include_muons) {
+                  mue=tg_mue.get(ix)/hc_mev_fm;
+                }
 		vector<double> line={tg_log_xn.get(ix),
                   tg_log_xp.get(ix),0.0,0.0,
                   tg_A_min.get(ix),tg_A_max.get(ix),tg_NmZ_min.get(ix),
-                  tg_NmZ_max.get(ix)};
-		gtab.line_of_data(8,line);
+                  tg_NmZ_max.get(ix),mue};
+		gtab.line_of_data(9,line);
 	      } else {
 		vector<double> line={tg_log_xn.get(ix),
                   tg_log_xp.get(ix),tg_Z.get(ix),tg_A.get(ix),
-                  0.0,0.0,0.0,0.0};
-		gtab.line_of_data(8,line);
+                  0.0,0.0,0.0,0.0,0.0};
+		gtab.line_of_data(9,line);
 	      }	
 	      
 	      tg_flag.get(ix)=(double)iflag_in_progress_with_guess;
@@ -7426,21 +7431,25 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	      tasks.push_back(iYe);
 	      tasks.push_back(iT);
 	      if (alg_mode>=2) {
-		double line[8]={external.tg_log_xn.get(ix),
+                double mue=0.0;
+                if (include_muons) {
+                  mue=tg_mue.get(ix)/hc_mev_fm;
+                }
+		double line[9]={external.tg_log_xn.get(ix),
                   external.tg_log_xp.get(ix),
                   0.0,0.0,
                   external.tg_A_min.get(ix),
                   external.tg_A_max.get(ix),
                   external.tg_NmZ_min.get(ix),
-                  external.tg_NmZ_max.get(ix)};
-		gtab.line_of_data(8,line);
+                  external.tg_NmZ_max.get(ix),mue};
+		gtab.line_of_data(9,line);
 	      } else {
-		double line[8]={external.tg_log_xn.get(ix),
+		double line[9]={external.tg_log_xn.get(ix),
                   external.tg_log_xp.get(ix),
                   external.tg_Z.get(ix),
                   external.tg_A.get(ix),
-                  0.0,0.0,0.0,0.0};
-		gtab.line_of_data(8,line);
+                  0.0,0.0,0.0,0.0,0.0};
+		gtab.line_of_data(9,line);
 	      }
 	      guess_found=true;
 	    }
@@ -7464,6 +7473,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 		  tasks.push_back(iT);
 		  
 		  if (alg_mode>=2) {
+                    double mue=0.0;
 		    // If we're at small densities and we've converged
 		    // at both a higher density and a lower density,
 		    // then we can linearly interpolate to get a good
@@ -7472,7 +7482,11 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 		    // liquid-gas phase transition
 		    if (nB_grid2[inB]<1.0e-3 && inB<((int)n_nB2)-1 &&
 			tg_flag.get3(inB+1,iYe,iT)>9.9) {
-		      double line[8]={(tg_log_xn.get3(inB-1,iYe,iT)+
+                      if (include_muons) {
+                        mue=(tg_mue.get3(inB-1,iYe,iT)+
+                             tg_mue.get3(inB+1,iYe,iT))/2.0/hc_mev_fm;
+                      }
+		      double line[9]={(tg_log_xn.get3(inB-1,iYe,iT)+
 				       tg_log_xn.get3(inB+1,iYe,iT))/2.0,
                         (tg_log_xp.get3(inB-1,iYe,iT)+
                          tg_log_xp.get3(inB-1,iYe,iT))/2.0,
@@ -7484,25 +7498,32 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
                         (tg_NmZ_min.get3(inB-1,iYe,iT)+
                          tg_NmZ_min.get3(inB-1,iYe,iT))/2.0,
                         (tg_NmZ_max.get3(inB-1,iYe,iT)+
-                         tg_NmZ_max.get3(inB-1,iYe,iT))/2.0};
-		      gtab.line_of_data(8,line);
+                         tg_NmZ_max.get3(inB-1,iYe,iT))/2.0,mue};
+		      gtab.line_of_data(9,line);
 		    } else {
-		      double line[8]={tg_log_xn.get3(inB-1,iYe,iT),
+                      if (include_muons) {
+                        mue=tg_mue.get3(inB-1,iYe,iT)/hc_mev_fm;
+                      }
+		      double line[9]={tg_log_xn.get3(inB-1,iYe,iT),
                         tg_log_xp.get3(inB-1,iYe,iT),
                         0.0,0.0,
                         tg_A_min.get3(inB-1,iYe,iT),
                         tg_A_max.get3(inB-1,iYe,iT),
                         tg_NmZ_min.get3(inB-1,iYe,iT),
-                        tg_NmZ_max.get3(inB-1,iYe,iT)};
-		      gtab.line_of_data(8,line);
+                        tg_NmZ_max.get3(inB-1,iYe,iT),mue};
+		      gtab.line_of_data(9,line);
 		    }
 		  } else {
-		    double line[8]={tg_log_xn.get3(inB-1,iYe,iT),
+                    double mue=0.0;
+                    if (include_muons) {
+                      mue=tg_mue.get3(inB-1,iYe,iT)/hc_mev_fm;
+                    }
+		    double line[9]={tg_log_xn.get3(inB-1,iYe,iT),
                       tg_log_xp.get3(inB-1,iYe,iT),
                       tg_Z.get3(inB-1,iYe,iT),
                       tg_A.get3(inB-1,iYe,iT),
-                      0.0,0.0,0.0,0.0};
-		    gtab.line_of_data(8,line);
+                      0.0,0.0,0.0,0.0,mue};
+		    gtab.line_of_data(9,line);
 		  }	
 		  
 		  guess_found=true;
@@ -7522,21 +7543,29 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 		  tasks.push_back(iT);
 		  
 		  if (alg_mode>=2) {
-		    double line[8]={tg_log_xn.get3(inB,iYe-1,iT),
+                    double mue=0.0;
+                    if (include_muons) {
+                      mue=tg_mue.get3(inB,iYe-1,iT)/hc_mev_fm;
+                    }
+		    double line[9]={tg_log_xn.get3(inB,iYe-1,iT),
                       tg_log_xp.get3(inB,iYe-1,iT),
                       0.0,0.0,
                       tg_A_min.get3(inB,iYe-1,iT),
                       tg_A_max.get3(inB,iYe-1,iT),
                       tg_NmZ_min.get3(inB,iYe-1,iT),
-                      tg_NmZ_max.get3(inB,iYe-1,iT)};
-		    gtab.line_of_data(8,line);
+                      tg_NmZ_max.get3(inB,iYe-1,iT),mue};
+		    gtab.line_of_data(9,line);
 		  } else {
-		    double line[8]={tg_log_xn.get3(inB,iYe-1,iT),
+                    double mue=0.0;
+                    if (include_muons) {
+                      mue=tg_mue.get3(inB,iYe-1,iT)/hc_mev_fm;
+                    }
+		    double line[9]={tg_log_xn.get3(inB,iYe-1,iT),
                       tg_log_xp.get3(inB,iYe-1,iT),
                       tg_Z.get3(inB,iYe-1,iT),
                       tg_A.get3(inB,iYe-1,iT),
-                      0.0,0.0,0.0,0.0};
-		    gtab.line_of_data(8,line);
+                      0.0,0.0,0.0,0.0,mue};
+		    gtab.line_of_data(9,line);
 		  }	
 		  
 		  guess_found=true;
@@ -7554,22 +7583,27 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 		  tasks.push_back(iYe);
 		  tasks.push_back(iT);
 
+                  double mue=0.0;
+                  if (include_muons) {
+                    mue=tg_mue.get3(inB,iYe,iT-1)/hc_mev_fm;
+                  }
+                  
 		  if (alg_mode>=2) {
-		    double line[8]={tg_log_xn.get3(inB,iYe,iT-1),
+		    double line[9]={tg_log_xn.get3(inB,iYe,iT-1),
                       tg_log_xp.get3(inB,iYe,iT-1),
                       0.0,0.0,
                       tg_A_min.get3(inB,iYe,iT-1),
                       tg_A_max.get3(inB,iYe,iT-1),
                       tg_NmZ_min.get3(inB,iYe,iT-1),
-                      tg_NmZ_max.get3(inB,iYe,iT-1)};
-		    gtab.line_of_data(8,line);
+                      tg_NmZ_max.get3(inB,iYe,iT-1),mue};
+		    gtab.line_of_data(9,line);
 		  } else {
-		    double line[8]={tg_log_xn.get3(inB,iYe,iT-1),
+		    double line[9]={tg_log_xn.get3(inB,iYe,iT-1),
                       tg_log_xp.get3(inB,iYe,iT-1),
                       tg_Z.get3(inB,iYe,iT-1),
                       tg_A.get3(inB,iYe,iT-1),
-                      0.0,0.0,0.0,0.0};
-		    gtab.line_of_data(8,line);
+                      0.0,0.0,0.0,0.0,mue};
+		    gtab.line_of_data(9,line);
 		  }	
 		  
 		  guess_found=true;
@@ -7590,7 +7624,12 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 		  if (alg_mode>=2) {
 		    if (nB_grid2[inB]<1.0e-3 && inB>0 &&
 			tg_flag.get3(inB-1,iYe,iT)>9.9) {
-		      double line[8]={(tg_log_xn.get3(inB-1,iYe,iT)+
+                      double mue=0.0;
+                      if (include_muons) {
+                        mue=(tg_mue.get3(inB-1,iYe,iT)+
+                             tg_mue.get3(inB+1,iYe,iT))/2.0/hc_mev_fm;
+                      }
+		      double line[9]={(tg_log_xn.get3(inB-1,iYe,iT)+
 				       tg_log_xn.get3(inB+1,iYe,iT))/2.0,
                         (tg_log_xp.get3(inB-1,iYe,iT)+
                          tg_log_xp.get3(inB-1,iYe,iT))/2.0,
@@ -7602,25 +7641,33 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
                         (tg_NmZ_min.get3(inB-1,iYe,iT)+
                          tg_NmZ_min.get3(inB-1,iYe,iT))/2.0,
                         (tg_NmZ_max.get3(inB-1,iYe,iT)+
-                         tg_NmZ_max.get3(inB-1,iYe,iT))/2.0};
-		      gtab.line_of_data(8,line);
+                         tg_NmZ_max.get3(inB-1,iYe,iT))/2.0,mue};
+		      gtab.line_of_data(9,line);
 		    } else {
-		      double line[8]={tg_log_xn.get3(inB+1,iYe,iT),
+                      double mue=0.0;
+                      if (include_muons) {
+                        mue=tg_mue.get3(inB+1,iYe,iT)/hc_mev_fm;
+                      }
+		      double line[9]={tg_log_xn.get3(inB+1,iYe,iT),
                         tg_log_xp.get3(inB+1,iYe,iT),
                         0.0,0.0,
                         tg_A_min.get3(inB+1,iYe,iT),
                         tg_A_max.get3(inB+1,iYe,iT),
                         tg_NmZ_min.get3(inB+1,iYe,iT),
-                        tg_NmZ_max.get3(inB+1,iYe,iT)};
-		      gtab.line_of_data(8,line);
+                        tg_NmZ_max.get3(inB+1,iYe,iT),mue};
+		      gtab.line_of_data(9,line);
 		    }
 		  } else {
-		    double line[8]={tg_log_xn.get3(inB+1,iYe,iT),
+                      double mue=0.0;
+                      if (include_muons) {
+                        mue=tg_mue.get3(inB+1,iYe,iT)/hc_mev_fm;
+                      }
+		    double line[9]={tg_log_xn.get3(inB+1,iYe,iT),
                       tg_log_xp.get3(inB+1,iYe,iT),
                       tg_Z.get3(inB+1,iYe,iT),
                       tg_A.get3(inB+1,iYe,iT),
-                      0.0,0.0,0.0,0.0};
-		    gtab.line_of_data(8,line);
+                      0.0,0.0,0.0,0.0,mue};
+		    gtab.line_of_data(9,line);
 		  }	
 		  
 		  guess_found=true;
@@ -7638,22 +7685,27 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 		  tasks.push_back(iYe);
 		  tasks.push_back(iT);
 
+                  double mue=0.0;
+                  if (include_muons) {
+                    mue=tg_mue.get3(inB,iYe+1,iT)/hc_mev_fm;
+                  }
+                  
 		  if (alg_mode>=2) {
-		    double line[8]={tg_log_xn.get3(inB,iYe+1,iT),
+		    double line[9]={tg_log_xn.get3(inB,iYe+1,iT),
                       tg_log_xp.get3(inB,iYe+1,iT),
                       0.0,0.0,
                       tg_A_min.get3(inB,iYe+1,iT),
                       tg_A_max.get3(inB,iYe+1,iT),
                       tg_NmZ_min.get3(inB,iYe+1,iT),
-                      tg_NmZ_max.get3(inB,iYe+1,iT)};
-		    gtab.line_of_data(8,line);
+                      tg_NmZ_max.get3(inB,iYe+1,iT),mue};
+		    gtab.line_of_data(9,line);
 		  } else {
-		    double line[8]={tg_log_xn.get3(inB,iYe+1,iT),
+		    double line[9]={tg_log_xn.get3(inB,iYe+1,iT),
                       tg_log_xp.get3(inB,iYe+1,iT),
                       tg_Z.get3(inB,iYe+1,iT),
                       tg_A.get3(inB,iYe+1,iT),
-                      0.0,0.0,0.0,0.0};
-		    gtab.line_of_data(8,line);
+                      0.0,0.0,0.0,0.0,mue};
+		    gtab.line_of_data(9,line);
 		  }	
 		  
 		  guess_found=true;
@@ -7671,22 +7723,27 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 		  tasks.push_back(iYe);
 		  tasks.push_back(iT);
 
+                  double mue=0.0;
+                  if (include_muons) {
+                    mue=tg_mue.get3(inB,iYe,iT+1)/hc_mev_fm;
+                  }
+                  
 		  if (alg_mode>=2) {
-		    double line[8]={tg_log_xn.get3(inB,iYe,iT+1),
+		    double line[9]={tg_log_xn.get3(inB,iYe,iT+1),
                       tg_log_xp.get3(inB,iYe,iT+1),
                       0.0,0.0,
                       tg_A_min.get3(inB,iYe,iT+1),
                       tg_A_max.get3(inB,iYe,iT+1),
                       tg_NmZ_min.get3(inB,iYe,iT+1),
-                      tg_NmZ_max.get3(inB,iYe,iT+1)};
-		    gtab.line_of_data(8,line);
+                      tg_NmZ_max.get3(inB,iYe,iT+1),mue};
+		    gtab.line_of_data(9,line);
 		  } else {
-		    double line[8]={tg_log_xn.get3(inB,iYe,iT+1),
+		    double line[9]={tg_log_xn.get3(inB,iYe,iT+1),
                       tg_log_xp.get3(inB,iYe,iT+1),
                       tg_Z.get3(inB,iYe,iT+1),
                       tg_A.get3(inB,iYe,iT+1),
-                      0.0,0.0,0.0,0.0};
-		    gtab.line_of_data(8,line);
+                      0.0,0.0,0.0,0.0,mue};
+		    gtab.line_of_data(9,line);
 		  }	
 		  
 		  guess_found=true;
@@ -7729,23 +7786,28 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 			tasks.push_back(inB);
 			tasks.push_back(iYe);
 			tasks.push_back(iT);
-			
+
+                        double mue=0.0;
+                        if (include_muons) {
+                          mue=tg_mue.get3(jnB,jYe,jT)/hc_mev_fm;
+                        }
+                        
 			if (alg_mode>=2) {
-			  double line[8]={tg_log_xn.get3(jnB,jYe,jT),
+			  double line[9]={tg_log_xn.get3(jnB,jYe,jT),
                             tg_log_xp.get3(jnB,jYe,jT),
                             0.0,0.0,
                             tg_A_min.get3(jnB,jYe,jT),
                             tg_A_max.get3(jnB,jYe,jT),
                             tg_NmZ_min.get3(jnB,jYe,jT),
-                            tg_NmZ_max.get3(jnB,jYe,jT)};
-			  gtab.line_of_data(8,line);
+                            tg_NmZ_max.get3(jnB,jYe,jT),mue};
+			  gtab.line_of_data(9,line);
 			} else {
-			  double line[8]={tg_log_xn.get3(jnB,jYe,jT),
+			  double line[9]={tg_log_xn.get3(jnB,jYe,jT),
                             tg_log_xp.get3(jnB,jYe,jT),
                             tg_Z.get3(jnB,jYe,jT),
                             tg_A.get3(jnB,jYe,jT),
-                            0.0,0.0,0.0,0.0};
-			  gtab.line_of_data(8,line);
+                            0.0,0.0,0.0,0.0,mue};
+			  gtab.line_of_data(9,line);
 			}	
 		  
 			if (iflag==iflag_guess) {
@@ -7860,6 +7922,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	      }
               if (include_muons) {
 		vdet["mue"]=input_buffers[proc_index][vi["mue"]];
+		vdet["Ymu"]=input_buffers[proc_index][vi["Ymu"]];
               }
 	      store_point(tasks[i2],tasks[j2],tasks[k2],
 			  input_buffers[proc_index][vi["nB"]],
@@ -7934,6 +7997,12 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	      output_buffers[proc_index][vi["NmZ_max"]]=
 		gtab.get("NmZ_max",i);
 	    }
+            if (include_muons) {
+	      output_buffers[proc_index][vi["mue"]]=
+		gtab.get("mue",i);
+	      output_buffers[proc_index][vi["Ymu"]]=
+		gtab.get("Ymu",i);
+            }
 
 	    // Determine if the "no_nuclei" flag should be set
 	    output_buffers[proc_index][vi["no_nuclei"]]=0.0;
@@ -8062,6 +8131,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	  double mun_full, mup_full, Zbar, Nbar;
 	  int A_min=0, A_max=0, NmZ_min=0, NmZ_max=0;
 	  map<string,double> vdet;
+          vdet["mue"]=gtab.get("mue",i);
 	  
 	  int ret=0;
 	  if (alg_mode==1) {
@@ -8313,6 +8383,10 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	}
 	
 	map<string,double> vdet;
+        if (include_muons) {
+          vdet["mue"]=input_buffer[vi["mue"]];
+          vdet["Ymu"]=input_buffer[vi["Ymu"]];
+        }
 	
 	if (alg_mode==1) {
 	  cerr << "Mode alg_mode=1 no longer supported in generate-table."
@@ -8381,6 +8455,10 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	  output_buffer[vi["Z"]]=nuc_Z1;
 	  output_buffer[vi["N"]]=nuc_N1;
 	}
+        if (include_muons) {
+	  output_buffer[vi["mue"]]=vdet["mue"];
+	  output_buffer[vi["Ymu"]]=vdet["Ymu"];
+        }
 	if (include_detail) {
 	  //output_buffer[vi["zn"]]=vdet["zn"];
 	}
