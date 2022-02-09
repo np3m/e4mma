@@ -455,6 +455,23 @@ int eos_nuclei::maxwell_test(std::vector<std::string> &sv,
   return 0;
 }
 
+int eos_nuclei::new_muons(size_t nv, const ubvector &x, ubvector &y,
+                          double nB, double Ye, double T,
+                          map<string,double> &vdet, eos_sn_base &eso) {
+  
+  eso.electron.n=x[0];
+  
+  thermo lep;
+  eso.compute_eg_point(nB,eso.electron.n/nB,T*hc_mev_fm,lep,vdet["mue"]);
+  
+  y[0]=(eso.electron.n+eso.muon.n-nB*Ye)/(nB*Ye);
+
+  vdet["Ymu"]=eso.muon.n/nB;
+  
+  return 0;
+}
+
+
 int eos_nuclei::add_eg(std::vector<std::string> &sv,
 		       bool itive_com) {
 
@@ -505,9 +522,16 @@ int eos_nuclei::add_eg(std::vector<std::string> &sv,
     tg_mue.set_grid_packed(packed);
     tg_mue.set_all(0.0);
   }
+  if (include_muons && tg_Ymu.total_size()==0) {
+    tg_Ymu.resize(3,st);
+    tg_Ymu.set_grid_packed(packed);
+    tg_Ymu.set_all(0.0);
+  }
   
   eos_sn_base eso;
   eso.include_muons=this->include_muons;
+
+  map<std::string,double> vdet;
   
   for (size_t i=0;i<n_nB2;i++) {
     for (size_t j=0;j<n_Ye2;j++) {
@@ -515,79 +539,96 @@ int eos_nuclei::add_eg(std::vector<std::string> &sv,
       for (size_t k=0;k<n_T2;k++) {
 	
 	thermo lep;
-	double mue;
         double nB=nB_grid2[i];
+        double Ye=Ye_grid2[i];
+        double T_MeV=T_grid2[i];
+        double T=T_grid2[i]/hc_mev_fm;
         
         // Note that this function accepts the temperature in MeV
         // and the electron chemical potential is returned in 1/fm.
         if (k==0) {
           // For the lowest temperature grid point, give an initial
           // guess for the electron chemical potential
-          mue=0.511/197.33;
+          vdet["mue"]=0.511/197.33;
         } else {
-          mue=mue_last;
+          vdet["mue"]=mue_last;
         }
-        
-        //cout << nB << " " << Ye_grid2[j] << " " << T_grid2[k]
-        //<< endl;
 
-        if (nB>0.16 && this->include_muons) {
-          eso.include_muons=true;
+        if (include_muons) {
+          
+          mm_funct nm_func=std::bind
+            (std::mem_fn<int(size_t,const ubvector &,ubvector&,double,double,
+                             double,map<string,double> &,
+                             o2scl::eos_sn_base &)>
+             (&eos_nuclei::new_muons),this,std::placeholders::_1,
+             std::placeholders::_2,std::placeholders::_3,nB,Ye,T,
+             std::ref(vdet),std::ref(eso));
+          
+          ubvector x(1), y(1);
+          
+          x[0]=nB*Ye;
+
+          int mret=mh.msolve(1,x,nm_func);
+          if (mret!=0) {
+            O2SCL_ERR("nuc matter muons failed.",o2scl::exc_einval);
+          }
+          
+          // Ensure the last function evaluation stores the correct values
+          // in 'vdet':
+          nm_func(1,x,y);
+          
         } else {
-          eso.include_muons=false;
+        
+          eso.compute_eg_point(nB,Ye,T_MeV,lep,vdet["mue"]);
+          mue_last=vdet["mue"];
+          
         }
-	eso.compute_eg_point(nB,Ye_grid2[j],T_grid2[k],lep,mue);
-        mue_last=mue;
 
         vector<size_t> ix={i,j,k};
 	tg_F.set3(i,j,k,tg_Fint.get(ix)+
 		  (hc_mev_fm*lep.ed-T_grid2[k]*lep.en)/nB);
-	tg_E.set3(i,j,k,tg_Eint.get(ix)+
-		  hc_mev_fm*lep.ed/nB);
-	tg_P.set3(i,j,k,tg_Pint.get(ix)+
-		  hc_mev_fm*lep.pr);
-	tg_S.set3(i,j,k,tg_Sint.get(ix)+
-		  lep.en/nB);
-	tg_mue.set3(i,j,k,hc_mev_fm*mue);
-        double np=nB*Ye_grid2[j];
-        if (nB>0.16 && this->include_muons) {
+	tg_E.set3(i,j,k,tg_Eint.get(ix)+hc_mev_fm*lep.ed/nB);
+	tg_P.set3(i,j,k,tg_Pint.get(ix)+hc_mev_fm*lep.pr);
+	tg_S.set3(i,j,k,tg_Sint.get(ix)+lep.en/nB);
+	tg_mue.set3(i,j,k,hc_mev_fm*vdet["mue"]);
+        
+        double np=nB*Ye;
+        double nn=nB*(1.0-Ye);
+        
+        if (include_muons) {
           // Set muon density
           tg_Ymu.set3(i,j,k,eso.muon.n/nB);
-          // Modify proton fraction to be equal to electron plus muon
-          // fraction
-          np=Ye_grid2[j]*nB+eso.muon.n;
-          tg_Xp.set3(i,j,k,np/nB);
         }
 
         if (true) {
           
-          double T_MeV=T_grid2[k];
-          double Ye=Ye_grid2[j];
-          double nn=nB*(1.0-Ye);
           double scale=fabs(tg_E.get(ix));
           if (scale<10.0) scale=10.0;
-          double ti_check=tg_E.get(ix)*nB+
-            tg_P.get(ix)-T_MeV*tg_S.get(ix)*nB-
-            nn*tg_mun.get(ix)-np*tg_mup.get(ix)-
-            Ye*nB*tg_mue.get(ix);
-          if (nB>0.16 && this->include_muons) {
-            ti_check-=eso.muon.n*tg_mue.get(ix);
-          }
+          
+          double ti_check=tg_E.get(ix)*nB+tg_P.get(ix)-
+            T_MeV*tg_S.get(ix)*nB-nn*tg_mun.get(ix)-np*tg_mup.get(ix);
+          if (this->include_muons) {
+            ti_check-=(eso.electron.n+eso.muon.n)*tg_mue.get(ix);
+          } else {
+            ti_check-=Ye*nB*tg_mue.get(ix);
+          }            
           ti_check/=scale*nB;
+          
           if (fabs(ti_check)>1.0e-6) {
-            double ti_check2=(lep.ed*hc_mev_fm+
-                              lep.pr*hc_mev_fm-
-                              T_MeV*lep.en-
-                              np*mue*hc_mev_fm)/scale/nB;
+            
+            double ti_check2;
+            ti_check2=(lep.ed*hc_mev_fm+lep.pr*hc_mev_fm-T_MeV*lep.en-
+                       Ye*nB*vdet["mue"]*hc_mev_fm)/scale/nB;
             double ti_int_check=(tg_Eint.get(ix)*nB+
                                  tg_Pint.get(ix)-
                                  T_MeV*tg_Sint.get(ix)*nB-
                                  nn*tg_mun.get(ix)-
                                  np*tg_mup.get(ix))/scale/nB;
+            
             cout << "ti check failed." << endl;
-            cout << "nB,Ye,ti,scale: " << nB << " " << Ye << " "
+            cout << "nB,Ye,T_MeV,ti_check,scale: " << nB << " " << Ye << " "
                  << T_MeV << " " << ti_check << " " << scale << endl;
-            cout << "ti_int, ti_2, n_e: "
+            cout << "ti_int_check, ti_check2, Ye*nB: "
                  << ti_int_check << " " << ti_check2 << " " << Ye*nB << endl;
             cout << "terms in ti_check: " << tg_E.get(ix)*nB << " "
                  << tg_P.get(ix) << " "
@@ -597,17 +638,17 @@ int eos_nuclei::add_eg(std::vector<std::string> &sv,
                  << np*tg_mue.get(ix) << endl;
             cout << "terms in ti_check2: "
                  << lep.ed << " " << lep.pr << " "
-                 << T_MeV/hc_mev_fm*lep.en << " " << np*mue << endl;
+                 << T_MeV/hc_mev_fm*lep.en << " " << np*vdet["mue"] << endl;
             cout << "  " << lep.ed+lep.pr << " "
-                 << T_MeV/hc_mev_fm*lep.en+np*mue << endl;
+                 << T_MeV/hc_mev_fm*lep.en+np*vdet["mue"] << endl;
             cout << "  " << lep.ed+lep.pr-
-              T_MeV/hc_mev_fm*lep.en-np*mue << endl;
+              T_MeV/hc_mev_fm*lep.en-np*vdet["mue"] << endl;
             cout << "  "
-                 << (lep.ed+lep.pr-T_MeV/hc_mev_fm*lep.en-np*mue)/scale/
+                 << (lep.ed+lep.pr-T_MeV/hc_mev_fm*lep.en-np*vdet["mue"])/scale/
               nB*hc_mev_fm << endl;
             cout << "mue: " << tg_mue.get(ix) << endl;
             cout << eso.electron.n << " " << np << endl;
-            cout << eso.electron.mu << " " << mue << endl;
+            cout << eso.electron.mu << " " << vdet["mue"] << endl;
             exit(-1);
           }
           //char ch;

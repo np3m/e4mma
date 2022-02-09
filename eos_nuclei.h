@@ -571,7 +571,14 @@ public:
   int nuc_matter_muons(size_t nv, const ubvector &x, ubvector &y,
                        double nB, double Ye, double T,
                        std::map<std::string,double> &vdet);
-    
+  
+  /** \brief Compute muons
+   */
+  int new_muons(size_t nv, const ubvector &x, ubvector &y,
+                double nB, double Ye, double T,
+                std::map<std::string,double> &vdet,
+                o2scl::eos_sn_base &eso);
+  
   /** \brief Determine the EOS presuming a distribution of nuclei
       and optimizing the limits in A and \f$ N-Z \f$
   */
