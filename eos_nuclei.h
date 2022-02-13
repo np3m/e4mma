@@ -622,7 +622,22 @@ public:
    */
   int edit_data(std::vector<std::string> &sv, bool itive_com);
 
-  /** \brief Merge two tables
+  /** \brief Merge two output tables to create a third
+
+      \verbatim cli
+      <input file 1> <input file 2> <output file>
+
+      Tables can only be merged if their grids and settings match. If
+      the Fint table is anomalously small or large or not-finite, then
+      this function calls the error handler. Otherwise, for each point
+      in (nB,Ye,T), there are four reasons for which a point is copied
+      from the second table to the first: (i) they both have flag=10
+      but the second has a smaller Fint, (ii) the second has flag=10
+      but the first does not, (iii) they both have flags less than 10
+      but the second has a non-zero flag with a smaller Fint, or (iv)
+      the second table has a non-zero flag and the first does not.
+      After the merge, the number of points modified is reported.
+      \endverbatim
    */
   int merge_tables(std::vector<std::string> &sv, bool itive_com);
 

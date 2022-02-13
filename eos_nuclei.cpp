@@ -10075,6 +10075,39 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
   eos::setup_cli(cl);
   
   static const int nopt=23;
+
+  char *eos_dir=getenv("UTKNA_EOS_DIR");
+  std::string eos_str;
+  if (eos_dir!=0) {
+    eos_str=eos_dir;
+  }
+  std::string mt_str;
+#ifdef O2SCL_PUGIXML
+  if (eos_str.length()>0) {
+    vector<string> vs;
+    std::string fn=eos_str+"/doc/xml/classeos__nuclei.xml";
+
+    pugi::xml_node n=doxygen_xml_get(doc_fn,"glob_wrapper",
+                                     "briefdescription");
+    cout << "dxg: " << n.name() << " " << n.value() << endl;
+
+    pugi::xml_node n2=doxygen_xml_get(doc_fn,"glob_wrapper",
+                                      "briefdescription");
+    cout << "dxg: " << n2.name() << " " << n2.value() << endl;
+    
+    doxygen_xml_member_func(fn,"eos_nuclei","merge_tables",vs,2,
+                            "detaileddescription","verbatim");
+    for(size_t j=0;j<vs.size();j++) {
+      mt_str+=vs[j]+" ";
+    }
+  } else {
+    mt_str=((string)"No documentation because environment ")+
+      "variable UTKNA_EOS_DIR not set.";
+  }
+#else
+  mt_str=((string)"No documentation because O2SCL_PUGIXML ")+
+    "not defined.";
+#endif
   
   o2scl::comm_option_s options[nopt]=
     {{0,"eos-deriv","compute derivatives",
