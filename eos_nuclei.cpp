@@ -32,6 +32,10 @@
 #include <o2scl/mmin_bfgs2.h>
 #include <o2scl/diff_evo_adapt.h>
 #include <o2scl/rng.h>
+#include <o2scl/xml.h>
+
+#define STRINGIFY(x) #x
+#define TOSTRING(x) STRINGIFY(x)
 
 using namespace std;
 using namespace o2scl;
@@ -87,7 +91,7 @@ eos_nuclei::eos_nuclei() {
       "zn","zp","F1","F2","F3","F4","Un","Up","msn",
       "msp","g","dgdT"});
 
-  select_high_T(6);
+  select_high_T_internal(6);
   
   ubvector fit_params(10);
   fit_params[0]=7.331653147364e-01;
@@ -4067,7 +4071,7 @@ int eos_nuclei::store_point
       photon.massless_calc(T);
 
       tg_F.set(ix,(fr+electron.ed+photon.ed-
-			       T*(electron.en+photon.en))/nB*hc_mev_fm);
+                   T*(electron.en+photon.en))/nB*hc_mev_fm);
       tg_E.set(ix,(th.ed+electron.ed+photon.ed)/nB*hc_mev_fm);
       tg_P.set(ix,(th.pr+electron.pr+photon.pr)*hc_mev_fm);
       tg_S.set(ix,(th.en+electron.en+photon.en)/nB);
@@ -4084,17 +4088,17 @@ int eos_nuclei::store_point
   return 0;
 }
 
-int eos_nuclei::select_high_T_cl(std::vector<std::string> &sv,
+int eos_nuclei::select_high_T(std::vector<std::string> &sv,
 				 bool itive_com) {
   if (sv.size()<2) {
     cerr << "Command \"select-high-T\" needs an integer argument."
 	 << endl;
     return 1;
   }
-  return select_high_T(o2scl::stoi(sv[1]));
+  return select_high_T_internal(o2scl::stoi(sv[1]));
 }
 
-int eos_nuclei::select_high_T(int option) {
+int eos_nuclei::select_high_T_internal(int option) {
   if (option==0) {
     // The original DSH fit
     sk_Tcorr.t0=5.067286719233e+03;
@@ -6905,35 +6909,35 @@ void eos_nuclei::new_table() {
       
       if (strangeness) {
       
-      size_t st[4]={n_nB2,n_Ye2,n_T2,n_S2};
-      tg_E.resize(4,st);
-      tg_E.set_grid_packed(packed);
-      tg_E.set_all(0.0);
-      tg_P.resize(4,st);
-      tg_P.set_grid_packed(packed);
-      tg_P.set_all(0.0);
-      tg_S.resize(4,st);
-      tg_S.set_grid_packed(packed);
-      tg_S.set_all(0.0);
-      tg_F.resize(4,st);
-      tg_F.set_grid_packed(packed);
-      tg_F.set_all(0.0);
+        size_t st[4]={n_nB2,n_Ye2,n_T2,n_S2};
+        tg_E.resize(4,st);
+        tg_E.set_grid_packed(packed);
+        tg_E.set_all(0.0);
+        tg_P.resize(4,st);
+        tg_P.set_grid_packed(packed);
+        tg_P.set_all(0.0);
+        tg_S.resize(4,st);
+        tg_S.set_grid_packed(packed);
+        tg_S.set_all(0.0);
+        tg_F.resize(4,st);
+        tg_F.set_grid_packed(packed);
+        tg_F.set_all(0.0);
       
       } else {
       
-      size_t st[3]={n_nB2,n_Ye2,n_T2};
-      tg_E.resize(3,st);
-      tg_E.set_grid_packed(packed);
-      tg_E.set_all(0.0);
-      tg_P.resize(3,st);
-      tg_P.set_grid_packed(packed);
-      tg_P.set_all(0.0);
-      tg_S.resize(3,st);
-      tg_S.set_grid_packed(packed);
-      tg_S.set_all(0.0);
-      tg_F.resize(3,st);
-      tg_F.set_grid_packed(packed);
-      tg_F.set_all(0.0);
+        size_t st[3]={n_nB2,n_Ye2,n_T2};
+        tg_E.resize(3,st);
+        tg_E.set_grid_packed(packed);
+        tg_E.set_all(0.0);
+        tg_P.resize(3,st);
+        tg_P.set_grid_packed(packed);
+        tg_P.set_all(0.0);
+        tg_S.resize(3,st);
+        tg_S.set_grid_packed(packed);
+        tg_S.set_all(0.0);
+        tg_F.resize(3,st);
+        tg_F.set_grid_packed(packed);
+        tg_F.set_all(0.0);
       
       }
       
@@ -7528,7 +7532,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
                              tg_mue.get3(inB+1,iYe,iT))/2.0/hc_mev_fm;
                       }
 		      vector<double> line={(tg_log_xn.get3(inB-1,iYe,iT)+
-				       tg_log_xn.get3(inB+1,iYe,iT))/2.0,
+                                            tg_log_xn.get3(inB+1,iYe,iT))/2.0,
                         (tg_log_xp.get3(inB-1,iYe,iT)+
                          tg_log_xp.get3(inB-1,iYe,iT))/2.0,
                         0.0,0.0,
@@ -7671,7 +7675,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
                              tg_mue.get3(inB+1,iYe,iT))/2.0/hc_mev_fm;
                       }
 		      vector<double> line={(tg_log_xn.get3(inB-1,iYe,iT)+
-				       tg_log_xn.get3(inB+1,iYe,iT))/2.0,
+                                            tg_log_xn.get3(inB+1,iYe,iT))/2.0,
                         (tg_log_xp.get3(inB-1,iYe,iT)+
                          tg_log_xp.get3(inB-1,iYe,iT))/2.0,
                         0.0,0.0,
@@ -7699,10 +7703,10 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 		      gtab.line_of_data(line.size(),line);
 		    }
 		  } else {
-                      double mue=0.0;
-                      if (include_muons) {
-                        mue=tg_mue.get3(inB+1,iYe,iT)/hc_mev_fm;
-                      }
+                    double mue=0.0;
+                    if (include_muons) {
+                      mue=tg_mue.get3(inB+1,iYe,iT)/hc_mev_fm;
+                    }
 		    vector<double> line={tg_log_xn.get3(inB+1,iYe,iT),
                       tg_log_xp.get3(inB+1,iYe,iT),
                       tg_Z.get3(inB+1,iYe,iT),
@@ -8415,6 +8419,8 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
       
       int ret=-10;
       double elapsed=MPI_Wtime()-mpi_start_time;
+      map<string,double> vdet;
+      
       if (max_time==0.0 || elapsed<max_time) {
 
 	if (gt_verbose>1) {
@@ -8423,7 +8429,6 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	       << Ye << " " << T*hc_mev_fm << endl;
 	}
 	
-	map<string,double> vdet;
         if (include_muons) {
           vdet["mue"]=input_buffer[vi["mue"]];
           vdet["Ymu"]=input_buffer[vi["Ymu"]];
@@ -10076,217 +10081,157 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
   
   static const int nopt=23;
 
-  char *eos_dir=getenv("UTKNA_EOS_DIR");
-  std::string eos_str;
-  if (eos_dir!=0) {
-    eos_str=eos_dir;
-  }
-  std::string mt_str;
-#ifdef O2SCL_PUGIXML
-  if (eos_str.length()>0) {
-    vector<string> vs;
-    std::string fn=eos_str+"/doc/xml/classeos__nuclei.xml";
-
-    pugi::xml_node n=doxygen_xml_get(doc_fn,"glob_wrapper",
-                                     "briefdescription");
-    cout << "dxg: " << n.name() << " " << n.value() << endl;
-
-    pugi::xml_node n2=doxygen_xml_get(doc_fn,"glob_wrapper",
-                                      "briefdescription");
-    cout << "dxg: " << n2.name() << " " << n2.value() << endl;
-    
-    doxygen_xml_member_func(fn,"eos_nuclei","merge_tables",vs,2,
-                            "detaileddescription","verbatim");
-    for(size_t j=0;j<vs.size();j++) {
-      mt_str+=vs[j]+" ";
-    }
-  } else {
-    mt_str=((string)"No documentation because environment ")+
-      "variable UTKNA_EOS_DIR not set.";
-  }
-#else
-  mt_str=((string)"No documentation because O2SCL_PUGIXML ")+
-    "not defined.";
-#endif
-  
   o2scl::comm_option_s options[nopt]=
-    {{0,"eos-deriv","compute derivatives",
-       0,0,"<file in> <file out>","",
+    {{0,"eos-deriv","",0,0,"","",
        new o2scl::comm_option_mfptr<eos_nuclei>
-       (this,&eos_nuclei::eos_deriv),
-       o2scl::cli::comm_option_both},
-     {0,"add-eg","Add electrons and photons.",
-      0,0,"","",new o2scl::comm_option_mfptr<eos_nuclei>
-      (this,&eos_nuclei::add_eg),
-      o2scl::cli::comm_option_both},
-     {0,"eg-table","Make electron and photon table.",
-      1,1,"<output file>","",new o2scl::comm_option_mfptr<eos_nuclei>
-      (this,&eos_nuclei::eg_table),
-      o2scl::cli::comm_option_both},
-     {0,"maxwell-test","Experimental test of Maxwell construction.",
-      4,4,"<file in> <file out>","",
+       (this,&eos_nuclei::eos_deriv),o2scl::cli::comm_option_both},
+     {0,"add-eg","",0,0,"","",
       new o2scl::comm_option_mfptr<eos_nuclei>
-      (this,&eos_nuclei::maxwell_test),
-      o2scl::cli::comm_option_both},
-     {0,"fit-frdm","Fit the FRDM mass model.",
-      0,0,"","",new o2scl::comm_option_mfptr<eos_nuclei>
-      (this,&eos_nuclei::fit_frdm),
-      o2scl::cli::comm_option_both},
-     {0,"check-virial","Check the virial EOS.",0,0,"",
-      ((std::string)"This function creates a file 'check_virial.o2' ")+
-      "with four tensor_grid objects which store the neutron and "+
-      "proton fugacities. This file can be plotted with, e.g.,\n\n"+
-      "  o2graph -set logz 1 -read check_virial.o2 zn -set logx 1 "+
-      "-set logy 1 -set colbar 1 -to-table3d 0 2 slice 0.01 "+
-      "-den-plot slice -show",
+      (this,&eos_nuclei::add_eg),o2scl::cli::comm_option_both},
+     {0,"eg-table","",1,1,"","",
       new o2scl::comm_option_mfptr<eos_nuclei>
-      (this,&eos_nuclei::check_virial),
-      o2scl::cli::comm_option_both},
-     {0,"generate-table","Generate an EOS table.",
-      0,1,"[out file]",
-      "",new o2scl::comm_option_mfptr<eos_nuclei>
+      (this,&eos_nuclei::eg_table),o2scl::cli::comm_option_both},
+     {0,"maxwell-test","",0,4,"","",
+      new o2scl::comm_option_mfptr<eos_nuclei>
+      (this,&eos_nuclei::maxwell_test),o2scl::cli::comm_option_both},
+     {0,"fit-frdm","",0,0,"","",
+      new o2scl::comm_option_mfptr<eos_nuclei>
+      (this,&eos_nuclei::fit_frdm),o2scl::cli::comm_option_both},
+     {0,"check-virial","",0,0,"","",
+      new o2scl::comm_option_mfptr<eos_nuclei>
+      (this,&eos_nuclei::check_virial),o2scl::cli::comm_option_both},
+     {0,"generate-table","",0,1,"","",
+      new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::generate_table),o2scl::cli::comm_option_both},
-     {0,"test-random","Test an EOS at random points in (nB,Ye,T)",
-      1,2,"<n_tests> [\"lg\"]",
-      ((std::string)"This function tests the EOS at randomly chosen ")+
-      "points in (nB,Ye,T) space. If the new calculation and the "+
-      "stored result disagree, then the new result is stored in the "+
-      "table.",
+     {0,"test-random","",1,2,"","",
       new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::test_random),o2scl::cli::comm_option_both},
-     {0,"load","Load an EOS table.",0,1,"<filename>",
-      ((std::string)"Loads an EOS table in to memory. In the case ")+
-      "where MPI is used, only one MPI rank reads the table at a time.",
+     {0,"load","",0,1,"","",
       new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::load),o2scl::cli::comm_option_both},
-     {0,"output","Output an EOS table.",
-      0,1,"<filename>",
-      ((std::string)"Write the EOS table to a file. In the case ")+
-      "where MPI is used...",
+     {0,"output","",0,1,"","",
       new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::output),o2scl::cli::comm_option_both},
-     {0,"edit-data","Edit data in the EOS tables.",1,4,
-      "<select func.> [tensor to modify] [value func.]",
-      ((string)"The \"edit-data\" command counts the number of ")+
-      "(nB,Ye,T) points matching the "+
-      "criteria specified in <select func.>. If the remaining two "+
-      "arguments are given, then the values of [tensor to modify] "+
-      "for the selected points "+
-      "are changed to the result of the function [value func.].",
+     {0,"edit-data","",1,4,"","",
       new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::edit_data),o2scl::cli::comm_option_both},
-     {0,"merge-tables","Merge two output tables to create a third.",
-      3,3,"<input file 1> <input file 2> <output file>",
-      ((std::string)"Tables can only be merged if their grids ")+
-      "and settings match. If the Fint table is anomalously small "+
-      "or large or not-finite, then this function calls the error "+
-      "handler. Otherwise, for each point in (nB,Ye,T), there are "+
-      "four reasons for which a point is copied from the second "+
-      "table to the first: (i) they both have flag=10 but the "+
-      "second has a smaller Fint, (ii) the second has flag=10 but "+
-      "the first does not, (iii) they both have flags less than 10 "+
-      "but the second has a non-zero flag with a smaller Fint, or "+
-      "(iv) the second table has a non-zero flag and the first "+
-      "does not. After the merge, the number of points modified "+
-      "is reported.",
+     {0,"merge-tables","",3,3,"","",
       new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::merge_tables),o2scl::cli::comm_option_both},
-     {0,"write-nuclei","Output nuclear masses.",
-      1,1,"<output file>",
-      "",new o2scl::comm_option_mfptr<eos_nuclei>
+     {0,"write-nuclei","",1,1,"","",
+      new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::write_nuclei),o2scl::cli::comm_option_both},
-     {0,"compare-tables","Compare two output tables.",
-      2,3,"<input file 1> <input file 2> [quantity]",
-      ((std::string)"Compare two EOS tables. If the optional argument ")+
-      "is unspecified, then all quantities are compared. If [quantity] "+
-      "is specified, then only that particular quantitiy is compared. "+
-      "Only points for which flag=10 in both tables are compared. "+
-      "If derivs_computed is true, then Pint, mun, and "+
-      "mup are available for comparisons. If with_leptons is "+
-      "true, then "+
-      "F, E, P, and S, are also available for comparisons. Any current "+
-      "EOS data stored is cleared before the comparison. If the "+
-      "nB, Ye, or T grids do not match, then no comparison is performed.",
+     {0,"compare-tables","",2,3,"","",
       new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::compare_tables),o2scl::cli::comm_option_both},
-     {0,"stats","Output convergence statistics and simple checks.",0,0,"",
-      ((std::string)"If an EOS is loaded, this function counts ")+
-      "the number of points with each flag value, checks that "+
-      "the nuclear fractions add up to 1, checks that the free energy "+
-      "internal energy, and entropy are consistent, and checks the "+
-      "thermodynamic identity.",new o2scl::comm_option_mfptr<eos_nuclei>
+     {0,"stats","",0,0,"","",
+      new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::stats),o2scl::cli::comm_option_both},
-     {0,"mcarlo-nuclei","",
-      0,0,"<file>",
-      "",new o2scl::comm_option_mfptr<eos_nuclei>
+     {0,"mcarlo-nuclei","",0,0,"","",
+      new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::mcarlo_nuclei),o2scl::cli::comm_option_both},
-     {0,"mcarlo-nuclei2","",
-      5,5,"<nB> <Ye> <T> <N> <filename>",
-      "",new o2scl::comm_option_mfptr<eos_nuclei>
+     {0,"mcarlo-nuclei2","",5,5,"","",
+      new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::mcarlo_nuclei2),o2scl::cli::comm_option_both},
-     {0,"mcarlo-beta","",
-      1,2,"<filename> [n_point]",
-      "",new o2scl::comm_option_mfptr<eos_nuclei>
+     {0,"mcarlo-beta","",1,2,"","",
+      new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::mcarlo_beta),o2scl::cli::comm_option_both},
-     {0,"point-nuclei",
-      "Compute and/or show EOS results at one (n_B,Y_e,T) point.",
-      -1,-1,((string)"<n_B> <Y_e> <T (MeV)> [log(xn) log(xp) Z N] ")+
-      "[alg_mode 2-4: log(xn) log(xp) A_min A_max NmZ_min NmZ_max] [fname]",
-      ((std::string)"If an EOS is loaded, then the n_B, Y_e, and T ")+
-      "values are modified to ensure that they lie on a grid point. "+
-      "If an initial guess is specified on the command line, it is "+
-      "used even if there is a good guess already in the table. "+
-      "If the flag is not 10 or if \"recompute\" is true, then the EOS is "+
-      "recomputed. If an EOS is loaded or the recompute was successful, "+
-      "then the results are output to the screen. If the point was "+
-      "successful it is stored in the current tables. If \"show_all"+
-      "_nuclei\" is true, then a file named \"dist.o2\" is created "+
-      "which holds the full nuclear distribution.",
+     {0,"point-nuclei","",-1,-1,"","",
       new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::point_nuclei),o2scl::cli::comm_option_both},
-     {0,"increase-density",
-      "Increase nB to optimize the phase transition.",7,7,
-      "<nB low> <nB high> <Ye low> <Ye high> <T low> <T high> <output file>",
-      ((std::string)"This function computes the EOS at higher densities ")+
-      "using initial guess from lower densities. It is particularly "+
-      "helpful in getting the phase transition between nuclei and "+
-      "nuclear matter correct. The outermost loop is temperature, the "+
-      "second loop is electron fraction and the inner loop is density. "+
-      "This function requires a table has been loaded and the EOS is "+
-      "specified. It has no parallelization support.",
+     {0,"increase-density","",7,7,"","",
       new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::increase_density),o2scl::cli::comm_option_both},
-     {0,"fix-cc",
-      "Increase nB to optimize the phase transition.",1,1,
-      "<output file>",
-      "",new o2scl::comm_option_mfptr<eos_nuclei>
+     {0,"fix-cc","",1,1,"","",
+      new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::fix_cc),o2scl::cli::comm_option_both},
-     {0,"verify","Verify the EOS",1,4,
-      ((std::string)"\"random\" <n_tests> <output file> or ")+
-      "\"random_lg\" <n_tests> <output file> or "+
-      "\"all\" <output file> or \"all_lg\" <output file> or "+
-      "\"point\" <output file> <nB> <Ye> <T>",
-      ((std::string)"Verify the EOS, recompute if a point fails ")+
-      "and the write final results to the specified output file. This "+
-      "function only verifies that the baryon density and electron "+
-      "fraction equations are solved to within the current tolerance "+
-      "and does not attempt to solve them again. The test-random "+
-      "function is different, it actually re-solves the equations "+
-      "to show the answer is correct. Thus, this function requires "+
-      "a bit less running time at each point. The first argument is a "+
-      "'mode' parameter which determines which points will be "+
-      "verified. ",
+     {0,"verify","",1,4,"","",
       new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::verify),o2scl::cli::comm_option_both},
-     {0,"select-high-T",
-      "Choose the Skyrme model for the finite T corrections.",
-      1,1,"<index>",
-      ((std::string)"Select 0 for the original DSH fit, 1 for NRAPR, ")+
-      "2 for Sk chi 414, 3 for Skchi450, 4 for Skchi500, 5 for ?, "+
-      "and 6 for Sk chi m* (the default).",
+     {0,"select-high-T","",1,1,"","",
       new o2scl::comm_option_mfptr<eos_nuclei>
-      (this,&eos_nuclei::select_high_T_cl),o2scl::cli::comm_option_both}
+      (this,&eos_nuclei::select_high_T),o2scl::cli::comm_option_both}
     };
+  
+  std::string eos_str=TOSTRING(EOS_DIR);
+  std::string mt_brief, mt_params;
+  std::string mt_long="Documentation not set.";
+
+#ifdef O2SCL_PUGIXML
+
+  if (true) {
+    
+    for(size_t j=0;j<nopt;j++) {
+      
+      pugi::xml_document doc;
+      pugi::xml_document doc2;
+
+      std::string cmd_name=options[j].lng;
+      std::string fn_name;
+      for(size_t k=0;k<cmd_name.length();k++) {
+        if (cmd_name[k]=='-') {
+          fn_name+='_';
+        } else {
+          fn_name+=cmd_name[k];
+        }
+      }
+      cout << "cmd,fn: " << cmd_name << " " << fn_name << endl;
+      
+      if (eos_str.length()>0) {
+        
+        std::string fn=eos_str+"/doc/xml/classeos__nuclei.xml";
+        
+        ostream_walker w;
+        
+        pugi::xml_node n3=doxygen_xml_member_get
+          (fn,"eos_nuclei",fn_name,"briefdescription",doc);
+        //cout << "dxmg: " << n3.name() << " " << n3.value() << endl;
+        //n3.traverse(w);
+        
+        pugi::xml_node n4=doxygen_xml_member_get
+          (fn,"eos_nuclei",fn_name,"detaileddescription",doc2);
+        //cout << "dxmg: " << n4.name() << " " << n4.value() << endl;
+        //n4.traverse(w);
+        
+        if (n3!=0 && n4!=0) {
+          
+          pugi::xml_node n5=n4.child("para");
+          
+          if (n5!=0) {
+            
+            std::string s2=n5.child_value("verbatim");
+            vector<string> vs3;
+            split_string_delim(s2,vs3,'\n');
+            
+            //cout << "H4 " << s2 << endl;
+            
+            if (vs3.size()>=3 && vs3[0]==((string)"cli")) {
+              
+              //cout << "H5 " << vs3.size() << endl;
+              options[j].desc=n3.child_value("para");
+              options[j].parm_desc=vs3[1];
+              size_t start=2;
+              if (vs3[2].length()==0 && vs3.size()>=4) start=3;
+              for(size_t k=start;k<vs3.size();k++) {
+                options[j].help+=vs3[k]+" ";
+              }
+              cout << "  " << fn_name << " " << options[j].desc << endl;
+
+              //cout << "mt_brief: " << mt_brief << endl;
+              //cout << "mt_params: " << mt_params << endl;
+              //cout << "mt_long: " << mt_long << endl;
+            }
+          }
+        }
+        
+      }
+      
+    }
+    
+  }
+  
+#endif
+  
   cl.set_comm_option_vec(nopt,options);
 
   p_nB_grid_spec.str=&nB_grid_spec;
