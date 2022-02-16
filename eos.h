@@ -667,67 +667,126 @@ class eos {
   /// \name Command-line interface functions [public]
   //@{
   /** \brief Construct a table at fixed electron fraction
+
+      <filename> <Ye>
+
+      Help.
    */
   int table_Ye(std::vector<std::string> &sv,
 	       bool itive_com);
 
-  /** \brief Select an alternate EOS model
+  /** \brief Use alternate, rather than the Du et al. EOS
+
+      "Skyrme" <name>, <RMF> name, etc.
+
+      Help.
    */
   int alt_model(std::vector<std::string> &sv,
 	       bool itive_com);
 
   /** \brief Construct a table at fixed baryon density
+
+      <filename> <nB>
+
+      Help.
    */
   int table_nB(std::vector<std::string> &sv,
 	       bool itive_com);
 
-  /** \brief Construct the EOS for a proto-neutron star
+  /** \brief Construct the PNS EOS and the M-R curve
+
+      <entropy per baryon> <lepton fraction> <output filename>
+
+      Use YL=0 for beta equilibrium. Currently always uses a cold
+      crust.
    */
   int pns_eos(std::vector<std::string> &sv, bool itive_com);
   
-  /** \brief Construct a full table 
+  /** \brief Construct a full 3D EOS table 
+
+      <filename>
+
+      Help.
    */
   int table_full(std::vector<std::string> &sv, bool itive_com);
 
-  /** \brief Test the code
+  /** \brief Test the first derivatives of the free energy
+
+      Params.
+
+      Help.
    */
   int test_deriv(std::vector<std::string> &sv, bool itive_com);
 
-  /** \brief Select a model by specifying the parameters
+  /** \brief Select an EOS model
+
+      <i_ns> <i_skyrme> <alpha> <a> <L> <S> <phi>
+
+      Help.
    */
   int select_model(std::vector<std::string> &sv, bool itive_com);
 
-  /** \brief Compare the full free energy with the free energy
-      from the virial expansion
+  /** \brief Compare the virial and full EOS
+
+      Params.
+
+      Help.
   */
   int vir_comp(std::vector<std::string> &sv, bool itive_com);
 
-  /** \brief Evaluate the EOS at one point
+  /** \brief Evaluate the EOS at one (nB,Ye,T) point
+
+      Params.
+
+      Help.
    */
   int point(std::vector<std::string> &sv, bool itive_com);
 
-  /** \brief Select a random model
+  /** \brief Select a random EOS model
+
+      Params.
+
+      Help.
    */
   int random(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Compute the data for the comparison figures
+
+      Params.
+
+      Help.
    */
   int comp_figs(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Compute the data for the Monte Carlo figures
+
+      Params.
+
+      Help.
    */
   int mcarlo_data(std::vector<std::string> &sv, bool itive_com);
 
-  /** \brief Perform the virial fit
+  /** \brief Fit the virial EOS
+
+      Params.
+
+      Help.
    */
   int vir_fit(std::vector<std::string> &sv, bool itive_com);
 
-  /** \brief Test the electron and photon contribution
+  /** \brief Test the electron and photon EOS
+
+      [filename]
+
+      Help.
    */
   int test_eg(std::vector<std::string> &sv, bool itive_com);
 
-  /** \brief Compute the EOS from previously generated EOS
-      tables at several points
+  /** \brief Compare to other EOSs?
+
+      Params.
+
+      Help.
    */
   int eos_sn(std::vector<std::string> &sv, bool itive_com);
   //@}

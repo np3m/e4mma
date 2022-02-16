@@ -159,11 +159,9 @@ public:
   //@{
   /** \brief Fit the FRDM mass model
 
-      \verbatim cli
       <no parameters>
 
       Fit the FRDM mass model.
-      \endverbatim
    */
   int fit_frdm(std::vector<std::string> &sv,
 	       bool itive_com);
@@ -597,11 +595,9 @@ public:
    
   /** \brief Generate an EOS table
 
-      \verbatim cli
       [out file]
 
       Help.
-      \endverbatim
    */
   int generate_table(std::vector<std::string> &sv, bool itive_com);
   //@}
@@ -610,53 +606,38 @@ public:
   //@{
   /** \brief Compute derivatives numerically
 
-      \verbatim cli
       <no parameters>
 
       Help.
-      \endverbatim
    */
   int eos_deriv(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Desc
-
-      \verbatim cli
-      \endverbatim
    */
   int eos_deriv_v2(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Compute second derivatives numerically
-
-      The derivatives ...
-
-      \verbatim cli
-      \endverbatim
    */
   int eos_second_deriv(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Add electrons and photons
 
-      \verbatim cli
       <no parameters>
       
       Help.
-      \endverbatim
    */
   int add_eg(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Construct an electrons and photon table
 
-      \verbatim cli
       <output file>
 
       Help.
-      \endverbatim
    */
   int eg_table(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Edit an EOS table
 
-      \verbatim cli
       <select func.> [tensor to modify] [value func.]
 
       The \"edit-data\" command counts the number of (nB,Ye,T) points
@@ -664,13 +645,11 @@ public:
       remaining two arguments are given, then the values of [tensor to
       modify] for the selected points are changed to the result of the
       function [value func.].
-      \endverbatim
    */
   int edit_data(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Merge two output tables to create a third
 
-      \verbatim cli
       <input file 1> <input file 2> <output file>
 
       Tables can only be merged if their grids and settings match. If
@@ -683,13 +662,11 @@ public:
       but the second has a non-zero flag with a smaller Fint, or (iv)
       the second table has a non-zero flag and the first does not.
       After the merge, the number of points modified is reported.
-      \endverbatim
    */
   int merge_tables(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Compare two output tables
 
-      \verbatim cli
       <input file 1> <input file 2> [quantity]
 
       Compare two EOS tables. If the optional argument ")+
@@ -702,13 +679,11 @@ public:
       F, E, P, and S, are also available for comparisons. Any current "+
       EOS data stored is cleared before the comparison. If the "+
       nB, Ye, or T grids do not match, then no comparison is performed.
-      \endverbatim
    */
   int compare_tables(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Output convergence statistics and simple checks
 
-      \verbatim cli
       <no parameters>
 
       If an EOS is loaded, this function counts
@@ -716,14 +691,13 @@ public:
       the nuclear fractions add up to 1, checks that the free energy
       internal energy, and entropy are consistent, and checks the
       thermodynamic identity.
-      \endverbatim
    */
   int stats(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Compute and/or show EOS results at one (n_B,Y_e,T) point
 
-      \verbatim cli
-      <n_B> <Y_e> <T (MeV)> [log(xn) log(xp) Z N] [alg_mode 2-4: log(xn) log(xp) A_min A_max NmZ_min NmZ_max] [fname]
+      <n_B> <Y_e> <T (MeV)> [log(xn) log(xp) Z N] [alg_mode 2-4:
+      log(xn) log(xp) A_min A_max NmZ_min NmZ_max] [fname]
 
       If an EOS is loaded, then the n_B, Y_e, and T
       values are modified to ensure that they lie on a grid point.
@@ -735,19 +709,16 @@ public:
       successful it is stored in the current tables. If \"show_all
       _nuclei\" is true, then a file named \"dist.o2\" is created
       which holds the full nuclear distribution.
-      \endverbatim
    */
   int point_nuclei(std::vector<std::string> &sv, bool itive_com);
   
   /** \brief Test an EOS at random points in (nB,Ye,T)
 
-      \verbatim cli
       <n_tests> [\"lg\"]
 
       This function tests the EOS at randomly chosen points in
       (nB,Ye,T) space. If the new calculation and the stored result
       disagree, then the new result is stored in the table.
-      \endverbatim
    */
   int test_random(std::vector<std::string> &sv, bool itive_com);
   //@}
@@ -756,23 +727,19 @@ public:
   //@{
   /** \brief Load an EOS table
 
-      \verbatim cli
       <filename> 
 
       Loads an EOS table in to memory. In the case
       where MPI is used, only one MPI rank reads the table at a time.
-      \endverbatim
    */
   int load(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Output an EOS table to a file
 
-      \verbatim cli
       <filename>
 
       Loads an EOS table in to memory. In the case
       where MPI is used, only one MPI rank writes the table at a time.
-      \endverbatim
    */
   int output(std::vector<std::string> &sv, bool itive_com);
 
@@ -790,11 +757,9 @@ public:
   
   /** \brief Write the nuclear masses to an HDF5 file
 
-      \verbatim cli
       <output file>
 
       Help.
-      \endverbatim
    */
   int write_nuclei(std::vector<std::string> &sv,
 			       bool itive_com);
@@ -822,7 +787,6 @@ public:
 
   /** \brief Check the virial EOS
 
-      \verbatim cli
       <no parameters>
 
       This function checks the solver by using it to compute the EOS
@@ -838,15 +802,13 @@ public:
       o2graph -set logz 1 -read check_virial.o2 zn -set logx 1
       -set logy 1 -set colbar 1 -to-table3d 0 2 slice 0.01
       -den-plot slice -show.
-      \endverbatim
   */
   int check_virial(std::vector<std::string> &sv, bool itive_com);
   
-  /** \brief Use lower densities to improve results at
-      higher densities
+  /** \brief Use low densities to improve results at high densities
 
-      \verbatim cli
-      <nB low> <nB high> <Ye low> <Ye high> <T low> <T high> <output file>
+      <nB low> <nB high> <Ye low> <Ye high> <T low> <T high> <output
+      file>
 
       This function computes the EOS at higher densities
       using initial guess from lower densities. It is particularly
@@ -855,24 +817,22 @@ public:
       second loop is electron fraction and the inner loop is density.
       This function requires a table has been loaded and the EOS is
       specified. It has no parallelization support.
-      \endverbatim
    */
   int increase_density(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Increase nB to optimize the phase transition
 
-      \verbatim cli
       <output file>
 
       Help
-      \endverbatim
    */
   int fix_cc(std::vector<std::string> &sv, bool itive_com);
   
   /** \brief Verify the EOS
 
-      \verbatim cli
-      random\" <n_tests> <output file> or "\"random_lg\" <n_tests> <output file> or "+"\"all\" <output file> or \"all_lg\" <output file> or "+"\"point\" <output file> <nB> <Ye> <T>
+      "random" <n_tests> <output file>, "random_lg" <n_tests>
+      <output file>, "all" <output file>, "all_lg" <output
+      file>, or "point" <output file> <nB> <Ye> <T>
 
       Verify the EOS, recompute if a point fails
       and the write final results to the specified output file. This
@@ -884,37 +844,30 @@ public:
       a bit less running time at each point. The first argument is a
       'mode' parameter which determines which points will be
       verified. 
-      \endverbatim
    */
   int verify(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Monte Carlo results with nuclei
 
-      \verbatim cli
       Params.
 
       Help.
-      \endverbatim
    */
   int mcarlo_nuclei(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Monte Carlo results with nuclei (v2)
 
-      \verbatim cli
       <nB> <Ye> <T> <N> <filename>
 
       Help
-      \endverbatim
    */
   int mcarlo_nuclei2(std::vector<std::string> &sv, bool itive_com);
   
   /** \brief Monte Carlo neutrino opacity in beta equilibrium
 
-      \verbatim cli
       <filename> [n_point]
 
       Help
-      \endverbatim
    */
   int mcarlo_beta(std::vector<std::string> &sv, bool itive_com);
 
@@ -930,22 +883,17 @@ public:
 
   /** \brief Compute the second derivatives and the
       eigenvalues of the stability matrix
-
-      \verbatim cli
-      \endverbatim
   */
   int stability(std::vector<std::string> &sv,
 		bool itive_com);
   
   /** \brief Select the high-temperature Skyrme EOS
 
-      \verbatim cli
       <index>
 
       Select 0 for the original DSH fit, 1 for NRAPR, 
       2 for Sk chi 414, 3 for Skchi450, 4 for Skchi500, 5 for ?, "+
       and 6 for Sk chi m* (the default).
-      \endverbatim
    */
   int select_high_T(std::vector<std::string> &sv, bool itive_com);
 
@@ -960,11 +908,9 @@ public:
   
   /** \brief Maxwell construction test
 
-      \verbatim cli
       Params.
 
       Help.
-      \endverbatim
    */
   int maxwell_test(std::vector<std::string> &sv, bool itive_com);
   //@}

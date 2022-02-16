@@ -469,6 +469,7 @@ int eos_nuclei::new_muons(size_t nv, const ubvector &x, ubvector &y,
   eso.compute_eg_point(nB,eso.electron.n/nB,T*hc_mev_fm,lep,vdet["mue"]);
   
   y[0]=(eso.electron.n+eso.muon.n-nB*Ye)/(nB*Ye);
+  //cout << "\t" << eso.electron.n << " " << eso.muon.n << " " << nB*Ye << endl;
 
   vdet["Ymu"]=eso.muon.n/nB;
   
@@ -544,9 +545,9 @@ int eos_nuclei::add_eg(std::vector<std::string> &sv,
 	
 	thermo lep;
         double nB=nB_grid2[i];
-        double Ye=Ye_grid2[i];
-        double T_MeV=T_grid2[i];
-        double T=T_grid2[i]/hc_mev_fm;
+        double Ye=Ye_grid2[j];
+        double T_MeV=T_grid2[k];
+        double T=T_grid2[k]/hc_mev_fm;
         
         // Note that this function accepts the temperature in MeV
         // and the electron chemical potential is returned in 1/fm.
@@ -560,6 +561,7 @@ int eos_nuclei::add_eg(std::vector<std::string> &sv,
 
         if (include_muons) {
           
+          cout << nB << " " << Ye << " " << T_MeV << endl;
           mm_funct nm_func=std::bind
             (std::mem_fn<int(size_t,const ubvector &,ubvector&,double,double,
                              double,map<string,double> &,
@@ -572,9 +574,31 @@ int eos_nuclei::add_eg(std::vector<std::string> &sv,
           
           x[0]=nB*Ye;
 
+          mh.tol_rel=1.0e-6;
           int mret=mh.msolve(1,x,nm_func);
           if (mret!=0) {
-            O2SCL_ERR("nuc matter muons failed.",o2scl::exc_einval);
+            nm_func(1,x,y);
+            mh.tol_rel=1.0e-5;
+            for(size_t jj=0;jj<5 && mret!=0;jj++) {
+              cout << jj << " " << x[0] << " " << y[0] << endl;
+              mret=mh.msolve(1,x,nm_func);
+              nm_func(1,x,y);
+            }
+            mh.tol_rel=1.0e-4;
+            for(size_t jj=0;jj<5 && mret!=0;jj++) {
+              cout << jj << " " << x[0] << " " << y[0] << endl;
+              mret=mh.msolve(1,x,nm_func);
+              nm_func(1,x,y);
+            }
+            mh.tol_rel=3.0e-4;
+            for(size_t jj=0;jj<5 && mret!=0;jj++) {
+              cout << jj << " " << x[0] << " " << y[0] << endl;
+              mret=mh.msolve(1,x,nm_func);
+              nm_func(1,x,y);
+            }
+            if (mret!=0) {
+              O2SCL_ERR("nuc matter muons failed.",o2scl::exc_einval);
+            }
           }
           
           // Ensure the last function evaluation stores the correct values
@@ -590,7 +614,7 @@ int eos_nuclei::add_eg(std::vector<std::string> &sv,
 
         vector<size_t> ix={i,j,k};
 	tg_F.set3(i,j,k,tg_Fint.get(ix)+
-		  (hc_mev_fm*lep.ed-T_grid2[k]*lep.en)/nB);
+		  (hc_mev_fm*lep.ed-T_MeV*lep.en)/nB);
 	tg_E.set3(i,j,k,tg_Eint.get(ix)+hc_mev_fm*lep.ed/nB);
 	tg_P.set3(i,j,k,tg_Pint.get(ix)+hc_mev_fm*lep.pr);
 	tg_S.set3(i,j,k,tg_Sint.get(ix)+lep.en/nB);
@@ -618,7 +642,7 @@ int eos_nuclei::add_eg(std::vector<std::string> &sv,
           }            
           ti_check/=scale*nB;
           
-          if (fabs(ti_check)>1.0e-6) {
+          if (fabs(ti_check)>1.0e-4) {
             
             double ti_check2;
             ti_check2=(lep.ed*hc_mev_fm+lep.pr*hc_mev_fm-T_MeV*lep.en-
@@ -10154,8 +10178,6 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
     };
   
   std::string eos_str=TOSTRING(EOS_DIR);
-  std::string mt_brief, mt_params;
-  std::string mt_long="Documentation not set.";
 
 #ifdef O2SCL_PUGIXML
 
@@ -10175,7 +10197,7 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
           fn_name+=cmd_name[k];
         }
       }
-      cout << "cmd,fn: " << cmd_name << " " << fn_name << endl;
+      //cout << "cmd,fn: " << cmd_name << " " << fn_name << endl;
       
       if (eos_str.length()>0) {
         
@@ -10194,40 +10216,22 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
         //n4.traverse(w);
         
         if (n3!=0 && n4!=0) {
-          
-          pugi::xml_node n5=n4.child("para");
-          
-          if (n5!=0) {
-            
-            std::string s2=n5.child_value("verbatim");
-            vector<string> vs3;
-            split_string_delim(s2,vs3,'\n');
-            
-            //cout << "H4 " << s2 << endl;
-            
-            if (vs3.size()>=3 && vs3[0]==((string)"cli")) {
-              
-              //cout << "H5 " << vs3.size() << endl;
-              options[j].desc=n3.child_value("para");
-              options[j].parm_desc=vs3[1];
-              size_t start=2;
-              if (vs3[2].length()==0 && vs3.size()>=4) start=3;
-              for(size_t k=start;k<vs3.size();k++) {
-                options[j].help+=vs3[k]+" ";
-              }
-              cout << "  " << fn_name << " " << options[j].desc << endl;
 
-              //cout << "mt_brief: " << mt_brief << endl;
-              //cout << "mt_params: " << mt_params << endl;
-              //cout << "mt_long: " << mt_long << endl;
-            }
+          pugi::xml_node_iterator it=n4.begin();
+          pugi::xml_node_iterator it2=n4.begin();
+          it2++;
+
+          if (it!=n4.end() && it2!=n4.end() &&
+              it->name()==((string)"para") &&
+              it2->name()==((string)"para")) {
+
+            options[j].desc=n3.child_value("para");
+            options[j].parm_desc=it->child_value();
+            options[j].help=it2->child_value();
           }
         }
-        
       }
-      
     }
-    
   }
   
 #endif

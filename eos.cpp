@@ -20,6 +20,11 @@
 */
 #include "eos.h"
 
+#include <o2scl/xml.h>
+
+#define STRINGIFY(x) #x
+#define TOSTRING(x) STRINGIFY(x)
+
 using namespace std;
 using namespace o2scl;
 using namespace o2scl_const;
@@ -3625,52 +3630,113 @@ void eos::setup_cli(o2scl::cli &cl) {
  
   static const int nopt=14;
   o2scl::comm_option_s options[nopt]=
-    {{0,"test-deriv","Test the first derivatives of the free energy.",
-      0,0,"","",new o2scl::comm_option_mfptr<eos>
-      (this,&eos::test_deriv),o2scl::cli::comm_option_both},
-     {0,"table-Ye","Construct a 2D table at fixed Y_e.",2,2,"<fname> <Ye>","",
+    {{0,"test-deriv","",0,0,"","",
+       new o2scl::comm_option_mfptr<eos>
+       (this,&eos::test_deriv),o2scl::cli::comm_option_both},
+     {0,"table-Ye","",2,2,"","",
       new o2scl::comm_option_mfptr<eos>
       (this,&eos::table_Ye),o2scl::cli::comm_option_both},
-     {0,"table-nB","Construct a 2D table at fixed n_B.",2,2,"<fname> <nB>","",
+     {0,"table-nB","",2,2,"","",
       new o2scl::comm_option_mfptr<eos>
       (this,&eos::table_nB),o2scl::cli::comm_option_both},
-     {0,"table-full","Construct a full 3D EOS table.",1,1,"<fname>","",
+     {0,"table-full","",1,1,"","",
       new o2scl::comm_option_mfptr<eos>
       (this,&eos::table_full),o2scl::cli::comm_option_both},
-     {0,"vir-fit","Fit the virial EOS",0,0,"","",
+     {0,"vir-fit","",0,0,"","",
       new o2scl::comm_option_mfptr<eos>
       (this,&eos::vir_fit),o2scl::cli::comm_option_both},
-     {0,"eos-sn-compare","Compare with other EOS tables.",0,0,"","",
+     {0,"eos-sn","",0,0,"","",
       new o2scl::comm_option_mfptr<eos>
       (this,&eos::eos_sn),o2scl::cli::comm_option_both},
-     {0,"mcarlo-data","Compute Monte Carlo data.",0,1,"","",
+     {0,"mcarlo-data","",0,1,"","",
       new o2scl::comm_option_mfptr<eos>
       (this,&eos::mcarlo_data),o2scl::cli::comm_option_both},
-     {0,"point","Compute the EOS at one (n_B,Y_e,T) point.",0,3,"","",
+     {0,"point","",0,3,"","",
       new o2scl::comm_option_mfptr<eos>
       (this,&eos::point),o2scl::cli::comm_option_both},
-     {0,"random","Generate a random EOS model.",0,0,"","",
+     {0,"random","",0,0,"","",
       new o2scl::comm_option_mfptr<eos>
       (this,&eos::random),o2scl::cli::comm_option_both},
-     {0,"pns-eos","Compute the PNS EOS and M-R curve.",3,3,
-      "<entropy per baryon> <lepton fraction> <output filename>",
-      "Use YL=0 for beta equilibrium. Currently always uses a cold crust.",
+     {0,"pns-eos","",3,3,"","",
       new o2scl::comm_option_mfptr<eos>
       (this,&eos::pns_eos),o2scl::cli::comm_option_both},
-     {0,"select-model","Specify a parameter set.",7,7,
-      "<i_ns> <i_skyrme> <alpha> <a> <L> <S> <phi>","",
+     {0,"select-model","",7,7,"","",
       new o2scl::comm_option_mfptr<eos>
       (this,&eos::select_model),o2scl::cli::comm_option_both},
-     {0,"test-eg","Test the electron-photon EOS.",0,1,"[fname]","",
+     {0,"test-eg","",0,1,"","",
       new o2scl::comm_option_mfptr<eos>
       (this,&eos::test_eg),o2scl::cli::comm_option_both},
-     {0,"vir-comp","Compare the virial and full EOS.",0,0,"","",
+     {0,"vir-comp","",0,0,"","",
       new o2scl::comm_option_mfptr<eos>
       (this,&eos::vir_comp),o2scl::cli::comm_option_both},
      {0,"alt-model","",1,2,"","",
       new o2scl::comm_option_mfptr<eos>
       (this,&eos::alt_model),o2scl::cli::comm_option_both}
     };
+
+  std::string eos_str=TOSTRING(EOS_DIR);
+
+#ifdef O2SCL_PUGIXML
+
+  if (true) {
+    
+    for(size_t j=0;j<nopt;j++) {
+      
+      pugi::xml_document doc;
+      pugi::xml_document doc2;
+
+      std::string cmd_name=options[j].lng;
+      std::string fn_name;
+      for(size_t k=0;k<cmd_name.length();k++) {
+        if (cmd_name[k]=='-') {
+          fn_name+='_';
+        } else {
+          fn_name+=cmd_name[k];
+        }
+      }
+      //cout << "cmd,fn: " << cmd_name << " " << fn_name << endl;
+      
+      if (eos_str.length()>0) {
+        
+        std::string fn=eos_str+"/doc/xml/classeos.xml";
+        
+        ostream_walker w;
+        
+        pugi::xml_node n3=doxygen_xml_member_get
+          (fn,"eos",fn_name,"briefdescription",doc);
+        if (false && n3!=0) {
+          cout << "dxmg: " << n3.name() << " " << n3.value() << endl;
+          n3.traverse(w);
+        }
+        
+        pugi::xml_node n4=doxygen_xml_member_get
+          (fn,"eos",fn_name,"detaileddescription",doc2);
+        if (false && n4!=0) {
+          cout << "dxmg: " << n4.name() << " " << n4.value() << endl;
+          n4.traverse(w);
+        }
+        
+        if (n3!=0 && n4!=0) {
+
+          pugi::xml_node_iterator it=n4.begin();
+          pugi::xml_node_iterator it2=n4.begin();
+          if (it2!=n4.end()) it2++;
+
+          if (it!=n4.end() && it2!=n4.end() &&
+              it->name()==((string)"para") &&
+              it2->name()==((string)"para")) {
+
+            options[j].desc=n3.child_value("para");
+            options[j].parm_desc=it->child_value();
+            options[j].help=it2->child_value();
+          }
+        }
+      }
+    }
+  }
+  
+#endif
+  
   cl.set_comm_option_vec(nopt,options);
   
   p_verbose.i=&verbose;

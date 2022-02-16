@@ -48,7 +48,8 @@ endif
 # ----------------------------------------------------------------
 
 eos.o: eos.cpp virial_solver.h eos.h
-	$(LMPI_CXX) $(LMPI_CFLAGS) -o eos.o -c eos.cpp
+	$(LMPI_CXX) $(LMPI_CFLAGS) -DEOS_DIR=$(EOS_DIR) \
+		-o eos.o -c eos.cpp
 
 eos_nuclei.o: eos_nuclei.cpp virial_solver.h eos_nuclei.h
 	$(LMPI_CXX) $(LMPI_CFLAGS) -DEOS_DIR=$(EOS_DIR) \
@@ -134,7 +135,8 @@ neutrino/jacobi_rule_nompi.o: neutrino/jacobi_rule.cpp neutrino/jacobi_rule.hpp
 		-c neutrino/jacobi_rule.cpp
 
 eos_nompi.o: eos.cpp virial_solver.h eos.h
-	$(LCXX) $(LCFLAGS) -o eos_nompi.o -c eos.cpp
+	$(LCXX) $(LCFLAGS) -DEOS_DIR=$(EOS_DIR) \
+		-o eos_nompi.o -c eos.cpp
 
 eos_nuclei_nompi.o: eos_nuclei.cpp virial_solver.h eos_nuclei.h
 	$(LCXX) $(LCFLAGS) -DEOS_DIR=$(EOS_DIR) \
