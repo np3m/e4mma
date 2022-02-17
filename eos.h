@@ -60,6 +60,9 @@ class eos_crust_virial_v2 : public o2scl::eos_crust_virial {
   
  public:
 
+  /** \brief If true, include the deuteron contribution in the
+      virial coefficients
+   */
   bool include_deuteron;
   
   /** \brief Temperature grid for alpha-nucleon virial coefficients
@@ -122,10 +125,12 @@ class eos_crust_virial_v2 : public o2scl::eos_crust_virial {
     return (bpn_f(T)+bpna(T))/2.0;
   }
   
-  /// The temperature must be specified in MeV
+  /** \brief The temperature must be specified in MeV
+   */
   double bna(double T);
 
-  /// The temperature must be specified in MeV
+  /** \brief The temperature must be specified in MeV
+   */
   double bpna(double T);
 
   /** \brief Desc

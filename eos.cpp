@@ -362,7 +362,7 @@ void eos_crust_virial_v2::fit(bool show_fit) {
 
   fitter.fit(bpn_np,bpn_params,covar2,chi2,cff_nuc);
 
-  if(show_fit) {
+  if (show_fit) {
     cout << "Final chi-squared: " << chi2 << endl;
     cout << "params: " << endl;
     cout.precision(12);
@@ -1063,8 +1063,7 @@ double eos::free_energy_density
 #ifdef STRANGENESS
 double eos::free_energy_density_detail_s
 (o2scl::fermion &n, o2scl::fermion &p, double Y_s, double T, o2scl::thermo &th,
- double &zn, double &zp,
- double &f1, double &f2, double &f3, double &f4,
+ double &zn, double &zp, double &f1, double &f2, double &f3, double &f4,
  double &g_virial, double &dgvirialdT, double &dgvirialdnn,
  double &dgvirialdnp) {
 
