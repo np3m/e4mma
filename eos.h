@@ -505,6 +505,9 @@ class eos {
 
   /// \name Particle objects [protected]
   //@{
+  /// New lepton object
+  o2scl::eos_leptons elep;
+  
   /** \brief Electron/positron
    */
   o2scl::fermion electron;
@@ -773,9 +776,10 @@ class eos {
 
   /** \brief Fit the virial EOS
 
-      Params.
+      <no parameters>
 
-      Help.
+      Fit the virial EOS table to the functional form specified
+      in Du et al. (2019) using \ref eos_crust_virial_v2::fit() .
    */
   int vir_fit(std::vector<std::string> &sv, bool itive_com);
 
@@ -783,7 +787,11 @@ class eos {
 
       [filename]
 
-      Help.
+      This function tests the electron and photon EOS to ensure that
+      it does not call the error handler (it does not test accuracy).
+      It uses a larger grid than the default EOS grid and stores the
+      results in tensor_grid objects. If a file is specified, these
+      tensor_grid objects are output to the specified file.
    */
   int test_eg(std::vector<std::string> &sv, bool itive_com);
 

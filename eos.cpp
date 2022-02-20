@@ -699,6 +699,8 @@ eos::eos() {
   sk_Tcorr.x3=-2.877974634128e+01;
   sk_Tcorr.alpha=0.144165;
 
+  elep.include_photons=true;
+
   // Seed the random number generator with the clock time
   rng.clock_seed();
 
@@ -3548,25 +3550,46 @@ int eos::test_eg(std::vector<std::string> &sv,
   
   eos_sn_base eso;
   eso.include_muons=include_muons;
+  elep.include_muons=include_muons;
 
   for(size_t i=0;i<n_nB;i++) {
     double nB=nB_grid[i];
-    if (true || i%10==0) {
+    if (i%10==0) {
       cout << "i,nB: " << i << " " << nB << endl;
     }
     for(size_t j=1;j<n_Ye-1;j++) {
       double Ye=Ye_grid[j];
+      
+      elep.e.mu=elep.e.m;
+      elep.e.n=nB*Ye/2.0;
+  
       for(size_t k=0;k<n_T;k++) {
+        
 	double T_MeV=T_grid[k];
 	thermo lep;
 	double mue2;
-	eso.compute_eg_point(nB,Ye,T_MeV,lep,mue2);
-	
-	t_F.set(i,j,k,(hc_mev_fm*lep.ed-T_grid[k]*lep.en)/nB);
-	t_E.set(i,j,k,hc_mev_fm*lep.ed/nB);
-	t_P.set(i,j,k,hc_mev_fm*lep.pr);
-	t_S.set(i,j,k,hc_mev_fm*lep.en/nB);
-	t_mue.set(i,j,k,hc_mev_fm*electron.mu);
+
+        if (false) {
+          eso.compute_eg_point(nB,Ye,T_MeV,lep,mue2);
+          cout << eso.electron.mu << " " << eso.electron.n << " "
+               << eso.muon.mu << " " << eso.muon.n << endl;
+          t_F.set(i,j,k,(hc_mev_fm*lep.ed-T_grid[k]*lep.en)/nB);
+          t_E.set(i,j,k,hc_mev_fm*lep.ed/nB);
+          t_P.set(i,j,k,hc_mev_fm*lep.pr);
+          t_S.set(i,j,k,hc_mev_fm*lep.en/nB);
+          t_mue.set(i,j,k,hc_mev_fm*electron.mu);
+        } else {
+          elep.pair_density_eq(nB*Ye,T_MeV/hc_mev_fm);
+          if (verbose>1) {
+            cout << nB << " " << Ye << " " << T_MeV << " " << elep.e.n << " "
+                 << elep.mu.n << " " << elep.e.n+elep.mu.n << endl;
+          }
+          t_F.set(i,j,k,(hc_mev_fm*elep.th.ed-T_grid[k]*elep.th.en)/nB);
+          t_E.set(i,j,k,hc_mev_fm*elep.th.ed/nB);
+          t_P.set(i,j,k,hc_mev_fm*elep.th.pr);
+          t_S.set(i,j,k,hc_mev_fm*elep.th.en/nB);
+          t_mue.set(i,j,k,hc_mev_fm*elep.e.mu);
+        }
 
       }
     }
