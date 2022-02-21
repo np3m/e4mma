@@ -3552,7 +3552,7 @@ int eos::test_eg(std::vector<std::string> &sv,
   eso.include_muons=include_muons;
   elep.include_muons=include_muons;
 
-  for(size_t i=0;i<n_nB;i++) {
+  for(size_t i=27;i<n_nB;i++) {
     double nB=nB_grid[i];
     if (i%10==0) {
       cout << "i,nB: " << i << " " << nB << endl;
