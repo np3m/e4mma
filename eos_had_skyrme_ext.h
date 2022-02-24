@@ -162,5 +162,114 @@
     //@}
 
   };
+  /** \brief Extended Skyrme hadronic equation of state 
+
+      This is the modified Skyrme model proposed by Holt and Lim.
+   */
+  class eos_had_lim_holt : public o2scl::eos_had_base {
+    
+  protected:
+
+    double betaL, betaU, theta, thetaL, sigma;
+    double alphaL, etaL, etaU, zetaL, zetaU;
+    double gamma, gamma2;
+
+    /** \brief Compute the base thermodynamic quantities
+
+	This function computes the energy density, pressure,
+	entropy, and chemical potentials.
+     */
+    template<class fermion_t>
+      void base_thermo
+    (fermion_t &ne, fermion_t &pr, double ltemper, o2scl::thermo &locth) {
+
+      double nb=ne.n+pr.n;
+
+      ne.ms=0.5/(0.5/ne.m+betaL*ne.n+betaU*pr.n+
+                 theta*nb*pow(nb,1.0+sigma)+
+                 thetaL*ne.n*pow(nb,sigma));
+      pr.ms=0.5/(0.5/pr.m+betaL*pr.n+betaU*ne.n+
+                 theta*nb*pow(nb,1.0+sigma)+
+                 thetaL*pr.n*pow(nb,sigma));
+      //ne.ms=ne.m/(1.0+2.0*(nb*term+ne.n*term2)*ne.m);
+      //pr.ms=pr.m/(1.0+2.0*(nb*term+pr.n*term2)*pr.m);
+      
+      double np2=ne.n*ne.n+pr.n*pr.n;
+      
+      double ham1=alphaL*np2;
+      double ham2=2.0*alphaL*ne.n*pr.n;
+      double ham3=etaL*np2*pow(nb,gamma);
+      double ham4=2.0*etaU*ne.n*pr.n*pow(nb,gamma);
+      double ham5=zetaL*np2*pow(nb,gamma2);
+      double ham6=2.0*zetaU*ne.n*pr.n*pow(nb,gamma2);
+      
+      double ham=ne.ed+pr.ed+ham1+ham2+ham3+ham4+ham5+ham6;
+      
+      double gn, gp;
+      if (ne.inc_rest_mass) {
+	gn=2.0*ne.ms*(ne.ed-ne.n*ne.m);
+      } else {
+	gn=2.0*ne.ms*ne.ed;
+      }
+      if (pr.inc_rest_mass) {
+	gp=2.0*pr.ms*(pr.ed-pr.n*pr.m);
+      } else {
+	gp=2.0*pr.ms*pr.ed;
+      }
+
+      double dhdnn=2.0*alphaL*ne.n+2.0*alphaL*pr.n+
+        2.0*etaL*ne.n*pow(nb,gamma)+2.0*gamma*np2+pow(nb,gamma-1.0)+
+        2.0*etaU*pr.n*pow(nb,gamma)+
+        2.0*gamma*etaU*ne.n*pr.n*pow(nb,gamma-1.0)+
+        2.0*zetaL*ne.n*pow(nb,gamma2)+gamma2*zetaL*np2*pow(nb,gamma2-1.0)+
+        2.0*zetaU*pr.n*pow(nb,gamma2)+
+        2.0*gamma2*zetaU*ne.n*pr.n*pow(nb,gamma2-1.0);
+      double dhdnp=2.0*alphaL*pr.n+2.0*alphaL*ne.n+
+        2.0*etaL*pr.n*pow(nb,gamma)+2.0*gamma*np2+pow(nb,gamma-1.0)+
+        2.0*etaU*ne.n*pow(nb,gamma)+
+        2.0*gamma*etaU*pr.n*ne.n*pow(nb,gamma-1.0)+
+        2.0*zetaL*pr.n*pow(nb,gamma2)+gamma2*zetaL*np2*pow(nb,gamma2-1.0)+
+        2.0*zetaU*ne.n*pow(nb,gamma2)+
+        2.0*gamma2*zetaU*pr.n*ne.n*pow(nb,gamma2-1.0);
+
+      // Compute the chemical potentials
+      //ne.mu=ne.nu+dhdnn+(gn+gp)*term+gn*term2;
+      //pr.mu=pr.nu+dhdnp+(gn+gp)*term+gp*term2;
+      
+      // Thermodynamics
+      locth.ed=ham;
+      locth.en=ne.en+pr.en;
+      locth.pr=ltemper*locth.en+ne.mu*ne.n+pr.mu*pr.n-locth.ed;
+      
+      return;
+    }
+    
+  public:
+
+    /// \name Basic usage
+    //@{
+    /// Create a blank Skyrme EOS
+    eos_had_lim_holt();
+
+    /// Destructor
+    virtual ~eos_had_lim_holt() {};
+
+    /** \brief Equation of state as a function of densities
+	at finite temperature
+    */
+    virtual int calc_temp_e(o2scl::fermion &ne, o2scl::fermion &pr,
+			    double temper, o2scl::thermo &th);
+
+    /** \brief Equation of state as a function of densities at 
+	zero temperature
+    */
+    virtual int calc_e(o2scl::fermion &ne, o2scl::fermion &pr,
+		       o2scl::thermo &lt);
+
+    /// Return string denoting type ("eos_had_lim_holt")
+    virtual const char *type() { return "eos_had_lim_holt"; }
+    //@}
+
+  };
 
 #endif
