@@ -34,9 +34,6 @@
 #include <o2scl/rng.h>
 #include <o2scl/xml.h>
 
-#define STRINGIFY(x) #x
-#define TOSTRING(x) STRINGIFY(x)
-
 using namespace std;
 using namespace o2scl;
 using namespace o2scl_const;
@@ -10147,13 +10144,13 @@ int eos_nuclei::xml_to_o2(std::vector<std::string> &sv,
   
   vector<std::string> doc_strings;
   
-  std::string eos_str=TOSTRING(EOS_DIR);
-  
 #ifdef O2SCL_PUGIXML
 
   vector<string> clist=cl_ptr->get_option_list();
   
   for(size_t j=0;j<clist.size();j++) {
+
+    bool found=false;
     
     pugi::xml_document doc;
     pugi::xml_document doc2;
@@ -10167,45 +10164,50 @@ int eos_nuclei::xml_to_o2(std::vector<std::string> &sv,
         fn_name+=cmd_name[k];
       }
     }
-    //cout << "cmd,fn: " << cmd_name << " " << fn_name << endl;
+    if (verbose>0) {
+      cout << "cmd,fn: " << cmd_name << " " << fn_name << endl;
+    }
     
-    if (eos_str.length()>0) {
+    std::string fn="doc/xml/classeos__nuclei.xml";
+    
+    ostream_walker w;
+    
+    pugi::xml_node n3=doxygen_xml_member_get
+      (fn,"eos",fn_name,"briefdescription",doc);
+    if (verbose>1 && n3!=0) {
+      cout << "dxmg: " << n3.name() << " " << n3.value() << endl;
+      n3.traverse(w);
+    }
+    
+    pugi::xml_node n4=doxygen_xml_member_get
+      (fn,"eos",fn_name,"detaileddescription",doc2);
+    if (verbose>1 && n4!=0) {
+      cout << "dxmg: " << n4.name() << " " << n4.value() << endl;
+      n4.traverse(w);
+    }
+    
+    if (n3!=0 && n4!=0) {
       
-      std::string fn=eos_str+"/doc/xml/classeos__nuclei.xml";
+      pugi::xml_node_iterator it=n4.begin();
+      pugi::xml_node_iterator it2=n4.begin();
+      if (it2!=n4.end()) it2++;
       
-      ostream_walker w;
-      
-      pugi::xml_node n3=doxygen_xml_member_get
-        (fn,"eos",fn_name,"briefdescription",doc);
-      if (false && n3!=0) {
-        cout << "dxmg: " << n3.name() << " " << n3.value() << endl;
-        n3.traverse(w);
-      }
-      
-      pugi::xml_node n4=doxygen_xml_member_get
-        (fn,"eos",fn_name,"detaileddescription",doc2);
-      if (false && n4!=0) {
-        cout << "dxmg: " << n4.name() << " " << n4.value() << endl;
-        n4.traverse(w);
-      }
-      
-      if (n3!=0 && n4!=0) {
+      if (it!=n4.end() && it2!=n4.end() &&
+          it->name()==((string)"para") &&
+          it2->name()==((string)"para")) {
         
-        pugi::xml_node_iterator it=n4.begin();
-        pugi::xml_node_iterator it2=n4.begin();
-        if (it2!=n4.end()) it2++;
-        
-        if (it!=n4.end() && it2!=n4.end() &&
-            it->name()==((string)"para") &&
-            it2->name()==((string)"para")) {
-          
-          doc_strings.push_back(cmd_name);
-          doc_strings.push_back(fn_name);
-          doc_strings.push_back(n3.child_value("para"));
-          doc_strings.push_back(it->child_value());
-          doc_strings.push_back(it2->child_value());
-        }
+        doc_strings.push_back(cmd_name);
+        doc_strings.push_back(fn_name);
+        doc_strings.push_back(n3.child_value("para"));
+        doc_strings.push_back(it->child_value());
+        doc_strings.push_back(it2->child_value());
+        found=true;
       }
+    }
+    
+    if (found==false) {
+      cout << "Could not find documentation for command " << cmd_name
+           << " and function " << fn_name << "." << endl;
     }
   }
 
@@ -10213,6 +10215,12 @@ int eos_nuclei::xml_to_o2(std::vector<std::string> &sv,
   hf.open_or_create("data/eos_nuclei_docs.o2");
   hf.sets_vec("doc_strings",doc_strings);
   hf.close();
+  cout << "Created file data/eos_nuclei_docs.o2." << endl;
+  
+#else
+
+  cout << "Pugixml must be enabled to create the documentation strings "
+       << "from the doxygen\n XML output." << endl;
   
 #endif
   
