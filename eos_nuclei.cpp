@@ -8988,7 +8988,9 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
     "gnn","gpp","gnp",
     "vf","vf_dg0","vgt",
     "cc_vec_imfp","cc_vec_imfp_dg0","cc_axvec_imfp",
-    "nc_vec_imfp","nc_vec_imfp_dg0","nc_axvec_imfp"};
+    "cc_vec_imfp_norpa","cc_axvec_imfp_norpa",
+    "nc_vec_imfp","nc_vec_imfp_dg0","nc_axvec_imfp",
+    "nc_vec_imfp_norpa","nc_axvec_imfp_norpa"};
   
   vector<string> unit_list={"1/fm^3","1/fm^3","1/fm^3",
     "","1/MeV^3","1/MeV^3","MeV","MeV","MeV","MeV","MeV",
@@ -9002,8 +9004,8 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
     "1/MeV^2","1/MeV^2","1/MeV^2","1/MeV^2","1/MeV^2","1/MeV^2",
     "1/MeV^2","1/MeV^2","1/MeV^2",
     "1/MeV^2","1/MeV^2","1/MeV^2",
-    "1/cm","1/cm","1/cm",
-    "1/cm","1/cm","1/cm"};
+    "1/cm","1/cm","1/cm","1/cm","1/cm",
+    "1/cm","1/cm","1/cm","1/cm","1/cm"};
 
   if (unit_list.size()!=col_list.size()) {
     cout << col_list.size() << " " << unit_list.size() << endl;
@@ -9492,12 +9494,12 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
                                               sk.alpha)*    
                             (1.0-sk.x3)+2.0/3.0*sk.alpha*sk.t3*
                             pow((neutron.n+proton.n),sk.alpha-1)* 
-                            ((1+sk.x3/2.0)*(neutron.n+proton.n)-                 
-                             (1.0/2.0+sk.x3)*neutron.n)+1.0/6.0*                 
-                            sk.alpha*(sk.alpha-1.0)*sk.t3*                       
-                            pow((neutron.n+proton.n),sk.alpha-2.0)*              
-                            ((1+sk.x3/2.0)*pow((neutron.n+proton.n),2.0)-        
-                             (0.5+sk.x3)*                                        
+                            ((1+sk.x3/2.0)*(neutron.n+proton.n)-           
+                             (1.0/2.0+sk.x3)*neutron.n)+1.0/6.0*            
+                            sk.alpha*(sk.alpha-1.0)*sk.t3*                   
+                            pow((neutron.n+proton.n),sk.alpha-2.0)*          
+                            ((1+sk.x3/2.0)*pow((neutron.n+proton.n),2.0)-    
+                             (0.5+sk.x3)*                                     
                              (neutron.n*neutron.n+proton.n*proton.n)));
         
         // [fm^4]
@@ -9873,7 +9875,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
  
         // -----------------------------------------------------------------
         // Charged current mean free path
-        
+
         pol_cc.integ_method_mu=Polarization::integ_mc;
         pol_cc.integ_method_q0=Polarization::integ_mc;
         //pol_cc.integ_method_mu=Polarization::integ_cubature;
@@ -9902,6 +9904,29 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         cout << "charged current, axial part: " << cc_axvec_mfp << endl;
       
         // -----------------------------------------------------------------
+        // Charged current mean free path without RPA
+        
+        pol_cc.integ_method_mu=Polarization::integ_mc;
+        pol_cc.integ_method_q0=Polarization::integ_mc;
+        //pol_cc.integ_method_mu=Polarization::integ_cubature;
+        //pol_cc.integ_method_q0=Polarization::integ_cubature;
+        //pol_cc.integ_method_mu=Polarization::integ_o2scl;
+        //pol_cc.integ_method_q0=Polarization::integ_o2scl;
+        //pol_cc.integ_method_mu=Polarization::integ_base;
+        //pol_cc.integ_method_q0=Polarization::integ_base;
+        
+        pol_cc.set_residual(0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,proton.n);
+        
+        pol_cc.flag=Polarization::flag_vector;
+        double cc_vec_mfp_norpa=pol_cc.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
+        cout << "charged current, vector part, no RPA: " << cc_vec_mfp << endl;
+      
+        pol_cc.flag=Polarization::flag_axial;
+        double cc_axvec_mfp_norpa=pol_cc.CalculateInverseMFP(E1)/
+          hc_mev_fm*1.e13;
+        cout << "charged current, axial part, no RPA: " << cc_axvec_mfp << endl;
+      
+        // -----------------------------------------------------------------
         // Neutral current mean free path
       
         pol_nc.integ_method_mu=Polarization::integ_mc;
@@ -9924,6 +9949,23 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         pol_nc.flag=Polarization::flag_axial;
         double nc_axvec_mfp=pol_nc.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
         cout << "neutral current, axial part: " << nc_axvec_mfp << endl;
+
+        // -----------------------------------------------------------------
+        // Neutral current mean free path no RPA
+      
+        pol_nc.integ_method_mu=Polarization::integ_mc;
+        pol_nc.integ_method_q0=Polarization::integ_mc;
+        
+        pol_nc.set_residual(0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,proton.n);
+      
+        pol_nc.flag=Polarization::flag_vector;
+        double nc_vec_mfp_norpa=pol_nc.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
+        cout << "neutral current, vector part, no RPA: " << nc_vec_mfp << endl;
+      
+        pol_nc.flag=Polarization::flag_axial;
+        double nc_axvec_mfp_norpa=pol_nc.CalculateInverseMFP(E1)/
+          hc_mev_fm*1.e13;
+        cout << "neutral current, axial part, no RPA: " << nc_axvec_mfp << endl;
 
         line.push_back(nB);
         line.push_back(neutron.n);
@@ -9980,9 +10022,13 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         line.push_back(cc_vec_mfp);
         line.push_back(cc_vec_mfp_dg0);
         line.push_back(cc_axvec_mfp);
+        line.push_back(cc_vec_mfp_norpa);
+        line.push_back(cc_axvec_mfp_norpa);
         line.push_back(nc_vec_mfp);
         line.push_back(nc_vec_mfp_dg0);
         line.push_back(nc_axvec_mfp);
+        line.push_back(nc_vec_mfp_norpa);
+        line.push_back(nc_axvec_mfp_norpa);
 
         // This counting is wrong
         //if (line.size()!=col_list.size()) {
