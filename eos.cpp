@@ -3773,11 +3773,32 @@ void eos::setup_cli(o2scl::cli &cl) {
      {0,"alt-model","",1,2,"","",
       new o2scl::comm_option_mfptr<eos>
       (this,&eos::alt_model),o2scl::cli::comm_option_both},
-     {0,"xml_to_o2","",0,0,"","",
+     {0,"xml-to-o2","",0,0,"","",
       new o2scl::comm_option_mfptr<eos>
       (this,&eos::xml_to_o2),o2scl::cli::comm_option_both}
     };
-
+  
+  hdf_file hf;
+  hf.open("data/eos_docs.o2");
+  vector<string> doc_strings;
+  hf.gets_vec("doc_strings",doc_strings);
+  hf.close();
+  
+  for(size_t j=0;j<nopt;j++) {
+    bool found=false;
+    for(size_t k=0;k<doc_strings.size() && found==false;k+=5) {
+      if (doc_strings[k]==options[j].lng) {
+        options[j].desc=doc_strings[k+2];
+        options[j].parm_desc=doc_strings[k+3];
+        options[j].help=doc_strings[k+4];
+        found=true;
+      }
+    }
+    if (found==false) {
+      cout << "Could not find docs for " << options[j].lng << endl;
+    }
+  }
+  
   cl.set_comm_option_vec(nopt,options);
   
   p_verbose.i=&verbose;

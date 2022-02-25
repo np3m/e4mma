@@ -90,6 +90,10 @@ int eos_had_skyrme_ext::calc_e(fermion &ne, fermion &pr, thermo &locth) {
 }
 
 eos_had_lim_holt::eos_had_lim_holt() {
+  neutron->init(939.0/hc_mev_fm,2.0);
+  proton->init(939.0/hc_mev_fm,2.0);
+
+  fet=&nrf;
 }
 
 int eos_had_lim_holt::calc_temp_e(fermion &ne, fermion &pr, 
