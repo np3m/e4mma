@@ -4254,6 +4254,7 @@ int eos_nuclei::select_high_T_internal(int option) {
     tm.report();
     
   } else if (option==6) {
+    
     // Sk chi m*
     sk_Tcorr.t0=-2260.7/hc_mev_fm;
     sk_Tcorr.t1=433.189/hc_mev_fm;
@@ -4286,6 +4287,45 @@ int eos_nuclei::select_high_T_internal(int option) {
       cout << "K: " << sk_Tcorr.comp*hc_mev_fm << endl;
       cout << "Esym: " << sk_Tcorr.esym*hc_mev_fm << endl;
       cout << "msom: " << sk_Tcorr.msom << endl;
+    }
+    if (tm.report()==false) {
+      O2SCL_ERR("sk_Tcorr failed.",o2scl::exc_esanity);
+    }
+    
+  } else if (option==7) {
+    
+    lim_holt.alphaL=-328.6611/hc_mev_fm;
+    lim_holt.alphaU=-938.9511/hc_mev_fm;
+    lim_holt.betaL=5.4410/hc_mev_fm;
+    lim_holt.betaU=82.0118/hc_mev_fm;
+    lim_holt.etaL=366.8049/hc_mev_fm;
+    lim_holt.etaU=1033.4339/hc_mev_fm;
+    lim_holt.zetaL=88.1020/hc_mev_fm;
+    lim_holt.zetaU=-286.3289/hc_mev_fm;
+    lim_holt.theta=2.5554/hc_mev_fm;
+    lim_holt.thetaL=38.9387/hc_mev_fm;
+    lim_holt.gamma=0.3333;
+    lim_holt.gamma2=1.0000;
+    lim_holt.sigma=1.0000;
+    
+    eos_Tcorr=&lim_holt;
+
+    lim_holt.saturation();
+
+    test_mgr tm;
+    tm.set_output_level(0);
+    tm.test_abs(lim_holt.n0,0.16,0.02,"n0");
+    tm.test_abs(lim_holt.eoa*hc_mev_fm,-16.0,2.0,"eoa");
+    tm.test_abs(lim_holt.comp*hc_mev_fm,240.0,40.0,"comp");
+    tm.test_abs(lim_holt.esym*hc_mev_fm,30.0,5.0,"esym");
+    tm.test_abs(lim_holt.msom,0.8,0.2,"msom");
+    if (true) {
+      cout << "n0: " << lim_holt.n0 << endl;
+      cout << "EoA: " << lim_holt.eoa*hc_mev_fm << endl;
+      cout << "K: " << lim_holt.comp*hc_mev_fm << endl;
+      cout << "Esym: " << lim_holt.esym*hc_mev_fm << endl;
+      cout << "msom: " << lim_holt.msom << endl;
+      exit(-1);
     }
     if (tm.report()==false) {
       O2SCL_ERR("sk_Tcorr failed.",o2scl::exc_esanity);

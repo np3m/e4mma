@@ -89,3 +89,55 @@ int eos_had_skyrme_ext::calc_e(fermion &ne, fermion &pr, thermo &locth) {
   return calc_temp_e(ne,pr,0.0,locth);
 }
 
+eos_had_lim_holt::eos_had_lim_holt() {
+}
+
+int eos_had_lim_holt::calc_temp_e(fermion &ne, fermion &pr, 
+				double ltemper, thermo &locth) {
+
+  // See note in class documentation about zero density
+  if (ltemper>0.0 && ne.n==0.0) {
+    if (ne.inc_rest_mass) {
+      ne.nu=ne.m;
+    } else {
+      ne.nu=0.0;
+    }
+    ne.ed=0.0;
+    ne.pr=0.0;
+    ne.en=0.0;
+  } else {
+    nrf.calc_density(ne,ltemper);
+  }
+  if (ltemper>0.0 && pr.n==0.0) {
+    if (pr.inc_rest_mass) {
+      pr.nu=pr.m;
+    } else {
+      pr.nu=0.0;
+    }
+    pr.ed=0.0;
+    pr.pr=0.0;
+    pr.en=0.0;
+  } else {
+    nrf.calc_density(pr,ltemper);
+  }
+
+  // Compute the coefficients of different powers of density
+  // in the hamiltonian
+  double ham1, ham2, ham3, ham4, ham5, ham6;
+  
+  // Compute the base thermodynamic properties
+  base_thermo(ne,pr,ltemper,locth);
+  
+  if (ne.ms<0.0 || pr.ms<0.0) {
+    O2SCL_CONV2_RET("Effective masses negative in ",
+		    "eos_had_lim_holt::calc_temp_e().",
+		    exc_einval,this->err_nonconv);
+  }
+
+  return success;
+}
+
+int eos_had_lim_holt::calc_e(fermion &ne, fermion &pr, thermo &locth) {
+  return calc_temp_e(ne,pr,0.0,locth);
+}
+

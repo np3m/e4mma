@@ -385,6 +385,9 @@ public:
 
   /// Extended Skyrme model for finite-temperature corrections
   eos_had_skyrme_ext skyrme_ext;
+
+  /// Extended Skyrme model for finite-temperature corrections
+  eos_had_lim_holt lim_holt;
   //@}
   
   /// \name Flag values

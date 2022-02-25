@@ -162,17 +162,26 @@
     //@}
 
   };
+
   /** \brief Extended Skyrme hadronic equation of state 
 
       This is the modified Skyrme model proposed by Holt and Lim.
    */
-  class eos_had_lim_holt : public o2scl::eos_had_base {
+  class eos_had_lim_holt : public o2scl::eos_had_temp_eden_base {
     
   protected:
 
+    o2scl::fermion_nonrel nrf;
+    
+  public:
+
     double betaL, betaU, theta, thetaL, sigma;
-    double alphaL, etaL, etaU, zetaL, zetaU;
+    
+    double alphaL, alphaU, etaL, etaU, zetaL, zetaU;
+
     double gamma, gamma2;
+    
+  protected:
 
     /** \brief Compute the base thermodynamic quantities
 
@@ -191,13 +200,11 @@
       pr.ms=0.5/(0.5/pr.m+betaL*pr.n+betaU*ne.n+
                  theta*nb*pow(nb,1.0+sigma)+
                  thetaL*pr.n*pow(nb,sigma));
-      //ne.ms=ne.m/(1.0+2.0*(nb*term+ne.n*term2)*ne.m);
-      //pr.ms=pr.m/(1.0+2.0*(nb*term+pr.n*term2)*pr.m);
       
       double np2=ne.n*ne.n+pr.n*pr.n;
       
       double ham1=alphaL*np2;
-      double ham2=2.0*alphaL*ne.n*pr.n;
+      double ham2=2.0*alphaU*ne.n*pr.n;
       double ham3=etaL*np2*pow(nb,gamma);
       double ham4=2.0*etaU*ne.n*pr.n*pow(nb,gamma);
       double ham5=zetaL*np2*pow(nb,gamma2);
@@ -217,14 +224,14 @@
 	gp=2.0*pr.ms*pr.ed;
       }
 
-      double dhdnn=2.0*alphaL*ne.n+2.0*alphaL*pr.n+
+      double dhdnn=2.0*alphaL*ne.n+2.0*alphaU*pr.n+
         2.0*etaL*ne.n*pow(nb,gamma)+2.0*gamma*np2+pow(nb,gamma-1.0)+
         2.0*etaU*pr.n*pow(nb,gamma)+
         2.0*gamma*etaU*ne.n*pr.n*pow(nb,gamma-1.0)+
         2.0*zetaL*ne.n*pow(nb,gamma2)+gamma2*zetaL*np2*pow(nb,gamma2-1.0)+
         2.0*zetaU*pr.n*pow(nb,gamma2)+
         2.0*gamma2*zetaU*ne.n*pr.n*pow(nb,gamma2-1.0);
-      double dhdnp=2.0*alphaL*pr.n+2.0*alphaL*ne.n+
+      double dhdnp=2.0*alphaL*pr.n+2.0*alphaU*ne.n+
         2.0*etaL*pr.n*pow(nb,gamma)+2.0*gamma*np2+pow(nb,gamma-1.0)+
         2.0*etaU*ne.n*pow(nb,gamma)+
         2.0*gamma*etaU*pr.n*ne.n*pow(nb,gamma-1.0)+
@@ -233,8 +240,15 @@
         2.0*gamma2*zetaU*pr.n*ne.n*pow(nb,gamma2-1.0);
 
       // Compute the chemical potentials
-      //ne.mu=ne.nu+dhdnn+(gn+gp)*term+gn*term2;
-      //pr.mu=pr.nu+dhdnp+(gn+gp)*term+gp*term2;
+      double der=theta*pow(nb,1.0+sigma)+
+        theta*nb*(1.0+sigma)*pow(nb,sigma);
+      
+      ne.mu=ne.nu+dhdnn+gn*(betaL+der+thetaL*pow(nb,sigma)+
+                            thetaL*ne.n*sigma*pow(nb,sigma-1.0))+
+        gp*(betaU+der+sigma*thetaL*ne.n*sigma*pow(nb,sigma-1.0));
+      pr.mu=pr.nu+dhdnn+gn*(betaL+der+thetaL*pow(nb,sigma)+
+                            thetaL*pr.n*sigma*pow(nb,sigma-1.0))+
+        gp*(betaU+der+sigma*thetaL*pr.n*sigma*pow(nb,sigma-1.0));
       
       // Thermodynamics
       locth.ed=ham;
@@ -265,6 +279,11 @@
     */
     virtual int calc_e(o2scl::fermion &ne, o2scl::fermion &pr,
 		       o2scl::thermo &lt);
+    
+    virtual int calc_p(o2scl::fermion &ne, o2scl::fermion &pr,
+		       o2scl::thermo &lt) {
+      return 0;
+    }
 
     /// Return string denoting type ("eos_had_lim_holt")
     virtual const char *type() { return "eos_had_lim_holt"; }
