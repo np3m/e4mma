@@ -236,6 +236,8 @@ class eos {
   
  protected:
 
+  o2scl::cli *cl_ptr;
+  
   /// \name Main EOS parameters [protected]
   //@{
   /// The first exponent for density in the QMC EOS (unitless)
@@ -794,6 +796,8 @@ class eos {
       tensor_grid objects are output to the specified file.
    */
   int test_eg(std::vector<std::string> &sv, bool itive_com);
+  
+  virtual int xml_to_o2(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Compare to other EOSs?
 

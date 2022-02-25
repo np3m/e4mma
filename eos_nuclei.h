@@ -603,6 +603,8 @@ public:
       Help.
    */
   int generate_table(std::vector<std::string> &sv, bool itive_com);
+  
+  virtual int xml_to_o2(std::vector<std::string> &sv, bool itive_com);
   //@}
 
   /// \name EOS post-processing functions

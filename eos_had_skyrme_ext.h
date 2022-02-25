@@ -171,15 +171,19 @@
     
   protected:
 
+    /// Nonrelativistic fermion object
     o2scl::fermion_nonrel nrf;
     
   public:
 
+    /// \name Parameters
+    //@{
     double betaL, betaU, theta, thetaL, sigma;
     
     double alphaL, alphaU, etaL, etaU, zetaL, zetaU;
 
     double gamma, gamma2;
+    //@}
     
   protected:
 
@@ -194,12 +198,15 @@
 
       double nb=ne.n+pr.n;
 
-      ne.ms=0.5/(0.5/ne.m+betaL*ne.n+betaU*pr.n+
-                 theta*nb*pow(nb,1.0+sigma)+
-                 thetaL*ne.n*pow(nb,sigma));
-      pr.ms=0.5/(0.5/pr.m+betaL*pr.n+betaU*ne.n+
-                 theta*nb*pow(nb,1.0+sigma)+
-                 thetaL*pr.n*pow(nb,sigma));
+      ne.ms=ne.m/(1.0+2.0*ne.m*(betaL*ne.n+betaU*pr.n+
+                                theta*nb*pow(nb,1.0+sigma)+
+                                thetaL*ne.n*pow(nb,sigma)));
+      pr.ms=pr.m/(1.0+2.0*pr.m*(betaL*pr.n+betaU*ne.n+
+                                theta*nb*pow(nb,1.0+sigma)+
+                                thetaL*pr.n*pow(nb,sigma)));
+      
+      nrf.calc_density(ne,ltemper);
+      nrf.calc_density(pr,ltemper);
       
       double np2=ne.n*ne.n+pr.n*pr.n;
       
