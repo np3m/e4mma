@@ -186,6 +186,8 @@ int eos_had_lim_holt::calc_temp_e(fermion &ne, fermion &pr,
   pr.mu=pr.nu+dhdnp+gp*(betaL+der+thetaL*pow(nb,sigma)+
                         thetaL*pr.n*sigma*pow(nb,sigma-1.0))+
     gp*(betaU+der+sigma*thetaL*pr.n*sigma*pow(nb,sigma-1.0));
+  cout << ne.mu*ne.n << " " << ne.ed+ne.pr << endl;
+  cout << pr.mu*pr.n << " " << pr.ed+pr.pr << endl;
   /*
   ne.mu=ne.nu+gn*(betaL+der+thetaL*pow(nb,sigma)+
                   thetaL*ne.n*sigma*pow(nb,sigma-1.0))+
