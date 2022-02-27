@@ -97,14 +97,17 @@ int eos_had_lim_holt::calc_temp_e(fermion &ne, fermion &pr,
                                   double temper, thermo &th) {
 
   double nb=ne.n+pr.n;
+  ne.inc_rest_mass=false;
+  pr.inc_rest_mass=false;
 
-  ne.ms=ne.m/(1.0+2.0*ne.m*(betaL*ne.n+betaU*pr.n+
-                            theta*nb*pow(nb,1.0+sigma)+
-                            thetaL*ne.n*pow(nb,sigma)));
-  pr.ms=pr.m/(1.0+2.0*pr.m*(betaL*pr.n+betaU*ne.n+
-                            theta*nb*pow(nb,1.0+sigma)+
-                            thetaL*pr.n*pow(nb,sigma)));
-      
+  double fn=betaL*ne.n+betaU*pr.n+theta*nb*pow(nb,1.0+sigma)+
+    thetaL*ne.n*pow(nb,sigma);
+  double fp=betaL*pr.n+betaU*ne.n+theta*nb*pow(nb,1.0+sigma)+
+    thetaL*pr.n*pow(nb,sigma);
+  
+  ne.ms=ne.m/(1.0+2.0*ne.m*fn);
+  pr.ms=pr.m/(1.0+2.0*pr.m*fp);
+  
   if (ne.ms<0.0 || pr.ms<0.0) {
     O2SCL_CONV2_RET("Effective masses negative in ",
 		    "eos_had_lim_holt::calc_temp_e().",
@@ -146,8 +149,7 @@ int eos_had_lim_holt::calc_temp_e(fermion &ne, fermion &pr,
   double ham5=zetaL*np2*pow(nb,gamma2);
   double ham6=2.0*zetaU*ne.n*pr.n*pow(nb,gamma2);
       
-  double ham=ne.ed+pr.ed+ham1+ham2+ham3+ham4+ham5+ham6;
-  //double ham=ne.ed+pr.ed;
+  double ham=ne.ed+pr.ed;//+ham1+ham2+ham3+ham4+ham5+ham6;
       
   double gn, gp;
   if (ne.inc_rest_mass) {
@@ -161,6 +163,7 @@ int eos_had_lim_holt::calc_temp_e(fermion &ne, fermion &pr,
     gp=2.0*pr.ms*pr.ed;
   }
 
+  // The potential energy contributions to the chemical potentials
   double dhdnn=2.0*alphaL*ne.n+2.0*alphaU*pr.n+
     2.0*etaL*ne.n*pow(nb,gamma)+etaL*gamma*np2*pow(nb,gamma-1.0)+
     2.0*etaU*pr.n*pow(nb,gamma)+
@@ -175,18 +178,24 @@ int eos_had_lim_holt::calc_temp_e(fermion &ne, fermion &pr,
     2.0*zetaL*pr.n*pow(nb,gamma2)+gamma2*zetaL*np2*pow(nb,gamma2-1.0)+
     2.0*zetaU*ne.n*pow(nb,gamma2)+
     2.0*gamma2*zetaU*pr.n*ne.n*pow(nb,gamma2-1.0);
+  dhdnn=0.0;
+  dhdnp=0.0;
 
   // Compute the chemical potentials
-  double der=theta*pow(nb,1.0+sigma)+
-    theta*nb*(1.0+sigma)*pow(nb,sigma);
+  double der=theta*(1.0+sigma)*pow(nb,sigma);
 
-  ne.mu=ne.nu+dhdnn+gn*(betaL+der+thetaL*pow(nb,sigma)+
-                        thetaL*ne.n*sigma*pow(nb,sigma-1.0))+
-    gp*(betaU+der+sigma*thetaL*ne.n*sigma*pow(nb,sigma-1.0));
-  pr.mu=pr.nu+dhdnp+gp*(betaL+der+thetaL*pow(nb,sigma)+
-                        thetaL*pr.n*sigma*pow(nb,sigma-1.0))+
-    gp*(betaU+der+sigma*thetaL*pr.n*sigma*pow(nb,sigma-1.0));
-  cout << ne.mu*ne.n << " " << ne.ed+ne.pr << endl;
+  double dfndnn=betaL+der+thetaL*pow(nb,sigma)+
+    thetaL*ne.n*sigma*pow(nb,sigma-1.0);
+  double dfndnp=betaU+der+thetaL*ne.n*sigma*pow(nb,sigma-1.0);
+  double dfpdnn=betaU+der+thetaL*pr.n*sigma*pow(nb,sigma-1.0);
+  double dfpdnp=betaL+der+thetaL*pow(nb,sigma)+
+    thetaL*pr.n*sigma*pow(nb,sigma-1.0);
+
+  ne.mu=ne.nu+dhdnn+gn*dfndnn+gp*dfpdnn;
+  pr.mu=pr.nu+dhdnp+gp*dfpdnp+gn*dfndnp;
+  
+  cout << "A: " << endl;
+  cout << ne.mu*ne.n << " " << ne.ed+ne.pr << " " << temper << endl;
   cout << pr.mu*pr.n << " " << pr.ed+pr.pr << endl;
   /*
   ne.mu=ne.nu+gn*(betaL+der+thetaL*pow(nb,sigma)+

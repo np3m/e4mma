@@ -129,6 +129,19 @@ eos_nuclei::eos_nuclei() {
   ext_guess="";
   include_detail=false;
   rmf_fields=false;
+
+  vdet_units.insert(make_pair("zn",""));
+  vdet_units.insert(make_pair("zp",""));
+  vdet_units.insert(make_pair("mue","1/fm"));
+  vdet_units.insert(make_pair("Ymu",""));
+  vdet_units.insert(make_pair("f1","?"));
+  vdet_units.insert(make_pair("f2","?"));
+  vdet_units.insert(make_pair("f3","?"));
+  vdet_units.insert(make_pair("f4","?"));
+  vdet_units.insert(make_pair("g",""));
+  vdet_units.insert(make_pair("dgdT","fm?"));
+  vdet_units.insert(make_pair("dgdnn","fm^3?"));
+  vdet_units.insert(make_pair("dgdnp","fm^3?"));
 }
 
 eos_nuclei::~eos_nuclei() {
@@ -532,6 +545,7 @@ int eos_nuclei::add_eg(std::vector<std::string> &sv,
   
   eos_sn_base eso;
   eso.include_muons=this->include_muons;
+  elep.include_muons=include_muons;
 
   map<std::string,double> vdet;
   
@@ -559,6 +573,15 @@ int eos_nuclei::add_eg(std::vector<std::string> &sv,
         if (include_muons) {
           
           cout << nB << " " << Ye << " " << T_MeV << endl;
+
+          elep.pair_density_eq(nB*Ye,T_MeV/hc_mev_fm);
+          if (verbose>1) {
+            cout << nB << " " << Ye << " " << T_MeV << " "
+                 << elep.e.n << " " << elep.mu.n << " "
+                 << elep.e.n+elep.mu.n << endl;
+          }
+
+          /*
           mm_funct nm_func=std::bind
             (std::mem_fn<int(size_t,const ubvector &,ubvector&,double,double,
                              double,map<string,double> &,
@@ -601,20 +624,24 @@ int eos_nuclei::add_eg(std::vector<std::string> &sv,
           // Ensure the last function evaluation stores the correct values
           // in 'vdet':
           nm_func(1,x,y);
+          */
           
         } else {
         
-          eso.compute_eg_point(nB,Ye,T_MeV,lep,vdet["mue"]);
-          mue_last=vdet["mue"];
+          elep.pair_density_eq(nB*Ye,T_MeV/hc_mev_fm);
+          //          eso.compute_eg_point(nB,Ye,T_MeV,lep,vdet["mue"]);
           
         }
 
+        vdet["mue"]=elep.e.mu;
+        mue_last=vdet["mue"];
+        
         vector<size_t> ix={i,j,k};
 	tg_F.set3(i,j,k,tg_Fint.get(ix)+
-		  (hc_mev_fm*lep.ed-T_MeV*lep.en)/nB);
-	tg_E.set3(i,j,k,tg_Eint.get(ix)+hc_mev_fm*lep.ed/nB);
-	tg_P.set3(i,j,k,tg_Pint.get(ix)+hc_mev_fm*lep.pr);
-	tg_S.set3(i,j,k,tg_Sint.get(ix)+lep.en/nB);
+		  (hc_mev_fm*elep.th.ed-T_MeV*elep.th.en)/nB);
+	tg_E.set3(i,j,k,tg_Eint.get(ix)+hc_mev_fm*elep.th.ed/nB);
+	tg_P.set3(i,j,k,tg_Pint.get(ix)+hc_mev_fm*elep.th.pr);
+	tg_S.set3(i,j,k,tg_Sint.get(ix)+elep.th.en/nB);
 	tg_mue.set3(i,j,k,hc_mev_fm*vdet["mue"]);
         
         double np=nB*Ye;
@@ -622,7 +649,8 @@ int eos_nuclei::add_eg(std::vector<std::string> &sv,
         
         if (include_muons) {
           // Set muon density
-          tg_Ymu.set3(i,j,k,eso.muon.n/nB);
+          //tg_Ymu.set3(i,j,k,eso.muon.n/nB);
+          tg_Ymu.set3(i,j,k,elep.mu.n/nB);
         }
 
         if (true) {
@@ -642,7 +670,8 @@ int eos_nuclei::add_eg(std::vector<std::string> &sv,
           if (fabs(ti_check)>1.0e-4) {
             
             double ti_check2;
-            ti_check2=(lep.ed*hc_mev_fm+lep.pr*hc_mev_fm-T_MeV*lep.en-
+            ti_check2=(elep.th.ed*hc_mev_fm+elep.th.pr*hc_mev_fm-
+                       T_MeV*elep.th.en-
                        Ye*nB*vdet["mue"]*hc_mev_fm)/scale/nB;
             double ti_int_check=(tg_Eint.get(ix)*nB+
                                  tg_Pint.get(ix)-
@@ -662,14 +691,16 @@ int eos_nuclei::add_eg(std::vector<std::string> &sv,
                  << np*tg_mup.get(ix) << " "
                  << np*tg_mue.get(ix) << endl;
             cout << "terms in ti_check2: "
-                 << lep.ed << " " << lep.pr << " "
-                 << T_MeV/hc_mev_fm*lep.en << " " << np*vdet["mue"] << endl;
-            cout << "  " << lep.ed+lep.pr << " "
-                 << T_MeV/hc_mev_fm*lep.en+np*vdet["mue"] << endl;
-            cout << "  " << lep.ed+lep.pr-
-              T_MeV/hc_mev_fm*lep.en-np*vdet["mue"] << endl;
+                 << elep.th.ed << " " << elep.th.pr << " "
+                 << T_MeV/hc_mev_fm*elep.th.en << " "
+                 << np*vdet["mue"] << endl;
+            cout << "  " << elep.th.ed+elep.th.pr << " "
+                 << T_MeV/hc_mev_fm*elep.th.en+np*vdet["mue"] << endl;
+            cout << "  " << elep.th.ed+elep.th.pr-
+              T_MeV/hc_mev_fm*elep.th.en-np*vdet["mue"] << endl;
             cout << "  "
-                 << (lep.ed+lep.pr-T_MeV/hc_mev_fm*lep.en-np*vdet["mue"])/scale/
+                 << (elep.th.ed+elep.th.pr-T_MeV/hc_mev_fm*
+                     elep.th.en-np*vdet["mue"])/scale/
               nB*hc_mev_fm << endl;
             cout << "mue: " << tg_mue.get(ix) << endl;
             cout << eso.electron.n << " " << np << endl;

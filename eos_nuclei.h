@@ -262,6 +262,7 @@ public:
   /// Fiducial value for solver tolerance (default \f$ 10^{-6} \f$)
   double mh_tol_rel;
 
+  /// If true, then RMF fields are included
   bool rmf_fields;
 
   /// File containing external guess
@@ -285,6 +286,9 @@ public:
       Wigner-Seitz radius (default true)
   */
   bool rnuc_less_rws;
+
+  /// Units of objects in the vdet arrays
+  std::map<std::string,std::string> vdet_units;
   
   /** \brief If true, recompute all points, irrespective of the
       value of the convergence flag (default false)

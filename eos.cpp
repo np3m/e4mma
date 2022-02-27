@@ -3493,8 +3493,9 @@ int eos::test_eg(std::vector<std::string> &sv,
 		 bool itive_com) {
 
   string fname;
-  if (sv.size()>2) {
+  if (sv.size()>1) {
     fname=sv[1];
+    cout << "Will output to file named " << fname << " ." << endl;
   }
   
   // Choose a larger grid for a more complete test
@@ -3549,14 +3550,17 @@ int eos::test_eg(std::vector<std::string> &sv,
   eso.include_muons=include_muons;
   elep.include_muons=include_muons;
 
-  for(size_t i=27;i<n_nB;i++) {
+  for(size_t i=0;i<n_nB;i++) {
     double nB=nB_grid[i];
     if (i%10==0) {
-      cout << "i,nB: " << i << " " << nB << endl;
+      cout << "i,nB: ";
+      cout.width(3);
+      cout << i << " " << nB << endl;
     }
     for(size_t j=1;j<n_Ye-1;j++) {
       double Ye=Ye_grid[j];
-      
+
+      // Construct a new guess for the electron chemical
       elep.e.mu=elep.e.m;
       elep.e.n=nB*Ye/2.0;
   
@@ -3564,10 +3568,10 @@ int eos::test_eg(std::vector<std::string> &sv,
         
 	double T_MeV=T_grid[k];
 	thermo lep;
-	double mue2;
+	//double mue2;
 
         if (false) {
-          eso.compute_eg_point(nB,Ye,T_MeV,lep,mue2);
+          //eso.compute_eg_point(nB,Ye,T_MeV,lep,mue2);
           cout << eso.electron.mu << " " << eso.electron.n << " "
                << eso.muon.mu << " " << eso.muon.n << endl;
           t_F.set(i,j,k,(hc_mev_fm*lep.ed-T_grid[k]*lep.en)/nB);
@@ -3593,6 +3597,7 @@ int eos::test_eg(std::vector<std::string> &sv,
   }
 
   if (fname.length()>0) {
+    cout << "Writing file " << fname << " ." << endl;
     hdf_file hf;
     hf.open_or_create(fname);
     hf.seti("include_muons",include_muons);

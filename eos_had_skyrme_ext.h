@@ -166,6 +166,35 @@
   /** \brief Extended Skyrme hadronic equation of state 
 
       This is the modified Skyrme model proposed by Holt and Lim.
+
+      The Hamiltonian is 
+      \f[
+      {\cal H} = \frac{\hbar^2 \tau_n}{2 m_n^{*}}
+      + \frac{\hbar^2 \tau_p}{2 m_p^{*}} + 
+      {\cal H}_{\mathrm{pot}}
+      \f]
+      where \f$ \tau_i = k_{F,i}^5/(5 \pi^2) \f$,
+      \f[
+      \frac{1}{2 m_n^{*}} = \frac{1}{2 m_n} + f_n(n_n,n_p)
+      \f]
+      and 
+      \f[
+      \frac{1}{2 m_p^{*}} = \frac{1}{2 m_p} + f_p(n_n,n_p) \, .
+      \f]
+      Then, the chemical potentials are
+      \f[
+      \mu_n = \nu_n + \tau_n 
+      \frac{\partial f_n}{\partial n_n} + 
+      \tau_p 
+      \frac{\partial f_p}{\partial n_n} 
+      \f]
+      and 
+      \f[
+      \mu_p = \nu_p + \tau_p 
+      \frac{\partial f_p}{\partial n_p} + 
+      \tau_n 
+      \frac{\partial f_n}{\partial n_p} \, .
+      \f]
    */
   class eos_had_lim_holt : public o2scl::eos_had_temp_eden_base {
     
