@@ -262,9 +262,6 @@ public:
   /// Fiducial value for solver tolerance (default \f$ 10^{-6} \f$)
   double mh_tol_rel;
 
-  /// If true, then RMF fields are included
-  bool rmf_fields;
-
   /// File containing external guess
   std::string ext_guess;
   

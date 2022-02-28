@@ -128,7 +128,6 @@ eos_nuclei::eos_nuclei() {
 
   ext_guess="";
   include_detail=false;
-  rmf_fields=false;
 
   vdet_units.insert(make_pair("zn",""));
   vdet_units.insert(make_pair("zp",""));
@@ -4663,6 +4662,12 @@ int eos_nuclei::write_results(std::string fname) {
   hdf_output(hf,tg_XHe3,"XHe3");
   hdf_output(hf,tg_XLi4,"XLi4");
 
+  if (rmf_fields) {
+    hdf_output(hf,tg_sigma,"sigma");
+    hdf_output(hf,tg_omega,"omega");
+    hdf_output(hf,tg_rho,"rho");
+  }
+  
   if (alg_mode==2 || alg_mode==3) {
     hdf_output(hf,tg_A_min,"A_min");
     hdf_output(hf,tg_A_max,"A_max");
@@ -4678,6 +4683,7 @@ int eos_nuclei::write_results(std::string fname) {
   }
   
   hf.seti("baryons_only",1);
+  hf.seti("rmf_fields",rmf_fields);
   hf.seti("alg_mode",alg_mode);
   if (derivs_computed) {
     hf.seti("derivs_computed",1);
@@ -4832,7 +4838,7 @@ int eos_nuclei::read_results(std::string fname) {
       split_string(mod_str,vs2);
       cout << "read_results(): model string: " << mod_str << endl;
       
-      if (vs2[0]=="0") {
+      if (false && vs2[0]=="0") {
         
         i_ns=o2scl::stoi(vs2[1]);
         i_skyrme=o2scl::stoi(vs2[2]);

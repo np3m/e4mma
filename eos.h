@@ -458,6 +458,9 @@ class eos {
   o2scl::cli::parameter_double p_a_virial;
   o2scl::cli::parameter_double p_b_virial;
   //@}
+
+  /// If true, then RMF fields are included
+  bool rmf_fields;
   
   /// \name Other EOS functions [protected]
   //@{

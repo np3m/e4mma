@@ -707,6 +707,7 @@ eos::eos() {
   eosp_alt=&sk_alt;
   strangeness=false;
   alt_name="";
+  rmf_fields=false;
 }
 
 double eos::energy_density_qmc(double nn, double np) {
