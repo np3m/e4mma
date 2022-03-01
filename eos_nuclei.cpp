@@ -133,14 +133,21 @@ eos_nuclei::eos_nuclei() {
   vdet_units.insert(make_pair("zp",""));
   vdet_units.insert(make_pair("mue","1/fm"));
   vdet_units.insert(make_pair("Ymu",""));
-  vdet_units.insert(make_pair("f1","?"));
-  vdet_units.insert(make_pair("f2","?"));
-  vdet_units.insert(make_pair("f3","?"));
-  vdet_units.insert(make_pair("f4","?"));
+  vdet_units.insert(make_pair("F1","MeV"));
+  vdet_units.insert(make_pair("F2","MeV"));
+  vdet_units.insert(make_pair("F3","MeV"));
+  vdet_units.insert(make_pair("F4","MeV"));
+  vdet_units.insert(make_pair("msn","MeV"));
+  vdet_units.insert(make_pair("msp","MeV"));
+  vdet_units.insert(make_pair("Un","MeV"));
+  vdet_units.insert(make_pair("Up","MeV"));
   vdet_units.insert(make_pair("g",""));
-  vdet_units.insert(make_pair("dgdT","fm?"));
-  vdet_units.insert(make_pair("dgdnn","fm^3?"));
-  vdet_units.insert(make_pair("dgdnp","fm^3?"));
+  vdet_units.insert(make_pair("dgdT","1/MeV"));
+  vdet_units.insert(make_pair("dgdnn","fm^3"));
+  vdet_units.insert(make_pair("dgdnp","fm^3"));
+  vdet_units.insert(make_pair("sigma","1/fm"));
+  vdet_units.insert(make_pair("omega","1/fm"));
+  vdet_units.insert(make_pair("rho","1/fm"));
 }
 
 eos_nuclei::~eos_nuclei() {
@@ -1692,25 +1699,9 @@ int eos_nuclei::solve_nuclei(size_t nv, const ubvector &x, ubvector &y,
       log_xp*T*log(10.0);
     
   } else {
-    
-    free_energy_density_detail(neutron,proton,T,th_gas,vdet["zn"],
-                               vdet["zp"],vdet["f1"],vdet["f2"],
-                               vdet["f3"],vdet["f4"],
-                               vdet["g"],vdet["dgdT"],
-                               vdet["dgdnn"],vdet["dgdnp"]);
-    if (include_detail) {
-      vdet["dgdT"]/=hc_mev_fm;
-    }
-    
+    free_energy_density_detail(neutron,proton,T,th_gas,vdet);
   }
 
-  if (include_detail) {
-    vdet["msn"]=neutron.ms*hc_mev_fm;
-    vdet["msp"]=proton.ms*hc_mev_fm;
-    vdet["Un"]=neutron.nu*hc_mev_fm;
-    vdet["Up"]=proton.nu*hc_mev_fm;
-  }
-    
   mun_gas=neutron.mu;
   mup_gas=proton.mu;
   double nn=nn_prime*xi;
@@ -2337,21 +2328,7 @@ int eos_nuclei::nuc_matter(double nB, double Ye, double T,
 
   // Now compute the full EOS
   double f1, f2, f3, f4;
-  free_energy_density_detail(neutron,proton,T,thx,vdet["zn"],
-                             vdet["zp"],f1,f2,f3,f4,vdet["g"],
-                             vdet["dgdT"],vdet["dgdnn"],
-                             vdet["dgdnp"]);
-  if (include_detail) {
-    vdet["F1"]=f1/nB*hc_mev_fm;
-    vdet["F2"]=f2/nB*hc_mev_fm;
-    vdet["F3"]=f3/nB*hc_mev_fm;
-    vdet["F4"]=f4/nB*hc_mev_fm;
-    vdet["msn"]=neutron.ms*hc_mev_fm;
-    vdet["msp"]=proton.ms*hc_mev_fm;
-    vdet["Un"]=neutron.nu*hc_mev_fm;
-    vdet["Up"]=proton.nu*hc_mev_fm;
-    vdet["dgdT"]/=hc_mev_fm;
-  }
+  free_energy_density_detail(neutron,proton,T,thx,vdet);
   
   mun_full=neutron.mu;
   mup_full=proton.mu;
@@ -4044,6 +4021,12 @@ int eos_nuclei::store_point
   tg_XLi4.set(ix,X[4]);
   tg_Xnuclei.set(ix,X[5]);
 
+  if (rmf_fields) {
+    tg_sigma.set(ix,vdet["sigma"]*hc_mev_fm);
+    tg_omega.set(ix,vdet["omega"]*hc_mev_fm);
+    tg_rho.set(ix,vdet["rho"]*hc_mev_fm);
+  }
+  
   if (loc_verbose>1) {
     cout << "  Xalpha, Xd, Xt: " << X[0] << " " << X[1] << " "
 	 << X[2] << endl;
@@ -4075,19 +4058,13 @@ int eos_nuclei::store_point
     tg_Ymu.set(ix,vdet["Ymu"]);
   }
   
-  if (rmf_fields) {
-    tg_sigma.set(ix,vdet["sigma"]);
-    tg_omega.set(ix,vdet["omega"]);
-    tg_rho.set(ix,vdet["rho"]);
-  }
-  
   if (include_detail) {
     tg_zn.set(ix,vdet["zn"]);
     tg_zp.set(ix,vdet["zp"]);
-    tg_F1.set(ix,vdet["f1"]);
-    tg_F2.set(ix,vdet["f2"]);
-    tg_F3.set(ix,vdet["f3"]);
-    tg_F4.set(ix,vdet["f4"]);
+    tg_F1.set(ix,vdet["F1"]);
+    tg_F2.set(ix,vdet["F2"]);
+    tg_F3.set(ix,vdet["F3"]);
+    tg_F4.set(ix,vdet["F4"]);
     tg_Un.set(ix,vdet["Un"]);
     tg_Up.set(ix,vdet["Up"]);
     tg_msn.set(ix,vdet["msn"]);
@@ -4982,6 +4959,15 @@ int eos_nuclei::read_results(std::string fname) {
   if (verbose>2) cout << "Reading XLi4." << endl;
   hdf_input(hf,tg_XLi4,"XLi4");
 
+  if (rmf_fields) {
+    if (verbose>2) cout << "Reading sigma." << endl;
+    hdf_input(hf,tg_sigma,"sigma");
+    if (verbose>2) cout << "Reading omega." << endl;
+    hdf_input(hf,tg_omega,"omega");
+    if (verbose>2) cout << "Reading rho." << endl;
+    hdf_input(hf,tg_rho,"rho");
+  }
+  
   // ----------------------------------------------------------------
   // Nuclear distribution
   
@@ -5502,6 +5488,11 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
     cout << "XLi4: " << tg_XLi4.get(ix) << endl;
     cout << "Xalpha: " << tg_Xalpha.get(ix) << endl;
     cout << "Xnuclei: " << tg_Xnuclei.get(ix) << endl;
+    if (rmf_fields) {
+      cout << "sigma: " << tg_sigma.get(ix) << endl;
+      cout << "omega: " << tg_omega.get(ix) << endl;
+      cout << "rho: " << tg_rho.get(ix) << endl;
+    }
     if (include_muons) {
       cout << "Ymu: " << tg_Ymu.get(ix) << endl;
     }

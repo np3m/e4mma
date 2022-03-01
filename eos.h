@@ -285,9 +285,10 @@ class eos {
    */
   double free_energy_density_detail
   (o2scl::fermion &n, o2scl::fermion &p, double T, o2scl::thermo &th,
-   double &zn, double &zp,
-   double &f1, double &f2, double &f3, double &f4, 
-   double &g_virial, double &dgvirialdT, double &dgdnn, double &dgdnp);
+   std::map<std::string,double> &vdet);
+  //double &zn, double &zp,
+  //double &f1, double &f2, double &f3, double &f4, 
+  //double &g_virial, double &dgvirialdT, double &dgdnn, double &dgdnp);
 
   /** \brief Compute the free energy density using the virial 
       expansion including derivative information

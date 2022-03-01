@@ -1052,12 +1052,8 @@ int eos::new_ns_eos(double nb, fermion &n,
 
 double eos::free_energy_density
 (fermion &n, fermion &p, double T, thermo &th) {
-  double zn, zp;
-  double f1, f2, f3, f4;
-  double g_virial, dgvirialdT, dgdnn, dgdnp;  
-  return free_energy_density_detail(n,p,T,th,zn,zp,f1,f2,f3,f4,
-				    g_virial,dgvirialdT,
-                                    dgdnn,dgdnp);
+  std::map<std::string,double> vdet;
+  return free_energy_density_detail(n,p,T,th,vdet);
 }
 
 #ifdef STRANGENESS
@@ -1090,10 +1086,18 @@ double eos::free_energy_density_detail_s
 
 double eos::free_energy_density_detail
 (o2scl::fermion &n, o2scl::fermion &p, double T, o2scl::thermo &th,
- double &zn, double &zp,
- double &f1, double &f2, double &f3, double &f4,
- double &g_virial, double &dgvirialdT, double &dgvirialdnn,
- double &dgvirialdnp) {
+ std::map<std::string,double> &vdet) {
+  
+  double zn;
+  double zp;
+  double f1;
+  double f2;
+  double f3;
+  double f4;
+  double g_virial;
+  double dgvirialdT;
+  double dgvirialdnn;
+  double dgvirialdnp;
   
   if (use_alt_eos) {
     eosp_alt->calc_temp_e(n,p,T,th);
@@ -1106,6 +1110,27 @@ double eos::free_energy_density_detail
     g_virial=0.0;
     dgvirialdT=0.0;
     double fr=th.ed-T*th.en;
+    vdet["zn"]=0.0;
+    vdet["zp"]=0.0;
+    vdet["F1"]=0.0;
+    vdet["F2"]=0.0;
+    vdet["F3"]=0.0;
+    vdet["F4"]=0.0;
+    vdet["g"]=1.0;
+    vdet["dgdT"]=0.0;
+    vdet["dgdnn"]=0.0;
+    vdet["dgdnp"]=0.0;
+    vdet["msn"]=neutron.m*hc_mev_fm;
+    vdet["msp"]=proton.m*hc_mev_fm;
+    vdet["Un"]=0.0;
+    vdet["Up"]=0.0;
+    if (rmf_fields) {
+      double sigma, omega, rho;
+      rmf.get_fields(sigma,omega,rho);
+      vdet["sigma"]=sigma;
+      vdet["omega"]=omega;
+      vdet["rho"]=rho;
+    }
     return fr;
   }
   
@@ -1568,6 +1593,21 @@ double eos::free_energy_density_detail
     
   }
 
+  vdet["zn"]=zn;
+  vdet["zp"]=zp;
+  vdet["F1"]=f1/nb*hc_mev_fm;
+  vdet["F2"]=f2/nb*hc_mev_fm;
+  vdet["F3"]=f3/nb*hc_mev_fm;
+  vdet["F4"]=f4/nb*hc_mev_fm;
+  vdet["g"]=g_virial;
+  vdet["dgdT"]=dgvirialdT/hc_mev_fm;
+  vdet["dgdnn"]=dgvirialdnn;
+  vdet["dgdnp"]=dgvirialdnp;
+  vdet["msn"]=neutron.ms*hc_mev_fm;
+  vdet["msp"]=proton.ms*hc_mev_fm;
+  vdet["Un"]=neutron.nu*hc_mev_fm;
+  vdet["Up"]=proton.nu*hc_mev_fm;
+  
   return f_total;
 }
   
@@ -3638,12 +3678,15 @@ int eos::alt_model(std::vector<std::string> &sv,
     }
     o2scl_hdf::skyrme_load(sk_alt,sv[2]);
     eosp_alt=&sk_alt;
+    use_alt_eos=true;
   } else if (sv[1]=="RMF") {
     o2scl_hdf::rmf_load(rmf,sv[2]);
     eosp_alt=&rmf;
+    use_alt_eos=true;
   } else if (sv[1]=="RMFH") {
     o2scl_hdf::rmf_load(rmf_hyp,sv[2]);
     eosp_alt=&rmf;
+    use_alt_eos=true;
   } else {
     cerr << "Model " << sv[1] << " not understood." << endl;
     return 2;
