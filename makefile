@@ -31,14 +31,12 @@ include $(UTKNA_MAKEFILE)
 LIBS = $(UTKNA_O2SCL_LIBS)
 LCXX = $(UTKNA_CXX) 
 LMPI_CXX = $(UTKNA_MPI_CXX)
-EOS_DIR = $(UTKNA_EOS_DIR)
 LCFLAGS = $(UTKNA_O2SCL_INCS) $(UTKNA_CFLAGS) -DNO_MPI \
         $(UTKNA_OPENMP_FLAGS) \
 	-DO2SCL_NEW_BOOST_INTEGRATION
-LMPI_CFLAGS = $(UTKNA_O2SCL_INCS) $(UTKNA_MPI_CFLAGS) \
-        -DO2SCL_MPI $(UTKNA_OPENMP_FLAGS) \
+LMPI_CFLAGS = $(UTKNA_O2SCL_INCS) $(UTKNA_CFLAGS) \
+	$(UTKNA_OPENMP_FLAGS) $(UTKNA_MPI_CFLAGS) \
 	-DO2SCL_NEW_BOOST_INTEGRATION
-
 
 endif
 
@@ -47,10 +45,12 @@ endif
 # ----------------------------------------------------------------
 
 eos.o: eos.cpp virial_solver.h eos.h
-	$(LMPI_CXX) $(LMPI_CFLAGS) -o eos.o -c eos.cpp
+	$(LMPI_CXX) $(LMPI_CFLAGS) \
+		-o eos.o -c eos.cpp
 
 eos_nuclei.o: eos_nuclei.cpp virial_solver.h eos_nuclei.h
-	$(LMPI_CXX) $(LMPI_CFLAGS) -o eos_nuclei.o -c eos_nuclei.cpp
+	$(LMPI_CXX) $(LMPI_CFLAGS) \
+		-o eos_nuclei.o -c eos_nuclei.cpp
 
 eos_had_skyrme_ext.o: eos_had_skyrme_ext.cpp virial_solver.h \
 		eos_had_skyrme_ext.h
@@ -132,10 +132,12 @@ neutrino/jacobi_rule_nompi.o: neutrino/jacobi_rule.cpp neutrino/jacobi_rule.hpp
 		-c neutrino/jacobi_rule.cpp
 
 eos_nompi.o: eos.cpp virial_solver.h eos.h
-	$(LCXX) $(LCFLAGS) -o eos_nompi.o -c eos.cpp
+	$(LCXX) $(LCFLAGS) \
+		-o eos_nompi.o -c eos.cpp
 
 eos_nuclei_nompi.o: eos_nuclei.cpp virial_solver.h eos_nuclei.h
-	$(LCXX) $(LCFLAGS) -o eos_nuclei_nompi.o -c eos_nuclei.cpp
+	$(LCXX) $(LCFLAGS) \
+		-o eos_nuclei_nompi.o -c eos_nuclei.cpp
 
 eos_had_skyrme_ext_nompi.o: eos_had_skyrme_ext.cpp virial_solver.h \
 		eos_had_skyrme_ext.h
@@ -187,14 +189,8 @@ empty:
 
 doc: empty
 	cd doc; cp ~/o2scl/doc/o2scl/o2scl.tag .
-	cd doc; cp ~/o2scl/doc/o2scl/part/o2scl_part.tag .
-	cd doc; cp ~/o2scl/doc/o2scl/eos/o2scl_eos.tag .
-	cd doc; cp ~/o2scl/doc/o2scl/sphinx/build/html/objects.inv \
+	cd doc; cp ~/o2scl/doc/o2scl/html/objects.inv \
 		o2scl_objects.inv
-	cd doc; cp ~/o2scl/doc/o2scl/part/sphinx/build/html/objects.inv \
-		o2scl_part_objects.inv
-	cd doc; cp ~/o2scl/doc/o2scl/eos/sphinx/build/html/objects.inv \
-		o2scl_eos_objects.inv
 	cd doc; doxygen doxyfile
 	cd doc; make html
 

@@ -20,6 +20,8 @@
 */
 #include "eos.h"
 
+#include <o2scl/xml.h>
+
 using namespace std;
 using namespace o2scl;
 using namespace o2scl_const;
@@ -357,7 +359,7 @@ void eos_crust_virial_v2::fit(bool show_fit) {
 
   fitter.fit(bpn_np,bpn_params,covar2,chi2,cff_nuc);
 
-  if(show_fit) {
+  if (show_fit) {
     cout << "Final chi-squared: " << chi2 << endl;
     cout << "params: " << endl;
     cout.precision(12);
@@ -694,6 +696,8 @@ eos::eos() {
   sk_Tcorr.x3=-2.877974634128e+01;
   sk_Tcorr.alpha=0.144165;
 
+  elep.include_photons=true;
+
   // Seed the random number generator with the clock time
   rng.clock_seed();
 
@@ -702,6 +706,8 @@ eos::eos() {
   eos_Tcorr=&sk_Tcorr;
   eosp_alt=&sk_alt;
   strangeness=false;
+  alt_name="";
+  rmf_fields=false;
 }
 
 double eos::energy_density_qmc(double nn, double np) {
@@ -1046,19 +1052,14 @@ int eos::new_ns_eos(double nb, fermion &n,
 
 double eos::free_energy_density
 (fermion &n, fermion &p, double T, thermo &th) {
-  double zn, zp;
-  double f1, f2, f3, f4;
-  double g_virial, dgvirialdT, dgdnn, dgdnp;  
-  return free_energy_density_detail(n,p,T,th,zn,zp,f1,f2,f3,f4,
-				    g_virial,dgvirialdT,
-                                    dgdnn,dgdnp);
+  std::map<std::string,double> vdet;
+  return free_energy_density_detail(n,p,T,th,vdet);
 }
 
 #ifdef STRANGENESS
 double eos::free_energy_density_detail_s
 (o2scl::fermion &n, o2scl::fermion &p, double Y_s, double T, o2scl::thermo &th,
- double &zn, double &zp,
- double &f1, double &f2, double &f3, double &f4,
+ double &zn, double &zp, double &f1, double &f2, double &f3, double &f4,
  double &g_virial, double &dgvirialdT, double &dgvirialdnn,
  double &dgvirialdnp) {
 
@@ -1085,10 +1086,18 @@ double eos::free_energy_density_detail_s
 
 double eos::free_energy_density_detail
 (o2scl::fermion &n, o2scl::fermion &p, double T, o2scl::thermo &th,
- double &zn, double &zp,
- double &f1, double &f2, double &f3, double &f4,
- double &g_virial, double &dgvirialdT, double &dgvirialdnn,
- double &dgvirialdnp) {
+ std::map<std::string,double> &vdet) {
+  
+  double zn;
+  double zp;
+  double f1;
+  double f2;
+  double f3;
+  double f4;
+  double g_virial;
+  double dgvirialdT;
+  double dgvirialdnn;
+  double dgvirialdnp;
   
   if (use_alt_eos) {
     eosp_alt->calc_temp_e(n,p,T,th);
@@ -1101,6 +1110,27 @@ double eos::free_energy_density_detail
     g_virial=0.0;
     dgvirialdT=0.0;
     double fr=th.ed-T*th.en;
+    vdet["zn"]=0.0;
+    vdet["zp"]=0.0;
+    vdet["F1"]=0.0;
+    vdet["F2"]=0.0;
+    vdet["F3"]=0.0;
+    vdet["F4"]=0.0;
+    vdet["g"]=1.0;
+    vdet["dgdT"]=0.0;
+    vdet["dgdnn"]=0.0;
+    vdet["dgdnp"]=0.0;
+    vdet["msn"]=neutron.m*hc_mev_fm;
+    vdet["msp"]=proton.m*hc_mev_fm;
+    vdet["Un"]=0.0;
+    vdet["Up"]=0.0;
+    if (rmf_fields) {
+      double sigma, omega, rho;
+      rmf.get_fields(sigma,omega,rho);
+      vdet["sigma"]=sigma;
+      vdet["omega"]=omega;
+      vdet["rho"]=rho;
+    }
     return fr;
   }
   
@@ -1563,6 +1593,21 @@ double eos::free_energy_density_detail
     
   }
 
+  vdet["zn"]=zn;
+  vdet["zp"]=zp;
+  vdet["F1"]=f1/nb*hc_mev_fm;
+  vdet["F2"]=f2/nb*hc_mev_fm;
+  vdet["F3"]=f3/nb*hc_mev_fm;
+  vdet["F4"]=f4/nb*hc_mev_fm;
+  vdet["g"]=g_virial;
+  vdet["dgdT"]=dgvirialdT/hc_mev_fm;
+  vdet["dgdnn"]=dgvirialdnn;
+  vdet["dgdnp"]=dgvirialdnp;
+  vdet["msn"]=neutron.ms*hc_mev_fm;
+  vdet["msp"]=proton.ms*hc_mev_fm;
+  vdet["Un"]=neutron.nu*hc_mev_fm;
+  vdet["Up"]=proton.nu*hc_mev_fm;
+  
   return f_total;
 }
   
@@ -3489,8 +3534,9 @@ int eos::test_eg(std::vector<std::string> &sv,
 		 bool itive_com) {
 
   string fname;
-  if (sv.size()>2) {
+  if (sv.size()>1) {
     fname=sv[1];
+    cout << "Will output to file named " << fname << " ." << endl;
   }
   
   // Choose a larger grid for a more complete test
@@ -3543,31 +3589,56 @@ int eos::test_eg(std::vector<std::string> &sv,
   
   eos_sn_base eso;
   eso.include_muons=include_muons;
+  elep.include_muons=include_muons;
 
   for(size_t i=0;i<n_nB;i++) {
     double nB=nB_grid[i];
-    if (true || i%10==0) {
-      cout << "i,nB: " << i << " " << nB << endl;
+    if (i%10==0) {
+      cout << "i,nB: ";
+      cout.width(3);
+      cout << i << " " << nB << endl;
     }
     for(size_t j=1;j<n_Ye-1;j++) {
       double Ye=Ye_grid[j];
+
+      // Construct a new guess for the electron chemical
+      elep.e.mu=elep.e.m;
+      elep.e.n=nB*Ye/2.0;
+  
       for(size_t k=0;k<n_T;k++) {
+        
 	double T_MeV=T_grid[k];
 	thermo lep;
-	double mue2;
-	eso.compute_eg_point(nB,Ye,T_MeV,lep,mue2);
-	
-	t_F.set(i,j,k,(hc_mev_fm*lep.ed-T_grid[k]*lep.en)/nB);
-	t_E.set(i,j,k,hc_mev_fm*lep.ed/nB);
-	t_P.set(i,j,k,hc_mev_fm*lep.pr);
-	t_S.set(i,j,k,hc_mev_fm*lep.en/nB);
-	t_mue.set(i,j,k,hc_mev_fm*electron.mu);
+	//double mue2;
+
+        if (false) {
+          //eso.compute_eg_point(nB,Ye,T_MeV,lep,mue2);
+          cout << eso.electron.mu << " " << eso.electron.n << " "
+               << eso.muon.mu << " " << eso.muon.n << endl;
+          t_F.set(i,j,k,(hc_mev_fm*lep.ed-T_grid[k]*lep.en)/nB);
+          t_E.set(i,j,k,hc_mev_fm*lep.ed/nB);
+          t_P.set(i,j,k,hc_mev_fm*lep.pr);
+          t_S.set(i,j,k,hc_mev_fm*lep.en/nB);
+          t_mue.set(i,j,k,hc_mev_fm*electron.mu);
+        } else {
+          elep.pair_density_eq(nB*Ye,T_MeV/hc_mev_fm);
+          if (verbose>1) {
+            cout << nB << " " << Ye << " " << T_MeV << " " << elep.e.n << " "
+                 << elep.mu.n << " " << elep.e.n+elep.mu.n << endl;
+          }
+          t_F.set(i,j,k,(hc_mev_fm*elep.th.ed-T_grid[k]*elep.th.en)/nB);
+          t_E.set(i,j,k,hc_mev_fm*elep.th.ed/nB);
+          t_P.set(i,j,k,hc_mev_fm*elep.th.pr);
+          t_S.set(i,j,k,hc_mev_fm*elep.th.en/nB);
+          t_mue.set(i,j,k,hc_mev_fm*elep.e.mu);
+        }
 
       }
     }
   }
 
   if (fname.length()>0) {
+    cout << "Writing file " << fname << " ." << endl;
     hdf_file hf;
     hf.open_or_create(fname);
     hf.seti("include_muons",include_muons);
@@ -3594,63 +3665,197 @@ int eos::vir_fit(std::vector<std::string> &sv,
   return 0;
 }
 
-int eos::skalt_model(std::vector<std::string> &sv,
+int eos::alt_model(std::vector<std::string> &sv,
                      bool itive_com) {
-  o2scl_hdf::skyrme_load(sk_alt,sv[1]);
-  eosp_alt=&sk_alt;
+
+  if (sv.size()<2) {
+    cout << "Not enough parameters for alt-model." << endl;
+  }
+  
+  if (sv[1]=="Skyrme") {
+    if (sv.size()<3) {
+      cout << "Not enough parameters for alt-model of type Skyrme." << endl;
+    }
+    o2scl_hdf::skyrme_load(sk_alt,sv[2]);
+    eosp_alt=&sk_alt;
+    use_alt_eos=true;
+  } else if (sv[1]=="RMF") {
+    o2scl_hdf::rmf_load(rmf,sv[2]);
+    eosp_alt=&rmf;
+    use_alt_eos=true;
+  } else if (sv[1]=="RMFH") {
+    o2scl_hdf::rmf_load(rmf_hyp,sv[2]);
+    eosp_alt=&rmf;
+    use_alt_eos=true;
+  } else {
+    cerr << "Model " << sv[1] << " not understood." << endl;
+    return 2;
+  }
+  return 0;
+}
+
+int eos::xml_to_o2(std::vector<std::string> &sv,
+                   bool itive_com) {
+  
+  vector<std::string> doc_strings;
+  
+#ifdef O2SCL_PUGIXML
+
+  vector<string> clist=cl_ptr->get_option_list();
+  
+  for(size_t j=0;j<clist.size();j++) {
+
+    bool found=false;
+    
+    pugi::xml_document doc;
+    pugi::xml_document doc2;
+    
+    std::string cmd_name=clist[j];
+    std::string fn_name;
+    for(size_t k=0;k<cmd_name.length();k++) {
+      if (cmd_name[k]=='-') {
+        fn_name+='_';
+      } else {
+        fn_name+=cmd_name[k];
+      }
+    }
+    if (verbose>0) {
+      cout << "cmd,fn: " << cmd_name << " " << fn_name << endl;
+    }
+    
+    std::string fn="doc/xml/classeos.xml";
+    
+    ostream_walker w;
+    
+    pugi::xml_node n3=doxygen_xml_member_get
+      (fn,"eos",fn_name,"briefdescription",doc);
+    if (verbose>1 && n3!=0) {
+      cout << "dxmg: " << n3.name() << " " << n3.value() << endl;
+      n3.traverse(w);
+    }
+    
+    pugi::xml_node n4=doxygen_xml_member_get
+      (fn,"eos",fn_name,"detaileddescription",doc2);
+    if (verbose>1 && n4!=0) {
+      cout << "dxmg: " << n4.name() << " " << n4.value() << endl;
+      n4.traverse(w);
+    }
+    
+    if (n3!=0 && n4!=0) {
+      
+      pugi::xml_node_iterator it=n4.begin();
+      pugi::xml_node_iterator it2=n4.begin();
+      if (it2!=n4.end()) it2++;
+      
+      if (it!=n4.end() && it2!=n4.end() &&
+          it->name()==((string)"para") &&
+          it2->name()==((string)"para")) {
+        
+        doc_strings.push_back(cmd_name);
+        doc_strings.push_back(fn_name);
+        doc_strings.push_back(n3.child_value("para"));
+        doc_strings.push_back(it->child_value());
+        doc_strings.push_back(it2->child_value());
+        found=true;
+      }
+    }
+    
+    if (found==false) {
+      cout << "Could not find documentation for command " << cmd_name
+           << " and function " << fn_name << "." << endl;
+    }
+  }
+
+  hdf_file hf;
+  hf.open_or_create("data/eos_docs.o2");
+  hf.sets_vec("doc_strings",doc_strings);
+  hf.close();
+  cout << "Created file data/eos_docs.o2." << endl;
+
+#else
+
+  cout << "Pugixml must be enabled to create the documentation strings "
+       << "from the doxygen\n XML output." << endl;
+  
+#endif
+  
   return 0;
 }
 
 void eos::setup_cli(o2scl::cli &cl) {
- 
-  static const int nopt=14;
+
+  cl_ptr=&cl;
+  
+  static const int nopt=15;
   o2scl::comm_option_s options[nopt]=
-    {{0,"test-deriv","Test the first derivatives of the free energy.",
-      0,0,"","",new o2scl::comm_option_mfptr<eos>
-      (this,&eos::test_deriv),o2scl::cli::comm_option_both},
-     {0,"table-Ye","Construct a 2D table at fixed Y_e.",2,2,"<fname> <Ye>","",
+    {{0,"test-deriv","",0,0,"","",
+       new o2scl::comm_option_mfptr<eos>
+       (this,&eos::test_deriv),o2scl::cli::comm_option_both},
+     {0,"table-Ye","",2,2,"","",
       new o2scl::comm_option_mfptr<eos>
       (this,&eos::table_Ye),o2scl::cli::comm_option_both},
-     {0,"table-nB","Construct a 2D table at fixed n_B.",2,2,"<fname> <nB>","",
+     {0,"table-nB","",2,2,"","",
       new o2scl::comm_option_mfptr<eos>
       (this,&eos::table_nB),o2scl::cli::comm_option_both},
-     {0,"table-full","Construct a full 3D EOS table.",1,1,"<fname>","",
+     {0,"table-full","",1,1,"","",
       new o2scl::comm_option_mfptr<eos>
       (this,&eos::table_full),o2scl::cli::comm_option_both},
-     {0,"vir-fit","Fit the virial EOS",0,0,"","",
+     {0,"vir-fit","",0,0,"","",
       new o2scl::comm_option_mfptr<eos>
       (this,&eos::vir_fit),o2scl::cli::comm_option_both},
-     {0,"eos-sn-compare","Compare with other EOS tables.",0,0,"","",
+     {0,"eos-sn","",0,0,"","",
       new o2scl::comm_option_mfptr<eos>
       (this,&eos::eos_sn),o2scl::cli::comm_option_both},
-     {0,"mcarlo-data","Compute Monte Carlo data.",0,1,"","",
+     {0,"mcarlo-data","",0,1,"","",
       new o2scl::comm_option_mfptr<eos>
       (this,&eos::mcarlo_data),o2scl::cli::comm_option_both},
-     {0,"point","Compute the EOS at one (n_B,Y_e,T) point.",0,3,"","",
+     {0,"point","",0,3,"","",
       new o2scl::comm_option_mfptr<eos>
       (this,&eos::point),o2scl::cli::comm_option_both},
-     {0,"random","Generate a random EOS model.",0,0,"","",
+     {0,"random","",0,0,"","",
       new o2scl::comm_option_mfptr<eos>
       (this,&eos::random),o2scl::cli::comm_option_both},
-     {0,"pns-eos","Compute the PNS EOS and M-R curve.",3,3,
-      "<entropy per baryon> <lepton fraction> <output filename>",
-      "Use YL=0 for beta equilibrium. Currently always uses a cold crust.",
+     {0,"pns-eos","",3,3,"","",
       new o2scl::comm_option_mfptr<eos>
       (this,&eos::pns_eos),o2scl::cli::comm_option_both},
-     {0,"select-model","Specify a parameter set.",7,7,
-      "<i_ns> <i_skyrme> <alpha> <a> <L> <S> <phi>","",
+     {0,"select-model","",7,7,"","",
       new o2scl::comm_option_mfptr<eos>
       (this,&eos::select_model),o2scl::cli::comm_option_both},
-     {0,"test-eg","Test the electron-photon EOS.",0,1,"[fname]","",
+     {0,"test-eg","",0,1,"","",
       new o2scl::comm_option_mfptr<eos>
       (this,&eos::test_eg),o2scl::cli::comm_option_both},
-     {0,"vir-comp","Compare the virial and full EOS.",0,0,"","",
+     {0,"vir-comp","",0,0,"","",
       new o2scl::comm_option_mfptr<eos>
       (this,&eos::vir_comp),o2scl::cli::comm_option_both},
-     {0,"skalt-model","",1,1,"","",
+     {0,"alt-model","",1,2,"","",
       new o2scl::comm_option_mfptr<eos>
-      (this,&eos::skalt_model),o2scl::cli::comm_option_both}
+      (this,&eos::alt_model),o2scl::cli::comm_option_both},
+     {0,"xml-to-o2","",0,0,"","",
+      new o2scl::comm_option_mfptr<eos>
+      (this,&eos::xml_to_o2),o2scl::cli::comm_option_both}
     };
+  
+  hdf_file hf;
+  hf.open("data/eos_docs.o2");
+  vector<string> doc_strings;
+  hf.gets_vec("doc_strings",doc_strings);
+  hf.close();
+  
+  for(size_t j=0;j<nopt;j++) {
+    bool found=false;
+    for(size_t k=0;k<doc_strings.size() && found==false;k+=5) {
+      if (doc_strings[k]==options[j].lng) {
+        options[j].desc=doc_strings[k+2];
+        options[j].parm_desc=doc_strings[k+3];
+        options[j].help=doc_strings[k+4];
+        found=true;
+      }
+    }
+    if (found==false) {
+      cout << "Could not find docs for " << options[j].lng << endl;
+    }
+  }
+  
   cl.set_comm_option_vec(nopt,options);
   
   p_verbose.i=&verbose;

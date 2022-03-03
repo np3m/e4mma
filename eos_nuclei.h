@@ -28,6 +28,32 @@
 typedef boost::numeric::ublas::vector<double> ubvector;
 typedef boost::numeric::ublas::matrix<double> ubmatrix;
 
+/** \brief temporary glue between tensor_grid3 and tensor_grid
+ */
+class tensor_grid_temp : public o2scl::tensor_grid<> {
+public:
+
+  /// Get the element indexed by \c (ix1,ix2,ix3)
+  double &get3(size_t ix1, size_t ix2, size_t ix3) { 
+    size_t sz[3]={ix1,ix2,ix3};
+    return tensor_grid<std::vector<double>,std::vector<size_t>>::get(sz); 
+  }
+  
+  /// Get the element indexed by \c (ix1,ix2,ix3)
+  const double &get3(size_t ix1, size_t ix2, size_t ix3) const { 
+    size_t sz[3]={ix1,ix2,ix3};
+    return tensor_grid<std::vector<double>,std::vector<size_t>>::get(sz); 
+  }
+  
+  /// Set the element indexed by \c (ix1,ix2,ix3) to value \c val
+  void set3(size_t ix1, size_t ix2, size_t ix3, double val) {
+    size_t sz[3]={ix1,ix2, ix3};
+    tensor_grid<std::vector<double>,std::vector<size_t>>::set(sz,val); 
+    return;
+  }
+  
+};
+
 /** \brief Compute partition functions using Fowler prescription
  */
 class partition_func {
@@ -131,7 +157,11 @@ public:
 
   /// \name Nuclear masses and their fits
   //@{
-  /** \brief Fit nuclear masses
+  /** \brief Fit the FRDM mass model
+
+      <no parameters>
+
+      Fit the FRDM mass model.
    */
   int fit_frdm(std::vector<std::string> &sv,
 	       bool itive_com);
@@ -253,6 +283,9 @@ public:
       Wigner-Seitz radius (default true)
   */
   bool rnuc_less_rws;
+
+  /// Units of objects in the vdet arrays
+  std::map<std::string,std::string> vdet_units;
   
   /** \brief If true, recompute all points, irrespective of the
       value of the convergence flag (default false)
@@ -306,15 +339,15 @@ public:
   */
   bool derivs_computed;
 
-  /** \brief Always true, for consistency with o2scl::eos_sn_base
+  /** \brief Always true, included for consistency with o2scl::eos_sn_base
    */
-  bool baryons_only_loaded;
+  bool baryons_only;
 
   /** \brief If true, include electrons and photons
 
       Requires that derivs_computed is also true
    */
-  bool with_leptons_loaded;
+  bool with_leptons;
   //@}
 
   /// \name Other internal objects
@@ -353,6 +386,9 @@ public:
 
   /// Extended Skyrme model for finite-temperature corrections
   eos_had_skyrme_ext skyrme_ext;
+
+  /// Extended Skyrme model for finite-temperature corrections
+  eos_had_lim_holt lim_holt;
   //@}
   
   /// \name Flag values
@@ -371,101 +407,57 @@ public:
   
   /// \name Main EOS table storage
   //@{
-#ifdef STRANGENESS
-  o2scl::tensor_grid3<> tg_log_xn;
-  o2scl::tensor_grid3<> tg_log_xp;
-  o2scl::tensor_grid3<> tg_flag;
-  o2scl::tensor_grid3<> tg_F;
-  o2scl::tensor_grid3<> tg_E;
-  o2scl::tensor_grid3<> tg_P;
-  o2scl::tensor_grid3<> tg_S;
-  o2scl::tensor_grid3<> tg_Fint;
-  o2scl::tensor_grid3<> tg_Eint;
-  o2scl::tensor_grid3<> tg_Pint;
-  o2scl::tensor_grid3<> tg_Sint;
-  o2scl::tensor_grid3<> tg_mun;
-  o2scl::tensor_grid3<> tg_mup;
-  o2scl::tensor_grid3<> tg_mue;
-  o2scl::tensor_grid3<> tg_Z;
-  o2scl::tensor_grid3<> tg_A;
-  o2scl::tensor_grid3<> tg_Xn;
-  o2scl::tensor_grid3<> tg_Xp;
-  o2scl::tensor_grid3<> tg_Xalpha;
-  o2scl::tensor_grid3<> tg_Xnuclei;
-  o2scl::tensor_grid3<> tg_Ymu;
-  o2scl::tensor_grid3<> tg_Xd;
-  o2scl::tensor_grid3<> tg_Xt;
-  o2scl::tensor_grid3<> tg_XHe3;
-  o2scl::tensor_grid3<> tg_XLi4;
-  o2scl::tensor_grid3<> tg_A_min;
-  o2scl::tensor_grid3<> tg_A_max;
-  o2scl::tensor_grid3<> tg_NmZ_min;
-  o2scl::tensor_grid3<> tg_NmZ_max;
-#else
-  o2scl::tensor_grid3<> tg3_log_xn;
-  o2scl::tensor_grid3<> tg3_log_xp;
-  o2scl::tensor_grid3<> tg3_flag;
-  o2scl::tensor_grid3<> tg3_F;
-  o2scl::tensor_grid3<> tg3_E;
-  o2scl::tensor_grid3<> tg3_P;
-  o2scl::tensor_grid3<> tg3_S;
-  o2scl::tensor_grid3<> tg3_Fint;
-  o2scl::tensor_grid3<> tg3_Eint;
-  o2scl::tensor_grid3<> tg3_Pint;
-  o2scl::tensor_grid3<> tg3_Sint;
-  o2scl::tensor_grid3<> tg3_mun;
-  o2scl::tensor_grid3<> tg3_mup;
-  o2scl::tensor_grid3<> tg3_mue;
-  o2scl::tensor_grid3<> tg3_Z;
-  o2scl::tensor_grid3<> tg3_A;
-  o2scl::tensor_grid3<> tg3_Xn;
-  o2scl::tensor_grid3<> tg3_Xp;
-  o2scl::tensor_grid3<> tg3_Xalpha;
-  o2scl::tensor_grid3<> tg3_Xnuclei;
-  o2scl::tensor_grid3<> tg3_Ymu;
-  o2scl::tensor_grid3<> tg3_Xd;
-  o2scl::tensor_grid3<> tg3_Xt;
-  o2scl::tensor_grid3<> tg3_XHe3;
-  o2scl::tensor_grid3<> tg3_XLi4;
-  o2scl::tensor_grid3<> tg3_A_min;
-  o2scl::tensor_grid3<> tg3_A_max;
-  o2scl::tensor_grid3<> tg3_NmZ_min;
-  o2scl::tensor_grid3<> tg3_NmZ_max;
-#endif
+  tensor_grid_temp tg_log_xn;
+  tensor_grid_temp tg_log_xp;
+  tensor_grid_temp tg_flag;
+  tensor_grid_temp tg_F;
+  tensor_grid_temp tg_E;
+  tensor_grid_temp tg_P;
+  tensor_grid_temp tg_S;
+  tensor_grid_temp tg_Fint;
+  tensor_grid_temp tg_Eint;
+  tensor_grid_temp tg_Pint;
+  tensor_grid_temp tg_Sint;
+  tensor_grid_temp tg_mun;
+  tensor_grid_temp tg_mup;
+  tensor_grid_temp tg_mue;
+  tensor_grid_temp tg_Z;
+  tensor_grid_temp tg_A;
+  tensor_grid_temp tg_Xn;
+  tensor_grid_temp tg_Xp;
+  tensor_grid_temp tg_Xalpha;
+  tensor_grid_temp tg_Xnuclei;
+  tensor_grid_temp tg_Ymu;
+  tensor_grid_temp tg_Xd;
+  tensor_grid_temp tg_Xt;
+  tensor_grid_temp tg_XHe3;
+  tensor_grid_temp tg_XLi4;
+  tensor_grid_temp tg_A_min;
+  tensor_grid_temp tg_A_max;
+  tensor_grid_temp tg_NmZ_min;
+  tensor_grid_temp tg_NmZ_max;
   //@}
 
   /// \name Detail storage
   //@{
   bool include_detail;
-#ifdef STRANGENESS
-  o2scl::tensor_grid3<> tg_zn;
-  o2scl::tensor_grid3<> tg_zp;
-  o2scl::tensor_grid3<> tg_F1;
-  o2scl::tensor_grid3<> tg_F2;
-  o2scl::tensor_grid3<> tg_F3;
-  o2scl::tensor_grid3<> tg_F4;
-  o2scl::tensor_grid3<> tg_Un;
-  o2scl::tensor_grid3<> tg_Up;
-  o2scl::tensor_grid3<> tg_msn;
-  o2scl::tensor_grid3<> tg_msp;
-  o2scl::tensor_grid3<> tg_g;
-  o2scl::tensor_grid3<> tg_dgdT;
-#else
-  o2scl::tensor_grid3<> tg3_zn;
-  o2scl::tensor_grid3<> tg3_zp;
-  o2scl::tensor_grid3<> tg3_F1;
-  o2scl::tensor_grid3<> tg3_F2;
-  o2scl::tensor_grid3<> tg3_F3;
-  o2scl::tensor_grid3<> tg3_F4;
-  o2scl::tensor_grid3<> tg3_Un;
-  o2scl::tensor_grid3<> tg3_Up;
-  o2scl::tensor_grid3<> tg3_msn;
-  o2scl::tensor_grid3<> tg3_msp;
-  o2scl::tensor_grid3<> tg3_g;
-  o2scl::tensor_grid3<> tg3_dgdT;
-#endif
+  tensor_grid_temp tg_zn;
+  tensor_grid_temp tg_zp;
+  tensor_grid_temp tg_F1;
+  tensor_grid_temp tg_F2;
+  tensor_grid_temp tg_F3;
+  tensor_grid_temp tg_F4;
+  tensor_grid_temp tg_Un;
+  tensor_grid_temp tg_Up;
+  tensor_grid_temp tg_msn;
+  tensor_grid_temp tg_msp;
+  tensor_grid_temp tg_g;
+  tensor_grid_temp tg_dgdT;
+  tensor_grid_temp tg_sigma;
+  tensor_grid_temp tg_omega;
+  tensor_grid_temp tg_rho;
   //@}
-  
+
   /// \name Other parameter objects
   //@{
   o2scl::cli::parameter_bool p_survey_eqs;
@@ -582,6 +574,19 @@ public:
 		 int &NmZ_min, int &NmZ_max,
 		 std::map<std::string,double> &vdet);
 
+  /** \brief Compute muons in nuclear matter
+   */
+  int nuc_matter_muons(size_t nv, const ubvector &x, ubvector &y,
+                       double nB, double Ye, double T,
+                       std::map<std::string,double> &vdet);
+  
+  /** \brief Compute muons
+   */
+  int new_muons(size_t nv, const ubvector &x, ubvector &y,
+                double nB, double Ye, double T,
+                std::map<std::string,double> &vdet,
+                o2scl::eos_sn_base &eso);
+  
   /** \brief Determine the EOS presuming a distribution of nuclei
       and optimizing the limits in A and \f$ N-Z \f$
   */
@@ -592,14 +597,24 @@ public:
 		    std::map<std::string,double> &vdet, bool dist_changed,
 		    bool no_nuclei);
    
-  /** \brief Generate a table (MPI version)
+  /** \brief Generate an EOS table
+
+      [out file]
+
+      Help.
    */
   int generate_table(std::vector<std::string> &sv, bool itive_com);
+  
+  virtual int xml_to_o2(std::vector<std::string> &sv, bool itive_com);
   //@}
 
   /// \name EOS post-processing functions
   //@{
   /** \brief Compute derivatives numerically
+
+      <no parameters>
+
+      Help.
    */
   int eos_deriv(std::vector<std::string> &sv, bool itive_com);
 
@@ -608,52 +623,129 @@ public:
   int eos_deriv_v2(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Compute second derivatives numerically
-
-      The derivatives 
-
    */
   int eos_second_deriv(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Add electrons and photons
+
+      <no parameters>
+      
+      Help.
    */
   int add_eg(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Construct an electrons and photon table
+
+      <output file>
+
+      Help.
    */
   int eg_table(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Edit an EOS table
+
+      <select func.> [tensor to modify] [value func.]
+
+      The \"edit-data\" command counts the number of (nB,Ye,T) points
+      matching the criteria specified in <select func.>. If the
+      remaining two arguments are given, then the values of [tensor to
+      modify] for the selected points are changed to the result of the
+      function [value func.].
    */
   int edit_data(std::vector<std::string> &sv, bool itive_com);
 
-  /** \brief Merge two tables
+  /** \brief Merge two output tables to create a third
+
+      <input file 1> <input file 2> <output file>
+
+      Tables can only be merged if their grids and settings match. If
+      the Fint table is anomalously small or large or not-finite, then
+      this function calls the error handler. Otherwise, for each point
+      in (nB,Ye,T), there are four reasons for which a point is copied
+      from the second table to the first: (i) they both have flag=10
+      but the second has a smaller Fint, (ii) the second has flag=10
+      but the first does not, (iii) they both have flags less than 10
+      but the second has a non-zero flag with a smaller Fint, or (iv)
+      the second table has a non-zero flag and the first does not.
+      After the merge, the number of points modified is reported.
    */
   int merge_tables(std::vector<std::string> &sv, bool itive_com);
 
-  /** \brief Compare two tables
+  /** \brief Compare two output tables
+
+      <input file 1> <input file 2> [quantity]
+
+      Compare two EOS tables. If the optional argument ")+
+      is unspecified, then all quantities are compared. If [quantity] "+
+      is specified, then only that particular quantitiy is compared. "+
+      Only points for which flag=10 in both tables are compared. "+
+      If derivs_computed is true, then Pint, mun, and "+
+      mup are available for comparisons. If with_leptons is "+
+      true, then "+
+      F, E, P, and S, are also available for comparisons. Any current "+
+      EOS data stored is cleared before the comparison. If the "+
+      nB, Ye, or T grids do not match, then no comparison is performed.
    */
   int compare_tables(std::vector<std::string> &sv, bool itive_com);
 
-  /** \brief Output the statistics on flag values for a table
+  /** \brief Output convergence statistics and simple checks
+
+      <no parameters>
+
+      If an EOS is loaded, this function counts
+      the number of points with each flag value, checks that
+      the nuclear fractions add up to 1, checks that the free energy
+      internal energy, and entropy are consistent, and checks the
+      thermodynamic identity.
    */
   int stats(std::vector<std::string> &sv, bool itive_com);
 
-  /** \brief Compute the EOS at one point
+  /** \brief Compute and/or show EOS results at one (n_B,Y_e,T) point
+
+      <n_B> <Y_e> <T (MeV)> [log(xn) log(xp) Z N] [alg_mode 2-4:
+      log(xn) log(xp) A_min A_max NmZ_min NmZ_max] [fname]
+
+      If an EOS is loaded, then the n_B, Y_e, and T
+      values are modified to ensure that they lie on a grid point.
+      If an initial guess is specified on the command line, it is
+      used even if there is a good guess already in the table.
+      If the flag is not 10 or if \"recompute\" is true, then the EOS is
+      recomputed. If an EOS is loaded or the recompute was successful,
+      then the results are output to the screen. If the point was
+      successful it is stored in the current tables. If \"show_all
+      _nuclei\" is true, then a file named \"dist.o2\" is created
+      which holds the full nuclear distribution.
    */
   int point_nuclei(std::vector<std::string> &sv, bool itive_com);
   
-  /** \brief Desc
+  /** \brief Test an EOS at random points in (nB,Ye,T)
+
+      <n_tests> [\"lg\"]
+
+      This function tests the EOS at randomly chosen points in
+      (nB,Ye,T) space. If the new calculation and the stored result
+      disagree, then the new result is stored in the table.
    */
   int test_random(std::vector<std::string> &sv, bool itive_com);
   //@}
 
   /// \name File I/O functions
   //@{
-  /** \brief Load an EOS table (CLI wrapper)
+  /** \brief Load an EOS table
+
+      <filename> 
+
+      Loads an EOS table in to memory. In the case
+      where MPI is used, only one MPI rank reads the table at a time.
    */
   int load(std::vector<std::string> &sv, bool itive_com);
 
-  /** \brief Output an EOS table to a file (CLI wrapper)
+  /** \brief Output an EOS table to a file
+
+      <filename>
+
+      Loads an EOS table in to memory. In the case
+      where MPI is used, only one MPI rank writes the table at a time.
    */
   int output(std::vector<std::string> &sv, bool itive_com);
 
@@ -670,6 +762,10 @@ public:
   int read_results(std::string fname);
   
   /** \brief Write the nuclear masses to an HDF5 file
+
+      <output file>
+
+      Help.
    */
   int write_nuclei(std::vector<std::string> &sv,
 			       bool itive_com);
@@ -695,42 +791,89 @@ public:
    */
   void new_table();
 
-  /** \brief Check the virial solver by using it to compute
-      the EOS over a wide range of densities and temperatures
-      
-      This function is particularly good for checking to make
-      sure that the virial part of the EOS does not lead to 
-      any discontinuities. 
+  /** \brief Check the virial EOS
 
-      For example, 
+      <no parameters>
 
-      o2graph -read check_virial.o2 zn -Ye-slice 0.3 -set logz 1 \
-      -den-plot slice -show
+      This function checks the solver by using it to compute the EOS
+      over a wide range of densities and temperatures This function is
+      particularly good for checking to make sure that the virial part
+      of the EOS does not lead to any discontinuities. For example,
+      o2graph -read check_virial.o2 zn -Ye-slice 0.3 -set logz 1
+      -den-plot slice -show.
+
+      This function creates a file 'check_virial.o2'
+      with four tensor_grid objects which store the neutron and
+      proton fugacities. This file can be plotted with, e.g.
+      o2graph -set logz 1 -read check_virial.o2 zn -set logx 1
+      -set logy 1 -set colbar 1 -to-table3d 0 2 slice 0.01
+      -den-plot slice -show.
   */
   int check_virial(std::vector<std::string> &sv, bool itive_com);
   
-  /** \brief Use results lower densities to provide initial 
-      guesses to higher densities
+  /** \brief Use low densities to improve results at high densities
+
+      <nB low> <nB high> <Ye low> <Ye high> <T low> <T high> <output
+      file>
+
+      This function computes the EOS at higher densities
+      using initial guess from lower densities. It is particularly
+      helpful in getting the phase transition between nuclei and
+      nuclear matter correct. The outermost loop is temperature, the
+      second loop is electron fraction and the inner loop is density.
+      This function requires a table has been loaded and the EOS is
+      specified. It has no parallelization support.
    */
   int increase_density(std::vector<std::string> &sv, bool itive_com);
 
-  /** \brief Fix the core-crust transition
+  /** \brief Increase nB to optimize the phase transition
+
+      <output file>
+
+      Help
    */
   int fix_cc(std::vector<std::string> &sv, bool itive_com);
   
   /** \brief Verify the EOS
+
+      "random" <n_tests> <output file>, "random_lg" <n_tests>
+      <output file>, "all" <output file>, "all_lg" <output
+      file>, or "point" <output file> <nB> <Ye> <T>
+
+      Verify the EOS, recompute if a point fails
+      and the write final results to the specified output file. This
+      function only verifies that the baryon density and electron
+      fraction equations are solved to within the current tolerance
+      and does not attempt to solve them again. The test-random
+      function is different, it actually re-solves the equations
+      to show the answer is correct. Thus, this function requires 
+      a bit less running time at each point. The first argument is a
+      'mode' parameter which determines which points will be
+      verified. 
    */
   int verify(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Monte Carlo results with nuclei
+
+      Params.
+
+      Help.
    */
   int mcarlo_nuclei(std::vector<std::string> &sv, bool itive_com);
 
-  /** \brief Monte Carlo results with nuclei (version 2)
+  /** \brief Monte Carlo results with nuclei (v2)
+
+      <nB> <Ye> <T> <N> <filename>
+
+      Help
    */
   int mcarlo_nuclei2(std::vector<std::string> &sv, bool itive_com);
   
-  /** \brief Monte Carlo results in beta equilibrium
+  /** \brief Monte Carlo neutrino opacity in beta equilibrium
+
+      <filename> [n_point]
+
+      Help
    */
   int mcarlo_beta(std::vector<std::string> &sv, bool itive_com);
 
@@ -742,7 +885,7 @@ public:
       \note This function is called by the constructor and thus
       cannot be virtual
   */
-  int select_high_T(int option);
+  int select_high_T_internal(int option);
 
   /** \brief Compute the second derivatives and the
       eigenvalues of the stability matrix
@@ -750,9 +893,15 @@ public:
   int stability(std::vector<std::string> &sv,
 		bool itive_com);
   
-  /** \brief Command-line interface for selection of the high-temperature EOS
+  /** \brief Select the high-temperature Skyrme EOS
+
+      <index>
+
+      Select 0 for the original DSH fit, 1 for NRAPR, 
+      2 for Sk chi 414, 3 for Skchi450, 4 for Skchi500, 5 for ?, "+
+      and 6 for Sk chi m* (the default).
    */
-  int select_high_T_cl(std::vector<std::string> &sv, bool itive_com);
+  int select_high_T(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Compute eos with nuclei by searching minimum
    */
@@ -763,7 +912,11 @@ public:
    */		      
   int init_function(size_t dim, const ubvector &x, ubvector &y);
   
-  /** \brief Old Maxwell construction test
+  /** \brief Maxwell construction test
+
+      Params.
+
+      Help.
    */
   int maxwell_test(std::vector<std::string> &sv, bool itive_com);
   //@}

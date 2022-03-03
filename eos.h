@@ -60,6 +60,9 @@ class eos_crust_virial_v2 : public o2scl::eos_crust_virial {
   
  public:
 
+  /** \brief If true, include the deuteron contribution in the
+      virial coefficients
+   */
   bool include_deuteron;
   
   /** \brief Temperature grid for alpha-nucleon virial coefficients
@@ -122,10 +125,12 @@ class eos_crust_virial_v2 : public o2scl::eos_crust_virial {
     return (bpn_f(T)+bpna(T))/2.0;
   }
   
-  /// The temperature must be specified in MeV
+  /** \brief The temperature must be specified in MeV
+   */
   double bna(double T);
 
-  /// The temperature must be specified in MeV
+  /** \brief The temperature must be specified in MeV
+   */
   double bpna(double T);
 
   /** \brief Desc
@@ -231,6 +236,8 @@ class eos {
   
  protected:
 
+  o2scl::cli *cl_ptr;
+  
   /// \name Main EOS parameters [protected]
   //@{
   /// The first exponent for density in the QMC EOS (unitless)
@@ -278,9 +285,10 @@ class eos {
    */
   double free_energy_density_detail
   (o2scl::fermion &n, o2scl::fermion &p, double T, o2scl::thermo &th,
-   double &zn, double &zp,
-   double &f1, double &f2, double &f3, double &f4, 
-   double &g_virial, double &dgvirialdT, double &dgdnn, double &dgdnp);
+   std::map<std::string,double> &vdet);
+  //double &zn, double &zp,
+  //double &f1, double &f2, double &f3, double &f4, 
+  //double &g_virial, double &dgvirialdT, double &dgdnn, double &dgdnp);
 
   /** \brief Compute the free energy density using the virial 
       expansion including derivative information
@@ -451,6 +459,9 @@ class eos {
   o2scl::cli::parameter_double p_a_virial;
   o2scl::cli::parameter_double p_b_virial;
   //@}
+
+  /// If true, then RMF fields are included
+  bool rmf_fields;
   
   /// \name Other EOS functions [protected]
   //@{
@@ -500,6 +511,9 @@ class eos {
 
   /// \name Particle objects [protected]
   //@{
+  /// New lepton object
+  o2scl::eos_leptons elep;
+  
   /** \brief Electron/positron
    */
   o2scl::fermion electron;
@@ -569,6 +583,9 @@ class eos {
 
   /// Pointer to alternative model
   o2scl::eos_had_temp_base *eosp_alt;
+
+  /// Name of the alternate EOS
+  std::string alt_name;
   //@}
 
   /// \name The parameters for the QMC energy density [protected]
@@ -664,65 +681,140 @@ class eos {
   /// \name Command-line interface functions [public]
   //@{
   /** \brief Construct a table at fixed electron fraction
+
+      <filename> <Ye>
+
+      Help.
    */
   int table_Ye(std::vector<std::string> &sv,
 	       bool itive_com);
-  
-  int skalt_model(std::vector<std::string> &sv,
+
+  /** \brief Use alternate, rather than the Du et al. EOS
+
+      "Skyrme" <name>, <RMF> name, etc.
+
+      Help.
+   */
+  int alt_model(std::vector<std::string> &sv,
 	       bool itive_com);
 
   /** \brief Construct a table at fixed baryon density
+
+      <filename> <nB>
+
+      Help.
    */
   int table_nB(std::vector<std::string> &sv,
 	       bool itive_com);
 
-  /** \brief Construct the EOS for a proto-neutron star
+  /** \brief Construct the PNS EOS and the M-R curve
+
+      <entropy per baryon> <lepton fraction> <output filename>
+
+      Use YL=0 for beta equilibrium. Currently always uses a cold
+      crust.
    */
   int pns_eos(std::vector<std::string> &sv, bool itive_com);
   
-  /** \brief Construct a full table 
+  /** \brief Construct a full 3D EOS table 
+
+      <filename>
+
+      Help.
    */
   int table_full(std::vector<std::string> &sv, bool itive_com);
 
-  /** \brief Test the code
+  /** \brief Test the first derivatives of the free energy
+
+      Params.
+
+      Help.
    */
   int test_deriv(std::vector<std::string> &sv, bool itive_com);
 
-  /** \brief Select a model by specifying the parameters
+  /** \brief Select an EOS model
+
+      <i_ns> <i_skyrme> <alpha> <a> <L> <S> <phi>
+
+      Help.
    */
   int select_model(std::vector<std::string> &sv, bool itive_com);
 
-  /** \brief Compare the full free energy with the free energy
-      from the virial expansion
+  /** \brief Compare the virial and full EOS
+
+      Params.
+
+      Help.
   */
   int vir_comp(std::vector<std::string> &sv, bool itive_com);
 
-  /** \brief Evaluate the EOS at one point
+  /** \brief Evaluate the EOS at one (nB,Ye,T) point
+
+      Params.
+
+      Help.
    */
   int point(std::vector<std::string> &sv, bool itive_com);
 
-  /** \brief Select a random model
+  /** \brief Select a random EOS model
+
+      Params.
+
+      Help.
    */
   int random(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Compute the data for the comparison figures
+
+      Params.
+
+      Help.
    */
   int comp_figs(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Compute the data for the Monte Carlo figures
+
+      Params.
+
+      Help.
    */
   int mcarlo_data(std::vector<std::string> &sv, bool itive_com);
 
-  /** \brief Perform the virial fit
+  /** \brief Fit the virial EOS
+
+      <no parameters>
+
+      Fit the virial EOS table to the functional form specified
+      in Du et al. (2019) using \ref eos_crust_virial_v2::fit() .
    */
   int vir_fit(std::vector<std::string> &sv, bool itive_com);
 
-  /** \brief Test the electron and photon contribution
+  /** \brief Test the electron and photon EOS
+
+      [filename]
+
+      This function tests the electron and photon EOS to ensure that
+      it does not call the error handler (it does not test accuracy).
+      It uses a larger grid than the default EOS grid and stores the
+      results in tensor_grid objects. If a file is specified, these
+      tensor_grid objects are output to the specified file.
    */
   int test_eg(std::vector<std::string> &sv, bool itive_com);
 
-  /** \brief Compute the EOS from previously generated EOS
-      tables at several points
+  /** \brief Create the command documentation database
+
+      <no parameters>
+      
+      Create document strings from XML and store them in the 
+      a HDF5 data file.
+  */
+  virtual int xml_to_o2(std::vector<std::string> &sv, bool itive_com);
+
+  /** \brief Compare to other EOSs?
+
+      Params.
+
+      Help.
    */
   int eos_sn(std::vector<std::string> &sv, bool itive_com);
   //@}

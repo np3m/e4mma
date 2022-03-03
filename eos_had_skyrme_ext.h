@@ -163,4 +163,102 @@
 
   };
 
+  /** \brief Extended Skyrme hadronic equation of state 
+
+      This is the modified Skyrme model proposed by Holt and Lim.
+
+      The Hamiltonian is 
+      \f[
+      {\cal H} = \frac{\hbar^2 \tau_n}{2 m_n^{*}}
+      + \frac{\hbar^2 \tau_p}{2 m_p^{*}} + 
+      {\cal H}_{\mathrm{pot}}
+      \f]
+      where \f$ \tau_i = k_{F,i}^5/(5 \pi^2) \f$,
+      \f[
+      \frac{1}{2 m_n^{*}} = \frac{1}{2 m_n} + f_n(n_n,n_p)
+      \f]
+      and 
+      \f[
+      \frac{1}{2 m_p^{*}} = \frac{1}{2 m_p} + f_p(n_n,n_p) \, .
+      \f]
+      Then, the chemical potentials are
+      \f[
+      \mu_n = \nu_n + \tau_n 
+      \frac{\partial f_n}{\partial n_n} + 
+      \tau_p 
+      \frac{\partial f_p}{\partial n_n} 
+      \f]
+      and 
+      \f[
+      \mu_p = \nu_p + \tau_p 
+      \frac{\partial f_p}{\partial n_p} + 
+      \tau_n 
+      \frac{\partial f_n}{\partial n_p} \, .
+      \f]
+   */
+  class eos_had_lim_holt : public o2scl::eos_had_temp_eden_base {
+    
+  protected:
+
+    /// Nonrelativistic fermion object
+    o2scl::fermion_nonrel nrf;
+    
+  public:
+
+    /// \name Parameters
+    //@{
+    double betaL, betaU, theta, thetaL, sigma;
+    
+    double alphaL, alphaU, etaL, etaU, zetaL, zetaU;
+
+    double gamma, gamma2;
+    //@}
+    
+  protected:
+
+    /** \brief Compute the base thermodynamic quantities
+
+	This function computes the energy density, pressure,
+	entropy, and chemical potentials.
+     */
+    template<class fermion_t>
+      void base_thermo
+    (fermion_t &ne, fermion_t &pr, double ltemper, o2scl::thermo &locth) {
+
+      return;
+    }
+    
+  public:
+
+    /// \name Basic usage
+    //@{
+    /// Create a blank Skyrme EOS
+    eos_had_lim_holt();
+
+    /// Destructor
+    virtual ~eos_had_lim_holt() {};
+
+    /** \brief Equation of state as a function of densities
+	at finite temperature
+    */
+    virtual int calc_temp_e(o2scl::fermion &ne, o2scl::fermion &pr,
+			    double temper, o2scl::thermo &th);
+
+    /** \brief Equation of state as a function of densities at 
+	zero temperature
+    */
+    virtual int calc_e(o2scl::fermion &ne, o2scl::fermion &pr,
+		       o2scl::thermo &lt);
+    
+    virtual int calc_p(o2scl::fermion &ne, o2scl::fermion &pr,
+		       o2scl::thermo &lt) {
+      return 0;
+    }
+
+    /// Return string denoting type ("eos_had_lim_holt")
+    virtual const char *type() { return "eos_had_lim_holt"; }
+    //@}
+
+  };
+
 #endif
