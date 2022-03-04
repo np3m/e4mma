@@ -7127,11 +7127,26 @@ int eos_nuclei::edit_data(std::vector<std::string> &sv,
 	  vars["Pint"]=tg_Pint.get(ix);
 	  vars["mun"]=tg_mun.get(ix);
 	  vars["mup"]=tg_mup.get(ix);
+          if (with_leptons) {
+            vars["F"]=tg_F.get(ix);
+            vars["E"]=tg_E.get(ix);
+            vars["P"]=tg_P.get(ix);
+            vars["S"]=tg_S.get(ix);
+          }
 	}
-	
+
 	double val=calc.eval(&vars);
 	if (val>0.5) {
+
 	  count++;
+
+          if (count<10) {
+            cout << count << "/? (nB,Ye,T[MeV]) "
+                 << nB_grid2[inB] << " "
+                 << Ye_grid2[iYe] << " "
+                 << T_grid2[iT] << endl;
+          }
+          
 	  if (sv.size()>3) {
 	    double val2=calc2.eval(&vars);
 	    if (tensor_to_change=="flag") {
