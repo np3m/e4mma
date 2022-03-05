@@ -19,6 +19,7 @@
   -------------------------------------------------------------------
 */
 #include "eos_nuclei.h"
+
 #include "neutrino/tensor.h"
 #include "neutrino/Polarization.hpp"
 #include "neutrino/PolarizationNonRel.hpp"
@@ -587,55 +588,15 @@ int eos_nuclei::add_eg(std::vector<std::string> &sv,
                  << elep.e.n+elep.mu.n << endl;
           }
 
-          /*
-          mm_funct nm_func=std::bind
-            (std::mem_fn<int(size_t,const ubvector &,ubvector&,double,double,
-                             double,map<string,double> &,
-                             o2scl::eos_sn_base &)>
-             (&eos_nuclei::new_muons),this,std::placeholders::_1,
-             std::placeholders::_2,std::placeholders::_3,nB,Ye,T,
-             std::ref(vdet),std::ref(eso));
-          
-          ubvector x(1), y(1);
-          
-          x[0]=nB*Ye;
-
-          mh.tol_rel=1.0e-6;
-          int mret=mh.msolve(1,x,nm_func);
-          if (mret!=0) {
-            nm_func(1,x,y);
-            mh.tol_rel=1.0e-5;
-            for(size_t jj=0;jj<5 && mret!=0;jj++) {
-              cout << jj << " " << x[0] << " " << y[0] << endl;
-              mret=mh.msolve(1,x,nm_func);
-              nm_func(1,x,y);
-            }
-            mh.tol_rel=1.0e-4;
-            for(size_t jj=0;jj<5 && mret!=0;jj++) {
-              cout << jj << " " << x[0] << " " << y[0] << endl;
-              mret=mh.msolve(1,x,nm_func);
-              nm_func(1,x,y);
-            }
-            mh.tol_rel=3.0e-4;
-            for(size_t jj=0;jj<5 && mret!=0;jj++) {
-              cout << jj << " " << x[0] << " " << y[0] << endl;
-              mret=mh.msolve(1,x,nm_func);
-              nm_func(1,x,y);
-            }
-            if (mret!=0) {
-              O2SCL_ERR("nuc matter muons failed.",o2scl::exc_einval);
-            }
-          }
-          
-          // Ensure the last function evaluation stores the correct values
-          // in 'vdet':
-          nm_func(1,x,y);
-          */
-          
         } else {
         
           elep.pair_density_eq(nB*Ye,T_MeV/hc_mev_fm);
-          //          eso.compute_eg_point(nB,Ye,T_MeV,lep,vdet["mue"]);
+          if (verbose>1) {
+            cout << "ed+pr: " << elep.th.ed+elep.th.pr 
+                 << "en*T+n*mu: "
+                 << elep.th.en*T_MeV/hc_mev_fm+elep.e.mu*elep.e.n
+                 << endl;
+          }
           
         }
 
