@@ -1116,12 +1116,12 @@ double eos::free_energy_density_detail
     vdet["F2"]=0.0;
     vdet["F3"]=0.0;
     vdet["F4"]=0.0;
-    vdet["g"]=1.0;
+    vdet["g"]=0.0;
     vdet["dgdT"]=0.0;
     vdet["dgdnn"]=0.0;
     vdet["dgdnp"]=0.0;
-    vdet["msn"]=neutron.m*hc_mev_fm;
-    vdet["msp"]=proton.m*hc_mev_fm;
+    vdet["msn"]=neutron.ms*hc_mev_fm;
+    vdet["msp"]=proton.ms*hc_mev_fm;
     vdet["Un"]=0.0;
     vdet["Up"]=0.0;
     if (rmf_fields) {

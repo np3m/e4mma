@@ -8956,8 +8956,6 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
     n_point=stoszt(sv[2]);
   }
 
-  bool sg2_debug=false;
-  
   /*
     Questions for Zidu:
     1) is there really a vec and axvec mfp? does it make sense to
@@ -9017,9 +9015,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
   }
 
   for(size_t ipoint=0;ipoint<n_point;ipoint++) {
-    
-    if (sg2_debug) ipoint=n_point-1;
-    
+
     for(size_t ik=0;ik<col_list.size();ik++) {
     std:string temp=col_list[ik]+"_"+o2scl::szttos(ipoint);
       tab.new_column(temp);
@@ -9068,8 +9064,6 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
   static const int N=10000;
   for(int j=0;j<N;j++) {
 
-    if (sg2_debug) j=1;
-    
     std::cout << "j: " << j << endl;
 
     if (j==0) {
@@ -9132,10 +9126,6 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
     
     for(size_t ipoint=0;ipoint<n_point;ipoint++) {      
 
-      if (sg2_debug) {
-        ipoint=n_point-1;
-      }
-      
       double nB=nB_list[ipoint];
       double T=TMeV_list[ipoint]/hc_mev_fm;
       double T_MeV=TMeV_list[ipoint];
@@ -10178,10 +10168,6 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
       hf.open_or_create(sv[1]);
       hdf_output(hf,tab,"mb");
       hf.close();
-    }
-
-    if (sg2_debug) {
-      exit(-1);
     }
 
   }
