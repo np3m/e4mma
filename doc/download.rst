@@ -7,7 +7,7 @@ Feb. 6 2022, first release
 Tables with electrons and photons:
 
 - `Fiducial
-  <https://isospin.roam.utk.edu/public_data/eos_tables/du21/fid_2_6_22.o2>`_
+  <https://isospin.roam.utk.edu/public_data/eos_tables/du21/fid_3_5_22.o2>`_
 - `Large Mmax
   <https://isospin.roam.utk.edu/public_data/eos_tables/du21/large_max_2_6_22.o2>`_
 - `Large SL
@@ -28,7 +28,7 @@ Tables with electrons and photons:
 Baryons-only tables without derivatives of F:
 
 - `Fiducial
-  <https://isospin.roam.utk.edu/public_data/eos_tables/du21/fid_nolep_noderiv_1_17_22.o2>`_
+  <https://isospin.roam.utk.edu/public_data/eos_tables/du21/fid_nolep_noderiv_3_4.o2>`_
 - `Large Mmax
   <https://isospin.roam.utk.edu/public_data/eos_tables/du21/large_max_nolep_noderiv_1_17_22.o2>`_
 - `Large SL
