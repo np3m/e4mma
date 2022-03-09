@@ -550,8 +550,6 @@ int eos_nuclei::add_eg(std::vector<std::string> &sv,
     tg_Ymu.set_all(0.0);
   }
   
-  eos_sn_base eso;
-  eso.include_muons=this->include_muons;
   elep.include_muons=include_muons;
 
   map<std::string,double> vdet;
@@ -616,7 +614,6 @@ int eos_nuclei::add_eg(std::vector<std::string> &sv,
         
         if (include_muons) {
           // Set muon density
-          //tg_Ymu.set3(i,j,k,eso.muon.n/nB);
           tg_Ymu.set3(i,j,k,elep.mu.n/nB);
         }
 
@@ -628,7 +625,7 @@ int eos_nuclei::add_eg(std::vector<std::string> &sv,
           double ti_check=tg_E.get(ix)*nB+tg_P.get(ix)-
             T_MeV*tg_S.get(ix)*nB-nn*tg_mun.get(ix)-np*tg_mup.get(ix);
           if (this->include_muons) {
-            ti_check-=(eso.electron.n+eso.muon.n)*tg_mue.get(ix);
+            ti_check-=(elep.e.n+elep.mu.n)*tg_mue.get(ix);
           } else {
             ti_check-=Ye*nB*tg_mue.get(ix);
           }            
@@ -670,8 +667,6 @@ int eos_nuclei::add_eg(std::vector<std::string> &sv,
                      elep.th.en-np*vdet["mue"])/scale/
               nB*hc_mev_fm << endl;
             cout << "mue: " << tg_mue.get(ix) << endl;
-            cout << eso.electron.n << " " << np << endl;
-            cout << eso.electron.mu << " " << vdet["mue"] << endl;
             exit(-1);
           }
           //char ch;
