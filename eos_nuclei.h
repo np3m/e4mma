@@ -415,55 +415,55 @@ public:
   
   /// \name Main EOS table storage
   //@{
-  tensor_grid_temp tg_log_xn;
-  tensor_grid_temp tg_log_xp;
-  tensor_grid_temp tg_flag;
-  tensor_grid_temp tg_F;
-  tensor_grid_temp tg_E;
-  tensor_grid_temp tg_P;
-  tensor_grid_temp tg_S;
-  tensor_grid_temp tg_Fint;
-  tensor_grid_temp tg_Eint;
-  tensor_grid_temp tg_Pint;
-  tensor_grid_temp tg_Sint;
-  tensor_grid_temp tg_mun;
-  tensor_grid_temp tg_mup;
-  tensor_grid_temp tg_mue;
-  tensor_grid_temp tg_Z;
-  tensor_grid_temp tg_A;
-  tensor_grid_temp tg_Xn;
-  tensor_grid_temp tg_Xp;
-  tensor_grid_temp tg_Xalpha;
-  tensor_grid_temp tg_Xnuclei;
-  tensor_grid_temp tg_Ymu;
-  tensor_grid_temp tg_Xd;
-  tensor_grid_temp tg_Xt;
-  tensor_grid_temp tg_XHe3;
-  tensor_grid_temp tg_XLi4;
-  tensor_grid_temp tg_A_min;
-  tensor_grid_temp tg_A_max;
-  tensor_grid_temp tg_NmZ_min;
-  tensor_grid_temp tg_NmZ_max;
+  o2scl::tensor_grid<> tg_log_xn;
+  o2scl::tensor_grid<> tg_log_xp;
+  o2scl::tensor_grid<> tg_flag;
+  o2scl::tensor_grid<> tg_F;
+  o2scl::tensor_grid<> tg_E;
+  o2scl::tensor_grid<> tg_P;
+  o2scl::tensor_grid<> tg_S;
+  o2scl::tensor_grid<> tg_Fint;
+  o2scl::tensor_grid<> tg_Eint;
+  o2scl::tensor_grid<> tg_Pint;
+  o2scl::tensor_grid<> tg_Sint;
+  o2scl::tensor_grid<> tg_mun;
+  o2scl::tensor_grid<> tg_mup;
+  o2scl::tensor_grid<> tg_mue;
+  o2scl::tensor_grid<> tg_Z;
+  o2scl::tensor_grid<> tg_A;
+  o2scl::tensor_grid<> tg_Xn;
+  o2scl::tensor_grid<> tg_Xp;
+  o2scl::tensor_grid<> tg_Xalpha;
+  o2scl::tensor_grid<> tg_Xnuclei;
+  o2scl::tensor_grid<> tg_Ymu;
+  o2scl::tensor_grid<> tg_Xd;
+  o2scl::tensor_grid<> tg_Xt;
+  o2scl::tensor_grid<> tg_XHe3;
+  o2scl::tensor_grid<> tg_XLi4;
+  o2scl::tensor_grid<> tg_A_min;
+  o2scl::tensor_grid<> tg_A_max;
+  o2scl::tensor_grid<> tg_NmZ_min;
+  o2scl::tensor_grid<> tg_NmZ_max;
   //@}
 
   /// \name Detail storage
   //@{
   bool include_detail;
-  tensor_grid_temp tg_zn;
-  tensor_grid_temp tg_zp;
-  tensor_grid_temp tg_F1;
-  tensor_grid_temp tg_F2;
-  tensor_grid_temp tg_F3;
-  tensor_grid_temp tg_F4;
-  tensor_grid_temp tg_Un;
-  tensor_grid_temp tg_Up;
-  tensor_grid_temp tg_msn;
-  tensor_grid_temp tg_msp;
-  tensor_grid_temp tg_g;
-  tensor_grid_temp tg_dgdT;
-  tensor_grid_temp tg_sigma;
-  tensor_grid_temp tg_omega;
-  tensor_grid_temp tg_rho;
+  o2scl::tensor_grid<> tg_zn;
+  o2scl::tensor_grid<> tg_zp;
+  o2scl::tensor_grid<> tg_F1;
+  o2scl::tensor_grid<> tg_F2;
+  o2scl::tensor_grid<> tg_F3;
+  o2scl::tensor_grid<> tg_F4;
+  o2scl::tensor_grid<> tg_Un;
+  o2scl::tensor_grid<> tg_Up;
+  o2scl::tensor_grid<> tg_msn;
+  o2scl::tensor_grid<> tg_msp;
+  o2scl::tensor_grid<> tg_g;
+  o2scl::tensor_grid<> tg_dgdT;
+  o2scl::tensor_grid<> tg_sigma;
+  o2scl::tensor_grid<> tg_omega;
+  o2scl::tensor_grid<> tg_rho;
   //@}
 
   /// \name Other parameter objects

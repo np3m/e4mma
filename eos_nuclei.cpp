@@ -602,19 +602,19 @@ int eos_nuclei::add_eg(std::vector<std::string> &sv,
         mue_last=vdet["mue"];
         
         vector<size_t> ix={i,j,k};
-	tg_F.set(ix,,tg_Fint.get(ix)+
+	tg_F.set(ix,tg_Fint.get(ix)+
 		  (hc_mev_fm*elep.th.ed-T_MeV*elep.th.en)/nB);
-	tg_E.set(ix,,tg_Eint.get(ix)+hc_mev_fm*elep.th.ed/nB);
-	tg_P.set(ix,,tg_Pint.get(ix)+hc_mev_fm*elep.th.pr);
-	tg_S.set(ix,,tg_Sint.get(ix)+elep.th.en/nB);
-	tg_mue.set(ix,,hc_mev_fm*vdet["mue"]);
+	tg_E.set(ix,tg_Eint.get(ix)+hc_mev_fm*elep.th.ed/nB);
+	tg_P.set(ix,tg_Pint.get(ix)+hc_mev_fm*elep.th.pr);
+	tg_S.set(ix,tg_Sint.get(ix)+elep.th.en/nB);
+	tg_mue.set(ix,hc_mev_fm*vdet["mue"]);
         
         double np=nB*Ye;
         double nn=nB*(1.0-Ye);
         
         if (include_muons) {
           // Set muon density
-          tg_Ymu.set(ix,,elep.mu.n/nB);
+          tg_Ymu.set(ix,elep.mu.n/nB);
         }
 
         if (true) {
@@ -699,12 +699,12 @@ int eos_nuclei::eg_table(std::vector<std::string> &sv,
     new_table();
   }
   
-  tensor_grid_temp mu_e;
-  tensor_grid_temp E;
-  tensor_grid_temp Ymu;
-  tensor_grid_temp P;
-  tensor_grid_temp S;
-  tensor_grid_temp F;
+  o2scl::tensor_grid<> mu_e;
+  o2scl::tensor_grid<> E;
+  o2scl::tensor_grid<> Ymu;
+  o2scl::tensor_grid<> P;
+  o2scl::tensor_grid<> S;
+  o2scl::tensor_grid<> F;
   
   size_t st[3]={n_nB2,n_Ye2,n_T2};
   vector<vector<double> > grid={nB_grid2,Ye_grid2,T_grid2};
@@ -730,19 +730,21 @@ int eos_nuclei::eg_table(std::vector<std::string> &sv,
     double nB=nB_grid2[i];
     for (size_t j=0;j<n_Ye2;j++) {
       for (size_t k=0;k<n_T2;k++) {
+        vector<size_t> ix={i,j,k};
+        
 	double T_MeV=T_grid2[k];
 	
 	thermo lep;
 	double mue;
 	esb.compute_eg_point(nB_grid2[i],Ye_grid2[j],T_grid2[k],lep,mue);
 
-	mu_e.set3(i,j,k,mue*o2scl_const::hc_mev_fm);
-	E.set3(i,j,k,lep.ed/nB*o2scl_const::hc_mev_fm);
-	P.set3(i,j,k,lep.pr*o2scl_const::hc_mev_fm);
-	S.set3(i,j,k,lep.en/nB);
-	F.set3(i,j,k,(lep.ed-T_MeV*lep.en)/nB*o2scl_const::hc_mev_fm);
+	mu_e.set(ix,mue*o2scl_const::hc_mev_fm);
+	E.set(ix,lep.ed/nB*o2scl_const::hc_mev_fm);
+	P.set(ix,lep.pr*o2scl_const::hc_mev_fm);
+	S.set(ix,lep.en/nB);
+	F.set(ix,(lep.ed-T_MeV*lep.en)/nB*o2scl_const::hc_mev_fm);
 	if (include_muons) {
-	  Ymu.set3(i,j,k,muon.n*o2scl_const::hc_mev_fm/nB);
+	  Ymu.set(ix,muon.n*o2scl_const::hc_mev_fm/nB);
 	}
       }
     }
@@ -852,11 +854,12 @@ int eos_nuclei::eos_deriv(std::vector<std::string> &sv,
       }
       itp_stf.set(n_T2,T_grid2,fint_vec_T);
       for(size_t k=0;k<n_T2;k++) {
+        vector<size_t> ix={i,j,k};
 	// Note that fint_vec_T above is stored in MeV/fm^3, so
 	// when we take a derivative wrt to temperature (stored
 	// in MeV), we get the correct units of 1/fm^3, and then
 	// we divide by the baryon density in units of 1/fm^3
-	tg_Sint.set3(i,j,k,-itp_stf.deriv(T_grid2[k])/nB_grid2[i]);
+	tg_Sint.set(ix,-itp_stf.deriv(T_grid2[k])/nB_grid2[i]);
       }
     }
   }
@@ -871,7 +874,8 @@ int eos_nuclei::eos_deriv(std::vector<std::string> &sv,
       }
       itp_stf.set(n_Ye2,Ye_grid2,fint_vec_Ye);
       for (size_t j=0;j<n_Ye2;j++) {
-	tg_mup.set3(i,j,k,itp_stf.deriv(Ye_grid2[j]));
+        vector<size_t> ix={i,j,k};
+	tg_mup.set(ix,itp_stf.deriv(Ye_grid2[j]));
       }
     }
   }
@@ -886,7 +890,8 @@ int eos_nuclei::eos_deriv(std::vector<std::string> &sv,
       }
       itp_stf.set(n_nB2,nB_grid2,fint_vec_nB);
       for (size_t i=0;i<n_nB2;i++) {
-	tg_mun.set3(i,j,k,itp_stf.deriv(nB_grid2[i]));
+        vector<size_t> ix={i,j,k};
+	tg_mun.set(ix,itp_stf.deriv(nB_grid2[i]));
       }
     }
   }
@@ -1000,12 +1005,12 @@ int eos_nuclei::eos_deriv_v2(std::vector<std::string> &sv,
     tg_mup.set_all(0.0);
   }
 
-  tensor_grid_temp tg_dmundnB;
-  tensor_grid_temp tg_dmundYe;
-  tensor_grid_temp tg_dmundT;
-  tensor_grid_temp tg_dmupdYe;
-  tensor_grid_temp tg_dmupdT;
-  tensor_grid_temp tg_dsdT;
+  o2scl::tensor_grid<> tg_dmundnB;
+  o2scl::tensor_grid<> tg_dmundYe;
+  o2scl::tensor_grid<> tg_dmundT;
+  o2scl::tensor_grid<> tg_dmupdYe;
+  o2scl::tensor_grid<> tg_dmupdT;
+  o2scl::tensor_grid<> tg_dsdT;
   
   size_t st[3]={n_nB2,n_Ye2,n_T2};
   vector<vector<double> > grid={nB_grid2,Ye_grid2,T_grid2};
@@ -1046,11 +1051,12 @@ int eos_nuclei::eos_deriv_v2(std::vector<std::string> &sv,
       }
       itp_stf.set(n_T2,T_grid2,fint_vec_T);
       for(size_t k=0;k<n_T2;k++) {
+        vector<size_t> ix={i,j,k};
 	// Note that fint_vec_T above is stored in MeV/fm^3, so
 	// when we take a derivative wrt to temperature (stored
 	// in MeV), we get the correct units of 1/fm^3, and then
 	// we divide by the baryon density in units of 1/fm^3
-	tg_Sint.set3(i,j,k,-itp_stf.deriv(T_grid2[k])/nB_grid2[i]);
+	tg_Sint.set(ix,-itp_stf.deriv(T_grid2[k])/nB_grid2[i]);
       }
     }
   }
@@ -1065,7 +1071,8 @@ int eos_nuclei::eos_deriv_v2(std::vector<std::string> &sv,
       }
       itp_stf.set(n_Ye2,Ye_grid2,fint_vec_Ye);
       for (size_t j=0;j<n_Ye2;j++) {
-	tg_mup.set3(i,j,k,itp_stf.deriv(Ye_grid2[j]));
+        vector<size_t> ix={i,j,k};
+	tg_mup.set(ix,itp_stf.deriv(Ye_grid2[j]));
       }
     }
   }
@@ -1080,7 +1087,8 @@ int eos_nuclei::eos_deriv_v2(std::vector<std::string> &sv,
       }
       itp_stf.set(n_nB2,nB_grid2,fint_vec_nB);
       for (size_t i=0;i<n_nB2;i++) {
-	tg_mun.set3(i,j,k,itp_stf.deriv(nB_grid2[i]));
+        vector<size_t> ix={i,j,k};
+	tg_mun.set(ix,itp_stf.deriv(nB_grid2[i]));
       }
     }
   }
@@ -1142,12 +1150,12 @@ int eos_nuclei::eos_second_deriv(std::vector<std::string> &sv,
     return 3;
   }
 
-  tensor_grid_temp tg_dmundnB;
-  tensor_grid_temp tg_dmundYe;
-  tensor_grid_temp tg_dmundT;
-  tensor_grid_temp tg_dmupdYe;
-  tensor_grid_temp tg_dmupdT;
-  tensor_grid_temp tg_dsdT;
+  o2scl::tensor_grid<> tg_dmundnB;
+  o2scl::tensor_grid<> tg_dmundYe;
+  o2scl::tensor_grid<> tg_dmundT;
+  o2scl::tensor_grid<> tg_dmupdYe;
+  o2scl::tensor_grid<> tg_dmupdT;
+  o2scl::tensor_grid<> tg_dsdT;
   
   derivs_computed=true;
   
@@ -1188,15 +1196,18 @@ int eos_nuclei::eos_second_deriv(std::vector<std::string> &sv,
       }
       itp_stf.set(n_T2,T_grid2,mun_vec_T);
       for(size_t k=0;k<n_T2;k++) {
-	tg_dmundT.set3(i,j,k,itp_stf.deriv(T_grid2[k]));
+        vector<size_t> ix={i,j,k};
+	tg_dmundT.set(ix,itp_stf.deriv(T_grid2[k]));
       }
       itp_stf.set(n_T2,T_grid2,mup_vec_T);
       for(size_t k=0;k<n_T2;k++) {
-	tg_dmupdT.set3(i,j,k,itp_stf.deriv(T_grid2[k]));
+        vector<size_t> ix={i,j,k};
+	tg_dmupdT.set(ix,itp_stf.deriv(T_grid2[k]));
       }
       itp_stf.set(n_T2,T_grid2,s_vec_T);
       for(size_t k=0;k<n_T2;k++) {
-	tg_dsdT.set3(i,j,k,itp_stf.deriv(T_grid2[k]));
+        vector<size_t> ix={i,j,k};
+	tg_dsdT.set(ix,itp_stf.deriv(T_grid2[k]));
       }
     }
   }
@@ -1211,11 +1222,13 @@ int eos_nuclei::eos_second_deriv(std::vector<std::string> &sv,
       }
       itp_stf.set(n_Ye2,Ye_grid2,mun_vec_Ye);
       for (size_t j=0;j<n_Ye2;j++) {
-	tg_dmundYe.set3(i,j,k,itp_stf.deriv(Ye_grid2[j]));
+        vector<size_t> ix={i,j,k};
+	tg_dmundYe.set(ix,itp_stf.deriv(Ye_grid2[j]));
       }
       itp_stf.set(n_Ye2,Ye_grid2,mup_vec_Ye);
       for (size_t j=0;j<n_Ye2;j++) {
-	tg_dmupdYe.set3(i,j,k,itp_stf.deriv(Ye_grid2[j]));
+        vector<size_t> ix={i,j,k};
+	tg_dmupdYe.set(ix,itp_stf.deriv(Ye_grid2[j]));
       }
     }
   }
@@ -1229,7 +1242,8 @@ int eos_nuclei::eos_second_deriv(std::vector<std::string> &sv,
       }
       itp_stf.set(n_nB2,nB_grid2,mun_vec_nB);
       for (size_t i=0;i<n_nB2;i++) {
-	tg_dmundnB.set3(i,j,k,itp_stf.deriv(nB_grid2[i]));
+        vector<size_t> ix={i,j,k};
+	tg_dmundnB.set(ix,itp_stf.deriv(nB_grid2[i]));
       }
     }
   }
@@ -1287,8 +1301,8 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
   string outfile=sv[1];
 
   // The six second derivatives we need to compute
-  tensor_grid_temp dmundYe, dmundnB, dmupdYe, dsdT, dsdnB, dsdYe;
-  tensor_grid_temp egv[4], cs2;
+  o2scl::tensor_grid<> dmundYe, dmundnB, dmupdYe, dsdT, dsdnB, dsdYe;
+  o2scl::tensor_grid<> egv[4], cs2;
 
   interp_vec<vector<double> > itp_sta_a, itp_sta_b, itp_sta_c;
 
@@ -6067,7 +6081,7 @@ int eos_nuclei::stats(std::vector<std::string> &sv,
 
   size_t ti_int_count=0, ti_count=0;
   
-  vector<tensor_grid_temp *> ptrs;
+  vector<o2scl::tensor_grid<> *> ptrs;
   ptrs.push_back(&tg_log_xn);
   ptrs.push_back(&tg_log_xp);
   ptrs.push_back(&tg_flag);
@@ -6434,12 +6448,12 @@ int eos_nuclei::merge_tables(std::vector<std::string> &sv,
 	if (fabs(flag1)<0.5 && (Fint1>1.0e90 ||
 				!std::isfinite(Fint1) || Fint1<(-1.0e10))) {
 	  flag1=0.0;
-	  tg_flag.set3(i,j,k,0.0);
-	  tg_Fint.set3(i,j,k,0.0);
-	  tg_Z.set3(i,j,k,0.0);
-	  tg_A.set3(i,j,k,0.0);
-	  tg_log_xn.set3(i,j,k,0.0);
-	  tg_log_xp.set3(i,j,k,0.0);
+	  tg_flag.set(ix,0.0);
+	  tg_Fint.set(ix,0.0);
+	  tg_Z.set(ix,0.0);
+	  tg_A.set(ix,0.0);
+	  tg_log_xn.set(ix,0.0);
+	  tg_log_xp.set(ix,0.0);
 	  c1++;
 	  cout << "Invalid free energy in table 1 (" << nB << ","
 	       << Ye << "," << T_MeV << ")." << endl;
@@ -6451,12 +6465,12 @@ int eos_nuclei::merge_tables(std::vector<std::string> &sv,
 				!std::isfinite(Fint2)|| Fint2<(-1.0e10))) {
           
 	  flag2=0.0;
-	  en2.tg_flag.set3(i,j,k,0.0);
-	  en2.tg_Fint.set3(i,j,k,0.0);
-	  en2.tg_Z.set3(i,j,k,0.0);
-	  en2.tg_A.set3(i,j,k,0.0);
-	  en2.tg_log_xn.set3(i,j,k,0.0);
-	  en2.tg_log_xp.set3(i,j,k,0.0);
+	  en2.tg_flag.set(ix,0.0);
+	  en2.tg_Fint.set(ix,0.0);
+	  en2.tg_Z.set(ix,0.0);
+	  en2.tg_A.set(ix,0.0);
+	  en2.tg_log_xn.set(ix,0.0);
+	  en2.tg_log_xp.set(ix,0.0);
 	  cout << "Invalid free energy in table 2 (" << nB << ","
 	       << Ye << "," << T_MeV << ")." << endl;
           O2SCL_ERR("Invalid Fint in table 2.",o2scl::exc_einval);
@@ -6475,41 +6489,41 @@ int eos_nuclei::merge_tables(std::vector<std::string> &sv,
 	    4: "2" has a non-zero flag but "1" does not
 	  */
 
-	  tg_flag.set3(i,j,k,en2.tg_flag.get(ix));
+	  tg_flag.set(ix,en2.tg_flag.get(ix));
 
-	  tg_log_xn.set3(i,j,k,en2.tg_log_xn.get(ix));
-	  tg_log_xp.set3(i,j,k,en2.tg_log_xp.get(ix));
-	  tg_Z.set3(i,j,k,en2.tg_Z.get(ix));
-	  tg_A.set3(i,j,k,en2.tg_A.get(ix));
+	  tg_log_xn.set(ix,en2.tg_log_xn.get(ix));
+	  tg_log_xp.set(ix,en2.tg_log_xp.get(ix));
+	  tg_Z.set(ix,en2.tg_Z.get(ix));
+	  tg_A.set(ix,en2.tg_A.get(ix));
 	  
-	  tg_A_min.set3(i,j,k,en2.tg_A_min.get(ix));
-	  tg_A_max.set3(i,j,k,en2.tg_A_max.get(ix));
-	  tg_NmZ_min.set3(i,j,k,en2.tg_NmZ_min.get(ix));
-	  tg_NmZ_max.set3(i,j,k,en2.tg_NmZ_max.get(ix));
+	  tg_A_min.set(ix,en2.tg_A_min.get(ix));
+	  tg_A_max.set(ix,en2.tg_A_max.get(ix));
+	  tg_NmZ_min.set(ix,en2.tg_NmZ_min.get(ix));
+	  tg_NmZ_max.set(ix,en2.tg_NmZ_max.get(ix));
 	  
-	  tg_Fint.set3(i,j,k,en2.tg_Fint.get(ix));
-	  tg_Sint.set3(i,j,k,en2.tg_Sint.get(ix));
-	  tg_Eint.set3(i,j,k,en2.tg_Eint.get(ix));
+	  tg_Fint.set(ix,en2.tg_Fint.get(ix));
+	  tg_Sint.set(ix,en2.tg_Sint.get(ix));
+	  tg_Eint.set(ix,en2.tg_Eint.get(ix));
 
-	  tg_Xn.set3(i,j,k,en2.tg_Xn.get(ix));
-	  tg_Xp.set3(i,j,k,en2.tg_Xp.get(ix));
-	  tg_Xalpha.set3(i,j,k,en2.tg_Xalpha.get(ix));
-	  tg_Xnuclei.set3(i,j,k,en2.tg_Xnuclei.get(ix));
-	  tg_Xd.set3(i,j,k,en2.tg_Xd.get(ix));
-	  tg_Xt.set3(i,j,k,en2.tg_Xt.get(ix));
-	  tg_XHe3.set3(i,j,k,en2.tg_XHe3.get(ix));
-	  tg_XLi4.set3(i,j,k,en2.tg_XLi4.get(ix));
+	  tg_Xn.set(ix,en2.tg_Xn.get(ix));
+	  tg_Xp.set(ix,en2.tg_Xp.get(ix));
+	  tg_Xalpha.set(ix,en2.tg_Xalpha.get(ix));
+	  tg_Xnuclei.set(ix,en2.tg_Xnuclei.get(ix));
+	  tg_Xd.set(ix,en2.tg_Xd.get(ix));
+	  tg_Xt.set(ix,en2.tg_Xt.get(ix));
+	  tg_XHe3.set(ix,en2.tg_XHe3.get(ix));
+	  tg_XLi4.set(ix,en2.tg_XLi4.get(ix));
 
 	  if (derivs_computed) {
-	    tg_Pint.set3(i,j,k,en2.tg_Pint.get(ix));
-	    tg_mun.set3(i,j,k,en2.tg_mun.get(ix));
-	    tg_mup.set3(i,j,k,en2.tg_mup.get(ix));
+	    tg_Pint.set(ix,en2.tg_Pint.get(ix));
+	    tg_mun.set(ix,en2.tg_mun.get(ix));
+	    tg_mup.set(ix,en2.tg_mup.get(ix));
 	    if (with_leptons) {
-	      tg_F.set3(i,j,k,en2.tg_F.get(ix));
-	      tg_E.set3(i,j,k,en2.tg_E.get(ix));
-	      tg_P.set3(i,j,k,en2.tg_P.get(ix));
-	      tg_S.set3(i,j,k,en2.tg_S.get(ix));
-	      tg_mue.set3(i,j,k,en2.tg_mue.get(ix));
+	      tg_F.set(ix,en2.tg_F.get(ix));
+	      tg_E.set(ix,en2.tg_E.get(ix));
+	      tg_P.set(ix,en2.tg_P.get(ix));
+	      tg_S.set(ix,en2.tg_S.get(ix));
+	      tg_mue.set(ix,en2.tg_mue.get(ix));
 	    }
 	  }
 
@@ -6621,7 +6635,7 @@ int eos_nuclei::compare_tables(std::vector<std::string> &sv,
     }
   }
   
-  vector<tensor_grid_temp *> ptrs;
+  vector<o2scl::tensor_grid<> *> ptrs;
   ptrs.push_back(&tg_log_xn);
   ptrs.push_back(&tg_log_xp);
   ptrs.push_back(&tg_Z);
@@ -6650,7 +6664,7 @@ int eos_nuclei::compare_tables(std::vector<std::string> &sv,
     }
   }
   
-  vector<tensor_grid_temp *> ptrs2;
+  vector<o2scl::tensor_grid<> *> ptrs2;
   ptrs2.push_back(&en2.tg_log_xn);
   ptrs2.push_back(&en2.tg_log_xp);
   ptrs2.push_back(&en2.tg_Z);
@@ -7376,7 +7390,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
       vector<string> edge_vec;
       split_string(edge_list,edge_vec);
       for(size_t k=0;k<edge_vec.size();k++) {
-	tensor_grid_temp *ptr;
+	o2scl::tensor_grid<> *ptr;
 	if (edge_vec[k]=="A") {
 	  ptr=&tg_A;
 	} else if (edge_vec[k]=="Xnuclei") {
@@ -8681,8 +8695,8 @@ int eos_nuclei::check_virial(std::vector<std::string> &sv,
   vector<double> packed, packed2;
   vector<std::string> split_res;
   
-  tensor_grid_temp tg_zn2;
-  tensor_grid_temp tg_zp2;
+  o2scl::tensor_grid<> tg_zn2;
+  o2scl::tensor_grid<> tg_zp2;
 
   split_string_delim(nB_grid_spec,split_res,',');
   n_nB2=stoszt(split_res[0]);
