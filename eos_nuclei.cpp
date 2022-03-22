@@ -602,19 +602,19 @@ int eos_nuclei::add_eg(std::vector<std::string> &sv,
         mue_last=vdet["mue"];
         
         vector<size_t> ix={i,j,k};
-	tg_F.set3(i,j,k,tg_Fint.get(ix)+
+	tg_F.set(ix,,tg_Fint.get(ix)+
 		  (hc_mev_fm*elep.th.ed-T_MeV*elep.th.en)/nB);
-	tg_E.set3(i,j,k,tg_Eint.get(ix)+hc_mev_fm*elep.th.ed/nB);
-	tg_P.set3(i,j,k,tg_Pint.get(ix)+hc_mev_fm*elep.th.pr);
-	tg_S.set3(i,j,k,tg_Sint.get(ix)+elep.th.en/nB);
-	tg_mue.set3(i,j,k,hc_mev_fm*vdet["mue"]);
+	tg_E.set(ix,,tg_Eint.get(ix)+hc_mev_fm*elep.th.ed/nB);
+	tg_P.set(ix,,tg_Pint.get(ix)+hc_mev_fm*elep.th.pr);
+	tg_S.set(ix,,tg_Sint.get(ix)+elep.th.en/nB);
+	tg_mue.set(ix,,hc_mev_fm*vdet["mue"]);
         
         double np=nB*Ye;
         double nn=nB*(1.0-Ye);
         
         if (include_muons) {
           // Set muon density
-          tg_Ymu.set3(i,j,k,elep.mu.n/nB);
+          tg_Ymu.set(ix,,elep.mu.n/nB);
         }
 
         if (true) {
@@ -5589,17 +5589,19 @@ int eos_nuclei::increase_density(std::vector<std::string> &sv,
 
   derivs_computed=false;
   with_leptons=false;
-  
+
   for(size_t iT=iT_start;iT<=iT_end;iT++) {
     
     for(size_t iYe=iYe_start;iYe<=iYe_end;iYe++) {
-  
-      log_xn=tg_log_xn.get3(inB_start,iYe,iT);
-      log_xp=tg_log_xp.get3(inB_start,iYe,iT);
-      A_min=tg_A_min.get3(inB_start,iYe,iT);
-      A_max=tg_A_max.get3(inB_start,iYe,iT);
-      NmZ_min=tg_NmZ_min.get3(inB_start,iYe,iT);
-      NmZ_max=tg_NmZ_max.get3(inB_start,iYe,iT);
+
+      vector<size_t> ix_start={inB_start,iYe,iT};
+      
+      log_xn=tg_log_xn.get(ix_start);
+      log_xp=tg_log_xp.get(ix_start);
+      A_min=tg_A_min.get(ix_start);
+      A_max=tg_A_max.get(ix_start);
+      NmZ_min=tg_NmZ_min.get(ix_start);
+      NmZ_max=tg_NmZ_max.get(ix_start);
 
       bool no_nuclei=false;
 
@@ -5772,9 +5774,9 @@ int eos_nuclei::fix_cc(std::vector<std::string> &sv,
 	  if (inB>20 && no_nuclei==false) {
 	    for(size_t j=1;j<20 && no_nuclei==false;j++) {
 	      cout << "j: " << j << endl;
-	      if (tg_flag.get3(inB-j,iYe,iT)>9.9 &&
-		  tg_Z.get3(inB-j,iYe,iT)<1.0e-4 &&
-		  tg_A.get3(inB-j,iYe,iT)<1.0e-4) {
+              vector<size_t> ixmj={inB-j,iYe,iT};
+	      if (tg_flag.get(ixmj)>9.9 && tg_Z.get(ixmj)<1.0e-4 &&
+		  tg_A.get(ixmj)<1.0e-4) {
 		cout << "Found nuclear matter at a lower density."
 		     << endl;
 		no_nuclei=true;
@@ -5782,12 +5784,15 @@ int eos_nuclei::fix_cc(std::vector<std::string> &sv,
 	    }
 	  }
 	  
+          vector<size_t> ixm1={inB-1,iYe,iT};
+          
 	  if (no_nuclei==false && inB>2) {
-	    double Z_prev=tg_Z.get3(inB-1,iYe,iT);
-	    double Z_prev2=tg_Z.get3(inB-2,iYe,iT);
+            vector<size_t> ixm2={inB-2,iYe,iT};
+	    double Z_prev=tg_Z.get(ixm1);
+	    double Z_prev2=tg_Z.get(ixm2);
 	    if (Z_prev>0 && Z_prev2>0) {
-	      double A_prev=tg_A.get3(inB-1,iYe,iT);
-	      double A_prev2=tg_A.get3(inB-2,iYe,iT);
+	      double A_prev=tg_A.get(ixm1);
+	      double A_prev2=tg_A.get(ixm2);
 	      double NoZ_prev=(A_prev-Z_prev)/Z_prev;
 	      double NoZ_prev2=(A_prev2-Z_prev2)/Z_prev2;
 	      cout << "prev: " << NoZ_prev << " " << NoZ_prev2 << endl;
@@ -5802,12 +5807,12 @@ int eos_nuclei::fix_cc(std::vector<std::string> &sv,
 	  }
 	  
 	  // Get initial guess 
-	  log_xn=tg_log_xn.get3(inB-1,iYe,iT);
-	  log_xp=tg_log_xp.get3(inB-1,iYe,iT);
-	  A_min=tg_A_min.get3(inB-1,iYe,iT);
-	  A_max=tg_A_max.get3(inB-1,iYe,iT);
-	  NmZ_min=tg_NmZ_min.get3(inB-1,iYe,iT);
-	  NmZ_max=tg_NmZ_max.get3(inB-1,iYe,iT);
+	  log_xn=tg_log_xn.get(ixm1);
+	  log_xp=tg_log_xp.get(ixm1);
+	  A_min=tg_A_min.get(ixm1);
+	  A_max=tg_A_max.get(ixm1);
+	  NmZ_min=tg_NmZ_min.get(ixm1);
+	  NmZ_max=tg_NmZ_max.get(ixm1);
 	  
 	  thermo thx;
 	  double mun_full, mup_full;
@@ -6688,10 +6693,11 @@ int eos_nuclei::compare_tables(std::vector<std::string> &sv,
 	for(size_t i=0;i<n_nB2;i++) {
 	  for(size_t j=0;j<n_Ye2;j++) {
 	    for(size_t k=0;k<n_T2;k++) {
-	      if (tg_flag.get3(i,j,k)>9.9 && en2.tg_flag.get3(i,j,k)>9.9) {
+              vector<size_t> ix={i,j,k};
+	      if (tg_flag.get(ix)>9.9 && en2.tg_flag.get(ix)>9.9) {
 		found=true;
-		double v1=ptrs[ell]->get3(i,j,k);
-		double v2=ptrs2[ell]->get3(i,j,k);
+		double v1=ptrs[ell]->get(ix);
+		double v2=ptrs2[ell]->get(ix);
 		if (fabs(v1-v2)/fabs(v1)>max_dev) {
 		  max_dev=fabs(v1-v2)/fabs(v1);
 		  imax=i;
@@ -6703,6 +6709,7 @@ int eos_nuclei::compare_tables(std::vector<std::string> &sv,
 	  }
 	}
 	if (found==true) {
+          vector<size_t> ix_max={imax,jmax,kmax};
 	  cout << "The maximum deviation for " << names[ell]
 	       << " is at point (" << imax << "," << jmax << ","
 	       << kmax << ")" << endl;
@@ -6713,9 +6720,9 @@ int eos_nuclei::compare_tables(std::vector<std::string> &sv,
 	       << "with relative deviation " << max_dev << endl;
 	  cout.precision(6);
 	  cout << "Value in file " << in1 << " is "
-	       << ptrs[ell]->get3(imax,jmax,kmax) << endl;
+	       << ptrs[ell]->get(ix_max) << endl;
 	  cout << "Value in file " << in2 << " is "
-	       << ptrs2[ell]->get3(imax,jmax,kmax) << endl;
+	       << ptrs2[ell]->get(ix_max) << endl;
 	  if (quantity.length()==0) cout << endl;
 	} else {
 	  cout << "Could not find any points to compare." << endl;
@@ -7061,10 +7068,16 @@ int eos_nuclei::edit_data(std::vector<std::string> &sv,
 	vars["XHe3"]=tg_XHe3.get(ix);
 	vars["XLi4"]=tg_XLi4.get(ix);
 	vars["dAdnB"]=0.0;
+        
+        vector<size_t> ixm1={((size_t)(inB-1)),((size_t)iYe),
+          ((size_t)iT)};
+        vector<size_t> ixp1={((size_t)(inB+1)),((size_t)iYe),
+          ((size_t)iT)};
+        
 	if (inB>0 && inB<((int)n_nB2)-1) {
-	  double a_low=tg_A.get3(inB-1,iYe,iT);
+	  double a_low=tg_A.get(ixm1);
 	  double a_mid=tg_A.get(ix);
-	  double a_high=tg_A.get3(inB+1,iYe,iT);
+	  double a_high=tg_A.get(ixp1);
 	  if (fabs(a_mid-a_low)>fabs(a_mid-a_high)) {
 	    vars["dAdnB"]=fabs(a_mid-a_low);
 	  } else {
@@ -7378,45 +7391,58 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	  for(int iYe=1;iYe<((int)n_Ye2-1);iYe++) {
 	    for(int iT=1;iT<((int)n_T2-1);iT++) {
               vector<size_t> ix={((size_t)inB),((size_t)iYe),((size_t)iT)};
+              vector<size_t> ixm1={((size_t)(inB-1)),((size_t)iYe),
+                ((size_t)iT)};
+              vector<size_t> ixp1={((size_t)(inB+1)),((size_t)iYe),
+                ((size_t)iT)};
+              vector<size_t> ixm2={((size_t)inB),((size_t)(iYe-1)),
+                ((size_t)iT)};
+              vector<size_t> ixp2={((size_t)inB),((size_t)(iYe+1)),
+                ((size_t)iT)};
+              vector<size_t> ixm3={((size_t)inB),((size_t)iYe),
+                ((size_t)(iT-1))};
+              vector<size_t> ixp3={((size_t)inB),((size_t)iYe),
+                ((size_t)(iT+1))};
+              
 	      int iflag=((int)(tg_flag.get(ix)*(1.0+1.0e-12)));
 	      if (iflag==iflag_done) {
 		double X0=ptr->get(ix);
 
 		if (X0>1.0e-4) {
 
-		  if (tg_flag.get3(inB-1,iYe,iT)>9.9 &&
-		      tg_flag.get3(inB+1,iYe,iT)>9.9) {
-		    double X1=ptr->get3(inB-1,iYe,iT);
-		    double X2=ptr->get3(inB+1,iYe,iT);
+		  if (tg_flag.get(ixm1)>9.9 &&
+		      tg_flag.get(ixp1)>9.9) {
+		    double X1=ptr->get(ixm1);
+		    double X2=ptr->get(ixp1);
 		
 		    if (X0<std::min(X1,X2) || X0>std::max(X1,X2)) {
-		      tg_flag.get3(inB-1,iYe,iT)=5.0;
-		      tg_flag.get3(inB+1,iYe,iT)=5.0;
+		      tg_flag.get(ixm1)=5.0;
+		      tg_flag.get(ixp1)=5.0;
 		      tg_flag.get(ix)=5.0;
 		    }
 		  }
 		  if (false) {
-		    if (tg_flag.get3(inB,iYe-1,iT)>9.9 &&
-			tg_flag.get3(inB,iYe+1,iT)>9.9) {
-		      double X1=ptr->get3(inB,iYe-1,iT);
-		      double X2=ptr->get3(inB,iYe+1,iT);
+		    if (tg_flag.get(ixm2)>9.9 &&
+			tg_flag.get(ixp2)>9.9) {
+		      double X1=ptr->get(ixm2);
+		      double X2=ptr->get(ixp2);
 		    
 		      if (X0<std::min(X1,X2) || X0>std::max(X1,X2)) {
 			tg_flag.get(ix)=5.0;
-			tg_flag.get3(inB,iYe-1,iT)=5.0;
-			tg_flag.get3(inB,iYe+1,iT)=5.0;
+			tg_flag.get(ixm2)=5.0;
+			tg_flag.get(ixp2)=5.0;
 		      }
 		    }
 		  }
-		  if (tg_flag.get3(inB,iYe,iT-1)>9.9 &&
-		      tg_flag.get3(inB,iYe,iT+1)>9.9) {
-		    double X1=ptr->get3(inB,iYe,iT-1);
-		    double X2=ptr->get3(inB,iYe,iT+1);
+		  if (tg_flag.get(ixm3)>9.9 &&
+		      tg_flag.get(ixp3)>9.9) {
+		    double X1=ptr->get(ixm3);
+		    double X2=ptr->get(ixp3);
 		  
 		    if (X0<std::min(X1,X2) || X0>std::max(X1,X2)) {
 		      tg_flag.get(ix)=5.0;
-		      tg_flag.get3(inB,iYe,iT-1)=5.0;
-		      tg_flag.get3(inB,iYe,iT+1)=5.0;
+		      tg_flag.get(ixm3)=5.0;
+		      tg_flag.get(ixp3)=5.0;
 		    }
 		  }
 		
@@ -7493,7 +7519,19 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	  int iYe=Ye_list_sizet[iYe_list];
 	  for(int iT=0;iT<((int)n_T2);iT++) {
             vector<size_t> ix={((size_t)inB),((size_t)iYe),((size_t)iT)};
-	    
+            vector<size_t> ixm1={((size_t)(inB-1)),((size_t)iYe),
+              ((size_t)iT)};
+            vector<size_t> ixp1={((size_t)(inB+1)),((size_t)iYe),
+              ((size_t)iT)};
+            vector<size_t> ixm2={((size_t)inB),((size_t)(iYe-1)),
+              ((size_t)iT)};
+            vector<size_t> ixp2={((size_t)inB),((size_t)(iYe+1)),
+              ((size_t)iT)};
+            vector<size_t> ixm3={((size_t)inB),((size_t)iYe),
+              ((size_t)(iT-1))};
+            vector<size_t> ixp3={((size_t)inB),((size_t)iYe),
+              ((size_t)(iT+1))};
+          
 	    int iflag=((int)(tg_flag.get(ix)*(1.0+1.0e-12)));
 	    bool guess_found=false;
 
@@ -7569,7 +7607,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 		 (propagate_points && iflag!=iflag_done))) {
 
 	      if (inB>0) {
-		int iflag2=((int)(tg_flag.get3(inB-1,iYe,iT)*
+		int iflag2=((int)(tg_flag.get(ixm1)*
 				  (1.0+1.0e-12)));
 		if (iflag2==iflag_in_progress_with_guess ||
 		    iflag2==iflag_guess || iflag2==iflag_done) {
@@ -7589,47 +7627,47 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 		    // necessarily a good guess because of the
 		    // liquid-gas phase transition
 		    if (nB_grid2[inB]<1.0e-3 && inB<((int)n_nB2)-1 &&
-			tg_flag.get3(inB+1,iYe,iT)>9.9) {
+			tg_flag.get(ixp1)>9.9) {
                       if (include_muons) {
-                        mue=(tg_mue.get3(inB-1,iYe,iT)+
-                             tg_mue.get3(inB+1,iYe,iT))/2.0/hc_mev_fm;
+                        mue=(tg_mue.get(ixm1)+
+                             tg_mue.get(ixp1))/2.0/hc_mev_fm;
                       }
-		      vector<double> line={(tg_log_xn.get3(inB-1,iYe,iT)+
-                                            tg_log_xn.get3(inB+1,iYe,iT))/2.0,
-                        (tg_log_xp.get3(inB-1,iYe,iT)+
-                         tg_log_xp.get3(inB-1,iYe,iT))/2.0,
+		      vector<double> line={(tg_log_xn.get(ixm1)+
+                                            tg_log_xn.get(ixp1))/2.0,
+                        (tg_log_xp.get(ixm1)+
+                         tg_log_xp.get(ixp1))/2.0,
                         0.0,0.0,
-                        (tg_A_min.get3(inB-1,iYe,iT)+
-                         tg_A_min.get3(inB-1,iYe,iT))/2.0,
-                        (tg_A_max.get3(inB-1,iYe,iT)+
-                         tg_A_max.get3(inB-1,iYe,iT))/2.0,
-                        (tg_NmZ_min.get3(inB-1,iYe,iT)+
-                         tg_NmZ_min.get3(inB-1,iYe,iT))/2.0,
-                        (tg_NmZ_max.get3(inB-1,iYe,iT)+
-                         tg_NmZ_max.get3(inB-1,iYe,iT))/2.0,mue};
+                        (tg_A_min.get(ixm1)+
+                         tg_A_min.get(ixp1))/2.0,
+                        (tg_A_max.get(ixm1)+
+                         tg_A_max.get(ixp1))/2.0,
+                        (tg_NmZ_min.get(ixm1)+
+                         tg_NmZ_min.get(ixp1))/2.0,
+                        (tg_NmZ_max.get(ixm1)+
+                         tg_NmZ_max.get(ixp1))/2.0,mue};
 		      gtab.line_of_data(line.size(),line);
 		    } else {
                       if (include_muons) {
-                        mue=tg_mue.get3(inB-1,iYe,iT)/hc_mev_fm;
+                        mue=tg_mue.get(ixm1)/hc_mev_fm;
                       }
-		      vector<double> line={tg_log_xn.get3(inB-1,iYe,iT),
-                        tg_log_xp.get3(inB-1,iYe,iT),
+		      vector<double> line={tg_log_xn.get(ixm1),
+                        tg_log_xp.get(ixm1),
                         0.0,0.0,
-                        tg_A_min.get3(inB-1,iYe,iT),
-                        tg_A_max.get3(inB-1,iYe,iT),
-                        tg_NmZ_min.get3(inB-1,iYe,iT),
-                        tg_NmZ_max.get3(inB-1,iYe,iT),mue};
+                        tg_A_min.get(ixm1),
+                        tg_A_max.get(ixm1),
+                        tg_NmZ_min.get(ixm1),
+                        tg_NmZ_max.get(ixm1),mue};
 		      gtab.line_of_data(line.size(),line);
 		    }
 		  } else {
                     double mue=0.0;
                     if (include_muons) {
-                      mue=tg_mue.get3(inB-1,iYe,iT)/hc_mev_fm;
+                      mue=tg_mue.get(ixm1)/hc_mev_fm;
                     }
-		    vector<double> line={tg_log_xn.get3(inB-1,iYe,iT),
-                      tg_log_xp.get3(inB-1,iYe,iT),
-                      tg_Z.get3(inB-1,iYe,iT),
-                      tg_A.get3(inB-1,iYe,iT),
+		    vector<double> line={tg_log_xn.get(ixm1),
+                      tg_log_xp.get(ixm1),
+                      tg_Z.get(ixm1),
+                      tg_A.get(ixm1),
                       0.0,0.0,0.0,0.0,mue};
 		    gtab.line_of_data(line.size(),line);
 		  }	
@@ -7639,7 +7677,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	      }
 	      
 	      if (six_neighbors>4 && iYe>0) {
-		int iflag2=((int)(tg_flag.get3(inB,iYe-1,iT)*
+		int iflag2=((int)(tg_flag.get(ixm2)*
 				  (1.0+1.0e-12)));
 		if (iflag2==iflag_in_progress_with_guess ||
 		    iflag2==iflag_guess || iflag2==iflag_done) {
@@ -7653,25 +7691,25 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 		  if (alg_mode>=2) {
                     double mue=0.0;
                     if (include_muons) {
-                      mue=tg_mue.get3(inB,iYe-1,iT)/hc_mev_fm;
+                      mue=tg_mue.get(ixm2)/hc_mev_fm;
                     }
-		    vector<double> line={tg_log_xn.get3(inB,iYe-1,iT),
-                      tg_log_xp.get3(inB,iYe-1,iT),
+		    vector<double> line={tg_log_xn.get(ixm2),
+                      tg_log_xp.get(ixm2),
                       0.0,0.0,
-                      tg_A_min.get3(inB,iYe-1,iT),
-                      tg_A_max.get3(inB,iYe-1,iT),
-                      tg_NmZ_min.get3(inB,iYe-1,iT),
-                      tg_NmZ_max.get3(inB,iYe-1,iT),mue};
+                      tg_A_min.get(ixm2),
+                      tg_A_max.get(ixm2),
+                      tg_NmZ_min.get(ixm2),
+                      tg_NmZ_max.get(ixm2),mue};
 		    gtab.line_of_data(line.size(),line);
 		  } else {
                     double mue=0.0;
                     if (include_muons) {
-                      mue=tg_mue.get3(inB,iYe-1,iT)/hc_mev_fm;
+                      mue=tg_mue.get(ixm2)/hc_mev_fm;
                     }
-		    vector<double> line={tg_log_xn.get3(inB,iYe-1,iT),
-                      tg_log_xp.get3(inB,iYe-1,iT),
-                      tg_Z.get3(inB,iYe-1,iT),
-                      tg_A.get3(inB,iYe-1,iT),
+		    vector<double> line={tg_log_xn.get(ixm2),
+                      tg_log_xp.get(ixm2),
+                      tg_Z.get(ixm2),
+                      tg_A.get(ixm2),
                       0.0,0.0,0.0,0.0,mue};
 		    gtab.line_of_data(line.size(),line);
 		  }	
@@ -7680,7 +7718,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 		}
 	      }
 	      if (six_neighbors>2 && iT>0) {
-		int iflag2=((int)(tg_flag.get3(inB,iYe,iT-1)*
+		int iflag2=((int)(tg_flag.get(ixm3)*
 				  (1.0+1.0e-12)));
 		if (iflag2==iflag_in_progress_with_guess ||
 		    iflag2==iflag_guess || iflag2==iflag_done) {
@@ -7693,23 +7731,23 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 
                   double mue=0.0;
                   if (include_muons) {
-                    mue=tg_mue.get3(inB,iYe,iT-1)/hc_mev_fm;
+                    mue=tg_mue.get(ixm3)/hc_mev_fm;
                   }
                   
 		  if (alg_mode>=2) {
-		    vector<double> line={tg_log_xn.get3(inB,iYe,iT-1),
-                      tg_log_xp.get3(inB,iYe,iT-1),
+		    vector<double> line={tg_log_xn.get(ixm3),
+                      tg_log_xp.get(ixm3),
                       0.0,0.0,
-                      tg_A_min.get3(inB,iYe,iT-1),
-                      tg_A_max.get3(inB,iYe,iT-1),
-                      tg_NmZ_min.get3(inB,iYe,iT-1),
-                      tg_NmZ_max.get3(inB,iYe,iT-1),mue};
+                      tg_A_min.get(ixm3),
+                      tg_A_max.get(ixm3),
+                      tg_NmZ_min.get(ixm3),
+                      tg_NmZ_max.get(ixm3),mue};
 		    gtab.line_of_data(line.size(),line);
 		  } else {
-		    vector<double> line={tg_log_xn.get3(inB,iYe,iT-1),
-                      tg_log_xp.get3(inB,iYe,iT-1),
-                      tg_Z.get3(inB,iYe,iT-1),
-                      tg_A.get3(inB,iYe,iT-1),
+		    vector<double> line={tg_log_xn.get(ixm3),
+                      tg_log_xp.get(ixm3),
+                      tg_Z.get(ixm3),
+                      tg_A.get(ixm3),
                       0.0,0.0,0.0,0.0,mue};
 		    gtab.line_of_data(line.size(),line);
 		  }	
@@ -7718,7 +7756,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 		}
 	      }
 	      if (six_neighbors>1 && inB<((int)n_nB2)-1) {
-		int iflag2=((int)(tg_flag.get3(inB+1,iYe,iT)*
+		int iflag2=((int)(tg_flag.get(ixp1)*
 				  (1.0+1.0e-12)));
 		if (iflag2==iflag_in_progress_with_guess ||
 		    iflag2==iflag_guess || iflag2==iflag_done) {
@@ -7731,49 +7769,49 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 
 		  if (alg_mode>=2) {
 		    if (nB_grid2[inB]<1.0e-3 && inB>0 &&
-			tg_flag.get3(inB-1,iYe,iT)>9.9) {
+			tg_flag.get(ixm1)>9.9) {
                       double mue=0.0;
                       if (include_muons) {
-                        mue=(tg_mue.get3(inB-1,iYe,iT)+
-                             tg_mue.get3(inB+1,iYe,iT))/2.0/hc_mev_fm;
+                        mue=(tg_mue.get(ixm1)+
+                             tg_mue.get(ixp1))/2.0/hc_mev_fm;
                       }
-		      vector<double> line={(tg_log_xn.get3(inB-1,iYe,iT)+
-                                            tg_log_xn.get3(inB+1,iYe,iT))/2.0,
-                        (tg_log_xp.get3(inB-1,iYe,iT)+
-                         tg_log_xp.get3(inB-1,iYe,iT))/2.0,
+		      vector<double> line={(tg_log_xn.get(ixm1)+
+                                            tg_log_xn.get(ixp1))/2.0,
+                        (tg_log_xp.get(ixm1)+
+                         tg_log_xp.get(ixp1))/2.0,
                         0.0,0.0,
-                        (tg_A_min.get3(inB-1,iYe,iT)+
-                         tg_A_min.get3(inB-1,iYe,iT))/2.0,
-                        (tg_A_max.get3(inB-1,iYe,iT)+
-                         tg_A_max.get3(inB-1,iYe,iT))/2.0,
-                        (tg_NmZ_min.get3(inB-1,iYe,iT)+
-                         tg_NmZ_min.get3(inB-1,iYe,iT))/2.0,
-                        (tg_NmZ_max.get3(inB-1,iYe,iT)+
-                         tg_NmZ_max.get3(inB-1,iYe,iT))/2.0,mue};
+                        (tg_A_min.get(ixm1)+
+                         tg_A_min.get(ixp1))/2.0,
+                        (tg_A_max.get(ixm1)+
+                         tg_A_max.get(ixp1))/2.0,
+                        (tg_NmZ_min.get(ixm1)+
+                         tg_NmZ_min.get(ixp1))/2.0,
+                        (tg_NmZ_max.get(ixm1)+
+                         tg_NmZ_max.get(ixp1))/2.0,mue};
 		      gtab.line_of_data(line.size(),line);
 		    } else {
                       double mue=0.0;
                       if (include_muons) {
-                        mue=tg_mue.get3(inB+1,iYe,iT)/hc_mev_fm;
+                        mue=tg_mue.get(ixp1)/hc_mev_fm;
                       }
-		      vector<double> line={tg_log_xn.get3(inB+1,iYe,iT),
-                        tg_log_xp.get3(inB+1,iYe,iT),
+		      vector<double> line={tg_log_xn.get(ixp1),
+                        tg_log_xp.get(ixp1),
                         0.0,0.0,
-                        tg_A_min.get3(inB+1,iYe,iT),
-                        tg_A_max.get3(inB+1,iYe,iT),
-                        tg_NmZ_min.get3(inB+1,iYe,iT),
-                        tg_NmZ_max.get3(inB+1,iYe,iT),mue};
+                        tg_A_min.get(ixp1),
+                        tg_A_max.get(ixp1),
+                        tg_NmZ_min.get(ixp1),
+                        tg_NmZ_max.get(ixp1),mue};
 		      gtab.line_of_data(line.size(),line);
 		    }
 		  } else {
                     double mue=0.0;
                     if (include_muons) {
-                      mue=tg_mue.get3(inB+1,iYe,iT)/hc_mev_fm;
+                      mue=tg_mue.get(ixp1)/hc_mev_fm;
                     }
-		    vector<double> line={tg_log_xn.get3(inB+1,iYe,iT),
-                      tg_log_xp.get3(inB+1,iYe,iT),
-                      tg_Z.get3(inB+1,iYe,iT),
-                      tg_A.get3(inB+1,iYe,iT),
+		    vector<double> line={tg_log_xn.get(ixp1),
+                      tg_log_xp.get(ixp1),
+                      tg_Z.get(ixp1),
+                      tg_A.get(ixp1),
                       0.0,0.0,0.0,0.0,mue};
 		    gtab.line_of_data(line.size(),line);
 		  }	
@@ -7782,7 +7820,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 		}
 	      }
 	      if (six_neighbors>4 && iYe<((int)n_Ye2)-1) {
-		int iflag2=((int)(tg_flag.get3(inB,iYe+1,iT)*
+		int iflag2=((int)(tg_flag.get(ixp2)*
 				  (1.0+1.0e-12)));
 		if (iflag2==iflag_in_progress_with_guess ||
 		    iflag2==iflag_guess || iflag2==iflag_done) {
@@ -7795,23 +7833,23 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 
                   double mue=0.0;
                   if (include_muons) {
-                    mue=tg_mue.get3(inB,iYe+1,iT)/hc_mev_fm;
+                    mue=tg_mue.get(ixp2)/hc_mev_fm;
                   }
                   
 		  if (alg_mode>=2) {
-		    vector<double> line={tg_log_xn.get3(inB,iYe+1,iT),
-                      tg_log_xp.get3(inB,iYe+1,iT),
+		    vector<double> line={tg_log_xn.get(ixp2),
+                      tg_log_xp.get(ixp2),
                       0.0,0.0,
-                      tg_A_min.get3(inB,iYe+1,iT),
-                      tg_A_max.get3(inB,iYe+1,iT),
-                      tg_NmZ_min.get3(inB,iYe+1,iT),
-                      tg_NmZ_max.get3(inB,iYe+1,iT),mue};
+                      tg_A_min.get(ixp2),
+                      tg_A_max.get(ixp2),
+                      tg_NmZ_min.get(ixp2),
+                      tg_NmZ_max.get(ixp2),mue};
 		    gtab.line_of_data(line.size(),line);
 		  } else {
-		    vector<double> line={tg_log_xn.get3(inB,iYe+1,iT),
-                      tg_log_xp.get3(inB,iYe+1,iT),
-                      tg_Z.get3(inB,iYe+1,iT),
-                      tg_A.get3(inB,iYe+1,iT),
+		    vector<double> line={tg_log_xn.get(ixp2),
+                      tg_log_xp.get(ixp2),
+                      tg_Z.get(ixp2),
+                      tg_A.get(ixp2),
                       0.0,0.0,0.0,0.0,mue};
 		    gtab.line_of_data(line.size(),line);
 		  }	
@@ -7820,7 +7858,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 		}
 	      }
 	      if (six_neighbors>2 && iT<((int)n_T2)-1) {
-		int iflag2=((int)(tg_flag.get3(inB,iYe,iT+1)*
+		int iflag2=((int)(tg_flag.get(ixp3)*
 				  (1.0+1.0e-12)));
 		if (iflag2==iflag_in_progress_with_guess ||
 		    iflag2==iflag_guess || iflag2==iflag_done) {
@@ -7833,23 +7871,23 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 
                   double mue=0.0;
                   if (include_muons) {
-                    mue=tg_mue.get3(inB,iYe,iT+1)/hc_mev_fm;
+                    mue=tg_mue.get(ixp3)/hc_mev_fm;
                   }
                   
 		  if (alg_mode>=2) {
-		    vector<double> line={tg_log_xn.get3(inB,iYe,iT+1),
-                      tg_log_xp.get3(inB,iYe,iT+1),
+		    vector<double> line={tg_log_xn.get(ixp3),
+                      tg_log_xp.get(ixp3),
                       0.0,0.0,
-                      tg_A_min.get3(inB,iYe,iT+1),
-                      tg_A_max.get3(inB,iYe,iT+1),
-                      tg_NmZ_min.get3(inB,iYe,iT+1),
-                      tg_NmZ_max.get3(inB,iYe,iT+1),mue};
+                      tg_A_min.get(ixp3),
+                      tg_A_max.get(ixp3),
+                      tg_NmZ_min.get(ixp3),
+                      tg_NmZ_max.get(ixp3),mue};
 		    gtab.line_of_data(line.size(),line);
 		  } else {
-		    vector<double> line={tg_log_xn.get3(inB,iYe,iT+1),
-                      tg_log_xp.get3(inB,iYe,iT+1),
-                      tg_Z.get3(inB,iYe,iT+1),
-                      tg_A.get3(inB,iYe,iT+1),
+		    vector<double> line={tg_log_xn.get(ixp3),
+                      tg_log_xp.get(ixp3),
+                      tg_Z.get(ixp3),
+                      tg_A.get(ixp3),
                       0.0,0.0,0.0,0.0,mue};
 		    gtab.line_of_data(line.size(),line);
 		  }	
@@ -7875,13 +7913,15 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 		      jYe<=iYe+((int)Ye_step);jYe++) {
 		  for(int jT=iT-T_step;guess_found2==false && 
 			jT<=iT+((int)T_step);jT++) {
-
+                    vector<size_t> jx={((size_t)jnB),
+                      ((size_t)jYe),((size_t)jT)};
+                    
 		    // Ensure that the j indices are in bounds
 		    if ((jnB!=inB || jYe!=iYe || jT!=iT) && jnB>=0 &&
 			jYe>=0 && jT>=0 && jnB<((int)n_nB2) &&
 			jYe<((int)n_Ye2) && jT<((int)n_T2)) {
 
-		      int jflag=((int)(tg_flag.get3(jnB,jYe,jT)*
+		      int jflag=((int)(tg_flag.get(jx)*
 				       (1.0+1.0e-12)));
 		      
 		      if (jflag==iflag_guess || jflag==iflag_done) {
@@ -7897,23 +7937,23 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 
                         double mue=0.0;
                         if (include_muons) {
-                          mue=tg_mue.get3(jnB,jYe,jT)/hc_mev_fm;
+                          mue=tg_mue.get(jx)/hc_mev_fm;
                         }
                         
 			if (alg_mode>=2) {
-			  vector<double> line={tg_log_xn.get3(jnB,jYe,jT),
-                            tg_log_xp.get3(jnB,jYe,jT),
+			  vector<double> line={tg_log_xn.get(jx),
+                            tg_log_xp.get(jx),
                             0.0,0.0,
-                            tg_A_min.get3(jnB,jYe,jT),
-                            tg_A_max.get3(jnB,jYe,jT),
-                            tg_NmZ_min.get3(jnB,jYe,jT),
-                            tg_NmZ_max.get3(jnB,jYe,jT),mue};
+                            tg_A_min.get(jx),
+                            tg_A_max.get(jx),
+                            tg_NmZ_min.get(jx),
+                            tg_NmZ_max.get(jx),mue};
 			  gtab.line_of_data(line.size(),line);
 			} else {
-			  vector<double> line={tg_log_xn.get3(jnB,jYe,jT),
-                            tg_log_xp.get3(jnB,jYe,jT),
-                            tg_Z.get3(jnB,jYe,jT),
-                            tg_A.get3(jnB,jYe,jT),
+			  vector<double> line={tg_log_xn.get(jx),
+                            tg_log_xp.get(jx),
+                            tg_Z.get(jx),
+                            tg_A.get(jx),
                             0.0,0.0,0.0,0.0,mue};
 			  gtab.line_of_data(line.size(),line);
 			}	
@@ -8121,15 +8161,16 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	      size_t inB_dest=tasks[i*6+3];
 	      size_t iYe_dest=tasks[i*6+4];
 	      size_t iT_dest=tasks[i*6+5];
+              vector<size_t> ix_dest_m3={inB_dest,iYe_dest,iT_dest-1};
 	      if (iT_dest>0) {
-		if (tg_flag.get3(inB_dest,iYe_dest,iT_dest-1)>9.9) {
+		if (tg_flag.get(ix_dest_m3)>9.9) {
 		  double X_all_nuclei=0.0;
-		  X_all_nuclei+=tg_Xalpha.get3(inB_dest,iYe_dest,iT_dest-1);
-		  X_all_nuclei+=tg_Xnuclei.get3(inB_dest,iYe_dest,iT_dest-1);
-		  X_all_nuclei+=tg_Xd.get3(inB_dest,iYe_dest,iT_dest-1);
-		  X_all_nuclei+=tg_Xt.get3(inB_dest,iYe_dest,iT_dest-1);
-		  X_all_nuclei+=tg_XHe3.get3(inB_dest,iYe_dest,iT_dest-1);
-		  X_all_nuclei+=tg_XLi4.get3(inB_dest,iYe_dest,iT_dest-1);
+		  X_all_nuclei+=tg_Xalpha.get(ix_dest_m3);
+		  X_all_nuclei+=tg_Xnuclei.get(ix_dest_m3);
+		  X_all_nuclei+=tg_Xd.get(ix_dest_m3);
+		  X_all_nuclei+=tg_Xt.get(ix_dest_m3);
+		  X_all_nuclei+=tg_XHe3.get(ix_dest_m3);
+		  X_all_nuclei+=tg_XLi4.get(ix_dest_m3);
 		  if (X_all_nuclei<1.0e-20 && nB_grid2[tasks[i*6+3]]<0.02) {
 		    cout << "X_all_nuclei small (1): " << X_all_nuclei << " "
 			 << T_grid2[iT_dest] << " "
@@ -8161,7 +8202,8 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	    for(size_t ii=0;ii<n_nB2;ii++) {
 	      for(size_t j=0;j<n_Ye2;j++) {
 		for(size_t k=0;k<n_T2;k++) {
-		  if (tg_flag.get3(ii,j,k)>=10.0) conv2_count++;
+                  vector<size_t> iix={ii,j,k};
+		  if (tg_flag.get(iix)>=10.0) conv2_count++;
 		  tc++;
 		}
 	      }
@@ -8218,14 +8260,15 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
           // can result in incorrect results if not used carefully
 	  if (false) {
 	    if (iT>0) {
-	      if (tg_flag.get3(inB,iYe,iT-1)>9.9) {
+              vector<size_t> ixm3={inB,iYe,iT-1};
+	      if (tg_flag.get(ixm3)>9.9) {
 		double X_all_nuclei=0.0;
-		X_all_nuclei+=tg_Xalpha.get3(inB,iYe,iT-1);
-		X_all_nuclei+=tg_Xnuclei.get3(inB,iYe,iT-1);
-		X_all_nuclei+=tg_Xd.get3(inB,iYe,iT-1);
-		X_all_nuclei+=tg_Xt.get3(inB,iYe,iT-1);
-		X_all_nuclei+=tg_XHe3.get3(inB,iYe,iT-1);
-		X_all_nuclei+=tg_XLi4.get3(inB,iYe,iT-1);
+		X_all_nuclei+=tg_Xalpha.get(ixm3);
+		X_all_nuclei+=tg_Xnuclei.get(ixm3);
+		X_all_nuclei+=tg_Xd.get(ixm3);
+		X_all_nuclei+=tg_Xt.get(ixm3);
+		X_all_nuclei+=tg_XHe3.get(ixm3);
+		X_all_nuclei+=tg_XLi4.get(ixm3);
 		if (X_all_nuclei<1.0e-20) {
 		  cout << "X_all_nuclei small (2): " << X_all_nuclei << " "
 		       << T_grid2[iT] << endl;
@@ -8299,7 +8342,8 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
             for(size_t ii=0;ii<n_nB2;ii++) {
               for(size_t j=0;j<n_Ye2;j++) {
                 for(size_t k=0;k<n_T2;k++) {
-                  if (tg_flag.get3(ii,j,k)>=10.0) conv2_count++;
+                  vector<size_t> iix={ii,j,k};
+                  if (tg_flag.get(iix)>=10.0) conv2_count++;
                   tc++;
                 }
               }
@@ -8371,7 +8415,8 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	for(size_t i=0;i<n_nB2;i++) {
 	  for(size_t j=0;j<n_Ye2;j++) {
 	    for(size_t k=0;k<n_T2;k++) {
-	      if (tg_flag.get3(i,j,k)>=10.0) conv2_count++;
+              vector<size_t> ix={i,j,k};
+	      if (tg_flag.get(ix)>=10.0) conv2_count++;
 	      tc++;
 	    }
 	  }
@@ -8411,7 +8456,8 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
     for(size_t i=0;i<n_nB2;i++) {
       for(size_t j=0;j<n_Ye2;j++) {
 	for(size_t k=0;k<n_T2;k++) {
-	  if (tg_flag.get3(i,j,k)>=10.0) conv2_count++;
+          vector<size_t> ix={i,j,k};
+	  if (tg_flag.get(ix)>=10.0) conv2_count++;
 	}
       }
     }
@@ -9307,15 +9353,16 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
       
       // Now compute the EOS at the optimal Ye
       
-      int A_min_best=((int)(tg_A_min.get3(inB,iYe_best,iT)));
-      int A_max_best=((int)(tg_A_max.get3(inB,iYe_best,iT)));
-      int NmZ_min_best=((int)(tg_NmZ_min.get3(inB,iYe_best,iT)));
-      int NmZ_max_best=((int)(tg_NmZ_max.get3(inB,iYe_best,iT)));
+      vector<size_t> ix_best={inB,iYe_best,iT};
+      int A_min_best=((int)(tg_A_min.get(ix_best)));
+      int A_max_best=((int)(tg_A_max.get(ix_best)));
+      int NmZ_min_best=((int)(tg_NmZ_min.get(ix_best)));
+      int NmZ_max_best=((int)(tg_NmZ_max.get(ix_best)));
 
       int ret2=10;
       for(size_t k=0;k<10 && ret2!=0;k++) {
-        log_xn=tg_log_xn.get3(inB,iYe_best,iT)+(rng.random()*0.5-0.25);
-        log_xp=tg_log_xp.get3(inB,iYe_best,iT)+(rng.random()*0.5-0.25);
+        log_xn=tg_log_xn.get(ix_best)+(rng.random()*0.5-0.25);
+        log_xp=tg_log_xp.get(ix_best)+(rng.random()*0.5-0.25);
         ret2=eos_vary_dist(nB,Ye_best,T,log_xn,log_xp,Zbar,Nbar,
                            thx,mun_full,mup_full,
                            A_min_best,A_max_best,NmZ_min_best,

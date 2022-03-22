@@ -3684,6 +3684,7 @@ int eos::alt_model(std::vector<std::string> &sv,
   return 0;
 }
 
+/*
 int eos::xml_to_o2(std::vector<std::string> &sv,
                    bool itive_com) {
 
@@ -3771,6 +3772,7 @@ int eos::xml_to_o2(std::vector<std::string> &sv,
   
   return 0;
 }
+*/
 
 void eos::setup_cli(o2scl::cli &cl) {
 
@@ -3791,69 +3793,67 @@ void eos::setup_cli(o2scl::cli &cl) {
     std::string doc_xml_file;
   */
   
-  static const int nopt=15;
+  static const int nopt=14;
   o2scl::comm_option_s options[nopt]=
     {{0,"test-deriv","",0,0,"","",
        new o2scl::comm_option_mfptr<eos>
        (this,&eos::test_deriv),o2scl::cli::comm_option_both,
-       1,"","eos","test_deriv","data/eos_docs.o2","doc/xml/classeos.xml"},
+       1,"","eos","test_deriv","doc/xml/classeos.xml"},
      {0,"table-Ye","",2,2,"","",
       new o2scl::comm_option_mfptr<eos>
       (this,&eos::table_Ye),o2scl::cli::comm_option_both,
-      1,"","eos","table_Ye","data/eos_docs.o2","doc/xml/classeos.xml"},
+      1,"","eos","table_Ye","doc/xml/classeos.xml"},
      {0,"table-nB","",2,2,"","",
       new o2scl::comm_option_mfptr<eos>
       (this,&eos::table_nB),o2scl::cli::comm_option_both,
-      1,"","eos","table_nB","data/eos_docs.o2","doc/xml/classeos.xml"},      
+      1,"","eos","table_nB","doc/xml/classeos.xml"},      
      {0,"table-full","",1,1,"","",
       new o2scl::comm_option_mfptr<eos>
       (this,&eos::table_full),o2scl::cli::comm_option_both,
-      1,"","eos","table_full","data/eos_docs.o2","doc/xml/classeos.xml"},      
+      1,"","eos","table_full","doc/xml/classeos.xml"},      
      {0,"vir-fit","",0,0,"","",
       new o2scl::comm_option_mfptr<eos>
       (this,&eos::vir_fit),o2scl::cli::comm_option_both,
-      1,"","eos","vir_fit","data/eos_docs.o2","doc/xml/classeos.xml"},      
+      1,"","eos","vir_fit","doc/xml/classeos.xml"},      
      {0,"eos-sn","",0,0,"","",
       new o2scl::comm_option_mfptr<eos>
       (this,&eos::eos_sn),o2scl::cli::comm_option_both,
-      1,"","eos","eos_sn","data/eos_docs.o2","doc/xml/classeos.xml"},      
+      1,"","eos","eos_sn","doc/xml/classeos.xml"},      
      {0,"mcarlo-data","",0,1,"","",
       new o2scl::comm_option_mfptr<eos>
       (this,&eos::mcarlo_data),o2scl::cli::comm_option_both,
-      1,"","eos","mcarlo_data","data/eos_docs.o2","doc/xml/classeos.xml"},      
+      1,"","eos","mcarlo_data","doc/xml/classeos.xml"},      
      {0,"point","",0,3,"","",
       new o2scl::comm_option_mfptr<eos>
       (this,&eos::point),o2scl::cli::comm_option_both,
-      1,"","eos","point","data/eos_docs.o2","doc/xml/classeos.xml"},      
+      1,"","eos","point","doc/xml/classeos.xml"},      
      {0,"random","",0,0,"","",
       new o2scl::comm_option_mfptr<eos>
       (this,&eos::random),o2scl::cli::comm_option_both,
-      1,"","eos","random","data/eos_docs.o2","doc/xml/classeos.xml"},      
+      1,"","eos","random","doc/xml/classeos.xml"},      
      {0,"pns-eos","",3,3,"","",
       new o2scl::comm_option_mfptr<eos>
       (this,&eos::pns_eos),o2scl::cli::comm_option_both,
-      1,"","eos","pns_eos","data/eos_docs.o2","doc/xml/classeos.xml"},      
+      1,"","eos","pns_eos","doc/xml/classeos.xml"},      
      {0,"select-model","",7,7,"","",
       new o2scl::comm_option_mfptr<eos>
       (this,&eos::select_model),o2scl::cli::comm_option_both,
-      1,"","eos","select_model","data/eos_docs.o2","doc/xml/classeos.xml"},
+      1,"","eos","select_model","doc/xml/classeos.xml"},
      {0,"test-eg","",0,1,"","",
       new o2scl::comm_option_mfptr<eos>
       (this,&eos::test_eg),o2scl::cli::comm_option_both,
-      1,"","eos","test_eg","data/eos_docs.o2","doc/xml/classeos.xml"},      
+      1,"","eos","test_eg","doc/xml/classeos.xml"},      
      {0,"vir-comp","",0,0,"","",
       new o2scl::comm_option_mfptr<eos>
       (this,&eos::vir_comp),o2scl::cli::comm_option_both,
-      1,"","eos","vir_comp","data/eos_docs.o2","doc/xml/classeos.xml"},      
+      1,"","eos","vir_comp","doc/xml/classeos.xml"},      
      {0,"alt-model","",1,2,"","",
       new o2scl::comm_option_mfptr<eos>
       (this,&eos::alt_model),o2scl::cli::comm_option_both,
-      1,"","eos","alt_model","data/eos_docs.o2","doc/xml/classeos.xml"},      
-     {0,"xml-to-o2","",0,0,"","",
-      new o2scl::comm_option_mfptr<eos>
-      (this,&eos::xml_to_o2),o2scl::cli::comm_option_both,
-      1,"","eos","xml_to_o2","data/eos_docs.o2","doc/xml/classeos.xml"}
+      1,"","eos","alt_model","doc/xml/classeos.xml"}
     };
+
+  cl.doc_o2_file="data/eos_docs.o2";
   
   hdf_file hf;
   hf.open("data/eos_docs.o2");
@@ -3865,9 +3865,9 @@ void eos::setup_cli(o2scl::cli &cl) {
     bool found=false;
     for(size_t k=0;k<doc_strings.size() && found==false;k+=5) {
       if (doc_strings[k]==options[j].lng) {
-        options[j].desc=doc_strings[k+2];
-        options[j].parm_desc=doc_strings[k+3];
-        options[j].help=doc_strings[k+4];
+        options[j].desc=doc_strings[k+1];
+        options[j].parm_desc=doc_strings[k+2];
+        options[j].help=doc_strings[k+3];
         found=true;
       }
     }

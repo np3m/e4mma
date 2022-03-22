@@ -801,14 +801,14 @@ class eos {
    */
   int test_eg(std::vector<std::string> &sv, bool itive_com);
 
-  /** \brief Create the command documentation database
+  /* \brief Create the command documentation database
 
       <no parameters>
       
       Create document strings from XML and store them in the 
       a HDF5 data file.
   */
-  virtual int xml_to_o2(std::vector<std::string> &sv, bool itive_com);
+  //virtual int xml_to_o2(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Compare to other EOSs?
 

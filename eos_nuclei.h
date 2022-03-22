@@ -127,6 +127,14 @@ public:
        - Future: Allow RMF rather than just Skyrme.
 
     \endverbatim
+
+    \comment
+    MUSES list:
+    - convert all 3-rank tensors to multi-rank tensors
+    - convert get3 to get everywhere
+    - add RMF and RMFH models
+    - finish implementing 'strangeness' parameter
+    \endcomment
 */
 class eos_nuclei : public eos {
 
