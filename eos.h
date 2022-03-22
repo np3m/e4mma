@@ -629,13 +629,12 @@ class eos {
    */
   bool old_version;
   
-  /** \brief Use a Skyrme model rather than the Du et al. 
-      combined EOS
-   */
+  /** \brief Use an alternate EOS rather than the Du et al. 
+      combined EOS (default false)
+  */
   bool use_alt_eos;
 
-  /** \brief If true, strangeness is included
-   */
+  /// If true, strangeness is included (default false)
   bool strangeness;
   
   /** \brief If true, test the neutron star speed of sound 
@@ -656,16 +655,19 @@ class eos {
    */
   bool old_ns_fit;
 
-  /// Verbose parameter
+  /** \brief Verbose parameter (default 1)
+   */
   int verbose;
 
   /// If true, create output files for individual EOSs
   bool output_files;
 
-  /// Coefficient for modulation of virial EOS
+  /** \brief Coefficient for modulation of virial EOS (default 10)
+   */
   double a_virial;
 
-  /// Coefficient for modulation of virial EOS
+  /** \brief Coefficient for modulation of virial EOS (default 10)
+   */
   double b_virial;
   
   /** \brief If true, include muons (default false)

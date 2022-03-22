@@ -28,32 +28,6 @@
 typedef boost::numeric::ublas::vector<double> ubvector;
 typedef boost::numeric::ublas::matrix<double> ubmatrix;
 
-/** \brief temporary glue between tensor_grid3 and tensor_grid
- */
-class tensor_grid_temp : public o2scl::tensor_grid<> {
-public:
-
-  /// Get the element indexed by \c (ix1,ix2,ix3)
-  double &get3(size_t ix1, size_t ix2, size_t ix3) { 
-    size_t sz[3]={ix1,ix2,ix3};
-    return tensor_grid<std::vector<double>,std::vector<size_t>>::get(sz); 
-  }
-  
-  /// Get the element indexed by \c (ix1,ix2,ix3)
-  const double &get3(size_t ix1, size_t ix2, size_t ix3) const { 
-    size_t sz[3]={ix1,ix2,ix3};
-    return tensor_grid<std::vector<double>,std::vector<size_t>>::get(sz); 
-  }
-  
-  /// Set the element indexed by \c (ix1,ix2,ix3) to value \c val
-  void set3(size_t ix1, size_t ix2, size_t ix3, double val) {
-    size_t sz[3]={ix1,ix2, ix3};
-    tensor_grid<std::vector<double>,std::vector<size_t>>::set(sz,val); 
-    return;
-  }
-  
-};
-
 /** \brief Compute partition functions using Fowler prescription
  */
 class partition_func {
@@ -130,10 +104,16 @@ public:
 
     \comment
     MUSES list:
-    - convert all 3-rank tensors to multi-rank tensors
-    - convert get3 to get everywhere
-    - add RMF and RMFH models
+    - convert all 3-rank tensors to multi-rank tensors (done)
+    - convert get3 to get and set3 to set everywhere (done)
+    - add sigma, omega, rho, delta? fields
+    - Fix tensor_list HDF5 output
+    - add beta-equilibrium functions
+    - add RMF models
     - finish implementing 'strangeness' parameter
+    - add RMFH models
+    - Add muons out of equilibrium
+    - improve fermion pair_density in non-degenerate limit
     \endcomment
 */
 class eos_nuclei : public eos {

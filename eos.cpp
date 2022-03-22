@@ -3855,66 +3855,123 @@ void eos::setup_cli(o2scl::cli &cl) {
 
   cl.doc_o2_file="data/eos_docs.o2";
   
-  hdf_file hf;
-  hf.open("data/eos_docs.o2");
-  vector<string> doc_strings;
-  hf.gets_vec("doc_strings",doc_strings);
-  hf.close();
-  
-  for(size_t j=0;j<nopt;j++) {
-    bool found=false;
-    for(size_t k=0;k<doc_strings.size() && found==false;k+=5) {
-      if (doc_strings[k]==options[j].lng) {
-        options[j].desc=doc_strings[k+1];
-        options[j].parm_desc=doc_strings[k+2];
-        options[j].help=doc_strings[k+3];
-        found=true;
-      }
-    }
-    if (found==false) {
-      cout << "Could not find docs for " << options[j].lng << endl;
-    }
-  }
-  
-  cl.set_comm_option_vec(nopt,options);
-  
   p_verbose.i=&verbose;
-  p_verbose.help="Verbose parameter (default 1).";
+  p_verbose.help="";
+  p_verbose.doc_class="eos";
+  p_verbose.doc_name="verbose";
+  p_verbose.doc_xml_file="doc/xml/classeos.xml";
   cl.par_list.insert(make_pair("verbose",&p_verbose));
 
   p_old_ns_fit.b=&old_ns_fit;
-  p_old_ns_fit.help="If true, use the old NS fit (default true).";
+  p_old_ns_fit.help="";
+  p_old_ns_fit.doc_class="eos";
+  p_old_ns_fit.doc_name="old_ns_fit";
+  p_old_ns_fit.doc_xml_file="doc/xml/classeos.xml";
   cl.par_list.insert(make_pair("old_ns_fit",&p_old_ns_fit));
 
   p_ns_record.b=&ns_record;
-  p_ns_record.help="If true, record the NS fit results (default false).";
+  p_ns_record.help="";
+  p_ns_record.doc_class="eos";
+  p_ns_record.doc_name="ns_record";
+  p_ns_record.doc_xml_file="doc/xml/classeos.xml";
   cl.par_list.insert(make_pair("ns_record",&p_ns_record));
 
   p_include_muons.b=&include_muons;
-  p_include_muons.help="If true, include muons (default false).";
+  p_include_muons.help="";
+  p_include_muons.doc_class="eos";
+  p_include_muons.doc_name="include_muons";
+  p_include_muons.doc_xml_file="doc/xml/classeos.xml";
   cl.par_list.insert(make_pair("include_muons",&p_include_muons));
 
   p_select_cs2_test.b=&select_cs2_test;
-  p_select_cs2_test.help="Test cs2 in select_internal() (default true).";
+  p_select_cs2_test.help="";
+  p_select_cs2_test.doc_class="eos";
+  p_select_cs2_test.doc_name="select_cs2_test";
+  p_select_cs2_test.doc_xml_file="doc/xml/classeos.xml";
   cl.par_list.insert(make_pair("select_cs2_test",&p_select_cs2_test));
 
   p_test_ns_cs2.b=&test_ns_cs2;
-  p_test_ns_cs2.help=((std::string)"If true, then test the neutron star ")+
-    "speed of sound (default false).";
+  p_test_ns_cs2.help="";
+  p_test_ns_cs2.doc_class="eos";
+  p_test_ns_cs2.doc_name="test_ns_cs2";
+  p_test_ns_cs2.doc_xml_file="doc/xml/classeos.xml";
   cl.par_list.insert(make_pair("test_ns_cs2",&p_test_ns_cs2));
 
   p_use_alt_eos.b=&use_alt_eos;
-  p_use_alt_eos.help=((std::string)"Use the alternate Skyrme model ")+
-    "(default false).";
+  p_use_alt_eos.help="";
+  p_use_alt_eos.doc_class="eos";
+  p_use_alt_eos.doc_name="use_alt_eos";
+  p_use_alt_eos.doc_xml_file="doc/xml/classeos.xml";
   cl.par_list.insert(make_pair("use_alt_eos",&p_use_alt_eos));
 
   p_a_virial.d=&a_virial;
-  p_a_virial.help="Virial coefficient a (default 3.0).";
+  p_a_virial.help="";
+  p_a_virial.doc_class="eos";
+  p_a_virial.doc_name="a_virial";
+  p_a_virial.doc_xml_file="doc/xml/classeos.xml";
   cl.par_list.insert(make_pair("a_virial",&p_a_virial));
 
   p_b_virial.d=&b_virial;
-  p_b_virial.help="Virial coefficient b (default 0.0).";
+  p_b_virial.help="";
+  p_b_virial.doc_class="eos";
+  p_b_virial.doc_name="b_virial";
+  p_b_virial.doc_xml_file="doc/xml/classeos.xml";
   cl.par_list.insert(make_pair("b_virial",&p_b_virial));
 
+  if (file_exists("data/eos_docs.o2")) {
+  
+    hdf_file hf;
+    hf.open("data/eos_docs.o2");
+    vector<vector<string>> cmd_doc_strings, param_doc_strings;
+    hf.gets_vec_vec("cmd_doc_strings",cmd_doc_strings);
+    hf.gets_vec_vec("param_doc_strings",param_doc_strings);
+    hf.close();
+    
+    for(size_t j=0;j<nopt;j++) {
+      bool found=false;
+      for(size_t k=0;k<cmd_doc_strings.size() && found==false;k++) {
+        if (cmd_doc_strings[k][0]==options[j].lng) {
+          if (cmd_doc_strings[k].size()>=2) {
+            options[j].desc=cmd_doc_strings[k][1];
+            if (cmd_doc_strings[k].size()>=3) {
+              options[j].parm_desc=cmd_doc_strings[k][2];
+              if (cmd_doc_strings[k].size()>=4) {
+                options[j].help=cmd_doc_strings[k][3];
+              }
+            }
+          }
+          found=true;
+        }
+      }
+      if (found==false) {
+        cout << "Could not find documentation for command "
+             << options[j].lng << endl;
+      }
+    }
+    
+    typedef std::map<std::string,cli::parameter *,
+                     std::greater<std::string> >::iterator par_t;
+    
+    for(par_t it=cl.par_list.begin();it!=cl.par_list.end();it++) {
+      if (it->second->doc_class==((string)"eos")) {
+        bool found=false;
+        for(size_t k=0;k<param_doc_strings.size() && found==false;k++) {
+          if (param_doc_strings[k][0]==it->first) {
+            it->second->help=param_doc_strings[k][1];
+            found=true;
+          }
+        }
+        if (found==false) {
+          cout << "Could not find documentation for parameter "
+               << it->first << endl;
+        }
+      }
+    }
+    
+  }
+
+  cl.set_comm_option_vec(nopt,options);
+  
+  
   return;
 }
