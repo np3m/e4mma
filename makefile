@@ -87,7 +87,6 @@ neutrino/jacobi_rule.o: neutrino/jacobi_rule.cpp neutrino/jacobi_rule.hpp
 		-c neutrino/jacobi_rule.cpp
 
 eos_nuclei: eos.o main.o eos_nuclei.o eos_had_skyrme_ext.o \
-		virial_solver_deriv.h \
 		neutrino/Couplings.o neutrino/FluidState.o \
 		neutrino/FunctionIntegrator.o neutrino/Polarization.o \
 		neutrino/PolarizationNonRelv2Apr8.o neutrino/jacobi_rule.o 
@@ -151,7 +150,7 @@ main_eos_nompi.o: main_eos.cpp eos.h
 	$(LCXX) $(LCFLAGS) -o main_eos_nompi.o -c main_eos.cpp 
 
 eos_nuclei_nompi: eos_nompi.o main_nompi.o eos_nuclei_nompi.o \
-		eos_had_skyrme_ext_nompi.o virial_solver_deriv.h \
+		eos_had_skyrme_ext_nompi.o \
 		neutrino/Couplings.o neutrino/FluidState.o \
 		neutrino/FunctionIntegrator.o neutrino/Polarization.o \
 		neutrino/PolarizationNonRelv2Apr8.o neutrino/jacobi_rule.o 
@@ -176,7 +175,7 @@ enn: eos_nompi.o main_nompi.o eos_nuclei_nompi.o \
 		-lreadline
 
 eos_nompi: eos_nompi.o main_eos_nompi.o \
-		eos_had_skyrme_ext_nompi.o virial_solver_deriv.h
+		eos_had_skyrme_ext_nompi.o 
 	$(LCXX) $(LCFLAGS) -o eos_nompi eos_nompi.o \
 		main_eos_nompi.o eos_had_skyrme_ext_nompi.o $(LIBS) \
 		-lreadline
