@@ -49,9 +49,10 @@
 #include <o2scl/deriv_gsl.h>
 #include <o2scl/deriv_cern.h>
 #include <o2scl/eos_had_rmf_hyp.h>
+#include <o2scl/eos_had_virial.h>
 
-#include "virial_solver.h" 
-#include "virial_solver_deriv.h" 
+typedef boost::numeric::ublas::vector<double> ubvector;
+typedef boost::numeric::ublas::matrix<double> ubmatrix;
 
 /** \brief An updated version of \ref o2scl::eos_crust_virial
     with a better fit for the virial coefficients
@@ -545,10 +546,7 @@ class eos {
   /// \name Base physics objects [protected]
   //@{
   /// The virial equation solver
-  virial_solver_deriv vsd;
-
-  /// Old virial solver
-  virial_solver vs;
+  o2scl::eos_had_virial vsd;
 
   /** \brief Object for computing electron/positron thermodynamic integrals
    */

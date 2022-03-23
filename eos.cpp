@@ -745,54 +745,6 @@ double eos::free_energy_density_virial
 
   if (nn*pow(lambda,3.0)>1.0e-5 || np*pow(lambda,3.0)>1.0e-5) {
 
-    if (false) {
-      
-      vs.nn=nn;
-      vs.pn=np;
-      vs.T=T;
-      vs.b_n=b_n;
-      vs.b_pn=b_pn; 
-      vs.lambda=lambda;
-      ubvector x(2);
-      vs.solve_fugacity(x);
-      n.mu=x[0];
-      p.mu=x[1];
-      zn=exp(n.mu/T);
-      zp=exp(p.mu/T);
-    
-      // Use linear solver to obtain derivative of mu_n_vir and
-      // mu_p_vir with respect to neutron number density
-    
-      vs.mfn2_mu_p=p.mu;
-      vs.mfn2_mu_n=n.mu;
-    
-      ubvector x2(2);
-      vs.mfn21(x2);
-      dmundnn=x2[0];
-      dmupdnn=x2[1];
-      
-      ubvector x3(2);
-      vs.mfn31(x3);
-      dmundnp=x3[0]; 
-      dmupdnp=x3[1];
-
-      // Use linear solver to obtain derivative of mu_n_virial and
-      // mu_p_virial with respect to temperature
-    
-      vs.dbndT=dbndT;
-      vs.dbpndT=dbpndT;
-      vs.dlambdadT=dlambdadT;
-    
-      ubvector x4(2);
-      vs.mfn41(x4);
-      dmundT=x4[0];
-      dmupdT=x4[1];
-
-      cout << zn << " " << zp << " " << dmundnn << " " << dmupdnn << endl;
-      cout << dmundnp << " " << dmupdnp << " " << dmundT << " "
-	   << dmupdT << endl;
-    }
-    
     // If the densities are large enough, then compute the
     // virial result
     vsd.solve_fugacity(nn,np,lambda,lambda,b_n,b_pn,zn,zp);
@@ -3971,7 +3923,6 @@ void eos::setup_cli(o2scl::cli &cl) {
   }
 
   cl.set_comm_option_vec(nopt,options);
-  
   
   return;
 }

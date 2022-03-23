@@ -44,20 +44,20 @@ endif
 # Main
 # ----------------------------------------------------------------
 
-eos.o: eos.cpp virial_solver.h eos.h
+eos.o: eos.cpp eos.h
 	$(LMPI_CXX) $(LMPI_CFLAGS) \
 		-o eos.o -c eos.cpp
 
-eos_nuclei.o: eos_nuclei.cpp virial_solver.h eos_nuclei.h
+eos_nuclei.o: eos_nuclei.cpp eos_nuclei.h
 	$(LMPI_CXX) $(LMPI_CFLAGS) \
 		-o eos_nuclei.o -c eos_nuclei.cpp
 
-eos_had_skyrme_ext.o: eos_had_skyrme_ext.cpp virial_solver.h \
+eos_had_skyrme_ext.o: eos_had_skyrme_ext.cpp \
 		eos_had_skyrme_ext.h
 	$(LMPI_CXX) $(LMPI_CFLAGS) -o eos_had_skyrme_ext.o \
 		-c eos_had_skyrme_ext.cpp
 
-main.o: main.cpp virial_solver.h eos.h 
+main.o: main.cpp eos.h 
 	$(LMPI_CXX) $(LMPI_CFLAGS) -o main.o -c main.cpp 
 
 neutrino/Couplings.o: neutrino/Couplings.cpp neutrino/Couplings.hpp
@@ -131,23 +131,23 @@ neutrino/jacobi_rule_nompi.o: neutrino/jacobi_rule.cpp neutrino/jacobi_rule.hpp
 	$(LCXX) $(LCFLAGS) -DNUOPAC_HAS_GSL -o neutrino/jacobi_rule_nompi.o \
 		-c neutrino/jacobi_rule.cpp
 
-eos_nompi.o: eos.cpp virial_solver.h eos.h
+eos_nompi.o: eos.cpp eos.h
 	$(LCXX) $(LCFLAGS) \
 		-o eos_nompi.o -c eos.cpp
 
-eos_nuclei_nompi.o: eos_nuclei.cpp virial_solver.h eos_nuclei.h
+eos_nuclei_nompi.o: eos_nuclei.cpp eos_nuclei.h
 	$(LCXX) $(LCFLAGS) \
 		-o eos_nuclei_nompi.o -c eos_nuclei.cpp
 
-eos_had_skyrme_ext_nompi.o: eos_had_skyrme_ext.cpp virial_solver.h \
+eos_had_skyrme_ext_nompi.o: eos_had_skyrme_ext.cpp \
 		eos_had_skyrme_ext.h
 	$(LCXX) $(LCFLAGS) -o eos_had_skyrme_ext_nompi.o \
 		-c eos_had_skyrme_ext.cpp
 
-main_nompi.o: main.cpp virial_solver.h eos.h 
+main_nompi.o: main.cpp eos.h 
 	$(LCXX) $(LCFLAGS) -o main_nompi.o -c main.cpp 
 
-main_eos_nompi.o: main_eos.cpp virial_solver.h eos.h 
+main_eos_nompi.o: main_eos.cpp eos.h 
 	$(LCXX) $(LCFLAGS) -o main_eos_nompi.o -c main_eos.cpp 
 
 eos_nuclei_nompi: eos_nompi.o main_nompi.o eos_nuclei_nompi.o \

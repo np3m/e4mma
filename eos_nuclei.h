@@ -20,7 +20,6 @@
 */
 #include "eos.h"
 #include "eos_had_skyrme_ext.h"
-#include "virial_solver_deriv.h"
 #include <o2scl/nucmass_fit.h>
 #include <o2scl/slack_messenger.h>
 #include <map>
@@ -369,9 +368,6 @@ public:
 
   /// \name Other internal physics objects
   //@{
-  /// Virial solver used in \ref check_virial()
-  virial_solver_deriv vsd;
-
   /// Extended Skyrme model for finite-temperature corrections
   eos_had_skyrme_ext skyrme_ext;
 

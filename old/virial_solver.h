@@ -112,7 +112,8 @@ class virial_solver {
 	  if (fabs(eval_zp[i].real())<2.0e-6 &&
 	                                 fabs(eval_zp[i].imag())<1.0e-8) {
             double r0, r1;
-            gsl_poly_solve_quadratic(2.0*b_n,2.0*res_zp[i].real()*b_pn+1.0,-nnt,&r0,&r1);
+            gsl_poly_solve_quadratic(2.0*b_n,2.0*res_zp[i].real()*
+                                     b_pn+1.0,-nnt,&r0,&r1);
             std::complex<double> eval_r0=(res_zp[i].real()+2.0
 			    *res_zp[i].real()*res_zp[i].real()*b_n
 			   +2.0*res_zp[i].real()*r0*b_pn-npt)/npt;
@@ -249,7 +250,8 @@ class virial_solver {
 	                                 fabs(eval_zn[i].imag())<1.0e-8) {
 
             double r0, r1;
-            gsl_poly_solve_quadratic(2.0*b_n,2.0*res_zn[i].real()*b_pn+1.0,-npt,&r0,&r1);
+            gsl_poly_solve_quadratic(2.0*b_n,2.0*res_zn[i].real()*b_pn+1.0,
+                                     -npt,&r0,&r1);
             std::complex<double> eval_r0=(res_zn[i].real()+2.0
 			   *res_zn[i].real()*res_zn[i].real()*b_n
 			   +2.0*res_zn[i].real()*r0*b_pn-nnt)/nnt;
@@ -334,11 +336,6 @@ class virial_solver {
       zn=res_zn[res_index].real();  
       x[1]=log(zp)*T;
       x[0]=log(zn)*T; 
-    
-    
-    
-    
-    
     
     }
 

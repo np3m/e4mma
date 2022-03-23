@@ -189,27 +189,27 @@ class virial_solver_deriv {
       return;
     }
     
-    dzndnn= -pow(lam_n, 3)*(2*b_n*zp + b_pn*zn + 1.0/2.0)/
-      (4*pow(b_pn, 2)*zn*zp - (4*b_n*zn + 2*b_pn*zp + 1)*
-       (4*b_n*zp + 2*b_pn*zn + 1)) ;
-    dzndnp= b_pn*pow(lam_p, 3)*zn/
-      (4*pow(b_pn, 2)*zn*zp - (4*b_n*zn + 2*b_pn*zp + 1)*
-       (4*b_n*zp + 2*b_pn*zn + 1)) ;
-    dzpdnn= b_pn*pow(lam_n, 3)*zp/
-      (4*pow(b_pn, 2)*zn*zp - (4*b_n*zn + 2*b_pn*zp + 1)*
-       (4*b_n*zp + 2*b_pn*zn + 1)) ;
-    dzpdnp= -pow(lam_p, 3)*(2*b_n*zn + b_pn*zp + 1.0/2.0)/
-      (4*pow(b_pn, 2)*zn*zp - (4*b_n*zn + 2*b_pn*zp + 1)*
-       (4*b_n*zp + 2*b_pn*zn + 1)) ;
+    dzndnn=-pow(lam_n,3)*(2*b_n*zp+b_pn*zn+1.0/2.0)/
+      (4*pow(b_pn,2)*zn*zp-(4*b_n*zn+2*b_pn*zp+1)*
+       (4*b_n*zp+2*b_pn*zn+1));
+    dzndnp=b_pn*pow(lam_p,3)*zn/
+      (4*pow(b_pn,2)*zn*zp-(4*b_n*zn+2*b_pn*zp+1)*
+       (4*b_n*zp+2*b_pn*zn+1));
+    dzpdnn=b_pn*pow(lam_n,3)*zp/
+      (4*pow(b_pn,2)*zn*zp-(4*b_n*zn+2*b_pn*zp+1)*
+       (4*b_n*zp+2*b_pn*zn+1));
+    dzpdnp=-pow(lam_p,3)*(2*b_n*zn+b_pn*zp+1.0/2.0)/
+      (4*pow(b_pn,2)*zn*zp-(4*b_n*zn+2*b_pn*zp+1)*
+       (4*b_n*zp+2*b_pn*zn+1));
     
-    double dzndnn_dzn= -b_pn*pow(lam_n, 3)/(4*pow(b_pn, 2)*zn*zp - (4*b_n*zn + 2*b_pn*zp + 1)*(4*b_n*zp + 2*b_pn*zn + 1)) - pow(lam_n, 3)*(2*b_n*zp + b_pn*zn + 1.0/2.0)*(-4*b_n*(-4*b_n*zp - 2*b_pn*zn - 1) - 4*pow(b_pn, 2)*zp + 2*b_pn*(4*b_n*zn + 2*b_pn*zp + 1))/pow(4*pow(b_pn, 2)*zn*zp - (4*b_n*zn + 2*b_pn*zp + 1)*(4*b_n*zp + 2*b_pn*zn + 1), 2) ;
-    double dzndnn_dzp= -2*b_n*pow(lam_n, 3)/(4*pow(b_pn, 2)*zn*zp - (4*b_n*zn + 2*b_pn*zp + 1)*(4*b_n*zp + 2*b_pn*zn + 1)) - pow(lam_n, 3)*(2*b_n*zp + b_pn*zn + 1.0/2.0)*(4*b_n*(4*b_n*zn + 2*b_pn*zp + 1) - 4*pow(b_pn, 2)*zn - 2*b_pn*(-4*b_n*zp - 2*b_pn*zn - 1))/pow(4*pow(b_pn, 2)*zn*zp - (4*b_n*zn + 2*b_pn*zp + 1)*(4*b_n*zp + 2*b_pn*zn + 1), 2) ;
-    double dzndnp_dzn= b_pn*pow(lam_p, 3)*zn*(-4*b_n*(-4*b_n*zp - 2*b_pn*zn - 1) - 4*pow(b_pn, 2)*zp + 2*b_pn*(4*b_n*zn + 2*b_pn*zp + 1))/pow(4*pow(b_pn, 2)*zn*zp - (4*b_n*zn + 2*b_pn*zp + 1)*(4*b_n*zp + 2*b_pn*zn + 1), 2) + b_pn*pow(lam_p, 3)/(4*pow(b_pn, 2)*zn*zp - (4*b_n*zn + 2*b_pn*zp + 1)*(4*b_n*zp + 2*b_pn*zn + 1)) ;
-    double dzndnp_dzp= b_pn*pow(lam_p, 3)*zn*(4*b_n*(4*b_n*zn + 2*b_pn*zp + 1) - 4*pow(b_pn, 2)*zn - 2*b_pn*(-4*b_n*zp - 2*b_pn*zn - 1))/pow(4*pow(b_pn, 2)*zn*zp - (4*b_n*zn + 2*b_pn*zp + 1)*(4*b_n*zp + 2*b_pn*zn + 1), 2) ;
-    double dzpdnn_dzn= b_pn*pow(lam_n, 3)*zp*(-4*b_n*(-4*b_n*zp - 2*b_pn*zn - 1) - 4*pow(b_pn, 2)*zp + 2*b_pn*(4*b_n*zn + 2*b_pn*zp + 1))/pow(4*pow(b_pn, 2)*zn*zp - (4*b_n*zn + 2*b_pn*zp + 1)*(4*b_n*zp + 2*b_pn*zn + 1), 2) ;
-    double dzpdnn_dzp= b_pn*pow(lam_n, 3)*zp*(4*b_n*(4*b_n*zn + 2*b_pn*zp + 1) - 4*pow(b_pn, 2)*zn - 2*b_pn*(-4*b_n*zp - 2*b_pn*zn - 1))/pow(4*pow(b_pn, 2)*zn*zp - (4*b_n*zn + 2*b_pn*zp + 1)*(4*b_n*zp + 2*b_pn*zn + 1), 2) + b_pn*pow(lam_n, 3)/(4*pow(b_pn, 2)*zn*zp - (4*b_n*zn + 2*b_pn*zp + 1)*(4*b_n*zp + 2*b_pn*zn + 1)) ;
-    double dzpdnp_dzn= -2*b_n*pow(lam_p, 3)/(4*pow(b_pn, 2)*zn*zp - (4*b_n*zn + 2*b_pn*zp + 1)*(4*b_n*zp + 2*b_pn*zn + 1)) - pow(lam_p, 3)*(2*b_n*zn + b_pn*zp + 1.0/2.0)*(-4*b_n*(-4*b_n*zp - 2*b_pn*zn - 1) - 4*pow(b_pn, 2)*zp + 2*b_pn*(4*b_n*zn + 2*b_pn*zp + 1))/pow(4*pow(b_pn, 2)*zn*zp - (4*b_n*zn + 2*b_pn*zp + 1)*(4*b_n*zp + 2*b_pn*zn + 1), 2) ;
-    double dzpdnp_dzp= -b_pn*pow(lam_p, 3)/(4*pow(b_pn, 2)*zn*zp - (4*b_n*zn + 2*b_pn*zp + 1)*(4*b_n*zp + 2*b_pn*zn + 1)) - pow(lam_p, 3)*(2*b_n*zn + b_pn*zp + 1.0/2.0)*(4*b_n*(4*b_n*zn + 2*b_pn*zp + 1) - 4*pow(b_pn, 2)*zn - 2*b_pn*(-4*b_n*zp - 2*b_pn*zn - 1))/pow(4*pow(b_pn, 2)*zn*zp - (4*b_n*zn + 2*b_pn*zp + 1)*(4*b_n*zp + 2*b_pn*zn + 1), 2) ;
+    double dzndnn_dzn=-b_pn*pow(lam_n,3)/(4*pow(b_pn,2)*zn*zp-(4*b_n*zn+2*b_pn*zp+1)*(4*b_n*zp+2*b_pn*zn+1))-pow(lam_n,3)*(2*b_n*zp+b_pn*zn+1.0/2.0)*(-4*b_n*(-4*b_n*zp-2*b_pn*zn-1)-4*pow(b_pn,2)*zp+2*b_pn*(4*b_n*zn+2*b_pn*zp+1))/pow(4*pow(b_pn,2)*zn*zp-(4*b_n*zn+2*b_pn*zp+1)*(4*b_n*zp+2*b_pn*zn+1),2);
+    double dzndnn_dzp=-2*b_n*pow(lam_n,3)/(4*pow(b_pn,2)*zn*zp-(4*b_n*zn+2*b_pn*zp+1)*(4*b_n*zp+2*b_pn*zn+1))-pow(lam_n,3)*(2*b_n*zp+b_pn*zn+1.0/2.0)*(4*b_n*(4*b_n*zn+2*b_pn*zp+1)-4*pow(b_pn,2)*zn-2*b_pn*(-4*b_n*zp-2*b_pn*zn-1))/pow(4*pow(b_pn,2)*zn*zp-(4*b_n*zn+2*b_pn*zp+1)*(4*b_n*zp+2*b_pn*zn+1),2);
+    double dzndnp_dzn=b_pn*pow(lam_p,3)*zn*(-4*b_n*(-4*b_n*zp-2*b_pn*zn-1)-4*pow(b_pn,2)*zp+2*b_pn*(4*b_n*zn+2*b_pn*zp+1))/pow(4*pow(b_pn,2)*zn*zp-(4*b_n*zn+2*b_pn*zp+1)*(4*b_n*zp+2*b_pn*zn+1),2)+b_pn*pow(lam_p,3)/(4*pow(b_pn,2)*zn*zp-(4*b_n*zn+2*b_pn*zp+1)*(4*b_n*zp+2*b_pn*zn+1));
+    double dzndnp_dzp=b_pn*pow(lam_p,3)*zn*(4*b_n*(4*b_n*zn+2*b_pn*zp+1)-4*pow(b_pn,2)*zn-2*b_pn*(-4*b_n*zp-2*b_pn*zn-1))/pow(4*pow(b_pn,2)*zn*zp-(4*b_n*zn+2*b_pn*zp+1)*(4*b_n*zp+2*b_pn*zn+1),2);
+    double dzpdnn_dzn=b_pn*pow(lam_n,3)*zp*(-4*b_n*(-4*b_n*zp-2*b_pn*zn-1)-4*pow(b_pn,2)*zp+2*b_pn*(4*b_n*zn+2*b_pn*zp+1))/pow(4*pow(b_pn,2)*zn*zp-(4*b_n*zn+2*b_pn*zp+1)*(4*b_n*zp+2*b_pn*zn+1),2);
+    double dzpdnn_dzp=b_pn*pow(lam_n,3)*zp*(4*b_n*(4*b_n*zn+2*b_pn*zp+1)-4*pow(b_pn,2)*zn-2*b_pn*(-4*b_n*zp-2*b_pn*zn-1))/pow(4*pow(b_pn,2)*zn*zp-(4*b_n*zn+2*b_pn*zp+1)*(4*b_n*zp+2*b_pn*zn+1),2)+b_pn*pow(lam_n,3)/(4*pow(b_pn,2)*zn*zp-(4*b_n*zn+2*b_pn*zp+1)*(4*b_n*zp+2*b_pn*zn+1));
+    double dzpdnp_dzn=-2*b_n*pow(lam_p,3)/(4*pow(b_pn,2)*zn*zp-(4*b_n*zn+2*b_pn*zp+1)*(4*b_n*zp+2*b_pn*zn+1))-pow(lam_p,3)*(2*b_n*zn+b_pn*zp+1.0/2.0)*(-4*b_n*(-4*b_n*zp-2*b_pn*zn-1)-4*pow(b_pn,2)*zp+2*b_pn*(4*b_n*zn+2*b_pn*zp+1))/pow(4*pow(b_pn,2)*zn*zp-(4*b_n*zn+2*b_pn*zp+1)*(4*b_n*zp+2*b_pn*zn+1),2);
+    double dzpdnp_dzp=-b_pn*pow(lam_p,3)/(4*pow(b_pn,2)*zn*zp-(4*b_n*zn+2*b_pn*zp+1)*(4*b_n*zp+2*b_pn*zn+1))-pow(lam_p,3)*(2*b_n*zn+b_pn*zp+1.0/2.0)*(4*b_n*(4*b_n*zn+2*b_pn*zp+1)-4*pow(b_pn,2)*zn-2*b_pn*(-4*b_n*zp-2*b_pn*zn-1))/pow(4*pow(b_pn,2)*zn*zp-(4*b_n*zn+2*b_pn*zp+1)*(4*b_n*zp+2*b_pn*zn+1),2);
 
     d2zndnn2=dzndnn_dzn*dzndnn+dzndnn_dzp*dzpdnn;
     d2zndnndnp=dzndnn_dzn*dzndnp+dzndnn_dzp*dzpdnp;
@@ -218,9 +218,9 @@ class virial_solver_deriv {
     d2zpdnndnp=dzpdnn_dzn*dzndnp+dzpdnn_dzp*dzpdnp;
     d2zpdnp2=dzpdnp_dzn*dzndnp+dzpdnp_dzp*dzpdnp;
 
-    dzndT= (1.0/2.0)*(-16*b_n*dbndT*pow(zn, 2)*zp - 16*b_n*dbpndT*zn*pow(zp, 2) + 12*b_n*dlamndT*pow(lam_n, 2)*nn*zp - 8*b_pn*dbndT*pow(zn, 3) + 8*b_pn*dbndT*zn*pow(zp, 2) + 6*b_pn*dlamndT*pow(lam_n, 2)*nn*zn - 6*b_pn*dlampdT*pow(lam_p, 2)*np*zn - 4*dbndT*pow(zn, 2) - 4*dbpndT*zn*zp + 3*dlamndT*pow(lam_n, 2)*nn)/(16*pow(b_n, 2)*zn*zp + 8*b_n*b_pn*pow(zn, 2) + 8*b_n*b_pn*pow(zp, 2) + 4*b_n*zn + 4*b_n*zp + 2*b_pn*zn + 2*b_pn*zp + 1) ;
+    dzndT=(1.0/2.0)*(-16*b_n*dbndT*pow(zn,2)*zp-16*b_n*dbpndT*zn*pow(zp,2)+12*b_n*dlamndT*pow(lam_n,2)*nn*zp-8*b_pn*dbndT*pow(zn,3)+8*b_pn*dbndT*zn*pow(zp,2)+6*b_pn*dlamndT*pow(lam_n,2)*nn*zn-6*b_pn*dlampdT*pow(lam_p,2)*np*zn-4*dbndT*pow(zn,2)-4*dbpndT*zn*zp+3*dlamndT*pow(lam_n,2)*nn)/(16*pow(b_n,2)*zn*zp+8*b_n*b_pn*pow(zn,2)+8*b_n*b_pn*pow(zp,2)+4*b_n*zn+4*b_n*zp+2*b_pn*zn+2*b_pn*zp+1);
     
-    dzpdT= (-b_pn*dzndT*zp + (3.0/4.0)*dlamndT*pow(lam_n, 2)*nn - 1.0/2.0*dzndT - zn*(2*b_n*dzndT + dbndT*zn + dbpndT*zp))/(b_pn*zn) ;
+    dzpdT=(-b_pn*dzndT*zp+(3.0/4.0)*dlamndT*pow(lam_n,2)*nn-1.0/2.0*dzndT-zn*(2*b_n*dzndT+dbndT*zn+dbpndT*zp))/(b_pn*zn);
     
     return;
   }
