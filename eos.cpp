@@ -3805,7 +3805,7 @@ void eos::setup_cli(o2scl::cli &cl, bool read_docs) {
       1,"","eos","alt_model","doc/xml/classeos.xml"}
     };
 
-  cl.doc_o2_file="data/eos_docs.o2";
+  cl.doc_o2_file="data/eos_nuclei_docs.o2";
   
   p_verbose.i=&verbose;
   p_verbose.help="";

@@ -10674,7 +10674,12 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
   
   cl.set_comm_option_vec(nopt,options);
 
-  cl.read_docs();
+  if (file_exists(cl.doc_o2_file)) {
+    cl.read_docs();
+  } else {
+    cerr << "Couldn't find file " << cl.doc_o2_file
+         << " for run-time documentation." << endl;
+  }
 
   return;
 }
