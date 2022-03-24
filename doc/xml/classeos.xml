@@ -19,7 +19,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="244" column="10" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="244" bodyend="-1"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="245" column="10" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="245" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a6ddc966f3bb9ccf15585fb3a33dade7c" prot="protected" static="no" mutable="no">
         <type>double</type>
@@ -34,7 +34,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="247" column="10" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="247" bodyend="-1"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="248" column="10" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="248" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1add88b86b2418c74c0f8140b959427f09" prot="protected" static="no" mutable="no">
         <type>double</type>
@@ -49,7 +49,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="252" column="10" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="252" bodyend="-1"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="253" column="10" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="253" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1af00734826d37d4e2b40de82cffebc842" prot="protected" static="no" mutable="no">
         <type>double</type>
@@ -64,7 +64,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="255" column="10" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="255" bodyend="-1"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="256" column="10" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="256" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a4189930e80f2c9c6400fe4c35faa4646" prot="protected" static="no" mutable="no">
         <type>double</type>
@@ -79,7 +79,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="258" column="10" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="258" bodyend="-1"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="259" column="10" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="259" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a8cd68a65afed99d0baf75edd407f598a" prot="protected" static="no" mutable="no">
         <type>int</type>
@@ -94,7 +94,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="261" column="7" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="261" bodyend="-1"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="262" column="7" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="262" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a07f7d8c8b08ead664234f8c0a1a34e93" prot="protected" static="no" mutable="no">
         <type>int</type>
@@ -109,7 +109,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="264" column="7" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="264" bodyend="-1"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="265" column="7" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="265" bodyend="-1"/>
       </memberdef>
       </sectiondef>
       <sectiondef kind="user-defined">
@@ -127,7 +127,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="347" column="4" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="347" bodyend="-1"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="348" column="4" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="348" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a802488baa08672fdef78f95eb9707280" prot="protected" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1table__units" kindref="compound" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag">o2scl::table_units</ref></type>
@@ -142,7 +142,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="350" column="4" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="350" bodyend="-1"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="351" column="4" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="351" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1af54fbf548389aaf2cdcc10bd3318c7aa" prot="protected" static="no" mutable="no">
         <type>bool</type>
@@ -157,7 +157,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="354" column="8" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="354" bodyend="-1"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="355" column="8" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="355" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a0b14a8f3c4f4675cc67626a5db20ec14" prot="protected" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1rng" kindref="compound" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag">o2scl::rng</ref></type>
@@ -172,7 +172,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="357" column="4" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="357" bodyend="-1"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="358" column="4" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="358" bodyend="-1"/>
       </memberdef>
       </sectiondef>
       <sectiondef kind="user-defined">
@@ -190,7 +190,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="363" column="10" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="363" bodyend="-1"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="364" column="10" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="364" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a903b4089d53c001c24a5a5608882a9cb" prot="protected" static="no" mutable="no">
         <type>double</type>
@@ -205,7 +205,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="366" column="10" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="366" bodyend="-1"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="367" column="10" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="367" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a2e1699b00bfc1d3d65d33c2ecea127cd" prot="protected" static="no" mutable="no">
         <type>double</type>
@@ -220,7 +220,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="369" column="10" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="369" bodyend="-1"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="370" column="10" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="370" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a123f00b92ba314ddcb470a2b1f7ef59c" prot="protected" static="no" mutable="no">
         <type>double</type>
@@ -235,7 +235,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="375" column="10" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="375" bodyend="-1"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="376" column="10" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="376" bodyend="-1"/>
       </memberdef>
       </sectiondef>
       <sectiondef kind="user-defined">
@@ -253,7 +253,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="390" column="15" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="390" bodyend="-1"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="391" column="15" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="391" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1ad75fc91b44b7c8a44c0820191d2e5ee3" prot="protected" static="no" mutable="no">
         <type>double</type>
@@ -268,7 +268,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="431" column="10" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="431" bodyend="-1"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="432" column="10" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="432" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a03553fcb0bf2589de3324ad40d9543a9" prot="protected" static="no" mutable="no">
         <type>double</type>
@@ -284,7 +284,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="438" column="10" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="438" bodyend="-1"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="439" column="10" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="439" bodyend="-1"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1a56066be90d4464ee499c2ed326d5b6b5" prot="protected" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>double</type>
@@ -306,7 +306,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="387" column="10"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="388" column="10"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1a7ea14982214528c766ec361401684e24" prot="protected" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>double</type>
@@ -334,7 +334,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="399" column="10"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="400" column="10"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1a11dcf97591da472a52cc06b72beb0d1b" prot="protected" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>double</type>
@@ -354,7 +354,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="408" column="10"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="409" column="10"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1a7b77c6340798d21d2115deece7efd8ca" prot="protected" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>double</type>
@@ -373,7 +373,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="413" column="10"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="414" column="10"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1a337b4bb929454134ff7295409fdf8dfd" prot="protected" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>double</type>
@@ -392,7 +392,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="418" column="10"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="419" column="10"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1aa6e39d3d5519ba1b07a58bc84c8ba91b" prot="protected" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>void</type>
@@ -415,7 +415,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="423" column="8"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="424" column="8"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1ae02ba6f3224e7ae56586f9aca94f5c87" prot="protected" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>void</type>
@@ -434,7 +434,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="428" column="8"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="429" column="8"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1a4726c6da75a70d1e7294f20e1a297b5b" prot="protected" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>double</type>
@@ -454,7 +454,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="447" column="10"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="448" column="10"/>
       </memberdef>
       </sectiondef>
       <sectiondef kind="user-defined">
@@ -471,7 +471,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="452" column="29" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="452" bodyend="-1"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="453" column="29" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="453" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1ab5cef53d24699c484d538a856ca03bd0" prot="protected" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1cli_1_1parameter__bool" kindref="compound" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag">o2scl::cli::parameter_bool</ref></type>
@@ -485,7 +485,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="453" column="30" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="453" bodyend="-1"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="454" column="30" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="454" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1ae04c7341212965d955c71cb688cebaa5" prot="protected" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1cli_1_1parameter__bool" kindref="compound" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag">o2scl::cli::parameter_bool</ref></type>
@@ -499,7 +499,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="454" column="30" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="454" bodyend="-1"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="455" column="30" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="455" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a368119648c8709b9d53ad13d375073f5" prot="protected" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1cli_1_1parameter__bool" kindref="compound" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag">o2scl::cli::parameter_bool</ref></type>
@@ -513,7 +513,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="455" column="30" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="455" bodyend="-1"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="456" column="30" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="456" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a5ff4775cbc9def7bcb9c123744397048" prot="protected" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1cli_1_1parameter__bool" kindref="compound" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag">o2scl::cli::parameter_bool</ref></type>
@@ -527,7 +527,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="456" column="30" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="456" bodyend="-1"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="457" column="30" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="457" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1af8925da98b919072e94a34b493f0c185" prot="protected" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1cli_1_1parameter__bool" kindref="compound" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag">o2scl::cli::parameter_bool</ref></type>
@@ -541,7 +541,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="457" column="30" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="457" bodyend="-1"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="458" column="30" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="458" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a1f7f15f61f329ddf72a0733d77a36bac" prot="protected" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1cli_1_1parameter__bool" kindref="compound" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag">o2scl::cli::parameter_bool</ref></type>
@@ -555,7 +555,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="458" column="30" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="458" bodyend="-1"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="459" column="30" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="459" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1af18bdac8e8845a31672bcc5e89a2e103" prot="protected" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1cli_1_1parameter__double" kindref="compound" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag">o2scl::cli::parameter_double</ref></type>
@@ -569,7 +569,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="459" column="32" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="459" bodyend="-1"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="460" column="32" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="460" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1ad4c78d840172ba24b525f562efe4a3d7" prot="protected" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1cli_1_1parameter__double" kindref="compound" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag">o2scl::cli::parameter_double</ref></type>
@@ -583,7 +583,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="460" column="32" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="460" bodyend="-1"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="461" column="32" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="461" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a06ea10ebf76e95b729bc34d5edb59427" prot="protected" static="no" mutable="no">
         <type>bool</type>
@@ -598,7 +598,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="464" column="8" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="464" bodyend="-1"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="465" column="8" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="465" bodyend="-1"/>
       </memberdef>
       </sectiondef>
       <sectiondef kind="user-defined">
@@ -616,7 +616,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="515" column="22" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="515" bodyend="-1"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="516" column="22" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="516" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a7d08a8fedcc33b7789cd889f30aff342" prot="protected" static="no" mutable="no">
         <type>o2scl::fermion</type>
@@ -631,7 +631,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="519" column="18" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="519" bodyend="-1"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="520" column="18" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="520" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a9163e34ddcb615af9ec561fb44f1655f" prot="protected" static="no" mutable="no">
         <type>o2scl::fermion</type>
@@ -646,7 +646,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="523" column="18" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="523" bodyend="-1"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="524" column="18" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="524" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a5ff2fbd5f7622bf05e31bb03a63c900e" prot="protected" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1boson" kindref="compound" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag">o2scl::boson</ref></type>
@@ -661,7 +661,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="527" column="16" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="527" bodyend="-1"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="528" column="16" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="528" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a1d6a2e292171de1dc51960cc51c610f9" prot="protected" static="no" mutable="no">
         <type>o2scl::fermion</type>
@@ -676,7 +676,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="530" column="18" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="530" bodyend="-1"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="531" column="18" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="531" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a4644e7862f3fecbaa246beb554da8847" prot="protected" static="no" mutable="no">
         <type>o2scl::fermion</type>
@@ -691,7 +691,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="533" column="18" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="533" bodyend="-1"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="534" column="18" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="534" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a59936e5b4616951e3cb4b2a605b26698" prot="protected" static="no" mutable="no">
         <type>o2scl::fermion</type>
@@ -706,7 +706,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="536" column="18" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="536" bodyend="-1"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="537" column="18" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="537" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a1e9900aedd76d412c6471bb41793a18e" prot="protected" static="no" mutable="no">
         <type>o2scl::fermion</type>
@@ -721,7 +721,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="539" column="18" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="539" bodyend="-1"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="540" column="18" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="540" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a60f53d36893b821e72e08aff3250ddd8" prot="protected" static="no" mutable="no">
         <type>o2scl::fermion</type>
@@ -736,14 +736,14 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="542" column="18" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="542" bodyend="-1"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="543" column="18" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="543" bodyend="-1"/>
       </memberdef>
       </sectiondef>
       <sectiondef kind="user-defined">
       <header>Base physics objects [protected]</header>
-      <memberdef kind="variable" id="classeos_1abc23aa642aa3486aa5bfc20839536616" prot="protected" static="no" mutable="no">
-        <type><ref refid="classvirial__solver__deriv" kindref="compound">virial_solver_deriv</ref></type>
-        <definition>virial_solver_deriv eos::vsd</definition>
+      <memberdef kind="variable" id="classeos_1af57f3af5a2b3e397232e7c6f9977f169" prot="protected" static="no" mutable="no">
+        <type><ref refid="classo2scl_1_1eos__had__virial" kindref="compound" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag">o2scl::eos_had_virial</ref></type>
+        <definition>o2scl::eos_had_virial eos::vsd</definition>
         <argsstring></argsstring>
         <name>vsd</name>
         <qualifiedname>eos::vsd</qualifiedname>
@@ -754,22 +754,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="548" column="23" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="548" bodyend="-1"/>
-      </memberdef>
-      <memberdef kind="variable" id="classeos_1a46d24610bbf62e88c7885f2d2acc10c6" prot="protected" static="no" mutable="no">
-        <type><ref refid="classvirial__solver" kindref="compound">virial_solver</ref></type>
-        <definition>virial_solver eos::vs</definition>
-        <argsstring></argsstring>
-        <name>vs</name>
-        <qualifiedname>eos::vs</qualifiedname>
-        <briefdescription>
-<para>Old virial solver. </para>
-        </briefdescription>
-        <detaileddescription>
-        </detaileddescription>
-        <inbodydescription>
-        </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="551" column="17" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="551" bodyend="-1"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="549" column="25" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="549" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1afead2a3442d9ad320bcce5043a6a801e" prot="protected" static="no" mutable="no">
         <type><ref refid="namespaceo2scl_1abe7ceb41876bd41c87b259f6defe3e4a" kindref="member" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag">o2scl::fermion_rel</ref></type>
@@ -784,7 +769,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="555" column="22" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="555" bodyend="-1"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="553" column="22" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="553" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a8c5a293eb5e1a6800eadb5d345ba9967" prot="protected" static="no" mutable="no">
         <type><ref refid="namespaceo2scl_1a460e43ee0206e03188c364087815398f" kindref="member" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag">o2scl::thermo</ref></type>
@@ -799,7 +784,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="558" column="17" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="558" bodyend="-1"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="556" column="17" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="556" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a5c9585cd6a83c158489d45c39025aaa9" prot="protected" static="no" mutable="no">
         <type><ref refid="namespaceo2scl_1a460e43ee0206e03188c364087815398f" kindref="member" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag">o2scl::thermo</ref></type>
@@ -814,7 +799,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="561" column="17" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="561" bodyend="-1"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="559" column="17" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="559" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a1ce709670f5e43caba65e040b9cc02f9" prot="protected" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1eos__had__skyrme" kindref="compound" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag">o2scl::eos_had_skyrme</ref></type>
@@ -829,7 +814,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="564" column="25" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="564" bodyend="-1"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="562" column="25" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="562" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a672a26f8553d520dc941519e63e86fcc" prot="protected" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1eos__had__rmf" kindref="compound" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag">o2scl::eos_had_rmf</ref></type>
@@ -844,7 +829,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="567" column="22" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="567" bodyend="-1"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="565" column="22" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="565" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a0373c607528d50a208fbe0bff038380f" prot="protected" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1eos__had__rmf__hyp" kindref="compound" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag">o2scl::eos_had_rmf_hyp</ref></type>
@@ -859,7 +844,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="570" column="26" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="570" bodyend="-1"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="568" column="26" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="568" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1ae08253e92e8f4dec1d3e41ce2d5d0279" prot="protected" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1eos__had__skyrme" kindref="compound" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag">o2scl::eos_had_skyrme</ref></type>
@@ -874,7 +859,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="573" column="25" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="573" bodyend="-1"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="571" column="25" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="571" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a0e84093516ee705a0f759d12be6152f5" prot="protected" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1eos__had__temp__eden__base" kindref="compound" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag">o2scl::eos_had_temp_eden_base</ref> *</type>
@@ -889,7 +874,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="576" column="33" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="576" bodyend="-1"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="574" column="33" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="574" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a48c44c24584afa24b514959434cda651" prot="protected" static="no" mutable="no">
         <type><ref refid="classeos__crust__virial__v2" kindref="compound">eos_crust_virial_v2</ref></type>
@@ -904,7 +889,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="579" column="23" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="579" bodyend="-1"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="577" column="23" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="577" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a48d645e17b016ffef047b73d2f517d11" prot="protected" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1eos__had__skyrme" kindref="compound" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag">o2scl::eos_had_skyrme</ref></type>
@@ -919,7 +904,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="582" column="25" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="582" bodyend="-1"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="580" column="25" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="580" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a2f327f60301c5def791ed3e2e31a505e" prot="protected" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1eos__had__temp__base" kindref="compound" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag">o2scl::eos_had_temp_base</ref> *</type>
@@ -934,7 +919,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="585" column="28" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="585" bodyend="-1"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="583" column="28" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="583" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a72b86f7d53fc7dd3947c556f7fa0d3b9" prot="protected" static="no" mutable="no">
         <type>std::string</type>
@@ -949,7 +934,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="588" column="15" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="588" bodyend="-1"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="586" column="15" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="586" bodyend="-1"/>
       </memberdef>
       </sectiondef>
       <sectiondef kind="user-defined">
@@ -967,7 +952,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="594" column="10" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="594" bodyend="-1"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="592" column="10" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="592" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1aa1d4bd74068377744160c5aa5b6c46a3" prot="protected" static="no" mutable="no">
         <type>double</type>
@@ -982,7 +967,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="596" column="10" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="596" bodyend="-1"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="594" column="10" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="594" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1ad656a3078814fbeceb967e6d43f08bfa" prot="protected" static="no" mutable="no">
         <type>double</type>
@@ -997,7 +982,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="600" column="10" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="600" bodyend="-1"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="598" column="10" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="598" bodyend="-1"/>
       </memberdef>
       </sectiondef>
       <sectiondef kind="user-defined">
@@ -1015,7 +1000,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="606" column="10" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="606" bodyend="-1"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="604" column="10" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="604" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1aa5d6c808833673220aed207a40dfe5fd" prot="protected" static="no" mutable="no">
         <type>double</type>
@@ -1030,7 +1015,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="609" column="10" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="609" bodyend="-1"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="607" column="10" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="607" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a7b0ce0f801d0318e5804d2b2daaab6cb" prot="protected" static="no" mutable="no">
         <type>double</type>
@@ -1045,7 +1030,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="612" column="10" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="612" bodyend="-1"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="610" column="10" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="610" bodyend="-1"/>
       </memberdef>
       </sectiondef>
       <sectiondef kind="user-defined">
@@ -1063,7 +1048,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="630" column="8" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="630" bodyend="-1"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="628" column="8" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="628" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a9fac0f5d859f20444f09bd04453587a5" prot="public" static="no" mutable="no">
         <type>bool</type>
@@ -1078,7 +1063,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="635" column="8" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="635" bodyend="-1"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="633" column="8" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="633" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a430e90f02d672922679a5360b4a34287" prot="public" static="no" mutable="no">
         <type>bool</type>
@@ -1093,7 +1078,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="638" column="8" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="638" bodyend="-1"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="636" column="8" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="636" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a74f5a2586276e7bfd2290d956b291141" prot="public" static="no" mutable="no">
         <type>bool</type>
@@ -1108,7 +1093,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="643" column="8" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="643" bodyend="-1"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="641" column="8" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="641" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1aef3af455de493d339ea33c47747e018d" prot="public" static="no" mutable="no">
         <type>bool</type>
@@ -1123,7 +1108,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="648" column="8" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="648" bodyend="-1"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="646" column="8" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="646" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1afa72659710add3dd0b7139b7da0a07dd" prot="public" static="no" mutable="no">
         <type>bool</type>
@@ -1139,7 +1124,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="656" column="8" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="656" bodyend="-1"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="654" column="8" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="654" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1ad517930f035d4b54ca6a688fb5494bfe" prot="public" static="no" mutable="no">
         <type>int</type>
@@ -1154,7 +1139,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="660" column="7" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="660" bodyend="-1"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="658" column="7" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="658" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1ad1c7d55cb03ff0f19ecc4b6195ffabf9" prot="public" static="no" mutable="no">
         <type>bool</type>
@@ -1169,7 +1154,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="663" column="8" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="663" bodyend="-1"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="661" column="8" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="661" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a5a1b813d87a973d3552ddcbcaae4c2eb" prot="public" static="no" mutable="no">
         <type>double</type>
@@ -1178,14 +1163,13 @@
         <name>a_virial</name>
         <qualifiedname>eos::a_virial</qualifiedname>
         <briefdescription>
-<para>Coefficient for modulation of virial EOS. </para>
+<para>Coefficient for modulation of virial EOS (default 10) </para>
         </briefdescription>
         <detaileddescription>
-<para>Virial coefficient a (default 10.0). </para>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="669" column="10" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="669" bodyend="-1"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="665" column="10" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="665" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a828e85c817596153f6607355e42e5a85" prot="public" static="no" mutable="no">
         <type>double</type>
@@ -1194,14 +1178,13 @@
         <name>b_virial</name>
         <qualifiedname>eos::b_virial</qualifiedname>
         <briefdescription>
-<para>Coefficient for modulation of virial EOS. </para>
+<para>Coefficient for modulation of virial EOS (default 10) </para>
         </briefdescription>
         <detaileddescription>
-<para>Virial coefficient b (default 10.0). </para>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="675" column="10" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="675" bodyend="-1"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="669" column="10" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="669" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1adcd6aa9ad3fbe21200c70c877374aba9" prot="public" static="no" mutable="no">
         <type>bool</type>
@@ -1216,7 +1199,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="679" column="8" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="679" bodyend="-1"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="673" column="8" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="673" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a2d54b943239f6dc81e07efdfd8b3e945" prot="public" static="no" mutable="no">
         <type>bool</type>
@@ -1231,7 +1214,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="684" column="8" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="684" bodyend="-1"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="678" column="8" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="678" bodyend="-1"/>
       </memberdef>
       </sectiondef>
       <sectiondef kind="user-defined">
@@ -1265,7 +1248,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="272" column="10"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="273" column="10"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1abda7474511cb007f9549a59c137fae84" prot="protected" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>double</type>
@@ -1302,7 +1285,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="286" column="10"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="287" column="10"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1a4144f3aff52bde7d7e2b00099061ae60" prot="protected" static="no" const="no" explicit="no" inline="no" virt="virtual">
         <type>double</type>
@@ -1357,7 +1340,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="296" column="18"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="297" column="18"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1ab3ce280e28cbe6afedd9a74815592090" prot="protected" static="no" const="no" explicit="no" inline="yes" virt="virtual">
         <type>double</type>
@@ -1388,7 +1371,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="305" column="18" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="306" bodyend="310"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="306" column="18" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="307" bodyend="311"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1a9d4b034dd1e222ce248e478a89d9004b" prot="protected" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>double</type>
@@ -1428,7 +1411,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="317" column="10"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="318" column="10"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1aac2d380b4481aec1f81bef711df6ce01" prot="protected" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>double</type>
@@ -1455,7 +1438,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="324" column="10"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="325" column="10"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1a105fb4842fa275a592d84df10b77b313" prot="protected" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>double</type>
@@ -1494,7 +1477,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="329" column="10"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="330" column="10"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1a3289d875b0f100e291d26fe2391840ab" prot="protected" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>double</type>
@@ -1533,7 +1516,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="335" column="10"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="336" column="10"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1ac61da4952bdae6a0dcdd1fa5a037fa36" prot="protected" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>double</type>
@@ -1564,7 +1547,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="340" column="10"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="341" column="10"/>
       </memberdef>
       </sectiondef>
       <sectiondef kind="user-defined">
@@ -1590,7 +1573,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="472" column="10"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="473" column="10"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1a1363b6b6d6cb43829b672e35a2434832" prot="protected" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -1621,7 +1604,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="477" column="7"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="478" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1a0450e91436baddef1b53ec21791373e4" prot="protected" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>double</type>
@@ -1660,7 +1643,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="482" column="10"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="483" column="10"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1a1d556879c5caf09532ca7398dce99a61" prot="protected" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>double</type>
@@ -1699,7 +1682,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="487" column="10"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="488" column="10"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1a1f8ac29273e5e0f1fc6bb1da9c2c578f" prot="protected" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -1738,7 +1721,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="492" column="7"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="493" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1a76f06b1b3ab9e0fc55f6ff024a38db2f" prot="protected" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -1777,7 +1760,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="497" column="7"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="498" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1a11c54a35b13fa5c9eb3229a019d1d164" prot="protected" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -1816,7 +1799,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="502" column="7"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="503" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1aa6e242360755e084e3845f8ad7ca5034" prot="protected" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -1859,7 +1842,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="507" column="7"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="508" column="7"/>
       </memberdef>
       </sectiondef>
       <sectiondef kind="user-defined">
@@ -1876,7 +1859,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="619" column="3"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="617" column="3"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1a25db96648576a8517d3b0dc93505b708" prot="public" static="no" const="no" explicit="no" inline="yes" virt="virtual">
         <type></type>
@@ -1890,7 +1873,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="621" column="11" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="621" bodyend="622"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="619" column="11" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="619" bodyend="620"/>
       </memberdef>
       </sectiondef>
       <sectiondef kind="user-defined">
@@ -1918,7 +1901,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="695" column="7"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="689" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1a5c3ca739dbccf7e530bc5bc660f575b7" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -1943,7 +1926,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="704" column="7"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="698" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1a9037d1e643beb2a46975c2d6ee0f7701" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -1968,7 +1951,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="713" column="7"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="707" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1ae642fc617fe1b1b5af6c347a45ac59eb" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -1993,7 +1976,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="723" column="7"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="717" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1a8747580da79f5b7a67c2d398fc92da9a" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -2018,7 +2001,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="731" column="7"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="725" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1a2c05bd84679793e7df3b7f23a92b89fb" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -2043,7 +2026,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="739" column="7"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="733" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1aa3bc65fa01f0eb33e795b5f2fe0c7d21" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -2068,7 +2051,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="747" column="7"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="741" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1aca0e9051a7e04930041783302730ae15" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -2093,7 +2076,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="755" column="7"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="749" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1a9155f6ba7680bfc4c0abaf7fa7001a9d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -2118,7 +2101,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="763" column="7"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="757" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1a73f6d595ccaf7a58edd90f90e6d8e27b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -2143,7 +2126,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="771" column="7"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="765" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1a572d844aa0cbd2fa62446886ca7c5f1e" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -2168,7 +2151,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="779" column="7"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="773" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1a0704d6eea1ea797affeb42a358b7971f" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -2193,7 +2176,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="787" column="7"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="781" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1a2dafcf25ad75a9a2b640bc845bf71d05" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -2218,7 +2201,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="796" column="7"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="790" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1aea1bd679e9f8b33ea8079b7cfd85ab0a" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -2243,7 +2226,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="808" column="7"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="802" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1a2763ba531a632f0924afaf81c6bd478d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -2268,7 +2251,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="825" column="7"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="819" column="7"/>
       </memberdef>
       </sectiondef>
       <sectiondef kind="user-defined">
@@ -2310,7 +2293,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="833" column="7"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="827" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1a8d1df2f651c5278f9c0b1e6a31d4e264" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -2349,18 +2332,22 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="838" column="7"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="832" column="7"/>
       </memberdef>
-      <memberdef kind="function" id="classeos_1a0ca92c378bb9f5f99be7a5cf6976ef99" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
+      <memberdef kind="function" id="classeos_1a95f4ca5114228035d40de725eefc521a" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
         <type>void</type>
         <definition>virtual void eos::setup_cli</definition>
-        <argsstring>(o2scl::cli &amp;cl)</argsstring>
+        <argsstring>(o2scl::cli &amp;cl, bool read_docs=true)</argsstring>
         <name>setup_cli</name>
         <qualifiedname>eos::setup_cli</qualifiedname>
-        <reimplementedby refid="classeos__nuclei_1a740b74ccb19bac55a9d067dc15a618a0">setup_cli</reimplementedby>
         <param>
           <type><ref refid="classo2scl_1_1cli" kindref="compound" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag">o2scl::cli</ref> &amp;</type>
           <declname>cl</declname>
+        </param>
+        <param>
+          <type>bool</type>
+          <declname>read_docs</declname>
+          <defval>true</defval>
         </param>
         <briefdescription>
 <para>Setup the command-line interface with commands and parameters. </para>
@@ -2369,7 +2356,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="845" column="16"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="839" column="16"/>
       </memberdef>
       </sectiondef>
       <sectiondef kind="protected-attrib">
@@ -2385,7 +2372,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos.h" line="239" column="14" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="239" bodyend="-1"/>
+        <location file="/Users/awsteiner/wcs/eos/eos.h" line="240" column="14" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="240" bodyend="-1"/>
       </memberdef>
       </sectiondef>
     <briefdescription>
@@ -2425,7 +2412,7 @@
         <childnode refid="30" relation="public-inheritance">
         </childnode>
       </node>
-      <node id="52">
+      <node id="46">
         <label>o2scl::cubic_real_coeff_cern&lt; fp_t, cx_t &gt;</label>
         <link refid="classo2scl_1_1cubic__real__coeff__cern" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag"/>
         <childnode refid="29" relation="public-inheritance">
@@ -2437,7 +2424,7 @@
         <childnode refid="29" relation="public-inheritance">
         </childnode>
       </node>
-      <node id="60">
+      <node id="54">
         <label>o2scl::deriv_base&lt; funct, double &gt;</label>
         <link refid="classo2scl_1_1deriv__base" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag"/>
       </node>
@@ -2479,35 +2466,32 @@
           <edgelabel>vsd</edgelabel>
         </childnode>
         <childnode refid="47" relation="usage">
-          <edgelabel>vs</edgelabel>
-        </childnode>
-        <childnode refid="53" relation="usage">
           <edgelabel>sk</edgelabel>
           <edgelabel>sk_Tcorr</edgelabel>
           <edgelabel>sk_alt</edgelabel>
         </childnode>
-        <childnode refid="67" relation="usage">
+        <childnode refid="61" relation="usage">
           <edgelabel>rmf</edgelabel>
         </childnode>
-        <childnode refid="70" relation="usage">
+        <childnode refid="64" relation="usage">
           <edgelabel>rmf_hyp</edgelabel>
         </childnode>
-        <childnode refid="54" relation="usage">
+        <childnode refid="48" relation="usage">
           <edgelabel>eos_Tcorr</edgelabel>
         </childnode>
-        <childnode refid="71" relation="usage">
+        <childnode refid="65" relation="usage">
           <edgelabel>ecv</edgelabel>
         </childnode>
-        <childnode refid="55" relation="usage">
+        <childnode refid="49" relation="usage">
           <edgelabel>eosp_alt</edgelabel>
         </childnode>
       </node>
-      <node id="71">
+      <node id="65">
         <label>eos_crust_virial_v2</label>
         <link refid="classeos__crust__virial__v2"/>
-        <childnode refid="72" relation="public-inheritance">
+        <childnode refid="66" relation="public-inheritance">
         </childnode>
-        <childnode refid="73" relation="usage">
+        <childnode refid="67" relation="usage">
           <edgelabel>iv_ba</edgelabel>
           <edgelabel>iv_bpna</edgelabel>
         </childnode>
@@ -2542,7 +2526,7 @@
           <edgelabel>svx</edgelabel>
         </childnode>
       </node>
-      <node id="73">
+      <node id="67">
         <label>o2scl::interp_vec&lt; std::vector&lt; double &gt; &gt;</label>
         <link refid="classo2scl_1_1interp__vec" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag"/>
         <childnode refid="7" relation="public-inheritance">
@@ -2574,25 +2558,21 @@
         <childnode refid="22" relation="public-inheritance">
         </childnode>
       </node>
-      <node id="50">
+      <node id="42">
         <label>o2scl_linalg::linear_solver&lt; boost::numeric::ublas::vector&lt; double &gt;, boost::numeric::ublas::matrix&lt; double &gt; &gt;</label>
         <link refid="classo2scl__linalg_1_1linear__solver" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag"/>
       </node>
-      <node id="49">
+      <node id="41">
         <label>o2scl_linalg::linear_solver_LU&lt; vector&lt; double &gt;, matrix&lt; double &gt; &gt;</label>
         <link refid="classo2scl__linalg_1_1linear__solver__LU" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag"/>
-        <childnode refid="50" relation="public-inheritance">
+        <childnode refid="42" relation="public-inheritance">
         </childnode>
-      </node>
-      <node id="48">
-        <label>boost::numeric::ublas::matrix&lt; double &gt;</label>
-        <link refid="classboost_1_1numeric_1_1ublas_1_1matrix" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag"/>
       </node>
       <node id="19">
         <label>o2scl::mroot&lt; mm_funct, boost::numeric::ublas::vector&lt; double &gt;, jac_funct &gt;</label>
         <link refid="classo2scl_1_1mroot" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag"/>
       </node>
-      <node id="69">
+      <node id="63">
         <label>o2scl::mroot&lt; mm_funct, vector&lt; double &gt;, jac_funct &gt;</label>
         <link refid="classo2scl_1_1mroot" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag"/>
       </node>
@@ -2635,42 +2615,42 @@
         <label>o2scl::comm_option_funct</label>
         <link refid="classo2scl_1_1comm__option__funct" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag"/>
       </node>
-      <node id="65">
+      <node id="59">
         <label>o2scl::deriv_base&lt; class func_t, class fp_t &gt;</label>
         <link refid="classo2scl_1_1deriv__base" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag"/>
       </node>
-      <node id="59">
+      <node id="53">
         <label>o2scl::deriv_gsl&lt; class func_t, class fp_t &gt;</label>
         <link refid="classo2scl_1_1deriv__gsl" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag"/>
-        <childnode refid="60" relation="public-inheritance">
+        <childnode refid="54" relation="public-inheritance">
         </childnode>
       </node>
-      <node id="57">
+      <node id="51">
         <label>o2scl::eos_base</label>
         <link refid="classo2scl_1_1eos__base" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag"/>
         <childnode refid="39" relation="usage">
           <edgelabel>def_thermo</edgelabel>
         </childnode>
-        <childnode refid="58" relation="usage">
+        <childnode refid="52" relation="usage">
           <edgelabel>eos_thermo</edgelabel>
         </childnode>
       </node>
-      <node id="72">
+      <node id="66">
         <label>o2scl::eos_crust_virial</label>
         <link refid="classo2scl_1_1eos__crust__virial" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag"/>
-        <childnode refid="68" relation="public-inheritance">
+        <childnode refid="62" relation="public-inheritance">
         </childnode>
         <childnode refid="37" relation="usage">
           <edgelabel>alpha</edgelabel>
           <edgelabel>deuteron</edgelabel>
         </childnode>
       </node>
-      <node id="56">
+      <node id="50">
         <label>o2scl::eos_had_base</label>
         <link refid="classo2scl_1_1eos__had__base" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag"/>
-        <childnode refid="57" relation="public-inheritance">
+        <childnode refid="51" relation="public-inheritance">
         </childnode>
-        <childnode refid="59" relation="usage">
+        <childnode refid="53" relation="usage">
           <edgelabel>def_deriv</edgelabel>
           <edgelabel>def_deriv2</edgelabel>
         </childnode>
@@ -2678,66 +2658,76 @@
           <edgelabel>beta_mroot</edgelabel>
           <edgelabel>def_mroot</edgelabel>
         </childnode>
-        <childnode refid="61" relation="usage">
+        <childnode refid="55" relation="usage">
           <edgelabel>def_sat_root</edgelabel>
         </childnode>
-        <childnode refid="63" relation="usage">
+        <childnode refid="57" relation="usage">
           <edgelabel>eos_mroot</edgelabel>
         </childnode>
-        <childnode refid="64" relation="usage">
+        <childnode refid="58" relation="usage">
           <edgelabel>sat_root</edgelabel>
         </childnode>
-        <childnode refid="65" relation="usage">
+        <childnode refid="59" relation="usage">
           <edgelabel>sat_deriv</edgelabel>
           <edgelabel>sat_deriv2</edgelabel>
         </childnode>
       </node>
-      <node id="67">
+      <node id="61">
         <label>o2scl::eos_had_rmf</label>
         <link refid="classo2scl_1_1eos__had__rmf" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag"/>
-        <childnode refid="68" relation="public-inheritance">
+        <childnode refid="62" relation="public-inheritance">
         </childnode>
         <childnode refid="18" relation="usage">
           <edgelabel>def_sat_mroot</edgelabel>
         </childnode>
-        <childnode refid="69" relation="usage">
+        <childnode refid="63" relation="usage">
           <edgelabel>sat_mroot</edgelabel>
         </childnode>
       </node>
-      <node id="70">
+      <node id="64">
         <label>o2scl::eos_had_rmf_hyp</label>
         <link refid="classo2scl_1_1eos__had__rmf__hyp" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag"/>
-        <childnode refid="67" relation="public-inheritance">
+        <childnode refid="61" relation="public-inheritance">
         </childnode>
       </node>
-      <node id="53">
+      <node id="47">
         <label>o2scl::eos_had_skyrme</label>
         <link refid="classo2scl_1_1eos__had__skyrme" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag"/>
-        <childnode refid="54" relation="public-inheritance">
+        <childnode refid="48" relation="public-inheritance">
         </childnode>
       </node>
-      <node id="55">
+      <node id="49">
         <label>o2scl::eos_had_temp_base</label>
         <link refid="classo2scl_1_1eos__had__temp__base" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag"/>
-        <childnode refid="56" relation="public-inheritance">
+        <childnode refid="50" relation="public-inheritance">
         </childnode>
-        <childnode refid="66" relation="usage">
+        <childnode refid="60" relation="usage">
           <edgelabel>fet</edgelabel>
         </childnode>
         <childnode refid="25" relation="usage">
           <edgelabel>def_fet</edgelabel>
         </childnode>
       </node>
-      <node id="54">
+      <node id="48">
         <label>o2scl::eos_had_temp_eden_base</label>
         <link refid="classo2scl_1_1eos__had__temp__eden__base" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag"/>
-        <childnode refid="55" relation="public-inheritance">
+        <childnode refid="49" relation="public-inheritance">
         </childnode>
       </node>
-      <node id="68">
+      <node id="62">
         <label>o2scl::eos_had_temp_pres_base</label>
         <link refid="classo2scl_1_1eos__had__temp__pres__base" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag"/>
-        <childnode refid="55" relation="public-inheritance">
+        <childnode refid="49" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="40">
+        <label>o2scl::eos_had_virial</label>
+        <link refid="classo2scl_1_1eos__had__virial" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag"/>
+        <childnode refid="41" relation="usage">
+          <edgelabel>lsol</edgelabel>
+        </childnode>
+        <childnode refid="43" relation="usage">
+          <edgelabel>quart</edgelabel>
         </childnode>
       </node>
       <node id="17">
@@ -2768,7 +2758,7 @@
           <edgelabel>density_root</edgelabel>
         </childnode>
       </node>
-      <node id="66">
+      <node id="60">
         <label>o2scl::fermion_thermo_tl&lt; class fermion_t, class fd_inte_t, class be_inte_t, class root_t, class func_t, class fp_t &gt;</label>
         <link refid="classo2scl_1_1fermion__thermo__tl" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag"/>
         <childnode refid="27" relation="public-inheritance">
@@ -2784,7 +2774,7 @@
         <label>o2scl::find_constants</label>
         <link refid="classo2scl_1_1find__constants" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag"/>
       </node>
-      <node id="63">
+      <node id="57">
         <label>o2scl::mroot&lt; class func_t, class vec_t, class jfunc_t &gt;</label>
         <link refid="classo2scl_1_1mroot" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag"/>
       </node>
@@ -2817,18 +2807,12 @@
         <label>o2scl::mroot_hybrids_base</label>
         <link refid="classo2scl_1_1mroot__hybrids__base" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag"/>
       </node>
-      <node id="41">
-        <label>o2scl::poly_real_coeff_gsl&lt; class fp_t, class cx_t, class coeff_vec_t, class root_vec_t &gt;</label>
-        <link refid="classo2scl_1_1poly__real__coeff__gsl" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag"/>
-        <childnode refid="42" relation="public-inheritance">
-        </childnode>
-      </node>
-      <node id="51">
+      <node id="43">
         <label>o2scl::quartic_real_coeff_cern&lt; class fp_t, class cx_t &gt;</label>
         <link refid="classo2scl_1_1quartic__real__coeff__cern" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag"/>
-        <childnode refid="45" relation="public-inheritance">
+        <childnode refid="44" relation="public-inheritance">
         </childnode>
-        <childnode refid="52" relation="usage">
+        <childnode refid="46" relation="usage">
           <edgelabel>cub_obj</edgelabel>
         </childnode>
       </node>
@@ -2836,14 +2820,14 @@
         <label>o2scl::rng&lt; class fp_t &gt;</label>
         <link refid="classo2scl_1_1rng" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag"/>
       </node>
-      <node id="64">
+      <node id="58">
         <label>o2scl::root&lt; class func_t, class dfunc_t, class fp_t &gt;</label>
         <link refid="classo2scl_1_1root" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag"/>
       </node>
-      <node id="61">
+      <node id="55">
         <label>o2scl::root_cern&lt; class func_t &gt;</label>
         <link refid="classo2scl_1_1root__cern" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag"/>
-        <childnode refid="62" relation="public-inheritance">
+        <childnode refid="56" relation="public-inheritance">
         </childnode>
       </node>
       <node id="4">
@@ -2855,7 +2839,7 @@
           <edgelabel>cup</edgelabel>
         </childnode>
       </node>
-      <node id="58">
+      <node id="52">
         <label>o2scl::thermo_tl&lt; class fp_t &gt;</label>
         <link refid="classo2scl_1_1thermo__tl" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag"/>
       </node>
@@ -2870,45 +2854,23 @@
           <edgelabel>rbg</edgelabel>
         </childnode>
       </node>
-      <node id="42">
-        <label>o2scl::poly_real_coeff&lt; double, std::complex&lt; double &gt; &gt;</label>
-        <link refid="classo2scl_1_1poly__real__coeff" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag"/>
-        <childnode refid="43" relation="public-inheritance">
-        </childnode>
-        <childnode refid="29" relation="public-inheritance">
-        </childnode>
-        <childnode refid="45" relation="public-inheritance">
-        </childnode>
-      </node>
-      <node id="44">
-        <label>o2scl::quadratic_real&lt; double &gt;</label>
-        <link refid="classo2scl_1_1quadratic__real" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag"/>
-        <childnode refid="31" relation="public-inheritance">
-        </childnode>
-      </node>
-      <node id="43">
-        <label>o2scl::quadratic_real_coeff&lt; double, std::complex&lt; double &gt; &gt;</label>
-        <link refid="classo2scl_1_1quadratic__real__coeff" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag"/>
-        <childnode refid="44" relation="public-inheritance">
-        </childnode>
-      </node>
-      <node id="46">
+      <node id="45">
         <label>o2scl::quartic_real&lt; double &gt;</label>
         <link refid="classo2scl_1_1quartic__real" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag"/>
         <childnode refid="31" relation="public-inheritance">
         </childnode>
       </node>
-      <node id="45">
+      <node id="44">
         <label>o2scl::quartic_real_coeff&lt; double, std::complex&lt; double &gt; &gt;</label>
         <link refid="classo2scl_1_1quartic__real__coeff" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag"/>
-        <childnode refid="46" relation="public-inheritance">
+        <childnode refid="45" relation="public-inheritance">
         </childnode>
       </node>
       <node id="35">
         <label>o2scl::root&lt; func_t, func_t, fp_t &gt;</label>
         <link refid="classo2scl_1_1root" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag"/>
       </node>
-      <node id="62">
+      <node id="56">
         <label>o2scl::root&lt; funct &gt;</label>
         <link refid="classo2scl_1_1root" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag"/>
       </node>
@@ -2953,34 +2915,8 @@
         <label>boost::numeric::ublas::vector&lt; double &gt;</label>
         <link refid="classboost_1_1numeric_1_1ublas_1_1vector" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag"/>
       </node>
-      <node id="47">
-        <label>virial_solver</label>
-        <link refid="classvirial__solver"/>
-        <childnode refid="48" relation="usage">
-          <edgelabel>A</edgelabel>
-        </childnode>
-        <childnode refid="23" relation="usage">
-          <edgelabel>B</edgelabel>
-        </childnode>
-        <childnode refid="49" relation="usage">
-          <edgelabel>lsol</edgelabel>
-        </childnode>
-        <childnode refid="51" relation="usage">
-          <edgelabel>quart</edgelabel>
-        </childnode>
-        <childnode refid="41" relation="usage">
-          <edgelabel>quart2</edgelabel>
-        </childnode>
-      </node>
-      <node id="40">
-        <label>virial_solver_deriv</label>
-        <link refid="classvirial__solver__deriv"/>
-        <childnode refid="41" relation="usage">
-          <edgelabel>quart</edgelabel>
-        </childnode>
-      </node>
     </collaborationgraph>
-    <location file="/Users/awsteiner/wcs/eos/eos.h" line="235" column="1" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="235" bodyend="848"/>
+    <location file="/Users/awsteiner/wcs/eos/eos.h" line="236" column="1" bodyfile="/Users/awsteiner/wcs/eos/eos.h" bodystart="236" bodyend="842"/>
     <listofallmembers>
       <member refid="classeos_1a5a1b813d87a973d3552ddcbcaae4c2eb" prot="public" virt="non-virtual"><scope>eos</scope><name>a_virial</name></member>
       <member refid="classeos_1a5c3ca739dbccf7e530bc5bc660f575b7" prot="public" virt="non-virtual"><scope>eos</scope><name>alt_model</name></member>
@@ -3071,7 +3007,7 @@
       <member refid="classeos_1a2d54b943239f6dc81e07efdfd8b3e945" prot="public" virt="non-virtual"><scope>eos</scope><name>select_cs2_test</name></member>
       <member refid="classeos_1aa6e242360755e084e3845f8ad7ca5034" prot="protected" virt="non-virtual"><scope>eos</scope><name>select_internal</name></member>
       <member refid="classeos_1aa3bc65fa01f0eb33e795b5f2fe0c7d21" prot="public" virt="non-virtual"><scope>eos</scope><name>select_model</name></member>
-      <member refid="classeos_1a0ca92c378bb9f5f99be7a5cf6976ef99" prot="public" virt="virtual"><scope>eos</scope><name>setup_cli</name></member>
+      <member refid="classeos_1a95f4ca5114228035d40de725eefc521a" prot="public" virt="virtual"><scope>eos</scope><name>setup_cli</name></member>
       <member refid="classeos_1a1ce709670f5e43caba65e040b9cc02f9" prot="protected" virt="non-virtual"><scope>eos</scope><name>sk</name></member>
       <member refid="classeos_1a48d645e17b016ffef047b73d2f517d11" prot="protected" virt="non-virtual"><scope>eos</scope><name>sk_alt</name></member>
       <member refid="classeos_1ae08253e92e8f4dec1d3e41ce2d5d0279" prot="protected" virt="non-virtual"><scope>eos</scope><name>sk_Tcorr</name></member>
@@ -3094,8 +3030,7 @@
       <member refid="classeos_1ad517930f035d4b54ca6a688fb5494bfe" prot="public" virt="non-virtual"><scope>eos</scope><name>verbose</name></member>
       <member refid="classeos_1aca0e9051a7e04930041783302730ae15" prot="public" virt="non-virtual"><scope>eos</scope><name>vir_comp</name></member>
       <member refid="classeos_1a2dafcf25ad75a9a2b640bc845bf71d05" prot="public" virt="non-virtual"><scope>eos</scope><name>vir_fit</name></member>
-      <member refid="classeos_1a46d24610bbf62e88c7885f2d2acc10c6" prot="protected" virt="non-virtual"><scope>eos</scope><name>vs</name></member>
-      <member refid="classeos_1abc23aa642aa3486aa5bfc20839536616" prot="protected" virt="non-virtual"><scope>eos</scope><name>vsd</name></member>
+      <member refid="classeos_1af57f3af5a2b3e397232e7c6f9977f169" prot="protected" virt="non-virtual"><scope>eos</scope><name>vsd</name></member>
       <member refid="classeos_1a25db96648576a8517d3b0dc93505b708" prot="public" virt="virtual"><scope>eos</scope><name>~eos</name></member>
     </listofallmembers>
   </compounddef>

@@ -10299,94 +10299,6 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
   return 0;
 }
 
-int eos_nuclei::xml_to_o2(std::vector<std::string> &sv,
-                          bool itive_com) {
-  
-  vector<std::string> doc_strings;
-  
-#ifdef O2SCL_PUGIXML
-
-  vector<string> clist=cl_ptr->get_option_list();
-  
-  for(size_t j=0;j<clist.size();j++) {
-
-    bool found=false;
-    
-    pugi::xml_document doc;
-    pugi::xml_document doc2;
-    
-    std::string cmd_name=clist[j];
-    std::string fn_name;
-    for(size_t k=0;k<cmd_name.length();k++) {
-      if (cmd_name[k]=='-') {
-        fn_name+='_';
-      } else {
-        fn_name+=cmd_name[k];
-      }
-    }
-    if (verbose>0) {
-      cout << "cmd,fn: " << cmd_name << " " << fn_name << endl;
-    }
-    
-    std::string fn="doc/xml/classeos__nuclei.xml";
-    
-    ostream_walker w;
-    
-    pugi::xml_node n3=doxygen_xml_member_get
-      (fn,"eos",fn_name,"briefdescription",doc);
-    if (verbose>1 && n3!=0) {
-      cout << "dxmg: " << n3.name() << " " << n3.value() << endl;
-      n3.traverse(w);
-    }
-    
-    pugi::xml_node n4=doxygen_xml_member_get
-      (fn,"eos",fn_name,"detaileddescription",doc2);
-    if (verbose>1 && n4!=0) {
-      cout << "dxmg: " << n4.name() << " " << n4.value() << endl;
-      n4.traverse(w);
-    }
-    
-    if (n3!=0 && n4!=0) {
-      
-      pugi::xml_node_iterator it=n4.begin();
-      pugi::xml_node_iterator it2=n4.begin();
-      if (it2!=n4.end()) it2++;
-      
-      if (it!=n4.end() && it2!=n4.end() &&
-          it->name()==((string)"para") &&
-          it2->name()==((string)"para")) {
-        
-        doc_strings.push_back(cmd_name);
-        doc_strings.push_back(fn_name);
-        doc_strings.push_back(n3.child_value("para"));
-        doc_strings.push_back(it->child_value());
-        doc_strings.push_back(it2->child_value());
-        found=true;
-      }
-    }
-    
-    if (found==false) {
-      cout << "Could not find documentation for command " << cmd_name
-           << " and function " << fn_name << "." << endl;
-    }
-  }
-
-  hdf_file hf;
-  hf.open_or_create("data/eos_nuclei_docs.o2");
-  hf.sets_vec("doc_strings",doc_strings);
-  hf.close();
-  cout << "Created file data/eos_nuclei_docs.o2." << endl;
-  
-#else
-
-  cout << "Pugixml must be enabled to create the documentation strings "
-       << "from the doxygen\n XML output." << endl;
-  
-#endif
-  
-  return 0;
-}
-
 void eos_nuclei::setup_cli(o2scl::cli &cl) {
   
   eos::setup_cli(cl,false);
@@ -10669,12 +10581,13 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
   p_strangeness.help="";
   p_strangeness.doc_class="eos_nuclei";
   p_strangeness.doc_name="strangeness";
-  p_strangeness.doc_xml_file="doc/xml/classeos__nuclei.xml";
+  p_strangeness.doc_xml_file="doc/xml/classeos.xml";
   cl.par_list.insert(make_pair("strangeness",&p_strangeness));
   
   cl.set_comm_option_vec(nopt,options);
 
   if (file_exists(cl.doc_o2_file)) {
+    //cl.set_verbose(3);
     cl.read_docs();
   } else {
     cerr << "Couldn't find file " << cl.doc_o2_file

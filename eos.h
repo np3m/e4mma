@@ -653,7 +653,7 @@ class eos {
    */
   bool old_ns_fit;
 
-  /** \brief Verbose parameter (default 1)
+  /** \brief Verbose parameter (default 0)
    */
   int verbose;
 

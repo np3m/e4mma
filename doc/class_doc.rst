@@ -33,19 +33,3 @@ Class eos_had_skyrme_ext
    :protected-members:
    :undoc-members:
 
-Class virial_solver
--------------------
-	     
-.. doxygenclass:: virial_solver
-   :members:
-   :protected-members:
-   :undoc-members:
-
-Class virial_solver_deriv
--------------------------
-	     
-.. doxygenclass:: virial_solver_deriv
-   :members:
-   :protected-members:
-   :undoc-members:
-
