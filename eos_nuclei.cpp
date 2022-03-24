@@ -439,43 +439,111 @@ int eos_nuclei::output(std::vector<std::string> &sv,
   return 0;
 }
 
-int eos_nuclei::maxwell_test(std::vector<std::string> &sv,
-			     bool itive_com) {
-
-  if (sv.size()<5) {
-    cerr << "Need input, Ye, T, and output files for \"maxwell-test\"" << endl;
-    return 1;
-  }
-  
-  read_results(sv[1]);
+int eos_nuclei::maxwell(std::vector<std::string> &sv,
+                        bool itive_com) {
   
   if (with_leptons==false || derivs_computed==false) {
     cout << "maxwell_test only works with leptons and derivatives." << endl;
     return 0;
   }
-
-  size_t iYe=vector_lookup(Ye_grid2,o2scl::function_to_double(sv[2]));
-  size_t iT=vector_lookup(T_grid2,o2scl::function_to_double(sv[3]));
-  cout << "iYe, iT: " << iYe << " " << iT << endl;
-  cout << Ye_grid2[iYe] << " " << T_grid2[iT] << endl;
-
-  table_units<> tu;
-  tu.line_of_names("nB P mun");
-  for(size_t i=0;i<n_nB2;i++) {
-    vector<size_t> ix={i,iYe,iT};
-    double line[3]={nB_grid2[i],tg_P.get(ix),tg_mun.get(ix)};
-    tu.line_of_data(3,line);
+  
+  for (size_t iYe=0;iYe<n_Ye2;iYe++) {
+    for (size_t iT=0;iT<n_T2;iT++) {
+      
+      double Ye=Ye_grid2[iYe];
+      double T_MeV=T_grid2[iT];
+      
+      ubvector dPdnb(n_nB2);
+      
+      for(size_t inB=0;inB<n_nB2;inB++) {
+        if (inB>0 && inB<n_nB2-1) {
+          vector<size_t> ixm1={inB-1,iYe,iT};
+          vector<size_t> ixp1={inB+1,iYe,iT};
+          dPdnb[inB]=(tg_P.get(ixp1)-tg_P.get(ixm1))/
+            (nB_grid2[inB+1]-nB_grid2[inB-1]);
+        } else if (inB==0) {
+          vector<size_t> ix={inB,iYe,iT};
+          vector<size_t> ixp1={inB+1,iYe,iT};
+          dPdnb[0]=(tg_P.get(ixp1)-tg_P.get(ix))/
+            (nB_grid2[inB+1]-nB_grid2[inB-1]);
+        } else {
+          dPdnb[n_nB2-1]=dPdnb[n_nB2-2];
+        }
+      }
+      
+      ubvector negative(n_nB2);
+      
+      for(size_t inB=0;inB<n_nB2;inB++) {
+        if (dPdnb[inB]<0.0) negative[inB]=1.0;
+        else negative[inB]=0.0;
+      }
+      
+      double ll=nB_grid2[n_nB2-1];
+      double ul=nB_grid2[0];
+      size_t li=n_nB2-1;
+      size_t ui=0;
+      for(size_t inB=0;inB<n_nB2;inB++) {
+        if (negative[inB]>0.5) {
+          if (nB_grid2[inB]<ll) {
+            ll=nB_grid2[inB];
+            li=inB;
+          }
+          if (nB_grid2[inB]>ul) {
+            ul=nB_grid2[inB];
+            ui=inB;
+          }
+        }
+      }
+      
+      if (((int)ui)-((int)li)>=10) {
+        cout << "Problem." << endl;
+        exit(-1);
+      }
+      if (ui>1 && li<n_nB2-2) {
+        //ui++;
+        //li--;
+        size_t left=li-1;
+        size_t right=ui+1;
+        vector<size_t> ileft={left,iYe,iT};
+        vector<size_t> iright={right,iYe,iT};
+        double nB_left=nB_grid2[left];
+        double nB_right=nB_grid2[right];
+        double F_left=tg_F.get(ileft)*nB_grid2[left];
+        double F_right=tg_F.get(iright)*nB_grid2[right];
+        double gamma=log(F_left/F_right)/log(nB_left/nB_right);
+        double coeff=F_left/pow(nB_left,gamma);
+        cout << Ye << " " << T_MeV << " " << nB_left << " " << nB_right << endl;
+        if (false) {
+          cout << left << " " << right << endl;
+          cout << nB_left << " "
+               << (nB_left+nB_right)/2.0 << " " << nB_right << endl;
+          cout << F_left << " " << coeff*pow((nB_left+nB_right)/2.0,gamma)
+               << " " << F_right << endl;
+        }
+        for(size_t inB=li;inB<=ui;inB++) {
+          vector<size_t> ix={inB,iYe,iT};
+          double shift=coeff*pow(nB_grid2[inB],gamma)-
+            tg_F.get(ix)*nB_grid2[inB];
+          tg_Fint.get(ix)+=shift/nB_grid2[inB];
+          //cout << "inB,shift: " << inB << " " << shift << endl;
+        }
+        //char ch;
+        //cin >> ch;
+      } else if (ui>1 || li<n_nB2-2) {
+        vector_out(cout,negative,true);
+        cout << "Error: " << li << " " << ui << endl;
+        exit(-1);
+      }
+      
+    }
   }
-
-  cout << "Writing file: " << sv[4] << endl;
-  hdf_file hf;
-  hf.open_or_create(sv[4]);
-  hdf_output(hf,tu,"mt");
-  hf.close();
+  
+  with_leptons==false;
+  derivs_computed==false;
   
   return 0;
 }
-
+  
 int eos_nuclei::new_muons(size_t nv, const ubvector &x, ubvector &y,
                           double nB, double Ye, double T,
                           map<string,double> &vdet, eos_sn_base &eso) {
@@ -10321,7 +10389,7 @@ int eos_nuclei::xml_to_o2(std::vector<std::string> &sv,
 
 void eos_nuclei::setup_cli(o2scl::cli &cl) {
   
-  eos::setup_cli(cl);
+  eos::setup_cli(cl,false);
   
   static const int nopt=23;
 
@@ -10338,10 +10406,10 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
       new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::eg_table),o2scl::cli::comm_option_both,
       1,"","eos_nuclei","eg_table","doc/xml/classeos__nuclei.xml"},
-     {0,"maxwell-test","",0,4,"","",
+     {0,"maxwell","",0,0,"","",
       new o2scl::comm_option_mfptr<eos_nuclei>
-      (this,&eos_nuclei::maxwell_test),o2scl::cli::comm_option_both,
-      1,"","eos_nuclei","maxwell_test","doc/xml/classeos__nuclei.xml"},
+      (this,&eos_nuclei::maxwell),o2scl::cli::comm_option_both,
+      1,"","eos_nuclei","maxwell","doc/xml/classeos__nuclei.xml"},
      {0,"fit-frdm","",0,0,"","",
       new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::fit_frdm),o2scl::cli::comm_option_both,
@@ -10420,263 +10488,193 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
       1,"","eos_nuclei","select_high_T","doc/xml/classeos__nuclei.xml"}
     };
 
-  // Todo: we need to resolve how to teach cli::xml_to_o2 to
-  // store different commands and different parameters in
-  // different files
   cl.doc_o2_file="data/eos_nuclei_docs.o2";
 
-  std::map<std::string,cli::parameter *,std::less<std::string> > par_list2;
-  
   p_nB_grid_spec.str=&nB_grid_spec;
-  p_nB_grid_spec.help=((string)"The function for default baryon ")+
-    "density grid. Used by the new_table() function, and the "+
-    "check-virial and eos-deriv commands.";
+  p_nB_grid_spec.help="";
   p_nB_grid_spec.doc_class="eos_nuclei";
   p_nB_grid_spec.doc_name="nB_grid_spec";
   p_nB_grid_spec.doc_xml_file="doc/xml/classeos__nuclei.xml";
   cl.par_list.insert(make_pair("nB_grid_spec",&p_nB_grid_spec));
-
+  
   p_Ye_grid_spec.str=&Ye_grid_spec;
-  p_Ye_grid_spec.help=((string)"The function for default electron ")+
-    "fraction grid. Used by the new_table() function, and the "+
-    "check-virial and eos-deriv commands.";
+  p_Ye_grid_spec.help="";
   p_Ye_grid_spec.doc_class="eos_nuclei";
   p_Ye_grid_spec.doc_name="Ye_grid_spec";
   p_Ye_grid_spec.doc_xml_file="doc/xml/classeos__nuclei.xml";
   cl.par_list.insert(make_pair("Ye_grid_spec",&p_Ye_grid_spec));
   
   p_T_grid_spec.str=&T_grid_spec;
-  p_T_grid_spec.help=((string)"The function for default temperature ")+
-    "grid. Used by the new_table() function, and the "+
-    "check-virial and eos-deriv commands.";
+  p_T_grid_spec.help="";
   p_T_grid_spec.doc_class="eos_nuclei";
   p_T_grid_spec.doc_name="T_grid_spec";
   p_T_grid_spec.doc_xml_file="doc/xml/classeos__nuclei.xml";
   cl.par_list.insert(make_pair("T_grid_spec",&p_T_grid_spec));
   
   p_show_all_nuclei.b=&show_all_nuclei;
-  p_show_all_nuclei.help=((string)"If true, show all nuclei considered at ")+
-    "every point (default false). This applies to the point-nuclei "+
-    "command and the eos_vary_ZN() function.";
+  p_show_all_nuclei.help="";
   p_show_all_nuclei.doc_class="eos_nuclei";
   p_show_all_nuclei.doc_name="show_all_nuclei";
   p_show_all_nuclei.doc_xml_file="doc/xml/classeos__nuclei.xml";
   cl.par_list.insert(make_pair("show_all_nuclei",&p_show_all_nuclei));
   
   p_extend_frdm.b=&extend_frdm;
-  p_extend_frdm.help=((string)"If true, attempt to extend FRDM beyond")+
-    "the drip lines (default false).";
+  p_extend_frdm.help="";
   p_extend_frdm.doc_class="eos_nuclei";
   p_extend_frdm.doc_name="extend_frdm";
   p_extend_frdm.doc_xml_file="doc/xml/classeos__nuclei.xml";
   cl.par_list.insert(make_pair("extend_frdm",&p_extend_frdm));
   
   p_survey_eqs.b=&survey_eqs;
-  p_survey_eqs.help=((string)"If true, survey the EOS near a failed ")+
-    "point (default false).";
+  p_survey_eqs.help="";
   p_survey_eqs.doc_class="eos_nuclei";
   p_survey_eqs.doc_name="survey_eqs";
   p_survey_eqs.doc_xml_file="doc/xml/classeos__nuclei.xml";
   cl.par_list.insert(make_pair("survey_eqs",&p_survey_eqs));
   
   p_fd_A_max.i=&fd_A_max;
-  p_fd_A_max.help=((string)"The maximum value of A for the alg_mode=4 ")+
-    "fixed distribution (default 600).";
+  p_fd_A_max.help="";
   p_fd_A_max.doc_class="eos_nuclei";
   p_fd_A_max.doc_name="fd_A_max";
   p_fd_A_max.doc_xml_file="doc/xml/classeos__nuclei.xml";
   cl.par_list.insert(make_pair("fd_A_max",&p_fd_A_max));
   
   p_recompute.b=&recompute;
-  p_recompute.help=((string)"If true, recompute points in the table ")+
-    "and ignore the flag value (default false). This setting is used "+
-    "in point-nuclei and generate-table.";
+  p_recompute.help="";
   p_recompute.doc_class="eos_nuclei";
   p_recompute.doc_name="recompute";
   p_recompute.doc_xml_file="doc/xml/classeos__nuclei.xml";
   cl.par_list.insert(make_pair("recompute",&p_recompute));
   
   p_verify_only.b=&verify_only;
-  p_verify_only.help=((string)"If true, don't call the solver, just ")+
-    "verify the initial guess (default false).";
+  p_verify_only.help="";
   p_verify_only.doc_class="eos_nuclei";
   p_verify_only.doc_name="verify_only";
   p_verify_only.doc_xml_file="doc/xml/classeos__nuclei.xml";
   cl.par_list.insert(make_pair("verify_only",&p_verify_only));
   
   p_edge_list.str=&edge_list;
-  p_edge_list.help=((string)"List of names");
+  p_edge_list.help="";
   p_edge_list.doc_class="eos_nuclei";
   p_edge_list.doc_name="edge_list";
   p_edge_list.doc_xml_file="doc/xml/classeos__nuclei.xml";
   cl.par_list.insert(make_pair("edge_list",&p_edge_list));
   
   p_six_neighbors.i=&six_neighbors;
-  p_six_neighbors.help=((string)"If greater than 0, use nearest ")+
-    "neighbors as guesses (default 0). Values greater than 0 use "+
-    "the point at the next smallest density, values greater than 1 "+
-    "use the point at the next largest density, values greater than 2 "+
-    "use points at the next largest and next smallest temperature, "+
-    "and values greater than 4 use the next largest and smallest "+
-    "electron fraction.";
+  p_six_neighbors.help="";
   p_six_neighbors.doc_class="eos_nuclei";
   p_six_neighbors.doc_name="six_neighbors";
   p_six_neighbors.doc_xml_file="doc/xml/classeos__nuclei.xml";
   cl.par_list.insert(make_pair("six_neighbors",&p_six_neighbors));
   
   p_rnuc_less_rws.b=&rnuc_less_rws;
-  p_rnuc_less_rws.help=((string)"If true, restrict rnuc to ")+
-    "be smaller than rws (default true).";
+  p_rnuc_less_rws.help="";
   p_rnuc_less_rws.doc_class="eos_nuclei";
   p_rnuc_less_rws.doc_name="rnuc_less_rws";
   p_rnuc_less_rws.doc_xml_file="doc/xml/classeos__nuclei.xml";
   cl.par_list.insert(make_pair("rnuc_less_rws",&p_rnuc_less_rws));
 
   p_propagate_points.b=&propagate_points;
-  p_propagate_points.help=((std::string)"If true, use previously ")+
-    "computed points as guesses for neighbors (default false)";
+  p_propagate_points.help="";
   p_propagate_points.doc_class="eos_nuclei";
   p_propagate_points.doc_name="propagate_points";
   p_propagate_points.doc_xml_file="doc/xml/classeos__nuclei.xml";
   cl.par_list.insert(make_pair("propagate_points",&p_propagate_points));
   
   p_mh_tol_rel.d=&mh_tol_rel;
-  p_mh_tol_rel.help=((std::string)"Relative tolerance for the solver ")+
-    "in the eos_fixed_dist() function (default 10^(-6)).";
+  p_mh_tol_rel.help="";
   p_mh_tol_rel.doc_class="eos_nuclei";
   p_mh_tol_rel.doc_name="mh_tol_rel";
   p_mh_tol_rel.doc_xml_file="doc/xml/classeos__nuclei.xml";
   cl.par_list.insert(make_pair("mh_tol_rel",&p_mh_tol_rel));
   
   p_max_time.d=&max_time;
-  p_max_time.help=((string)"Maximum time, in seconds, for the ")+
-    "generate-table command. The default is 0.0 which is "+
-    "no maximum time.";
+  p_max_time.help="";
   p_max_time.doc_class="eos_nuclei";
   p_max_time.doc_name="max_time";
   p_max_time.doc_xml_file="doc/xml/classeos__nuclei.xml";
   cl.par_list.insert(make_pair("max_time",&p_max_time));
   
   p_nucleon_func.str=&nucleon_func;
-  p_nucleon_func.help="Function for delta Z and delta N in the SNA.";
+  p_nucleon_func.help="";
   p_nucleon_func.doc_class="eos_nuclei";
   p_nucleon_func.doc_name="nucleon_func";
   p_nucleon_func.doc_xml_file="doc/xml/classeos__nuclei.xml";
   cl.par_list.insert(make_pair("nucleon_func",&p_nucleon_func));
 
   p_ext_guess.str=&ext_guess;
-  p_ext_guess.help=((string)"Filename containing separate table ")+
-    "to use as a guess for the generate-table command (default \"\").";
+  p_ext_guess.help="";
   p_ext_guess.doc_class="eos_nuclei";
   p_ext_guess.doc_name="ext_guess";
   p_ext_guess.doc_xml_file="doc/xml/classeos__nuclei.xml";
   cl.par_list.insert(make_pair("ext_guess",&p_ext_guess));
 
   p_Ye_list.str=&Ye_list;
-  p_Ye_list.help=((string)"The list of electron fractions to consider ")+
-    "for the generate-table command. Can be several comma-separated "+
-    "ranges e.g. \"1-3,5-7,59-60\". Zero-indexed.";
+  p_Ye_list.help="";
   p_Ye_list.doc_class="eos_nuclei";
   p_Ye_list.doc_name="Ye_list";
   p_Ye_list.doc_xml_file="doc/xml/classeos__nuclei.xml";
   cl.par_list.insert(make_pair("Ye_list",&p_Ye_list));
 
   p_alg_mode.i=&alg_mode;
-  p_alg_mode.help=((string)"Algorithm mode (default 4; ")+
-    "0 for SNA, 1 for old SNA method, 2 for vary dist., "+
-    "3 for old vary dist., and 4 for fixed dist.)";
+  p_alg_mode.help="";
   p_alg_mode.doc_class="eos_nuclei";
   p_alg_mode.doc_name="alg_mode";
   p_alg_mode.doc_xml_file="doc/xml/classeos__nuclei.xml";
   cl.par_list.insert(make_pair("alg_mode",&p_alg_mode));
   
   p_fixed_dist_alg.i=&fixed_dist_alg;
-  p_fixed_dist_alg.help=((string)"Modify the algorithm for the ")+
-    "eos_fixed_dist() function. The 1s digit is the number "+
-    "of solves minus 1, the 10s digit is the number of brackets "+
-    "divided by 10, the "+
-    "100s digit is the number of minimizes, and the 1000s digit "+
-    "is the number of random guesses to try divided by 1000. "+
-    "The default is 1111. Other good options are 1319, 1919, 1999, "+
-    "and 9999.";
+  p_fixed_dist_alg.help="";
   p_fixed_dist_alg.doc_class="eos_nuclei";
   p_fixed_dist_alg.doc_name="fixed_dist_alg";
   p_fixed_dist_alg.doc_xml_file="doc/xml/classeos__nuclei.xml";
   cl.par_list.insert(make_pair("fixed_dist_alg",&p_fixed_dist_alg));
   
   p_function_verbose.i=&function_verbose;
-  p_function_verbose.help=((string)"Verbose for individual functions ")+
-    "(default value 11111).\n\t1s digit: fixed_ZN()\n\t10s digit: "+
-    "vary_ZN()\n\t100s digit: "+
-    "fixed_dist()\n\t1000s digit: vary_dist()\n\t10000s digit: "+
-    "store_point().";
+  p_function_verbose.help="";
   p_function_verbose.doc_class="eos_nuclei";
   p_function_verbose.doc_name="function_verbose";
   p_function_verbose.doc_xml_file="doc/xml/classeos__nuclei.xml";
   cl.par_list.insert(make_pair("function_verbose",&p_function_verbose));
   
   p_max_ratio.d=&max_ratio;
-  p_max_ratio.help="The maximum of N/Z or Z/N (default 7.0).";
+  p_max_ratio.help="";
   p_max_ratio.doc_class="eos_nuclei";
   p_max_ratio.doc_name="max_ratio";
   p_max_ratio.doc_xml_file="doc/xml/classeos__nuclei.xml";
   cl.par_list.insert(make_pair("max_ratio",&p_max_ratio));
 
   p_file_update_time.d=&file_update_time;
-  p_file_update_time.help=((string)"The time (in seconds) between ")+
-    "output file updates for the generate-table command. Default is "+
-    "1800 or 30 minutes.";
+  p_file_update_time.help="";
   p_file_update_time.doc_class="eos_nuclei";
   p_file_update_time.doc_name="file_update_time";
   p_file_update_time.doc_xml_file="doc/xml/classeos__nuclei.xml";
   cl.par_list.insert(make_pair("file_update_time",&p_file_update_time));
 
   p_file_update_iters.i=&file_update_iters;
-  p_file_update_iters.help=((string)"The number of points between ")+
-    "output file updates for the generate-table command. Default is "+
-    "100000.";
+  p_file_update_iters.help="";
   p_file_update_iters.doc_class="eos_nuclei";
   p_file_update_iters.doc_name="file_update_iters";
   p_file_update_iters.doc_xml_file="doc/xml/classeos__nuclei.xml";
   cl.par_list.insert(make_pair("file_update_iters",&p_file_update_iters));
 
   p_include_detail.b=&include_detail;
-  p_include_detail.help="(default false)";
+  p_include_detail.help="";
   p_include_detail.doc_class="eos_nuclei";
   p_include_detail.doc_name="include_detail";
   p_include_detail.doc_xml_file="doc/xml/classeos__nuclei.xml";
   cl.par_list.insert(make_pair("include_detail",&p_include_detail));
 
   p_strangeness.b=&strangeness;
-  p_strangeness.help="If true, include strangeness (default false).";
+  p_strangeness.help="";
   p_strangeness.doc_class="eos_nuclei";
   p_strangeness.doc_name="strangeness";
   p_strangeness.doc_xml_file="doc/xml/classeos__nuclei.xml";
   cl.par_list.insert(make_pair("strangeness",&p_strangeness));
   
-  hdf_file hf;
-  hf.open("data/eos_nuclei_docs.o2");
-  vector<string> doc_strings;
-  hf.gets_vec("doc_strings",doc_strings);
-  hf.close();
-  
-  for(size_t j=0;j<nopt;j++) {
-    bool found=false;
-    for(size_t k=0;k<doc_strings.size() && found==false;k+=5) {
-      if (doc_strings[k]==options[j].lng) {
-        options[j].desc=doc_strings[k+2];
-        options[j].parm_desc=doc_strings[k+3];
-        options[j].help=doc_strings[k+4];
-        found=true;
-      }
-    }
-    if (found==false) {
-      cout << "Could not find docs for " << options[j].lng << endl;
-    }
-  }
-  
   cl.set_comm_option_vec(nopt,options);
 
+  cl.read_docs();
 
   return;
 }

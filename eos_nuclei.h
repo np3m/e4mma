@@ -136,8 +136,23 @@ public:
   std::vector<double> Ye_grid2;
   std::vector<double> T_grid2;
   std::vector<double> S_grid2;
+  /** \brief The function for default baryon density grid. 
+      
+      This parameter is used by the new_table() function, and the
+      check-virial and eos-deriv commands.
+  */
   std::string nB_grid_spec;
+  /** \brief The function for default electron fraction grid. 
+      
+      This parameter is used by the new_table() function, and the
+      check-virial and eos-deriv commands.
+  */
   std::string Ye_grid_spec;
+  /** \brief The function for default temperature grid. 
+      
+      This parameter is used by the new_table() function, and the
+      check-virial and eos-deriv commands.
+  */
   std::string T_grid_spec;
   std::string S_grid_spec;
   //@}
@@ -230,39 +245,55 @@ public:
 
   /// \name Parameters modifiable by the CLI user
   //@{
-  /// The time between file updates in seconds (default 1800)
+  /** \brief The time (in seconds) between output file updates for the
+      \ref generate_table() (default 1800)
+  */
   double file_update_time;
-  /// The number of iterations between file updates (default 1000)
+  /// The number of iterations between file updates (default 100000;)
   int file_update_iters;
     
-  /** \brief The maximum value of A for a fixed distribution
-      (when alg_mode is 4)
+  /** \brief The maximum value of A for a fixed distribution when
+      alg_mode is 4 (default 600)
   */
   int fd_A_max;
 
-  /// If true, extend FRDM beyond neutron/proton drip (default false)
+  /** \brief If true, attempt to extend FRDM beyond
+      the drip lines (default false).
+  */
   bool extend_frdm;
   
-  /// The maximum value of \f$ N/Z \f$ or \f$ Z/N \f$ (default 2.25)
+  /// The maximum value of \f$ N/Z \f$ or \f$ Z/N \f$ (default 7)
   double max_ratio;
   
-  /// Fiducial value for solver tolerance (default \f$ 10^{-6} \f$)
+  /** \brief Relative tolerance for the solver in the \ref
+      eos_fixed_dist() function (default \f$ 10^{-6} \f$)
+  */ 
   double mh_tol_rel;
 
-  /// File containing external guess
+  /** \brief Filename containing separate table to use as a guess for
+      the generate-table command (default "")
+  */
   std::string ext_guess;
   
-  /** \brief Function to describe the Z and N range 
+  /** \brief Function for delta Z and delta N in the single 
+      nucleus approximation
 
       This is the function used to specify the range of Z and N which
       is varied to find the smallest free energy
   */
   std::string nucleon_func;
 
-  /// Maximum MPI time (default 0)
+  /** \brief Maximum time, in seconds, for the ``generate-table``
+      command. The default is 0.0 which is interpreted as no maximum
+      time
+  */
   double max_time;
   
-  /** \brief Show all nuclei considered at every point (default false)
+  /** \brief If true, show all nuclei considered at every point (default 
+      false)
+      
+      This applies to the point-nuclei command and the eos_vary_ZN()
+      function.
    */
   bool show_all_nuclei;
 
@@ -276,6 +307,8 @@ public:
   
   /** \brief If true, recompute all points, irrespective of the
       value of the convergence flag (default false)
+
+      This setting is used in point-nuclei and generate-table.
   */
   bool recompute;
 
@@ -289,7 +322,7 @@ public:
   */
   std::string edge_list;
 
-  /** \brief Algorithm mode (default 1)
+  /** \brief Algorithm mode (default 4)
 
       0 for SNA, 1 for old SNA method, 2 for vary dist., 
       3 for old vary dist., and 4 for fixed dist.
@@ -297,17 +330,36 @@ public:
   int alg_mode;
 
   /** \brief Algorithm for \ref eos_fixed_dist()
-   */
+
+      Modify the algorithm for the \ref eos_fixed_dist() function. The
+      1s digit is the number of solves minus 1, the 10s digit is the
+      number of brackets divided by 10, the 100s digit is the number
+      of minimizes, and the 1000s digit is the number of random
+      guesses to try divided by 1000. The default is 1111. Other good
+      options are 1319, 1919, 1999, and 9999.
+  */
   int fixed_dist_alg;
   
   /** \brief If true, when computing a point, perform the calculation
-      also using the six neighboring points as an initial guess
-      (default false)
+      using some of the neighboring points as an initial guess
+      (default 0)
+
+      Values greater than 0 use the point at the next smallest
+      density, values greater than 1 use the point at the next largest
+      density, values greater than 2 use points at the next largest
+      and next smallest temperature, and values greater than 4 use the
+      next largest and smallest electron fraction.
   */
   int six_neighbors;
 
   /** \brief A new function verbose parameter
-   */
+
+      Verbose for individual functions
+      (default value 11111).\n\t1s digit: fixed_ZN()\n\t10s digit:
+      vary_ZN()\n\t100s digit:
+      fixed_dist()\n\t1000s digit: vary_dist()\n\t10000s digit:
+      store_point().
+  */
   int function_verbose;
   
   /** \brief If true, use previously computed points (or guesses) as
@@ -315,7 +367,8 @@ public:
   */
   bool propagate_points;
 
-  /** \brief If true survey the nB and Ye equations (default false)
+  /** \brief If true, survey the nB and Ye equations near a failed point
+      (default false)
    */
   bool survey_eqs;
 
@@ -361,7 +414,11 @@ public:
    */
   o2scl::slack_messenger slack;
 
-  /** \brief List of electron fractions to examine for computing
+  /** \brief The list of electron fractions to consider
+      for the generate-table command. 
+
+      Can be several comma-separated ranges e.g. "1-3,5-7,59-60".
+      Zero-indexed.
    */
   std::string Ye_list;
   //@}
@@ -896,13 +953,13 @@ public:
    */		      
   int init_function(size_t dim, const ubvector &x, ubvector &y);
   
-  /** \brief Maxwell construction test
+  /** \brief Maxwell construction
 
       Params.
 
       Help.
    */
-  int maxwell_test(std::vector<std::string> &sv, bool itive_com);
+  int maxwell(std::vector<std::string> &sv, bool itive_com);
   //@}
   
 };

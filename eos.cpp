@@ -3726,7 +3726,7 @@ int eos::xml_to_o2(std::vector<std::string> &sv,
 }
 */
 
-void eos::setup_cli(o2scl::cli &cl) {
+void eos::setup_cli(o2scl::cli &cl, bool read_docs) {
 
   cl_ptr=&cl;
 
@@ -3870,59 +3870,17 @@ void eos::setup_cli(o2scl::cli &cl) {
   p_b_virial.doc_xml_file="doc/xml/classeos.xml";
   cl.par_list.insert(make_pair("b_virial",&p_b_virial));
 
-  if (file_exists("data/eos_docs.o2")) {
-  
-    hdf_file hf;
-    hf.open("data/eos_docs.o2");
-    vector<vector<string>> cmd_doc_strings, param_doc_strings;
-    hf.gets_vec_vec("cmd_doc_strings",cmd_doc_strings);
-    hf.gets_vec_vec("param_doc_strings",param_doc_strings);
-    hf.close();
-    
-    for(size_t j=0;j<nopt;j++) {
-      bool found=false;
-      for(size_t k=0;k<cmd_doc_strings.size() && found==false;k++) {
-        if (cmd_doc_strings[k][0]==options[j].lng) {
-          if (cmd_doc_strings[k].size()>=2) {
-            options[j].desc=cmd_doc_strings[k][1];
-            if (cmd_doc_strings[k].size()>=3) {
-              options[j].parm_desc=cmd_doc_strings[k][2];
-              if (cmd_doc_strings[k].size()>=4) {
-                options[j].help=cmd_doc_strings[k][3];
-              }
-            }
-          }
-          found=true;
-        }
-      }
-      if (found==false) {
-        cout << "Could not find documentation for command "
-             << options[j].lng << endl;
-      }
-    }
-    
-    typedef std::map<std::string,cli::parameter *,
-                     std::greater<std::string> >::iterator par_t;
-    
-    for(par_t it=cl.par_list.begin();it!=cl.par_list.end();it++) {
-      if (it->second->doc_class==((string)"eos")) {
-        bool found=false;
-        for(size_t k=0;k<param_doc_strings.size() && found==false;k++) {
-          if (param_doc_strings[k][0]==it->first) {
-            it->second->help=param_doc_strings[k][1];
-            found=true;
-          }
-        }
-        if (found==false) {
-          cout << "Could not find documentation for parameter "
-               << it->first << endl;
-        }
-      }
-    }
-    
-  }
-
   cl.set_comm_option_vec(nopt,options);
   
+  if (read_docs) {
+    
+    // The default xml-to-o2 function overwrites all the eos_nuclei
+    // documentation so we disable it here if we're not calling
+    // this function from there.
+    cl.remove_comm_option("xml-to-o2");
+    
+    cl.read_docs();
+  }
+
   return;
 }

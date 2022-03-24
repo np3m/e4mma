@@ -836,7 +836,7 @@ class eos {
   /** \brief Setup the command-line interface with commands and
       parameters
    */
-  virtual void setup_cli(o2scl::cli &cl);
+  virtual void setup_cli(o2scl::cli &cl, bool read_docs=true);
   //@}
   
 };
