@@ -139,19 +139,19 @@ public:
   /** \brief The function for default baryon density grid. 
       
       This parameter is used by the new_table() function, and the
-      check-virial and eos-deriv commands.
+      \c check-virial and \c eos-deriv commands.
   */
   std::string nB_grid_spec;
   /** \brief The function for default electron fraction grid. 
       
       This parameter is used by the new_table() function, and the
-      check-virial and eos-deriv commands.
+      \c check-virial and eos-deriv \c commands.
   */
   std::string Ye_grid_spec;
   /** \brief The function for default temperature grid. 
       
       This parameter is used by the new_table() function, and the
-      check-virial and eos-deriv commands.
+      \c check-virial and \c eos-deriv commands.
   */
   std::string T_grid_spec;
   /** \brief The function for default strangeness grid
@@ -273,13 +273,13 @@ public:
   double mh_tol_rel;
 
   /** \brief Filename containing separate table to use as a guess for
-      the generate-table command (default "")
+      the \c generate-table command (default is the empty string)
   */
   std::string ext_guess;
   
   /** \brief Function for delta Z and delta N in the single 
       nucleus approximation
-
+      
       This is the function used to specify the range of Z and N which
       is varied to find the smallest free energy
   */
@@ -294,7 +294,7 @@ public:
   /** \brief If true, show all nuclei considered at every point (default 
       false)
       
-      This applies to the point-nuclei command and the eos_vary_ZN()
+      This applies to the \c point-nuclei command and the eos_vary_ZN()
       function.
    */
   bool show_all_nuclei;
@@ -417,7 +417,7 @@ public:
   o2scl::slack_messenger slack;
 
   /** \brief The list of electron fractions to consider
-      for the generate-table command. 
+      for the \c generate-table command. 
 
       Can be several comma-separated ranges e.g. "1-3,5-7,59-60".
       Zero-indexed.
@@ -687,7 +687,7 @@ public:
 
       <select func.> [tensor to modify] [value func.]
 
-      The \"edit-data\" command counts the number of (nB,Ye,T) points
+      The \c edit-data command counts the number of (nB,Ye,T) points
       matching the criteria specified in <select func.>. If the
       remaining two arguments are given, then the values of [tensor to
       modify] for the selected points are changed to the result of the
@@ -750,11 +750,11 @@ public:
       values are modified to ensure that they lie on a grid point.
       If an initial guess is specified on the command line, it is
       used even if there is a good guess already in the table.
-      If the flag is not 10 or if \"recompute\" is true, then the EOS is
+      If the flag is not 10 or if \ref recompute is true, then the EOS is
       recomputed. If an EOS is loaded or the recompute was successful,
       then the results are output to the screen. If the point was
-      successful it is stored in the current tables. If \"show_all
-      _nuclei\" is true, then a file named \"dist.o2\" is created
+      successful it is stored in the current tables. If \ref show_all_nuclei
+      is true, then a file named \c dist.o2 is created
       which holds the full nuclear distribution.
    */
   int point_nuclei(std::vector<std::string> &sv, bool itive_com);

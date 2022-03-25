@@ -10585,7 +10585,15 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
   cl.par_list.insert(make_pair("strangeness",&p_strangeness));
   
   cl.set_comm_option_vec(nopt,options);
-
+  cl.xml_subs.push_back("<formula> $ 10^{-6} $ </formula>");
+  cl.xml_subs.push_back("10⁻⁶");
+  cl.xml_subs.push_back("<formula> $ N/Z $ </formula>");
+  cl.xml_subs.push_back("N/Z");
+  cl.xml_subs.push_back("<formula> $ Z/N $ </formula>");
+  cl.xml_subs.push_back("Z/N");
+  cl.xml_subs.push_back("<computeroutput> dist.o2 </computeroutput>");
+  cl.xml_subs.push_back("dist.o2");
+  
   if (file_exists(cl.doc_o2_file)) {
     //cl.set_verbose(3);
     cl.read_docs();
