@@ -10593,6 +10593,11 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
   cl.xml_subs.push_back("Z/N");
   cl.xml_subs.push_back("<computeroutput> dist.o2 </computeroutput>");
   cl.xml_subs.push_back("dist.o2");
+  // Just ignore the function references
+  cl.xml_subs.push_back("<ref>");
+  cl.xml_subs.push_back("");
+  cl.xml_subs.push_back("</ref>");
+  cl.xml_subs.push_back("");
   
   if (file_exists(cl.doc_o2_file)) {
     //cl.set_verbose(3);

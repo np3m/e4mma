@@ -251,7 +251,8 @@ public:
       \ref generate_table() (default 1800)
   */
   double file_update_time;
-  /// The number of iterations between file updates (default 100000;)
+  
+  /// The number of iterations between file updates (default 100000)
   int file_update_iters;
     
   /** \brief The maximum value of A for a fixed distribution when
@@ -310,7 +311,7 @@ public:
   /** \brief If true, recompute all points, irrespective of the
       value of the convergence flag (default false)
 
-      This setting is used in point-nuclei and generate-table.
+      This setting is used in \c point-nuclei and \c generate-table.
   */
   bool recompute;
 
@@ -889,7 +890,7 @@ public:
       function is different, it actually re-solves the equations
       to show the answer is correct. Thus, this function requires 
       a bit less running time at each point. The first argument is a
-      'mode' parameter which determines which points will be
+      mode parameter which determines which points will be
       verified. 
    */
   int verify(std::vector<std::string> &sv, bool itive_com);
