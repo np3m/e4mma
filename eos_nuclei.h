@@ -154,6 +154,8 @@ public:
       check-virial and eos-deriv commands.
   */
   std::string T_grid_spec;
+  /** \brief The function for default strangeness grid
+  */
   std::string S_grid_spec;
   //@}
 
@@ -245,7 +247,7 @@ public:
 
   /// \name Parameters modifiable by the CLI user
   //@{
-  /** \brief The time (in seconds) between output file updates for the
+  /** \brief The time (in seconds) between output file updates for
       \ref generate_table() (default 1800)
   */
   double file_update_time;

@@ -237,8 +237,6 @@ class eos {
   
  protected:
 
-  o2scl::cli *cl_ptr;
-  
   /// \name Main EOS parameters [protected]
   //@{
   /// The first exponent for density in the QMC EOS (unitless)
@@ -660,11 +658,11 @@ class eos {
   /// If true, create output files for individual EOSs
   bool output_files;
 
-  /** \brief Coefficient for modulation of virial EOS (default 10)
+  /** \brief Coefficient for modulation of virial EOS (default 10.0)
    */
   double a_virial;
 
-  /** \brief Coefficient for modulation of virial EOS (default 10)
+  /** \brief Coefficient for modulation of virial EOS (default 10.0)
    */
   double b_virial;
   

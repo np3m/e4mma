@@ -3638,8 +3638,6 @@ int eos::alt_model(std::vector<std::string> &sv,
 
 void eos::setup_cli(o2scl::cli &cl, bool read_docs) {
 
-  cl_ptr=&cl;
-
   static const int nopt=14;
   o2scl::comm_option_s options[nopt]=
     {{0,"test-deriv","",0,0,"","",
