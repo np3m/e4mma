@@ -475,34 +475,33 @@ int eos_nuclei::maxwell(std::vector<std::string> &sv,
   
     for (size_t iYe=0;iYe<n_Ye2;iYe++) {
       for (size_t iT=0;iT<n_T2;iT++) {
-      
+
+        if (verbose>1) {
+          for(size_t inB=0;inB<n_nB2;inB++) {
+            vector<size_t> ix={inB,iYe,iT};
+            cout << nB_grid2[inB] << " " << tg_P.get(ix) << endl;
+          }
+        }
+
         double Ye=Ye_grid2[iYe];
         double T_MeV=T_grid2[iT];
       
-        ubvector dPdnb(n_nB2);
-      
-        for(size_t inB=0;inB<n_nB2;inB++) {
-          if (inB>0 && inB<n_nB2-1) {
-            vector<size_t> ixm1={inB-1,iYe,iT};
-            vector<size_t> ixp1={inB+1,iYe,iT};
-            dPdnb[inB]=(tg_P.get(ixp1)-tg_P.get(ixm1))/
-              (nB_grid2[inB+1]-nB_grid2[inB-1]);
-          } else if (inB==0) {
-            vector<size_t> ix={inB,iYe,iT};
-            vector<size_t> ixp1={inB+1,iYe,iT};
-            dPdnb[0]=(tg_P.get(ixp1)-tg_P.get(ix))/
-              (nB_grid2[inB+1]-nB_grid2[inB-1]);
-          } else {
-            dPdnb[n_nB2-1]=dPdnb[n_nB2-2];
-          }
-        }
-      
         ubvector negative(n_nB2);
       
+        // attempt 2
         for(size_t inB=0;inB<n_nB2;inB++) {
-          if (dPdnb[inB]<0.0) negative[inB]=1.0;
-          else negative[inB]=0.0;
+          negative[inB]=0.0;
         }
+        
+        for(size_t inB=0;inB<n_nB2-1;inB++) {
+          vector<size_t> ix={inB,iYe,iT};
+          vector<size_t> ixp1={inB+1,iYe,iT};
+          if (tg_P.get(ix)>tg_P.get(ixp1)) {
+            negative[inB]=1.0;
+            negative[inB+1]=1.0;
+          }
+        }
+        // end of attempt 2
       
         double ll=nB_grid2[n_nB2-1];
         double ul=nB_grid2[0];
@@ -526,6 +525,8 @@ int eos_nuclei::maxwell(std::vector<std::string> &sv,
           exit(-1);
         }
         if (ui>1 && li<n_nB2-2) {
+          //li--;
+          //ui++;
           
           size_t left=li-1;
           size_t right=ui+1;
@@ -536,66 +537,118 @@ int eos_nuclei::maxwell(std::vector<std::string> &sv,
           double nB_right=nB_grid2[right];
           double F_left=tg_F.get(ileft);
           double F_right=tg_F.get(iright);
-          double S_left=tg_S.get(ileft);
-          double S_right=tg_S.get(iright);
+          double P_left=tg_P.get(ileft);
+          double P_right=tg_P.get(iright);
+          double E_left=tg_E.get(ileft);
+          double E_right=tg_E.get(iright);
 
-          //std::cout << F_left << " " << F_right << endl;
+          while (P_left>P_right) {
+            li--;
+            ui++;
+            
+            left=li-1;
+            right=ui+1;
+            ileft[0]=left;
+            iright[0]=right;
+          
+            nB_left=nB_grid2[left];
+            nB_right=nB_grid2[right];
+            F_left=tg_F.get(ileft);
+            F_right=tg_F.get(iright);
+            P_left=tg_P.get(ileft);
+            P_right=tg_P.get(iright);
+            E_left=tg_E.get(ileft);
+            E_right=tg_E.get(iright);
+          }
+          
+          if (true || verbose>1) {
+            std::cout << "P_left, P_right: "
+                      << P_left << " " << P_right << endl;
+          }
+          
           cout.precision(4);
           cout << "Adjusting from nB = " 
                << nB_grid2[li] << " to " << nB_grid2[ui]
                << " at Ye = " << Ye_grid2[iYe]
                << " and T = " << T_grid2[iT] << endl;
+          
           cout.precision(6);
           
-          for(size_t inB=li;inB<=ui;inB++) {
+          for(size_t inB=left;inB<=right;inB++) {
             double nb_frac=(nB_grid2[inB]-nB_grid2[left])/
               (nB_grid2[right]-nB_grid2[left]);
             
             vector<size_t> ix={inB,iYe,iT};
-            
-            //cout << inB << " " << nb_frac << " ";
-            //cout << tg_Fint.get(ix) << " " << tg_F.get(ix) << " ";
-             
-            double F_new=F_left+(F_right-F_left)*nb_frac;
-            tg_Fint.get(ix)+=(F_new-tg_F.get(ix));
-            tg_F.get(ix)=F_new;
-            double S_new=S_left+(S_right-S_left)*nb_frac;
-            tg_Sint.get(ix)+=(S_new-tg_S.get(ix));
-            tg_S.get(ix)=S_new;
-            
-            //cout << tg_Fint.get(ix) << " " << tg_F.get(ix) << endl;
 
-            // E = F + T S
-            tg_Eint.get(ix)=tg_Fint.get(ix)+T_grid2[iT]*tg_Sint.get(ix);
-            
-            // P = - F + mun * nn + mup * np
-            tg_Pint.get(ix)=-tg_Fint.get(ix)*nB_grid2[inB]+
+            if (verbose>1) {
+              cout << inB << " " << nb_frac << " ";
+              cout << tg_Pint.get(ix) << " " << tg_P.get(ix) << " ";
+            }
+             
+            double P_new=P_left+(P_right-P_left)*nb_frac;
+            tg_Pint.get(ix)+=(P_new-tg_P.get(ix));
+            tg_P.get(ix)=P_new;
+            double E_new=E_left+(E_right-E_left)*nb_frac;
+            tg_Eint.get(ix)+=(E_new-tg_E.get(ix));
+            tg_E.get(ix)=E_new;
+
+            if (verbose>1) {
+              cout << tg_Pint.get(ix) << " " << tg_P.get(ix) << endl;
+            }
+
+            // F = - P + mun * nn + mup * np
+            tg_Fint.get(ix)=-tg_Pint.get(ix)*nB_grid2[inB]+
               nB_grid2[inB]*(1.0-Ye_grid2[iYe])*tg_mun.get(ix)+
               nB_grid2[inB]*Ye_grid2[iYe]*tg_mup.get(ix);
 
-            // E = F + T S
-            tg_E.get(ix)=tg_F.get(ix)+T_grid2[iT]*tg_S.get(ix);
+            // E = F + T S 
+            tg_Eint.get(ix)=tg_Fint.get(ix)+T_grid2[iT]*tg_Sint.get(ix);
             
-            // P = - F + mun * nn + mup * np
-            tg_P.get(ix)=-tg_F.get(ix)*nB_grid2[inB]+
+            // F = - P + mun * nn + mup * np
+            tg_F.get(ix)=-tg_P.get(ix)*nB_grid2[inB]+
               nB_grid2[inB]*(1.0-Ye_grid2[iYe])*tg_mun.get(ix)+
               nB_grid2[inB]*Ye_grid2[iYe]*tg_mup.get(ix)+
               nB_grid2[inB]*Ye_grid2[iYe]*tg_mue.get(ix);
+
+            // E = F + T S 
+            tg_E.get(ix)=tg_F.get(ix)+T_grid2[iT]*tg_S.get(ix);
+            
+          }
+
+          bool fail=false;
+          for(size_t inB=0;inB<n_nB2-1;inB++) {
+            vector<size_t> ix={inB,iYe,iT};
+            vector<size_t> ixp1={inB+1,iYe,iT};
+            double P1=tg_P.get(ix);
+            double P2=tg_P.get(ixp1);
+            if (P2<P1) {
+              fail=true;
+              cout << "Failed between " << nB_grid2[inB] << " and "
+                   << nB_grid2[inB+1] << endl;
+            }
           }
           
-          //char ch;
-          //cin >> ch;
+          
+          if (verbose>1 || fail) {
+            for(size_t inB=0;inB<n_nB2;inB++) {
+              vector<size_t> ix={inB,iYe,iT};
+              cout << nB_grid2[inB] << " " << tg_P.get(ix) << endl;
+            }
+            char ch;
+            cin >> ch;
+          }
           
         } else if (ui>1 || li<n_nB2-2) {
           vector_out(cout,negative,true);
-          cout << "Error: " << li << " " << ui << endl;
+          cout << "iYe,iT: " << iYe << " " << iT << endl;
+          cout << "Error (maxwell4): " << li << " " << ui << endl;
           exit(-1);
         }
       
       }
     }
   
-  } else if (method==4) {
+  } else if (method==0) {
     
     if (with_leptons==false || derivs_computed==false) {
       cout << "maxwell_test only works with leptons and derivatives." << endl;
@@ -687,7 +740,7 @@ int eos_nuclei::maxwell(std::vector<std::string> &sv,
           //cin >> ch;
         } else if (ui>1 || li<n_nB2-2) {
           vector_out(cout,negative,true);
-          cout << "Error: " << li << " " << ui << endl;
+          cout << "Error maxwell 0: " << li << " " << ui << endl;
           exit(-1);
         }
       
@@ -826,7 +879,7 @@ int eos_nuclei::maxwell(std::vector<std::string> &sv,
         
         } else if (ui>1 || li<n_nB2-2) {
           vector_out(cout,negative,true);
-          cout << "Error: " << li << " " << ui << endl;
+          cout << "Error: maxwell 1 " << li << " " << ui << endl;
           exit(-1);
         }
       
