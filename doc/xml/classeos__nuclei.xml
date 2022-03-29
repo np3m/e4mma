@@ -3815,6 +3815,40 @@ file&gt;, or &quot;point&quot; &lt;output file&gt; &lt;nB&gt; &lt;Ye&gt; &lt;T&g
         </inbodydescription>
         <location file="/Users/awsteiner/wcs/eos/eos_nuclei.h" line="963" column="7"/>
       </memberdef>
+      <memberdef kind="function" id="classeos__nuclei_1a90757fda0ca76057b31e58215d7d3079" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int eos_nuclei::max_fun</definition>
+        <argsstring>(size_t nv, const ubvector &amp;x, ubvector &amp;y, o2scl::interp_vec&lt; std::vector&lt; double &gt;, ubvector &gt; &amp;itp_P, o2scl::interp_vec&lt; std::vector&lt; double &gt;, ubvector &gt; &amp;itp_mun)</argsstring>
+        <name>max_fun</name>
+        <qualifiedname>eos_nuclei::max_fun</qualifiedname>
+        <param>
+          <type>size_t</type>
+          <declname>nv</declname>
+        </param>
+        <param>
+          <type>const <ref refid="classboost_1_1numeric_1_1ublas_1_1vector" kindref="compound" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag">ubvector</ref> &amp;</type>
+          <declname>x</declname>
+        </param>
+        <param>
+          <type><ref refid="classboost_1_1numeric_1_1ublas_1_1vector" kindref="compound" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag">ubvector</ref> &amp;</type>
+          <declname>y</declname>
+        </param>
+        <param>
+          <type><ref refid="classo2scl_1_1interp__vec" kindref="compound" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag">o2scl::interp_vec</ref>&lt; std::vector&lt; double &gt;, <ref refid="classboost_1_1numeric_1_1ublas_1_1vector" kindref="compound" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag">ubvector</ref> &gt; &amp;</type>
+          <declname>itp_P</declname>
+        </param>
+        <param>
+          <type><ref refid="classo2scl_1_1interp__vec" kindref="compound" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag">o2scl::interp_vec</ref>&lt; std::vector&lt; double &gt;, <ref refid="classboost_1_1numeric_1_1ublas_1_1vector" kindref="compound" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag">ubvector</ref> &gt; &amp;</type>
+          <declname>itp_mun</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/Users/awsteiner/wcs/eos/eos_nuclei.h" line="965" column="7"/>
+      </memberdef>
       </sectiondef>
     <briefdescription>
 <para>Solve for the EOS including nuclei. </para>
@@ -4645,7 +4679,7 @@ file&gt;, or &quot;point&quot; &lt;output file&gt; &lt;nB&gt; &lt;Ye&gt; &lt;T&g
         <link refid="classboost_1_1numeric_1_1ublas_1_1vector" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag"/>
       </node>
     </collaborationgraph>
-    <location file="/Users/awsteiner/wcs/eos/eos_nuclei.h" line="118" column="1" bodyfile="/Users/awsteiner/wcs/eos/eos_nuclei.h" bodystart="118" bodyend="966"/>
+    <location file="/Users/awsteiner/wcs/eos/eos_nuclei.h" line="118" column="1" bodyfile="/Users/awsteiner/wcs/eos/eos_nuclei.h" bodystart="118" bodyend="971"/>
     <listofallmembers>
       <member refid="classeos_1a5a1b813d87a973d3552ddcbcaae4c2eb" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>a_virial</name></member>
       <member refid="classeos__nuclei_1af76d052dfa9dd1b11245f66c74d0a4eb" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>add_eg</name></member>
@@ -4737,6 +4771,7 @@ file&gt;, or &quot;point&quot; &lt;output file&gt; &lt;nB&gt; &lt;Ye&gt; &lt;T&g
       <member refid="classeos__nuclei_1a589e9ce90ed45f886adf9d57d1f05a64" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>load_nuclei</name></member>
       <member refid="classeos__nuclei_1afb96a831c4da38e5c05c4ad2738ff50c" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>loaded</name></member>
       <member refid="classeos__nuclei_1a47a76469f97ff30926321b51fd0cecb5" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>m95</name></member>
+      <member refid="classeos__nuclei_1a90757fda0ca76057b31e58215d7d3079" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>max_fun</name></member>
       <member refid="classeos__nuclei_1a38f192295a91ff802335cf8e06e1c30e" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>max_ratio</name></member>
       <member refid="classeos__nuclei_1a579ac167d74c08da18cb75d6df7e1cd1" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>max_time</name></member>
       <member refid="classeos__nuclei_1a80e2a3f16b57acaeae0352a665986e2c" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>maxwell</name></member>

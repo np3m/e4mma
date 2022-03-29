@@ -125,9 +125,12 @@ also included:
 - ``mup``: the proton chemical potential
   (in :math:`\mathrm{MeV}`)
 
-If ``with_leptons`` is 1, then the electron chemical potential is
-included (as described above) and the following four quantities are
-also included:
+The neutron and proton rest mass have been subtracted out from the
+neutron and proton chemical potentials (indepedent of whether or not
+the model implies a relativistic dispersion relation for the
+nucleons). If ``with_leptons`` is 1, then the electron chemical
+potential is included (as described above) and the following four
+quantities are also included:
 
 - ``F``: the total free energy per baryon
   (in :math:`\mathrm{MeV}`)

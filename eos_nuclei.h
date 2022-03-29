@@ -961,6 +961,11 @@ public:
       Help.
    */
   int maxwell(std::vector<std::string> &sv, bool itive_com);
+  
+  int max_fun(size_t nv, const ubvector &x, ubvector &y,
+              o2scl::interp_vec<std::vector<double>,ubvector> &itp_P, 
+              o2scl::interp_vec<std::vector<double>,ubvector> &itp_mun);
+  
   //@}
   
 };

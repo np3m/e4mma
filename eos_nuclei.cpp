@@ -439,107 +439,492 @@ int eos_nuclei::output(std::vector<std::string> &sv,
   return 0;
 }
 
+int eos_nuclei::max_fun(size_t nv, const ubvector &x, ubvector &y,
+                        interp_vec<vector<double>,ubvector> &itp_P, 
+                        interp_vec<vector<double>,ubvector> &itp_mu) {
+  double nb_low=x[0];
+  double nb_high=x[1];
+
+  cout << "I: " << x[0] << " " << x[1] << endl;
+  
+  if (x[0]<0.01 || x[0]>0.16 || x[1]<0.01 || x[1]>0.16) return 1;
+  if (nb_high-nb_low<0.002) return 2;
+
+  double P_low=itp_P.eval(nb_low);
+  double P_high=itp_P.eval(nb_high);
+  double mu_low=itp_mu.eval(nb_low);
+  double mu_high=itp_mu.eval(nb_high);
+
+  y[0]=(P_low-P_high)/fabs(P_high);
+  y[1]=(mu_low-mu_high)/fabs(mu_high);
+  
+  return 0;
+}
+
 int eos_nuclei::maxwell(std::vector<std::string> &sv,
                         bool itive_com) {
   
-  if (with_leptons==false || derivs_computed==false) {
-    cout << "maxwell_test only works with leptons and derivatives." << endl;
-    return 0;
-  }
+  int method=4;
   
-  for (size_t iYe=0;iYe<n_Ye2;iYe++) {
-    for (size_t iT=0;iT<n_T2;iT++) {
-      
-      double Ye=Ye_grid2[iYe];
-      double T_MeV=T_grid2[iT];
-      
-      ubvector dPdnb(n_nB2);
-      
-      for(size_t inB=0;inB<n_nB2;inB++) {
-        if (inB>0 && inB<n_nB2-1) {
-          vector<size_t> ixm1={inB-1,iYe,iT};
-          vector<size_t> ixp1={inB+1,iYe,iT};
-          dPdnb[inB]=(tg_P.get(ixp1)-tg_P.get(ixm1))/
-            (nB_grid2[inB+1]-nB_grid2[inB-1]);
-        } else if (inB==0) {
-          vector<size_t> ix={inB,iYe,iT};
-          vector<size_t> ixp1={inB+1,iYe,iT};
-          dPdnb[0]=(tg_P.get(ixp1)-tg_P.get(ix))/
-            (nB_grid2[inB+1]-nB_grid2[inB-1]);
-        } else {
-          dPdnb[n_nB2-1]=dPdnb[n_nB2-2];
-        }
-      }
-      
-      ubvector negative(n_nB2);
-      
-      for(size_t inB=0;inB<n_nB2;inB++) {
-        if (dPdnb[inB]<0.0) negative[inB]=1.0;
-        else negative[inB]=0.0;
-      }
-      
-      double ll=nB_grid2[n_nB2-1];
-      double ul=nB_grid2[0];
-      size_t li=n_nB2-1;
-      size_t ui=0;
-      for(size_t inB=0;inB<n_nB2;inB++) {
-        if (negative[inB]>0.5) {
-          if (nB_grid2[inB]<ll) {
-            ll=nB_grid2[inB];
-            li=inB;
-          }
-          if (nB_grid2[inB]>ul) {
-            ul=nB_grid2[inB];
-            ui=inB;
-          }
-        }
-      }
-      
-      if (((int)ui)-((int)li)>=10) {
-        cout << "Problem." << endl;
-        exit(-1);
-      }
-      if (ui>1 && li<n_nB2-2) {
-        //ui++;
-        //li--;
-        size_t left=li-1;
-        size_t right=ui+1;
-        vector<size_t> ileft={left,iYe,iT};
-        vector<size_t> iright={right,iYe,iT};
-        double nB_left=nB_grid2[left];
-        double nB_right=nB_grid2[right];
-        double F_left=tg_F.get(ileft)*nB_grid2[left];
-        double F_right=tg_F.get(iright)*nB_grid2[right];
-        double gamma=log(F_left/F_right)/log(nB_left/nB_right);
-        double coeff=F_left/pow(nB_left,gamma);
-        cout << Ye << " " << T_MeV << " " << nB_left << " " << nB_right << endl;
-        if (false) {
-          cout << left << " " << right << endl;
-          cout << nB_left << " "
-               << (nB_left+nB_right)/2.0 << " " << nB_right << endl;
-          cout << F_left << " " << coeff*pow((nB_left+nB_right)/2.0,gamma)
-               << " " << F_right << endl;
-        }
-        for(size_t inB=li;inB<=ui;inB++) {
-          vector<size_t> ix={inB,iYe,iT};
-          double shift=coeff*pow(nB_grid2[inB],gamma)-
-            tg_F.get(ix)*nB_grid2[inB];
-          tg_Fint.get(ix)+=shift/nB_grid2[inB];
-          //cout << "inB,shift: " << inB << " " << shift << endl;
-        }
-        //char ch;
-        //cin >> ch;
-      } else if (ui>1 || li<n_nB2-2) {
-        vector_out(cout,negative,true);
-        cout << "Error: " << li << " " << ui << endl;
-        exit(-1);
-      }
-      
+  if (method==4) {
+    
+    if (with_leptons==false || derivs_computed==false) {
+      cout << "maxwell_test only works with leptons and derivatives." << endl;
+      return 0;
     }
-  }
   
-  with_leptons==false;
-  derivs_computed==false;
+    for (size_t iYe=0;iYe<n_Ye2;iYe++) {
+      for (size_t iT=0;iT<n_T2;iT++) {
+      
+        double Ye=Ye_grid2[iYe];
+        double T_MeV=T_grid2[iT];
+      
+        ubvector dPdnb(n_nB2);
+      
+        for(size_t inB=0;inB<n_nB2;inB++) {
+          if (inB>0 && inB<n_nB2-1) {
+            vector<size_t> ixm1={inB-1,iYe,iT};
+            vector<size_t> ixp1={inB+1,iYe,iT};
+            dPdnb[inB]=(tg_P.get(ixp1)-tg_P.get(ixm1))/
+              (nB_grid2[inB+1]-nB_grid2[inB-1]);
+          } else if (inB==0) {
+            vector<size_t> ix={inB,iYe,iT};
+            vector<size_t> ixp1={inB+1,iYe,iT};
+            dPdnb[0]=(tg_P.get(ixp1)-tg_P.get(ix))/
+              (nB_grid2[inB+1]-nB_grid2[inB-1]);
+          } else {
+            dPdnb[n_nB2-1]=dPdnb[n_nB2-2];
+          }
+        }
+      
+        ubvector negative(n_nB2);
+      
+        for(size_t inB=0;inB<n_nB2;inB++) {
+          if (dPdnb[inB]<0.0) negative[inB]=1.0;
+          else negative[inB]=0.0;
+        }
+      
+        double ll=nB_grid2[n_nB2-1];
+        double ul=nB_grid2[0];
+        size_t li=n_nB2-1;
+        size_t ui=0;
+        for(size_t inB=0;inB<n_nB2;inB++) {
+          if (negative[inB]>0.5) {
+            if (nB_grid2[inB]<ll) {
+              ll=nB_grid2[inB];
+              li=inB;
+            }
+            if (nB_grid2[inB]>ul) {
+              ul=nB_grid2[inB];
+              ui=inB;
+            }
+          }
+        }
+      
+        if (((int)ui)-((int)li)>=10) {
+          cout << "Problem." << endl;
+          exit(-1);
+        }
+        if (ui>1 && li<n_nB2-2) {
+          
+          size_t left=li-1;
+          size_t right=ui+1;
+          vector<size_t> ileft={left,iYe,iT};
+          vector<size_t> iright={right,iYe,iT};
+          
+          double nB_left=nB_grid2[left];
+          double nB_right=nB_grid2[right];
+          double F_left=tg_F.get(ileft);
+          double F_right=tg_F.get(iright);
+          double S_left=tg_S.get(ileft);
+          double S_right=tg_S.get(iright);
+
+          //std::cout << F_left << " " << F_right << endl;
+          cout.precision(4);
+          cout << "Adjusting from nB = " 
+               << nB_grid2[li] << " to " << nB_grid2[ui]
+               << " at Ye = " << Ye_grid2[iYe]
+               << " and T = " << T_grid2[iT] << endl;
+          cout.precision(6);
+          
+          for(size_t inB=li;inB<=ui;inB++) {
+            double nb_frac=(nB_grid2[inB]-nB_grid2[left])/
+              (nB_grid2[right]-nB_grid2[left]);
+            
+            vector<size_t> ix={inB,iYe,iT};
+            
+            //cout << inB << " " << nb_frac << " ";
+            //cout << tg_Fint.get(ix) << " " << tg_F.get(ix) << " ";
+             
+            double F_new=F_left+(F_right-F_left)*nb_frac;
+            tg_Fint.get(ix)+=(F_new-tg_F.get(ix));
+            tg_F.get(ix)=F_new;
+            double S_new=S_left+(S_right-S_left)*nb_frac;
+            tg_Sint.get(ix)+=(S_new-tg_S.get(ix));
+            tg_S.get(ix)=S_new;
+            
+            //cout << tg_Fint.get(ix) << " " << tg_F.get(ix) << endl;
+
+            // E = F + T S
+            tg_Eint.get(ix)=tg_Fint.get(ix)+T_grid2[iT]*tg_Sint.get(ix);
+            
+            // P = - F + mun * nn + mup * np
+            tg_Pint.get(ix)=-tg_Fint.get(ix)*nB_grid2[inB]+
+              nB_grid2[inB]*(1.0-Ye_grid2[iYe])*tg_mun.get(ix)+
+              nB_grid2[inB]*Ye_grid2[iYe]*tg_mup.get(ix);
+
+            // E = F + T S
+            tg_E.get(ix)=tg_F.get(ix)+T_grid2[iT]*tg_S.get(ix);
+            
+            // P = - F + mun * nn + mup * np
+            tg_P.get(ix)=-tg_F.get(ix)*nB_grid2[inB]+
+              nB_grid2[inB]*(1.0-Ye_grid2[iYe])*tg_mun.get(ix)+
+              nB_grid2[inB]*Ye_grid2[iYe]*tg_mup.get(ix)+
+              nB_grid2[inB]*Ye_grid2[iYe]*tg_mue.get(ix);
+          }
+          
+          //char ch;
+          //cin >> ch;
+          
+        } else if (ui>1 || li<n_nB2-2) {
+          vector_out(cout,negative,true);
+          cout << "Error: " << li << " " << ui << endl;
+          exit(-1);
+        }
+      
+      }
+    }
+  
+  } else if (method==4) {
+    
+    if (with_leptons==false || derivs_computed==false) {
+      cout << "maxwell_test only works with leptons and derivatives." << endl;
+      return 0;
+    }
+  
+    for (size_t iYe=0;iYe<n_Ye2;iYe++) {
+      for (size_t iT=0;iT<n_T2;iT++) {
+      
+        double Ye=Ye_grid2[iYe];
+        double T_MeV=T_grid2[iT];
+      
+        ubvector dPdnb(n_nB2);
+      
+        for(size_t inB=0;inB<n_nB2;inB++) {
+          if (inB>0 && inB<n_nB2-1) {
+            vector<size_t> ixm1={inB-1,iYe,iT};
+            vector<size_t> ixp1={inB+1,iYe,iT};
+            dPdnb[inB]=(tg_P.get(ixp1)-tg_P.get(ixm1))/
+              (nB_grid2[inB+1]-nB_grid2[inB-1]);
+          } else if (inB==0) {
+            vector<size_t> ix={inB,iYe,iT};
+            vector<size_t> ixp1={inB+1,iYe,iT};
+            dPdnb[0]=(tg_P.get(ixp1)-tg_P.get(ix))/
+              (nB_grid2[inB+1]-nB_grid2[inB-1]);
+          } else {
+            dPdnb[n_nB2-1]=dPdnb[n_nB2-2];
+          }
+        }
+      
+        ubvector negative(n_nB2);
+      
+        for(size_t inB=0;inB<n_nB2;inB++) {
+          if (dPdnb[inB]<0.0) negative[inB]=1.0;
+          else negative[inB]=0.0;
+        }
+      
+        double ll=nB_grid2[n_nB2-1];
+        double ul=nB_grid2[0];
+        size_t li=n_nB2-1;
+        size_t ui=0;
+        for(size_t inB=0;inB<n_nB2;inB++) {
+          if (negative[inB]>0.5) {
+            if (nB_grid2[inB]<ll) {
+              ll=nB_grid2[inB];
+              li=inB;
+            }
+            if (nB_grid2[inB]>ul) {
+              ul=nB_grid2[inB];
+              ui=inB;
+            }
+          }
+        }
+      
+        if (((int)ui)-((int)li)>=10) {
+          cout << "Problem." << endl;
+          exit(-1);
+        }
+        if (ui>1 && li<n_nB2-2) {
+          //ui++;
+          //li--;
+          size_t left=li-1;
+          size_t right=ui+1;
+          vector<size_t> ileft={left,iYe,iT};
+          vector<size_t> iright={right,iYe,iT};
+          double nB_left=nB_grid2[left];
+          double nB_right=nB_grid2[right];
+          double F_left=tg_F.get(ileft)*nB_grid2[left];
+          double F_right=tg_F.get(iright)*nB_grid2[right];
+          double gamma=log(F_left/F_right)/log(nB_left/nB_right);
+          double coeff=F_left/pow(nB_left,gamma);
+          cout << Ye << " " << T_MeV << " " << nB_left << " "
+               << nB_right << endl;
+          if (false) {
+            cout << left << " " << right << endl;
+            cout << nB_left << " "
+                 << (nB_left+nB_right)/2.0 << " " << nB_right << endl;
+            cout << F_left << " " << coeff*pow((nB_left+nB_right)/2.0,gamma)
+                 << " " << F_right << endl;
+          }
+          for(size_t inB=li;inB<=ui;inB++) {
+            vector<size_t> ix={inB,iYe,iT};
+            double shift=coeff*pow(nB_grid2[inB],gamma)-
+              tg_F.get(ix)*nB_grid2[inB];
+            tg_Fint.get(ix)+=shift/nB_grid2[inB];
+            //cout << "inB,shift: " << inB << " " << shift << endl;
+          }
+          //char ch;
+          //cin >> ch;
+        } else if (ui>1 || li<n_nB2-2) {
+          vector_out(cout,negative,true);
+          cout << "Error: " << li << " " << ui << endl;
+          exit(-1);
+        }
+      
+      }
+    }
+  
+    with_leptons==false;
+    derivs_computed==false;
+
+  } else if (method==1) {
+  
+    if (with_leptons==false || derivs_computed==false) {
+      cout << "maxwell_test only works with leptons and derivatives." << endl;
+      return 0;
+    }
+  
+    for (size_t iYe=0;iYe<n_Ye2;iYe++) {
+      for (size_t iT=0;iT<n_T2;iT++) {
+      
+        double Ye=Ye_grid2[iYe];
+        double T_MeV=T_grid2[iT];
+
+        cout << "Ye,Y_MeV: " << Ye << " " << T_MeV << endl;
+
+        ubvector P(n_nB2);
+        ubvector mu(n_nB2);
+        ubvector mun(n_nB2);
+        ubvector mup(n_nB2);
+        ubvector mue(n_nB2);
+        ubvector dPdnb(n_nB2);
+      
+        for(size_t inB=0;inB<n_nB2;inB++) {
+          vector<size_t> ix={inB,iYe,iT};
+        
+          P[inB]=tg_P.get(ix);
+          mun[inB]=tg_mun.get(ix);
+          mup[inB]=tg_mup.get(ix);
+          mue[inB]=tg_mue.get(ix);
+          mu[inB]=(1.0-Ye_grid2[iYe])*tg_mun.get(ix)+
+            Ye_grid2[iYe]*(tg_mup.get(ix)+tg_mue.get(ix));
+        
+          if (inB>0 && inB<n_nB2-1) {
+            vector<size_t> ixm1={inB-1,iYe,iT};
+            vector<size_t> ixp1={inB+1,iYe,iT};
+            dPdnb[inB]=(tg_P.get(ixp1)-tg_P.get(ixm1))/
+              (nB_grid2[inB+1]-nB_grid2[inB-1]);
+          } else if (inB==0) {
+            vector<size_t> ixp1={inB+1,iYe,iT};
+            dPdnb[0]=(tg_P.get(ixp1)-tg_P.get(ix))/
+              (nB_grid2[inB+1]-nB_grid2[inB-1]);
+          } else {
+            dPdnb[n_nB2-1]=dPdnb[n_nB2-2];
+          }
+        }
+      
+        ubvector negative(n_nB2);
+      
+        for(size_t inB=0;inB<n_nB2;inB++) {
+          if (dPdnb[inB]<0.0) negative[inB]=1.0;
+          else negative[inB]=0.0;
+        }
+      
+        double ll=nB_grid2[n_nB2-1];
+        double ul=nB_grid2[0];
+        size_t li=n_nB2-1;
+        size_t ui=0;
+        for(size_t inB=0;inB<n_nB2;inB++) {
+          if (negative[inB]>0.5) {
+            if (nB_grid2[inB]<ll) {
+              ll=nB_grid2[inB];
+              li=inB;
+            }
+            if (nB_grid2[inB]>ul) {
+              ul=nB_grid2[inB];
+              ui=inB;
+            }
+          }
+        }
+      
+        if (((int)ui)-((int)li)>=10) {
+          cout << "Problem." << endl;
+          exit(-1);
+        }
+        if (ui>1 && li<n_nB2-2) {
+
+          double nb_low=nB_grid2[li];
+          double nb_high=nB_grid2[ui];
+        
+          interp_vec<vector<double>,ubvector>
+            itp_P(n_nB2,nB_grid2,P,itp_linear);
+          interp_vec<vector<double>,ubvector>
+            itp_mu(n_nB2,nB_grid2,mu,itp_linear);
+          interp_vec<vector<double>,ubvector>
+            itp_mun(n_nB2,nB_grid2,mun,itp_linear);
+          interp_vec<vector<double>,ubvector>
+            itp_mup(n_nB2,nB_grid2,mup,itp_linear);
+          interp_vec<vector<double>,ubvector>
+            itp_mue(n_nB2,nB_grid2,mue,itp_linear);
+
+          cout << li << " " << ui << " " << nb_low << " " << nb_high << endl;
+          ofstream fout;
+          fout.open("max2.out");
+          fout << "nb P mu" << endl;
+          cout << "nb P mu" << endl;
+          for(double nbx=0.01;nbx<0.16;nbx+=0.001) {
+            fout << nbx << " " << itp_P.eval(nbx) << " "
+                 << itp_mu.eval(nbx) << endl;
+            cout << nbx << " " << itp_P.eval(nbx) << " "
+                 << itp_mu.eval(nbx) << " "
+                 << itp_mun.eval(nbx) << " "
+                 << itp_mup.eval(nbx) << " "
+                 << itp_mue.eval(nbx) << endl;
+          }
+          fout.close();
+
+          mh.verbose=2;
+
+          mm_funct func=std::bind
+            (std::mem_fn<int(size_t,const ubvector &,ubvector&,
+                             interp_vec<vector<double>,ubvector> &,
+                             interp_vec<vector<double>,ubvector> &)>
+             (&eos_nuclei::max_fun),this,std::placeholders::_1,
+             std::placeholders::_2,std::placeholders::_3,
+             std::ref(itp_P),std::ref(itp_mun));
+
+          ubvector x(2), y(2);
+          x[0]=nb_low;
+          x[1]=nb_high;
+
+          mh.msolve(2,x,func);
+
+          cout << "H: " << x[0] << " " << x[1] << endl;
+        
+          cout << "Done." << endl;
+          exit(-1);
+        
+        } else if (ui>1 || li<n_nB2-2) {
+          vector_out(cout,negative,true);
+          cout << "Error: " << li << " " << ui << endl;
+          exit(-1);
+        }
+      
+      }
+    }
+  
+    with_leptons==false;
+    derivs_computed==false;
+
+  } else if (method==2) {
+  
+    if (with_leptons==false || derivs_computed==false) {
+      cout << "maxwell_test only works with leptons and derivatives." << endl;
+      return 0;
+    }
+  
+    for (size_t iYe=0;iYe<n_Ye2;iYe++) {
+      for (size_t iT=0;iT<n_T2;iT++) {
+      
+        double Ye=Ye_grid2[iYe];
+        double T_MeV=T_grid2[iT];
+
+        cout << "Ye,Y_MeV: " << Ye << " " << T_MeV << endl;
+
+        ubvector P(n_nB2);
+        ubvector mu(n_nB2);
+        ubvector oonB(n_nB2);
+      
+        for(size_t inB=1;inB<n_nB2;inB++) {
+          vector<size_t> ixm1={inB-1,iYe,iT};
+          vector<size_t> ix={inB,iYe,iT};
+          double Pint1=tg_Pint.get(ixm1);
+          double Pint2=tg_Pint.get(ix);
+
+          oonB[inB]=1.0/nB_grid2[inB];
+          mu[inB]=(1.0-Ye_grid2[iYe])*tg_mun.get(ix)+
+            Ye_grid2[iYe]*(tg_mup.get(ix)+tg_mue.get(ix));
+        }
+
+        vector<double> signc;
+        vector<size_t> signix;
+        vector<double> signP;
+        ofstream fout;
+        fout.open("max3.out");
+        for(size_t inB=1;inB<n_nB2-1;inB++) {
+          cout << inB << " " << P[inB]-P[inB-1] << " " << P[inB] << " "
+               << mu[inB] << endl;
+          fout << nB_grid2[inB] << " " << P[inB] << endl;
+          if ((P[inB]-P[inB-1])*(P[inB+1]-P[inB])<0.0) {
+            signc.push_back(nB_grid2[inB]);
+            signix.push_back(inB);
+            signP.push_back(P[inB]);
+          }
+        }
+        fout.close();
+
+        if (signc.size()>0) {
+          vector_out(cout,signix,true);
+          vector_out(cout,signc,true);
+
+          size_t inB_min=vector_min_value<vector<size_t>,size_t>(signix);
+          size_t inB_max=vector_max_value<vector<size_t>,size_t>(signix);
+          signP.push_back(P[inB_min-1]);
+          signP.push_back(P[inB_max+1]);
+          vector_out(cout,signP,true);
+
+          double P_min=vector_min_value<vector<double>,double>(signP);
+          double P_max=vector_max_value<vector<double>,double>(signP);
+          cout << P_min << " " << P_max << endl;
+
+          interp_vec<ubvector,ubvector> itp_P(n_nB2,oonB,P,itp_linear);
+
+          for(double Pt=P_min;Pt<P_max*1.0000001;Pt+=(P_max-P_min)/60.0) {
+
+            vector<double> locs;
+            vector_find_level(Pt,n_nB2,oonB,P,locs);
+          
+            cout << Pt << " " << locs.size() << endl;
+
+            if (locs.size()==3) {
+              cout << itp_P.integ(locs[0],locs[1]) << " "
+                   << itp_P.integ(locs[1],locs[2]) << " "
+                   << itp_P.integ(locs[0],locs[2]) << endl;
+           
+            }
+          
+          }
+        
+          exit(-1);
+        }
+      
+      }
+    }
+  
+    with_leptons==false;
+    derivs_computed==false;
+
+  }
   
   return 0;
 }
@@ -671,7 +1056,7 @@ int eos_nuclei::add_eg(std::vector<std::string> &sv,
         
         vector<size_t> ix={i,j,k};
 	tg_F.set(ix,tg_Fint.get(ix)+
-		  (hc_mev_fm*elep.th.ed-T_MeV*elep.th.en)/nB);
+                 (hc_mev_fm*elep.th.ed-T_MeV*elep.th.en)/nB);
 	tg_E.set(ix,tg_Eint.get(ix)+hc_mev_fm*elep.th.ed/nB);
 	tg_P.set(ix,tg_Pint.get(ix)+hc_mev_fm*elep.th.pr);
 	tg_S.set(ix,tg_Sint.get(ix)+elep.th.en/nB);
@@ -4155,7 +4540,7 @@ int eos_nuclei::store_point
 }
 
 int eos_nuclei::select_high_T(std::vector<std::string> &sv,
-				 bool itive_com) {
+                              bool itive_com) {
   if (sv.size()<2) {
     cerr << "Command \"select-high-T\" needs an integer argument."
 	 << endl;
