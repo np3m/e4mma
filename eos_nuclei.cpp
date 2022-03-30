@@ -25,6 +25,10 @@
 #include "neutrino/PolarizationNonRel.hpp"
 #include "neutrino/constants.h"
 
+#ifdef O2SCL_EIGEN
+#include <eigen3/Eigen/Dense>
+#endif
+
 #include <o2scl/root_brent_gsl.h>
 #include <o2scl/classical.h>
 #include <o2scl/interp.h>
@@ -1812,9 +1816,6 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
 
   interp_vec<vector<double> > itp_sta_a, itp_sta_b, itp_sta_c;
 
-  std::string in_file;
-  read_results(in_file);
-
   vector<double> packed;
   for(size_t i=0;i<n_nB2;i++) {
     packed.push_back(nB_grid2[i]);
@@ -1828,7 +1829,7 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
   size_t st[3]={n_nB2,n_Ye2,n_T2};
   
   dmundYe.resize(3,st);
-  dmundYe.resize(3,st);
+  dmundnB.resize(3,st);
   dmupdYe.resize(3,st);
   dsdT.resize(3,st);
   dsdnB.resize(3,st);
@@ -1856,7 +1857,7 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
       for (size_t i=0;i<n_nB2;i++) {
         vector<size_t> ix={i,j,k};
 	mun_of_nB.push_back(tg_mun.get(ix)/o2scl_const::hc_mev_fm);
-	s_of_nB.push_back(tg_Sint.get(ix)*nB_grid2[i]);
+	s_of_nB.push_back(tg_S.get(ix)*nB_grid2[i]);
       }
       itp_sta_a.set(n_nB2,nB_grid2,mun_of_nB,itp_steffen);
       itp_sta_b.set(n_nB2,nB_grid2,s_of_nB,itp_steffen);
@@ -1877,7 +1878,7 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
         vector<size_t> ix={i,j,k};
 	mun_of_Ye.push_back(tg_mun.get(ix)/o2scl_const::hc_mev_fm);
 	mup_of_Ye.push_back(tg_mup.get(ix)/o2scl_const::hc_mev_fm);
-	s_of_Ye.push_back(tg_Sint.get(ix)*nB);
+	s_of_Ye.push_back(tg_S.get(ix)*nB);
       }
       itp_sta_a.set(n_Ye2,Ye_grid2,mun_of_Ye,itp_steffen);
       itp_sta_b.set(n_Ye2,Ye_grid2,mup_of_Ye,itp_steffen);
@@ -1898,7 +1899,7 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
       vector<double> s_of_T;
       for (size_t k=0;k<n_T2;k++) {
         vector<size_t> ix={i,j,k};
-	s_of_T.push_back(tg_Sint.get(ix)*nB);
+	s_of_T.push_back(tg_S.get(ix)*nB);
       }
       itp_sta_a.set(n_T2,T_grid2,s_of_T,itp_steffen);
       for (size_t k=0;k<n_T2;k++) {
@@ -1978,12 +1979,31 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
 	mat(3,2)=mat(2,3);
 	mat(3,3)=np2*np2*dmupdnp_s;
 
+#ifdef NEVER_DEFINED
+        Eigen::MatrixXd mat2=Eigen::MatrixXd::Ones(4,4);
+        for(size_t jj=0;jj<4;jj++) {
+          for(size_t kk=0;kk<4;kk++) {
+            mat2(jj,kk)=mat(jj,kk);
+          }
+        }
+        Eigen::VectorXcd eivals=mat2.eigenvalues();
+#endif
+        
 	// Compute eigenvalues using SVD
 	o2scl_linalg::SV_decomp(4,4,mat,V,sing,work);
 
 	for(size_t ij=0;ij<4;ij++) {
 	  egv[ij].get(ix)=sing[ij];
 	}
+
+        if (sing[0]<0.0 || sing[1]<0.0 || sing[2]<0.0 ||
+            sing[3]<0.0) {
+          cout << "Here: " << nB << " " << Ye << " " << T_MeV << " "
+               << sing[0] << " " << sing[1] << " " << sing[2]
+               << " " << sing[3] << endl;
+          char ch;
+          cin >> ch;
+        }
 
 	// Compute squared speed of sound
 	double f_nnnn=dmundnn;
@@ -1999,12 +2019,18 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
 		      np2*np2*(f_npnp-f_npT*f_npT/f_TT)-
 		      2.0*en*(nn2*f_nnT/f_TT+np2*f_npT/f_TT)-en*en/f_TT)/den;
 	cs2.get(ix)=cs_sq;
+
+        if (cs_sq>1.0) {
+          cout << "Here2: " << nB << " " << Ye << " " << T_MeV << " "
+               << cs_sq << endl;
+          exit(-1);
+        }
       }
     }
   }
   
   hdf_file hf;
-  hf.open(outfile);
+  hf.open_or_create(outfile);
   hdf_output(hf,dmundnB,"dmundnB");
   hdf_output(hf,dmundYe,"dmundYe");
   hdf_output(hf,dmupdYe,"dmupdYe");
@@ -6731,11 +6757,13 @@ int eos_nuclei::stats(std::vector<std::string> &sv,
 	if (fabs(ti_int_check)>1.0e-9) {
 	  ti_int_count++;
           if (ti_int_count<1000) {
-            cout << "Therm. ident. doens't hold (i,nB,Ye,T,ti_int_check): "
-                 << i << " " << nB << " " << Ye << " " << T_MeV
-                 << " " << ti_int_check << endl;
+            cout << "Thermodynamic identity violated for EOS w/o leptons:\n"
+                 << "  i,nB,Ye,T [MeV]: " 
+                 << i << " " << nB << " " << Ye << " " << T_MeV << endl;
+            cout << "  ti_int_check: " << ti_int_check << endl;
 	  } else if (ti_int_count==1000) {
-	    cout << "Further Fint warnings suppressed." << endl;
+	    cout << "Further thermodynamic identity w/o leptons "
+                 << "warnings suppressed." << endl;
 	  }
 	}
       }
@@ -6755,11 +6783,12 @@ int eos_nuclei::stats(std::vector<std::string> &sv,
 	if (fabs(ti_check)>1.0e-9) {
 	  ti_count++;
           if (ti_count<1000) {
-            cout << "Therm. ident. doens't hold (ti_count,i,"
-                 << "nB,Ye,T,ti_check,scale): "
-                 << ti_count << " " << i << "\n  "
-                 << nB << " " << Ye << " " << T_MeV
-                 << " " << ti_check << " " << scale << endl;
+            cout << "Thermodynamic identity violated for EOS w/leptons:\n"
+                 << "  ti_count,i,nB,Ye,T [MeV]: "
+                 << ti_count << " " << i << " "
+                 << nB << " " << Ye << " " << T_MeV << endl;
+            cout << "  ti_check,scale: "
+                 << ti_check << " " << scale << endl;
             if (false) {
               cout.precision(5);
               cout << tg_E.get_data()[i]*nB << " "
@@ -6773,7 +6802,8 @@ int eos_nuclei::stats(std::vector<std::string> &sv,
               cin >> ch;
             }
           } else if (ti_count==1000) {
-	    cout << "Further Fint warnings suppressed." << endl;
+	    cout << "Further thermodynamic idenity w/leptons "
+                 << "warnings suppressed." << endl;
 	  }
 	}
       }
@@ -10741,7 +10771,7 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
   
   eos::setup_cli(cl,false);
   
-  static const int nopt=23;
+  static const int nopt=24;
 
   o2scl::comm_option_s options[nopt]=
     {{0,"eos-deriv","",0,0,"","",
@@ -10828,6 +10858,10 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
       new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::fix_cc),o2scl::cli::comm_option_both,
       1,"","eos_nuclei","fix_cc","doc/xml/classeos__nuclei.xml"},
+     {0,"stability","",1,1,"","",
+      new o2scl::comm_option_mfptr<eos_nuclei>
+      (this,&eos_nuclei::stability),o2scl::cli::comm_option_both,
+      1,"","eos_nuclei","stability","doc/xml/classeos__nuclei.xml"},
      {0,"verify","",1,4,"","",
       new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::verify),o2scl::cli::comm_option_both,

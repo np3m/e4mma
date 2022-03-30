@@ -30,6 +30,8 @@ More documentation will be added as time permits.
    eos_nuclei
    class_doc
    todos
+   gibbs
+   trans
 
 * :ref:`genindex`
 * :ref:`modindex`
