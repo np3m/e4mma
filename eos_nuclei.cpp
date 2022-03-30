@@ -601,19 +601,19 @@ int eos_nuclei::maxwell(std::vector<std::string> &sv,
             }
 
             // F = - P + mun * nn + mup * np
-            tg_Fint.get(ix)=-tg_Pint.get(ix)*nB_grid2[inB]+
-              nB_grid2[inB]*(1.0-Ye_grid2[iYe])*tg_mun.get(ix)+
-              nB_grid2[inB]*Ye_grid2[iYe]*tg_mup.get(ix);
-
+            tg_Fint.get(ix)=-tg_Pint.get(ix)/nB_grid2[inB]+
+              (1.0-Ye_grid2[iYe])*tg_mun.get(ix)+
+              Ye_grid2[iYe]*tg_mup.get(ix);
+            
             // E = F + T S 
             tg_Eint.get(ix)=tg_Fint.get(ix)+T_grid2[iT]*tg_Sint.get(ix);
             
             // F = - P + mun * nn + mup * np
-            tg_F.get(ix)=-tg_P.get(ix)*nB_grid2[inB]+
-              nB_grid2[inB]*(1.0-Ye_grid2[iYe])*tg_mun.get(ix)+
-              nB_grid2[inB]*Ye_grid2[iYe]*tg_mup.get(ix)+
-              nB_grid2[inB]*Ye_grid2[iYe]*tg_mue.get(ix);
-
+            tg_F.get(ix)=-tg_P.get(ix)/nB_grid2[inB]+
+              (1.0-Ye_grid2[iYe])*tg_mun.get(ix)+
+              Ye_grid2[iYe]*tg_mup.get(ix)+
+              Ye_grid2[iYe]*tg_mue.get(ix);
+            
             // E = F + T S 
             tg_E.get(ix)=tg_F.get(ix)+T_grid2[iT]*tg_S.get(ix);
             

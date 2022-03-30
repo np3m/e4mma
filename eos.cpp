@@ -616,6 +616,7 @@ eos::eos() {
   muon.init(o2scl_settings.get_convert_units().convert
 	    ("kg","1/fm",o2scl_mks::mass_muon),2.0);
   neutrino.init(0.0,1.0);
+  photon.init(0.0,2.0);
 
   // Default settings
   verbose=0;

@@ -31,6 +31,7 @@ More documentation will be added as time permits.
    class_doc
    todos
    trans
+   cs2
 
 * :ref:`genindex`
 * :ref:`modindex`

@@ -2,7 +2,12 @@ Variable Transformations
 ========================
 
 It is useful to be able to convert derivative operators between the
-various sets of composition variables. Since :math:`n_p=n_e` and
+various sets of composition variables.
+
+Converting between :math:`(n_n,n_p)` and :math:`(n_B,n_e)`
+----------------------------------------------------------
+
+Since :math:`n_p=n_e` and
 :math:`n_n=n_B-n_e`,
 
 .. math::
@@ -38,6 +43,9 @@ For second derivatives
    2\left(\frac{\partial^2 }{\partial n_p \partial n_n}\right) +
    \left(\frac{\partial^2 }{\partial n_n^2}\right)_{n_p}
    
+Converting between :math:`(n_n,n_p)` and :math:`(n_B,Y_e)`
+----------------------------------------------------------
+
 Since :math:`n_p=n_B Y_e` and :math:`n_n=n_B(1-Y_e)`,
 
 .. math::
@@ -58,8 +66,11 @@ Since :math:`n_p=n_B Y_e` and :math:`n_n=n_B(1-Y_e)`,
    n_B \left[\left(\frac{\partial }{\partial n_p}\right)_{n_n} -
    \left(\frac{\partial }{\partial n_n}\right)_{n_p} \right]
 
-With muons, the expressions change, since :math:`n_p = n_e + n_{\mu}(n_e)`
-and :math:`n_n = n_B - n_e - n_{\mu}(n_e)`, 
+Converting between :math:`(n_n,n_p)` and :math:`(n_B,n_e)` with muons
+---------------------------------------------------------------------
+
+When muons are included, the expressions change, since :math:`n_p =
+n_e + n_{\mu}(n_e)` and :math:`n_n = n_B - n_e - n_{\mu}(n_e)`,
 
 .. math::
 
