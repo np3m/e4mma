@@ -335,7 +335,7 @@ class eos {
 	    double nn, double np, double T, o2scl::thermo &th);
 
   /** \brief Compute the squared speed of sound 
-  */
+   */
   double cs2_func(o2scl::fermion &n, o2scl::fermion &p, double T,
 		  o2scl::thermo &th);
   //@}

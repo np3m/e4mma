@@ -1650,12 +1650,17 @@ double eos::cs2_func(fermion &n, fermion &p, double T, thermo &th) {
   double np=p.n;
   double nb=n.n+p.n;
   free_energy_density_ep(nn,np,T);
-  
+
+  // Include the nucleon rest masses in the terms involving the
+  // chemical potentials
   double den=th2.en*T+(n.mu+n.m)*n.n+(p.mu+p.m)*p.n+electron.mu*electron.n;
   double en=th2.en;
 
   // Numerically compute required second derivatives
   double fac=1.0e3;
+
+  // Note that the nucleon rest mass contributions are included in the
+  // functions dfdnn_total and dfdnp_total.
   
   // d^2f/dnn^2
   std::function<double(double)> f_nnnn_func=
@@ -3218,15 +3223,18 @@ int eos::select_internal(int i_ns_loc, int i_skyrme_loc,
   }
 
   double rho0=UNEDF_tab.get(((string)"rho0"),i_skyrme);
-  double Crdr0=UNEDF_tab.get(((string)"Crdr0"),i_skyrme);
-  double Vp=UNEDF_tab.get(((string)"Vp"),i_skyrme);
-  double EoA=UNEDF_tab.get(((string)"EoA"),i_skyrme); 
-  double Crdr1=UNEDF_tab.get(((string)"Crdr1"),i_skyrme);
-  double CrdJ0=UNEDF_tab.get(((string)"CrdJ0"),i_skyrme);
   double K=UNEDF_tab.get(((string)"K"),i_skyrme);
   double Ms_inv=UNEDF_tab.get(((string)"Ms_inv"),i_skyrme);
-  double Vn=UNEDF_tab.get(((string)"Vn"),i_skyrme);
+  double EoA=UNEDF_tab.get(((string)"EoA"),i_skyrme);
+  double unedf_a=UNEDF_tab.get(((string)"a"),i_skyrme);
+  double unedf_L=UNEDF_tab.get(((string)"L"),i_skyrme);
+  
+  double Crdr0=UNEDF_tab.get(((string)"Crdr0"),i_skyrme);
+  double Crdr1=UNEDF_tab.get(((string)"Crdr1"),i_skyrme);
+  double CrdJ0=UNEDF_tab.get(((string)"CrdJ0"),i_skyrme);
   double CrdJ1=UNEDF_tab.get(((string)"CrdJ1"),i_skyrme);
+  double Vp=UNEDF_tab.get(((string)"Vp"),i_skyrme);
+  double Vn=UNEDF_tab.get(((string)"Vn"),i_skyrme);
 
   // Store some of the nuclear matter parameters
   eos_n0=rho0;
@@ -3243,11 +3251,21 @@ int eos::select_internal(int i_ns_loc, int i_skyrme_loc,
   }
   
   double Ms_star=1/Ms_inv;
-    
+
   sk.alt_params_saturation(rho0,EoA/hc_mev_fm,K/hc_mev_fm,Ms_star,
 			   eos_S/hc_mev_fm,eos_L/hc_mev_fm,1.0/1.249,
 			   Crdr0/hc_mev_fm,Crdr1/hc_mev_fm,
 			   CrdJ0/hc_mev_fm,CrdJ1/hc_mev_fm);
+
+  /*
+    double f0, g0, f0p, g0p, f1, g1, f1p, g1p;
+    sk.landau_nuclear(rho0,939.0/197.33,f0,g0,f0p,g0p,f1,g1,f1p,g1p);
+    cout << f0 << " " << g0 << " " << f0p << " " << g0p << " " << f1 << " "
+    << g1 << " " << f1p << " " << g1p << endl;
+    sk.landau_neutron(rho0,939.0/197.33,f0,g0,f1,g1);
+    cout << f0 << " " << g0 << " " << f1 << " " << g1 << endl;
+    exit(-1);
+  */
 
   /*
     sk.saturation();
