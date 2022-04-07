@@ -1,5 +1,15 @@
 help:
-	@echo Help
+	@echo "Makefile targets:"
+	@echo "─────────────────────────────────────────────────────────"
+	@echo "help:             This makefile documentation."
+	@echo "eos:              Main homogeneous matter executable."
+	@echo "eos_nompi:        Non-parallel version of eos."
+	@echo "eos_nuclei:       Main heterogeneous matter executable."
+	@echo "eos_nuclei_nompi: Non-parallel version of eos_nuclei."
+	@echo "open-doc:         Open local documentation in browser."
+	@echo "doc:              Generate documentation."
+	@echo "sync-doc:         Upload documentation to web."
+	@echo "web-doc:          Open online documentation in browser."
 
 # ----------------------------------------------------------------
 # Various user-specific settings
@@ -193,8 +203,20 @@ doc: empty
 	cd doc; doxygen doxyfile
 	cd doc; make html
 
+BROWSER = 
+UNAME_S := $(shell uname -s)
+    ifeq ($(UNAME_S),Linux)
+        BROWSER += xdg-open
+    endif
+    ifeq ($(UNAME_S),Darwin)
+        BROWSER += open
+    endif
+
+web-doc:
+	$(BROWSER) https://neutronstars.utk.edu/code/eos/
+
 open-doc:
-	open doc/build/html/index.html
+	$(BROWSER) doc/build/html/index.html
 
 sync-doc:
 	rsync -Cavzu doc/build/html/* $(STATIC_DOC_DIR)/eos
