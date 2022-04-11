@@ -1856,7 +1856,8 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
       vector<double> mun_of_nB, s_of_nB;
       for (size_t i=0;i<n_nB2;i++) {
         vector<size_t> ix={i,j,k};
-	mun_of_nB.push_back(tg_mun.get(ix)/o2scl_const::hc_mev_fm);
+	mun_of_nB.push_back(tg_mun.get(ix)/o2scl_const::hc_mev_fm+
+                            neutron.m);
 	s_of_nB.push_back(tg_S.get(ix)*nB_grid2[i]);
       }
       itp_sta_a.set(n_nB2,nB_grid2,mun_of_nB,itp_steffen);
@@ -1876,8 +1877,10 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
       vector<double> mun_of_Ye, mup_of_Ye, s_of_Ye;
       for (size_t j=0;j<n_Ye2;j++) {
         vector<size_t> ix={i,j,k};
-	mun_of_Ye.push_back(tg_mun.get(ix)/o2scl_const::hc_mev_fm);
-	mup_of_Ye.push_back(tg_mup.get(ix)/o2scl_const::hc_mev_fm);
+	mun_of_Ye.push_back(tg_mun.get(ix)/o2scl_const::hc_mev_fm+
+                            neutron.m);
+	mup_of_Ye.push_back(tg_mup.get(ix)/o2scl_const::hc_mev_fm+
+                            proton.m);
 	s_of_Ye.push_back(tg_S.get(ix)*nB);
       }
       itp_sta_a.set(n_Ye2,Ye_grid2,mun_of_Ye,itp_steffen);
@@ -1912,6 +1915,10 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
   // Storage for the matrix and SVD
   ubmatrix mat(4,4), V(4,4);
   ubvector sing(4), work(4);
+
+  int unstable_count=0;
+  int superlum_count=0;
+  int total_count=0;
   
   /// Compute the stability matrix and its eigenvalues at each point
   for (size_t i=0;i<n_nB2;i++) {
@@ -1919,6 +1926,9 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
     for (size_t j=0;j<n_Ye2;j++) {
       double Ye=Ye_grid2[j];
       for (size_t k=0;k<n_T2;k++) {
+
+        total_count++;
+        
 	double T_MeV=T_grid2[k];
         vector<size_t> ix={i,j,k};
 
@@ -1998,11 +2008,12 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
 
         if (sing[0]<0.0 || sing[1]<0.0 || sing[2]<0.0 ||
             sing[3]<0.0) {
-          cout << "Here: " << nB << " " << Ye << " " << T_MeV << " "
+          cout << "Unstable: " << nB << " " << Ye << " " << T_MeV << " "
                << sing[0] << " " << sing[1] << " " << sing[2]
                << " " << sing[3] << endl;
-          char ch;
-          cin >> ch;
+          unstable_count++;
+          //char ch;
+          //cin >> ch;
         }
 
 	// Compute squared speed of sound
@@ -2013,21 +2024,39 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
 	double f_npT=dmupdT;
 	double f_TT=-dsdTv;
 	double den=en*T_MeV+(tg_mun.get(ix)/hc_mev_fm+neutron.m)*nn2+
-	  (tg_mup.get(ix)/hc_mev_fm+proton.m)*np2+electron.mu*electron.n;
+	  (tg_mup.get(ix)/hc_mev_fm+proton.m)*np2+tg_mue.get(ix)*np2;
 	double cs_sq=(nn2*nn2*(f_nnnn-f_nnT*f_nnT/f_TT)+
 		      2.0*nn2*np2*(f_nnnp-f_nnT*f_npT/f_TT)+
 		      np2*np2*(f_npnp-f_npT*f_npT/f_TT)-
 		      2.0*en*(nn2*f_nnT/f_TT+np2*f_npT/f_TT)-en*en/f_TT)/den;
+
+        if (false && nB>0.16) {
+          cout << "cs21: " << cs_sq << endl;
+          neutron.n=nB*(1.0-Ye);
+          proton.n=nB*Ye;
+          thermo th;
+          cout << "cs22: " << cs2_func(neutron,proton,T_MeV/hc_mev_fm,th)
+               << endl;
+          exit(-1);
+        }
+        
 	cs2.get(ix)=cs_sq;
 
         if (cs_sq>1.0) {
-          cout << "Here2: " << nB << " " << Ye << " " << T_MeV << " "
+          //cout << tg_mun.get(ix) << " " << neutron.m << " "
+          //<< electron.mu << " " << electron.n << endl;
+          cout << "Superluminal: " << nB << " " << Ye << " " << T_MeV << " "
                << cs_sq << endl;
-          exit(-1);
+          superlum_count++;
+          //exit(-1);
         }
       }
     }
   }
+
+  cout << "Unstable count: " << unstable_count << endl;
+  cout << "Superluminal count: " << superlum_count << endl;
+  cout << "Total count: " << total_count << endl;
   
   hdf_file hf;
   hf.open_or_create(outfile);
