@@ -98,43 +98,47 @@ class eos_crust_virial_v2 : public o2scl::eos_crust_virial {
    */
   double bn1_free();
 
-  /** \brief Desc
+  /** \brief Free spin-isospin nucleon virial coefficient
    */
   double bpn1_free();
 
-  /** \brief Desc
+  /** \brief Nucleon virial coefficient
    */
   double bn0(double T) {
     return (bn_f(T)-bna(T))/2.0;
   }
   
-  /** \brief Desc
+  /** \brief Spin nucleon virial coefficient
    */
   double bn1(double T) {
     return (bn_f(T)+bna(T))/2.0;
   }
   
-  /** \brief Desc
+  /** \brief Isopin nucleon virial coefficient
    */
   double bpn0(double T) {
     return (bpn_f(T)-bpna(T))/2.0;
   }
   
-  /** \brief Desc
+  /** \brief Spin-isospin nucleon virial coefficient
    */
   double bpn1(double T) {
     return (bpn_f(T)+bpna(T))/2.0;
   }
   
-  /** \brief The temperature must be specified in MeV
+  /** \brief Nucleon-alpha virial coefficient
+
+      The temperature must be specified in MeV
    */
   double bna(double T);
 
-  /** \brief The temperature must be specified in MeV
+  /** \brief Nucleon-alpha isospin virial coefficient
+
+      The temperature must be specified in MeV
    */
   double bpna(double T);
 
-  /** \brief Desc
+  /** \brief Fermi-liquid parameter 
 
       The value of lambda should be in 1/MeV and the 
       temperature should be specified in MeV. The result
@@ -285,9 +289,6 @@ class eos {
   double free_energy_density_detail
   (o2scl::fermion &n, o2scl::fermion &p, double T, o2scl::thermo &th,
    std::map<std::string,double> &vdet);
-  //double &zn, double &zp,
-  //double &f1, double &f2, double &f3, double &f4, 
-  //double &g_virial, double &dgvirialdT, double &dgdnn, double &dgdnp);
 
   /** \brief Compute the free energy density using the virial 
       expansion including derivative information
@@ -335,6 +336,8 @@ class eos {
 	    double nn, double np, double T, o2scl::thermo &th);
 
   /** \brief Compute the squared speed of sound 
+
+      The temperature should be in \f$ 1/\mathrm{fm} \f$.
    */
   double cs2_func(o2scl::fermion &n, o2scl::fermion &p, double T,
 		  o2scl::thermo &th);
@@ -367,9 +370,8 @@ class eos {
   /// The virial entropy
   double s_virial;
 
-  /** \brief The value of \f$ \bar{\Lambda} \f$ 
-      for a 1.4 solar mass neutron
-      star
+  /** \brief The value of \f$ \bar{\Lambda} \f$ for a 1.4 solar mass
+      neutron star
   */
   double Lambda_bar_14;
   //@}
@@ -543,7 +545,7 @@ class eos {
 
   /// \name Base physics objects [protected]
   //@{
-  /// The virial equation solver
+  /// The virial equation solver (now part of O2scl)
   o2scl::eos_had_virial vsd;
 
   /** \brief Object for computing electron/positron thermodynamic integrals
@@ -621,7 +623,7 @@ class eos {
   /// \name Settings [public]
   //@{
   /** \brief If true, use the EOS from the Du et al. (2019) paper
-      instead of the Du et al. (2020) update (default false)
+      instead of the Du et al. (2022) update (default false)
    */
   bool old_version;
   
@@ -682,16 +684,21 @@ class eos {
 
       <filename> <Ye>
 
-      Help.
+      Constructs the EOS as a table3d object and outputs to 
+      <filename>. Currently stores Fint, Pint, Sint, g, 
+      msn, and msp.
    */
   int table_Ye(std::vector<std::string> &sv,
 	       bool itive_com);
 
   /** \brief Use alternate, rather than the Du et al. EOS
 
-      "Skyrme" <name>, <RMF> name, etc.
+      <"Skyrme"> <name> or <"RMF"> <name>, etc.
 
-      Help.
+      For a Skyrme model, the first argument should be the word \c
+      Skyrme, and the second should be the name of the desired Skyrme
+      model. Similarly for an RMF model. (Hyperons are not yet
+      fully supported.)
    */
   int alt_model(std::vector<std::string> &sv,
 	       bool itive_com);
@@ -700,7 +707,9 @@ class eos {
 
       <filename> <nB>
 
-      Help.
+      Constructs the EOS as a table3d object and outputs to 
+      <filename>. Currently stores Fint, Pint, Sint, g, 
+      msn, and msp.
    */
   int table_nB(std::vector<std::string> &sv,
 	       bool itive_com);
@@ -718,7 +727,8 @@ class eos {
 
       <filename>
 
-      Help.
+      Stores grid information, Fint, Eint, Pint, Sint, mun,
+      mup, cs2, mue, F, E, P, and S.
    */
   int table_full(std::vector<std::string> &sv, bool itive_com);
 
@@ -756,9 +766,11 @@ class eos {
 
   /** \brief Select a random EOS model
 
-      Params.
+      (No arguments.)
 
-      Help.
+      Select a random EOS, checking several physical constraints
+      and re-selecting a new random EOS until all the constraints
+      are met.
    */
   int random(std::vector<std::string> &sv, bool itive_com);
 
@@ -798,15 +810,6 @@ class eos {
       tensor_grid objects are output to the specified file.
    */
   int test_eg(std::vector<std::string> &sv, bool itive_com);
-
-  /* \brief Create the command documentation database
-
-      <no parameters>
-      
-      Create document strings from XML and store them in the 
-      a HDF5 data file.
-  */
-  //virtual int xml_to_o2(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Compare to other EOSs?
 
