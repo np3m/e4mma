@@ -10,10 +10,10 @@ installation of `Boost <http://www.boost.org>`_, `GSL
 <http://www.gnu.org/software/gsl>`_ (versions 1.16 and later), `HDF5
 <http://www.hdfgroup.org>`_ (versions 1.8.14 and later), and the most
 current version of `O2scl
-<https://neutronstars.utk.edu/code/o2scl/index.html>`_ is required
-in order to compile the code to generate and analyze EOS tables.
-(You do not necessarily need to compile the code to use the EOS
-tables.)
+<https://neutronstars.utk.edu/code/o2scl/index.html>`_ is required in
+order to compile the code to generate and analyze EOS tables. You do
+not need to compile the code to use the EOS tables. They can be read
+by any application which reads HDF5 files.
 
 You will need to manually edit the makefile to work with your system
 and then compile ``eos_nuclei`` in order to generate an EOS. The
@@ -30,6 +30,7 @@ More documentation will be added as time permits.
    eos_nuclei
    class_doc
    todos
+   chem_pot
    trans
    cs2
 
