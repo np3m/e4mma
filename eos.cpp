@@ -698,6 +698,7 @@ eos::eos() {
   sk_Tcorr.alpha=0.144165;
 
   elep.include_photons=true;
+  elep.include_muons=false;
 
   // Seed the random number generator with the clock time
   rng.clock_seed();
@@ -1576,7 +1577,10 @@ double eos::free_energy_density_ep
   neutron.n=nn;
   proton.n=np;
   
+  elep.include_muons=include_muons;
   elep.pair_density_eq(proton.n,T);
+  cout << "three: " << elep.include_muons << " "
+       << proton.n << " " << elep.e.n << endl;
   
   double frnp=free_energy_density(neutron,proton,T,th2);
   
@@ -1584,7 +1588,7 @@ double eos::free_energy_density_ep
   th2.pr+=elep.e.pr+elep.ph.pr;
   th2.en+=elep.e.en+elep.ph.en;
   
-  return frnp+elep.e.ed-electron.en*T+elep.ph.ed-T*elep.ph.en;
+  return frnp+elep.e.ed-elep.e.en*T+elep.ph.ed-T*elep.ph.en;
 }
 
 double eos::entropy(fermion &n, fermion &p, double nn,
@@ -1597,6 +1601,7 @@ double eos::entropy(fermion &n, fermion &p, double nn,
   
   free_energy_density(n,p,T,th);
   
+  elep.include_muons=include_muons;
   elep.pair_density_eq(p.n,T);
   
   return th.en+elep.e.en+elep.ph.en;
@@ -1611,6 +1616,7 @@ double eos::ed(fermion &n, fermion &p, double nn,
   
   free_energy_density(n,p,T,th);
   
+  elep.include_muons=include_muons;
   elep.pair_density_eq(p.n,T);
 
   return th.ed+elep.e.ed+photon.ed+n.m*nn+p.m*pn;
@@ -1626,6 +1632,7 @@ double eos::dfdnn_total(fermion &n, fermion &p, double nn,
   
   free_energy_density(n,p,T,th);
   
+  elep.include_muons=include_muons;
   elep.pair_density_eq(p.n,T);
 
   return n.mu+n.m;
@@ -1641,6 +1648,7 @@ double eos::dfdnp_total(fermion &n, fermion &p, double nn,
   
   free_energy_density(n,p,T,th);
   
+  elep.include_muons=include_muons;
   elep.pair_density_eq(p.n,T);
   
   return p.mu+elep.e.mu+p.m;
@@ -1652,13 +1660,28 @@ double eos::cs2_func(fermion &n, fermion &p, double T, thermo &th) {
   double nn=n.n;
   double np=p.n;
   double nb=n.n+p.n;
+
+  cout << "One: " << p.n << endl;
+  
   free_energy_density_ep(nn,np,T);
 
+  cout << "Two: " << p.n << endl;
+  
   // Include the nucleon rest masses in the terms involving the
-  // chemical potentials
-  double den=th2.en*T+(n.mu+n.m)*n.n+(p.mu+p.m)*p.n+electron.mu*electron.n;
+  // chemical potentials. We have to remember that the chemical
+  // potentials are currently stored in neutron.mu and proton.mu
+  // not in n.mu and p.mu (this is a bit confusing).
+  double den=th2.en*T+(neutron.mu+n.m)*n.n+(proton.mu+p.m)*p.n+
+    elep.e.mu*elep.e.n;
   double en=th2.en;
+  cout << "mun,mup,mue 1: " << neutron.mu << " " << proton.mu
+       << " " << elep.e.mu << endl;
 
+  cout << "den1,den2,den3,den4: " << th2.en*T << " "
+       << (n.mu+n.m)*n.n << " "
+       << (p.mu+p.m)*p.n << " "
+       << elep.e.mu << " " << elep.e.n << endl;
+  
   // Numerically compute required second derivatives
   double fac=1.0e3;
 
@@ -1725,6 +1748,12 @@ double eos::cs2_func(fermion &n, fermion &p, double T, thermo &th) {
   gd.h=fabs(T)/fac;
   double f_TT=-gd.deriv(T,f_TT_func);
 
+  cout << "nn,np,en: " << nn << " " << np << " " << en << endl;
+  cout << "f_nnnn, f_nnnp, f_npnp, f_nnT, f_npT, f_TT, den 1:\n  "
+       << f_nnnn << " " << f_nnnp << " " << f_npnp << " "
+       << f_nnT << " " << f_npT << " " << f_TT << " "
+       << den << endl;
+  
   double cs_sq=(nn*nn*(f_nnnn-f_nnT*f_nnT/f_TT)+
 		2.0*nn*np*(f_nnnp-f_nnT*f_npT/f_TT)+
 		np*np*(f_npnp-f_npT*f_npT/f_TT)-
@@ -1985,7 +2014,7 @@ int eos::table_full(std::vector<std::string> &sv, bool itive_com) {
 
 	double cs2_val=cs2_func(neutron,proton,T_grid[k]/hc_mev_fm,th2);
 	t_cs2.set(i,j,k,cs2_val);
-	t_mue.set(i,j,k,eso.electron.mu);
+	t_mue.set(i,j,k,elep.e.mu);
 
 	if (!std::isfinite(th2.ed)) {
 	  cout << "Hadronic energy density not finite." << endl;

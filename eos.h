@@ -138,7 +138,7 @@ class eos_crust_virial_v2 : public o2scl::eos_crust_virial {
    */
   double bpna(double T);
 
-  /** \brief Fermi-liquid parameter 
+  /** \brief Fermi-liquid parameter \f$ F_0 \f$
 
       The value of lambda should be in 1/MeV and the 
       temperature should be specified in MeV. The result
@@ -146,7 +146,7 @@ class eos_crust_virial_v2 : public o2scl::eos_crust_virial {
    */
   double f0(double lambda, double T);
 
-  /** \brief Desc
+  /** \brief Fermi-liquid parameter \f$ F_0^{\prime} \f$
 
       The value of lambda should be in 1/MeV and the 
       temperature should be specified in MeV. The result
@@ -154,16 +154,16 @@ class eos_crust_virial_v2 : public o2scl::eos_crust_virial {
    */
   double f0p(double lambda, double T);
 
-  /** \brief Desc
+  /** \brief Fermi-liquid parameter \f$ G_0 \f$
 
       The value of lambda should be in 1/MeV and the 
       temperature should be specified in MeV. The result
       is returned in units of 1/MeV^2.
    */
   double g0(double lambda, double T);
-
-  /** \brief Desc
-
+  
+  /** \brief Fermi-liquid parameter \f$ G_0^{\prime} \f$
+      
       The value of lambda should be in 1/MeV and the 
       temperature should be specified in MeV. The result
       is returned in units of 1/MeV^2.
@@ -325,6 +325,8 @@ class eos {
   
   /** \brief Compute the entropy density including photons,
       electrons, and positrons
+
+      This function is used in \ref cs2_func() .
   */
   double entropy(o2scl::fermion &n, o2scl::fermion &p,
 		 double nn, double np, double T, o2scl::thermo &th);
@@ -479,11 +481,15 @@ class eos {
 		 double &densdnn);
 
   /** \brief Compute dfdnn including photons and electons
+
+      This function is used in \ref cs2_func() .
    */
   double dfdnn_total(o2scl::fermion &n, o2scl::fermion &p,
 		     double nn, double pn, double T, o2scl::thermo &th);
   
   /** \brief Compute dfdnp including photons and electons
+
+      This function is used in \ref cs2_func() .
    */
   double dfdnp_total(o2scl::fermion &n, o2scl::fermion &p,
 		     double nn, double pn, double T, o2scl::thermo &th);

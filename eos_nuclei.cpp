@@ -136,6 +136,7 @@ eos_nuclei::eos_nuclei() {
 
   vdet_units.insert(make_pair("zn",""));
   vdet_units.insert(make_pair("zp",""));
+  // Note that vdet has different units than tg_mue!
   vdet_units.insert(make_pair("mue","1/fm"));
   vdet_units.insert(make_pair("Ymu",""));
   vdet_units.insert(make_pair("F1","MeV"));
@@ -1176,7 +1177,7 @@ int eos_nuclei::add_eg(std::vector<std::string> &sv,
                  << (elep.th.ed+elep.th.pr-T_MeV/hc_mev_fm*
                      elep.th.en-np*vdet["mue"])/scale/
               nB*hc_mev_fm << endl;
-            cout << "mue: " << tg_mue.get(ix) << endl;
+            cout << "mue [MeV]: " << tg_mue.get(ix) << endl;
             exit(-1);
           }
           //char ch;
@@ -1248,13 +1249,13 @@ int eos_nuclei::eg_table(std::vector<std::string> &sv,
 	double mue;
 	esb.compute_eg_point(nB_grid2[i],Ye_grid2[j],T_grid2[k],lep,mue);
 
-	mu_e.set(ix,mue*o2scl_const::hc_mev_fm);
-	E.set(ix,lep.ed/nB*o2scl_const::hc_mev_fm);
-	P.set(ix,lep.pr*o2scl_const::hc_mev_fm);
+	mu_e.set(ix,mue*hc_mev_fm);
+	E.set(ix,lep.ed/nB*hc_mev_fm);
+	P.set(ix,lep.pr*hc_mev_fm);
 	S.set(ix,lep.en/nB);
-	F.set(ix,(lep.ed-T_MeV*lep.en)/nB*o2scl_const::hc_mev_fm);
+	F.set(ix,(lep.ed-T_MeV*lep.en)/nB*hc_mev_fm);
 	if (include_muons) {
-	  Ymu.set(ix,muon.n*o2scl_const::hc_mev_fm/nB);
+	  Ymu.set(ix,muon.n*hc_mev_fm/nB);
 	}
       }
     }
@@ -1856,7 +1857,7 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
       vector<double> mun_of_nB, s_of_nB;
       for (size_t i=0;i<n_nB2;i++) {
         vector<size_t> ix={i,j,k};
-	mun_of_nB.push_back(tg_mun.get(ix)/o2scl_const::hc_mev_fm+
+	mun_of_nB.push_back(tg_mun.get(ix)/hc_mev_fm+
                             neutron.m);
 	s_of_nB.push_back(tg_S.get(ix)*nB_grid2[i]);
       }
@@ -1877,10 +1878,10 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
       vector<double> mun_of_Ye, mup_of_Ye, s_of_Ye;
       for (size_t j=0;j<n_Ye2;j++) {
         vector<size_t> ix={i,j,k};
-	mun_of_Ye.push_back(tg_mun.get(ix)/o2scl_const::hc_mev_fm+
+	mun_of_Ye.push_back(tg_mun.get(ix)/hc_mev_fm+
                             neutron.m);
-	mup_of_Ye.push_back(tg_mup.get(ix)/o2scl_const::hc_mev_fm+
-                            proton.m);
+	mup_of_Ye.push_back(tg_mup.get(ix)/hc_mev_fm+
+                            proton.m+tg_mue.get(ix)/hc_mev_fm);
 	s_of_Ye.push_back(tg_S.get(ix)*nB);
       }
       itp_sta_a.set(n_Ye2,Ye_grid2,mun_of_Ye,itp_steffen);
@@ -1945,14 +1946,17 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
 	double dsdYev=dsdYe.get(ix);
 	double dsdTv=dsdT.get(ix);
 
-	// Compute dmupdnB
+	// Compute dmupdnB, which is related to the other three
+        // by a Maxwell relation
 	double dmupdnBv=Ye/nB*dmupdYev+dmundnBv+(1.0-Ye)/nB*dmundYev;
 
-	// Transform to nn and np
+	// Transform from (Ye,nB) to (nn,np)
 	double dmundnn=dmundnBv-Ye/nB*dmundYev;
 	double dmundnp=dmundnBv+(1.0-Ye)/nB*dmundYev;
 	double dmupdnn=dmundnp;
 	double dmupdnp=dmupdnBv+(1.0-Ye)/nB*dmupdYev;
+
+        // Use dmundT = -dsdnn and dmupdT = -dsdnp
 	double dmundT=-dsdnBv+Ye/nB*dsdYev;
 	double dmupdT=-dsdnBv-(1.0-Ye)/nB*dsdYev;
 
@@ -2023,23 +2027,37 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
 	double f_nnT=dmundT;
 	double f_npT=dmupdT;
 	double f_TT=-dsdTv;
-	double den=en*T_MeV+(tg_mun.get(ix)/hc_mev_fm+neutron.m)*nn2+
-	  (tg_mup.get(ix)/hc_mev_fm+proton.m)*np2+tg_mue.get(ix)*np2;
+	double den=en*T_MeV/hc_mev_fm+
+          (tg_mun.get(ix)/hc_mev_fm+neutron.m)*nn2+
+	  (tg_mup.get(ix)/hc_mev_fm+proton.m)*np2+tg_mue.get(ix)*np2/hc_mev_fm;
+        cout << "mun,mup,mue 2: " << tg_mun.get(ix)/hc_mev_fm << " "
+             << tg_mup.get(ix)/hc_mev_fm << " " << tg_mue.get(ix)/hc_mev_fm
+             << endl;
+        cout << "den1,den2,den3,den4: " << en*T_MeV/hc_mev_fm << " " 
+             << (tg_mun.get(ix)/hc_mev_fm+neutron.m)*nn2 << " " 
+             << (tg_mup.get(ix)/hc_mev_fm+proton.m)*np2 << " "
+             << tg_mue.get(ix)/hc_mev_fm << " " << np2 << endl;
+        cout << "nn,np,en: " << nn2 << " " << np2 << " " << en << endl;
+        cout << "f_nnnn, f_nnnp, f_npnp, f_nnT, f_npT, f_TT, den 2:\n  "
+             << f_nnnn << " " << f_nnnp << " " << f_npnp << " "
+             << f_nnT << " " << f_npT << " " << f_TT << " "
+             << den << endl;
 	double cs_sq=(nn2*nn2*(f_nnnn-f_nnT*f_nnT/f_TT)+
 		      2.0*nn2*np2*(f_nnnp-f_nnT*f_npT/f_TT)+
 		      np2*np2*(f_npnp-f_npT*f_npT/f_TT)-
 		      2.0*en*(nn2*f_nnT/f_TT+np2*f_npT/f_TT)-en*en/f_TT)/den;
 
-        if (false && nB>0.16) {
-          cout << "cs21: " << cs_sq << endl;
+        if (true && T_MeV>100.0) {
+          cout << "cs21: " << cs_sq << " " << proton.n << endl;
           neutron.n=nB*(1.0-Ye);
           proton.n=nB*Ye;
           thermo th;
-          cout << "cs22: " << cs2_func(neutron,proton,T_MeV/hc_mev_fm,th)
-               << endl;
-          exit(-1);
+          double cs22=cs2_func(neutron,proton,T_MeV/hc_mev_fm,th);
+          cout << "cs22: " << cs22 << endl;
+          char ch;
+          cin >> ch;
         }
-        
+
 	cs2.get(ix)=cs_sq;
 
         if (cs_sq>1.0) {
@@ -4316,7 +4334,7 @@ int eos_nuclei::eos_vary_ZN
 
   vars["nB"]=nB;
   vars["Ye"]=Ye;
-  vars["T"]=T*o2scl_const::hc_mev_fm;
+  vars["T"]=T*hc_mev_fm;
   vars["i"]=((double)nuc_Z1);
   int delta_Z=((double)calc.eval(&vars));
   vars["i"]=((double)nuc_N1);
@@ -5207,9 +5225,9 @@ int eos_nuclei::write_results(std::string fname) {
   // child class doesn't support muons yet
   hf.seti("include_muons",this->include_muons);
 
-  hf.setd("m_neut",neutron.m*o2scl_const::hc_mev_fm);
-  hf.setd("m_prot",proton.m*o2scl_const::hc_mev_fm);
-  hf.setd("hc",o2scl_const::hc_mev_fm);
+  hf.setd("m_neut",neutron.m*hc_mev_fm);
+  hf.setd("m_prot",proton.m*hc_mev_fm);
+  hf.setd("hc",hc_mev_fm);
   hf.setd("alpha_em",o2scl_const::fine_structure);
 
   if (with_leptons || include_muons) {
@@ -10306,7 +10324,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         
         // qtf2 has units of MeV^2
         double qtf2=4.0*e2*cbrt(o2scl_const::pi)*
-          pow(3.0*proton.n*pow(o2scl_const::hc_mev_fm,3),2.0/3.0);
+          pow(3.0*proton.n*pow(hc_mev_fm,3),2.0/3.0);
         double q=3.0*T_MeV;
         
         // Variable coulombf has units of 1/MeV^2
