@@ -44,7 +44,7 @@ breathe_default_project = "eos"
 #
 
 intersphinx_mapping = {'o2scl':
-                       ('https://neutronstars.utk.edu/code/o2scl-dev/html/',
+                       ('https://neutronstars.utk.edu/code/o2scl/html/',
                         'o2scl_objects.inv')}
 
 # Add any paths that contain templates here, relative to this directory.

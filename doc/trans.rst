@@ -2,7 +2,11 @@ Variable Transformations
 ========================
 
 It is useful to be able to convert derivative operators between the
-various sets of composition variables.
+various sets of composition variables. In the relations below, we omit
+the "bars" and simply write :math:`n_n,n_p` for
+:math:`\bar{n}_n,\bar{n}_p`. In other words, all of the nucleon
+densities below are presumed to include nucleons both inside and
+outside of nuclei.
 
 Converting between :math:`(n_n,n_p)` and :math:`(n_B,n_e)`
 ----------------------------------------------------------

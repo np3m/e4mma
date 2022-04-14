@@ -14,21 +14,21 @@ energy for hot and dense matter in (at least) four different ways,
 the first form, the Saha equations have been solved to determine
 :math:`\{n_i\}` and charge neutrality has been used to determine
 :math:`n_e`. In the second form, the Saha equations have been solved
-but charge neutrality has not been used. In the third form the Saha
+but charge neutrality has not been used. In the third form, the Saha
 equations have not been solved but charge neutrality has been used.
 The electron contribution to the free energy is included in all four
 free energies, but in the case of :math:`f_1` and :math:`f_3`, the
 electron density is not independent of the other densities. For these
-four free energies, there are four proton chemical potentials,
-:math:`\partial f_1/\partial \bar{n}_p`, :math:`\partial f_2/\partial
-\bar{n}_p`, :math:`\partial f_3/\partial n_p`, and :math:`\partial
-f_4/\partial n_p`. None of these four proton chemical potentials are
-the same. This documentation attempts to explain how this complication
-relates to the code. In Du et al. (2022), we use a confusing notation
-because we do not clearly distinguish :math:`\bar{n}_n` and
-:math:`n_n`. The function :math:`f_1` is most directly related to the
-tables which are generated and one can simply identify
-:math:`\bar{n}_n=n_B(1-Y_e)` and :math:`\bar{n}_p=n_B Y_e`.
+four free energies, there are four corresponding proton chemical
+potentials, :math:`\partial f_1/\partial \bar{n}_p`, :math:`\partial
+f_2/\partial \bar{n}_p`, :math:`\partial f_3/\partial n_p`, and
+:math:`\partial f_4/\partial n_p`. *None of these four proton chemical
+potentials are the same.* This documentation attempts to explain how
+this complication relates to the code. In Du et al. (2022), we use a
+confusing notation because we do not clearly distinguish
+:math:`\bar{n}_n` and :math:`n_n`. The function :math:`f_1` is most
+directly related to the tables which are generated and one can simply
+identify :math:`\bar{n}_n=n_B(1-Y_e)` and :math:`\bar{n}_p=n_B Y_e`.
       
 The comparison between :math:`f_1` and :math:`f_2` is the simplest
 (now being a bit more careful about what is held constant)
@@ -48,12 +48,12 @@ To simplify the discussion we use the following notation:
 
 .. math::
 
-   \mu_{n,i} \equiv \left( \frac{\partial f_i}{\partial \bar{n}_p}
+   \mu_{p,i} \equiv \left( \frac{\partial f_i}{\partial \bar{n}_p}
    \right)
 
-where all of the other densities are held constant, either :math:`n_n`
-or :math:`\bar{n}_n` as appropriate. Thus :math:`f_1` and :math:`f_2`
-imply two thermodynamic identies
+where all of the other densities are held constant, including either
+:math:`n_n` or :math:`\bar{n}_n` as appropriate. Thus :math:`f_1` and
+:math:`f_2` imply two thermodynamic identies
 
 .. math::
 
@@ -68,9 +68,10 @@ literature, it has become standard to store :math:`\mu_{n,2}` and
 refer to it as the "neutron chemical potential" and refer to
 :math:`\mu_{p,2}` as the "proton chemical potential" even though
 charge neutrality has been assumed so the electron density is not
-independent. The tables generated at this website the same notation.
+independent. The tables generated at this website use the same
+notation.
 
-The distinction between :math:`\mu_{n,1}` and :math:`mu_{n,3}` is
+The distinction between :math:`\mu_{n,1}` and :math:`\mu_{n,3}` is
 more complicated, see Eq. 36 of Du et al. (2022).
 
 The neutron fraction ``Xn`` stored in the

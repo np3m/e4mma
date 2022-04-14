@@ -10,9 +10,11 @@ and :math:`\tilde{s}` for entropy per baryon, the speed of sound is
    c_s^2 = \left( \frac{\partial P}{\partial \varepsilon}
    \right)_{\tilde{s},\{ N_i \}}
    \, .
- 
-In infinite matter, it is useful to rewrite this derivative in
-terms of fixed volume rather than fixed number.
+
+The energy density in the denominator must *include the rest mass
+contribution to the energy density*. In infinite matter, it is useful
+to rewrite this derivative in terms of fixed volume rather than fixed
+number.
 
 .. math::
    
@@ -66,7 +68,8 @@ Putting these two results together gives
    {\partial n_i} \right)_{S,\{n_{j\neq i}\},V}\right] \left(
    T s + \sum_i \mu_i n_i \right)^{-1}
  
-To re-express this in terms of derivatives of the free energy,
+To re-express this in terms of derivatives of the free energy
+(which again must include the rest mass contribution),
 
 .. math::
    
@@ -125,17 +128,26 @@ Finally, we get
 
 .. math::
    
-   c_s^2 &=& \left\{
+   c_s^2 = \left\{
    - \left(\frac{s}{f_{TT}}\right) \left( \sum_i n_i f_{n_i T}+s \right)
    + \sum_i n_i \left[ \sum_k n_k \left(f_{n_i n_k}- f_{n_k T}
    f_{n_i T} f_{TT}^{-1}\right) 
    - s f_{n_i T} f_{TT}^{-1}\right]
    \right\} \left(
-   T s + \sum_i \mu_i n_i \right)^{-1} \nonumber \\
-   &=& \left[
+   T s + \sum_i \mu_i n_i \right)^{-1}
+
+and   
+   
+.. math::
+   
+   c_s^2 = \left[
    \sum_i \sum_k n_i n_k \left(f_{n_i n_k}- f_{n_k T}
    f_{n_i T} f_{TT}^{-1}\right)
    - 2\sum_i s n_i f_{n_i T} f_{TT}^{-1}
    - s^2 f_{TT}^{-1} \right] \left(
    T s + \sum_i \mu_i n_i \right)^{-1}
  
+Note that, when applying this expression, one must be consistent about
+the free energy which one differentiates and the densities and
+chemical potentials which are used. See :ref:`Chemical Potentials` for
+more information regarding this issue. 

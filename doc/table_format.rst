@@ -86,14 +86,21 @@ Composition
 These are all :ref:`o2scl:tensor_grid` objects and included for
 all tables.
 
-- ``Xn``: the baryon number fraction of neutrons
-- ``Xp``: the baryon number fraction of protons
+- ``Xn``: the baryon number fraction of neutrons (this includes only
+  the neutrons in the low-density phase, i.e. the neutrons not inside
+  nuclei)
+- ``Xp``: the baryon number fraction of protons (this includes only
+  the protons in the low-density phase, i.e. the protons not inside
+  nuclei)
 - ``Xalpha``: the baryon number fraction of alpha particles
 - ``Xd``: the baryon number fraction of deuterons
 - ``Xt``: the baryon number fraction of tritons
 - ``XHe3``: the baryon number fraction of :math:`^{3}\mathrm{He}`,
 - ``XLi4``: the baryon number fraction of :math:`^{4}\mathrm{Li}`
 - ``Xnuclei``: the baryon number fraction of nuclei
+
+The sum of these eight quantities should be close to 1 for all
+points in the table.
 
 Thermodynamic quantities
 ------------------------
@@ -109,11 +116,14 @@ Three quantities are included for all tables:
 - ``Eint``: the baryon part of the internal energy per baryon
   (in :math:`\mathrm{MeV}`)
 
+The relation :math:`F_{\mathrm{int}}=E_{\mathrm{int}}-T
+S_{\mathrm{int}}` should hold at all points in the table.
+  
 If ``include_muons`` is 1, then ``Ymu``, the muon fraction,
 is also included. If either ``include_muons`` or ``with_leptons``
 is 1, then ``mue``, the electron chemical potential is included.
 The electron chemical potential includes the electron rest mass
-and is in :math:`\mathrm{MeV}`.
+and is in :math:`\mathrm{MeV}`. 
 
 If ``derivs_computed`` is 1, then the following quantities are
 also included:
@@ -125,10 +135,22 @@ also included:
 - ``mup``: the proton chemical potential
   (in :math:`\mathrm{MeV}`)
 
+The thermodynamic identity,
+
+.. math::
+
+   E_{\mathrm{int}} n_B = - P_{\mathrm{int}} + S_{\mathrm{int}} n_B T
+   + \bar{n}_n \mu_{n} + \bar{n}_p \mu_{p}
+
+where :math:`\bar{n}_n\equiv n_B(1-Y_e)` and :math:`\bar{n}_p\equiv
+n_B Y_e` should be satisfied for all of the points in the table.
+
 The neutron and proton rest mass have been subtracted out from the
 neutron and proton chemical potentials (indepedent of whether or not
 the model implies a relativistic dispersion relation for the
-nucleons). If ``with_leptons`` is 1, then the electron chemical
+nucleons). See also :ref:`Chemical Potentials` for some helpful
+information on chemical potentials and the associated thermodynamic
+identity. If ``with_leptons`` is 1, then the electron chemical
 potential is included (as described above) and the following four
 quantities are also included:
 
@@ -140,6 +162,15 @@ quantities are also included:
 - ``P``: the total pressure 
   (in :math:`\mathrm{MeV}/\mathrm{fm}^3`)
 
+The thermodynamic identity,
+
+.. math::
+
+   E n_B = - P + S n_B T
+   + \bar{n}_n \mu_{n} + \bar{n}_p (\mu_{p}+\mu_{e})
+
+should be satisfied for all of the points in the table.     
+  
 String arrays
 -------------
 
@@ -171,22 +202,22 @@ objects which includes electrons, positrons, and photons,
 Nuclear masses table
 --------------------
 
-The nuclear massses table, contains five :ref:`o2scl:table`
-object. This table has 
+The nuclear massses table, contains a :ref:`o2scl:table`
+object with the columns
 
-- ``Z``: the proton number
-- ``N``: the neutron number
-- ``g``: the spin degeneracy
+- ``Z``: the proton number,
+- ``N``: the neutron number,
+- ``g``: the spin degeneracy,
 - ``m``: the total mass
-  (in :math:`\mathrm{MeV}`)
+  (in :math:`\mathrm{MeV}`),
 - ``be``: the binding energy
-  (in :math:`\mathrm{MeV}`)
+  (in :math:`\mathrm{MeV}`),
 - ``Sn``: the neutron separation energy
-  (in :math:`\mathrm{MeV}`)
+  (in :math:`\mathrm{MeV}`),
 - ``Sp``: the proton separation energy
-  (in :math:`\mathrm{MeV}`)
+  (in :math:`\mathrm{MeV}`),
 - ``mass_type``: 1 for light nucleus, 2 for AME, 3 for FRDM, and
-  4 for extrapolated FRDM results
+  4 for extrapolated FRDM results, and
 - ``spin_type``: 1 for light nucleus, 2 for Jexp from HFB fit, 3
-  for Jth from HFB fit, 4 for simple ansatz
+  for Jth from HFB fit, 4 for simple ansatz.
 
