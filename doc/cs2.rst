@@ -1,9 +1,9 @@
 Speed of sound in a multicomponent system
 =========================================
 
-Using :math:`\varepsilon` for energy density (including rest mass
-energy density), :math:`S` for entropy, :math:`s` for entropy density,
-and :math:`\tilde{s}` for entropy per baryon, the speed of sound is
+Using :math:`\varepsilon` for energy density :math:`S` for entropy,
+:math:`s` for entropy density, and :math:`\tilde{s}` for entropy per
+baryon, the speed of sound is
 
 .. math::
    
