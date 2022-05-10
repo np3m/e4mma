@@ -126,6 +126,13 @@ public:
   virtual ~eos_nuclei();
   //@}
 
+  o2scl::boson pi_minus;
+  o2scl::boson pi_plus;
+  o2scl::fermion delta_pp;
+  o2scl::boson_rel relb;
+  int solve_hrg(size_t nv, const ubvector &x,
+                ubvector &y, double nB, double Ye, double T);
+  
   /// \name Grid specification
   //@{
   size_t n_nB2;

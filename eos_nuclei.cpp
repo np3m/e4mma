@@ -154,6 +154,10 @@ eos_nuclei::eos_nuclei() {
   vdet_units.insert(make_pair("sigma","1/fm"));
   vdet_units.insert(make_pair("omega","1/fm"));
   vdet_units.insert(make_pair("rho","1/fm"));
+
+  pi_minus.init(140.0/hc_mev_fm,3.0);
+  pi_plus.init(140.0/hc_mev_fm,3.0);
+  delta_pp.init(1232.0/hc_mev_fm,2.0);
 }
 
 eos_nuclei::~eos_nuclei() {
@@ -2806,6 +2810,40 @@ int eos_nuclei::eos_fixed_ZN(double nB, double Ye, double T,
   return 0;
 }
 
+int eos_nuclei::solve_hrg(size_t nv, const ubvector &x,
+                          ubvector &y, double nB, double Ye, double T) {
+
+  double nB2, Ye2;
+
+  neutron.n=x[0];
+  proton.n=x[1];
+
+  thermo th;
+  if (neutron.n<0.0 || proton.n<0.0) {
+    return 1;
+  }
+  eosp_alt->calc_temp_e(neutron,proton,T,th);
+  pi_minus.mu=neutron.mu-proton.mu;
+  pi_plus.mu=proton.mu-neutron.mu;
+  delta_pp.mu=2.0*proton.mu-neutron.mu;
+  relb.pair_mu(pi_minus,T);
+  relb.pair_mu(pi_plus,T);
+  relf.pair_mu(delta_pp,T);
+
+  nB2=neutron.n+proton.n+delta_pp.n;
+  Ye2=(proton.n-pi_minus.n+pi_plus.n)/nB2;
+
+  y[0]=(nB2-nB)/nB;
+  y[1]=(Ye2-Ye)/Ye;
+
+  cout << "HRG: " << nB2 << " " << Ye2 << " "
+       << nB << " " << Ye << " "
+       << neutron.n << " " << proton.n << " "
+       << pi_minus.n << " " << pi_plus.n << " " << delta_pp.n << endl;
+
+  return 0;
+}
+
 int eos_nuclei::nuc_matter(double nB, double Ye, double T,
 			   double &log_xn, double &log_xp,
 			   double &Zbar, double &Nbar, thermo &thx,
@@ -2814,6 +2852,8 @@ int eos_nuclei::nuc_matter(double nB, double Ye, double T,
 			   int &NmZ_min, int &NmZ_max,
 			   map<string,double> &vdet) {
 
+  std::cout << "Here." << std::endl;
+  
   if (include_muons) {
     
     mm_funct nm_func=std::bind
@@ -2875,12 +2915,35 @@ int eos_nuclei::nuc_matter(double nB, double Ye, double T,
     nuclei[i].n=0.0;
   }
 
-  // Now compute the full EOS
-  double f1, f2, f3, f4;
-  free_energy_density_detail(neutron,proton,T,thx,vdet);
+  bool hrg=true;
   
-  mun_full=neutron.mu;
-  mup_full=proton.mu;
+  if (hrg) {
+
+    mm_funct hrg_func=std::bind
+      (std::mem_fn<int(size_t,const ubvector &,ubvector&,double,double,
+                       double)>
+       (&eos_nuclei::solve_hrg),this,std::placeholders::_1,
+       std::placeholders::_2,std::placeholders::_3,nB,Ye,T);
+
+    ubvector x(2), y(2);
+    
+    x[0]=nB*(1.0-Ye);
+    x[1]=nB*Ye;
+
+    mh.verbose=2;
+    mh.msolve(2,x,hrg_func);
+    exit(-1);
+    
+  } else {
+    
+    // Now compute the full EOS
+    double f1, f2, f3, f4;
+    free_energy_density_detail(neutron,proton,T,thx,vdet);
+    
+    mun_full=neutron.mu;
+    mup_full=proton.mu;
+    
+  }
   
   return 0;
 }
@@ -2915,7 +2978,7 @@ int eos_nuclei::eos_vary_dist
   // We want homogeneous matter if we're above the saturation density
   // or if the 'no_nuclei' flag is true. 
 
-  if (no_nuclei==true || nB>0.16) {
+  if (no_nuclei==true || nB>0.16 || true) {
     nuc_matter(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,thx,mun_full,
 	       mup_full,A_min,A_max,NmZ_min,NmZ_max,vdet);
     return 0;
@@ -5949,6 +6012,7 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
     double Zbar, Nbar;
     map<string,double> vdet;
     if (alg_mode==2 || alg_mode==3 || alg_mode==4) {
+      cout << "Goign to evd." << endl;
       ret=eos_vary_dist(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,
 			thx,mun_full,mup_full,
 			A_min,A_max,NmZ_min,NmZ_max,vdet,
