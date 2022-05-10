@@ -638,7 +638,9 @@ class eos {
   */
   bool use_alt_eos;
 
-  /// If true, strangeness is included (default false)
+  /** \brief If true, strangeness is included as an additional
+      tensor rank (default false)
+  */
   bool strangeness;
   
   /** \brief If true, test the neutron star speed of sound 
@@ -826,6 +828,19 @@ class eos {
   int eos_sn(std::vector<std::string> &sv, bool itive_com);
   //@}
 
+  /** \brief Desc
+   */
+  double free_energy_density_s
+  (o2scl::fermion &n, o2scl::fermion &p, double Y_s, double T,
+   o2scl::thermo &th);
+  
+  /** \brief Desc
+   */
+  double free_energy_density_detail_s
+  (o2scl::fermion &n, o2scl::fermion &p, double Y_s, double T,
+   o2scl::thermo &th,
+   std::map<std::string,double> &vdet);
+  
   /// \name Miscellaneous functions [public]
   //@{
   /** \brief Solve for fixed entropy per baryon and fixed
