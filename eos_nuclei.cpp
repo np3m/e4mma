@@ -2357,6 +2357,26 @@ int eos_nuclei::solve_nuclei(size_t nv, const ubvector &x, ubvector &y,
 
   double Ymu=0.0;
   
+  bool hrg=true;
+  if (hrg) {
+    
+    pi_minus.mu=neutron.mu-proton.mu;
+    pi_plus.mu=proton.mu-neutron.mu;
+    delta_pp.mu=2.0*proton.mu-neutron.mu;
+    relb.pair_mu(pi_minus,T);
+    relb.pair_mu(pi_plus,T);
+    relf.pair_mu(delta_pp,T);
+
+    double nB2=neutron.n+proton.n+delta_pp.n;
+    double Ye2=(proton.n-pi_minus.n+pi_plus.n)/nB2;
+    // I'm not 100% sure this is right
+    nn_tilde+=nB2*(1.0-Ye2);
+    np_tilde+=nB2*Ye2;
+    cout << "Here: " << nB2 << " " << Ye2 << " " << pi_minus.n << " "
+         << pi_plus.n << " " << delta_pp.n << endl;
+    
+  }
+  
   if (include_muons) {
     
     eos_sn_base eso;
@@ -2852,8 +2872,6 @@ int eos_nuclei::nuc_matter(double nB, double Ye, double T,
 			   int &NmZ_min, int &NmZ_max,
 			   map<string,double> &vdet) {
 
-  std::cout << "Here." << std::endl;
-  
   if (include_muons) {
     
     mm_funct nm_func=std::bind
@@ -2978,7 +2996,7 @@ int eos_nuclei::eos_vary_dist
   // We want homogeneous matter if we're above the saturation density
   // or if the 'no_nuclei' flag is true. 
 
-  if (no_nuclei==true || nB>0.16 || true) {
+  if (no_nuclei==true || nB>0.16) {
     nuc_matter(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,thx,mun_full,
 	       mup_full,A_min,A_max,NmZ_min,NmZ_max,vdet);
     return 0;
@@ -6012,7 +6030,6 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
     double Zbar, Nbar;
     map<string,double> vdet;
     if (alg_mode==2 || alg_mode==3 || alg_mode==4) {
-      cout << "Goign to evd." << endl;
       ret=eos_vary_dist(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,
 			thx,mun_full,mup_full,
 			A_min,A_max,NmZ_min,NmZ_max,vdet,
