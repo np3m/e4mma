@@ -126,10 +126,15 @@ public:
   virtual ~eos_nuclei();
   //@}
 
-  o2scl::boson pi_minus;
-  o2scl::boson pi_plus;
-  o2scl::fermion delta_pp;
+  /*
+    o2scl::boson pi_minus;
+    o2scl::boson pi_plus;
+    o2scl::fermion delta_pp;
+  */
   o2scl::boson_rel relb;
+
+  bool inc_hrg;
+  
   int solve_hrg(size_t nv, const ubvector &x,
                 ubvector &y, double nB, double Ye, double T);
   
@@ -511,6 +516,7 @@ public:
 
   /// \name Other parameter objects
   //@{
+  o2scl::cli::parameter_bool p_inc_hrg;
   o2scl::cli::parameter_bool p_survey_eqs;
   o2scl::cli::parameter_bool p_extend_frdm;
   o2scl::cli::parameter_bool p_show_all_nuclei;

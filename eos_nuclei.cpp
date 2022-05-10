@@ -154,10 +154,6 @@ eos_nuclei::eos_nuclei() {
   vdet_units.insert(make_pair("sigma","1/fm"));
   vdet_units.insert(make_pair("omega","1/fm"));
   vdet_units.insert(make_pair("rho","1/fm"));
-
-  pi_minus.init(140.0/hc_mev_fm,3.0);
-  pi_plus.init(140.0/hc_mev_fm,3.0);
-  delta_pp.init(1232.0/hc_mev_fm,2.0);
 }
 
 eos_nuclei::~eos_nuclei() {
@@ -191,6 +187,8 @@ void eos_nuclei::compute_X(double nB, ubvector &X) {
   } else {
     X[5]=nuc_heavy->n*(nuc_heavy->Z+nuc_heavy->N)/nB;
   }
+
+  inc_hrg=false;
   
   return;
 }
@@ -2355,27 +2353,38 @@ int eos_nuclei::solve_nuclei(size_t nv, const ubvector &x, ubvector &y,
     // End of loop over nuclei
   }
 
-  double Ymu=0.0;
-  
-  bool hrg=true;
-  if (hrg) {
-    
-    pi_minus.mu=neutron.mu-proton.mu;
-    pi_plus.mu=proton.mu-neutron.mu;
-    delta_pp.mu=2.0*proton.mu-neutron.mu;
-    relb.pair_mu(pi_minus,T);
-    relb.pair_mu(pi_plus,T);
-    relf.pair_mu(delta_pp,T);
+  if (inc_hrg) {
 
-    double nB2=neutron.n+proton.n+delta_pp.n;
-    double Ye2=(proton.n-pi_minus.n+pi_plus.n)/nB2;
+    double nB2=0.0, Ye2=0.0;
+    
+    int iferm=0;
+    int ibos=0;
+    for(size_t j=0;j<part_db.size();j++) {
+      if (part_db[j].spin_deg%2==0) {
+        res_f[iferm].mu=part_db[j].baryon*neutron.mu+
+          part_db[j].charge*(proton.mu-neutron.mu);
+        relf.pair_mu(res_f[iferm],T);
+        nB2+=part_db[j].baryon*res_f[iferm].n;
+        Ye2+=part_db[j].charge*res_f[iferm].n;
+        iferm++;
+      } else {
+        res_b[ibos].mu=part_db[j].baryon*neutron.mu+
+          part_db[j].charge*(proton.mu-neutron.mu);
+        relb.pair_mu(res_b[ibos],T);
+        nB2+=part_db[j].baryon*res_b[ibos].n;
+        Ye2+=part_db[j].charge*res_b[ibos].n;
+        ibos++;
+      }
+    }
+    Ye2/=nB2;
+
     // I'm not 100% sure this is right
     nn_tilde+=nB2*(1.0-Ye2);
     np_tilde+=nB2*Ye2;
-    cout << "Here: " << nB2 << " " << Ye2 << " " << pi_minus.n << " "
-         << pi_plus.n << " " << delta_pp.n << endl;
     
   }
+  
+  double Ymu=0.0;
   
   if (include_muons) {
     
@@ -2843,23 +2852,21 @@ int eos_nuclei::solve_hrg(size_t nv, const ubvector &x,
     return 1;
   }
   eosp_alt->calc_temp_e(neutron,proton,T,th);
-  pi_minus.mu=neutron.mu-proton.mu;
-  pi_plus.mu=proton.mu-neutron.mu;
-  delta_pp.mu=2.0*proton.mu-neutron.mu;
-  relb.pair_mu(pi_minus,T);
-  relb.pair_mu(pi_plus,T);
-  relf.pair_mu(delta_pp,T);
 
-  nB2=neutron.n+proton.n+delta_pp.n;
-  Ye2=(proton.n-pi_minus.n+pi_plus.n)/nB2;
+  nB2=0.0;
+  Ye2=0.0;
+  //nB2=neutron.n+proton.n+delta_pp.n;
+  //Ye2=(proton.n-pi_minus.n+pi_plus.n)/nB2;
 
   y[0]=(nB2-nB)/nB;
   y[1]=(Ye2-Ye)/Ye;
 
+  /*
   cout << "HRG: " << nB2 << " " << Ye2 << " "
        << nB << " " << Ye << " "
        << neutron.n << " " << proton.n << " "
        << pi_minus.n << " " << pi_plus.n << " " << delta_pp.n << endl;
+  */
 
   return 0;
 }
@@ -4350,7 +4357,22 @@ int eos_nuclei::eos_fixed_dist
   f+=xi*(th_gas.ed-T*th_gas.en)-T*sum_nuc*log(kappa);
   thx.en+=xi*th_gas.en+sum_nuc*log(kappa);
   thx.ed=f+T*thx.en;
-   
+
+  // Add the HRG contribution
+  
+  if (inc_hrg) {
+    for(size_t j=0;j<res_f.size();j++) {
+      f+=(res_f[j].ed-T*res_f[j].en);
+      thx.ed+=res_f[j].ed;
+      thx.en+=res_f[j].en;
+    }
+    for(size_t j=0;j<res_b.size();j++) {
+      f+=(res_b[j].ed-T*res_b[j].en);
+      thx.ed+=res_b[j].ed;
+      thx.en+=res_b[j].en;
+    }
+  }
+  
   // -------------------------------------------------------------
 
   // Nucleon chemical potentials and pressure
@@ -11183,6 +11205,13 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
   p_strange_axis.doc_name="strange_axis";
   p_strange_axis.doc_xml_file="doc/xml/classeos.xml";
   cl.par_list.insert(make_pair("strange_axis",&p_strange_axis));
+  
+  p_inc_hrg.b=&inc_hrg;
+  p_inc_hrg.help="";
+  p_inc_hrg.doc_class="eos_nuclei";
+  p_inc_hrg.doc_name="inc_hrg";
+  p_inc_hrg.doc_xml_file="doc/xml/classeos__nuclei.xml";
+  cl.par_list.insert(make_pair("inc_hrg",&p_inc_hrg));
   
   cl.set_comm_option_vec(nopt,options);
   cl.xml_subs.push_back("<formula> $ 10^{-6} $ </formula>");

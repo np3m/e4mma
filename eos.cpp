@@ -388,6 +388,71 @@ void eos_crust_virial_v2::fit(bool show_fit) {
   return;
 }
 
+int eos::hrg_load(std::vector<std::string> &sv, bool itive_com) {
+
+  std::string fn=sv[1];
+
+  ifstream fin;
+  fin.open(fn.c_str());
+  std::string stmp;
+
+  for(size_t k=0;k<11;k++) fin >> stmp;
+
+  int dtemp;
+  while (fin >> dtemp) { 
+    part_pdg_db::pdg_entry p;
+    p.id=dtemp;
+    fin >> p.name >> p.mass >> p.mass_errp >> p.spin_deg >>
+      p.baryon >> p.strangeness >> dtemp >> dtemp >> dtemp >> p.charge;
+    p.mass_errm=p.mass_errp;
+    p.width=0.0;
+    p.width_errp=0.0;
+    p.width_errm=0.0;
+    part_db.push_back(p);
+  }
+  
+  fin.close();
+
+  cout << "Read " << part_db.size() << " resonances." << endl;
+
+  int nferm=0;
+  int nbos=0;
+  for(size_t j=0;j<part_db.size();j++) {
+    if (part_db[j].spin_deg%2==0) {
+      fermion f;
+      f.m=part_db[j].mass/1.0e3/hc_mev_fm;
+      f.g=part_db[j].spin_deg;
+      f.n=0.0;
+      f.ed=0.0;
+      f.en=0.0;
+      f.pr=0.0;
+      f.mu=0.0;
+      f.nu=0.0;
+      f.ms=0.0;
+      res_f.push_back(f);
+      nferm++;
+    } else {
+      boson b;
+      b.m=part_db[j].mass/1.0e3/hc_mev_fm;
+      b.g=part_db[j].spin_deg;
+      res_b.push_back(b);
+      b.n=0.0;
+      b.ed=0.0;
+      b.en=0.0;
+      b.pr=0.0;
+      b.mu=0.0;
+      b.nu=0.0;
+      b.ms=0.0;
+      nbos++;
+    }
+  }
+
+  cout << "Read " << nferm << " fermions and " << nbos << " bosons."
+       << endl;
+  
+  return 0;
+}
+
 double eos::fit_fun(size_t np, const std::vector<double> &parms,
 		    double nb) {
   if (old_ns_fit) {
@@ -3736,7 +3801,7 @@ int eos::alt_model(std::vector<std::string> &sv,
 
 void eos::setup_cli(o2scl::cli &cl, bool read_docs) {
 
-  static const int nopt=14;
+  static const int nopt=15;
   o2scl::comm_option_s options[nopt]=
     {{0,"test-deriv","",0,0,"","",
        new o2scl::comm_option_mfptr<eos>
@@ -3793,7 +3858,11 @@ void eos::setup_cli(o2scl::cli &cl, bool read_docs) {
      {0,"alt-model","",1,2,"","",
       new o2scl::comm_option_mfptr<eos>
       (this,&eos::alt_model),o2scl::cli::comm_option_both,
-      1,"","eos","alt_model","doc/xml/classeos.xml"}
+      1,"","eos","alt_model","doc/xml/classeos.xml"},
+     {0,"hrg-load","",1,1,"","",
+      new o2scl::comm_option_mfptr<eos>
+      (this,&eos::hrg_load),o2scl::cli::comm_option_both,
+      1,"","eos","hrg_load","doc/xml/classeos.xml"}
     };
 
   cl.doc_o2_file="data/eos_nuclei_docs.o2";

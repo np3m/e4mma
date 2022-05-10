@@ -50,6 +50,7 @@
 #include <o2scl/deriv_cern.h>
 #include <o2scl/eos_had_rmf_hyp.h>
 #include <o2scl/eos_had_virial.h>
+#include <o2scl/part_pdg.h>
 
 typedef boost::numeric::ublas::vector<double> ubvector;
 typedef boost::numeric::ublas::matrix<double> ubmatrix;
@@ -238,6 +239,20 @@ class eos_crust_virial_v2 : public o2scl::eos_crust_virial {
 /** \brief Phenomenological EOS for homogeneous nucleonic matter
  */
 class eos {
+  
+public:
+
+  /** \brief Particle database
+   */
+  std::vector<o2scl::part_pdg_db::pdg_entry> part_db;
+
+  /** \brief Fermionic resonances
+   */
+  std::vector<o2scl::fermion> res_f;
+  
+  /** \brief Bosonic resonances
+   */
+  std::vector<o2scl::boson> res_b;
   
  protected:
 
@@ -699,6 +714,11 @@ class eos {
   int table_Ye(std::vector<std::string> &sv,
 	       bool itive_com);
 
+  /** \brief
+   */
+  int hrg_load(std::vector<std::string> &sv,
+	       bool itive_com);
+  
   /** \brief Use alternate, rather than the Du et al. EOS
 
       <"Skyrme"> <name> or <"RMF"> <name>, etc.
