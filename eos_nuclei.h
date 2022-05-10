@@ -525,7 +525,7 @@ public:
   o2scl::cli::parameter_bool p_include_eg;
   o2scl::cli::parameter_bool p_propagate_points;
   o2scl::cli::parameter_bool p_include_detail;
-  o2scl::cli::parameter_bool p_strangeness;
+  o2scl::cli::parameter_bool p_strange_axis;
   o2scl::cli::parameter_double p_mh_tol_rel;
   o2scl::cli::parameter_double p_max_time;
   o2scl::cli::parameter_string p_nucleon_func;

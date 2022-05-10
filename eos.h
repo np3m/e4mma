@@ -641,7 +641,7 @@ class eos {
   /** \brief If true, strangeness is included as an additional
       tensor rank (default false)
   */
-  bool strangeness;
+  bool strange_axis;
   
   /** \brief If true, test the neutron star speed of sound 
       (default true)

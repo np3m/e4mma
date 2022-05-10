@@ -707,7 +707,7 @@ eos::eos() {
 
   eos_Tcorr=&sk_Tcorr;
   eosp_alt=&sk_alt;
-  strangeness=false;
+  strange_axis=false;
   alt_name="";
   rmf_fields=false;
 }
@@ -1020,7 +1020,7 @@ double eos::free_energy_density_detail_s
 (o2scl::fermion &n, o2scl::fermion &p, double Y_s, double T, o2scl::thermo &th,
  std::map<std::string,double> &vdet) {
 
-  if (!strangeness) {
+  if (!strange_axis) {
     return free_energy_density_detail(n,p,T,th,vdet);
   }
   

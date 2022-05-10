@@ -5489,17 +5489,17 @@ int eos_nuclei::read_results(std::string fname) {
   // Flags
 
   int itmp;
-  if (verbose>2) cout << "Reading strangeness." << endl;
-  hf.geti_def("strangeness",0,itmp);
-  if (itmp==1) strangeness=true;
-  else strangeness=false;
+  if (verbose>2) cout << "Reading strange_axis." << endl;
+  hf.geti_def("strange_axis",0,itmp);
+  if (itmp==1) strange_axis=true;
+  else strange_axis=false;
 
-  if (strangeness==true) {
+  if (strange_axis==true) {
     hf.get_szt_def("n_S",0,n_S2);
     if (n_S2>0) {
       hf.getd_vec("S_grid",S_grid2);
     } else {
-      cerr << "Strangeness is 1 but n_S2=0." << endl;
+      cerr << "Variable strange_axis is 1 but n_S2=0." << endl;
       exit(-1);
     }
   } else {
@@ -7421,7 +7421,7 @@ void eos_nuclei::new_table() {
   n_Ye2=70;
   n_T2=160;
 
-  if (strangeness) {
+  if (strange_axis) {
     n_S2=5;
   } else {
     n_S2=0;
@@ -7464,7 +7464,7 @@ void eos_nuclei::new_table() {
     packed.push_back(T_grid2[i]);
   }
 
-  if (strangeness) {
+  if (strange_axis) {
     split_string_delim(S_grid_spec,split_res,',');
     n_S2=stoszt(split_res[0]);
     
@@ -7476,7 +7476,7 @@ void eos_nuclei::new_table() {
     }
   }
   
-  if (strangeness) {
+  if (strange_axis) {
     
     size_t st[4]={n_nB2,n_Ye2,n_T2,n_S2};
     tg_log_xn.resize(4,st);
@@ -7558,7 +7558,7 @@ void eos_nuclei::new_table() {
   
   if (alg_mode==2 || alg_mode==3 || alg_mode==4) {
 
-    if (strangeness) {
+    if (strange_axis) {
     
       size_t st[4]={n_nB2,n_Ye2,n_T2,n_S2};
       tg_A_min.resize(4,st);
@@ -7590,7 +7590,7 @@ void eos_nuclei::new_table() {
 
   if ((derivs_computed || include_muons) && with_leptons) {
     
-    if (strangeness) {
+    if (strange_axis) {
     
       size_t st[4]={n_nB2,n_Ye2,n_T2,n_S2};
       tg_mue.resize(4,st);
@@ -7610,7 +7610,7 @@ void eos_nuclei::new_table() {
   
   if (derivs_computed) {
     
-    if (strangeness) {
+    if (strange_axis) {
       
       size_t st[4]={n_nB2,n_Ye2,n_T2,n_S2};
       tg_Pint.resize(4,st);
@@ -7640,7 +7640,7 @@ void eos_nuclei::new_table() {
     
     if (with_leptons) {
       
-      if (strangeness) {
+      if (strange_axis) {
       
         size_t st[4]={n_nB2,n_Ye2,n_T2,n_S2};
         tg_E.resize(4,st);
@@ -11177,12 +11177,12 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
   p_include_detail.doc_xml_file="doc/xml/classeos__nuclei.xml";
   cl.par_list.insert(make_pair("include_detail",&p_include_detail));
 
-  p_strangeness.b=&strangeness;
-  p_strangeness.help="";
-  p_strangeness.doc_class="eos_nuclei";
-  p_strangeness.doc_name="strangeness";
-  p_strangeness.doc_xml_file="doc/xml/classeos.xml";
-  cl.par_list.insert(make_pair("strangeness",&p_strangeness));
+  p_strange_axis.b=&strange_axis;
+  p_strange_axis.help="";
+  p_strange_axis.doc_class="eos_nuclei";
+  p_strange_axis.doc_name="strange_axis";
+  p_strange_axis.doc_xml_file="doc/xml/classeos.xml";
+  cl.par_list.insert(make_pair("strange_axis",&p_strange_axis));
   
   cl.set_comm_option_vec(nopt,options);
   cl.xml_subs.push_back("<formula> $ 10^{-6} $ </formula>");
