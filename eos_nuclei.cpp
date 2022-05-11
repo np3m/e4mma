@@ -2377,7 +2377,7 @@ int eos_nuclei::solve_nuclei(size_t nv, const ubvector &x, ubvector &y,
       } else {
         res_b[ibos].mu=part_db[j].baryon*(neutron.mu+neutron.m)+
           part_db[j].charge*(proton.mu+proton.m-neutron.mu-neutron.m);
-        relb.calc_mu(res_b[ibos],T);
+        effb.calc_mu(res_b[ibos],T);
         nB2+=part_db[j].baryon*res_b[ibos].n;
         Ye2+=part_db[j].charge*res_b[ibos].n;
         ibos++;
