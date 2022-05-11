@@ -154,6 +154,8 @@ eos_nuclei::eos_nuclei() {
   vdet_units.insert(make_pair("sigma","1/fm"));
   vdet_units.insert(make_pair("omega","1/fm"));
   vdet_units.insert(make_pair("rho","1/fm"));
+  
+  inc_hrg=false;
 }
 
 eos_nuclei::~eos_nuclei() {
@@ -188,8 +190,6 @@ void eos_nuclei::compute_X(double nB, ubvector &X) {
     X[5]=nuc_heavy->n*(nuc_heavy->Z+nuc_heavy->N)/nB;
   }
 
-  inc_hrg=false;
-  
   return;
 }
 
@@ -2361,15 +2361,15 @@ int eos_nuclei::solve_nuclei(size_t nv, const ubvector &x, ubvector &y,
     int ibos=0;
     for(size_t j=0;j<part_db.size();j++) {
       if (part_db[j].spin_deg%2==0) {
-        res_f[iferm].mu=part_db[j].baryon*neutron.mu+
-          part_db[j].charge*(proton.mu-neutron.mu);
+        res_f[iferm].mu=part_db[j].baryon*(neutron.mu+neutron.m)+
+          part_db[j].charge*(proton.mu+proton.m-neutron.mu-neutron.m);
         relf.pair_mu(res_f[iferm],T);
         nB2+=part_db[j].baryon*res_f[iferm].n;
         Ye2+=part_db[j].charge*res_f[iferm].n;
         iferm++;
       } else {
-        res_b[ibos].mu=part_db[j].baryon*neutron.mu+
-          part_db[j].charge*(proton.mu-neutron.mu);
+        res_b[ibos].mu=part_db[j].baryon*(neutron.mu+neutron.m)+
+          part_db[j].charge*(proton.mu+proton.m-neutron.mu-neutron.m);
         relb.pair_mu(res_b[ibos],T);
         nB2+=part_db[j].baryon*res_b[ibos].n;
         Ye2+=part_db[j].charge*res_b[ibos].n;
@@ -2381,6 +2381,10 @@ int eos_nuclei::solve_nuclei(size_t nv, const ubvector &x, ubvector &y,
     // I'm not 100% sure this is right
     nn_tilde+=nB2*(1.0-Ye2);
     np_tilde+=nB2*Ye2;
+    
+    cout << "HRG: " << nn_tilde << " " << np_tilde << endl;
+    //char ch;
+    //cin >> ch;
     
   }
   
@@ -6056,6 +6060,33 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
 			thx,mun_full,mup_full,
 			A_min,A_max,NmZ_min,NmZ_max,vdet,
 			true,false);
+      double n_fraction, p_fraction;
+      if (nB<0.16) {
+        double xn=0.0;
+        if (log_xn>-300.0) {
+          xn=pow(10.0,log_xn);
+        }
+        double xp=0.0;
+        if (log_xp>-300.0) {
+          xp=pow(10.0,log_xp);
+        }
+        double n0=0.16;
+        n_fraction=xn*(1.0-nB/n0)/(1.0-nB*xn/n0-nB*xp/n0);
+        p_fraction=xp*(1.0-nB/n0)/(1.0-nB*xn/n0-nB*xp/n0);    
+      } else {
+        n_fraction=1.0-Ye;
+        p_fraction=Ye;
+      }
+      cout << "Xn: " << n_fraction << endl;
+      cout << "Xp: " << p_fraction << endl;
+      ubvector X;
+      compute_X(nB,X);
+      cout << "Xalpha: " << X[0] << endl;
+      cout << "Xd: " << X[1] << endl;
+      cout << "Xt: " << X[2] << endl;
+      cout << "XHe3: " << X[3] << endl;
+      cout << "XLi4: " << X[4] << endl;
+      cout << "Xh: " << X[5] << endl;
     } else {
       ret=eos_vary_ZN(nB,Ye,T,log_xn,log_xp,nuc_Z1,nuc_N1,
 		      thx,mun_full,mup_full,false);
@@ -6081,7 +6112,7 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
     if (ret==0) {
       cout << "log_xn: " << log_xn << endl;
       cout << "log_xp: " << log_xp << endl;
-      cout << "fint: " << thx.ed-T*thx.en << endl;
+      cout << "fint: " << thx.ed-T*thx.en << " 1/fm^4" << endl;
       cout << "Fint: " << (thx.ed-T*thx.en)/nB*hc_mev_fm << " MeV" << endl;
       cout << "A: " << Zbar+Nbar << endl;
       cout << "Z: " << Zbar << endl;

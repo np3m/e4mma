@@ -403,7 +403,9 @@ int eos::hrg_load(std::vector<std::string> &sv, bool itive_com) {
     part_pdg_db::pdg_entry p;
     p.id=dtemp;
     fin >> p.name >> p.mass >> p.mass_errp >> p.spin_deg >>
-      p.baryon >> p.strangeness >> dtemp >> dtemp >> dtemp >> p.charge;
+      p.baryon >> p.strangeness >> stmp >> stmp >> stmp >> p.charge;
+    //cout << "Read " << p.name << " " << p.mass << " " << p.charge << endl;
+    getline(fin,stmp);
     p.mass_errm=p.mass_errp;
     p.width=0.0;
     p.width_errp=0.0;
@@ -420,7 +422,7 @@ int eos::hrg_load(std::vector<std::string> &sv, bool itive_com) {
   for(size_t j=0;j<part_db.size();j++) {
     if (part_db[j].spin_deg%2==0) {
       fermion f;
-      f.m=part_db[j].mass/1.0e3/hc_mev_fm;
+      f.m=part_db[j].mass*1.0e3/hc_mev_fm;
       f.g=part_db[j].spin_deg;
       f.n=0.0;
       f.ed=0.0;
@@ -433,7 +435,7 @@ int eos::hrg_load(std::vector<std::string> &sv, bool itive_com) {
       nferm++;
     } else {
       boson b;
-      b.m=part_db[j].mass/1.0e3/hc_mev_fm;
+      b.m=part_db[j].mass*1.0e3/hc_mev_fm;
       b.g=part_db[j].spin_deg;
       res_b.push_back(b);
       b.n=0.0;
