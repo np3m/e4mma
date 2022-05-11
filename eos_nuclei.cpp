@@ -38,11 +38,13 @@
 #include <o2scl/diff_evo_adapt.h>
 #include <o2scl/rng.h>
 #include <o2scl/xml.h>
+#include <o2scl/auto_format.h>
 
 using namespace std;
 using namespace o2scl;
 using namespace o2scl_const;
 using namespace o2scl_hdf;
+using namespace o2scl_auto_format;
 using namespace nuopac;
 
 eos_nuclei::eos_nuclei() {
@@ -154,6 +156,8 @@ eos_nuclei::eos_nuclei() {
   vdet_units.insert(make_pair("sigma","1/fm"));
   vdet_units.insert(make_pair("omega","1/fm"));
   vdet_units.insert(make_pair("rho","1/fm"));
+  vdet_units.insert(make_pair("mun_gas","1/fm"));
+  vdet_units.insert(make_pair("mup_gas","1/fm"));
   
   inc_hrg=false;
 }
@@ -2355,6 +2359,9 @@ int eos_nuclei::solve_nuclei(size_t nv, const ubvector &x, ubvector &y,
 
   if (inc_hrg) {
 
+    double nn_tilde_old=nn_tilde;
+    double np_tilde_old=np_tilde;
+    
     double nB2=0.0, Ye2=0.0;
     
     int iferm=0;
@@ -2363,14 +2370,14 @@ int eos_nuclei::solve_nuclei(size_t nv, const ubvector &x, ubvector &y,
       if (part_db[j].spin_deg%2==0) {
         res_f[iferm].mu=part_db[j].baryon*(neutron.mu+neutron.m)+
           part_db[j].charge*(proton.mu+proton.m-neutron.mu-neutron.m);
-        relf.pair_mu(res_f[iferm],T);
+        relf.calc_mu(res_f[iferm],T);
         nB2+=part_db[j].baryon*res_f[iferm].n;
         Ye2+=part_db[j].charge*res_f[iferm].n;
         iferm++;
       } else {
         res_b[ibos].mu=part_db[j].baryon*(neutron.mu+neutron.m)+
           part_db[j].charge*(proton.mu+proton.m-neutron.mu-neutron.m);
-        relb.pair_mu(res_b[ibos],T);
+        relb.calc_mu(res_b[ibos],T);
         nB2+=part_db[j].baryon*res_b[ibos].n;
         Ye2+=part_db[j].charge*res_b[ibos].n;
         ibos++;
@@ -2382,7 +2389,9 @@ int eos_nuclei::solve_nuclei(size_t nv, const ubvector &x, ubvector &y,
     nn_tilde+=nB2*(1.0-Ye2);
     np_tilde+=nB2*Ye2;
     
-    cout << "HRG: " << nn_tilde << " " << np_tilde << endl;
+    cout << "HRG: " << neutron.mu << " " << proton.mu << " "
+         << nn_tilde_old << " " << np_tilde_old << " "
+         << nn_tilde << " " << np_tilde << endl;
     //char ch;
     //cin >> ch;
     
@@ -4276,8 +4285,8 @@ int eos_nuclei::eos_fixed_dist
   sn_func(2,x1,y1);
 
   // Store the chemical potentials for homogeneous matter
-  vdet["mun_hom"]=mun_gas;
-  vdet["mup_hom"]=mup_gas;
+  vdet["mun_gas"]=mun_gas;
+  vdet["mup_gas"]=mup_gas;
   
   if (mpi_size==1 && loc_verbose>1) {
     sn_func(2,x1,y1);
@@ -6060,33 +6069,70 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
 			thx,mun_full,mup_full,
 			A_min,A_max,NmZ_min,NmZ_max,vdet,
 			true,false);
-      double n_fraction, p_fraction;
-      if (nB<0.16) {
-        double xn=0.0;
-        if (log_xn>-300.0) {
-          xn=pow(10.0,log_xn);
+
+      if (inc_hrg) {
+        
+        cout << "mun_gas: " << vdet["mun_gas"] << endl;
+        cout << "mup_gas: " << vdet["mup_gas"] << endl;
+        cout << "muB (MeV): " << (vdet["mun_gas"]+neutron.m)*hc_mev_fm << endl;
+        cout << "muQ (MeV): " << (vdet["mup_gas"]-vdet["mun_gas"]+
+                                  proton.m-neutron.m)*hc_mev_fm << endl;
+        double n_fraction, p_fraction;
+        if (nB<0.16) {
+          double xn=0.0;
+          if (log_xn>-300.0) {
+            xn=pow(10.0,log_xn);
+          }
+          double xp=0.0;
+          if (log_xp>-300.0) {
+            xp=pow(10.0,log_xp);
+          }
+          double n0=0.16;
+          n_fraction=xn*(1.0-nB/n0)/(1.0-nB*xn/n0-nB*xp/n0);
+          p_fraction=xp*(1.0-nB/n0)/(1.0-nB*xn/n0-nB*xp/n0);    
+        } else {
+          n_fraction=1.0-Ye;
+          p_fraction=Ye;
         }
-        double xp=0.0;
-        if (log_xp>-300.0) {
-          xp=pow(10.0,log_xp);
+        cout << "Xn: " << n_fraction << endl;
+        cout << "Xp: " << p_fraction << endl;
+        
+        ubvector X;
+        compute_X(nB,X);
+        cout << "Xalpha: " << X[0] << endl;
+        cout << "Xd: " << X[1] << endl;
+        cout << "Xt: " << X[2] << endl;
+        cout << "XHe3: " << X[3] << endl;
+        cout << "XLi4: " << X[4] << endl;
+        cout << "Xh: " << X[5] << endl;
+
+        cout << "Resonance table:" << endl;
+        auto_format af;
+        af.start_table();
+        af << "name" << "number dens" << "energy dens" << "pressure" << "entropy dens" << "F/B" << endo;
+        af << " " << "1/fm^3" << "MeV/fm^3" << "MeV/fm^3" << "1/fm^3" << " " << endo;
+        af << "----" << "------------" << "------------" << "--------" << "-------" << "-" << endo;
+        int iferm=0;
+        int ibos=0;
+        for(size_t j=0;j<part_db.size();j++) {
+          if (part_db[j].spin_deg%2==0) {
+            af << part_db[j].name << res_f[iferm].n
+               << res_f[iferm].ed*hc_mev_fm 
+               << res_f[iferm].pr*hc_mev_fm
+               << res_f[iferm].en << "f" << endo;
+            iferm++;
+          } else {
+            af << part_db[j].name << res_b[ibos].n
+               << res_b[ibos].ed*hc_mev_fm 
+               << res_b[ibos].pr*hc_mev_fm
+               << res_b[ibos].en << "b" << endo;
+            ibos++;
+          }
         }
-        double n0=0.16;
-        n_fraction=xn*(1.0-nB/n0)/(1.0-nB*xn/n0-nB*xp/n0);
-        p_fraction=xp*(1.0-nB/n0)/(1.0-nB*xn/n0-nB*xp/n0);    
-      } else {
-        n_fraction=1.0-Ye;
-        p_fraction=Ye;
+        af.end_table();
+        
       }
-      cout << "Xn: " << n_fraction << endl;
-      cout << "Xp: " << p_fraction << endl;
-      ubvector X;
-      compute_X(nB,X);
-      cout << "Xalpha: " << X[0] << endl;
-      cout << "Xd: " << X[1] << endl;
-      cout << "Xt: " << X[2] << endl;
-      cout << "XHe3: " << X[3] << endl;
-      cout << "XLi4: " << X[4] << endl;
-      cout << "Xh: " << X[5] << endl;
+      
     } else {
       ret=eos_vary_ZN(nB,Ye,T,log_xn,log_xp,nuc_Z1,nuc_N1,
 		      thx,mun_full,mup_full,false);
@@ -10014,8 +10060,8 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
               proton.n=Ye*nB;
             }
             
-            double mun_hom=vdet["mun_hom"];
-            double mup_hom=vdet["mup_hom"];
+            double mun_gas=vdet["mun_gas"];
+            double mup_gas=vdet["mup_gas"];
             
             // Make sure to compute kf, which is not always computed at
             // finite temperature
@@ -10023,9 +10069,9 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
             sk.def_fet.kf_from_density(proton);
             
             if (false) {
-              cout << "mu2,mu4,mu2-mu4: " << mun_hom*hc_mev_fm << " "
-                   << mup_hom*hc_mev_fm << " "
-                   << (mun_hom-mup_hom)*hc_mev_fm << endl;
+              cout << "mu2,mu4,mu2-mu4: " << mun_gas*hc_mev_fm << " "
+                   << mup_gas*hc_mev_fm << " "
+                   << (mun_gas-mup_gas)*hc_mev_fm << endl;
             }
             
             // Add the electrons
@@ -10124,10 +10170,10 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         proton.n=Ye_best*nB;
       }
 
-      double mun_hom=vdet["mun_hom"];
-      double mup_hom=vdet["mup_hom"];
-      cout << "mun_hom [MeV], mup_hom [MeV]: " << mun_hom*hc_mev_fm << " "
-           << mup_hom*hc_mev_fm << endl;
+      double mun_gas=vdet["mun_gas"];
+      double mup_gas=vdet["mup_gas"];
+      cout << "mun_gas [MeV], mup_gas [MeV]: " << mun_gas*hc_mev_fm << " "
+           << mup_gas*hc_mev_fm << endl;
       
       // Make sure to compute kf, which is not always computed at
       // finite temperature
@@ -10135,7 +10181,7 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
       sk.def_fet.kf_from_density(proton);
       
       // Set the electron chemical potential (with the electron rest mass)
-      double mue=mun_hom+neutron.m-mup_hom-proton.m;
+      double mue=mun_gas+neutron.m-mup_gas-proton.m;
       
       // Copy the electron results to the local electron object
       electron.n=nB*Ye_best;
@@ -10161,8 +10207,8 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
           p2(vdet["msp"]/hc_mev_fm,2.0);
         n2.n=neutron.n;
         p2.n=proton.n;
-        n2.mu=mun_hom;
-        p2.mu=mup_hom;
+        n2.mu=mun_gas;
+        p2.mu=mup_gas;
         n2.inc_rest_mass=false;
         p2.inc_rest_mass=false;
         fermion_nonrel fnr;
