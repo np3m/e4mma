@@ -714,7 +714,11 @@ public:
   int table_Ye(std::vector<std::string> &sv,
 	       bool itive_com);
 
-  /** \brief
+  /** \brief Load the HRG table
+
+      <filename>
+
+      Loads a list of resonances from a text file.
    */
   int hrg_load(std::vector<std::string> &sv,
 	       bool itive_com);
@@ -848,13 +852,15 @@ public:
   int eos_sn(std::vector<std::string> &sv, bool itive_com);
   //@}
 
-  /** \brief Desc
+  /** \brief Free energy density as a function of the 
+      strangeness fraction
    */
   double free_energy_density_s
   (o2scl::fermion &n, o2scl::fermion &p, double Y_s, double T,
    o2scl::thermo &th);
   
-  /** \brief Desc
+  /** \brief \brief Free energy density as a function of the 
+      strangeness fraction
    */
   double free_energy_density_detail_s
   (o2scl::fermion &n, o2scl::fermion &p, double Y_s, double T,
