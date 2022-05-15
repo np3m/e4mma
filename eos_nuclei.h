@@ -378,6 +378,9 @@ public:
   */
   int function_verbose;
   
+  void store_hrg(double mun, double mup,
+                 double nn, double np, o2scl::table_units<> &tab);
+  
   /** \brief If true, use previously computed points (or guesses) as
       an initial guess to compute adjacent points (default true)
   */

@@ -2131,6 +2131,47 @@ double eos_nuclei::solve_nuclei_min
   return retval;
 }
 
+void eos_nuclei::store_hrg(double mun, double mup,
+                           double nn, double np, table_units<> &tab) {
+  
+  tab.clear();
+  
+  tab.line_of_names("id mass spin_deg mu n ed pr en");
+  tab.line_of_units(". . . MeV 1/fm^3 MeV/fm^4 MeV/fm^4 1/fm^3");
+  
+  int iferm=0;
+  int ibos=0;
+  for(size_t j=0;j<part_db.size();j++) {
+    if (part_db[j].id==2212 && part_db[j].charge==1) {
+      vector<double> line={((double)2212),neutron.m*hc_mev_fm,2,
+        mun*hc_mev_fm,nn,0.0,0.0,0.0};
+      tab.line_of_data(line.size(),line);
+    } else if (part_db[j].id==2212 && part_db[j].charge==0) {
+      vector<double> line={((double)2212),neutron.m*hc_mev_fm,2,
+        mun*hc_mev_fm,nn,0.0,0.0,0.0};
+      tab.line_of_data(line.size(),line);
+    } else if (part_db[j].spin_deg%2==0) {
+      vector<double> line={((double)part_db[j].id),
+        res_f[iferm].m*hc_mev_fm,
+        res_f[iferm].g,res_f[iferm].mu*hc_mev_fm,res_f[iferm].n,
+        res_f[iferm].ed*hc_mev_fm,res_f[iferm].pr*hc_mev_fm,
+        res_f[iferm].en};
+      tab.line_of_data(line.size(),line);
+      iferm++;
+    } else {
+      vector<double> line={((double)part_db[j].id),
+        res_b[ibos].m*hc_mev_fm,
+        res_b[ibos].g,res_b[ibos].mu*hc_mev_fm,res_b[ibos].n,
+        res_b[ibos].ed*hc_mev_fm,res_b[ibos].pr*hc_mev_fm,
+        res_b[ibos].en};
+      tab.line_of_data(line.size(),line);
+      ibos++;
+    }
+  }
+  
+  return;
+}
+
 int eos_nuclei::solve_nuclei(size_t nv, const ubvector &x, ubvector &y,
 			     double nB, double Ye, double T,
 			     int loc_verbose, double &mun_gas,
@@ -4773,7 +4814,7 @@ int eos_nuclei::store_point
     }
     
   }
-  
+
   if (loc_verbose>8) {
     exit(-1);
   }
@@ -6106,6 +6147,11 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
         cout << "XLi4: " << X[4] << endl;
         cout << "Xh: " << X[5] << endl;
 
+        table_units<> t;
+        store_hrg(vdet["mun_gas"]+neutron.m,
+                  vdet["mup_gas"]+proton.m,
+                  n_fraction*nB,p_fraction*nB,t);
+        
         cout << "Resonance table:" << endl;
         auto_format af;
         af.start_table();
