@@ -1658,8 +1658,8 @@ double eos::free_energy_density_ep
   
   elep.include_muons=include_muons;
   elep.pair_density_eq(proton.n,T);
-  cout << "three: " << elep.include_muons << " "
-       << proton.n << " " << elep.e.n << endl;
+  //cout << "three: " << elep.include_muons << " "
+  //<< proton.n << " " << elep.e.n << endl;
   
   double frnp=free_energy_density(neutron,proton,T,th2);
   
@@ -1740,11 +1740,11 @@ double eos::cs2_func(fermion &n, fermion &p, double T, thermo &th) {
   double np=p.n;
   double nb=n.n+p.n;
 
-  cout << "One: " << p.n << endl;
+  //cout << "One: " << p.n << endl;
   
   free_energy_density_ep(nn,np,T);
 
-  cout << "Two: " << p.n << endl;
+  //cout << "Two: " << p.n << endl;
   
   // Include the nucleon rest masses in the terms involving the
   // chemical potentials. We have to remember that the chemical
@@ -1753,13 +1753,15 @@ double eos::cs2_func(fermion &n, fermion &p, double T, thermo &th) {
   double den=th2.en*T+(neutron.mu+n.m)*n.n+(proton.mu+p.m)*p.n+
     elep.e.mu*elep.e.n;
   double en=th2.en;
-  cout << "mun,mup,mue 1: " << neutron.mu << " " << proton.mu
-       << " " << elep.e.mu << endl;
+  //cout << "mun,mup,mue 1: " << neutron.mu << " " << proton.mu
+  //<< " " << elep.e.mu << endl;
 
+  /*
   cout << "den1,den2,den3,den4: " << th2.en*T << " "
        << (n.mu+n.m)*n.n << " "
        << (p.mu+p.m)*p.n << " "
        << elep.e.mu << " " << elep.e.n << endl;
+  */
   
   // Numerically compute required second derivatives
   double fac=1.0e3;
@@ -1827,11 +1829,13 @@ double eos::cs2_func(fermion &n, fermion &p, double T, thermo &th) {
   gd.h=fabs(T)/fac;
   double f_TT=-gd.deriv(T,f_TT_func);
 
+  /*
   cout << "nn,np,en: " << nn << " " << np << " " << en << endl;
   cout << "f_nnnn, f_nnnp, f_npnp, f_nnT, f_npT, f_TT, den 1:\n  "
        << f_nnnn << " " << f_nnnp << " " << f_npnp << " "
        << f_nnT << " " << f_npT << " " << f_TT << " "
        << den << endl;
+  */
   
   double cs_sq=(nn*nn*(f_nnnn-f_nnT*f_nnT/f_TT)+
 		2.0*nn*np*(f_nnnp-f_nnT*f_npT/f_TT)+

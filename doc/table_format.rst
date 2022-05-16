@@ -99,8 +99,14 @@ all tables.
 - ``XLi4``: the baryon number fraction of :math:`^{4}\mathrm{Li}`
 - ``Xnuclei``: the baryon number fraction of nuclei
 
-The sum of these eight quantities should be close to 1 for all
-points in the table.
+The sum of these eight quantities should be close to 1 for all points
+in the table. Note that ``Xn`` and ``Xp`` do not store the local
+density of neutrons in the gas phase, those quantities are given in Du
+et al. (2022): :math:`n_n^{\prime}\equiv n_n/\xi` and
+:math:`n_n^{\prime}\equiv n_p/\xi`. These densities are not stored in
+the tables, but are accessible, for example, in the ``point-nuclei``
+command. At high densities or temperatures when nuclei are not
+present, :math:`\xi=1`.
 
 Thermodynamic quantities
 ------------------------

@@ -2994,9 +2994,7 @@ int eos_nuclei::nuc_matter(double nB, double Ye, double T,
     nuclei[i].n=0.0;
   }
 
-  bool hrg=true;
-  
-  if (hrg) {
+  if (inc_hrg) {
 
     mm_funct hrg_func=std::bind
       (std::mem_fn<int(size_t,const ubvector &,ubvector&,double,double,
@@ -3011,7 +3009,6 @@ int eos_nuclei::nuc_matter(double nB, double Ye, double T,
 
     mh.verbose=2;
     mh.msolve(2,x,hrg_func);
-    exit(-1);
     
   } else {
     
@@ -3211,7 +3208,7 @@ int eos_nuclei::eos_vary_dist
     if (done==false) dist_changed=true;
 
   } while (done==false);
-  
+
   // Determine average N and Z
   
   double nt=0.0;
@@ -6110,75 +6107,6 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
 			thx,mun_full,mup_full,
 			A_min,A_max,NmZ_min,NmZ_max,vdet,
 			true,false);
-
-      if (inc_hrg) {
-        
-        cout << "mun_gas: " << vdet["mun_gas"] << endl;
-        cout << "mup_gas: " << vdet["mup_gas"] << endl;
-        cout << "muB (MeV): " << (vdet["mun_gas"]+neutron.m)*hc_mev_fm << endl;
-        cout << "muQ (MeV): " << (vdet["mup_gas"]-vdet["mun_gas"]+
-                                  proton.m-neutron.m)*hc_mev_fm << endl;
-        double n_fraction, p_fraction;
-        if (nB<0.16) {
-          double xn=0.0;
-          if (log_xn>-300.0) {
-            xn=pow(10.0,log_xn);
-          }
-          double xp=0.0;
-          if (log_xp>-300.0) {
-            xp=pow(10.0,log_xp);
-          }
-          double n0=0.16;
-          n_fraction=xn*(1.0-nB/n0)/(1.0-nB*xn/n0-nB*xp/n0);
-          p_fraction=xp*(1.0-nB/n0)/(1.0-nB*xn/n0-nB*xp/n0);    
-        } else {
-          n_fraction=1.0-Ye;
-          p_fraction=Ye;
-        }
-        cout << "Xn: " << n_fraction << endl;
-        cout << "Xp: " << p_fraction << endl;
-        
-        ubvector X;
-        compute_X(nB,X);
-        cout << "Xalpha: " << X[0] << endl;
-        cout << "Xd: " << X[1] << endl;
-        cout << "Xt: " << X[2] << endl;
-        cout << "XHe3: " << X[3] << endl;
-        cout << "XLi4: " << X[4] << endl;
-        cout << "Xh: " << X[5] << endl;
-
-        table_units<> t;
-        store_hrg(vdet["mun_gas"]+neutron.m,
-                  vdet["mup_gas"]+proton.m,
-                  n_fraction*nB,p_fraction*nB,t);
-        
-        cout << "Resonance table:" << endl;
-        auto_format af;
-        af.start_table();
-        af << "name" << "number dens" << "energy dens" << "pressure" << "entropy dens" << "F/B" << endo;
-        af << " " << "1/fm^3" << "MeV/fm^3" << "MeV/fm^3" << "1/fm^3" << " " << endo;
-        af << "----" << "------------" << "------------" << "--------" << "-------" << "-" << endo;
-        int iferm=0;
-        int ibos=0;
-        for(size_t j=0;j<part_db.size();j++) {
-          if (part_db[j].spin_deg%2==0) {
-            af << part_db[j].name << res_f[iferm].n
-               << res_f[iferm].ed*hc_mev_fm 
-               << res_f[iferm].pr*hc_mev_fm
-               << res_f[iferm].en << "f" << endo;
-            iferm++;
-          } else {
-            af << part_db[j].name << res_b[ibos].n
-               << res_b[ibos].ed*hc_mev_fm 
-               << res_b[ibos].pr*hc_mev_fm
-               << res_b[ibos].en << "b" << endo;
-            ibos++;
-          }
-        }
-        af.end_table();
-        
-      }
-      
     } else {
       ret=eos_vary_ZN(nB,Ye,T,log_xn,log_xp,nuc_Z1,nuc_N1,
 		      thx,mun_full,mup_full,false);
@@ -6186,13 +6114,15 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
       Zbar=nuc_Z1;
     }
 
+    ubvector X;
+    if (ret==0) {
+      compute_X(nB,X);
+    }
+
     if (ret!=0) {
       cout << "Point failed." << endl;
     } else if (loaded) {
       cout << "Point succeeded. Storing." << endl;
-
-      ubvector X;
-      compute_X(nB,X);
 
       store_point(inB,iYe,iT,nB,Ye,T,thx,log_xn,log_xp,Zbar,Nbar,
 		  mun_full,mup_full,X,A_min,A_max,NmZ_min,NmZ_max,
@@ -6208,6 +6138,64 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
       cout << "Fint: " << (thx.ed-T*thx.en)/nB*hc_mev_fm << " MeV" << endl;
       cout << "A: " << Zbar+Nbar << endl;
       cout << "Z: " << Zbar << endl;
+      
+      if (true) {
+        
+        double n0=0.16;
+        double kappa=1.0-nB/n0;
+        double n_fraction, p_fraction, xn, xp, xi;
+        
+        if (nB<0.16) {
+          
+          xn=0.0;
+          if (log_xn>-300.0) {
+            xn=pow(10.0,log_xn);
+          }
+          
+          xp=0.0;
+          if (log_xp>-300.0) {
+            xp=pow(10.0,log_xp);
+          }
+          
+          xi=kappa/(1.0-nB*xn/n0-nB*xp/n0);
+          n_fraction=xn*xi;
+          p_fraction=xp*xi;
+          
+        } else {
+          
+          xn=1.0-Ye;
+          xp=Ye;
+          xi=1.0;
+          n_fraction=1.0-Ye;
+          p_fraction=Ye;
+          
+        }
+
+        cout << "xi: " << xi << endl;
+        cout << "n_{n,gas} [in 1/fm^3; called n_n^{\\prime} in "
+             << "Du et al. (2022)]: " << xn*nB << endl;
+        cout << "n_{p,gas} [in 1/fm^3; called n_n^{\\prime} in "
+             << "Du et al. (2022)]: " << xp*nB << endl;
+        cout << "n_{n,avg} [in 1/fm^3: equal to Xn*nB]: "
+             << xn*nB*xi << endl;
+        cout << "n_{n,avg} [in 1/fm^3: equal to Xn*nB]: "
+             << xp*nB*xi << endl;
+        
+        if (inc_hrg) {
+          
+          table_units<> t;
+          store_hrg(vdet["mun_gas"]+neutron.m,vdet["mup_gas"]+proton.m,
+                    n_fraction*nB,p_fraction*nB,t);
+          hdf_file hf;
+          hf.open_or_create("hrg.o2");
+          hdf_output(hf,t,"hrg");
+          hf.close();
+          
+        }
+
+      }
+      
+      
       if (include_detail) {
 	cout << "zn: " << vdet["zn"] << endl;
 	cout << "zp: " << vdet["zp"] << endl;
@@ -6272,7 +6260,7 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
       cout << "Ymu: " << tg_Ymu.get(ix) << endl;
     }
     if (include_muons || with_leptons) {
-      cout << "mue: " << tg_mue.get(ix) << endl;
+      cout << "mue: " << tg_mue.get(ix) << " MeV" << endl;
     }
     if (derivs_computed) {
       cout << "Pint: " << tg_Pint.get(ix) << endl;
