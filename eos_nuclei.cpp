@@ -2408,7 +2408,13 @@ int eos_nuclei::solve_nuclei(size_t nv, const ubvector &x, ubvector &y,
     int iferm=0;
     int ibos=0;
     for(size_t j=0;j<part_db.size();j++) {
-      if (part_db[j].spin_deg%2==0) {
+      if (part_db[j].id==2212 && part_db[j].charge==1) {
+        res_f[iferm]=proton;
+        iferm++;
+      } else if (part_db[j].id==2212 && part_db[j].charge==0) {
+        res_f[iferm]=neutron;
+        iferm++;
+      } else if (part_db[j].spin_deg%2==0) {
         res_f[iferm].mu=part_db[j].baryon*(neutron.mu+neutron.m)+
           part_db[j].charge*(proton.mu+proton.m-neutron.mu-neutron.m);
         relf.calc_mu(res_f[iferm],T);
@@ -2907,6 +2913,39 @@ int eos_nuclei::solve_hrg(size_t nv, const ubvector &x,
   }
   eosp_alt->calc_temp_e(neutron,proton,T,th);
 
+  double nn_total=neutron.n, np_total=proton.n;
+    
+  int iferm=0;
+  int ibos=0;
+  for(size_t j=0;j<part_db.size();j++) {
+    if (part_db[j].id==2212 && part_db[j].charge==1) {
+      res_f[iferm]=proton;
+      iferm++;
+    } else if (part_db[j].id==2212 && part_db[j].charge==0) {
+      res_f[iferm]=neutron;
+      iferm++;
+    } else if (part_db[j].spin_deg%2==0) {
+      res_f[iferm].mu=part_db[j].baryon*(neutron.mu+neutron.m)+
+        part_db[j].charge*(proton.mu+proton.m-neutron.mu-neutron.m);
+      relf.calc_mu(res_f[iferm],T);
+      //nB2+=
+      //Ye2+=part_db[j].charge*res_f[iferm].n;
+      iferm++;
+    } else {
+      res_b[ibos].mu=part_db[j].baryon*(neutron.mu+neutron.m)+
+        part_db[j].charge*(proton.mu+proton.m-neutron.mu-neutron.m);
+      effb.calc_mu(res_b[ibos],T);
+      //nB2+=part_db[j].baryon*res_b[ibos].n;
+      //Ye2+=part_db[j].charge*res_b[ibos].n;
+      ibos++;
+    }
+  }
+  Ye2/=nB2;
+  
+  // I'm not 100% sure this is right
+  //nn_tilde+=nB2*(1.0-Ye2);
+  //np_tilde+=nB2*Ye2;
+  
   nB2=0.0;
   Ye2=0.0;
   //nB2=neutron.n+proton.n+delta_pp.n;
@@ -4409,13 +4448,16 @@ int eos_nuclei::eos_fixed_dist
   thx.en+=xi*th_gas.en+sum_nuc*log(kappa);
   thx.ed=f+T*thx.en;
 
-  // Add the HRG contribution
+  // Add the HRG contribution, except for neutrons and protons
+  // which are already included
   
   if (inc_hrg) {
     for(size_t j=0;j<res_f.size();j++) {
-      f+=(res_f[j].ed-T*res_f[j].en);
-      thx.ed+=res_f[j].ed;
-      thx.en+=res_f[j].en;
+      if (fabs(res_f[j].m-939.0/hc_mev_fm)>1.0) {
+        f+=(res_f[j].ed-T*res_f[j].en);
+        thx.ed+=res_f[j].ed;
+        thx.en+=res_f[j].en;
+      }
     }
     for(size_t j=0;j<res_b.size();j++) {
       f+=(res_b[j].ed-T*res_b[j].en);
@@ -6185,7 +6227,7 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
           
           table_units<> t;
           store_hrg(vdet["mun_gas"]+neutron.m,vdet["mup_gas"]+proton.m,
-                    n_fraction*nB,p_fraction*nB,t);
+                    xn*nB,xp*nB,t);
           hdf_file hf;
           hf.open_or_create("hrg.o2");
           hdf_output(hf,t,"hrg");
@@ -6199,16 +6241,25 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
       if (include_detail) {
 	cout << "zn: " << vdet["zn"] << endl;
 	cout << "zp: " << vdet["zp"] << endl;
-	cout << "F1: " << vdet["F1"] << " MeV" << endl;
-	cout << "F2: " << vdet["F2"] << " MeV" << endl;
-	cout << "F3: " << vdet["F3"] << " MeV" << endl;
-	cout << "F3: " << vdet["F3"] << " MeV" << endl;
-	cout << "msn: " << vdet["msn"] << " MeV" << endl;
-	cout << "msp: " << vdet["msp"] << " MeV" << endl;
-	cout << "Un: " << vdet["Un"] << " MeV" << endl;
-	cout << "Up: " << vdet["Up"] << " MeV" << endl;
+	cout << "F1: " << vdet["F1"] << " "
+             << vdet_units.find("F1")->second << endl;
+	cout << "F2: " << vdet["F2"] << " "
+             << vdet_units.find("F2")->second << endl;
+	cout << "F3: " << vdet["F3"] << " "
+             << vdet_units.find("F3")->second << endl;
+	cout << "F4: " << vdet["F4"] << " "
+             << vdet_units.find("F4")->second << endl;
+	cout << "msn: " << vdet["msn"] << " "
+             << vdet_units.find("msn")->second << endl;
+	cout << "msp: " << vdet["msp"] << " "
+             << vdet_units.find("msp")->second << endl;
+	cout << "Un: " << vdet["Un"] << " "
+             << vdet_units.find("Un")->second << endl;
+	cout << "Up: " << vdet["Up"] << " "
+             << vdet_units.find("Up")->second << endl;
 	cout << "g: " << vdet["g"] << endl;
-	cout << "dgdT: " << vdet["dgdT"] << " 1/MeV" << endl;
+	cout << "dgdT: " << vdet["dgdT"] << " "
+             << vdet_units.find("dgdT")->second << endl;
       }
     }      
 
@@ -10256,17 +10307,21 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
 
         cout << "mun: " << neutron.mu*hc_mev_fm << endl;
         cout << "mup: " << proton.mu*hc_mev_fm << endl;
-        cout << "msn: " << vdet["msn"] << endl;
-        cout << "msp: " << vdet["msp"] << endl;
+        cout << "msn: " << vdet["msn"] << " "
+             << vdet_units.find("msn")->second << endl;
+        cout << "msp: " << vdet["msp"] << " "
+             << vdet_units.find("msp")->second << endl;
         cout << "nn: " << neutron.n << endl;
         cout << "np: " << proton.n << endl;
         cout << "g,dgdnn [fm^3],dgdnp [fm^3]: " << vdet["g"] << " "
              << vdet["dgdnn"] << " " << vdet["dgdnp"] << endl;
 
         double u2eos=neutron.mu*hc_mev_fm-mu_n_nonint*hc_mev_fm;
-        cout << "U2 [MeV]: " << u2eos << endl;
+        cout << "U2 [MeV]: " << u2eos << " "
+             << vdet_units.find("U2")->second << endl;
         double u4eos=proton.mu*hc_mev_fm-mu_p_nonint*hc_mev_fm;
-        cout << "U4 [MeV]: " << u4eos << endl;
+        cout << "U4 [MeV]: " << u4eos << " "
+             << vdet_units.find("U4")->second << endl;
         cout << "T [MeV]: " << T*hc_mev_fm << endl;
         
         if (false) {
