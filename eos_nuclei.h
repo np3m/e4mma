@@ -513,9 +513,9 @@ public:
   o2scl::tensor_grid<> tg_msp;
   o2scl::tensor_grid<> tg_g;
   o2scl::tensor_grid<> tg_dgdT;
-  o2scl::tensor_grid<> tg_sigma;
-  o2scl::tensor_grid<> tg_omega;
-  o2scl::tensor_grid<> tg_rho;
+  o2scl::tensor_grid<> tg_σ;
+  o2scl::tensor_grid<> tg_ω;
+  o2scl::tensor_grid<> tg_ρ;
   //@}
 
   /// \name Other parameter objects

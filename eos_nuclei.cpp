@@ -20,6 +20,8 @@
 */
 #include "eos_nuclei.h"
 
+// πρςστυφχψωϊ
+
 #include "neutrino/tensor.h"
 #include "neutrino/Polarization.hpp"
 #include "neutrino/PolarizationNonRel.hpp"
@@ -4767,9 +4769,9 @@ int eos_nuclei::store_point
   tg_Xnuclei.set(ix,X[5]);
 
   if (rmf_fields) {
-    tg_sigma.set(ix,vdet["sigma"]*hc_mev_fm);
-    tg_omega.set(ix,vdet["omega"]*hc_mev_fm);
-    tg_rho.set(ix,vdet["rho"]*hc_mev_fm);
+    tg_σ.set(ix,vdet["sigma"]*hc_mev_fm);
+    tg_ω.set(ix,vdet["omega"]*hc_mev_fm);
+    tg_ρ.set(ix,vdet["rho"]*hc_mev_fm);
   }
   
   if (loc_verbose>1) {
@@ -5385,9 +5387,9 @@ int eos_nuclei::write_results(std::string fname) {
   hdf_output(hf,tg_XLi4,"XLi4");
 
   if (rmf_fields) {
-    hdf_output(hf,tg_sigma,"sigma");
-    hdf_output(hf,tg_omega,"omega");
-    hdf_output(hf,tg_rho,"rho");
+    hdf_output(hf,tg_σ,"sigma");
+    hdf_output(hf,tg_ω,"omega");
+    hdf_output(hf,tg_ρ,"rho");
   }
   
   if (alg_mode==2 || alg_mode==3) {
@@ -5705,12 +5707,12 @@ int eos_nuclei::read_results(std::string fname) {
   hdf_input(hf,tg_XLi4,"XLi4");
 
   if (rmf_fields) {
-    if (verbose>2) cout << "Reading sigma." << endl;
-    hdf_input(hf,tg_sigma,"sigma");
-    if (verbose>2) cout << "Reading omega." << endl;
-    hdf_input(hf,tg_omega,"omega");
-    if (verbose>2) cout << "Reading rho." << endl;
-    hdf_input(hf,tg_rho,"rho");
+    if (verbose>2) cout << "Reading σ." << endl;
+    hdf_input(hf,tg_σ,"sigma");
+    if (verbose>2) cout << "Reading ω." << endl;
+    hdf_input(hf,tg_ω,"omega");
+    if (verbose>2) cout << "Reading ρ." << endl;
+    hdf_input(hf,tg_ρ,"rho");
   }
   
   // ----------------------------------------------------------------
@@ -6184,8 +6186,8 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
       if (true) {
         
         double n0=0.16;
-        double kappa=1.0-nB/n0;
-        double n_fraction, p_fraction, xn, xp, xi;
+        double κ=1.0-nB/n0;
+        double n_fraction, p_fraction, xn, xp, ξ;
         
         if (nB<0.16) {
           
@@ -6199,29 +6201,29 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
             xp=pow(10.0,log_xp);
           }
           
-          xi=kappa/(1.0-nB*xn/n0-nB*xp/n0);
-          n_fraction=xn*xi;
-          p_fraction=xp*xi;
+          ξ=κ/(1.0-nB*xn/n0-nB*xp/n0);
+          n_fraction=xn*ξ;
+          p_fraction=xp*ξ;
           
         } else {
           
           xn=1.0-Ye;
           xp=Ye;
-          xi=1.0;
+          ξ=1.0;
           n_fraction=1.0-Ye;
           p_fraction=Ye;
           
         }
 
-        cout << "xi: " << xi << endl;
+        cout << "ξ: " << ξ << endl;
         cout << "n_{n,gas} [in 1/fm^3; called n_n^{\\prime} in "
              << "Du et al. (2022)]: " << xn*nB << endl;
         cout << "n_{p,gas} [in 1/fm^3; called n_n^{\\prime} in "
              << "Du et al. (2022)]: " << xp*nB << endl;
         cout << "n_{n,avg} [in 1/fm^3: equal to Xn*nB]: "
-             << xn*nB*xi << endl;
+             << xn*nB*ξ << endl;
         cout << "n_{n,avg} [in 1/fm^3: equal to Xn*nB]: "
-             << xp*nB*xi << endl;
+             << xp*nB*ξ << endl;
         
         if (inc_hrg) {
           
@@ -6303,9 +6305,9 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
     cout << "Xalpha: " << tg_Xalpha.get(ix) << endl;
     cout << "Xnuclei: " << tg_Xnuclei.get(ix) << endl;
     if (rmf_fields) {
-      cout << "sigma: " << tg_sigma.get(ix) << endl;
-      cout << "omega: " << tg_omega.get(ix) << endl;
-      cout << "rho: " << tg_rho.get(ix) << endl;
+      cout << "sigma: " << tg_σ.get(ix) << endl;
+      cout << "omega: " << tg_ω.get(ix) << endl;
+      cout << "rho: " << tg_ρ.get(ix) << endl;
     }
     if (include_muons) {
       cout << "Ymu: " << tg_Ymu.get(ix) << endl;
