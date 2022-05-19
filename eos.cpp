@@ -396,7 +396,7 @@ int eos::hrg_load(std::vector<std::string> &sv, bool itive_com) {
   fin.open(fn.c_str());
   std::string stmp;
 
-  for(size_t k=0;k<11;k++) fin >> stmp;
+  for(size_t k=0;k<12;k++) fin >> stmp;
 
   int dtemp;
   while (fin >> dtemp) { 
@@ -420,7 +420,8 @@ int eos::hrg_load(std::vector<std::string> &sv, bool itive_com) {
   int nferm=0;
   int nbos=0;
   for(size_t j=0;j<part_db.size();j++) {
-    if (part_db[j].spin_deg%2==0) {
+    // Skip the photon because it's a boson with two degrees of freedom
+    if (part_db[j].spin_deg%2==0 && part_db[j].id!=22) {
       fermion f;
       f.m=part_db[j].mass*1.0e3/hc_mev_fm;
       f.g=part_db[j].spin_deg;
@@ -433,6 +434,8 @@ int eos::hrg_load(std::vector<std::string> &sv, bool itive_com) {
       f.ms=0.0;
       res_f.push_back(f);
       nferm++;
+      //cout << j << " " << part_db[j].id << " "
+      //<< nferm << " " << f.m*hc_mev_fm << " " << f.g << endl;
     } else {
       boson b;
       b.m=part_db[j].mass*1.0e3/hc_mev_fm;

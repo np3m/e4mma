@@ -20,8 +20,6 @@
 */
 #include "eos_nuclei.h"
 
-// πρςστυφχψωϊ
-
 #include "neutrino/tensor.h"
 #include "neutrino/Polarization.hpp"
 #include "neutrino/PolarizationNonRel.hpp"
@@ -2134,30 +2132,43 @@ double eos_nuclei::solve_nuclei_min
 }
 
 void eos_nuclei::store_hrg(double mun, double mup,
-                           double nn, double np, table_units<> &tab) {
+                           double nn, double np, double T,
+                           table_units<> &tab) {
   
   tab.clear();
   
-  tab.line_of_names("id mass spin_deg mu n ed pr en");
-  tab.line_of_units(". . . MeV 1/fm^3 MeV/fm^4 MeV/fm^4 1/fm^3");
+  tab.line_of_names("id mass spin_deg mu n ed pr en baryon charge");
+  tab.line_of_units(". MeV . MeV 1/fm^3 MeV/fm^4 MeV/fm^4 1/fm^3 . .");
   
   int iferm=0;
   int ibos=0;
   for(size_t j=0;j<part_db.size();j++) {
-    if (part_db[j].id==2212 && part_db[j].charge==1) {
-      vector<double> line={((double)2212),neutron.m*hc_mev_fm,2,
-        mun*hc_mev_fm,nn,0.0,0.0,0.0};
+    if (part_db[j].id==22) {
+      photon.massless_calc(T);
+      vector<double> line={((double)22),0.0,2,
+        photon.mu,photon.n,photon.ed,photon.pr,photon.en,
+        ((double)part_db[j].baryon),((double)part_db[j].charge)};
       tab.line_of_data(line.size(),line);
+      ibos++;
+    } else if (part_db[j].id==2212 && part_db[j].charge==1) {
+      vector<double> line={((double)2212),neutron.m*hc_mev_fm,2,
+        mun*hc_mev_fm,nn,0.0,0.0,0.0,
+        ((double)part_db[j].baryon),((double)part_db[j].charge)};
+      tab.line_of_data(line.size(),line);
+      iferm++;
     } else if (part_db[j].id==2212 && part_db[j].charge==0) {
       vector<double> line={((double)2212),neutron.m*hc_mev_fm,2,
-        mun*hc_mev_fm,nn,0.0,0.0,0.0};
+        mun*hc_mev_fm,nn,0.0,0.0,0.0,
+        ((double)part_db[j].baryon),((double)part_db[j].charge)};
       tab.line_of_data(line.size(),line);
+      iferm++;
     } else if (part_db[j].spin_deg%2==0) {
       vector<double> line={((double)part_db[j].id),
         res_f[iferm].m*hc_mev_fm,
         res_f[iferm].g,res_f[iferm].mu*hc_mev_fm,res_f[iferm].n,
         res_f[iferm].ed*hc_mev_fm,res_f[iferm].pr*hc_mev_fm,
-        res_f[iferm].en};
+        res_f[iferm].en,
+        ((double)part_db[j].baryon),((double)part_db[j].charge)};
       tab.line_of_data(line.size(),line);
       iferm++;
     } else {
@@ -2165,7 +2176,8 @@ void eos_nuclei::store_hrg(double mun, double mup,
         res_b[ibos].m*hc_mev_fm,
         res_b[ibos].g,res_b[ibos].mu*hc_mev_fm,res_b[ibos].n,
         res_b[ibos].ed*hc_mev_fm,res_b[ibos].pr*hc_mev_fm,
-        res_b[ibos].en};
+        res_b[ibos].en,
+        ((double)part_db[j].baryon),((double)part_db[j].charge)};
       tab.line_of_data(line.size(),line);
       ibos++;
     }
@@ -2410,20 +2422,45 @@ int eos_nuclei::solve_nuclei(size_t nv, const ubvector &x, ubvector &y,
     int iferm=0;
     int ibos=0;
     for(size_t j=0;j<part_db.size();j++) {
+      cout << "H: " << j << " " << part_db.size() << endl;
       if (part_db[j].id==2212 && part_db[j].charge==1) {
+        if (iferm>=((int)res_f.size())) {
+          O2SCL_ERR("Indexing problem with fermions.",o2scl::exc_efailed);
+        }
         res_f[iferm]=proton;
         iferm++;
       } else if (part_db[j].id==2212 && part_db[j].charge==0) {
+        if (iferm>=((int)res_f.size())) {
+          O2SCL_ERR("Indexing problem with fermions.",o2scl::exc_efailed);
+        }
         res_f[iferm]=neutron;
         iferm++;
+      } else if (part_db[j].id==22 && part_db[j].charge==0) {
+        if (ibos>=((int)res_b.size())) {
+          O2SCL_ERR("Indexing problem with bosons.",o2scl::exc_efailed);
+        }
+        photon.massless_calc(T);
+        res_b[ibos]=photon;
+        ibos++;
       } else if (part_db[j].spin_deg%2==0) {
+        if (iferm>=((int)res_f.size())) {
+          O2SCL_ERR("Indexing problem with fermions.",o2scl::exc_efailed);
+        }
         res_f[iferm].mu=part_db[j].baryon*(neutron.mu+neutron.m)+
           part_db[j].charge*(proton.mu+proton.m-neutron.mu-neutron.m);
         relf.calc_mu(res_f[iferm],T);
+        if (j>700) {
+          cout << j << " " << part_db[j].baryon << " "
+               << part_db[j].charge << " "
+               << res_f[iferm].mu << " " << res_f[iferm].n << endl;
+        }
         nB2+=part_db[j].baryon*res_f[iferm].n;
         Ye2+=part_db[j].charge*res_f[iferm].n;
         iferm++;
       } else {
+        if (ibos>=((int)res_b.size())) {
+          O2SCL_ERR("Indexing problem with bosons.",o2scl::exc_efailed);
+        }
         res_b[ibos].mu=part_db[j].baryon*(neutron.mu+neutron.m)+
           part_db[j].charge*(proton.mu+proton.m-neutron.mu-neutron.m);
         effb.calc_mu(res_b[ibos],T);
@@ -2431,16 +2468,26 @@ int eos_nuclei::solve_nuclei(size_t nv, const ubvector &x, ubvector &y,
         Ye2+=part_db[j].charge*res_b[ibos].n;
         ibos++;
       }
+      if (!std::isfinite(nB2) ||
+          !std::isfinite(Ye2)) {
+        cout << j << " " << part_db[j].id << " "
+             << nB2 << " " << Ye2 << endl;
+        O2SCL_ERR("HRG problem.",o2scl::exc_einval);
+      }
     }
     Ye2/=nB2;
 
     // I'm not 100% sure this is right
     nn_tilde+=nB2*(1.0-Ye2);
     np_tilde+=nB2*Ye2;
-    
+
     cout << "HRG: " << neutron.mu << " " << proton.mu << " "
          << nn_tilde_old << " " << np_tilde_old << " "
          << nn_tilde << " " << np_tilde << endl;
+    if (!std::isfinite(nn_tilde) ||
+        !std::isfinite(np_tilde)) {
+      O2SCL_ERR("HRG problem.",o2scl::exc_einval);
+    }
     //char ch;
     //cin >> ch;
     
@@ -6228,8 +6275,8 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
         if (inc_hrg) {
           
           table_units<> t;
-          store_hrg(vdet["mun_gas"]+neutron.m,vdet["mup_gas"]+proton.m,
-                    xn*nB,xp*nB,t);
+          store_hrg(vdet["mun_gas"]+neutron.m,
+                    vdet["mup_gas"]+proton.m,xn*nB,xp*nB,T,t);
           hdf_file hf;
           hf.open_or_create("hrg.o2");
           hdf_output(hf,t,"hrg");
