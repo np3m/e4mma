@@ -4816,9 +4816,9 @@ int eos_nuclei::store_point
   tg_Xnuclei.set(ix,X[5]);
 
   if (rmf_fields) {
-    tg_σ.set(ix,vdet["sigma"]*hc_mev_fm);
-    tg_ω.set(ix,vdet["omega"]*hc_mev_fm);
-    tg_ρ.set(ix,vdet["rho"]*hc_mev_fm);
+    tg_sigma.set(ix,vdet["sigma"]*hc_mev_fm);
+    tg_omega.set(ix,vdet["omega"]*hc_mev_fm);
+    tg_rho.set(ix,vdet["rho"]*hc_mev_fm);
   }
   
   if (loc_verbose>1) {
@@ -5434,9 +5434,9 @@ int eos_nuclei::write_results(std::string fname) {
   hdf_output(hf,tg_XLi4,"XLi4");
 
   if (rmf_fields) {
-    hdf_output(hf,tg_σ,"sigma");
-    hdf_output(hf,tg_ω,"omega");
-    hdf_output(hf,tg_ρ,"rho");
+    hdf_output(hf,tg_sigma,"sigma");
+    hdf_output(hf,tg_omega,"omega");
+    hdf_output(hf,tg_rho,"rho");
   }
   
   if (alg_mode==2 || alg_mode==3) {
@@ -5755,11 +5755,11 @@ int eos_nuclei::read_results(std::string fname) {
 
   if (rmf_fields) {
     if (verbose>2) cout << "Reading σ." << endl;
-    hdf_input(hf,tg_σ,"sigma");
+    hdf_input(hf,tg_sigma,"sigma");
     if (verbose>2) cout << "Reading ω." << endl;
-    hdf_input(hf,tg_ω,"omega");
+    hdf_input(hf,tg_omega,"omega");
     if (verbose>2) cout << "Reading ρ." << endl;
-    hdf_input(hf,tg_ρ,"rho");
+    hdf_input(hf,tg_rho,"rho");
   }
   
   // ----------------------------------------------------------------
@@ -6352,9 +6352,9 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
     cout << "Xalpha: " << tg_Xalpha.get(ix) << endl;
     cout << "Xnuclei: " << tg_Xnuclei.get(ix) << endl;
     if (rmf_fields) {
-      cout << "sigma: " << tg_σ.get(ix) << endl;
-      cout << "omega: " << tg_ω.get(ix) << endl;
-      cout << "rho: " << tg_ρ.get(ix) << endl;
+      cout << "sigma: " << tg_sigma.get(ix) << endl;
+      cout << "omega: " << tg_omega.get(ix) << endl;
+      cout << "rho: " << tg_rho.get(ix) << endl;
     }
     if (include_muons) {
       cout << "Ymu: " << tg_Ymu.get(ix) << endl;
