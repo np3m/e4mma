@@ -151,16 +151,16 @@ The thermodynamic identity,
 where :math:`\bar{n}_n\equiv n_B(1-Y_e)` and :math:`\bar{n}_p\equiv
 n_B Y_e` should be satisfied for all of the points in the table.
 
-The rest mass energy :math:`m_n (1-Y_e) + m_p Y_e` has
-been subtracted out from ``Fint`` and ``Eint``. The neutron and proton
-rest mass have been subtracted out from the neutron and proton
-chemical potentials (indepedent of whether or not the model implies a
-relativistic dispersion relation for the nucleons). See also
-:ref:`Chemical Potentials` for some helpful information on chemical
-potentials and the associated thermodynamic identity. If
-``with_leptons`` is 1, then the electron chemical potential is
-included (as described above) and the following four quantities are
-also included:
+The rest mass energy, :math:`m_n (1-Y_e) + m_p Y_e`, has been
+subtracted out from ``Fint`` and ``Eint``. (See :ref:`Rest mass
+contribution` for more detail.) The neutron and proton rest mass have
+been subtracted out from the neutron and proton chemical potentials
+(indepedent of whether or not the model implies a relativistic
+dispersion relation for the nucleons). See also :ref:`Chemical
+Potentials` for some helpful information on chemical potentials and
+the associated thermodynamic identity. If ``with_leptons`` is 1, then
+the electron chemical potential is included (as described above) and
+the following four quantities are also included:
 
 - ``F``: the total free energy per baryon
   (in :math:`\mathrm{MeV}`)

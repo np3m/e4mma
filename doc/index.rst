@@ -30,6 +30,7 @@ More documentation will be added as time permits.
    eos_nuclei
    class_doc
    todos
+   rest_mass
    chem_pot
    trans
    cs2
