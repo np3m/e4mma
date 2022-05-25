@@ -5600,6 +5600,13 @@ int eos_nuclei::read_results(std::string fname) {
   hf.open(fname);
 
   if (true) {
+    vector<string> name_list;
+    hf.list_objects_by_type("tensor_grid",name_list);
+    std::cout << "Name list: ";
+    vector_out(cout,name_list,true);
+  }
+  
+  if (true) {
     
     std::string mod_str;
     hf.gets_def("model","",mod_str);
