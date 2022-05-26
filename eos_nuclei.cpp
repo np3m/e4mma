@@ -5599,12 +5599,17 @@ int eos_nuclei::read_results(std::string fname) {
 
   hf.open(fname);
 
-  if (true) {
-    vector<string> name_list;
-    hf.list_objects_by_type("tensor_grid",name_list);
-    std::cout << "Name list: ";
-    vector_out(cout,name_list,true);
-  }
+  vector<string> name_list;
+  hf.list_objects_by_type("tensor_grid",name_list);
+
+  size_t n_oth;
+  vector<string> oth_names, oth_units;
+  hf.get_szt("n_oth",n_oth);
+  hf.gets_vec("oth_names",oth_names);
+  hf.gets_vec("oth_units",oth_units);
+
+  //vector<string> m1, m2;
+  //vectors_missing(name_list,oth_names,m1,m2);
   
   if (true) {
     
