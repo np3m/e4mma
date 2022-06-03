@@ -22,6 +22,7 @@
 #include "eos_had_skyrme_ext.h"
 #include <o2scl/nucmass_fit.h>
 #include <o2scl/slack_messenger.h>
+#include <o2scl/part_funcs.h>
 #include <map>
 
 typedef boost::numeric::ublas::vector<double> ubvector;
@@ -126,6 +127,9 @@ public:
   virtual ~eos_nuclei();
   //@}
 
+  /// Desc
+  o2scl::part_funcs pfuncs;
+  
   /*
     o2scl::boson pi_minus;
     o2scl::boson pi_plus;

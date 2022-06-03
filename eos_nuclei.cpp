@@ -213,20 +213,11 @@ void eos_nuclei::load_nuclei() {
   }
 #endif
   
-#ifdef O2SCL_CORI
-  // Load the nuclear masses
-  cout << "Rank " << mpi_rank << " loading nuclear masses." << endl;  
-  o2scl_hdf::ame_load_ext(ame,"data/ame16.o2","ame16.o2");
-  o2scl_hdf::mnmsk_load(m95,"data/mnmsk.o2");
-  o2scl_hdf::hfb_sp_load(hfb,27,"data");
-  cout << "Rank " << mpi_rank << " finished loading nuclear masses."
-       << endl;  
-#else
   // Load the nuclear masses
   o2scl_hdf::ame_load(ame);
   o2scl_hdf::mnmsk_load(m95);
   o2scl_hdf::hfb_sp_load(hfb,27);
-#endif
+  pfuncs.load();
   
 #ifndef NO_MPI
   // Send a message to the next MPI rank
@@ -256,11 +247,25 @@ void eos_nuclei::load_nuclei() {
   Sneut.resize(6);
   Sprot.resize(6);
   for(size_t i=0;i<5;i++) {
-    ame.get_nucleus(nuclei[i].Z,nuclei[i].N-1,nuc_temp);
-    Sneut[i]=-(nuclei[i].be-nuc_temp.be)*hc_mev_fm;
-    ame.get_nucleus(nuclei[i].Z-1,nuclei[i].N,nuc_temp);
-    Sprot[i]=-(nuclei[i].be-nuc_temp.be)*hc_mev_fm;  
+    if (ame.is_included(nuclei[i].Z,nuclei[i].N-1) &&
+        ame.is_included(nuclei[i].Z-1,nuclei[i].N)) {
+      ame.get_nucleus(nuclei[i].Z,nuclei[i].N-1,nuc_temp);
+      Sneut[i]=-(nuclei[i].be-nuc_temp.be)*hc_mev_fm;
+      ame.get_nucleus(nuclei[i].Z-1,nuclei[i].N,nuc_temp);
+      Sprot[i]=-(nuclei[i].be-nuc_temp.be)*hc_mev_fm;
+    } else {
+      Sneut[i]=-1.0;
+      Sprot[i]=-1.0;
+    }
   }
+  
+  //for(size_t i=0;i<5;i++) {
+  //ame.get_nucleus(nuclei[i].Z,nuclei[i].N-1,nuc_temp);
+  //Sneut[i]=-(nuclei[i].be-nuc_temp.be)*hc_mev_fm;
+  //ame.get_nucleus(nuclei[i].Z-1,nuclei[i].N,nuc_temp);
+  //Sprot[i]=-(nuclei[i].be-nuc_temp.be)*hc_mev_fm;  
+  //}
+  
   vomega.resize(6);
   vomega_prime.resize(6);
   Ec.resize(6);
@@ -3476,10 +3481,18 @@ int eos_nuclei::eos_fixed_dist
     // Set the neutron and proton separation energies for light nuclei
     nucleus nuc_temp;
     for(size_t i=0;i<5;i++) {
-      ame.get_nucleus(nuclei[i].Z,nuclei[i].N-1,nuc_temp);
-      Sneut[i]=-(nuclei[i].be-nuc_temp.be)*hc_mev_fm;
-      ame.get_nucleus(nuclei[i].Z-1,nuclei[i].N,nuc_temp);
-      Sprot[i]=-(nuclei[i].be-nuc_temp.be)*hc_mev_fm;
+      
+      if (ame.is_included(nuclei[i].Z,nuclei[i].N-1) &&
+          ame.is_included(nuclei[i].Z-1,nuclei[i].N)) {
+        ame.get_nucleus(nuclei[i].Z,nuclei[i].N-1,nuc_temp);
+        Sneut[i]=-(nuclei[i].be-nuc_temp.be)*hc_mev_fm;
+        ame.get_nucleus(nuclei[i].Z-1,nuclei[i].N,nuc_temp);
+        Sprot[i]=-(nuclei[i].be-nuc_temp.be)*hc_mev_fm;
+      } else {
+        Sneut[i]=-1.0;
+        Sprot[i]=-1.0;
+      }
+      
     }
     
     // Set the neutron and proton separation energies and
@@ -3613,6 +3626,7 @@ int eos_nuclei::eos_fixed_dist
       if (nuclei[i].Z<=30) {
 	part_func.a=0.052*pow(nuclei[i].N+nuclei[i].Z,1.2);
 	part_func.delta=delta_p-80.0/(nuclei[i].Z+nuclei[i].N);
+        cout << "a,delta: " << part_func.a << " " << part_func.delta << endl;
       } else {
 	part_func.a=0.125*(nuclei[i].N+nuclei[i].Z);
 	part_func.delta=delta_p-80.0/(nuclei[i].Z+nuclei[i].N)-0.5;
@@ -3687,7 +3701,19 @@ int eos_nuclei::eos_fixed_dist
       }
       
     }
+
+    double v, vop;
+    pfuncs.few78(nuclei[i].Z,nuclei[i].N,T_MeV*1.160452e10,v,vop);
+
+    if (fabs(vomega[i]-v)/fabs(v)>1.0e-5) {
+      cout << nuclei[i].Z << " " << nuclei[i].N << " "
+           << vomega[i] << " " << vomega_prime[i] << " ";
+      cout << v << " " << vop << endl;
+      exit(-1);
+    }
+    
   }
+  exit(-1);
 
   // ---------------------------------------------------------------
   // Set up for calling the solver
@@ -5110,7 +5136,7 @@ int eos_nuclei::select_high_T_internal(int option) {
     eos_Tcorr=&lim_holt;
 
     cout << "Here1." << endl;
-    lim_holt.def_sat_root.verbose=2;
+    lim_holt.def_sat_mroot.verbose=2;
     lim_holt.saturation();
     cout << "Here2." << endl;
 
