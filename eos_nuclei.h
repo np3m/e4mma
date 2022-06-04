@@ -251,7 +251,7 @@ public:
   ubvector vomega;
   
   /** \brief Derivative of partition function with respect to 
-      temperature
+      temperature, in units of \f$ \mathrm{fm} \f$
   */
   ubvector vomega_prime;
   //@}

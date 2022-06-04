@@ -160,6 +160,8 @@ eos_nuclei::eos_nuclei() {
   vdet_units.insert(make_pair("mup_gas","1/fm"));
   
   inc_hrg=false;
+
+  pfuncs.spin_deg_mode=1;
 }
 
 eos_nuclei::~eos_nuclei() {
@@ -2427,7 +2429,6 @@ int eos_nuclei::solve_nuclei(size_t nv, const ubvector &x, ubvector &y,
     int iferm=0;
     int ibos=0;
     for(size_t j=0;j<part_db.size();j++) {
-      cout << "H: " << j << " " << part_db.size() << endl;
       if (part_db[j].id==2212 && part_db[j].charge==1) {
         if (iferm>=((int)res_f.size())) {
           O2SCL_ERR("Indexing problem with fermions.",o2scl::exc_efailed);
@@ -3626,7 +3627,6 @@ int eos_nuclei::eos_fixed_dist
       if (nuclei[i].Z<=30) {
 	part_func.a=0.052*pow(nuclei[i].N+nuclei[i].Z,1.2);
 	part_func.delta=delta_p-80.0/(nuclei[i].Z+nuclei[i].N);
-        cout << "a,delta: " << part_func.a << " " << part_func.delta << endl;
       } else {
 	part_func.a=0.125*(nuclei[i].N+nuclei[i].Z);
 	part_func.delta=delta_p-80.0/(nuclei[i].Z+nuclei[i].N)-0.5;
@@ -3702,10 +3702,15 @@ int eos_nuclei::eos_fixed_dist
       
     }
 
+    double T_K=o2scl_settings.get_convert_units().convert
+      ("MeV","K",T_MeV);
+    
     double v, vop;
-    pfuncs.few78(nuclei[i].Z,nuclei[i].N,T_MeV*1.160452e10,v,vop);
-
-    if (fabs(vomega[i]-v)/fabs(v)>1.0e-5) {
+    pfuncs.few78(nuclei[i].Z,nuclei[i].N,T_K,v,vop);
+    vop/=T;
+    
+    if (fabs(vomega[i]-v)/fabs(v)>1.0e-5 ||
+        fabs(vomega_prime[i]-vop)/fabs(vop)>1.0e-5) {
       cout << nuclei[i].Z << " " << nuclei[i].N << " "
            << vomega[i] << " " << vomega_prime[i] << " ";
       cout << v << " " << vop << endl;
@@ -3713,6 +3718,8 @@ int eos_nuclei::eos_fixed_dist
     }
     
   }
+
+  cout << "Done." << endl;
   exit(-1);
 
   // ---------------------------------------------------------------
@@ -4489,6 +4496,8 @@ int eos_nuclei::eos_fixed_dist
       double lambda=sqrt(2.0*pi/nuclei[i].m/T);
       fr_nuc=-T*(log(vomega[i]/nuclei[i].n/pow(lambda,3.0))+1.0)*
 	nuclei[i].n;
+      // Note that everything here, including vomega_prime, is in
+      // units of powers of femtometers
       en_nuc=nuclei[i].n*(log(vomega[i]/nuclei[i].n/pow(lambda,3.0))+
 			  5.0/2.0+vomega_prime[i]*T/vomega[i]);
       if (!std::isfinite(fr_nuc)) {
