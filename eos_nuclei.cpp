@@ -3708,7 +3708,7 @@ int eos_nuclei::eos_fixed_dist
     double v, vop;
     pfuncs.few78(nuclei[i].Z,nuclei[i].N,T_K,v,vop);
     vop/=T;
-    
+
     if (fabs(vomega[i]-v)/fabs(v)>1.0e-5 ||
         fabs(vomega_prime[i]-vop)/fabs(vop)>1.0e-5) {
       cout << nuclei[i].Z << " " << nuclei[i].N << " "
@@ -3718,9 +3718,6 @@ int eos_nuclei::eos_fixed_dist
     }
     
   }
-
-  cout << "Done." << endl;
-  exit(-1);
 
   // ---------------------------------------------------------------
   // Set up for calling the solver
