@@ -3702,19 +3702,21 @@ int eos_nuclei::eos_fixed_dist
       
     }
 
-    double T_K=o2scl_settings.get_convert_units().convert
-      ("MeV","K",T_MeV);
-    
-    double v, vop;
-    pfuncs.few78(nuclei[i].Z,nuclei[i].N,T_K,v,vop);
-    vop/=T;
-
-    if (fabs(vomega[i]-v)/fabs(v)>1.0e-5 ||
-        fabs(vomega_prime[i]-vop)/fabs(vop)>1.0e-5) {
-      cout << nuclei[i].Z << " " << nuclei[i].N << " "
-           << vomega[i] << " " << vomega_prime[i] << " ";
-      cout << v << " " << vop << endl;
-      exit(-1);
+    if (false) {
+      double T_K=o2scl_settings.get_convert_units().convert
+        ("MeV","K",T_MeV);
+      
+      double v, vop;
+      pfuncs.few78(nuclei[i].Z,nuclei[i].N,T_K,v,vop);
+      vop/=T;
+      
+      if (fabs(vomega[i]-v)/fabs(v)>1.0e-5 ||
+          fabs(vomega_prime[i]-vop)/fabs(vop)>1.0e-5) {
+        cout << nuclei[i].Z << " " << nuclei[i].N << " "
+             << vomega[i] << " " << vomega_prime[i] << " ";
+        cout << v << " " << vop << endl;
+        exit(-1);
+      }
     }
     
   }
@@ -10411,11 +10413,9 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
              << vdet["dgdnn"] << " " << vdet["dgdnp"] << endl;
 
         double u2eos=neutron.mu*hc_mev_fm-mu_n_nonint*hc_mev_fm;
-        cout << "U2 [MeV]: " << u2eos << " "
-             << vdet_units.find("U2")->second << endl;
+        cout << "U2 [MeV]: " << u2eos << endl;
         double u4eos=proton.mu*hc_mev_fm-mu_p_nonint*hc_mev_fm;
-        cout << "U4 [MeV]: " << u4eos << " "
-             << vdet_units.find("U4")->second << endl;
+        cout << "U4 [MeV]: " << u4eos << endl;
         cout << "T [MeV]: " << T*hc_mev_fm << endl;
         
         if (false) {

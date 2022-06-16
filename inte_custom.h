@@ -49,6 +49,8 @@ namespace o2scl {
     inte_qags_gsl<> qags;
     
     inte_qng_gsl<> qng;
+
+    inte_qag_smooth<> iqs;
     
     inte_adapt_cern<> ac;
     
@@ -105,6 +107,11 @@ namespace o2scl {
       qags.tol_rel=1.0e-6;
       ret=qags.integ_err(f,a,b,res,err);
       if (ret!=0) {
+        std::cout << res << " " << err << std::endl;
+        iqs.qag.set_limit(100);
+        iqs.integ_err(f,a,b,res,err);
+        std::cout << res << " " << err << std::endl;
+        exit(-1);
         std::cout << "2";
         mv.tol_rel=1.0e-6;
         ret=mv.integ_err(f,a,b,res,err);
