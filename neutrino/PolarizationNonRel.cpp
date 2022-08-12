@@ -337,7 +337,7 @@ std::array<double, 4> PolarizationNonRel::CalculateBasePolarizationsProton(doubl
 }
 
 
-  double PolarizationNonRel::gamma0(double q0, double q) const {
+double PolarizationNonRel::gamma0(double q0, double q) const {
 //void Polarization::SetPolarizations(double q0, double q) {
   // Calculate some kinematic factors
   double mu2pol;

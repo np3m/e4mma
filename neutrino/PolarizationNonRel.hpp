@@ -124,7 +124,7 @@ namespace nuopac {
     void SetPolarizations
     (double q0, double q, Tensor<double>* piVV, 
      Tensor<double>* piAA, Tensor<double>* piTT, Tensor<double>* piVA, 
-     Tensor<double>* piVT, Tensor<double>* piAT) const;
+     Tensor<double>* piVT, Tensor<double>* piAT, bool pnm=false) const;
     
   public:
     
@@ -133,7 +133,7 @@ namespace nuopac {
      Tensor<double>* piVV, Tensor<double>* piAA, Tensor<double>* piTT, 
      Tensor<double>* piVA, Tensor<double>* piVT, Tensor<double>* piAT,
      double &piLn, double &piLp, double &piLnRe, double &piLpRe,
-     double &piRPAvec, double &piRPAax, double &piL) const;
+     double &piRPAvec, double &piRPAax, double &piL, bool pnm=false) const;
 
     void SetPolarizations_charged
     (double q0, double q,

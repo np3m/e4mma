@@ -941,6 +941,14 @@ public:
    */
   int mcarlo_beta(std::vector<std::string> &sv, bool itive_com);
 
+  /** \brief Monte Carlo neutrino opacity in pure neutron matter
+
+      <filename> [n_point]
+
+      Help
+   */
+  int mcarlo_neutron(std::vector<std::string> &sv, bool itive_com);
+
   /// Compute the baryon number fractions and put them in \c X
   void compute_X(double nB, ubvector &X);
   

@@ -582,9 +582,10 @@ void PolarizationNonRel::SetPolarizations(double q0, double q,
                                           Tensor<double>* piTT, 
                                           Tensor<double>* piVA, 
                                           Tensor<double>* piVT, 
-                                          Tensor<double>* piAT) const {
+                                          Tensor<double>* piAT,
+                                          bool pnm) const {
   
-  if (current==current_neutral) {
+  if (pnm==true || current==current_neutral) {
     double piLn;
     double piLp;
     double piLnRe;
@@ -594,8 +595,8 @@ void PolarizationNonRel::SetPolarizations(double q0, double q,
     double piL;
     SetPolarizations_neutral(q0,q,piVV,piAA,piTT,piVA,piVT,piAT,
                              piLn,piLp,piLnRe,piLpRe,
-                             piRPAvec,piRPAax,piL);
-  } else {
+                             piRPAvec,piRPAax,piL,pnm);
+  } else if (pnm==false) {
     double piLRe;
     double piRPAvec;
     double piRPAax;
@@ -612,7 +613,7 @@ void PolarizationNonRel::SetPolarizations_neutral
  Tensor<double>* piVV, Tensor<double>* piAA, Tensor<double>* piTT, 
  Tensor<double>* piVA, Tensor<double>* piVT, Tensor<double>* piAT,
  double &piLn, double &piLp, double &piLnRe, double &piLpRe,
- double &piRPAvec, double &piRPAax, double &piL) const {
+ double &piRPAvec, double &piRPAax, double &piL, bool pnm) const {
 
   // Calculate the basic parts of the polarization
   std::array<double,4> ptN=CalculateBasePolarizationsNeutron(q0,q);
@@ -640,60 +641,70 @@ void PolarizationNonRel::SetPolarizations_neutral
 
   double xfppCoul=xfpp+coulombf;
   
-  // Vector polarization
-  piRPAvec=(impin+
-            xfnp*xfnp*impin*impin*impip+
-            xfppCoul*xfppCoul*impin*impip*impip+
-            xfnp*xfnp*impip*repin*repin-
-            2.0*xfppCoul*impin*repip+
-            xfppCoul*xfppCoul*impin*repip*repip)/
-    ((-xfnn*impin-
-      xfppCoul*impip-
-      xfnp*xfnp*impip*repin+
-      xfnn*xfppCoul*impip*repin-
-      xfnp*xfnp*impin*repip+
-      xfnn*xfppCoul*impin*repip)*
-     (-xfnn*impin-
-      xfppCoul*impip-
-      xfnp*xfnp*impip*repin+
-      xfnn*xfppCoul*impip*repin-
-      xfnp*xfnp*impin*repip+
-      xfnn*xfppCoul*impin*repip)+
-     (1+
-      xfnp*xfnp*impin*impip-
-      xfnn*xfppCoul*impin*impip-
-      xfnn*repin-
-      xfppCoul*repip-
-      xfnp*xfnp*repin*repip+
-      xfnn*xfppCoul*repin*repip)*
-     (1+
-      xfnp*xfnp*impin*impip-
-      xfnn*xfppCoul*impin*impip-
-      xfnn*repin-
-      xfppCoul*repip-
-      xfnp*xfnp*repin*repip+
-      xfnn*xfppCoul*repin*repip));
+  if (pnm) {
+    
+    // Vector polarization in pure neutron matter
+    piRPAvec=impin/(impin*impin*xfnn*xfnn+pow(1.0-repin*xfnn,2.0));
+    // Axial polarization in pure neutron matter
+    piRPAax=impin/(impin*impin*xgnn*xgnn+pow(1.0-repin*xgnn,2.0));
+    
+  } else {
+    
+    // Vector polarization
+    piRPAvec=(impin+
+              xfnp*xfnp*impin*impin*impip+
+              xfppCoul*xfppCoul*impin*impip*impip+
+              xfnp*xfnp*impip*repin*repin-
+              2.0*xfppCoul*impin*repip+
+              xfppCoul*xfppCoul*impin*repip*repip)/
+      ((-xfnn*impin-
+        xfppCoul*impip-
+        xfnp*xfnp*impip*repin+
+        xfnn*xfppCoul*impip*repin-
+        xfnp*xfnp*impin*repip+
+        xfnn*xfppCoul*impin*repip)*
+       (-xfnn*impin-
+        xfppCoul*impip-
+        xfnp*xfnp*impip*repin+
+        xfnn*xfppCoul*impip*repin-
+        xfnp*xfnp*impin*repip+
+        xfnn*xfppCoul*impin*repip)+
+       (1+
+        xfnp*xfnp*impin*impip-
+        xfnn*xfppCoul*impin*impip-
+        xfnn*repin-
+        xfppCoul*repip-
+        xfnp*xfnp*repin*repip+
+        xfnn*xfppCoul*repin*repip)*
+       (1+
+        xfnp*xfnp*impin*impip-
+        xfnn*xfppCoul*impin*impip-
+        xfnn*repin-
+        xfppCoul*repip-
+        xfnp*xfnp*repin*repip+
+        xfnn*xfppCoul*repin*repip));
   
-  // Axial polarization
-  piRPAax=((xgnn+xgnp)*(xgnn+xgnp)*impin*impin*impip+impip*
-           (-1.0+xgnn*repin+xgnp*repin)*
-           (-1.0+xgnn*repin+xgnp*repin)+impin*
-           (1.0-2.0*xgnp*repip-
-            2.0*xgpp*repip+xgnp*xgnp*(impip*impip+repip*repip)+
-            2.0*xgnp*xgpp*(impip*impip+repip*repip)+
-            xgpp*xgpp*(impip*impip+repip*repip)))/
-    ((-xgnn*impin-xgpp*impip-xgnp*xgnp*impip*repin+
-      xgnn*xgpp*impip*repin-xgnp*xgnp*impin*repip+
-      xgnn*xgpp*impin*repip)*
-     (-xgnn*impin-xgpp*impip-xgnp*xgnp*impip*repin+
-      xgnn*xgpp*impip*repin-xgnp*xgnp*impin*repip+
-      xgnn*xgpp*impin*repip)+
-     (1.0+xgnp*xgnp*impin*impip-xgnn*xgpp*impin*impip-
-      xgnn*repin-xgpp*repip-xgnp*xgnp*repin*repip+
-      xgnn*xgpp*repin*repip)*
-     (1.0+xgnp*xgnp*impin*impip-xgnn*xgpp*impin*impip-
-      xgnn*repin-xgpp*repip-xgnp*xgnp*repin*repip+
-      xgnn*xgpp*repin*repip));
+    // Axial polarization
+    piRPAax=((xgnn+xgnp)*(xgnn+xgnp)*impin*impin*impip+impip*
+             (-1.0+xgnn*repin+xgnp*repin)*
+             (-1.0+xgnn*repin+xgnp*repin)+impin*
+             (1.0-2.0*xgnp*repip-
+              2.0*xgpp*repip+xgnp*xgnp*(impip*impip+repip*repip)+
+              2.0*xgnp*xgpp*(impip*impip+repip*repip)+
+              xgpp*xgpp*(impip*impip+repip*repip)))/
+      ((-xgnn*impin-xgpp*impip-xgnp*xgnp*impip*repin+
+        xgnn*xgpp*impip*repin-xgnp*xgnp*impin*repip+
+        xgnn*xgpp*impin*repip)*
+       (-xgnn*impin-xgpp*impip-xgnp*xgnp*impip*repin+
+        xgnn*xgpp*impip*repin-xgnp*xgnp*impin*repip+
+        xgnn*xgpp*impin*repip)+
+       (1.0+xgnp*xgnp*impin*impip-xgnn*xgpp*impin*impip-
+        xgnn*repin-xgpp*repip-xgnp*xgnp*repin*repip+
+        xgnn*xgpp*repin*repip)*
+       (1.0+xgnp*xgnp*impin*impip-xgnn*xgpp*impin*impip-
+        xgnn*repin-xgpp*repip-xgnp*xgnp*repin*repip+
+        xgnn*xgpp*repin*repip));
+  }
 
   if (flag==flag_vector) {
     piL=2.0*piRPAvec;
