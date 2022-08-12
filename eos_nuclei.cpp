@@ -369,7 +369,7 @@ double eos_nuclei::f_min_search(size_t nvar,const ubvector &x,
     double A=nuclei[i].A;
     double rA=cbrt(3.0*A/4.0/pi/n0);
     double xx=cbrt(nb*ye/n0*A/nuclei[i].Z);
-    Ec1[i]=-0.6*nuclei[i].Z*nuclei[i].Z*fine_structure/rA*
+    Ec1[i]=-0.6*nuclei[i].Z*nuclei[i].Z*fine_structure_f<double>()/rA*
       (3.0/2.0*xx-1.0/2.0*pow(xx,3.0));
     double lambda=sqrt(2.0*pi/nuclei[i].m/T);
     double vv=(nuclei[i].N+nuclei[i].Z)/n0;
@@ -397,7 +397,7 @@ double eos_nuclei::f_min_search(size_t nvar,const ubvector &x,
 					-nuclei[0].A*Z);
   double rA_alpha=cbrt(3.0*nuclei[0].A/4.0/pi/n0);
   double xx_alpha=cbrt(nb*ye/n0*nuclei[0].A/nuclei[0].Z);
-  double Ecalpha=-0.6*nuclei[0].Z*nuclei[0].Z*fine_structure
+  double Ecalpha=-0.6*nuclei[0].Z*nuclei[0].Z*fine_structure_f<double>()
     /rA_alpha*(3.0/2.0*xx_alpha
 	       -1.0/2.0*pow(xx_alpha,3.0));
   double lambda_alpha=sqrt(2.0*pi/nuclei[0].m/T);
@@ -411,7 +411,7 @@ double eos_nuclei::f_min_search(size_t nvar,const ubvector &x,
   }
   double rA_heavy=cbrt(3.0*nuclei[5].A/4.0/pi/n0);
   double xx_heavy=cbrt(nb*ye/n0*nuclei[5].A/nuclei[5].Z);
-  double Echeavy=-0.6*nuclei[5].Z*nuclei[5].Z*fine_structure
+  double Echeavy=-0.6*nuclei[5].Z*nuclei[5].Z*fine_structure_f<double>()
     /rA_heavy*(3.0/2.0*xx_heavy
                -1.0/2.0*pow(xx_heavy,3.0));
   double lambda_heavy=sqrt(2.0*pi/nuclei[5].m/T);
@@ -2267,7 +2267,7 @@ int eos_nuclei::solve_nuclei(size_t nv, const ubvector &x, ubvector &y,
     double rA=cbrt(3.0*A/4.0/pi/n0);
     xx[i]=cbrt(nB*Ye/n0*A/nuclei[i].Z);
     // Coulomb energy in 1/fm
-    Ec[i]=-0.6*nuclei[i].Z*nuclei[i].Z*fine_structure/rA*
+    Ec[i]=-0.6*nuclei[i].Z*nuclei[i].Z*fine_structure_f<double>()/rA*
       (1.5*xx[i]-0.5*pow(xx[i],3.0));
   }
 
@@ -2678,7 +2678,7 @@ int eos_nuclei::eos_fixed_ZN(double nB, double Ye, double T,
       // MeV since nuclei[i].m is in fm^{-1}
       double zER=0.5/nuclei[i].m/zR/zR*hc_mev_fm;
       // MeV
-      double zEc=(nuclei[i].Z-1.0)*fine_structure/zR*hc_mev_fm;
+      double zEc=(nuclei[i].Z-1.0)*fine_structure_f<double>()/zR*hc_mev_fm;
       // MeV
       double zEt=min(Sneut[i]+zER,Sprot[i]+zER+zEc/2.0);
       // fm
@@ -2929,7 +2929,8 @@ int eos_nuclei::eos_fixed_ZN(double nB, double Ye, double T,
     // Coulomb contribution to pressure for nuclei
     xx[i]=cbrt(nB*Ye/n0*nuclei[i].A/nuclei[i].Z);
     double rA=cbrt(3.0*nuclei[i].A/4.0/pi/n0);
-    p_c2+=-0.6*nuclei[i].n*nuclei[i].Z*nuclei[i].Z*fine_structure/rA*
+    p_c2+=-0.6*nuclei[i].n*nuclei[i].Z*nuclei[i].Z*
+      fine_structure_f<double>()/rA*
       (0.5*xx[i]-0.5*pow(xx[i],3.0));
   }
   f+=f_c+xi*(th_gas.ed-T*th_gas.en)-T*sum_nuc*log(kappa);
@@ -3619,7 +3620,7 @@ int eos_nuclei::eos_fixed_dist
       double zEd=min(Sneut[i],Sprot[i])/2.0;
       double zR=1.25*cbrt(nuclei[i].Z+nuclei[i].N-1.0);
       double zER=0.5/nuclei[i].m/zR/zR*hc_mev_fm;
-      double zEc=(nuclei[i].Z-1.0)*fine_structure/zR*hc_mev_fm;
+      double zEc=(nuclei[i].Z-1.0)*fine_structure_f<double>()/zR*hc_mev_fm;
       double zEt=min(Sneut[i]+zER,Sprot[i]+zER+zEc/2.0);
       double zrA=cbrt(3.0*(nuclei[i].N+nuclei[i].Z)/4.0/pi/n0);
       double delta_p=11.0/sqrt(nuclei[i].Z+nuclei[i].N)*
@@ -5508,7 +5509,7 @@ int eos_nuclei::write_results(std::string fname) {
   hf.setd("m_neut",neutron.m*hc_mev_fm);
   hf.setd("m_prot",proton.m*hc_mev_fm);
   hf.setd("hc",hc_mev_fm);
-  hf.setd("alpha_em",o2scl_const::fine_structure);
+  hf.setd("alpha_em",o2scl_const::fine_structure_f<double>());
 
   if (with_leptons || include_muons) {
     hdf_output(hf,tg_mue,"mue");
@@ -11923,59 +11924,6 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
              << vf_dg0 << " " << vgt_old << " " << vgt << endl;
  
         // -----------------------------------------------------------------
-        // Charged current mean free path
-
-        pol_cc.integ_method_mu=Polarization::integ_mc;
-        pol_cc.integ_method_q0=Polarization::integ_mc;
-        //pol_cc.integ_method_mu=Polarization::integ_cubature;
-        //pol_cc.integ_method_q0=Polarization::integ_cubature;
-        //pol_cc.integ_method_mu=Polarization::integ_o2scl;
-        //pol_cc.integ_method_q0=Polarization::integ_o2scl;
-        //pol_cc.integ_method_mu=Polarization::integ_base;
-        //pol_cc.integ_method_q0=Polarization::integ_base;
-        
-        pol_cc.set_residual(fnn,fnp,fpp,gnn,gnp,gpp,
-                            vf_dg0,vgt,proton.n);
-        
-        pol_cc.flag=Polarization::flag_vector;
-        double cc_vec_mfp_dg0=pol_cc.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
-        cout << "charged current, vector part, no dgdn terms: "
-             << cc_vec_mfp_dg0 << endl;
-      
-        pol_cc.set_residual(fnn,fnp,fpp,gnn,gnp,gpp,vf,vgt,proton.n);
-        
-        pol_cc.flag=Polarization::flag_vector;
-        double cc_vec_mfp=pol_cc.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
-        cout << "charged current, vector part: " << cc_vec_mfp << endl;
-      
-        pol_cc.flag=Polarization::flag_axial;
-        double cc_axvec_mfp=pol_cc.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
-        cout << "charged current, axial part: " << cc_axvec_mfp << endl;
-      
-        // -----------------------------------------------------------------
-        // Charged current mean free path without RPA
-        
-        pol_cc.integ_method_mu=Polarization::integ_mc;
-        pol_cc.integ_method_q0=Polarization::integ_mc;
-        //pol_cc.integ_method_mu=Polarization::integ_cubature;
-        //pol_cc.integ_method_q0=Polarization::integ_cubature;
-        //pol_cc.integ_method_mu=Polarization::integ_o2scl;
-        //pol_cc.integ_method_q0=Polarization::integ_o2scl;
-        //pol_cc.integ_method_mu=Polarization::integ_base;
-        //pol_cc.integ_method_q0=Polarization::integ_base;
-        
-        pol_cc.set_residual(0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,proton.n);
-        
-        pol_cc.flag=Polarization::flag_vector;
-        double cc_vec_mfp_norpa=pol_cc.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
-        cout << "charged current, vector part, no RPA: " << cc_vec_mfp << endl;
-      
-        pol_cc.flag=Polarization::flag_axial;
-        double cc_axvec_mfp_norpa=pol_cc.CalculateInverseMFP(E1)/
-          hc_mev_fm*1.e13;
-        cout << "charged current, axial part, no RPA: " << cc_axvec_mfp << endl;
-      
-        // -----------------------------------------------------------------
         // Neutral current mean free path
       
         pol_nc.integ_method_mu=Polarization::integ_mc;
@@ -12038,8 +11986,8 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
         line.push_back(Zbar+Nbar);
         line.push_back(Zbar/(Zbar+Nbar));
 
-        line.push_back(X[5]);
-        line.push_back(Ye_best);
+        //line.push_back(X[5]);
+        //line.push_back(Ye_best);
         line.push_back(fnn_sk);
         line.push_back(fpp_sk+coulombf);
         line.push_back(fnp_sk);
@@ -12068,11 +12016,13 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
         line.push_back(vf);
         line.push_back(vf_dg0);
         line.push_back(vgt);
+        /*
         line.push_back(cc_vec_mfp);
         line.push_back(cc_vec_mfp_dg0);
         line.push_back(cc_axvec_mfp);
         line.push_back(cc_vec_mfp_norpa);
         line.push_back(cc_axvec_mfp_norpa);
+        */
         line.push_back(nc_vec_mfp);
         line.push_back(nc_vec_mfp_dg0);
         line.push_back(nc_axvec_mfp);
@@ -12133,72 +12083,6 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
             hdf_file hf;
             hf.open_or_create(sv[1]);
             hf.setd_vec("w_nc",w_nc);
-            hf.close();
-          }
-          
-        }
-        
-        // -----------------------------------------------------------------
-        // Charged current dynamic response, at q0=w, q=3*T
-        
-        if (n_point<5) {
-          
-          //double T_MeV=T*hc_mev_fm;
-          static const double densFac=pow(hc_mev_fm,3.0);
-          
-          // Set integration range
-          
-          double wmin;
-          double wmax;
-          wmin=-100.0;
-          wmax=50.0;
-          double dw=(wmax-wmin)/99;
-          
-          vector<double> w_cc;
-
-          if (false) {
-            double w=-90.8929;
-            double dcos=2.0/30.0;
-            for(double ii=0.0;ii<30.1;ii+=1.0) {
-              double mu=-1.0+dcos*ii;
-              pol_cc.flag=Polarization::flag_axial;
-              double rtue=pol_cc.GetResponse(E1,w,
-                                             pol_cc.GetqFromMu13(E1,w,mu));
-              cout << ii << " " << mu << " " << rtue << endl;
-            }
-            exit(-1);
-          }
-          
-          for (int k=0;k<100;k++) {
-            
-            double w=wmin+dw*k;
-            w_cc.push_back(w);
-            
-            Tensor<double> piVV, piAA, piTT, piVA, piVT, piAT;
-            double piL, piLRe, piRPAax, piRPAvec;
-            
-            pol_cc.SetPolarizations_charged(w,3*T_MeV,&piVV,&piAA,&piTT,
-                                            &piVA,&piVT,&piAT,
-                                            piLRe,piRPAvec,piRPAax,piL);
-            
-            double zz=(w+betaEoS.Mu2-betaEoS.Mu4)/T_MeV;
-            double FermiF=1/(1-exp(-zz));
-            
-            double response=pol_cc.GetResponse(E1,w,10*T_MeV);   
-            
-            double resp_RPAvec=2.0*piRPAvec*FermiF;
-            double resp_RPAax=2.0*piRPAax*FermiF;
-            
-            line.push_back(piRPAvec);
-            line.push_back(piRPAax);
-            line.push_back(resp_RPAvec);
-            line.push_back(resp_RPAax);
-          }
-
-          if (j==0) {
-            hdf_file hf;
-            hf.open_or_create(sv[1]);
-            hf.setd_vec("w_cc",w_cc);
             hf.close();
           }
           
