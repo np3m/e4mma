@@ -400,3 +400,17 @@ imfps:
 		-ttext 0.3 0.8 "NC,ax" \
 		-subadj "left=0.12,right=0.99,top=0.99,bottom=0.09,wspace=0.27,hspace=0.17" \
 		-save imfps.pdf -show
+
+mn-test:
+	enn \
+		-set select_cs2_test 0 \
+		-select-model $(P_FIDUCIAL) \
+		-set a_virial 10 -set b_virial 10 \
+		-set extend_frdm 0 \
+		-set fd_A_max 600 -set max_ratio 7.0 \
+		-set fixed_dist_alg 1999 \
+		-set function_verbose 9999 \
+		-set verbose 3 \
+		-load ~/data/eos/final/fid_6_30_21.o2 \
+		-mcarlo-neutron mn_test.o2
+

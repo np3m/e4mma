@@ -4347,7 +4347,7 @@ int eos_nuclei::eos_fixed_dist
 	}
       }
 
-      double min_min=1.0, min_x, min_y;
+      double min_min=1.0, min_x=0.0, min_y=0.0;
       
       // Compute the optimal point in each quadrant
       cout.setf(ios::showpos);
@@ -5144,10 +5144,10 @@ int eos_nuclei::select_high_T_internal(int option) {
     
     eos_Tcorr=&lim_holt;
 
-    cout << "Here1." << endl;
+    cout << "Here1a." << endl;
     lim_holt.def_sat_mroot.verbose=2;
     lim_holt.saturation();
-    cout << "Here2." << endl;
+    cout << "Here2a." << endl;
 
     test_mgr tm;
     tm.set_output_level(2);
@@ -11378,19 +11378,16 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
       // Now compute the EOS at the optimal Ye
       
       vector<size_t> ix_best={inB,0,iT};
-      int A_min_best=((int)(tg_A_min.get(ix_best)));
-      int A_max_best=((int)(tg_A_max.get(ix_best)));
-      int NmZ_min_best=((int)(tg_NmZ_min.get(ix_best)));
-      int NmZ_max_best=((int)(tg_NmZ_max.get(ix_best)));
 
-      int ret2=10;
-      for(size_t k=0;k<10 && ret2!=0;k++) {
-        log_xn=tg_log_xn.get(ix_best)+(rng.random()*0.5-0.25);
-        log_xp=tg_log_xp.get(ix_best)+(rng.random()*0.5-0.25);
-
-        thermo th_gas;
-        double fr=free_energy_density_detail(neutron,proton,T,th_gas,vdet);
-
+      thermo th_gas;
+      neutron.n=nB;
+      proton.n=0.0;
+      cout << "Going to fedd " << neutron.n << " " << proton.n << endl;
+      double fr=free_energy_density_detail(neutron,proton,T,th_gas,vdet);
+      cout << "Done in fedd " << neutron.n << " " << proton.n << endl;
+      vdet["g"]=1.0;
+      vdet["dgdnn"]=0.0;
+      vdet["dgdnp"]=0.0;
         /*
         ret2=eos_vary_dist(nB,0.0,T,log_xn,log_xp,Zbar,Nbar,
                            thx,mun_full,mup_full,
@@ -11398,37 +11395,17 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
                            NmZ_max_best,vdet,
                            dist_changed,no_nuclei);
         */
-      }
-      if (ret2!=0) {
-        cout << "Point failed." << endl;
-        exit(-1);
-      }
-
-      // Compute the number density of free neutrons and protons
-      double n_fraction, p_fraction;
-      if (nB<0.16) {
-        double xn=0.0;
-        if (log_xn>-300.0) {
-          xn=pow(10.0,log_xn);
-        }
-        double xp=0.0;
-        double n0=0.16;
-        neutron.n=xn*(1.0-nB/n0)/(1.0-nB*xn/n0-nB*xp/n0)*nB;
-        proton.n=xp*(1.0-nB/n0)/(1.0-nB*xn/n0-nB*xp/n0)*nB;    
-      } else {
-        neutron.n=nB;
-        proton.n=0.0;
-      }
-
-      double mun_gas=vdet["mun_gas"];
-      double mup_gas=vdet["mup_gas"];
+      
+      double mun_gas=neutron.mu;
+      double mup_gas=proton.mu;
       cout << "mun_gas [MeV], mup_gas [MeV]: " << mun_gas*hc_mev_fm << " "
            << mup_gas*hc_mev_fm << endl;
       
       // Make sure to compute kf, which is not always computed at
       // finite temperature
+      cout << "Here." << endl;
       sk.def_fet.kf_from_density(neutron);
-      sk.def_fet.kf_from_density(proton);
+      cout << "Here2." << endl;
 
       /*
       cout << "Beta-eq point (ret2,Ye_best): " << ret2 << " "
@@ -11443,22 +11420,24 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
       if (true) {
         // Noninteracting fermions, but with the same mass as the
         // effective mass of the original neutron and proton
-        fermion n2(vdet["msn"]/hc_mev_fm,2.0),
-          p2(vdet["msp"]/hc_mev_fm,2.0);
+        fermion n2(vdet["msn"]/hc_mev_fm,2.0);
         n2.n=neutron.n;
-        p2.n=proton.n;
+        //p2.n=0.0;
         n2.mu=mun_gas;
-        p2.mu=mup_gas;
+        //p2.mu=mup_gas;
         n2.inc_rest_mass=false;
-        p2.inc_rest_mass=false;
+        //p2.inc_rest_mass=false;
         fermion_nonrel fnr;
+        cout << "Here4b. " << n2.n << " " << neutron.n << endl;
         fnr.calc_density(n2,T);
-        fnr.calc_density(p2,T);
+        cout << "Here4c." << endl;
+        //fnr.calc_density(p2,T);
         mu_n_nonint=n2.mu;
-        mu_p_nonint=p2.mu;
+        //mu_p_nonint=p2.mu;
       }
       
-      if (ret2==0) {
+      cout << "Here3." << endl;
+      if (true) {
 
         cout << "mun: " << neutron.mu*hc_mev_fm << endl;
         cout << "mup: " << proton.mu*hc_mev_fm << endl;
@@ -11509,7 +11488,7 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
       
         betaEoS.Mu2=neutron.mu*hc_mev_fm;
         betaEoS.Mu4=proton.mu*hc_mev_fm;
-        betaEoS.Mu3=(electron.mu-electron.m)*hc_mev_fm;
+        betaEoS.Mu3=0.0;
         cout << "mu2 [MeV], mu4 [MeV], mu3 [MeV] (without rest mass): "
              << betaEoS.Mu2 << " "
              << betaEoS.Mu4 << " "
@@ -11963,6 +11942,7 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
         double nc_axvec_mfp_norpa=pol_nc.CalculateInverseMFP(E1)/
           hc_mev_fm*1.e13;
         cout << "neutral current, axial part, no RPA: " << nc_axvec_mfp << endl;
+        exit(-1);
 
         line.push_back(nB);
         line.push_back(neutron.n);
@@ -12118,7 +12098,7 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
   
   eos::setup_cli(cl,false);
   
-  static const int nopt=24;
+  static const int nopt=25;
 
   o2scl::comm_option_s options[nopt]=
     {{0,"eos-deriv","",0,0,"","",
@@ -12193,6 +12173,10 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
       new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::mcarlo_beta),o2scl::cli::comm_option_both,
       1,"","eos_nuclei","mcarlo_beta","doc/xml/classeos__nuclei.xml"},
+     {0,"mcarlo-neutron","",1,2,"","",
+      new o2scl::comm_option_mfptr<eos_nuclei>
+      (this,&eos_nuclei::mcarlo_neutron),o2scl::cli::comm_option_both,
+      1,"","eos_nuclei","mcarlo_neutron","doc/xml/classeos__nuclei.xml"},
      {0,"point-nuclei","",-1,-1,"","",
       new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::point_nuclei),o2scl::cli::comm_option_both,
