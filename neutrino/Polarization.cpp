@@ -340,9 +340,9 @@ double Polarization::CalculateDGamDq0(double E1, double q0, bool pnm) {
   if (integ_method_mu==integ_o2scl || integ_method_mu==integ_compare) {
 
     funct f=std::bind(std::mem_fn<double(double,double,double,double,
-                                         double)>
+                                         double,bool)>
                       (&Polarization::GetResponse_mu),
-                      this,E1,q0,std::placeholders::_1,delta,avg);
+                      this,E1,q0,std::placeholders::_1,delta,avg,pnm);
 
     double err;
     integral_debug=false;
@@ -558,6 +558,7 @@ int nuopac::integrand_new(unsigned ndim, const double *xi, void *fdata,
   
   integration_params &ip=*((integration_params *)fdata);
   Polarization &p=*(ip.p);
+  bool pnm=ip.pnm;
 
   double t=xi[0];
   double x=t/(1.0-t);
@@ -584,7 +585,7 @@ int nuopac::integrand_new(unsigned ndim, const double *xi, void *fdata,
   //cout << "p3,mu13cross,delta,avg: " << p3 << " " << mu13cross << " "
   //<< delta << " " << avg << endl;
   
-  double integral=p.GetResponse_mu(ip.E1,q0,x2,delta,avg);
+  double integral=p.GetResponse_mu(ip.E1,q0,x2,delta,avg,pnm);
     
   integral*=delta;
   double fac=p.GetCsecPrefactor(ip.E1, q0);
@@ -615,6 +616,7 @@ double Polarization::integrand_mc(size_t ndim, const ubvector &xi,
   
   integration_params &ip=*((integration_params *)fdata);
   Polarization &p=*(ip.p);
+  bool pnm=ip.pnm;
 
   double t=xi[0];
   double x=t/(1.0-t);
@@ -641,7 +643,7 @@ double Polarization::integrand_mc(size_t ndim, const ubvector &xi,
   //cout << "p3,mu13cross,delta,avg: " << p3 << " " << mu13cross << " "
   //<< delta << " " << avg << endl;
   
-  double integral=p.GetResponse_mu(ip.E1,q0,x2,delta,avg);
+  double integral=p.GetResponse_mu(ip.E1,q0,x2,delta,avg,pnm);
     
   integral*=delta;
   double fac=p.GetCsecPrefactor(ip.E1,q0);
@@ -794,6 +796,7 @@ double Polarization::CalculateInverseMFP(double E1, bool pnm) {
     ip.estar=estar;
     ip.sign=-1;
     ip.E1=E1;
+    ip.pnm=pnm;
 
     cout << "Starting cubature." << endl;
     int ret=hcubature(1,integrand_new,&ip,2,xmin,xmax,0,0,1.0e-4,
@@ -834,6 +837,7 @@ double Polarization::CalculateInverseMFP(double E1, bool pnm) {
     ip.estar=estar;
     ip.sign=-1;
     ip.E1=E1;
+    ip.pnm=pnm;
     mcarlo_miser<> mm;
     //mm.verbose=2;
     mm.tol_rel=1.0e-6;
@@ -946,7 +950,7 @@ double Polarization::GetResponse(double E1, double q0, double q,
 }
 
 double Polarization::GetResponse_mu(double E1, double q0, double x,
-                                    double delta, double avg) {
+                                    double delta, double avg, bool pnm) {
 
   double mu=x*delta+avg;
   double q=GetqFromMu13(E1,q0,mu);
@@ -956,7 +960,7 @@ double Polarization::GetResponse_mu(double E1, double q0, double x,
        << E1 << " " << q0 << endl;
   */
   //cout << "H: " << x << " " << flush;
-  double ret=GetResponse(E1,q0,q);
+  double ret=GetResponse(E1,q0,q,pnm);
   //cout << "val2: " << ret << endl;
   //exit(-1);
   

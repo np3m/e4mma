@@ -155,7 +155,7 @@ namespace nuopac {
     /** \brief Desc 
      */
     double GetResponse_mu(double E1, double q0, double x, double delta,
-                          double avg);
+                          double avg, bool pnm=false);
 
     /** \brief Desc 
      */
@@ -432,6 +432,7 @@ namespace nuopac {
     double E1;
     std::vector<double> *xv;
     std::vector<double> *yv;
+    bool pnm;
   } integration_params;
   
   int integrand_new(unsigned ndim, const double *x, void *fdata,
