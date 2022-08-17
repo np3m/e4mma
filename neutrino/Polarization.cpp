@@ -82,8 +82,9 @@ namespace {
   // sub-dominant for large masses so the error induced in the cross
   // sections will be very small
   inline double Fermi1(double eta) { 
-    if (eta>1.e-3) 
+    if (eta>1.e-3) {
       return (pow(eta, 2)*0.5 + 1.6449)/(1.0 + exp(-1.6855*eta));
+    }
     return exp(eta)/(1.0 + 0.2159*exp(0.8857*eta));
   }
 
@@ -94,10 +95,11 @@ namespace {
   }
   inline std::array<double, 3> FermiAll(double eta) {
     double expeta = exp(eta); 
-    if (eta>1.e-3)  
+    if (eta>1.e-3) {
       return {log(expeta + 1.0), 
               (pow(eta, 2)*0.5 + 1.6449)/(1.0 + exp(-1.6855*eta)),
               (pow(eta, 3)/3.0 + 3.2899*eta)/(1.0 - exp(-1.8246*eta))};
+    }
     return {log(expeta + 1.0),
             expeta/(1.0 + 0.2159*exp(0.8857*eta)),
             2.0*expeta/(1.0 + 0.1092*exp(0.8908*eta))};
@@ -205,7 +207,8 @@ void Polarization::SetPolarizations(double q0, double q,
                                     Tensor<double>* piTT, 
                                     Tensor<double>* piVA, 
                                     Tensor<double>* piVT, 
-                                    Tensor<double>* piAT) const {
+                                    Tensor<double>* piAT, bool pnm) const {
+  
   // Calculate the basic parts of the polarization 
   auto pt = CalculateBasePolarizations(q0, q); 
   double piQ = pt[0]; 
@@ -294,12 +297,12 @@ void Polarization::SetLeptonTensor(double E1, double q0, double q,
 }
   
 double Polarization::CalculateDGamDq0Dmu13(double E1, double q0,
-                                           double mu13) const {
+                                           double mu13, bool pnm) const {
   double q = GetqFromMu13(E1, q0, mu13); 
-  return GetResponse(E1, q0, q)*2.0*o2scl_const::pi*GetCsecPrefactor(E1, q0); 
+  return GetResponse(E1,q0,q,pnm)*2.0*o2scl_const::pi*GetCsecPrefactor(E1, q0); 
 }
   
-double Polarization::CalculateDGamDq0(double E1, double q0) { 
+double Polarization::CalculateDGamDq0(double E1, double q0, bool pnm) { 
   
   // Only integrate over angles for which |q0| < q
   double p3 = sqrt((E1-q0)*(E1-q0) - st.M3*st.M3);
@@ -321,7 +324,7 @@ double Polarization::CalculateDGamDq0(double E1, double q0) {
            << GetqFromMu13(E1, q0, mu) << " "
            << E1 << " " << q0 << endl;
       */
-      integral += ww[i] * GetResponse(E1, q0, GetqFromMu13(E1, q0, mu));
+      integral += ww[i] * GetResponse(E1, q0, GetqFromMu13(E1, q0, mu),pnm);
       //cout << "val: " << GetResponse(E1, q0,
       //GetqFromMu13(E1, q0, mu)) << endl;
       //cout.precision(6);
@@ -484,7 +487,7 @@ void Polarization::CalculateDGamDq0l(double E1, double q0, double* S0,
   
   for (int i=0; i<NPGJ; ++i) { 
     double mu = xx[i]*delta + avg;
-    double r = GetResponse(E1, q0, GetqFromMu13(E1, q0, mu));
+    double r = GetResponse(E1,q0,GetqFromMu13(E1,q0,mu),false);
     integral0 += ww[i] * r;
     integral1 += ww[i] * mu * r;
   }
@@ -536,7 +539,7 @@ double Polarization::CalculateTransportInverseMFP(double E1) const {
 }
 
 double Polarization::dgamdq0_intl(double E1, double x, double estar,
-                                  int sign) {
+                                  int sign, bool pnm) {
 
   double q0=estar+sign*x*st.T;
   //cout << "x,E1,estar,sign,q0: " << x << " " << E1 << " " << estar << " "
@@ -545,7 +548,7 @@ double Polarization::dgamdq0_intl(double E1, double x, double estar,
   if (sign==-1 && abs(q0) > 30.0*st.T) return 0.0;
   if (sign==1 && q0>E1-st.M3) return 0.0;
   
-  double ret=CalculateDGamDq0(E1, q0);
+  double ret=CalculateDGamDq0(E1,q0,pnm);
 
   return ret;
 }
@@ -671,7 +674,7 @@ double Polarization::integrand_mc(size_t ndim, const ubvector &xi,
   return crx; 
 }
 
-double Polarization::CalculateInverseMFP(double E1) {
+double Polarization::CalculateInverseMFP(double E1, bool pnm) {
 
   double estar;
   if (current==current_charged) {
@@ -690,7 +693,7 @@ double Polarization::CalculateInverseMFP(double E1) {
     for (int i=0; i<NNPGL; ++i) {
       double q0 = estar - xgl[i]*st.T;
       if (abs(q0) > 30.0*st.T) break;
-      double ee = log(CalculateDGamDq0(E1, q0)) + xgl[i];
+      double ee = log(CalculateDGamDq0(E1,q0,pnm)) + xgl[i];
       integral_base1 += wgl[i] * exp(ee); 
     }
     
@@ -698,7 +701,7 @@ double Polarization::CalculateInverseMFP(double E1) {
     for (int i=0; i<NNPGL; ++i) {
       double q0 = estar + xgl[i]*st.T; 
       if (q0>E1 - st.M3) break; 
-      double ee = log(CalculateDGamDq0(E1, q0)) + xgl[i];
+      double ee = log(CalculateDGamDq0(E1,q0,pnm)) + xgl[i];
       integral_base2 += wgl[i] * exp(ee); 
     }
     integral_base=integral_base1+integral_base2;
@@ -714,9 +717,9 @@ double Polarization::CalculateInverseMFP(double E1) {
     
     integral=0.0;
 
-    funct f=std::bind(std::mem_fn<double(double,double,double,int)>
+    funct f=std::bind(std::mem_fn<double(double,double,double,int,bool)>
                       (&Polarization::dgamdq0_intl),
-                      this,E1,std::placeholders::_1,estar,-1);
+                      this,E1,std::placeholders::_1,estar,-1,pnm);
     qagiu.verbose=1;
     //std::cout << "o2scl integrating 0 to infty." << std::endl;
     //qagiu.err_nonconv=false;
@@ -741,9 +744,9 @@ double Polarization::CalculateInverseMFP(double E1) {
     }
     integral=val;
     
-    funct f2=std::bind(std::mem_fn<double(double,double,double,int)>
+    funct f2=std::bind(std::mem_fn<double(double,double,double,int,bool)>
                        (&Polarization::dgamdq0_intl),
-                       this,E1,std::placeholders::_1,estar,+1);
+                       this,E1,std::placeholders::_1,estar,+1,pnm);
 
     qagiu.tol_rel=1.0e-6;
     qagiu.tol_abs=0.0;
@@ -917,11 +920,12 @@ void Polarization::PrintResponse(double E1, double q0, double q) const {
   std::cout << "AT: " << FullContract(L, piAT) << std::endl;
 }
 
-double Polarization::GetResponse(double E1, double q0, double q) const {
+double Polarization::GetResponse(double E1, double q0, double q,
+                                 bool pnm) const {
   Tensor<double> L;
   SetLeptonTensor(E1, q0, q, &L);
   Tensor<double> piVV, piAA, piTT, piVA, piVT, piAT;   
-  SetPolarizations(q0, q, &piVV, &piAA, &piTT, &piVA, &piVT, &piAT);
+  SetPolarizations(q0,q,&piVV,&piAA,&piTT,&piVA,&piVT,&piAT,pnm);
   
   double pi = 0.0;
   if (flag==flag_vector) {

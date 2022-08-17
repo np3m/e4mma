@@ -617,21 +617,36 @@ void PolarizationNonRel::SetPolarizations_neutral
 
   // Calculate the basic parts of the polarization
   std::array<double,4> ptN=CalculateBasePolarizationsNeutron(q0,q);
-  std::array<double,4> ptP=CalculateBasePolarizationsProton(q0,q);
+  std::array<double,4> ptP;
+  if (!pnm) {
+    ptP=CalculateBasePolarizationsProton(q0,q);
+  }
   
   piLn=ptN[1];
-  piLp=ptP[1];
+
+  if (!pnm) {
+    piLp=ptP[1];
+  }
   
   piLnRe=GetRePIn(q0,q);
-  piLpRe=GetRePIp(q0,q);
+  if (!pnm) {
+    piLpRe=GetRePIp(q0,q);
+  }
   
   double impin, impip, repin, repip;
   double pirpaVec, pirpaAx;
-  
-  impin=piLn/2.0;
-  impip=piLp/2.0;
-  repin=piLnRe/2.0;
-  repip=piLpRe/2.0;
+
+  if (pnm) {
+    impin=piLn/2.0;
+    impip=0.0;
+    repin=piLnRe/2.0;
+    repip=0.0;
+  } else {
+    impin=piLn/2.0;
+    impip=piLp/2.0;
+    repin=piLnRe/2.0;
+    repip=piLpRe/2.0;
+  }
   
   // Coulomb correction for fpp
   double e2=1.0/137.0*4.0*o2scl_const::pi;

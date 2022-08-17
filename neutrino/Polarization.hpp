@@ -113,13 +113,14 @@ namespace nuopac {
     /// transfer q0 and electron/neutrino scattering angle mu13)
     /// interaction rate with the medium as a function of neutrino
     /// energy E1
-    double CalculateDGamDq0Dmu13(double E1, double q0, double mu13) const;
+    double CalculateDGamDq0Dmu13(double E1, double q0, double mu13,
+                                 bool pnm=false) const;
 
     /// Return the differential interaction rate (with the differential
     /// in energy transfer q0 and electron/neutrino scattering angle
     /// mu13 integrated over) with the medium as a function of neutrino
     /// energy E1
-    double CalculateDGamDq0(double E1, double q0);
+    double CalculateDGamDq0(double E1, double q0, bool pnm=false);
   
     /// Return Legendre moment of the the differential interaction rate
     /// (with the differential in energy transfer q0 and
@@ -135,7 +136,7 @@ namespace nuopac {
     double CalculateTransportInverseMFP(double E1) const;
   
     /// Calculate the inverse mean free path for a neutrino of energy E1  
-    double CalculateInverseMFP(double E1);
+    double CalculateInverseMFP(double E1, bool pnm=false);
   
     /// Calculate the momentum transfer from a given neutrino/electron 
     /// scattering angle 
@@ -149,7 +150,7 @@ namespace nuopac {
 
     /** \brief Desc 
      */
-    double GetResponse(double E1, double q0, double q) const;
+    double GetResponse(double E1, double q0, double q, bool pnm=false) const;
     
     /** \brief Desc 
      */
@@ -159,7 +160,7 @@ namespace nuopac {
     /** \brief Desc 
      */
     double dgamdq0_intl(double E1, double x, double estar,
-                                      int sign);
+                        int sign, bool pnm=false);
     /** \brief Desc 
      */
     void SetCurrentConservation(bool cons) {
@@ -374,7 +375,7 @@ namespace nuopac {
                                   Tensor<double>* piTT, 
                                   Tensor<double>* piVA, 
                                   Tensor<double>* piVT, 
-                                  Tensor<double>* piAT) const;
+                                  Tensor<double>* piAT, bool pnm=false) const;
   
     /** \brief Desc 
      */
