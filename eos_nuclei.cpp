@@ -11418,17 +11418,18 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
         // Noninteracting fermions, but with the same mass as the
         // effective mass of the original neutron and proton
         fermion n2(vdet["msn"]/hc_mev_fm,2.0);
+        fermion p2(vdet["msp"]/hc_mev_fm,2.0);
         n2.n=neutron.n;
-        //p2.n=0.0;
+        p2.n=proton.n;
         n2.mu=mun_gas;
-        //p2.mu=mup_gas;
+        p2.mu=mup_gas;
         n2.inc_rest_mass=false;
-        //p2.inc_rest_mass=false;
+        p2.inc_rest_mass=false;
         fermion_nonrel fnr;
         fnr.calc_density(n2,T);
-        //fnr.calc_density(p2,T);
+        fnr.calc_density(p2,T);
         mu_n_nonint=n2.mu;
-        //mu_p_nonint=p2.mu;
+        mu_p_nonint=p2.mu;
       }
       
       if (true) {
@@ -12032,6 +12033,9 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
           double dw=(wmax-wmin)/99;
           
           vector<double> w_nc;
+
+          double sum_vec=0.0;
+          double sum_ax=0.0;
           
           for (int k=0;k<100;k++) {
             
@@ -12052,12 +12056,22 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
             
             double resp_RPAvec=2.0*piRPAvec*FermiF;
             double resp_RPAax=2.0*piRPAax*FermiF;
+
+            cout << w << " " << resp_RPAvec << " " << resp_RPAax << endl;
             
             line.push_back(piRPAvec);
             line.push_back(piRPAax);
             line.push_back(resp_RPAvec);
             line.push_back(resp_RPAax);
+
+            sum_vec+=resp_RPAvec;
+            sum_ax+=resp_RPAax;
           }
+
+          sum_vec/=2*pi*nB*pow(hc_mev_fm,3.0);
+          sum_ax/=2*pi*nB*pow(hc_mev_fm,3.0);
+          
+          cout << "sums: " << nB << " " << sum_vec << " " << sum_ax << endl;
 
           if (j==0) {
             hdf_file hf;
