@@ -11271,7 +11271,7 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
   // 1.0e-4 is well into the virial region, 5.0e-3 gives g \approx 0.6,
   // and 0.15 is near saturation density and far from the virial region
   
-  vector<double> nB_list={1.0e-4,5.0e-3,0.15};
+  vector<double> nB_list={1.0e-4,5.0e-3,0.016,0.16};
   vector<double> TMeV_list={10,10,10};
   include_detail=true;
 
@@ -11943,6 +11943,11 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
           hc_mev_fm*1.e13;
         cout << "neutral current, axial part, no RPA: " << nc_axvec_mfp << endl;
 
+        // Go back to the "with RPA" calculations to compute the
+        // response below
+        pol_nc.set_residual(fnn_dg0,fnp_dg0,fpp_dg0,gnn,gnp,gpp,
+                            vf,vgt,proton.n);
+        
         if (false) {
           line.push_back(nB);
           line.push_back(neutron.n);
@@ -12057,8 +12062,6 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
             double resp_RPAvec=2.0*piRPAvec*FermiF;
             double resp_RPAax=2.0*piRPAax*FermiF;
 
-            cout << w << " " << resp_RPAvec << " " << resp_RPAax << endl;
-            
             line.push_back(piRPAvec);
             line.push_back(piRPAax);
             line.push_back(resp_RPAvec);
@@ -12103,7 +12106,6 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
       hf.close();
     }
 
-    exit(-1);
   }
 
   return 0;
