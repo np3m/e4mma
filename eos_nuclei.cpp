@@ -12064,14 +12064,14 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
             line.push_back(resp_RPAvec);
             line.push_back(resp_RPAax);
 
-            sum_vec+=resp_RPAvec;
-            sum_ax+=resp_RPAax;
+            sum_vec+=resp_RPAvec*dw;
+            sum_ax+=resp_RPAax*dw;
           }
 
           sum_vec/=2*pi*nB*pow(hc_mev_fm,3.0);
           sum_ax/=2*pi*nB*pow(hc_mev_fm,3.0);
           
-          cout << "sums: " << nB << " " << sum_vec << " " << sum_ax << endl;
+          cout << "sum_vec,sum_ax: " << sum_vec << " " << sum_ax << endl;
 
           if (j==0) {
             hdf_file hf;
@@ -12080,8 +12080,6 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
             hf.close();
           }
 
-          exit(-1);
-          
         }
       }
     }
@@ -12105,6 +12103,7 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
       hf.close();
     }
 
+    exit(-1);
   }
 
   return 0;
