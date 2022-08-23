@@ -11187,7 +11187,7 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
     return 2;
   }
 
-  size_t n_point=3;
+  size_t n_point=4;
   if (sv.size()>=3) {
     n_point=stoszt(sv[2]);
   }
@@ -11202,7 +11202,7 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
   
   vector<string> col_list={"nB","nn","np",
     "g","dgdnn","dgdnp","msn","msp","mun","mup","mu_n_nonint",
-    "mu_p_nonint","mue",
+    "mu_p_nonint",
     "U2","U4","log_xn","log_xp",
     "fnn_sk","fpp_sk","fnp_sk",
     "gnn_sk","gpp_sk","gnp_sk",
@@ -11216,7 +11216,7 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
   
   vector<string> unit_list={"1/fm^3","1/fm^3","1/fm^3",
     "","1/MeV^3","1/MeV^3","MeV","MeV","MeV","MeV","MeV",
-    "MeV","MeV",
+    "MeV",
     "MeV","MeV","","",
     "1/MeV^2","1/MeV^2","1/MeV^2",
     "1/MeV^2","1/MeV^2","1/MeV^2",
@@ -11229,7 +11229,7 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
 
   if (unit_list.size()!=col_list.size()) {
     cout << col_list.size() << " " << unit_list.size() << endl;
-    O2SCL_ERR("Table sync 1.",o2scl::exc_einval);
+    O2SCL_ERR("Table sync 1 mcarlo_neutron.",o2scl::exc_einval);
   }
 
   for(size_t ipoint=0;ipoint<n_point;ipoint++) {
@@ -11948,7 +11948,6 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
           line.push_back(proton.mu*hc_mev_fm);
           line.push_back(mu_n_nonint*hc_mev_fm);
           line.push_back(mu_p_nonint*hc_mev_fm);
-          line.push_back(electron.mu*hc_mev_fm);
           line.push_back(u2eos);
           line.push_back(u4eos);
           line.push_back(log_xn);
@@ -12066,17 +12065,26 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
         }
       }
     }
+
+    if (true) {
+      for(size_t jj=0;jj<line.size() || jj<tab.get_ncolumns();jj++) {
+        if (jj<tab.get_ncolumns()) {
+          cout << tab.get_column_name(jj) << " ";
+        } else {
+          cout << "<not present>" << " ";
+        }
+        if (jj<line.size()) {
+          cout << line[jj] << endl;
+        } else {
+          cout << "<not present>" << endl;
+        }
+      }
+    }
     
     if (tab.get_ncolumns()!=line.size()) {
       O2SCL_ERR("Mismatch of columns.",o2scl::exc_einval);
     }
-    if (false) {
-      for(size_t jj=0;jj<line.size();jj++) {
-        cout << tab.get_column_name(jj) << " ";
-        cout << line[jj] << endl;
-      }
-      exit(-1);
-    }
+    
     tab.line_of_data(line.size(),line);
     
     if (true || j%100==0) {
