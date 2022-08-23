@@ -11369,7 +11369,7 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
 
       thermo th_gas;
       neutron.n=nB;
-      proton.n=nB/1.0e5;
+      proton.n=nB/1.0e4;
       double fr=free_energy_density_detail(neutron,proton,T,th_gas,vdet);
       vdet["g"]=1.0;
       vdet["dgdnn"]=0.0;
