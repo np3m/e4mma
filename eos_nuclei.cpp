@@ -11187,7 +11187,7 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
     return 2;
   }
 
-  size_t n_point=4;
+  size_t n_point=5;
   if (sv.size()>=3) {
     n_point=stoszt(sv[2]);
   }
@@ -11258,8 +11258,8 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
   // 1.0e-4 is well into the virial region, 5.0e-3 gives g \approx 0.6,
   // and 0.15 is near saturation density and far from the virial region
   
-  vector<double> nB_list={1.0e-4,5.0e-3,0.016,0.16};
-  vector<double> TMeV_list={10,10,10};
+  vector<double> nB_list={1.0e-4,5.0e-3,0.016,0.16,0.012};
+  vector<double> TMeV_list={10,10,10,10,20};
   include_detail=true;
 
   if (n_point>5) {
@@ -11369,7 +11369,7 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
 
       thermo th_gas;
       neutron.n=nB;
-      proton.n=nB/1.0e4;
+      proton.n=nB/1.0e5;
       double fr=free_energy_density_detail(neutron,proton,T,th_gas,vdet);
       vdet["g"]=1.0;
       vdet["dgdnn"]=0.0;
