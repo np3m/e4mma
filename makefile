@@ -181,8 +181,7 @@ enn: eos_nompi.o main_nompi.o eos_nuclei_nompi.o \
 		neutrino/Couplings.o neutrino/FluidState.o \
 		neutrino/FunctionIntegrator.o neutrino/Polarization.o \
 		neutrino/PolarizationNonRelv2Apr8.o neutrino/jacobi_rule.o \
-		eos_nuclei_nompi.o eos_had_skyrme_ext_nompi.o $(LIBS) \
-		-lreadline
+		eos_nuclei_nompi.o eos_had_skyrme_ext_nompi.o $(LIBS)
 
 eos_nompi: eos_nompi.o main_eos_nompi.o \
 		eos_had_skyrme_ext_nompi.o 

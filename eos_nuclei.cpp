@@ -5584,8 +5584,8 @@ int eos_nuclei::write_results(std::string fname) {
 
   size_t n_oth=oth_names.size();
   hf.set_szt("n_oth",n_oth);
-  hf.sets_vec("oth_names",oth_names);
-  hf.sets_vec("oth_units",oth_units);
+  hf.sets_vec_copy("oth_names",oth_names);
+  hf.sets_vec_copy("oth_units",oth_units);
   
   hf.close();
   
@@ -5638,8 +5638,8 @@ int eos_nuclei::read_results(std::string fname) {
   size_t n_oth;
   vector<string> oth_names, oth_units;
   hf.get_szt("n_oth",n_oth);
-  hf.gets_vec("oth_names",oth_names);
-  hf.gets_vec("oth_units",oth_units);
+  hf.gets_vec_copy("oth_names",oth_names);
+  hf.gets_vec_copy("oth_units",oth_units);
 
   //vector<string> m1, m2;
   //vectors_missing(name_list,oth_names,m1,m2);
@@ -11203,8 +11203,7 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
   vector<string> col_list={"nB","nn","np",
     "g","dgdnn","dgdnp","msn","msp","mun","mup","mu_n_nonint",
     "mu_p_nonint","mue",
-    "U2","U4","log_xn","log_xp","Z","N",
-    "A","ZoA","Xnuclei","Ye_best",
+    "U2","U4","log_xn","log_xp",
     "fnn_sk","fpp_sk","fnp_sk",
     "gnn_sk","gpp_sk","gnp_sk",
     "fnn_virial","fpp_virial","fnp_virial",
@@ -11212,16 +11211,13 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
     "fnn","fpp","fnp","fnn_dg0","fpp_dg0","fnp_dg0",
     "gnn","gpp","gnp",
     "vf","vf_dg0","vgt",
-    "cc_vec_imfp","cc_vec_imfp_dg0","cc_axvec_imfp",
-    "cc_vec_imfp_norpa","cc_axvec_imfp_norpa",
     "nc_vec_imfp","nc_vec_imfp_dg0","nc_axvec_imfp",
     "nc_vec_imfp_norpa","nc_axvec_imfp_norpa"};
   
   vector<string> unit_list={"1/fm^3","1/fm^3","1/fm^3",
     "","1/MeV^3","1/MeV^3","MeV","MeV","MeV","MeV","MeV",
     "MeV","MeV",
-    "MeV","MeV","","","","",
-    "","","","",
+    "MeV","MeV","","",
     "1/MeV^2","1/MeV^2","1/MeV^2",
     "1/MeV^2","1/MeV^2","1/MeV^2",
     "1/MeV^2","1/MeV^2","1/MeV^2",
@@ -11229,7 +11225,6 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
     "1/MeV^2","1/MeV^2","1/MeV^2","1/MeV^2","1/MeV^2","1/MeV^2",
     "1/MeV^2","1/MeV^2","1/MeV^2",
     "1/MeV^2","1/MeV^2","1/MeV^2",
-    "1/cm","1/cm","1/cm","1/cm","1/cm",
     "1/cm","1/cm","1/cm","1/cm","1/cm"};
 
   if (unit_list.size()!=col_list.size()) {
@@ -11255,16 +11250,8 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
         tab.new_column(((string)"nc_resp_RPAax_")+o2scl::szttos(ik)+"_"+
                        o2scl::szttos(ipoint));
       }
-      for(size_t ik=0;ik<100;ik++) {
-        tab.new_column(((string)"cc_piRPAvec_")+o2scl::szttos(ik)+"_"+
-                       o2scl::szttos(ipoint));
-        tab.new_column(((string)"cc_piRPAax_")+o2scl::szttos(ik)+"_"+
-                       o2scl::szttos(ipoint));
-        tab.new_column(((string)"cc_resp_RPAvec_")+o2scl::szttos(ik)+"_"+
-                       o2scl::szttos(ipoint));
-        tab.new_column(((string)"cc_resp_RPAax_")+o2scl::szttos(ik)+"_"+
-                       o2scl::szttos(ipoint));
-      }
+      tab.new_column(((string)"sum_vec_")+o2scl::szttos(ipoint));
+      tab.new_column(((string)"sum_ax_")+o2scl::szttos(ipoint));
     }
   }
   
@@ -11948,7 +11935,7 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
         pol_nc.set_residual(fnn_dg0,fnp_dg0,fpp_dg0,gnn,gnp,gpp,
                             vf,vgt,proton.n);
         
-        if (false) {
+        if (true) {
           line.push_back(nB);
           line.push_back(neutron.n);
           line.push_back(proton.n);
@@ -11966,10 +11953,6 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
           line.push_back(u4eos);
           line.push_back(log_xn);
           line.push_back(log_xp);
-          line.push_back(Zbar);
-          line.push_back(Nbar);
-          line.push_back(Zbar+Nbar);
-          line.push_back(Zbar/(Zbar+Nbar));
           
           //line.push_back(X[5]);
           //line.push_back(Ye_best);
@@ -12001,13 +11984,7 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
           line.push_back(vf);
           line.push_back(vf_dg0);
           line.push_back(vgt);
-          /*
-            line.push_back(cc_vec_mfp);
-            line.push_back(cc_vec_mfp_dg0);
-            line.push_back(cc_axvec_mfp);
-            line.push_back(cc_vec_mfp_norpa);
-            line.push_back(cc_axvec_mfp_norpa);
-          */
+          
           line.push_back(nc_vec_mfp);
           line.push_back(nc_vec_mfp_dg0);
           line.push_back(nc_axvec_mfp);
@@ -12073,6 +12050,9 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
 
           sum_vec/=2*pi*nB*pow(hc_mev_fm,3.0);
           sum_ax/=2*pi*nB*pow(hc_mev_fm,3.0);
+          
+          line.push_back(sum_vec);
+          line.push_back(sum_ax);
           
           cout << "sum_vec,sum_ax: " << sum_vec << " " << sum_ax << endl;
 
