@@ -11258,7 +11258,7 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
   // 1.0e-4 is well into the virial region, 5.0e-3 gives g \approx 0.6,
   // and 0.15 is near saturation density and far from the virial region
   
-  vector<double> nB_list={1.0e-4,5.0e-3,0.016,0.16,0.012};
+  vector<double> nB_list={1.0e-4,5.0e-3,0.016,0.16,0.01364};
   vector<double> TMeV_list={10,10,10,10,20};
   include_detail=true;
 
