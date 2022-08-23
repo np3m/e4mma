@@ -11239,7 +11239,7 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
       tab.new_column(temp);
       tab.set_unit(temp,unit_list[ik]);
     }
-    if (n_point<5) {
+    if (n_point<10) {
       for(size_t ik=0;ik<100;ik++) {
         tab.new_column(((string)"nc_piRPAvec_")+o2scl::szttos(ik)+"_"+
                        o2scl::szttos(ipoint));
@@ -11262,7 +11262,7 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
   vector<double> TMeV_list={10,10,10,10,20};
   include_detail=true;
 
-  if (n_point>5) {
+  if (n_point>10) {
     nB_list.clear();
     TMeV_list.clear();
     for(size_t j=0;j<100;j++) {
@@ -11480,7 +11480,7 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
         PolarizationNonRel pol_nc(betaEoS,nscat,false,false,false);
         pol_nc.current=Polarization::current_neutral;
 
-        if (n_point>5 && ipoint>50) {
+        if (n_point>10 && ipoint>50) {
           pol_nc.qagiu.tol_abs=4.0e-19;
         } else {
           pol_nc.qagiu.tol_abs=1.0e-10;
@@ -12000,7 +12000,7 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
         // -----------------------------------------------------------------
         // Neutral current dynamic response at q0=w, q=3*T
         
-        if (n_point<5) {
+        if (n_point<10) {
           
           //double T_MeV=T*hc_mev_fm;
           
