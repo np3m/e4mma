@@ -11371,9 +11371,9 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
       neutron.n=nB;
       proton.n=nB/1.0e5;
       double fr=free_energy_density_detail(neutron,proton,T,th_gas,vdet);
-      vdet["g"]=1.0;
-      vdet["dgdnn"]=0.0;
-      vdet["dgdnp"]=0.0;
+      //vdet["g"]=1.0;
+      //vdet["dgdnn"]=0.0;
+      //vdet["dgdnp"]=0.0;
         /*
         ret2=eos_vary_dist(nB,0.0,T,log_xn,log_xp,Zbar,Nbar,
                            thx,mun_full,mup_full,
