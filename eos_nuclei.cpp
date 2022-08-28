@@ -11245,6 +11245,10 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
                        o2scl::szttos(ipoint));
         tab.new_column(((string)"nc_piRPAax_")+o2scl::szttos(ik)+"_"+
                        o2scl::szttos(ipoint));
+        tab.new_column(((string)"nc_piLn_")+o2scl::szttos(ik)+"_"+
+                       o2scl::szttos(ipoint));
+        tab.new_column(((string)"nc_piLnRe_")+o2scl::szttos(ik)+"_"+
+                       o2scl::szttos(ipoint));
         tab.new_column(((string)"nc_resp_RPAvec_")+o2scl::szttos(ik)+"_"+
                        o2scl::szttos(ipoint));
         tab.new_column(((string)"nc_resp_RPAax_")+o2scl::szttos(ik)+"_"+
@@ -12040,6 +12044,8 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
 
             line.push_back(piRPAvec);
             line.push_back(piRPAax);
+            line.push_back(piLn);
+            line.push_back(piLnRe);
             line.push_back(resp_RPAvec);
             line.push_back(resp_RPAax);
 
