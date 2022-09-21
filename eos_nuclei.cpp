@@ -11262,11 +11262,15 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
   // 1.0e-4 is well into the virial region, 5.0e-3 gives g \approx 0.6,
   // and 0.15 is near saturation density and far from the virial region
   
-  vector<double> nB_list={1.0e-4,5.0e-3,0.016,0.16,0.01364,0.05};
-  vector<double> TMeV_list={10,10,10,10,20,20};
+  vector<double> nB_list={1.0e-4,5.0e-3,0.016,0.16,
+    0.01364,0.01608,0.01860,0.02160,0.02549,0.02947,0.03347,0.03754,
+    0.04151,0.04549,0.04952};
+  vector<double> TMeV_list={10,10,10,10,
+    20,20,20,20,20,20,20,20,
+    20,20,20};
   include_detail=true;
 
-  if (n_point>10) {
+  if (n_point>20) {
     nB_list.clear();
     TMeV_list.clear();
     for(size_t j=0;j<100;j++) {
@@ -11484,7 +11488,7 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
         PolarizationNonRel pol_nc(betaEoS,nscat,false,false,false);
         pol_nc.current=Polarization::current_neutral;
 
-        if (n_point>10 && ipoint>50) {
+        if (n_point>20 && ipoint>50) {
           pol_nc.qagiu.tol_abs=4.0e-19;
         } else {
           pol_nc.qagiu.tol_abs=1.0e-10;
@@ -12004,7 +12008,7 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
         // -----------------------------------------------------------------
         // Neutral current dynamic response at q0=w, q=3*T
         
-        if (n_point<10) {
+        if (n_point<20) {
           
           //double T_MeV=T*hc_mev_fm;
           
