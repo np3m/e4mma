@@ -11187,7 +11187,7 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
     return 2;
   }
 
-  size_t n_point=6;
+  size_t n_point=15;
   if (sv.size()>=3) {
     n_point=stoszt(sv[2]);
   }
