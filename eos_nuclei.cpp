@@ -11239,7 +11239,7 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
       tab.new_column(temp);
       tab.set_unit(temp,unit_list[ik]);
     }
-    if (n_point<10) {
+    if (n_point<20) {
       for(size_t ik=0;ik<100;ik++) {
         tab.new_column(((string)"nc_piRPAvec_")+o2scl::szttos(ik)+"_"+
                        o2scl::szttos(ipoint));
