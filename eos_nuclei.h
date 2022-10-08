@@ -959,8 +959,14 @@ public:
   */
   int select_high_T_internal(int option);
 
-  /** \brief Compute the second derivatives and the
-      eigenvalues of the stability matrix
+  /** \brief Compute the second derivatives and the stability matrix
+      
+      <output file>
+
+      The \c stability command creates an output file with several
+      additional data objects for the second derivatives of the free
+      energy, the eigenvalues of the curvature matrix, and the squared
+      speed of sound.
   */
   int stability(std::vector<std::string> &sv,
 		bool itive_com);
