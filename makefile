@@ -413,4 +413,4 @@ mn-test:
 		-load ~/data/eos/final/fid_6_30_21.o2 \
 		-mcarlo-neutron mn_test.o2
 
-include makefile.aws
+-include makefile.aws
