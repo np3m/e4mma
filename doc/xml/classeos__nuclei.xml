@@ -3867,7 +3867,7 @@ file&gt;, or &quot;point&quot; &lt;output file&gt; &lt;nB&gt; &lt;Ye&gt; &lt;T&g
           <declname>itive_com</declname>
         </param>
         <briefdescription>
-<para>Compute the second derivatives and the eigenvalues of the stability matrix. </para>
+<para>Compute the second derivatives and the stability matrix. </para>
         </briefdescription>
         <detaileddescription>
 <para>&lt;output file&gt;</para>
@@ -3875,7 +3875,7 @@ file&gt;, or &quot;point&quot; &lt;output file&gt; &lt;nB&gt; &lt;Ye&gt; &lt;T&g
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos_nuclei.h" line="972" column="7"/>
+        <location file="/Users/awsteiner/wcs/eos/eos_nuclei.h" line="971" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos__nuclei_1a5f19d4a4c83e3d76edf03e01fe8e3df6" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -3900,7 +3900,7 @@ file&gt;, or &quot;point&quot; &lt;output file&gt; &lt;nB&gt; &lt;Ye&gt; &lt;T&g
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos_nuclei.h" line="983" column="7"/>
+        <location file="/Users/awsteiner/wcs/eos/eos_nuclei.h" line="982" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos__nuclei_1ab940f90e1dc234212bd9d20bfd4c5e0a" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>double</type>
@@ -3935,7 +3935,7 @@ file&gt;, or &quot;point&quot; &lt;output file&gt; &lt;nB&gt; &lt;Ye&gt; &lt;T&g
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos_nuclei.h" line="987" column="10"/>
+        <location file="/Users/awsteiner/wcs/eos/eos_nuclei.h" line="986" column="10"/>
       </memberdef>
       <memberdef kind="function" id="classeos__nuclei_1aa13a2c14da94d5d854399dc357410cb5" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -3962,7 +3962,7 @@ file&gt;, or &quot;point&quot; &lt;output file&gt; &lt;nB&gt; &lt;Ye&gt; &lt;T&g
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos_nuclei.h" line="992" column="7"/>
+        <location file="/Users/awsteiner/wcs/eos/eos_nuclei.h" line="991" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos__nuclei_1a80e2a3f16b57acaeae0352a665986e2c" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -3987,7 +3987,7 @@ file&gt;, or &quot;point&quot; &lt;output file&gt; &lt;nB&gt; &lt;Ye&gt; &lt;T&g
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos_nuclei.h" line="1000" column="7"/>
+        <location file="/Users/awsteiner/wcs/eos/eos_nuclei.h" line="999" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos__nuclei_1a90757fda0ca76057b31e58215d7d3079" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -4021,7 +4021,7 @@ file&gt;, or &quot;point&quot; &lt;output file&gt; &lt;nB&gt; &lt;Ye&gt; &lt;T&g
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner/wcs/eos/eos_nuclei.h" line="1002" column="7"/>
+        <location file="/Users/awsteiner/wcs/eos/eos_nuclei.h" line="1001" column="7"/>
       </memberdef>
       </sectiondef>
     <briefdescription>
@@ -4877,7 +4877,7 @@ file&gt;, or &quot;point&quot; &lt;output file&gt; &lt;nB&gt; &lt;Ye&gt; &lt;T&g
         <link refid="classboost_1_1numeric_1_1ublas_1_1vector" external="/Users/awsteiner/wcs/eos/doc/o2scl.tag"/>
       </node>
     </collaborationgraph>
-    <location file="/Users/awsteiner/wcs/eos/eos_nuclei.h" line="119" column="1" bodyfile="/Users/awsteiner/wcs/eos/eos_nuclei.h" bodystart="119" bodyend="1008"/>
+    <location file="/Users/awsteiner/wcs/eos/eos_nuclei.h" line="119" column="1" bodyfile="/Users/awsteiner/wcs/eos/eos_nuclei.h" bodystart="119" bodyend="1007"/>
     <listofallmembers>
       <member refid="classeos_1a5a1b813d87a973d3552ddcbcaae4c2eb" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>a_virial</name></member>
       <member refid="classeos__nuclei_1af76d052dfa9dd1b11245f66c74d0a4eb" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>add_eg</name></member>

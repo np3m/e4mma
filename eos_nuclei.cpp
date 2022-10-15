@@ -1822,8 +1822,6 @@ int eos_nuclei::eos_second_deriv(std::vector<std::string> &sv,
 int eos_nuclei::stability(std::vector<std::string> &sv,
                           bool itive_com) {
 
-  string outfile=sv[1];
-
   // The six second derivatives we need to compute
   o2scl::tensor_grid<> dmundYe, dmundnB, dmupdYe, dsdT, dsdnB, dsdYe;
   o2scl::tensor_grid<> egv[4], cs2;
@@ -1878,8 +1876,8 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
       itp_sta_b.set(n_nB2,nB_grid2,s_of_nB,itp_steffen);
       for (size_t i=0;i<n_nB2;i++) {
         vector<size_t> ix={i,j,k};
-	dmundnB.get(ix)=itp_sta_a.eval(nB_grid2[i]);
-	dsdnB.get(ix)=itp_sta_b.eval(nB_grid2[i]);
+	dmundnB.get(ix)=itp_sta_a.deriv(nB_grid2[i]);
+	dsdnB.get(ix)=itp_sta_b.deriv(nB_grid2[i]);
       }
     }
   }
@@ -1902,9 +1900,9 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
       itp_sta_c.set(n_Ye2,Ye_grid2,s_of_Ye,itp_steffen);
       for (size_t j=0;j<n_Ye2;j++) {
         vector<size_t> ix={i,j,k};
-	dmundYe.get(ix)=itp_sta_a.eval(Ye_grid2[j]);
-	dmupdYe.get(ix)=itp_sta_b.eval(Ye_grid2[j]);
-	dsdYe.get(ix)=itp_sta_b.eval(Ye_grid2[j]);
+	dmundYe.get(ix)=itp_sta_a.deriv(Ye_grid2[j]);
+	dmupdYe.get(ix)=itp_sta_b.deriv(Ye_grid2[j]);
+	dsdYe.get(ix)=itp_sta_b.deriv(Ye_grid2[j]);
       }
     }
   }
@@ -1921,7 +1919,7 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
       itp_sta_a.set(n_T2,T_grid2,s_of_T,itp_steffen);
       for (size_t k=0;k<n_T2;k++) {
         vector<size_t> ix={i,j,k};
-	dsdT.get(ix)=itp_sta_a.eval(T_grid2[k]);
+	dsdT.get(ix)=itp_sta_a.deriv(T_grid2[k])*hc_mev_fm;
       }
     }
   }
@@ -1933,13 +1931,34 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
   int unstable_count=0;
   int superlum_count=0;
   int total_count=0;
+
+  string outfile;
+  size_t ilo=0, ihi=n_nB2;
+  size_t jlo=0, jhi=n_Ye2;
+  size_t klo=0, khi=n_T2;
+  if (sv.size()>=4) {
+    double nBx=o2scl::function_to_double(sv[1]);
+    double Yex=o2scl::function_to_double(sv[2]);
+    double Tx=o2scl::function_to_double(sv[3]);
+    ilo=vector_lookup(n_nB2,nB_grid2,nBx);
+    ihi=ilo+1;
+    jlo=vector_lookup(n_Ye2,Ye_grid2,Yex);
+    jhi=jlo+1;
+    klo=vector_lookup(n_T2,T_grid2,Tx);
+    khi=klo+1;
+    cout << "Density " << nBx << " index " << ilo << endl;
+    cout << "Electron fraction " << Yex << " index " << jlo << endl;
+    cout << "Temperature " << Tx << " index " << klo << endl;
+  } else {
+    outfile=sv[1];
+  }
   
   /// Compute the stability matrix and its eigenvalues at each point
-  for (size_t i=0;i<n_nB2;i++) {
+  for (size_t i=ilo;i<ihi;i++) {
     double nB=nB_grid2[i];
-    for (size_t j=0;j<n_Ye2;j++) {
+    for (size_t j=jlo;j<jhi;j++) {
       double Ye=Ye_grid2[j];
-      for (size_t k=0;k<n_T2;k++) {
+      for (size_t k=klo;k<khi;k++) {
 
         total_count++;
         
@@ -2043,32 +2062,40 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
 	double den=en*T_MeV/hc_mev_fm+
           (tg_mun.get(ix)/hc_mev_fm+neutron.m)*nn2+
 	  (tg_mup.get(ix)/hc_mev_fm+proton.m)*np2+tg_mue.get(ix)*np2/hc_mev_fm;
-        cout << "mun,mup,mue 2: " << tg_mun.get(ix)/hc_mev_fm << " "
-             << tg_mup.get(ix)/hc_mev_fm << " " << tg_mue.get(ix)/hc_mev_fm
-             << endl;
-        cout << "den1,den2,den3,den4: " << en*T_MeV/hc_mev_fm << " " 
-             << (tg_mun.get(ix)/hc_mev_fm+neutron.m)*nn2 << " " 
-             << (tg_mup.get(ix)/hc_mev_fm+proton.m)*np2 << " "
-             << tg_mue.get(ix)/hc_mev_fm << " " << np2 << endl;
-        cout << "nn,np,en: " << nn2 << " " << np2 << " " << en << endl;
-        cout << "f_nnnn, f_nnnp, f_npnp, f_nnT, f_npT, f_TT, den 2:\n  "
-             << f_nnnn << " " << f_nnnp << " " << f_npnp << " "
-             << f_nnT << " " << f_npT << " " << f_TT << " "
-             << den << endl;
+        if (cs2_verbose>0) {
+          cout << endl;
+          cout << "fr: " << tg_F.get(ix)/hc_mev_fm*nB << endl;
+          cout << "en: " << tg_S.get(ix)*nB << endl;
+          cout << "mun[1/fm],mup[1/fm],mue[1/fm]: "
+               << tg_mun.get(ix)/hc_mev_fm << " "
+               << tg_mup.get(ix)/hc_mev_fm << " " << tg_mue.get(ix)/hc_mev_fm
+               << endl;
+          cout << "den1,den2,den3,den4 (all [1/fm^3]):\n  "
+               << en*T_MeV/hc_mev_fm << " " 
+               << (tg_mun.get(ix)/hc_mev_fm+neutron.m)*nn2 << " " 
+               << (tg_mup.get(ix)/hc_mev_fm+proton.m)*np2 << " "
+               << tg_mue.get(ix)/hc_mev_fm << " " << np2 << endl;
+          cout << "nn,np,en: " << nn2 << " " << np2 << " " << en << endl;
+          cout << "f_nnnn, f_nnnp, f_npnp, f_nnT, f_npT, f_TT, den:\n  "
+               << f_nnnn << " " << f_nnnp << " " << f_npnp << " "
+               << f_nnT << "\n  " << f_npT << " " << f_TT << " "
+               << den << endl;
+        }
 	double cs_sq=(nn2*nn2*(f_nnnn-f_nnT*f_nnT/f_TT)+
 		      2.0*nn2*np2*(f_nnnp-f_nnT*f_npT/f_TT)+
 		      np2*np2*(f_npnp-f_npT*f_npT/f_TT)-
 		      2.0*en*(nn2*f_nnT/f_TT+np2*f_npT/f_TT)-en*en/f_TT)/den;
 
-        if (true && T_MeV>100.0) {
-          cout << "cs21: " << cs_sq << " " << proton.n << endl;
+        if (T_MeV>100.0 || nB>0.16) {
+          cout << "cs2: " << cs_sq << endl;
+          if (cs2_verbose>0) {
+            cout << endl;
+          }
           neutron.n=nB*(1.0-Ye);
           proton.n=nB*Ye;
           thermo th;
           double cs22=cs2_func(neutron,proton,T_MeV/hc_mev_fm,th);
-          cout << "cs22: " << cs22 << endl;
-          char ch;
-          cin >> ch;
+          cout << "cs2 (hom): " << cs22 << endl;
         }
 
 	cs2.get(ix)=cs_sq;
@@ -2076,7 +2103,8 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
         if (cs_sq>1.0) {
           //cout << tg_mun.get(ix) << " " << neutron.m << " "
           //<< electron.mu << " " << electron.n << endl;
-          cout << "Superluminal: " << nB << " " << Ye << " " << T_MeV << " "
+          cout << "Superluminal: nB,Ye,T[MeV],cs2:\n  "
+               << nB << " " << Ye << " " << T_MeV << " "
                << cs_sq << endl;
           superlum_count++;
           //exit(-1);
@@ -2088,21 +2116,23 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
   cout << "Unstable count: " << unstable_count << endl;
   cout << "Superluminal count: " << superlum_count << endl;
   cout << "Total count: " << total_count << endl;
-  
-  hdf_file hf;
-  hf.open_or_create(outfile);
-  hdf_output(hf,dmundnB,"dmundnB");
-  hdf_output(hf,dmundYe,"dmundYe");
-  hdf_output(hf,dmupdYe,"dmupdYe");
-  hdf_output(hf,dsdnB,"dsdnB");
-  hdf_output(hf,dsdYe,"dsdYe");
-  hdf_output(hf,dsdT,"dsdT");
-  hdf_output(hf,egv[0],"egv0");
-  hdf_output(hf,egv[1],"egv1");
-  hdf_output(hf,egv[2],"egv2");
-  hdf_output(hf,egv[3],"egv3");
-  hdf_output(hf,cs2,"cs2");
-  hf.close();
+
+  if (outfile.length()>0) {
+    hdf_file hf;
+    hf.open_or_create(outfile);
+    hdf_output(hf,dmundnB,"dmundnB");
+    hdf_output(hf,dmundYe,"dmundYe");
+    hdf_output(hf,dmupdYe,"dmupdYe");
+    hdf_output(hf,dsdnB,"dsdnB");
+    hdf_output(hf,dsdYe,"dsdYe");
+    hdf_output(hf,dsdT,"dsdT");
+    hdf_output(hf,egv[0],"egv0");
+    hdf_output(hf,egv[1],"egv1");
+    hdf_output(hf,egv[2],"egv2");
+    hdf_output(hf,egv[3],"egv3");
+    hdf_output(hf,cs2,"cs2");
+    hf.close();
+  }
   
   return 0;
 }
@@ -12204,7 +12234,7 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
       new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::fix_cc),o2scl::cli::comm_option_both,
       1,"","eos_nuclei","fix_cc","doc/xml/classeos__nuclei.xml"},
-     {0,"stability","",1,1,"","",
+     {0,"stability","",1,3,"","",
       new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::stability),o2scl::cli::comm_option_both,
       1,"","eos_nuclei","stability","doc/xml/classeos__nuclei.xml"},
