@@ -908,23 +908,42 @@ public:
       <output file>, "all" <output file>, "all_lg" <output
       file>, or "point" <output file> <nB> <Ye> <T>
 
-      Verify the EOS, recompute if a point fails
-      and the write final results to the specified output file. This
-      function only verifies that the baryon density and electron
-      fraction equations are solved to within the current tolerance
-      and does not attempt to solve them again. The test-random
-      function is different, it actually re-solves the equations
-      to show the answer is correct. Thus, this function requires 
-      a bit less running time at each point. The first argument is a
-      mode parameter which determines which points will be
-      verified. 
+      Verify the EOS, recompute if a point fails and the write final
+      results to the specified output file. An table must be loaded
+      and the full model must be specified (either with select-model
+      or from the table).
+
+      This function only
+      verifies that the baryon density and electron fraction equations
+      are solved to within the current tolerance and does not attempt
+      to solve them again. The test-random function is different, it
+      actually re-solves the equations to show the answer is correct.
+      Thus, this function requires a bit less running time at each
+      point.
+
+      The first argument is a mode parameter which determines which
+      points will be verified. If it is "random", then random points
+      will be verified. If it is "random_lg", then random points with
+      baryon densities from 0.01 to 0.16 fm^{-3} will be verified. If
+      is is "all", then all points will be verified. If it is "all_lg"
+      then all points with baryon densities from 0.01 to 0.16 fm^{-3}
+      will be verified. If it is "point", then only the specified
+      point will be verified. If any point fails, the verification
+      procedure stops immediately and no further points are tested.
+
+      The baryon density, electron fraction, and temperature are
+      output to the screen, as well as the integer from \ref
+      eos_vary_dist(), which is 0 for success.
+
+      This function does not appear to require electrons and 
+      photons but only works with alg_mode=4. 
    */
   int verify(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Monte Carlo results with nuclei
-
+      
       Params.
-
+      
       Help.
    */
   int mcarlo_nuclei(std::vector<std::string> &sv, bool itive_com);

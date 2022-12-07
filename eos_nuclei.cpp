@@ -1958,6 +1958,7 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
   /// Compute the stability matrix and its eigenvalues at each point
   for (size_t i=ilo;i<ihi;i++) {
     double nB=nB_grid2[i];
+    cout << "nB is " << nB << endl;
     for (size_t j=jlo;j<jhi;j++) {
       double Ye=Ye_grid2[j];
       for (size_t k=klo;k<khi;k++) {
@@ -2093,25 +2094,22 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
 	cs2.get(ix)=cs_sq;
         
         if (true) {
-          if (cs2_verbose>0) {
-            cout << "cs2: " << cs_sq << endl;
-            cout << endl;
-          }
           neutron.n=nB*(1.0-Ye);
           proton.n=nB*Ye;
           thermo th;
           cs2_hom.get(ix)=cs2_func(neutron,proton,T_MeV/hc_mev_fm,th);
-          if (cs2_verbose>0) {
-            cout << "cs2 (hom): " << cs22 << endl;
+          if (cs2_verbose>0 || sv.size()>=4) {
+            cout << "cs2 (het,hom): " << cs_sq << " "
+                 << cs2_hom.get(ix) << endl;
           }
         }
 
         if (cs_sq>1.0) {
           //cout << tg_mun.get(ix) << " " << neutron.m << " "
           //<< electron.mu << " " << electron.n << endl;
-          cout << "Superluminal: nB,Ye,T[MeV],cs2:\n  "
+          cout << "Superluminal: nB,Ye,T[MeV],cs2,cs2_hom:\n  "
                << nB << " " << Ye << " " << T_MeV << " "
-               << cs_sq << endl;
+               << cs_sq << " " << cs2_hom.get(ix) << endl;
           superlum_count++;
           //exit(-1);
         }
@@ -12245,7 +12243,7 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
       new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::stability),o2scl::cli::comm_option_both,
       1,"","eos_nuclei","stability","doc/xml/classeos__nuclei.xml"},
-     {0,"verify","",1,4,"","",
+     {0,"verify","",2,4,"","",
       new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::verify),o2scl::cli::comm_option_both,
       1,"","eos_nuclei","verify","doc/xml/classeos__nuclei.xml"},
