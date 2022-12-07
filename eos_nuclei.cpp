@@ -2102,7 +2102,7 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
           thermo th;
           cs2_hom.get(ix)=cs2_func(neutron,proton,T_MeV/hc_mev_fm,th);
           if (cs2_verbose>0) {
-            cout << "cs2 (hom): " << cs22 << endl;
+            cout << "cs2 (hom): " << cs2_hom.get(ix) << endl;
           }
         }
 
