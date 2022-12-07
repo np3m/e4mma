@@ -242,6 +242,8 @@ class eos {
   
 public:
 
+  int cs2_verbose;
+  
   /** \brief Particle database
    */
   std::vector<o2scl::part_pdg_db::pdg_entry> part_db;

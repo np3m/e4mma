@@ -660,6 +660,8 @@ void eos::ns_fit(int row) {
 
 eos::eos() {
 
+  cs2_verbose=0;
+  
   // Nucleon init
   neutron.init(o2scl_settings.get_convert_units().convert
 	       ("kg","1/fm",o2scl_mks::mass_neutron),2.0);
@@ -1743,11 +1745,9 @@ double eos::cs2_func(fermion &n, fermion &p, double T, thermo &th) {
   double np=p.n;
   double nb=n.n+p.n;
 
-  //cout << "One: " << p.n << endl;
-  
-  free_energy_density_ep(nn,np,T);
-
-  //cout << "Two: " << p.n << endl;
+  double frx=free_energy_density_ep(nn,np,T);
+  thermo thx;
+  double enx=entropy(n,p,nn,np,T,thx);
   
   // Include the nucleon rest masses in the terms involving the
   // chemical potentials. We have to remember that the chemical
@@ -1756,16 +1756,17 @@ double eos::cs2_func(fermion &n, fermion &p, double T, thermo &th) {
   double den=th2.en*T+(neutron.mu+n.m)*n.n+(proton.mu+p.m)*p.n+
     elep.e.mu*elep.e.n;
   double en=th2.en;
-  //cout << "mun,mup,mue 1: " << neutron.mu << " " << proton.mu
-  //<< " " << elep.e.mu << endl;
+  if (cs2_verbose>0) {
+    cout << "fr (hom): " << frx << endl;
+    cout << "en (hom): " << enx << endl;
+    cout << "mun,mup,mue (hom): " << neutron.mu << " " << proton.mu
+         << " " << elep.e.mu << endl;
+    cout << "den1,den2,den3,den4 (hom):\n  " << th2.en*T << " "
+         << (n.mu+n.m)*n.n << " "
+         << (p.mu+p.m)*p.n << " "
+         << elep.e.mu << " " << elep.e.n << endl;
+  }
 
-  /*
-  cout << "den1,den2,den3,den4: " << th2.en*T << " "
-       << (n.mu+n.m)*n.n << " "
-       << (p.mu+p.m)*p.n << " "
-       << elep.e.mu << " " << elep.e.n << endl;
-  */
-  
   // Numerically compute required second derivatives
   double fac=1.0e3;
 
@@ -1832,19 +1833,19 @@ double eos::cs2_func(fermion &n, fermion &p, double T, thermo &th) {
   gd.h=fabs(T)/fac;
   double f_TT=-gd.deriv(T,f_TT_func);
 
-  /*
-  cout << "nn,np,en: " << nn << " " << np << " " << en << endl;
-  cout << "f_nnnn, f_nnnp, f_npnp, f_nnT, f_npT, f_TT, den 1:\n  "
-       << f_nnnn << " " << f_nnnp << " " << f_npnp << " "
-       << f_nnT << " " << f_npT << " " << f_TT << " "
-       << den << endl;
-  */
+  if (cs2_verbose>0) {
+    cout << "nn,np,en (hom): " << nn << " " << np << " " << en << endl;
+    cout << "f_nnnn, f_nnnp, f_npnp, f_nnT, f_npT, f_TT, den (hom):\n  "
+         << f_nnnn << " " << f_nnnp << " " << f_npnp << " "
+         << f_nnT << "\n  " << f_npT << " " << f_TT << " "
+         << den << endl;
+  }
   
   double cs_sq=(nn*nn*(f_nnnn-f_nnT*f_nnT/f_TT)+
 		2.0*nn*np*(f_nnnp-f_nnT*f_npT/f_TT)+
 		np*np*(f_npnp-f_npT*f_npT/f_TT)-
 		2.0*en*(nn*f_nnT/f_TT+np*f_npT/f_TT)-en*en/f_TT)/den;
-
+  
   return cs_sq;
 }
 
