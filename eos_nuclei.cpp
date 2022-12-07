@@ -12204,7 +12204,7 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
       new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::fix_cc),o2scl::cli::comm_option_both,
       1,"","eos_nuclei","fix_cc","doc/xml/classeos__nuclei.xml"},
-     {0,"stability","",1,1,"","",
+     {0,"stability","",1,3,"","",
       new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::stability),o2scl::cli::comm_option_both,
       1,"","eos_nuclei","stability","doc/xml/classeos__nuclei.xml"},
