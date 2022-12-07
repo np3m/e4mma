@@ -789,6 +789,10 @@ public:
       This function tests the EOS at randomly chosen points in
       (nB,Ye,T) space. If the new calculation and the stored result
       disagree, then the new result is stored in the table.
+      
+      If the additional argument "lg" is given, then 
+      the random points are all selected at densities
+      between 0.01 and 0.16 fm^{-3}.
    */
   int test_random(std::vector<std::string> &sv, bool itive_com);
   //@}
