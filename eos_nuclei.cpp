@@ -1822,6 +1822,13 @@ int eos_nuclei::eos_second_deriv(std::vector<std::string> &sv,
 int eos_nuclei::stability(std::vector<std::string> &sv,
                           bool itive_com) {
 
+
+  if (with_leptons==false) {
+    cerr << "The 'stability' command requires an EOS table with "
+         << "leptons and photons." << endl;
+    return 2;
+  }
+  
   // The six second derivatives we need to compute
   o2scl::tensor_grid<> dmundYe, dmundnB, dmupdYe, dsdT, dsdnB, dsdYe;
   o2scl::tensor_grid<> egv[4], cs2, cs2_hom;
@@ -6005,12 +6012,22 @@ int eos_nuclei::test_random(std::vector<std::string> &sv,
   }
 
   vector<double> nB_kist, Ye_kist, T_kist;
+
+  size_t ilo=0, ihi=n_nB2;
+  if (lg) {
+    ilo=vector_lookup(n_nB2,nB_grid2,0.01);
+    ihi=vector_lookup(n_nB2,nB_grid2,0.15);
+    // The random int below doesn't include ihi, so we increase
+    // this by one to make sure we include ihi
+    if (ihi<n_nB2) ihi++;
+    cout << "inB_lo, inB_hi: " << ilo << " " << ihi << endl;
+  }
   
   for(size_t it=0;it<ntests;it++) {
 
     size_t inB;
     if (lg) {
-      inB=rg.random_int(31)+242;
+      inB=rg.random_int(ihi-ilo)+ilo;
     } else {
       inB=rg.random_int(n_nB2);
     }
@@ -6902,6 +6919,9 @@ int eos_nuclei::verify(std::vector<std::string> &sv,
   if (mode=="random_lg" || mode=="all_lg") {
     inB_lo=vector_lookup(nB_grid2,0.01);
     inB_hi=vector_lookup(nB_grid2,0.15);
+    // The random int below doesn't include ihi, so we increase
+    // this by one to make sure we include ihi
+    if (inB_hi<n_nB2) inB_hi++;
     cout << "inB_lo, inB_hi: " << inB_lo << " " << inB_hi << endl;
   }
 
@@ -12439,13 +12459,14 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
   cl.par_list.insert(make_pair("strange_axis",&p_strange_axis));
   
   p_inc_hrg.b=&inc_hrg;
-  p_inc_hrg.help="";
+  p_inc_hrg.help="If true, include the hadron resonance gas (default false)";
   p_inc_hrg.doc_class="eos_nuclei";
   p_inc_hrg.doc_name="inc_hrg";
   p_inc_hrg.doc_xml_file="doc/xml/classeos__nuclei.xml";
   cl.par_list.insert(make_pair("inc_hrg",&p_inc_hrg));
   
   cl.set_comm_option_vec(nopt,options);
+  
   cl.xml_subs.push_back("<formula> $ 10^{-6} $ </formula>");
   cl.xml_subs.push_back("10⁻⁶");
   cl.xml_subs.push_back("<formula> $ N/Z $ </formula>");

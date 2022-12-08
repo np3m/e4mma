@@ -788,11 +788,12 @@ public:
 
       This function tests the EOS at randomly chosen points in
       (nB,Ye,T) space. If the new calculation and the stored result
-      disagree, then the new result is stored in the table.
+      disagree, then the new result is stored in the table. A table
+      must be loaded and the full model must be specified (either with
+      select-model or from the table).
       
-      If the additional argument "lg" is given, then 
-      the random points are all selected at densities
-      between 0.01 and 0.16 fm^{-3}.
+      If the additional argument "lg" is given, then the random points
+      are all selected at densities between 0.01 and 0.15 1/fm^3.
    */
   int test_random(std::vector<std::string> &sv, bool itive_com);
   //@}
@@ -926,7 +927,7 @@ public:
       will be verified. If it is "random_lg", then random points with
       baryon densities from 0.01 to 0.16 fm^{-3} will be verified. If
       is is "all", then all points will be verified. If it is "all_lg"
-      then all points with baryon densities from 0.01 to 0.16 fm^{-3}
+      then all points with baryon densities from 0.01 to 0.15 fm^{-3}
       will be verified. If it is "point", then only the specified
       point will be verified. If any point fails, the verification
       procedure stops immediately and no further points are tested.
@@ -985,6 +986,11 @@ public:
   /** \brief Compute the second derivatives and the stability matrix
       
       <output file> or <nB> <Ye> <T>
+
+      This command computes the second derivatives, speed of sound,
+      and stability matrix of the current EOS table. A table with
+      electrons must be loaded and the full model must be specified
+      (either with select-model or from the table).
 
       If one output file argument is specified, the \c stability
       command creates an output file with several additional data

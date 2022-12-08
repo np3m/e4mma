@@ -842,6 +842,9 @@ public:
       It uses a larger grid than the default EOS grid and stores the
       results in tensor_grid objects. If a file is specified, these
       tensor_grid objects are output to the specified file.
+
+      This function does not require an EOS table or any hadronic
+      model specification.
    */
   int test_eg(std::vector<std::string> &sv, bool itive_com);
 
