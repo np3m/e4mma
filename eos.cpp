@@ -158,7 +158,7 @@ double eos_crust_virial_v2::dbpndT_f(double T) {
 void eos_crust_virial_v2::fit(bool show_fit) {
 
   // Chi squared
-  double chi2;
+  double chi2=0.0;
 
   // Fitter class
   fit_nonlin<chi_fit_funct<vector<double>,ubmatrix,std::function<

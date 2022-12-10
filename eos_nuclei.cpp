@@ -1629,20 +1629,9 @@ int eos_nuclei::eos_deriv_v2(std::vector<std::string> &sv,
 	double dfdnB=tg_mun.get(ix);
 	double dfdYe=tg_mup.get(ix);
 
-	if (false && nB_grid2[i]>0.3) {
-	  cout << tg_mun.get(ix) << endl;
-	  cout << tg_mup.get(ix) << endl;
-	}
-	
 	tg_mun.get(ix)=dfdnB-dfdYe*Ye_grid2[j]/nB_grid2[i];
 	tg_mup.get(ix)=dfdnB-dfdYe*(Ye_grid2[j]-1.0)/nB_grid2[i];
 
-	if (false && nB_grid2[i]>0.3) {
-	  cout << tg_mun.get(ix) << endl;
-	  cout << tg_mup.get(ix) << endl;
-	  exit(-1);
-	}
-	
 	// E = F + T S
 	tg_Eint.get(ix)=tg_Fint.get(ix)+
 	  T_grid2[k]*tg_Sint.get(ix);
@@ -1929,6 +1918,21 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
       for (size_t k=0;k<n_T2;k++) {
         vector<size_t> ix={i,j,k};
 	dsdT.get(ix)=itp_sta_a.deriv(T_grid2[k])*hc_mev_fm;
+        /*
+          if (dsdT.get(ix)<=0.0) {
+          cout << "dsdT non-positive: " << endl;
+          if (k>0) {
+          cout << "nB: " << nB << " Ye: " << Ye_grid2[j] << " "
+          << " T: " << T_grid2[k-1] << std::endl;
+          }
+          cout << "nB: " << nB << " Ye: " << Ye_grid2[j] << " "
+          << " T: " << T_grid2[k] << std::endl;
+          if (k<n_T2-1) {
+          cout << "nB: " << nB << " Ye: " << Ye_grid2[j] << " "
+          << " T: " << T_grid2[k+1] << std::endl;
+          }
+          }
+        */
       }
     }
   }
@@ -2146,6 +2150,33 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
     hdf_output(hf,cs2_hom,"cs2_hom");
     hf.close();
   }
+
+  mh_tol_rel=1.0e-8;
+  
+  for (size_t i=ilo;i<ihi;i++) {
+    double nB=nB_grid2[i];
+    for (size_t j=jlo;j<jhi;j++) {
+      double Ye=Ye_grid2[j];
+      for (size_t k=klo;k<khi;k++) {
+	double T_MeV=T_grid2[k];
+        vector<size_t> ix={i,j,k};
+
+        if (dsdT.get(ix)<=0.0) {
+          cout << "nB, Ye, T [MeV]: " << nB << " " << Ye << " "
+               << T_MeV << endl;
+          vector<string> sv2={"",o2scl::dtos(nB),
+            o2scl::dtos(Ye),o2scl::dtos(T_MeV)};
+          point_nuclei(sv2,false);
+        }
+        
+      }
+    }
+  }
+
+  /*
+int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
+			     bool itive_com) {
+   */
   
   return 0;
 }
@@ -12408,6 +12439,13 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
   p_alg_mode.doc_name="alg_mode";
   p_alg_mode.doc_xml_file="doc/xml/classeos__nuclei.xml";
   cl.par_list.insert(make_pair("alg_mode",&p_alg_mode));
+  
+  p_cs2_verbose.i=&cs2_verbose;
+  p_cs2_verbose.help="";
+  p_cs2_verbose.doc_class="eos_nuclei";
+  p_cs2_verbose.doc_name="cs2_verbose";
+  p_cs2_verbose.doc_xml_file="doc/xml/classeos__nuclei.xml";
+  cl.par_list.insert(make_pair("cs2_verbose",&p_cs2_verbose));
   
   p_fixed_dist_alg.i=&fixed_dist_alg;
   p_fixed_dist_alg.help="";

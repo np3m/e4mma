@@ -242,6 +242,8 @@ class eos {
   
 public:
 
+  /** \brief If true, increase the verbosity for cs2
+   */
   int cs2_verbose;
   
   /** \brief Particle database

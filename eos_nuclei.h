@@ -545,6 +545,7 @@ public:
   o2scl::cli::parameter_double p_max_time;
   o2scl::cli::parameter_string p_nucleon_func;
   o2scl::cli::parameter_int p_alg_mode;
+  o2scl::cli::parameter_int p_cs2_verbose;
   o2scl::cli::parameter_int p_fixed_dist_alg;
   o2scl::cli::parameter_int p_function_verbose;
   o2scl::cli::parameter_string p_Ye_list;
