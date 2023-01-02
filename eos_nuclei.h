@@ -23,10 +23,13 @@
 #include <o2scl/nucmass_fit.h>
 #include <o2scl/slack_messenger.h>
 #include <o2scl/part_funcs.h>
+#include <o2scl/interpm_krige.h>
 #include <map>
 
 typedef boost::numeric::ublas::vector<double> ubvector;
 typedef boost::numeric::ublas::matrix<double> ubmatrix;
+typedef boost::numeric::ublas::matrix_row<ubmatrix> ubmatrix_row;
+typedef boost::numeric::ublas::matrix_column<ubmatrix> ubmatrix_col;
 
 /** \brief Compute partition functions using Fowler prescription
  */
@@ -77,6 +80,114 @@ public:
   */
   double delta_large_iand_prime(double E);
     
+};
+
+/** \brief Desc
+ */
+class interpm_krige_eos :
+  public o2scl::interpm_krige_optim<o2scl::mcovar_funct_rbf,
+                                    ubvector,ubmatrix,ubmatrix_row,
+                                    ubmatrix,ubmatrix_row,ubmatrix,
+                                    o2scl_linalg::matrix_invert_det_cholesky
+                                    <ubmatrix>,
+                                    std::vector<std::vector<double>> > {
+
+  /*
+  template<class func_t, class vec_t, class mat_x_t, class mat_x_row_t, 
+           class mat_y_t, class mat_y_row_t, class mat_inv_kxx_t,
+           class mat_inv_t=
+           o2scl_linalg::matrix_invert_det_cholesky<mat_inv_kxx_t>,
+           class vec_vec_t=std::vector<std::vector<double>> >
+  */
+  
+public:
+  
+  
+  /** \brief Desc
+   */
+  virtual double qual_fun(size_t iout, int &success) {
+    
+    // Select the row of the data matrix
+    ubmatrix_row yiout2(this->y,iout);
+    
+    double ret=0.0;
+    
+    success=0;
+    
+    size_t size=this->x.size1();
+    
+    time_t t1=0, t2=0, t3=0, t4=0;
+    
+    if (mode==mode_loo_cv_bf) {
+      
+      for(size_t k=0;k<size;k++) {
+        // Leave one observation out
+        
+        ubmatrix_row xk(this->x,k);
+        
+        ubvector y2(size-1);
+        o2scl::vector_copy_jackknife(size,yiout2,k,y2);
+        
+        // Construct the inverse of the KXX matrix. Note that we
+        // don't use the inv_KXX data member because of the size
+        // mismatch
+        ubmatrix inv_KXX2(size-1,size-1);
+        for(size_t irow=0;irow<size-1;irow++) {
+          size_t irow2=irow;
+          if (irow>=k) irow2++;        
+          ubmatrix_row xrow(this->x,irow2);
+          for(size_t icol=0;icol<size-1;icol++) {
+            size_t icol2=icol;
+            if (icol>=k) icol2++;        
+            ubmatrix_row xcol(this->x,icol2);
+            if (irow2>icol2) {
+              inv_KXX2(irow,icol)=inv_KXX2(icol,irow);
+            } else {
+              inv_KXX2(irow,icol)=(*cf)(iout,xrow,xcol);
+            }
+          }
+        }
+        
+        // Construct the inverse of KXX
+        this->mi.invert_inplace(size-1,inv_KXX2);
+        
+        // Inverse covariance matrix times function vector
+        ubvector Kinvf2(size-1);
+        o2scl_cblas::dgemv(o2scl_cblas::o2cblas_RowMajor,
+                           o2scl_cblas::o2cblas_NoTrans,
+                           size-1,size-1,1.0,inv_KXX2,y2,0.0,
+                           Kinvf2);
+        
+        
+        // The actual value
+        double yact=yiout2[k];
+        
+        // Compute the predicted value
+        double ypred=0.0;
+        ubvector kxx0(size-1);
+        for(size_t i=0;i<size-1;i++) {
+          size_t i2=i;
+          if (i>=k) i2++;        
+          ubmatrix_row xi2(this->x,i2);
+          kxx0[i]=(*cf)(iout,xi2,xk);
+          ypred+=kxx0[i]*Kinvf2[i];
+        }
+        
+        // AWS 12/31/22: This uses absolute, rather than relative
+        // differences to evaluate the quality, but this seems
+        // sensible to me because we are presuming the data has zero
+        // mean and unit standard deviation.
+        ret+=pow(yact-ypred,2.0);
+        
+      }
+      
+    }
+    
+    if (!isfinite(ret)) success=3;
+    
+    return ret;
+  }
+  
 };
 
 /** \brief Solve for the EOS including nuclei
@@ -682,6 +793,8 @@ public:
       Help.
    */
   int eos_deriv(std::vector<std::string> &sv, bool itive_com);
+
+  int interp_point(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Desc
    */

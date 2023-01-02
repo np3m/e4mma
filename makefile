@@ -62,6 +62,10 @@ eos_nuclei.o: eos_nuclei.cpp eos_nuclei.h
 	$(LMPI_CXX) $(LMPI_CFLAGS) \
 		-o eos_nuclei.o -c eos_nuclei.cpp
 
+eos_interp.o: eos_interp.cpp
+	$(LMPI_CXX) $(LMPI_CFLAGS) \
+		-o eos_interp.o -c eos_interp.cpp
+
 eos_had_skyrme_ext.o: eos_had_skyrme_ext.cpp \
 		eos_had_skyrme_ext.h
 	$(LMPI_CXX) $(LMPI_CFLAGS) -o eos_had_skyrme_ext.o \
@@ -96,7 +100,7 @@ neutrino/jacobi_rule.o: neutrino/jacobi_rule.cpp neutrino/jacobi_rule.hpp
 	$(LCXX) $(LCFLAGS) -DNUOPAC_HAS_GSL -o neutrino/jacobi_rule.o \
 		-c neutrino/jacobi_rule.cpp
 
-eos_nuclei: eos.o main.o eos_nuclei.o eos_had_skyrme_ext.o \
+eos_nuclei: eos.o main.o eos_nuclei.o eos_had_skyrme_ext.o eos_interp.o \
 		neutrino/Couplings.o neutrino/FluidState.o \
 		neutrino/FunctionIntegrator.o neutrino/Polarization.o \
 		neutrino/PolarizationNonRelv2Apr8.o neutrino/jacobi_rule.o 
@@ -148,6 +152,10 @@ eos_nuclei_nompi.o: eos_nuclei.cpp eos_nuclei.h
 	$(LCXX) $(LCFLAGS) \
 		-o eos_nuclei_nompi.o -c eos_nuclei.cpp
 
+eos_interp_nompi.o: eos_interp.cpp
+	$(LMPI_CXX) $(LMPI_CFLAGS) \
+		-o eos_interp_nompi.o -c eos_interp.cpp
+
 eos_had_skyrme_ext_nompi.o: eos_had_skyrme_ext.cpp \
 		eos_had_skyrme_ext.h
 	$(LCXX) $(LCFLAGS) -o eos_had_skyrme_ext_nompi.o \
@@ -160,7 +168,7 @@ main_eos_nompi.o: main_eos.cpp eos.h
 	$(LCXX) $(LCFLAGS) -o main_eos_nompi.o -c main_eos.cpp 
 
 eos_nuclei_nompi: eos_nompi.o main_nompi.o eos_nuclei_nompi.o \
-		eos_had_skyrme_ext_nompi.o \
+		eos_had_skyrme_ext_nompi.o eos_interp_nompi.o \
 		neutrino/Couplings.o neutrino/FluidState.o \
 		neutrino/FunctionIntegrator.o neutrino/Polarization.o \
 		neutrino/PolarizationNonRelv2Apr8.o neutrino/jacobi_rule.o 
@@ -172,7 +180,7 @@ eos_nuclei_nompi: eos_nompi.o main_nompi.o eos_nuclei_nompi.o \
 		-lreadline
 
 # A shorthand alias for eos_nuclei_nompi
-enn: eos_nompi.o main_nompi.o eos_nuclei_nompi.o \
+enn: eos_nompi.o main_nompi.o eos_nuclei_nompi.o eos_interp_nompi.o \
 		eos_had_skyrme_ext_nompi.o eos_nompi.o \
 		neutrino/Couplings.o neutrino/FluidState.o \
 		neutrino/FunctionIntegrator.o neutrino/Polarization.o \
