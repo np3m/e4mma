@@ -109,7 +109,7 @@ public:
     
     time_t t1=0, t2=0, t3=0, t4=0;
     
-    if (true || mode==mode_loo_cv_bf) {
+    if (mode==mode_loo_cv_bf) {
 
       for(size_t k=0;k<size;k++) {
         // Leave one observation out
@@ -172,6 +172,78 @@ public:
         
       }
       
+    } else if (mode==mode_final) {
+
+      if (verbose>2) {
+        std::cout << "Creating covariance matrix with size "
+                  << size << std::endl;
+      }
+      
+      // Construct the KXX matrix
+      Eigen::MatrixXd KXX(size,size);
+      for(size_t irow=0;irow<size;irow++) {
+        ubmatrix_row xrow(this->x,irow);
+        for(size_t icol=0;icol<size;icol++) {
+          ubmatrix_row xcol(this->x,icol);
+          if (irow>icol) {
+            KXX(irow,icol)=KXX(icol,irow);
+          } else {
+            KXX(irow,icol)=(*cf)(iout,xrow,xcol);
+          }
+        }
+      }
+      
+      if (verbose>2) {
+        std::cout << "Done creating covariance matrix with size "
+                  << size << std::endl;
+      }
+      
+      // Perform the matrix inversion and compute the determinant
+      
+      double lndet;
+      
+      if (timing) {
+        t1=time(0);          
+      }
+      
+      // Construct the inverse of KXX
+      if (verbose>2) {
+        std::cout << "Performing matrix inversion with size "
+                  << size << std::endl;
+      }
+      this->inv_KXX[iout].resize(size,size);
+      int cret=this->mi.invert_det(size,KXX,this->inv_KXX[iout],lndet);
+      if (cret!=0) {
+        success=2;
+        return 1.0e99;
+      }
+      
+      lndet=log(lndet);
+      
+      if (verbose>2) {
+        std::cout << "Done performing matrix inversion with size "
+                  << size << std::endl;
+      }
+      
+      if (timing) {
+        t2=time(0);          
+        std::cout << "Matrix inversion took "
+                  << t2-t1 << " seconds." << std::endl;
+      }
+      
+      // Inverse covariance matrix times function vector
+      this->Kinvf[iout].resize(size);
+      o2scl_cblas::dgemv(o2scl_cblas::o2cblas_RowMajor,
+                         o2scl_cblas::o2cblas_NoTrans,
+                         size,size,1.0,this->inv_KXX[iout],
+                         yiout2,0.0,this->Kinvf[iout]);
+      
+      if (timing) {
+        t3=time(0);          
+        std::cout << "Matrix vector multiply took "
+                  << t3-t2 << " seconds." << std::endl;
+      }
+        
     }
     
     if (!isfinite(ret)) success=3;
