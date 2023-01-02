@@ -186,8 +186,9 @@ enn: eos_nompi.o main_nompi.o eos_nuclei_nompi.o eos_interp_nompi.o \
 		neutrino/FunctionIntegrator.o neutrino/Polarization.o \
 		neutrino/PolarizationNonRelv2Apr8.o neutrino/jacobi_rule.o 
 	$(LCXX) $(LCFLAGS) -o enn eos_nompi.o main_nompi.o \
-		neutrino/Couplings.o neutrino/FluidState.o \
-		neutrino/FunctionIntegrator.o neutrino/Polarization.o \
+		eos_interp_nompi.o neutrino/Couplings.o \
+		neutrino/FluidState.o neutrino/FunctionIntegrator.o \
+		neutrino/Polarization.o \
 		neutrino/PolarizationNonRelv2Apr8.o neutrino/jacobi_rule.o \
 		eos_nuclei_nompi.o eos_had_skyrme_ext_nompi.o $(LIBS)
 

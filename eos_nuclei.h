@@ -82,34 +82,25 @@ public:
     
 };
 
-/** \brief Desc
+/** \brief Specialized Gaussian process interpolation object
  */
 class interpm_krige_eos :
-  public o2scl::interpm_krige_optim<o2scl::mcovar_funct_rbf,
-                                    ubvector,ubmatrix,ubmatrix_row,
-                                    ubmatrix,ubmatrix_row,ubmatrix,
-                                    o2scl_linalg::matrix_invert_det_cholesky
-                                    <ubmatrix>,
-                                    std::vector<std::vector<double>> > {
+  public o2scl::interpm_krige_optim
+<o2scl::mcovar_funct_rbf,ubvector,ubmatrix,ubmatrix_row,
+ ubmatrix,ubmatrix_row,Eigen::MatrixXd,
+ o2scl_linalg::matrix_invert_det_eigen<Eigen::MatrixXd>,
+ std::vector<std::vector<double>> > {
 
-  /*
-  template<class func_t, class vec_t, class mat_x_t, class mat_x_row_t, 
-           class mat_y_t, class mat_y_row_t, class mat_inv_kxx_t,
-           class mat_inv_t=
-           o2scl_linalg::matrix_invert_det_cholesky<mat_inv_kxx_t>,
-           class vec_vec_t=std::vector<std::vector<double>> >
-  */
-  
 public:
   
   
-  /** \brief Desc
+  /** \brief Function to evaluate quality of interpolation
    */
   virtual double qual_fun(size_t iout, int &success) {
-    
+
     // Select the row of the data matrix
     ubmatrix_row yiout2(this->y,iout);
-    
+
     double ret=0.0;
     
     success=0;
@@ -118,20 +109,20 @@ public:
     
     time_t t1=0, t2=0, t3=0, t4=0;
     
-    if (mode==mode_loo_cv_bf) {
-      
+    if (true || mode==mode_loo_cv_bf) {
+
       for(size_t k=0;k<size;k++) {
         // Leave one observation out
-        
+
         ubmatrix_row xk(this->x,k);
-        
+
         ubvector y2(size-1);
         o2scl::vector_copy_jackknife(size,yiout2,k,y2);
         
         // Construct the inverse of the KXX matrix. Note that we
         // don't use the inv_KXX data member because of the size
         // mismatch
-        ubmatrix inv_KXX2(size-1,size-1);
+        Eigen::MatrixXd inv_KXX2(size-1,size-1);
         for(size_t irow=0;irow<size-1;irow++) {
           size_t irow2=irow;
           if (irow>=k) irow2++;        
@@ -794,6 +785,8 @@ public:
    */
   int eos_deriv(std::vector<std::string> &sv, bool itive_com);
 
+  /** \brief Desc
+   */
   int interp_point(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Desc

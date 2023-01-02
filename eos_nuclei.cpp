@@ -12200,7 +12200,7 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
   
   eos::setup_cli(cl,false);
   
-  static const int nopt=25;
+  static const int nopt=26;
 
   o2scl::comm_option_s options[nopt]=
     {{0,"eos-deriv","",0,0,"","",
@@ -12259,6 +12259,10 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
       new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::compare_tables),o2scl::cli::comm_option_both,
       1,"","eos_nuclei","compare_tables","doc/xml/classeos__nuclei.xml"},
+     {0,"interp-point","",4,4,"","",
+      new o2scl::comm_option_mfptr<eos_nuclei>
+      (this,&eos_nuclei::interp_point),o2scl::cli::comm_option_both,
+      1,"","eos_nuclei","interp_point","doc/xml/classeos__nuclei.xml"},
      {0,"stats","",0,0,"","",
       new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::stats),o2scl::cli::comm_option_both,
