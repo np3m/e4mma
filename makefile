@@ -66,6 +66,10 @@ eos_interp.o: eos_interp.cpp
 	$(LMPI_CXX) $(LMPI_CFLAGS) \
 		-o eos_interp.o -c eos_interp.cpp
 
+eos_neutrino.o: eos_neutrino.cpp
+	$(LMPI_CXX) $(LMPI_CFLAGS) \
+		-o eos_neutrino.o -c eos_neutrino.cpp
+
 eos_had_skyrme_ext.o: eos_had_skyrme_ext.cpp \
 		eos_had_skyrme_ext.h
 	$(LMPI_CXX) $(LMPI_CFLAGS) -o eos_had_skyrme_ext.o \
@@ -103,7 +107,8 @@ neutrino/jacobi_rule.o: neutrino/jacobi_rule.cpp neutrino/jacobi_rule.hpp
 eos_nuclei: eos.o main.o eos_nuclei.o eos_had_skyrme_ext.o eos_interp.o \
 		neutrino/Couplings.o neutrino/FluidState.o \
 		neutrino/FunctionIntegrator.o neutrino/Polarization.o \
-		neutrino/PolarizationNonRelv2Apr8.o neutrino/jacobi_rule.o 
+		neutrino/PolarizationNonRelv2Apr8.o neutrino/jacobi_rule.o \
+		eos_neutrino.o
 	$(LMPI_CXX) $(LMPI_CFLAGS) -o eos_nuclei eos.o main.o \
 		eos_nuclei.o eos_had_skyrme_ext.o \
 		neutrino/Couplings.o neutrino/FluidState.o \
@@ -156,6 +161,10 @@ eos_interp_nompi.o: eos_interp.cpp
 	$(LMPI_CXX) $(LMPI_CFLAGS) \
 		-o eos_interp_nompi.o -c eos_interp.cpp
 
+eos_neutrino_nompi.o: eos_neutrino.cpp
+	$(LMPI_CXX) $(LMPI_CFLAGS) \
+		-o eos_neutrino_nompi.o -c eos_neutrino.cpp
+
 eos_had_skyrme_ext_nompi.o: eos_had_skyrme_ext.cpp \
 		eos_had_skyrme_ext.h
 	$(LCXX) $(LCFLAGS) -o eos_had_skyrme_ext_nompi.o \
@@ -171,7 +180,8 @@ eos_nuclei_nompi: eos_nompi.o main_nompi.o eos_nuclei_nompi.o \
 		eos_had_skyrme_ext_nompi.o eos_interp_nompi.o \
 		neutrino/Couplings.o neutrino/FluidState.o \
 		neutrino/FunctionIntegrator.o neutrino/Polarization.o \
-		neutrino/PolarizationNonRelv2Apr8.o neutrino/jacobi_rule.o 
+		neutrino/PolarizationNonRelv2Apr8.o neutrino/jacobi_rule.o \
+		eos_neutrino_nompi.o
 	$(LCXX) $(LCFLAGS) -o eos_nuclei_nompi eos_nompi.o main_nompi.o \
 		neutrino/Couplings.o neutrino/FluidState.o \
 		neutrino/FunctionIntegrator.o neutrino/Polarization.o \
@@ -184,11 +194,12 @@ enn: eos_nompi.o main_nompi.o eos_nuclei_nompi.o eos_interp_nompi.o \
 		eos_had_skyrme_ext_nompi.o eos_nompi.o \
 		neutrino/Couplings.o neutrino/FluidState.o \
 		neutrino/FunctionIntegrator.o neutrino/Polarization.o \
-		neutrino/PolarizationNonRelv2Apr8.o neutrino/jacobi_rule.o 
+		neutrino/PolarizationNonRelv2Apr8.o neutrino/jacobi_rule.o \
+		eos_neutrino_nompi.o
 	$(LCXX) $(LCFLAGS) -o enn eos_nompi.o main_nompi.o \
 		eos_interp_nompi.o neutrino/Couplings.o \
 		neutrino/FluidState.o neutrino/FunctionIntegrator.o \
-		neutrino/Polarization.o \
+		neutrino/Polarization.o eos_neutrino_nompi.o \
 		neutrino/PolarizationNonRelv2Apr8.o neutrino/jacobi_rule.o \
 		eos_nuclei_nompi.o eos_had_skyrme_ext_nompi.o $(LIBS)
 

@@ -113,6 +113,7 @@ int eos_nuclei::interp_point(std::vector<std::string> &sv,
   ike.full_min=true;
   ike.def_mmin.verbose=1;
   mcovar_funct_rbf mfr;
+  mfr.noise=1.0e-2;
   mfr.len.resize(3);
   
   //vector<double> len_list={0.1,0.3,0.5,0.75,1.0,2.0,3.0,4.0,5.0,6.0,
@@ -171,23 +172,23 @@ int eos_nuclei::interp_point(std::vector<std::string> &sv,
     double F_T=out[0]/hc_mev_fm/dTdk;
 
     {
-      vector<double> pointx={((double)inB+1),((double)iYe),((double)iT)};
+      vector<size_t> pointx={((size_t)inB+1),((size_t)iYe),((size_t)iT)};
       double F_nB2=(tg_F.get(pointx)-tg_F.get(point))/hc_mev_fm/
         (nB_grid2[inB+1]-nB_grid2[inB]);
       cout << "F_nB: " << F_nB << " " << F_nB2 << " "
            << F_nB2/F_nB << endl;
     }
     {
-      vector<double> pointx={((double)inB),((double)iYe+1),((double)iT)};
+      vector<size_t> pointx={((size_t)inB),((size_t)iYe+1),((size_t)iT)};
       double F_Ye2=(tg_F.get(pointx)-tg_F.get(point))/hc_mev_fm/
         (Ye_grid2[iYe+1]-Ye_grid2[iYe]);
       cout << "F_Ye: " << F_Ye << " " << F_Ye2 << " "
            << F_Ye2/F_Ye << endl;
     }
     {
-      vector<double> pointx={((double)iT),((double)iYe),((double)iT+1)};
-      double F_T2=(tg_F.get(pointx)-tg_F.get(point))/
-        (T_grid2[iT+1]-T_grid2[iT])/pow(hc_mev_fm,2.0);
+      vector<size_t> pointx={((size_t)inB),((size_t)iYe),((size_t)iT+1)};
+      double F_T2=(tg_F.get(pointx)-tg_F.get(point))/hc_mev_fm/
+        (T_grid2[iT+1]-T_grid2[iT]);
       cout << "F_T: " << F_T << " " << F_T2 << endl;
     }
     
@@ -201,6 +202,13 @@ int eos_nuclei::interp_point(std::vector<std::string> &sv,
     vector<double> point2={nB_cent,Ye_cent,T_cent*hc_mev_fm};
 
     cout << "F[MeV]: " << tg_F.get(point) << " " << Fintp << endl;
+    
+    for(int kk=-window;kk<=window;kk++) {
+      vector<size_t> pointy={((size_t)inB),((size_t)iYe),((size_t)iT+kk)};
+      ike.eval(pointy,out);
+      double Fintpx=out[0];
+      cout << kk << " " << Fintpx << " " << tg_F.get(pointy) << endl;
+    }
     cout << "mun,mup,mue: ";
     cout << tg_mun.interp_linear(point2) << " ";
     cout << tg_mup.interp_linear(point2) << " ";
