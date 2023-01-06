@@ -164,11 +164,32 @@ int eos_nuclei::interp_point(std::vector<std::string> &sv,
     double Fintp=out[0];
     
     ike.deriv(point,out,0);
-    double F_nB=out[0]/hc_mev_fm/dnBdi*nB;
+    double F_nB=out[0]/hc_mev_fm/dnBdi;
     ike.deriv(point,out,1);
-    double F_Ye=out[0]/hc_mev_fm/dYedj*nB;
+    double F_Ye=out[0]/hc_mev_fm/dYedj;
     ike.deriv(point,out,2);
     double F_T=out[0]/hc_mev_fm/dTdk;
+
+    {
+      vector<double> pointx={((double)inB+1),((double)iYe),((double)iT)};
+      double F_nB2=(tg_F.get(pointx)-tg_F.get(point))/hc_mev_fm/
+        (nB_grid2[inB+1]-nB_grid2[inB]);
+      cout << "F_nB: " << F_nB << " " << F_nB2 << " "
+           << F_nB2/F_nB << endl;
+    }
+    {
+      vector<double> pointx={((double)inB),((double)iYe+1),((double)iT)};
+      double F_Ye2=(tg_F.get(pointx)-tg_F.get(point))/hc_mev_fm/
+        (Ye_grid2[iYe+1]-Ye_grid2[iYe]);
+      cout << "F_Ye: " << F_Ye << " " << F_Ye2 << " "
+           << F_Ye2/F_Ye << endl;
+    }
+    {
+      vector<double> pointx={((double)iT),((double)iYe),((double)iT+1)};
+      double F_T2=(tg_F.get(pointx)-tg_F.get(point))/
+        (T_grid2[iT+1]-T_grid2[iT])/pow(hc_mev_fm,2.0);
+      cout << "F_T: " << F_T << " " << F_T2 << endl;
+    }
     
     double mun=Fintp/hc_mev_fm-Ye*F_Ye+nB*F_nB;
     double mup=Fintp/hc_mev_fm+(1.0-Ye)*F_Ye+nB*F_nB;
@@ -192,6 +213,7 @@ int eos_nuclei::interp_point(std::vector<std::string> &sv,
          << mup*hc_mev_fm << " " << mue*hc_mev_fm << endl;
     cout << "en: " << tg_S.interp_linear(point2)*nB << " ";
     cout << en*hc_mev_fm << endl;
+    exit(-1);
     
     ike.deriv2(point,out,0,0);
     double F_nBnB=out[0]/hc_mev_fm;
