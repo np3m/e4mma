@@ -1938,6 +1938,7 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
   int unstable_count=0;
   int superlum_count=0;
   int total_count=0;
+  int dPdnB_negative_count=0;
 
   string outfile;
   size_t ilo=0, ihi=n_nB2;
@@ -1973,6 +1974,15 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
 	double T_MeV=T_grid2[k];
         vector<size_t> ix={i,j,k};
 
+        // Check dPdnB
+        if (i<n_nB2) {
+          vector<size_t> ixp1={i,j,k};
+          double dP=tg_P.get(ixp1)-tg_P.get(ix);
+          if (dP<0.0) {
+            dPdnB_negative_count++;
+          }
+        }
+        
 	// Entropy and densities
 	double en=tg_S.get(ix)*nB;
 	double nn2=(1.0-Ye)*nB;
@@ -2097,7 +2107,8 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
 		      2.0*en*(nn2*f_nnT/f_TT+np2*f_npT/f_TT)-en*en/f_TT)/den;
 
 	cs2.get(ix)=cs_sq;
-        
+
+        // This code reuquires a model to compute the homogeneous cs2
         if (true) {
           neutron.n=nB*(1.0-Ye);
           proton.n=nB*Ye;
@@ -2167,11 +2178,6 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
     }
   }
 
-  /*
-int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
-			     bool itive_com) {
-   */
-  
   return 0;
 }
 
@@ -8072,6 +8078,7 @@ int eos_nuclei::edit_data(std::vector<std::string> &sv,
   for(int inB=0;inB<((int)n_nB2);inB++) {
     for(int iYe=0;iYe<((int)n_Ye2);iYe++) {
       for(int iT=0;iT<((int)n_T2);iT++) {
+
         vector<size_t> ix={((size_t)inB),((size_t)iYe),((size_t)iT)};
 	
 	vars["inB"]=inB;
@@ -8113,16 +8120,27 @@ int eos_nuclei::edit_data(std::vector<std::string> &sv,
           ((size_t)iT)};
         
 	if (inB>0 && inB<((int)n_nB2)-1) {
-	  double a_low=tg_A.get(ixm1);
-	  double a_mid=tg_A.get(ix);
-	  double a_high=tg_A.get(ixp1);
-	  if (fabs(a_mid-a_low)>fabs(a_mid-a_high)) {
-	    vars["dAdnB"]=fabs(a_mid-a_low);
-	  } else {
-	    vars["dAdnB"]=fabs(a_mid-a_high);
-	  }
-	}
-
+          vars["dPdnB"]=(tg_P.get(ixp1)-tg_P.get(ixm1))/
+            (nB_grid2[inB+1]-nB_grid2[inB-1]);
+        } else if (inB==0) {
+          vars["dPdnB"]=(tg_P.get(ixp1)-tg_P.get(ix))/
+            (nB_grid2[inB+1]-nB_grid2[inB]);
+        } else {
+          vars["dPdnB"]=(tg_P.get(ix)-tg_P.get(ixm1))/
+            (nB_grid2[inB]-nB_grid2[inB-1]);
+        }
+ 
+	if (inB>0 && inB<((int)n_nB2)-1) {
+          vars["dAdnB"]=(tg_A.get(ixp1)-tg_A.get(ixm1))/
+            (nB_grid2[inB+1]-nB_grid2[inB-1]);
+        } else if (inB==0) {
+          vars["dAdnB"]=(tg_A.get(ixp1)-tg_A.get(ix))/
+            (nB_grid2[inB+1]-nB_grid2[inB]);
+        } else {
+          vars["dAdnB"]=(tg_A.get(ix)-tg_A.get(ixm1))/
+            (nB_grid2[inB]-nB_grid2[inB-1]);
+        }
+ 
 	if (alg_mode==2 || alg_mode==3 || alg_mode==4) {
 	  vars["A_min"]=tg_A_min.get(ix);
 	  vars["A_max"]=tg_A_max.get(ix);

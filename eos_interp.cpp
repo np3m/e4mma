@@ -29,6 +29,60 @@ using namespace o2scl;
 using namespace o2scl_const;
 using namespace o2scl_hdf;
 
+#ifdef O2SCL_NEVER_DEFINED
+
+/** \brief
+    
+    Compute the free energy per baryon at (jnB,jYe,jT) assuming a
+    correction centered at (inB,iYe,iT) given parameters in \c pars
+*/
+double eos_nuclei::F_interp
+(size_t inB, size_t iYe, size_t iT, double r_inner,
+ double r_outer, vector<size_t> nB_list,
+ vector<size_t> Ye_list, vector<size_t> T_list,
+ vector<double> F_list, size_t np, ubvector &pars,
+ size_t i) {
+    
+  size_t jnB=nB_list[i];
+  size_t jYe=Ye_list[i];
+  size_t jT=T_list[i];
+  
+  double dnB=((double)jnB)-((double)inB);
+  double dYe=((double)jYe)-((double)iYe);
+  double dT=((double)jT)-((double)iT);
+  
+  double F_func=pars[0]+
+    pars[1]*dnB+pars[2]*dnB*dnB+
+    pars[3]*dYe+pars[4]*dYe*dYe+
+    pars[5]*dT+pars[6]*dT*dT+
+    pars[7]*dnB*dYe+pars[8]*dnB*dT+pars[9]*dYe*dT;
+  vector<size_t> ix={jnB,jYe,jT};
+  double F_orig=tg_F.get(ix);
+  double rad=sqrt(dnB*dnB+dYe*dYe+dT*dT);
+  double ret=(F_func-F_orig)/(1.0+exp(rad-r_inner)/(r_outer-r_inner)*8.0)+
+    F_orig;
+  
+  return ret;
+}
+
+/** \brief Using parameters in \c p, compute the 
+    relative deviations in \c f
+*/
+double eos_nuclei::interp_min
+(size_t inB, size_t iYe, size_t iT, double r_inner,
+ double r_outer, vector<size_t> nB_list,
+ vector<size_t> Ye_list, vector<size_t> T_list,
+ vector<double> F_list, size_t np, const vec_t &p) {
+
+  for(size_t i=0;i<nd;i++) {
+    double yi=F_new(np,p,i);
+    f[i]=(yi-Flist[i])/0.1;
+  }
+  return;
+}
+
+#endif
+
 int eos_nuclei::interp_point(std::vector<std::string> &sv,
                              bool itive_com) {
 
