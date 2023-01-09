@@ -110,8 +110,8 @@ eos_nuclei: eos.o main.o eos_nuclei.o eos_had_skyrme_ext.o eos_interp.o \
 		neutrino/PolarizationNonRelv2Apr8.o neutrino/jacobi_rule.o \
 		eos_neutrino.o
 	$(LMPI_CXX) $(LMPI_CFLAGS) -o eos_nuclei eos.o main.o \
-		eos_nuclei.o eos_had_skyrme_ext.o \
-		neutrino/Couplings.o neutrino/FluidState.o \
+		eos_nuclei.o eos_had_skyrme_ext.o eos_interp.o \
+		neutrino/Couplings.o neutrino/FluidState.o eos_neutrino.o \
 		neutrino/FunctionIntegrator.o neutrino/Polarization.o \
 		neutrino/PolarizationNonRelv2Apr8.o neutrino/jacobi_rule.o \
 		$(LIBS) -lreadline
