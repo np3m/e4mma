@@ -1979,6 +1979,8 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
           vector<size_t> ixp1={i,j,k};
           double dP=tg_P.get(ixp1)-tg_P.get(ix);
           if (dP<0.0) {
+          cout << "dPdnB<0: nB,Ye,T[MeV]:\n  "
+               << nB << " " << Ye << " " << T_MeV << endl;
             dPdnB_negative_count++;
           }
         }
@@ -2137,6 +2139,7 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
   cout << "Unstable count: " << unstable_count << endl;
   cout << "Superluminal count: " << superlum_count << endl;
   cout << "Total count: " << total_count << endl;
+  cout << "dPdnB<0 count: " << dPdnB_negative_count << endl;
 
   if (outfile.length()>0) {
     hdf_file hf;
@@ -2156,24 +2159,26 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
     hf.close();
   }
 
-  mh_tol_rel=1.0e-8;
-  
-  for (size_t i=ilo;i<ihi;i++) {
-    double nB=nB_grid2[i];
-    for (size_t j=jlo;j<jhi;j++) {
-      double Ye=Ye_grid2[j];
-      for (size_t k=klo;k<khi;k++) {
-	double T_MeV=T_grid2[k];
-        vector<size_t> ix={i,j,k};
-
-        if (dsdT.get(ix)<=0.0) {
-          cout << "nB, Ye, T [MeV]: " << nB << " " << Ye << " "
-               << T_MeV << endl;
-          vector<string> sv2={"",o2scl::dtos(nB),
-            o2scl::dtos(Ye),o2scl::dtos(T_MeV)};
-          point_nuclei(sv2,false);
+  if (false) {
+    mh_tol_rel=1.0e-8;
+    
+    for (size_t i=ilo;i<ihi;i++) {
+      double nB=nB_grid2[i];
+      for (size_t j=jlo;j<jhi;j++) {
+        double Ye=Ye_grid2[j];
+        for (size_t k=klo;k<khi;k++) {
+          double T_MeV=T_grid2[k];
+          vector<size_t> ix={i,j,k};
+          
+          if (dsdT.get(ix)<=0.0) {
+            cout << "nB, Ye, T [MeV]: " << nB << " " << Ye << " "
+                 << T_MeV << endl;
+            vector<string> sv2={"",o2scl::dtos(nB),
+              o2scl::dtos(Ye),o2scl::dtos(T_MeV)};
+            point_nuclei(sv2,false);
+          }
+          
         }
-        
       }
     }
   }
