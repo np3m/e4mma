@@ -1937,13 +1937,21 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
 
   int unstable_count=0;
   int superlum_count=0;
-  int total_count=0;
   int dPdnB_negative_count=0;
+  int PS_negative_count=0;
+  int total_count=0;
 
+  vector<size_t> i_nB_fix;
+  vector<size_t> i_Ye_fix;
+  vector<size_t> i_T_fix;
+  vector<size_t> type_fix;
+  
   string outfile;
   size_t ilo=0, ihi=n_nB2;
   size_t jlo=0, jhi=n_Ye2;
   size_t klo=0, khi=n_T2;
+  ilo=260;
+  ihi=262;
   if (sv.size()>=4) {
     double nBx=o2scl::function_to_double(sv[1]);
     double Yex=o2scl::function_to_double(sv[2]);
@@ -1964,7 +1972,7 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
   /// Compute the stability matrix and its eigenvalues at each point
   for (size_t i=ilo;i<ihi;i++) {
     double nB=nB_grid2[i];
-    cout << "nB is " << nB << endl;
+    cout << "nB at " << i << " is " << nB << endl;
     for (size_t j=jlo;j<jhi;j++) {
       double Ye=Ye_grid2[j];
       for (size_t k=klo;k<khi;k++) {
@@ -1974,14 +1982,34 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
 	double T_MeV=T_grid2[k];
         vector<size_t> ix={i,j,k};
 
+        // Check entropy and pressure are positive
+        if (tg_P.get(ix)<0.0 || tg_S.get(ix)<0.0) {
+          cout << "P or S <0: nB,Ye,T[MeV]:\n  "
+               << nB << " " << Ye << " " << T_MeV << " "
+               << tg_P.get(ix) << " " << tg_S.get(ix) << endl;
+          PS_negative_count++;
+          i_nB_fix.push_back(i);
+          i_Ye_fix.push_back(j);
+          i_T_fix.push_back(k);
+          type_fix.push_back(1);
+        }
+        
         // Check dPdnB
         if (i<n_nB2) {
-          vector<size_t> ixp1={i,j,k};
+          vector<size_t> ixp1={i+1,j,k};
           double dP=tg_P.get(ixp1)-tg_P.get(ix);
           if (dP<0.0) {
-          cout << "dPdnB<0: nB,Ye,T[MeV]:\n  "
-               << nB << " " << Ye << " " << T_MeV << endl;
+            cout << "dPdnB<0: nB,Ye,T[MeV]:\n  "
+                 << nB << " " << Ye << " " << T_MeV << endl;
             dPdnB_negative_count++;
+            i_nB_fix.push_back(i);
+            i_Ye_fix.push_back(j);
+            i_T_fix.push_back(k);
+            type_fix.push_back(2);
+            i_nB_fix.push_back(i+1);
+            i_Ye_fix.push_back(j);
+            i_T_fix.push_back(k);
+            type_fix.push_back(2);
           }
         }
         
@@ -2068,6 +2096,10 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
                << sing[0] << " " << sing[1] << " " << sing[2]
                << " " << sing[3] << endl;
           unstable_count++;
+          i_nB_fix.push_back(i);
+          i_Ye_fix.push_back(j);
+          i_T_fix.push_back(k);
+          type_fix.push_back(3);
           //char ch;
           //cin >> ch;
         }
@@ -2110,7 +2142,7 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
 
 	cs2.get(ix)=cs_sq;
 
-        // This code reuquires a model to compute the homogeneous cs2
+        // This code requires a model to compute the homogeneous cs2
         if (true) {
           neutron.n=nB*(1.0-Ye);
           proton.n=nB*Ye;
@@ -2122,26 +2154,176 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
                  << cs2_hom.get(ix) << endl;
 	  }
         }
-
-        if (cs_sq>1.0) {
+        
+        if (cs_sq>1.0 || !std::isfinite(cs_sq)) {
           //cout << tg_mun.get(ix) << " " << neutron.m << " "
           //<< electron.mu << " " << electron.n << endl;
           cout << "Superluminal: nB,Ye,T[MeV],cs2,cs2_hom:\n  "
                << nB << " " << Ye << " " << T_MeV << " "
                << cs_sq << " " << cs2_hom.get(ix) << endl;
           superlum_count++;
+          i_nB_fix.push_back(i);
+          i_Ye_fix.push_back(j);
+          i_T_fix.push_back(k);
+          type_fix.push_back(4);
           //exit(-1);
         }
       }
     }
   }
 
-  cout << "Unstable count: " << unstable_count << endl;
-  cout << "Superluminal count: " << superlum_count << endl;
+  cout << "Unstable count (type 3): " << unstable_count << endl;
+  cout << "Superluminal count (type 4): " << superlum_count << endl;
+  cout << "dPdnB<0 count (type 2): " << dPdnB_negative_count << endl;
+  cout << "P|S<0 count (type 1): " << PS_negative_count << endl;
   cout << "Total count: " << total_count << endl;
-  cout << "dPdnB<0 count: " << dPdnB_negative_count << endl;
 
+  recompute=true;
+
+  if (false) {
+    
+    for(size_t i=0;i<i_nB_fix.size();i++) {
+      
+      if (type_fix[i]==1 || type_fix[i]==2) {
+        
+        double nB=nB_grid2[i_nB_fix[i]];
+        double Ye=Ye_grid2[i_Ye_fix[i]];
+        double T_MeV=T_grid2[i_T_fix[i]];
+        
+        cout << "nB, Ye, T [MeV]: " << nB << " " << Ye << " "
+             << T_MeV << endl;
+        
+        vector<string> sv2={"",o2scl::dtos(nB),
+          o2scl::dtos(Ye),o2scl::dtos(T_MeV)};
+        
+        vector<size_t> ix={i_nB_fix[i],i_Ye_fix[i],i_T_fix[i]};
+        tg_flag.get(ix)=5;
+        
+        mh_tol_rel=1.0e-8;
+        point_nuclei(sv2,false);
+        
+        if (tg_flag.get(ix)<10) {
+          
+          mh_tol_rel=1.0e-7;
+          point_nuclei(sv2,false);
+          
+          if (tg_flag.get(ix)<10) {
+            
+            mh_tol_rel=1.0e-6;
+            point_nuclei(sv2,false);
+            
+            if (tg_flag.get(ix)<10) {
+              
+              mh_tol_rel=1.0e-4;
+              point_nuclei(sv2,false);
+            }
+            
+          }  
+        }
+        
+        cout << endl;
+      }
+    }
+
+  }
+  
+  if (false) {
+
+    cout << "Here: " << i_nB_fix.size() << endl;
+    
+    vector<bool> in_a_group(i_nB_fix.size());
+    vector_set_all(in_a_group,false);
+    
+    vector<vector<size_t>> i_nB_groups, i_Ye_groups, i_T_groups;
+    bool group_done=false;
+
+    int countx=0;
+    
+    while (group_done==false) {
+      
+      bool found_one=false;
+      
+      for(size_t i=0;i<i_nB_fix.size();i++) {
+        
+        if (in_a_group[i]==false) {
+          found_one=true;
+          
+          for(size_t j=0;j<i_nB_groups.size() &&
+                in_a_group[i]==false;j++) {
+            for(size_t k=0;k<i_nB_groups[j].size() &&
+                  in_a_group[i]==false;k++) {
+              
+              int i1=i_nB_fix[i];
+              int i2=i_Ye_fix[i];
+              int i3=i_T_fix[i];
+              int i4=i_nB_groups[j][k];
+              int i5=i_Ye_groups[j][k];
+              int i6=i_T_groups[j][k];
+              if (abs(i1-i4)+abs(i2-i5)+abs(i3-i6)<=2) {
+                /*
+                  cout << "Add to group: " << i << " " << i_nB_fix[i] << " "
+                  << i_Ye_fix[i] << " " << i_T_fix[i] << " with "
+                  << i4 << " " << i5 << " " << i6 << endl;
+                */
+                i_nB_groups[j].push_back(i1);
+                i_Ye_groups[j].push_back(i2);
+                i_T_groups[j].push_back(i3);
+                in_a_group[i]=true;
+              }
+            }
+          }
+          
+          if (in_a_group[i]==false) {
+            //cout << "Start group: " << i << " " << i_nB_fix[i] << " "
+            //<< i_Ye_fix[i] << " " << i_T_fix[i] << endl;
+            i_nB_groups.push_back({i_nB_fix[i]});
+            i_Ye_groups.push_back({i_Ye_fix[i]});
+            i_T_groups.push_back({i_T_fix[i]});
+            in_a_group[i]=true;
+            //char ch;
+            //std::cin >> ch;
+          }
+          
+        }
+        
+      }
+      
+      if (found_one==false) {
+        group_done=true;
+      }
+    }
+
+    int tot=0;
+    for(size_t i=0;i<i_nB_groups.size();i++) {
+      cout << "Group: ";
+      cout.width(3);
+      cout << i << " ";
+      cout.width(3);
+      cout << i_nB_groups[i].size() << " ";
+      cout.width(3);
+      cout << i_Ye_groups[i].size() << " ";
+      cout.width(3);
+      cout << i_T_groups[i].size() << " ";
+      tot+=i_nB_groups[i].size();
+      if (i_nB_groups[i].size()>2) {
+        cout << vector_mean<vector<size_t>>(i_nB_groups[i]) << " "
+             << vector_stddev<vector<size_t>>(i_nB_groups[i]) << " ";
+        cout << vector_mean<vector<size_t>>(i_Ye_groups[i]) << " "
+             << vector_stddev<vector<size_t>>(i_Ye_groups[i]) << " ";
+        cout << vector_mean<vector<size_t>>(i_T_groups[i]) << " "
+             << vector_stddev<vector<size_t>>(i_T_groups[i]) << endl;
+      } else {
+        cout << 0.0 << " " << 0.0 << " ";
+        cout << 0.0 << " " << 0.0 << " ";
+        cout << 0.0 << " " << 0.0 << endl;
+      }
+    }
+    cout << "tot: " << tot << endl;
+
+  }
+      
   if (outfile.length()>0) {
+    
     hdf_file hf;
     hf.open_or_create(outfile);
     hdf_output(hf,dmundnB,"dmundnB");
@@ -2157,30 +2339,6 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
     hdf_output(hf,cs2,"cs2");
     hdf_output(hf,cs2_hom,"cs2_hom");
     hf.close();
-  }
-
-  if (false) {
-    mh_tol_rel=1.0e-8;
-    
-    for (size_t i=ilo;i<ihi;i++) {
-      double nB=nB_grid2[i];
-      for (size_t j=jlo;j<jhi;j++) {
-        double Ye=Ye_grid2[j];
-        for (size_t k=klo;k<khi;k++) {
-          double T_MeV=T_grid2[k];
-          vector<size_t> ix={i,j,k};
-          
-          if (dsdT.get(ix)<=0.0) {
-            cout << "nB, Ye, T [MeV]: " << nB << " " << Ye << " "
-                 << T_MeV << endl;
-            vector<string> sv2={"",o2scl::dtos(nB),
-              o2scl::dtos(Ye),o2scl::dtos(T_MeV)};
-            point_nuclei(sv2,false);
-          }
-          
-        }
-      }
-    }
   }
 
   return 0;
