@@ -1950,8 +1950,6 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
   size_t ilo=0, ihi=n_nB2;
   size_t jlo=0, jhi=n_Ye2;
   size_t klo=0, khi=n_T2;
-  ilo=260;
-  ihi=262;
   if (sv.size()>=4) {
     double nBx=o2scl::function_to_double(sv[1]);
     double Yex=o2scl::function_to_double(sv[2]);
@@ -2180,7 +2178,7 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
 
   recompute=true;
 
-  if (false) {
+  if (true) {
     
     for(size_t i=0;i<i_nB_fix.size();i++) {
       
@@ -2291,7 +2289,6 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
       if (found_one==false) {
         group_done=true;
       }
-    }
 
     int tot=0;
     for(size_t i=0;i<i_nB_groups.size();i++) {
@@ -2319,7 +2316,8 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
       }
     }
     cout << "tot: " << tot << endl;
-
+    
+    }
   }
       
   if (outfile.length()>0) {
