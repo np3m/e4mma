@@ -1,7 +1,7 @@
 /*
   -------------------------------------------------------------------
   
-  Copyright (C) 2018-2022, Xingfu Du, Zidu Lin, and Andrew W. Steiner
+  Copyright (C) 2018-2023, Xingfu Du, Zidu Lin, and Andrew W. Steiner
   
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -19,48 +19,14 @@
   -------------------------------------------------------------------
 */
 #include "eos_nuclei.h"
-#include <cubature.h>
 
 using namespace std;
 using namespace o2scl;
-
-/*
-int f(unsigned ndim, const double *x, void *fdata,
-      unsigned fdim, double *fval) {
-  double x1=x[0];
-  double y1=x[1];
-  fval[0]=exp(-pow(x1-2.0,2.0)-pow(y1-3.0,2.0));
-  return 0;
-}
-
-int f2(unsigned ndim, const double *x, void *fdata,
-       unsigned fdim, double *fval) {
-  double t=x[0];
-  double x1=1.0+t/(1.0-t);
-  double dxdt=1.0/(1.0-t)/(1.0-t);
-  double y1=x[1];
-  fval[0]=exp(-pow(x1-2.0,2.0)-pow(y1-3.0,2.0))*dxdt;
-  return 0;
-}
-*/
 
 int main(int argc, char *argv[]) {
 
   cout.setf(ios::scientific);
 
-  /*
-  double xmin[2]={0,0};
-  double xmax[2]={10,10};
-  double val, err;
-  hcubature(1,f,0,2,xmin,xmax,0,0,1.0e-8,ERROR_INDIVIDUAL,&val,&err);
-  cout << val << " " << err << endl;
-
-  xmin[0]=0.0;
-  xmax[0]=1.0;
-  hcubature(1,f2,0,2,xmin,xmax,0,0,1.0e-8,ERROR_INDIVIDUAL,&val,&err);
-  cout << val << " " << err << endl;
-  */
-  
 #ifndef NO_MPI
   // Init MPI
   MPI_Init(&argc,&argv);

@@ -57,8 +57,6 @@
 #include "tensor.h" 
 #include "constants.h"
 
-#include <cubature.h>
-
 #include <o2scl/constants.h>
 #include <o2scl/funct.h>
 #include <o2scl/hdf_io.h>
@@ -799,14 +797,16 @@ double Polarization::CalculateInverseMFP(double E1, bool pnm) {
     ip.pnm=pnm;
 
     cout << "Starting cubature." << endl;
-    int ret=hcubature(1,integrand_new,&ip,2,xmin,xmax,0,0,1.0e-4,
-                      ERROR_INDIVIDUAL,&val,&err);
+    exit(-1);
+    int ret;
+      //hcubature(1,integrand_new,&ip,2,xmin,xmax,0,0,1.0e-4,
+      //ERROR_INDIVIDUAL,&val,&err);
     cout << "ret,err,val: " << ret << " " << val << " " << err << endl;
     integral=val;
 
     ip.sign=1;
-    ret=hcubature(1,integrand_new,&ip,2,xmin,xmax,0,0,1.0e-4,
-                  ERROR_INDIVIDUAL,&val,&err);
+    //ret=hcubature(1,integrand_new,&ip,2,xmin,xmax,0,0,1.0e-4,
+    //ERROR_INDIVIDUAL,&val,&err);
     cout << "ret,err,val: " << ret << " " << val << " " << err << endl;
     exit(-1);
     integral+=val;
