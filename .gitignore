@@ -1,13 +1,11 @@
-nt*.out
 eos_nompi
 eos
 eos_nuclei
 eos_nuclei_nompi
-mt.o2
-mt2.o2
+dist.o2
 *.o
 eos
 *~
-dist.o2
 enn
-tt4.o2
+makefile.aws
+
