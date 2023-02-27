@@ -82,6 +82,8 @@ public:
     
 };
 
+#ifdef O2SCL_NEVER_DEFINED
+
 /** \brief Specialized Gaussian process interpolation object
  */
 class interpm_krige_eos :
@@ -252,6 +254,8 @@ public:
   }
   
 };
+
+#endif
 
 /** \brief Solve for the EOS including nuclei
 
