@@ -161,6 +161,8 @@ int eos_nuclei::interp_point(std::vector<std::string> &sv,
   }
 
   ubmatrix ix2=ix;
+
+#ifdef O2SCL_NEVER_DEFINED
   
   interpm_krige_eos ike;
   ike.mode=ike.mode_loo_cv_bf;
@@ -307,6 +309,8 @@ int eos_nuclei::interp_point(std::vector<std::string> &sv,
                   np2*np2*(f_npnp-f_npT*f_npT/f_TT)-
                   2.0*en*(nn2*f_nnT/f_TT+np2*f_npT/f_TT)-en*en/f_TT)/den;
 
+#endif
+    
     exit(-1);
   }
   
