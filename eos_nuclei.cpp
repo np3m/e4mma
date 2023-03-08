@@ -5748,9 +5748,11 @@ int eos_nuclei::write_results(std::string fname) {
   hf.setd("hc",hc_mev_fm);
   hf.setd("alpha_em",o2scl_const::fine_structure_f<double>());
 
-  if (with_leptons || include_muons) {
+  if (with_leptons) {
     hdf_output(hf,tg_mue,"mue");
-    hdf_output(hf,tg_Ymu,"Ymu");
+    if (include_muons) {
+      hdf_output(hf,tg_Ymu,"Ymu");
+    }
   }
   
   if (derivs_computed) {
@@ -5767,17 +5769,19 @@ int eos_nuclei::write_results(std::string fname) {
 
   vector<string> oth_names={"Xd","Xt","XHe3","XLi4","flag",
     "log_xn","log_xp"};
-  if (alg_mode==2 || alg_mode==3 || alg_mode==4) {
-    oth_names.push_back("A_min");
-    oth_names.push_back("A_max");
-    oth_names.push_back("NmZ_min");
-    oth_names.push_back("NmZ_max");
-  }
   vector<string> oth_units={"","","","","","",""};
   if (alg_mode==2 || alg_mode==3 || alg_mode==4) {
+    oth_names.push_back("A_min");
     oth_units.push_back("");
+    oth_names.push_back("A_max");
     oth_units.push_back("");
+    oth_names.push_back("NmZ_min");
     oth_units.push_back("");
+    oth_names.push_back("NmZ_max");
+    oth_units.push_back("");
+  }
+  if (include_muons && with_leptons) {
+    oth_names.push_back("Ymu");
     oth_units.push_back("");
   }
 
@@ -5893,7 +5897,7 @@ int eos_nuclei::read_results(std::string fname) {
 
   vector<string> tg_list;
   vector<string> standard_list={"A","E","Eint","F","Fint","P",
-    "Pint","S","Sint","Xalpha","Xn","Xp","Ymu","Z","mue",
+    "Pint","S","Sint","Xalpha","Xn","Xp","Xnuclei","Z","mue",
     "mun","mup"};
   hf.list_objects_by_type("tensor_grid",tg_list,false,1);
   for(size_t i=0;i<n_oth;i++) {

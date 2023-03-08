@@ -70,7 +70,7 @@ public:
   /** \brief Integrand when \f$ \delta \f$ is greater than \f$ E_d \f$
 
       From eq. (25) and (30) in Shen 10.
-   */
+  */
   double delta_large_iand(double E);
     
   /** \brief Integrand for temperature derivative when \f$ \delta
@@ -82,180 +82,59 @@ public:
     
 };
 
-#ifdef O2SCL_NEVER_DEFINED
-
 /** \brief Specialized Gaussian process interpolation object
  */
 class interpm_krige_eos :
   public o2scl::interpm_krige_optim
-<o2scl::mcovar_funct_rbf,ubvector,ubmatrix,ubmatrix_row,
+<std::vector<o2scl::mcovar_funct_rbf_noise>,ubvector,ubmatrix,ubmatrix_row,
  ubmatrix,ubmatrix_row,Eigen::MatrixXd,
- o2scl_linalg::matrix_invert_det_eigen<Eigen::MatrixXd>,
- std::vector<std::vector<double>> > {
-
+ o2scl_linalg::matrix_invert_det_eigen<Eigen::MatrixXd>> {
+  
 public:
-  
-  
-  /** \brief Function to evaluate quality of interpolation
+
+  /** \brief Desc
    */
-  virtual double qual_fun(size_t iout, int &success) {
+  std::vector<size_t> index_list;
 
-    // Select the row of the data matrix
-    ubmatrix_row yiout2(this->y,iout);
+  /// \name grids
+  //@{
+  std::vector<double> nB_grid;
+  std::vector<double> Ye_grid;
+  std::vector<double> T_grid;
+  //@}
 
-    double ret=0.0;
-    
-    success=0;
-    
-    size_t size=this->x.size1();
-    
-    time_t t1=0, t2=0, t3=0, t4=0;
-    
-    if (mode==mode_loo_cv_bf) {
+  /// \name data
+  //@{
+  o2scl::tensor_grid<> *tgp_F;
+  o2scl::tensor_grid<> *tgp_P;
+  o2scl::tensor_grid<> *tgp_S;
+  o2scl::tensor_grid<> *tgp_mun;
+  o2scl::tensor_grid<> *tgp_mup;
+  o2scl::tensor_grid<> *tgp_mue;
+  //@}
 
-      for(size_t k=0;k<size;k++) {
-        // Leave one observation out
-
-        ubmatrix_row xk(this->x,k);
-
-        ubvector y2(size-1);
-        o2scl::vector_copy_jackknife(size,yiout2,k,y2);
-        
-        // Construct the inverse of the KXX matrix. Note that we
-        // don't use the inv_KXX data member because of the size
-        // mismatch
-        Eigen::MatrixXd inv_KXX2(size-1,size-1);
-        for(size_t irow=0;irow<size-1;irow++) {
-          size_t irow2=irow;
-          if (irow>=k) irow2++;        
-          ubmatrix_row xrow(this->x,irow2);
-          for(size_t icol=0;icol<size-1;icol++) {
-            size_t icol2=icol;
-            if (icol>=k) icol2++;        
-            ubmatrix_row xcol(this->x,icol2);
-            if (irow2>icol2) {
-              inv_KXX2(irow,icol)=inv_KXX2(icol,irow);
-            } else {
-              inv_KXX2(irow,icol)=(*cf)(iout,xrow,xcol);
-            }
-          }
-        }
-        
-        // Construct the inverse of KXX
-        this->mi.invert_inplace(size-1,inv_KXX2);
-        
-        // Inverse covariance matrix times function vector
-        ubvector Kinvf2(size-1);
-        o2scl_cblas::dgemv(o2scl_cblas::o2cblas_RowMajor,
-                           o2scl_cblas::o2cblas_NoTrans,
-                           size-1,size-1,1.0,inv_KXX2,y2,0.0,
-                           Kinvf2);
-        
-        
-        // The actual value
-        double yact=yiout2[k];
-        
-        // Compute the predicted value
-        double ypred=0.0;
-        ubvector kxx0(size-1);
-        for(size_t i=0;i<size-1;i++) {
-          size_t i2=i;
-          if (i>=k) i2++;        
-          ubmatrix_row xi2(this->x,i2);
-          kxx0[i]=(*cf)(iout,xi2,xk);
-          ypred+=kxx0[i]*Kinvf2[i];
-        }
-        
-        // AWS 12/31/22: This uses absolute, rather than relative
-        // differences to evaluate the quality, but this seems
-        // sensible to me because we are presuming the data has zero
-        // mean and unit standard deviation.
-        ret+=pow(yact-ypred,2.0);
-        
-      }
-      
-    } else if (mode==mode_final) {
-
-      if (verbose>2) {
-        std::cout << "Creating covariance matrix with size "
-                  << size << std::endl;
-      }
-      
-      // Construct the KXX matrix
-      Eigen::MatrixXd KXX(size,size);
-      for(size_t irow=0;irow<size;irow++) {
-        ubmatrix_row xrow(this->x,irow);
-        for(size_t icol=0;icol<size;icol++) {
-          ubmatrix_row xcol(this->x,icol);
-          if (irow>icol) {
-            KXX(irow,icol)=KXX(icol,irow);
-          } else {
-            KXX(irow,icol)=(*cf)(iout,xrow,xcol);
-          }
-        }
-      }
-      
-      if (verbose>2) {
-        std::cout << "Done creating covariance matrix with size "
-                  << size << std::endl;
-      }
-      
-      // Perform the matrix inversion and compute the determinant
-      
-      double lndet;
-      
-      if (timing) {
-        t1=time(0);          
-      }
-      
-      // Construct the inverse of KXX
-      if (verbose>2) {
-        std::cout << "Performing matrix inversion with size "
-                  << size << std::endl;
-      }
-      this->inv_KXX[iout].resize(size,size);
-      int cret=this->mi.invert_det(size,KXX,this->inv_KXX[iout],lndet);
-      if (cret!=0) {
-        success=2;
-        return 1.0e99;
-      }
-      
-      lndet=log(lndet);
-      
-      if (verbose>2) {
-        std::cout << "Done performing matrix inversion with size "
-                  << size << std::endl;
-      }
-      
-      if (timing) {
-        t2=time(0);          
-        std::cout << "Matrix inversion took "
-                  << t2-t1 << " seconds." << std::endl;
-      }
-      
-      // Inverse covariance matrix times function vector
-      this->Kinvf[iout].resize(size);
-      o2scl_cblas::dgemv(o2scl_cblas::o2cblas_RowMajor,
-                         o2scl_cblas::o2cblas_NoTrans,
-                         size,size,1.0,this->inv_KXX[iout],
-                         yiout2,0.0,this->Kinvf[iout]);
-      
-      if (timing) {
-        t3=time(0);          
-        std::cout << "Matrix vector multiply took "
-                  << t3-t2 << " seconds." << std::endl;
-      }
-        
-    }
-    
-    if (!isfinite(ret)) success=3;
-    
-    return ret;
-  }
+  double mneut;
+  double mprot;
+  
+  /** \brief Desc
+   */
+  virtual void set(std::vector<double> &nB_grid2,
+                   std::vector<double> &Ye_grid2,
+                   std::vector<double> &T_grid2,
+                   o2scl::tensor_grid<> &tg_F,
+                   o2scl::tensor_grid<> &tg_P,
+                   o2scl::tensor_grid<> &tg_S,
+                   o2scl::tensor_grid<> &tg_mun,
+                   o2scl::tensor_grid<> &tg_mup,
+                   o2scl::tensor_grid<> &tg_mue,
+                   double mn, double mp,
+                   int window=0);
+  
+  /** \brief Desc
+   */
+  virtual int addl_const(double &ret);
   
 };
-
-#endif
 
 /** \brief Solve for the EOS including nuclei
 
@@ -263,20 +142,20 @@ public:
 
     .. todo::
 
-       Class eos_nuclei:
+    Class eos_nuclei:
 
-       - Rename n_nB2 to n_nB, etc.
-       - Make child of eos_sn_base
-       - Use \c loaded instead of testing n_nB2==0
-       - Move select_high_T to the parent
-       - 1/15/22: I'm not sure if fix_cc() is really useful or 
-         not anymore?
-       - 1/15/22: I'm not sure the non-derivative virial solver
-         is needed anymore?
-       - Future: Allow different form for the NS fit
-       - Future: Allow user to specify where data files are
-         located or to manually specify the nuclear model?
-       - Future: Allow RMF rather than just Skyrme.
+    - Rename n_nB2 to n_nB, etc.
+    - Make child of eos_sn_base
+    - Use \c loaded instead of testing n_nB2==0
+    - Move select_high_T to the parent
+    - 1/15/22: I'm not sure if fix_cc() is really useful or 
+    not anymore?
+    - 1/15/22: I'm not sure the non-derivative virial solver
+    is needed anymore?
+    - Future: Allow different form for the NS fit
+    - Future: Allow user to specify where data files are
+    located or to manually specify the nuclear model?
+    - Future: Allow RMF rather than just Skyrme.
 
     \endverbatim
 
@@ -350,7 +229,7 @@ public:
   */
   std::string T_grid_spec;
   /** \brief The function for default strangeness grid
-  */
+   */
   std::string S_grid_spec;
   //@}
 
@@ -361,7 +240,7 @@ public:
       <no parameters>
 
       Fit the FRDM mass model.
-   */
+  */
   int fit_frdm(std::vector<std::string> &sv,
 	       bool itive_com);
   
@@ -492,7 +371,7 @@ public:
       
       This applies to the \c point-nuclei command and the eos_vary_ZN()
       function.
-   */
+  */
   bool show_all_nuclei;
 
   /** \brief If true, ensure that the nuclear radius is less than the
@@ -571,7 +450,7 @@ public:
 
   /** \brief If true, survey the nB and Ye equations near a failed point
       (default false)
-   */
+  */
   bool survey_eqs;
 
   /** \brief If true, output all of the data necessary for a full EOS
@@ -588,7 +467,7 @@ public:
   /** \brief If true, include electrons and photons
 
       Requires that derivs_computed is also true
-   */
+  */
   bool with_leptons;
   //@}
 
@@ -609,7 +488,7 @@ public:
 
   /** \brief Ranges for randomly selected ranges in 
       \ref eos_fixed_dist()
-   */
+  */
   std::vector<double> fd_rand_ranges;
 
   /** \brief Object for sending slack messages
@@ -621,7 +500,7 @@ public:
 
       Can be several comma-separated ranges e.g. "1-3,5-7,59-60".
       Zero-indexed.
-   */
+  */
   std::string Ye_list;
   //@}
 
@@ -847,7 +726,7 @@ public:
       [out file]
 
       Help.
-   */
+  */
   int generate_table(std::vector<std::string> &sv, bool itive_com);
   //@}
 
@@ -858,7 +737,7 @@ public:
       <no parameters>
 
       Help.
-   */
+  */
   int eos_deriv(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Desc
@@ -878,7 +757,7 @@ public:
       <no parameters>
       
       Help.
-   */
+  */
   int add_eg(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Construct an electrons and photon table
@@ -886,7 +765,7 @@ public:
       <output file>
 
       Help.
-   */
+  */
   int eg_table(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Edit an EOS table
@@ -898,7 +777,7 @@ public:
       remaining two arguments are given, then the values of [tensor to
       modify] for the selected points are changed to the result of the
       function [value func.].
-   */
+  */
   int edit_data(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Merge two output tables to create a third
@@ -915,7 +794,7 @@ public:
       but the second has a non-zero flag with a smaller Fint, or (iv)
       the second table has a non-zero flag and the first does not.
       After the merge, the number of points modified is reported.
-   */
+  */
   int merge_tables(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Compare two output tables
@@ -932,7 +811,7 @@ public:
       F, E, P, and S, are also available for comparisons. Any current "+
       EOS data stored is cleared before the comparison. If the "+
       nB, Ye, or T grids do not match, then no comparison is performed.
-   */
+  */
   int compare_tables(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Output convergence statistics and simple checks
@@ -944,7 +823,7 @@ public:
       the nuclear fractions add up to 1, checks that the free energy
       internal energy, and entropy are consistent, and checks the
       thermodynamic identity.
-   */
+  */
   int stats(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Compute and/or show EOS results at one (n_B,Y_e,T) point
@@ -962,7 +841,7 @@ public:
       successful it is stored in the current tables. If \ref show_all_nuclei
       is true, then a file named \c dist.o2 is created
       which holds the full nuclear distribution.
-   */
+  */
   int point_nuclei(std::vector<std::string> &sv, bool itive_com);
   
   /** \brief Test an EOS at random points in (nB,Ye,T)
@@ -977,7 +856,7 @@ public:
       
       If the additional argument "lg" is given, then the random points
       are all selected at densities between 0.01 and 0.15 1/fm^3.
-   */
+  */
   int test_random(std::vector<std::string> &sv, bool itive_com);
   //@}
 
@@ -989,7 +868,7 @@ public:
 
       Loads an EOS table in to memory. In the case
       where MPI is used, only one MPI rank reads the table at a time.
-   */
+  */
   int load(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Output an EOS table to a file
@@ -998,7 +877,7 @@ public:
 
       Loads an EOS table in to memory. In the case
       where MPI is used, only one MPI rank writes the table at a time.
-   */
+  */
   int output(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Write results to an HDF5 file
@@ -1018,14 +897,14 @@ public:
       <output file>
 
       Help.
-   */
+  */
   int write_nuclei(std::vector<std::string> &sv,
-			       bool itive_com);
+                   bool itive_com);
 
   /** \brief Load nuclear masses
 
       This function is called in <tt>main()</tt>.
-   */
+  */
   void load_nuclei();
   
   /** \brief Write nuclear masses to a file
@@ -1075,7 +954,7 @@ public:
       second loop is electron fraction and the inner loop is density.
       This function requires a table has been loaded and the EOS is
       specified. It has no parallelization support.
-   */
+  */
   int increase_density(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Increase nB to optimize the phase transition
@@ -1083,7 +962,7 @@ public:
       <output file>
 
       Help
-   */
+  */
   int fix_cc(std::vector<std::string> &sv, bool itive_com);
   
   /** \brief Verify the EOS
@@ -1121,7 +1000,7 @@ public:
 
       This function does not appear to require electrons and 
       photons but only works with alg_mode=4. 
-   */
+  */
   int verify(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Monte Carlo results with nuclei
@@ -1129,7 +1008,7 @@ public:
       Params.
       
       Help.
-   */
+  */
   int mcarlo_nuclei(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Monte Carlo results with nuclei (v2)
@@ -1137,7 +1016,7 @@ public:
       <nB> <Ye> <T> <N> <filename>
 
       Help
-   */
+  */
   int mcarlo_nuclei2(std::vector<std::string> &sv, bool itive_com);
   
   /** \brief Monte Carlo neutrino opacity in beta equilibrium
@@ -1145,7 +1024,7 @@ public:
       <filename> [n_point]
 
       Help
-   */
+  */
   int mcarlo_beta(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Monte Carlo neutrino opacity in pure neutron matter
@@ -1153,7 +1032,7 @@ public:
       <filename> [n_point]
 
       Help
-   */
+  */
   int mcarlo_neutron(std::vector<std::string> &sv, bool itive_com);
 
   /// Compute the baryon number fractions and put them in \c X
@@ -1196,7 +1075,7 @@ public:
       Select 0 for the original DSH fit, 1 for NRAPR, 
       2 for Sk chi 414, 3 for Skchi450, 4 for Skchi500, 5 for ?, "+
       and 6 for Sk chi m* (the default).
-   */
+  */
   int select_high_T(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Compute eos with nuclei by searching minimum
@@ -1213,7 +1092,7 @@ public:
       Params.
 
       Help.
-   */
+  */
   int maxwell(std::vector<std::string> &sv, bool itive_com);
   
   int max_fun(size_t nv, const ubvector &x, ubvector &y,
