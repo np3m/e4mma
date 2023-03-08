@@ -20,15 +20,29 @@ help:
 # LCFLAGS are the local C++ compiler flags
 
 # Default settings
-LCXX = $(CXX)
-LMPI_CXX = $(MPI_CXX)
-LIBS = -L/usr/local/lib -lo2scl_hdf -lo2scl_eos -lo2scl_part -lo2scl \
-        -lhdf5 -lgsl -lreadline
-LMPI_CFLAGS = -O3 -std=c++11 -DTEMP_UPDATES -DO2SCL_MPI \
-	-DO2SCL_OPENMP -fopenmp
-LCFLAGS = -O3 -std=c++11 -DNO_MPI -DTEMP_UPDATES \
-	-DO2SCL_OPENMP -fopenmp
-
+LIBS = -L/usr/lib/x86_64-linux-gnu/hdf5/serial -lcubature\
+	-lo2scl -lhdf5 -lgsl \
+	-lreadline -lpython3.10
+FLIBS = -lgfortran
+# PLIBS = -L/usr/lib/x86_64-linux-gnu/ 
+LCXX = g++
+LFC = gfortran
+LMPI_FC = mpif90
+LMPI_CXX = mpic++
+LCFLAGS = -I/usr/lib/x86_64-linux-gnu/hdf5/serial/include \
+	-DNO_MPI -DNO_OPENMP -DO2SCL_PYTHON \
+	-I/usr/include/python3.10 
+LCFLAGS_OMP = -I/usr/lib/x86_64-linux-gnu/hdf5/serial/include \
+	-DNO_MPI -DO2SCL_PYTHON \
+	-fopenmp -DTEMP_UPDATES\
+	-I/usr/include/python3.10 
+LFFLAGS = -O3
+LMPI_CFLAGS = -I/usr/lib/x86_64-linux-gnu/hdf5/serial/include \
+	-DO2SCL_MPI -DO2SCL_OPENMP -DO2SCL_PYTHON \
+	-fopenmp -DTEMP_UPDATES \
+	-I/usr/include/python3.10 
+	
+COMMENT = "default"
 # ----------------------------------------------------------------
 # UTK-specific settings
 # ----------------------------------------------------------------
@@ -434,4 +448,32 @@ mn-test:
 		-load ~/data/eos/final/fid_6_30_21.o2 \
 		-mcarlo-neutron mn_test.o2
 
+mbnew:
+	./eos_nuclei \
+		-set select_cs2_test 0 \
+		-select-model $(P_FIDUCIAL) \
+		-set a_virial 10 -set b_virial 10 \
+		-set extend_frdm 0 \
+		-set fd_A_max 600 -set max_ratio 7.0 \
+		-set fixed_dist_alg 1999 \
+		-set function_verbose 0 \
+		-load data/fid_3_5_22.o2 \
+		-set recompute 1 \
+		-point-nuclei 0.1 0.4 30 
+
+mbpi:
+	./eos_nuclei \
+		-set select_cs2_test 0 \
+		-select-model $(P_FIDUCIAL) \
+		-set a_virial 10 -set b_virial 10 \
+		-set extend_frdm 0 \
+		-set inc_hrg true \
+		-set fd_A_max 600 -set max_ratio 7.0 \
+		-set fixed_dist_alg 1999 \
+		-set function_verbose 1000 \
+		-set cs2_verbose 2 \
+		-load data/fid_3_5_22.o2 \
+		-hrg-load ./pdg_uh_nonp.dat \
+		-set recompute 1 \
+		-point-nuclei 0.1 0.4 30 
 -include makefile.aws

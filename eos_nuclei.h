@@ -25,6 +25,7 @@
 #include <o2scl/part_funcs.h>
 #include <o2scl/interpm_krige.h>
 #include <map>
+#include "fore.h"
 
 typedef boost::numeric::ublas::vector<double> ubvector;
 typedef boost::numeric::ublas::matrix<double> ubmatrix;
@@ -315,6 +316,9 @@ public:
   */
   o2scl::boson_rel relb;
   o2scl::boson_eff effb;
+
+  /// pion class to compute pion properties
+  fore fr;
 
   bool inc_hrg;
   

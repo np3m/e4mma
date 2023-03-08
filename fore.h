@@ -215,7 +215,7 @@ public:
           values=0.0; }
       }
       return values; };
-  
+    cout << "interp_phase_sum done" << endl;
     return;
   }
   
@@ -502,6 +502,17 @@ public:
 
   void calc_mu(boson &b,double Y_p, double T, double n_B, double mu_n, 
                   double mu_p, double meff_n, double meff_p) {
+    for(double x=0.01;x<500.01;x+=(500.0-0.01)/29.0) {
+      p_list.push_back(x);
+    }
+    for(double x=520.0;x<2000.01;x+=(2000-520)/9.0) {
+      p_list.push_back(x);
+    }
+    for(double x=2150.0;x<10000.01;x+=(1e4-2150)/9.0) {
+      p_list.push_back(x);
+    }
+    get_phase_shifts();
+    interp_phase_shift_sum(pseudo_pot_params);
     single_point_data(Y_p, T, b.mu, n_B, mu_n, mu_p, meff_n, meff_p);
     b.n=Y_pi;
     b.pr=press_pi;

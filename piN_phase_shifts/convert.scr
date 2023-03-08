@@ -1,0 +1,12 @@
+acol -generic table p11_band.dat -internal p11_band.o2
+acol -generic table p11_central.dat -internal p11_central.o2
+acol -generic table p13_band.dat -internal p13_band.o2
+acol -generic table p13_central.dat -internal p13_central.o2
+acol -generic table p31_band.dat -internal p31_band.o2
+acol -generic table p31_central.dat -internal p31_central.o2
+acol -generic table p33_band.dat -internal p33_band.o2
+acol -generic table p33_central.dat -internal p33_central.o2
+acol -generic table s11_band.dat -internal s11_band.o2
+acol -generic table s11_central.dat -internal s11_central.o2
+acol -generic table s31_band.dat -internal s31_band.o2
+acol -generic table s31_central.dat -internal s31_central.o2

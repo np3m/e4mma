@@ -2439,7 +2439,6 @@ int eos_nuclei::solve_nuclei(size_t nv, const ubvector &x, ubvector &y,
   
   double log_xn=x[0];
   double log_xp=x[1];
-
   loc_verbose=0;
 
   // Set two flags help us handle low-density regimes
@@ -2494,7 +2493,7 @@ int eos_nuclei::solve_nuclei(size_t nv, const ubvector &x, ubvector &y,
     }
     return 4;
   }
-
+  
   size_t n_nuclei=nuclei.size();
 
   // Compute Coulomb energy for each nucleus
@@ -2518,7 +2517,7 @@ int eos_nuclei::solve_nuclei(size_t nv, const ubvector &x, ubvector &y,
   // Ensure that this function is deterministic
   neutron.mu=neutron.m;
   proton.mu=proton.m;
-
+  
   if (np_small && nn_small) {
 
     // Use shift to compute correct proton chemical potential
@@ -2656,7 +2655,7 @@ int eos_nuclei::solve_nuclei(size_t nv, const ubvector &x, ubvector &y,
 
     // End of loop over nuclei
   }
-
+  
   if (inc_hrg) {
 
     double nn_tilde_old=nn_tilde;
@@ -2666,20 +2665,24 @@ int eos_nuclei::solve_nuclei(size_t nv, const ubvector &x, ubvector &y,
     
     int iferm=0;
     int ibos=0;
+    cout << "part_db.szie(): " << part_db.size() << endl;
     for(size_t j=0;j<part_db.size();j++) {
       if (part_db[j].id==2212 && part_db[j].charge==1) {
+        cout <<"solve_nuclei1: " << j << part_db[j].id << " " << part_db[j].name << endl;
         if (iferm>=((int)res_f.size())) {
           O2SCL_ERR("Indexing problem with fermions.",o2scl::exc_efailed);
         }
         res_f[iferm]=proton;
         iferm++;
       } else if (part_db[j].id==2212 && part_db[j].charge==0) {
+        cout <<"solve_nuclei2: " << j << part_db[j].id << " " << part_db[j].name << endl;
         if (iferm>=((int)res_f.size())) {
           O2SCL_ERR("Indexing problem with fermions.",o2scl::exc_efailed);
         }
         res_f[iferm]=neutron;
         iferm++;
       } else if (part_db[j].id==22 && part_db[j].charge==0) {
+        cout <<"solve_nuclei3: " << j << part_db[j].id << " " << part_db[j].name << endl;
         if (ibos>=((int)res_b.size())) {
           O2SCL_ERR("Indexing problem with bosons.",o2scl::exc_efailed);
         }
@@ -2687,6 +2690,7 @@ int eos_nuclei::solve_nuclei(size_t nv, const ubvector &x, ubvector &y,
         res_b[ibos]=photon;
         ibos++;
       } else if (part_db[j].spin_deg%2==0) {
+        cout <<"solve_nuclei4: " << j << part_db[j].id << " " << part_db[j].name << endl;
         if (iferm>=((int)res_f.size())) {
           O2SCL_ERR("Indexing problem with fermions.",o2scl::exc_efailed);
         }
@@ -2701,13 +2705,15 @@ int eos_nuclei::solve_nuclei(size_t nv, const ubvector &x, ubvector &y,
         nB2+=part_db[j].baryon*res_f[iferm].n;
         Ye2+=part_db[j].charge*res_f[iferm].n;
         iferm++;
-      } else {
+      } else if (part_db[j].id==-211 && part_db[j].charge==-1){
+        cout <<"solve_nuclei5: " << j << part_db[j].id << " " << part_db[j].name << endl;
         if (ibos>=((int)res_b.size())) {
           O2SCL_ERR("Indexing problem with bosons.",o2scl::exc_efailed);
         }
         res_b[ibos].mu=part_db[j].baryon*(neutron.mu+neutron.m)+
           part_db[j].charge*(proton.mu+proton.m-neutron.mu-neutron.m);
-        effb.calc_mu(res_b[ibos],T);
+        cout <<"solve_nuclei6: " << res_b[ibos].mu << endl;
+        fr.calc_mu(res_b[ibos],proton.n/nB, T, nB, neutron.mu, proton.mu, neutron.m, proton.m);
         nB2+=part_db[j].baryon*res_b[ibos].n;
         Ye2+=part_db[j].charge*res_b[ibos].n;
         ibos++;
@@ -3388,6 +3394,7 @@ int eos_nuclei::eos_vary_dist
   // or if the 'no_nuclei' flag is true. 
 
   if (no_nuclei==true || nB>0.16) {
+    cout << "going in nuc_matter" << endl;
     nuc_matter(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,thx,mun_full,
 	       mup_full,A_min,A_max,NmZ_min,NmZ_max,vdet);
     return 0;
@@ -3428,6 +3435,7 @@ int eos_nuclei::eos_vary_dist
     }
 
     // Compute the EOS with the current nuclear distribution
+    cout << "going into eos_fixed_dist" << endl;
     int ret=eos_fixed_dist
       (nB,Ye,T,log_xn,log_xp,thx,mun_full,mup_full,
        A_min,A_max,NmZ_min,NmZ_max,vdet,dist_changed,no_nuclei);
@@ -3638,7 +3646,6 @@ int eos_nuclei::eos_fixed_dist
 #endif
   
   int loc_verbose=function_verbose/100%10;
-
   double T_MeV=T*hc_mev_fm;
   double n0=0.16;
   // Chemical potentials for homogeneous matter
@@ -3843,6 +3850,7 @@ int eos_nuclei::eos_fixed_dist
   funct f2_prime=std::bind(std::mem_fn<double(double)>
 			   (&partition_func::delta_large_iand_prime),
 			   &part_func,std::placeholders::_1);
+
   
   double res, err, ret, ret_prime, res_prime, err_prime;
   
@@ -4016,8 +4024,11 @@ int eos_nuclei::eos_fixed_dist
   double qual_best=1.0e100;
 
   if (mh_ret!=0) {
+    cout << "here11aa" << endl;
+    cout << "x1 size: " << x1.size() << endl;
     mh_ret=mh.msolve(2,x1,sn_func);
     if (mh_ret==0 && mpi_size==1) {
+      cout << "here11bb" << endl;
       if (loc_verbose>1) {
         cout << "Rank " << mpi_rank
              << " finished after initial solve." << endl;
@@ -4026,6 +4037,7 @@ int eos_nuclei::eos_fixed_dist
   }
 
   if (alg_mode==2 || alg_mode==4) {
+    cout << "here11a" << endl;
 
     for(int k=0;k<n_solves && mh_ret!=0;k++) {
       mh_ret=mh.msolve(2,x1,sn_func);
@@ -4045,6 +4057,7 @@ int eos_nuclei::eos_fixed_dist
 	cout << "Rank " << mpi_rank << " finished after solve " << k
 	     << "." << endl;
       }
+      cout << "here11b" << endl;
     }
     
   } else {
@@ -4074,6 +4087,7 @@ int eos_nuclei::eos_fixed_dist
       }
     }
   }
+  cout << "here12" << endl;
 
   // ---------------------------------------------------------------
   // If the solver failed, call the bracketing solver
@@ -6522,11 +6536,13 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
     double Zbar, Nbar;
     map<string,double> vdet;
     if (alg_mode==2 || alg_mode==3 || alg_mode==4) {
+      cout << "alg mode: " << alg_mode << endl;
       ret=eos_vary_dist(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,
 			thx,mun_full,mup_full,
 			A_min,A_max,NmZ_min,NmZ_max,vdet,
 			true,false);
     } else {
+      cout << "going for eos_vary_ZN" << endl;
       ret=eos_vary_ZN(nB,Ye,T,log_xn,log_xp,nuc_Z1,nuc_N1,
 		      thx,mun_full,mup_full,false);
       Nbar=nuc_N1;
