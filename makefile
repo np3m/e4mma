@@ -119,13 +119,16 @@ neutrino/jacobi_rule.o: neutrino/jacobi_rule.cpp neutrino/jacobi_rule.hpp
 	$(LCXX) $(LCFLAGS) -DNUOPAC_HAS_GSL -o neutrino/jacobi_rule.o \
 		-c neutrino/jacobi_rule.cpp
 
-eos_nuclei: eos.o main.o eos_nuclei.o eos_had_skyrme_ext.o eos_interp.o \
+fore.o: fore.cpp fore.h
+	$(LMPI_CXX) $(LMPI_CFLAGS) -o fore.o -c fore.cpp 
+
+eos_nuclei: eos.o main.o eos_nuclei.o fore.o eos_had_skyrme_ext.o eos_interp.o \
 		neutrino/Couplings.o neutrino/FluidState.o \
 		neutrino/FunctionIntegrator.o neutrino/Polarization.o \
 		neutrino/PolarizationNonRelv2Apr8.o neutrino/jacobi_rule.o \
 		eos_neutrino.o
 	$(LMPI_CXX) $(LMPI_CFLAGS) -o eos_nuclei eos.o main.o \
-		eos_nuclei.o eos_had_skyrme_ext.o eos_interp.o \
+		eos_nuclei.o fore.o eos_had_skyrme_ext.o eos_interp.o \
 		neutrino/Couplings.o neutrino/FluidState.o eos_neutrino.o \
 		neutrino/FunctionIntegrator.o neutrino/Polarization.o \
 		neutrino/PolarizationNonRelv2Apr8.o neutrino/jacobi_rule.o \
@@ -459,7 +462,7 @@ mbnew:
 		-set function_verbose 0 \
 		-load data/fid_3_5_22.o2 \
 		-set recompute 1 \
-		-point-nuclei 0.1 0.4 30 
+		-point-nuclei 0.1 0.4 20 
 
 mbpi:
 	./eos_nuclei \
@@ -475,5 +478,5 @@ mbpi:
 		-load data/fid_3_5_22.o2 \
 		-hrg-load ./pdg_uh_nonp.dat \
 		-set recompute 1 \
-		-point-nuclei 0.1 0.4 30 
+		-point-nuclei 0.1 0.4 20 
 -include makefile.aws

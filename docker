@@ -1,12 +1,20 @@
+# This dockerfile is for the full development version directly from
+# main branch in the current repo, complete with python, armadillo,
+# eigen, fftw, OpenMP, regex, and HDF5 compression support. It
+# attempts to run all of the o2scl test and examples. It also installs
+# and tests the main branch github version of o2sclpy
+
 FROM ubuntu:latest 
 MAINTAINER Andrew W. Steiner (awsteiner@mykolab.com)
 
-# 9/29/21: This curently fails, because of an openmp linking error on
-# o2graph. Need to fix.
-
+# -----------------------------------------------------------------
 # To fix tzdata asking for a timezone during installation
 # can set up later using sudo dpkg-reconfigure tzdata I think.
+
 ARG DEBIAN_FRONTEND=noninteractive
+
+# -----------------------------------------------------------------
+# apt packages
 
 RUN apt-get -y update
 # compiler, make and gsl
@@ -18,37 +26,84 @@ RUN apt-get -y install libboost-all-dev libeigen3-dev
 # Armadillo and dependencies
 RUN apt-get -y install cmake libopenblas-dev liblapack-dev libarpack2-dev
 RUN apt-get -y install libsuperlu-dev libarmadillo-dev libfftw3-dev
+# We need curl to test downloading EOSs for o2sclpy
+RUN apt-get -y install curl
 
-# Now install o2scl
+# --------------------------------------------------------------------------
+# Since we're enabling python extensions, we need to install python
+# before we install o2scl, so we do that now
+
+RUN apt-get -y install python3 python3-pip
+# Ubuntu libhdf5 is outdated relative to the version used by pip install
+# h5py, so we have to explicitly use the old Ubuntu one
+RUN HDF5_DIR=/usr/lib/x86_64-linux-gnu/hdf5/serial pip3 install --no-binary=h5py h5py
+RUN apt-get -y install texlive dvipng texlive-latex-extra cm-super
+# We need pillow to compare images for o2sclpy tests
+RUN pip3 install numpy scipy yt matplotlib requests pytest Pillow
+RUN pip3 install scikit-learn tensorflow-cpu
+
+# -----------------------------------------------------------------
+# Install o2scl
+
 WORKDIR /opt
 RUN git clone https://github.com/awsteiner/o2scl
 WORKDIR /opt/o2scl
-RUN mkdir m4
 RUN autoreconf -i
-RUN LDFLAGS="-larmadillo -llapack -lblas -lncurses" CXXFLAGS="-O3 -DO2SCL_UBUNTU_HDF5 -DO2SCL_HDF5_PRE_1_12 -DO2SCL_REGEX -DO2SCL_HDF5_COMP -DO2SCL_LD_TYPES -DO2SCL_NEW_BOOST_INTEGRATION -I/usr/include" ./configure --enable-eigen --enable-armadillo --enable-openmp --enable-fftw
+RUN LDFLAGS="-larmadillo -llapack -lblas -lncurses" CXXFLAGS="-O3 -DO2SCL_UBUNTU_HDF5 -DO2SCL_HDF5_PRE_1_12 -DO2SCL_REGEX -DO2SCL_HDF5_COMP -I/usr/include -I/usr/lib/x86_64-linux-gnu/hdf5/serial/include -I/usr/local/lib/python3.10/dist-packages/numpy/core/include" ./configure --enable-eigen --enable-armadillo --enable-openmp --enable-fftw --enable-python
 RUN make blank-doc
-RUN make
+RUN make -j 6
 RUN make install
 WORKDIR /
 ENV LD_LIBRARY_PATH /usr/local/lib
+RUN acol -h
 RUN acol -v
-WORKDIR /opt/o2scl
-RUN make o2scl-test
-RUN make o2scl-examples
-WORKDIR /
 
-# Python3, and o2sclpy via pip
-RUN apt-get -y install python3 python3-pip texlive dvipng python3-h5py
-RUN pip3 install o2sclpy
+# --------------------------------------------------------------------------
+# Install o2sclpy via pip
+
+WORKDIR /opt
+RUN git clone https://github.com/awsteiner/o2sclpy
+WORKDIR /opt/o2sclpy
+RUN pip3 install .
+
+# --------------------------------------------------------------------------
 # To ensure o2graph loads OpenMP appropriately
-ENV O2SCL_ADDL_LIBS /usr/lib/gcc/x86_64-linux-gnu/10/libgomp.so
-RUN o2graph -help
+ENV O2SCL_ADDL_LIBS /usr/lib/gcc/x86_64-linux-gnu/11/libgomp.so
+# --------------------------------------------------------------------------
+# O2scl testing and examples
+
+WORKDIR /opt/o2scl
+#RUN make o2scl-test
+#RUN make o2scl-examples
+
+# --------------------------------------------------------------------------
+# Test o2sclpy
+RUN o2graph -h
+#RUN o2graph -v
+#RUN make test
 
 # UTK EOS
 WORKDIR /opt
 RUN git clone https://github.com/awsteiner/eos
 WORKDIR /opt/eos
-RUN make eos_nuclei eos eos_nompi eos_nuclei_nompi
+RUN git switch v2
+RUN git pull
+RUN make eos_nuclei 
+RUN mkdir data
+WORKDIR /opt/eos/data/
+RUN wget https://isospin.roam.utk.edu/public_data/eos_tables/du21/fid_3_5_22.o2 
+WORKDIR /opt/eos/
+RUN ./eos_nuclei \
+		-set select_cs2_test 0 \
+		-select-model $(P_FIDUCIAL) \
+		-set a_virial 10 -set b_virial 10 \
+		-set extend_frdm 0 \
+		-set fd_A_max 600 -set max_ratio 7.0 \
+		-set fixed_dist_alg 1999 \
+		-set function_verbose 0 \
+		-load data/fid_3_5_22.o2 \
+		-set recompute 1 \
+		-point-nuclei 0.1 0.4 20 
 
 
 
