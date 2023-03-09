@@ -434,4 +434,19 @@ mn-test:
 		-load ~/data/eos/final/fid_6_30_21.o2 \
 		-mcarlo-neutron mn_test.o2
 
+docker_clean:
+	-sudo docker rm \
+	`sudo docker ps --all | grep -i -v container | awk '{print $$1}'`
+	-sudo docker rmi \
+	`sudo docker images --all | grep -i -v container | awk '{print $$3}'`
+
+docker_show:
+	- sudo docker ps --all
+	- sudo docker images --all
+
+docker_build:
+	sudo docker build - < docker \
+		> docker.out 2>&1 &
+
+
 -include makefile.aws
