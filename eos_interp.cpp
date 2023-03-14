@@ -318,11 +318,11 @@ void interpm_krige_eos::set(std::vector<double> &nB_grid2,
                             o2scl::tensor_grid<> &tg_mun,
                             o2scl::tensor_grid<> &tg_mup,
                             o2scl::tensor_grid<> &tg_mue,
-                            double mn, double mp,
+                            double mn, double mpx,
                             int window) {
 
   mneut=mn;
-  mprot=mp;
+  mprot=mpx;
   
   nB_grid=nB_grid2;
   Ye_grid=Ye_grid2;
@@ -357,8 +357,8 @@ void interpm_krige_eos::set(std::vector<double> &nB_grid2,
         for(int dYe=-window;dYe<=window;dYe++) {
           for(int dT=-window;dT<=window;dT++) {
             if (inB+dnB>=0 && iYe+dYe>=0 && iT+dT>=0 &&
-                inB+dnB<n_nB && iYe+dYe<n_Ye && iT+dT<n_T &&
-                abs(dnB)+abs(dYe)+abs(dT)<=window) {
+                inB+dnB<((int)n_nB) && iYe+dYe<((int)n_Ye) &&
+                iT+dT<((int)n_T) && abs(dnB)+abs(dYe)+abs(dT)<=window) {
 
               if (irun==1) {
                 ix(count,0)=inB+dnB;
