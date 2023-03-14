@@ -364,7 +364,8 @@ void interpm_krige_eos::set(std::vector<double> &nB_grid2,
                 ix(count,0)=inB+dnB;
                 ix(count,1)=iYe+dYe;
                 ix(count,2)=iT+dT;
-                std::vector<size_t> index={inB+dnB,iYe+dYe,iT+dT};
+                std::vector<size_t> index={((size_t)(inB+dnB)),
+                  ((size_t)(iYe+dYe)),((size_t)(iT+dT))};
                 iy(0,count)=tg_F.get(index);
                   
                 if (true) {
@@ -423,7 +424,7 @@ int interpm_krige_eos::addl_const(double &ret) {
   ret=0.0;
   bool compare=true;
     
-  for(int ilist=0;ilist<index_list.size();ilist++) {
+  for(size_t ilist=0;ilist<index_list.size();ilist++) {
       
     std::cout << "ilist: " << ilist << std::endl;
       
