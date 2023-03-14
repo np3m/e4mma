@@ -1935,8 +1935,6 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
   size_t ilo=0, ihi=n_nB2;
   size_t jlo=0, jhi=n_Ye2;
   size_t klo=0, khi=n_T2;
-  ilo=260;
-  ihi=261;
   if (sv.size()>=4) {
     double nBx=o2scl::function_to_double(sv[1]);
     double Yex=o2scl::function_to_double(sv[2]);
@@ -2175,7 +2173,7 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
   
   recompute=true;
   
-  if (true) {
+  if (false) {
 
     derivs_computed=false;
     with_leptons=false;
