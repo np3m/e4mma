@@ -139,9 +139,9 @@ Polarization::Polarization(FluidState stPol, WeakCouplings wc,
   qags.tol_rel=1.0e-6;
   qags.tol_abs=1.0e-6;
   qags.err_nonconv=false;
-  iac.tol_rel=1.0e-6;
-  iac.tol_abs=1.0e-6;
-  iac.err_nonconv=false;
+  //iac.tol_rel=1.0e-6;
+  //iac.tol_abs=1.0e-6;
+  //iac.err_nonconv=false;
   qag.tol_rel=1.0e-6;
   qag.tol_abs=1.0e-6;
   qag.err_nonconv=false;
@@ -369,12 +369,14 @@ double Polarization::CalculateDGamDq0(double E1, double q0, bool pnm) {
       qags.tol_abs=0.0;
       cout << "3";
       //iret=qags.integ_err(f,-1.0,1.0,integral,err);
+      /*
       if (false && iret!=0) {
         iac.tol_rel=1.0e-6;
         iac.tol_abs=0.0;
         cout << "2";
         iret=iac.integ_err(f,-1.0,1.0,integral,err);
       }
+      */
       //}
       
       if (iret!=0) {
