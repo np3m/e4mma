@@ -20,7 +20,8 @@ help:
 # LCFLAGS are the local C++ compiler flags
 
 # Default settings
-LIBS = -L/usr/lib/x86_64-linux-gnu/hdf5/serial -lcubature\
+LIBS = -L/usr/lib/x86_64-linux-gnu/hdf5/serial \
+	-L/usr/local/lib/python3.10/dist-packages/numpy/core/include \
 	-lo2scl -lhdf5 -lgsl \
 	-lreadline -lpython3.10
 FLIBS = -lgfortran
@@ -30,14 +31,17 @@ LFC = gfortran
 LMPI_FC = mpif90
 LMPI_CXX = mpic++
 LCFLAGS = -I/usr/lib/x86_64-linux-gnu/hdf5/serial/include \
+	-I/usr/local/lib/python3.10/dist-packages/numpy/core/include \
 	-DNO_MPI -DNO_OPENMP -DO2SCL_PYTHON \
 	-I/usr/include/python3.10 
 LCFLAGS_OMP = -I/usr/lib/x86_64-linux-gnu/hdf5/serial/include \
 	-DNO_MPI -DO2SCL_PYTHON \
 	-fopenmp -DTEMP_UPDATES\
+	-I/usr/local/lib/python3.10/dist-packages/numpy/core/include \
 	-I/usr/include/python3.10 
 LFFLAGS = -O3
 LMPI_CFLAGS = -I/usr/lib/x86_64-linux-gnu/hdf5/serial/include \
+	-I/usr/local/lib/python3.10/dist-packages/numpy/core/include \
 	-DO2SCL_MPI -DO2SCL_OPENMP -DO2SCL_PYTHON \
 	-fopenmp -DTEMP_UPDATES \
 	-I/usr/include/python3.10 
