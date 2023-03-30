@@ -1,17 +1,13 @@
 version: '2'
 services:
     utk_eos:
-      image: "utk_eosv2:latest"
+      image: "eosv2:latest"
       ports:
         - 8080:8081
       build:
         context: .
       container_name: "utk_eos_test"
-      command: "git clone https://github.com/awsteiner/eos;
-                cd ./eos;
-                git switch v2;
-                git pull;
-                make eos_nuclei;
-                mkdir data;
+      command: "
+                make -j 6 eos_nuclei;
                 curl https://isospin.roam.utk.edu/public_data/eos_tables/du21/fid_3_5_22.o2; 
-                ./eos_nuclei -load data/fid_3_5_22.o2 -set recompute 1 -point-nuclei 0.1 0.4 20"
+                ./eos_nuclei -load fid_3_5_22.o2 -set recompute 1 -point-nuclei 0.1 0.4 20"
