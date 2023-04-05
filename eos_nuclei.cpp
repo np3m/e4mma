@@ -1984,7 +1984,7 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
           if (dP<0.0) {
             cout << "dPdnB<0: nB,Ye,T[MeV]:\n  "
                  << nB << " " << Ye << " " << T_MeV << endl;
-            if (true) {
+            if (false) {
               cout << "ix  ,P: ";
               vector_out(cout,ix,false);
               cout << " " << tg_P.get(ix) << endl;
