@@ -65,7 +65,7 @@
 #include <o2scl/inte_qng_gsl.h>
 #include <o2scl/inte_qagiu_gsl.h>
 #include <o2scl/inte_qags_gsl.h>
-#include <o2scl/inte_adapt_cern.h>
+//#include <o2scl/inte_adapt_cern.h>
 #include "../inte_custom.h"
 
 // Going much lower than 64 seems to degrade accuracy at a few percent level

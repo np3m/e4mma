@@ -52,7 +52,7 @@ namespace o2scl {
 
     inte_qag_smooth<> iqs;
     
-    inte_adapt_cern<> ac;
+    //inte_adapt_cern<> ac;
     
     mcarlo_vegas<> mv;
     

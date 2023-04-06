@@ -470,17 +470,10 @@ mbnew:
 
 mbpi:
 	./eos_nuclei \
-		-set select_cs2_test 0 \
 		-select-model $(P_FIDUCIAL) \
-		-set a_virial 10 -set b_virial 10 \
-		-set extend_frdm 0 \
 		-set inc_hrg true \
-		-set fd_A_max 600 -set max_ratio 7.0 \
-		-set fixed_dist_alg 1999 \
-		-set function_verbose 1000 \
-		-set cs2_verbose 2 \
 		-load data/fid_3_5_22.o2 \
 		-hrg-load ./pdg_uh_nonp.dat \
 		-set recompute 1 \
-		-point-nuclei 0.1 0.4 20 
+		-point-nuclei 0.1 0.4 30 
 -include makefile.aws

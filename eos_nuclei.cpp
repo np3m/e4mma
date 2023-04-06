@@ -2705,13 +2705,20 @@ int eos_nuclei::solve_nuclei(size_t nv, const ubvector &x, ubvector &y,
         if (ibos>=((int)res_b.size())) {
           O2SCL_ERR("Indexing problem with bosons.",o2scl::exc_efailed);
         }
+        cout << "pion mass: " << res_b[ibos].m*hc_mev_fm << endl;
         res_b[ibos].mu=part_db[j].baryon*(neutron.mu+neutron.m)+
           part_db[j].charge*(proton.mu+proton.m-neutron.mu-neutron.m);
-        cout <<"Pion chem pot: " << res_b[ibos].mu << endl;
-        fr.calc_mu(res_b[ibos],proton.n/nB, T, nB, neutron.mu, proton.mu, neutron.m, proton.m);
+        cout <<"Pion chem pot: " << res_b[ibos].mu*hc_mev_fm << endl;
+        fr.calc_mu(res_b[ibos], neutron, proton, T, nB);
         nB2+=part_db[j].baryon*res_b[ibos].n;
         Ye2+=part_db[j].charge*res_b[ibos].n;
         ibos++;
+      } else {
+        if (part_db[j].spin_deg%2==0) {
+          iferm++;}
+        else{
+          ibos++;
+        }
       }
       if (!std::isfinite(nB2) ||
           !std::isfinite(Ye2)) {

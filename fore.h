@@ -13,6 +13,7 @@
 #include <o2scl/root_brent_gsl.h>
 #include <o2scl/test_mgr.h>
 #include <o2scl/boson.h>
+#include <o2scl/fermion.h>
 
 #include <boost/numeric/ublas/vector.hpp>
 #include <boost/numeric/ublas/matrix.hpp>
@@ -49,8 +50,6 @@ public:
   // (\alpha_0^{1/2}, \alpha_1^{1/2}, \alpha_0^{3/2}, \alpha_1^{3/2})
   vector<double> d30, d31, d31m, d10, d11, d11m, p_list, pseudo_pot_params;
 
-  bool include_p_wave, const_after_data;
-
   // functions with same names and utility as the python variant
   // returns total phase shifts for neutrons or protons for a given com_mom
   funct neutron_phase_shift_sum, proton_phase_shift_sum;
@@ -61,9 +60,13 @@ public:
   // Fixed-order Gaussian quadrature of order 8-16
   o2scl::inte_gauss_cern<> fixed_quad;
   // Basic Gauss-Kronrod integration class (GSL)
+  o2scl::inte_kronrod_boost<> kron;
   o2scl::inte_qagiu_gsl<> quad;
   // One-dimensional minimization (CERNLIB)
   o2scl::min_cern<> mcn;
+
+  bool include_p_wave=true; 
+  bool const_after_data=true;
 
   // heaviside function
   int heaviside(double x);
@@ -130,9 +133,8 @@ public:
 
   double boson_entropy(funct distro);
 
-  void single_point_data(boson &b, double Y_p, double T, double mu_pi, double n_B, double mu_n, 
-                  double mu_p, double meff_n, double meff_p);
+  void single_point_data(double Y_p, double T, double n_B, double mu_n, 
+                  double mu_p, double meff_n, double meff_p, double U_n, double U_p);
 
-  void calc_mu(boson &b,double Y_p, double T, double n_B, double mu_n, 
-                  double mu_p, double meff_n, double meff_p);
+  void calc_mu(boson &b, fermion &n, fermion &p, double T, double n_B);
 };          

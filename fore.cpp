@@ -79,7 +79,7 @@
     }
 
     // Also save everything in a table to check later or plot using o2graph
-    if(true) {
+    if(false) {
       hdf_file hf1;
       hf1.open_or_create("phase_shifts.o2");
       table_units<> t1;
@@ -198,7 +198,7 @@
     
     // The result and the uncertainty
     double res_n, err_n, res_p, err_p, tot;
-    quad.tol_rel=1.0e-6;
+    quad.tol_rel=1.0e-4;
 
     int ret1 = quad.integ_err(fiin, 0.0, 0.0, res_n, err_n);
     int ret2 = quad.integ_err(fiip, 0.0, 0.0, res_p, err_p);
@@ -221,6 +221,7 @@
     for (size_t i=0; i<p_list.size(); i++) {
       p_list_New[i] = p_list[i];
       se_list[i] = self_energy(p_list[i], params, nuc_mod, T);
+      cout << "se: " << p_list[i] << " " << se_list[i] << endl;
     }
     interp_se.set(p_list.size(), p_list_New, se_list, itp_cspline);
 
@@ -390,11 +391,9 @@
     return -res/(2*pi*pi);
   }
 
-  void fore::single_point_data(boson &b,double Y_p, double T, double mu_pi, double n_B, double mu_n, 
-                  double mu_p, double meff_n, double meff_p){
-
+  void fore::single_point_data(double Y_p, double T, double n_B, double mu_n, 
+                  double mu_p, double meff_n, double meff_p, double U_n, double U_p){
     funct sigma_pi = self_energy_interp(pseudo_pot_params, nucleon_mod, T);
-    mu_pi=b.mu;
     if (mu_pi>(m_pi+sigma_pi(0))){
       flag = 0;
       cout << "flag 0: "  << mu_pi << " " << m_pi << " " << sigma_pi(0) << " " << flag << endl;
@@ -402,8 +401,7 @@
       Y_pi = rel_pion_number_density(T, mu_pi, pseudo_pot_params, nucleon_mod);
 
       if (Y_pi!=0) {
-        // this will be done in eos_nuclei.cpp
-        //Y_pi = Y_pi/n_B;
+        Y_pi = Y_pi/n_B;
       }
 
       if (Y_pi==0){
@@ -412,7 +410,7 @@
         e_pi = pion_energy(T, mu_pi, pseudo_pot_params, nucleon_mod);
         s_pi = pion_entropy(T, mu_pi, pseudo_pot_params, nucleon_mod)/n_B;
 
-        press_pi = T*s_pi*n_B - e_pi + Y_pi*mu_pi;
+        press_pi = T*s_pi*n_B - e_pi + Y_pi*n_B*mu_pi;
 
         e_pi = e_pi/(hbar_c*hbar_c*hbar_c);
         press_pi = press_pi/(hbar_c*hbar_c*hbar_c);
@@ -424,34 +422,34 @@
     return;
   }
 
-  void fore::calc_mu(boson &b,double Y_p, double T, double n_B, double mu_n, 
-                  double mu_p, double meff_n, double meff_p) {
+  void fore::calc_mu(boson &b, fermion &n, fermion &p, double T, double n_B) {
 
-    U_n=-21.439131485446815;   // Neutron single particle potential
-    U_p=-49.96927579963659;    // Proton single particle potential
+    // Convert units from 1/fm to MeV to use here..
+
+    mu_n = n.mu*hc_mev_fm;       // Neutron Chemical potential
+    mu_p = p.mu*hc_mev_fm;       // Proton chemical potential
+    mu_pi = b.mu*hc_mev_fm;      // Pion chemical potential
+    meff_n = n.ms*hc_mev_fm;     // Neutron effective mass
+    meff_p = p.ms*hc_mev_fm;     // Proton effective mass
+    U_n=(n.mu+n.nu)*hc_mev_fm;   // Neutron single particle potential
+    U_p=(p.mu+p.nu)*hc_mev_fm;   // Proton single particle potential
+
+    m_n = n.m*hc_mev_fm;         // Neutron rest mass
+    m_p = p.m*hc_mev_fm;         // Proton rest mass
+    m_pi = b.m*hc_mev_fm;        // Pion rest mass
+
+    cout << "n_B, T: " << n_B << " " << T << endl;
+    cout << "mu_n, mu_p, mu_pi: " << mu_n << " " << mu_p << " " << mu_pi << endl;
+    cout << "meff_n, meff_p: " << meff_n << " " << meff_p << endl;
+    cout << "U_n, U_p: " << U_n << " " << U_p << endl;
+    cout << "m_n, m_p, m_pi:  " << m_n << " " << m_p << " " << m_pi << endl;
 
     hbar = 6.582119514e-22;
-    hbar_c = 197.327;
 
-    n_0 = .16;
-    n_0_MeV3 = n_0*(hbar_c*hbar_c*hbar_c);
+    pseudo_pot_params = {1, 0.3081465, 1, 0.3081465};
 
     include_p_wave=true;
     const_after_data=true;
-    
-    nucleon_mod.resize(2,2);
-    nucleon_mod(0,0)=meff_n;
-    nucleon_mod(0,1)=mu_n-U_n-m_n;
-    nucleon_mod(1,0)=meff_p;
-    nucleon_mod(1,1)=mu_p-U_p-m_p;
-
-    m_n = meff_n;
-    m_p = meff_p;
-    m_e = .511;
-    m_mu = 105.658;
-    m_pi = 139.57;
-
-    pseudo_pot_params = {1, 0.3081465, 1, 0.3081465};
 
     for(double x=0.01;x<500.01;x+=(500.0-0.01)/29.0) {
         p_list.push_back(x);
@@ -462,11 +460,24 @@
     for(double x=2150.0;x<10000.01;x+=(1e4-2150)/9.0) {
         p_list.push_back(x);
     }
+
+    double n_0 = .16;
+    double n_0_MeV3 = n_0*(hc_mev_fm*hc_mev_fm*hc_mev_fm);
+    
+    
+    nucleon_mod.resize(2,2);
+    nucleon_mod(0,0)=n.ms*hc_mev_fm;
+    nucleon_mod(0,1)=(n.mu-U_n-n.m)*hc_mev_fm;
+    nucleon_mod(1,0)=p.ms*hc_mev_fm;
+    nucleon_mod(1,1)=(p.mu-U_p-p.m)*hc_mev_fm;
+
     cout << "p_list.size(): " << p_list.size() << endl;
 
     get_phase_shifts();
+    
     interp_phase_shift_sum(pseudo_pot_params);
-    single_point_data(b,Y_p, T, b.mu, n_B, mu_n, mu_p, meff_n, meff_p);
+
+    single_point_data(Y_p, T, n_B, mu_n, mu_p, meff_n, meff_p, U_n, U_p);
     b.n=Y_pi;
     b.pr=press_pi;
     b.ed=e_pi;

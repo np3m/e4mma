@@ -9,5 +9,5 @@ services:
       container_name: "utk_eos_test"
       command: "
                 make -j 6 eos_nuclei;
-                curl https://isospin.roam.utk.edu/public_data/eos_tables/du21/fid_3_5_22.o2; 
+                curl https://isospin.roam.utk.edu/public_data/eos_tables/du21/fid_3_5_22.o2 --output ; 
                 ./eos_nuclei -load fid_3_5_22.o2 -set recompute 1 -point-nuclei 0.1 0.4 20"
