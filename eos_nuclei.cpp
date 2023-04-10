@@ -1978,7 +1978,7 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
         }
         
         // Check dPdnB
-        if (i<n_nB2) {
+        if (i<n_nB2-1) {
           vector<size_t> ixp1={i+1,j,k};
           double dP=tg_P.get(ixp1)-tg_P.get(ix);
           if (dP<0.0) {
