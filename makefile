@@ -401,7 +401,7 @@ imfps:
 		-save imfps.pdf -show
 
 mn-test:
-	enn \
+	./enn \
 		-set select_cs2_test 0 \
 		-select-model $(P_FIDUCIAL) \
 		-set a_virial 10 -set b_virial 10 \
@@ -410,7 +410,7 @@ mn-test:
 		-set fixed_dist_alg 1999 \
 		-set function_verbose 9999 \
 		-set verbose 3 \
-		-load ~/data/eos/final/fid_6_30_21.o2 \
-		-mcarlo-neutron mn_test.o2
+		-load ~awsteiner/data/eos/final/fid_6_30_21.o2 \
+		-mcarlo-neutron mn_test.o2> mn_test.out 2>&1 &
 
 -include makefile.aws

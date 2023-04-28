@@ -45,7 +45,8 @@ double eos_crust_virial_v2::bpn1_free() {
 
 /// The temperature must be specified in MeV
 double eos_crust_virial_v2::bna(double T) {
-  if (T<1.0 || T>20.0) {
+//  if (T<1.0 || T>20.0) {//orig one
+    if (T<1.0 || T>200.0) {//temporily turn off the high T limit to run pure NRAPR EoS, which is not relating to virial
     cout << "Problem 1: " << T << endl;
     O2SCL_ERR("Cannot extrapolate spin virial.",o2scl::exc_efailed);
   }
@@ -54,7 +55,8 @@ double eos_crust_virial_v2::bna(double T) {
 
 /// The temperature must be specified in MeV
 double eos_crust_virial_v2::bpna(double T) {
-  if (T<1.0 || T>20.0) {
+//  if (T<1.0 || T>20.0) { //orig
+    if (T<1.0 || T>200.0) {//temporily turn off the high T limit to run pure NRAPR EoS, which is not relating to virial
     cout << "Problem 2: " << T << endl;
     O2SCL_ERR("Cannot extrapolate spin virial.",o2scl::exc_efailed);
   }

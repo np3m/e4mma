@@ -472,10 +472,34 @@ double PolarizationNonRel::GetRePI( double q0, double q) const {
   F.params = &par;
       
   double result, error;
+  double q0boundaryCCLow, q0boundaryCCHigh;
+  //from the kinematics of nucleons, the lowest q0=-(\delta U+\delta m)-q*(2*P_1-q)/(2*M)
+  //where P_1 is the momentum of the initial nucleon. Approximately P_1=K_F^1 where K_F^1 is
+  //the fermi momentum of the initial nucleon. given k_F, the maximum q*(2*P_1-q)/(2*M), corresponding
+  //to the minimum q0, happens when q=k_F. Assuming in simulations, the highest k_F correspond to 10n0,
+  //then k_F=713 MeV approximately. Then, the minimum q0=-(\delta U+\delta m)-713(2*713-713)/(2*939),
+  //which is q0=-(\delta U+\delta m)-270MeV approximately. Conservatively, we set
+  // q0lowThresh=-(\delta U+\delta m)-300MeV, to get RePi at q0=q0lowThresh, the integration range need
+  // to be increased. Here I increase it by another 300 MeV
+
+  q0boundaryCCLow=st.U2-st.U4+st.M2-st.M4+300*2;
+
+  //the upper bound of q0 can not be larger than E1, the largest E1 considered in simulations can be 480 mev, conservatively, 
+  //we set the upper bound of q0 to be 500 mev
+  q0boundaryCCHigh=500;
+
+ /* if (10*st.T>100.0) {
+          q0boundaryCC=30*st.T;
+  } else {
+          q0boundaryCC=100.0;
+  }*/
+
 
   // gsl_integration_qawc (&F, -90, 90, q0, 0, 1e-7, 1000,
   //                          w, &result, &error);
-  gsl_integration_qawc (&F, -300, 100.0, q0, 0, 1e-7, 1000,
+ // gsl_integration_qawc (&F, -300, 100.0, q0, 0, 1e-7, 1000,
+   //                     w, &result, &error);
+  gsl_integration_qawc (&F, -q0boundaryCCLow, q0boundaryCCHigh, q0, 0, 1e-7, 1000,
                         w, &result, &error);
   // gsl_integration_qags (&F, 0, 1, 0, 1e-7, 1000,
   //                         w, &result, &error);
@@ -502,10 +526,36 @@ double PolarizationNonRel::GetRePIn( double q0, double q) const {
   F.params = &par;
 
   double result, error;
+ /* double q0boundaryNC;
+  if (10*st.T>100.0) {
+          q0boundaryNC=10*st.T;
+  } else {
+          q0boundaryNC=100.0;
+  }*/
+
+   double q0boundaryNCLow, q0boundaryNCHigh;
+  //from the kinematics of nucleons, the lowest q0=-(\delta U+\delta m)-q*(2*P_1-q)/(2*M)
+  //where P_1 is the momentum of the initial nucleon. Approximately P_1=K_F^1 where K_F^1 is
+  //the fermi momentum of the initial nucleon. given k_F, the maximum q*(2*P_1-q)/(2*M), corresponding
+  //to the minimum q0, happens when q=k_F. Assuming in simulations, the highest k_F correspond to 10n0,
+  //then k_F=713 MeV approximately. Then, the minimum q0=-(\delta U+\delta m)-713(2*713-713)/(2*939),
+  //which is q0=-(\delta U+\delta m)-270MeV approximately. Conservatively, we set
+  // q0lowThresh=-(\delta U+\delta m)-300MeV, to get RePi at q0=q0lowThresh, the integration range need
+  // to be increased. Here I increase it by another 300 MeV
+
+  q0boundaryNCLow=st.U2-st.U2+st.M2-st.M2+300*2;
+
+  //the upper bound of q0 can not be larger than E1, the largest E1 considered in simulations can be 480 mev, conservatively,
+  //we set the upper bound of q0 to be 500 mev
+  q0boundaryNCHigh=500;
+
+
 
   // gsl_integration_qawc (&F, -90, 90, q0, 0, 1e-7, 1000,
   //                          w, &result, &error);
-  gsl_integration_qawc (&F, -100, 100.0, q0, 0, 1e-7, 1000,
+ // gsl_integration_qawc (&F, -100, 100.0, q0, 0, 1e-7, 1000,
+  //                      w, &result, &error);//usually use this one
+     gsl_integration_qawc (&F, -q0boundaryNCLow, q0boundaryNCHigh, q0, 0, 1e-7, 1000,
                         w, &result, &error);
   // gsl_integration_qags (&F, 0, 1, 0, 1e-7, 1000,
   //                         w, &result, &error);
@@ -536,10 +586,36 @@ double PolarizationNonRel::GetRePIp( double q0, double q) const {
   
   // gsl_integration_qawc (&F, -90, 90, q0, 0, 1e-7, 1000,
   //                          w,&result,&error);
-  
-  gsl_integration_qawc(&F,-100,100.0,q0,0,1e-7,1000,
+ /* double q0boundaryNC;
+  if (10*st.T>100.0) {
+	  q0boundaryNC=10*st.T;
+  } else {
+	  q0boundaryNC=100.0;
+  }*/
+   double q0boundaryNCLow, q0boundaryNCHigh;
+  //from the kinematics of nucleons, the lowest q0=-(\delta U+\delta m)-q*(2*P_1-q)/(2*M)
+  //where P_1 is the momentum of the initial nucleon. Approximately P_1=K_F^1 where K_F^1 is
+  //the fermi momentum of the initial nucleon. given k_F, the maximum q*(2*P_1-q)/(2*M), corresponding
+  //to the minimum q0, happens when q=k_F. Assuming in simulations, the highest k_F correspond to 10n0,
+  //then k_F=713 MeV approximately. Then, the minimum q0=-(\delta U+\delta m)-713(2*713-713)/(2*939),
+  //which is q0=-(\delta U+\delta m)-270MeV approximately. Conservatively, we set
+  // q0lowThresh=-(\delta U+\delta m)-300MeV, to get RePi at q0=q0lowThresh, the integration range need
+  // to be increased. Here I increase it by another 300 MeV
+
+  q0boundaryNCLow=st.U4-st.U4+st.M4-st.M4+300*2;
+
+  //the upper bound of q0 can not be larger than E1, the largest E1 considered in simulations can be 480 mev, conservatively,
+  //we set the upper bound of q0 to be 500 mev
+  q0boundaryNCHigh=500;
+
+
+
+
+//  gsl_integration_qawc(&F,-100,100.0,q0,0,1e-7,1000,
+  //                     w,&result,&error);// usually use this one
+  gsl_integration_qawc(&F,-q0boundaryNCLow,q0boundaryNCHigh,q0,0,1e-7,1000,
                        w,&result,&error);
-  
+
   // gsl_integration_qags (&F, 0, 1, 0, 1e-7, 1000,
   //                         w, &result, &error);
 
@@ -775,7 +851,8 @@ void PolarizationNonRel::SetPolarizations_charged
 void PolarizationNonRel::SetLeptonTensor(double E1, double q0, double q,
                                          Tensor<double>* L) const {
   double E3 = E1 - q0;
-  double mu13 = (q*q - E1*E1 - E3*E3)/(2.0*E1*E3);
+ // double mu13 = (q*q - E1*E1 - E3*E3)/(2.0*E1*E3);//original one
+  double mu13 = -(q*q - E1*E1 - E3*E3)/(2.0*E1*E3);
   L->L  = 8.0*E1*E3*(1 + mu13); 
   L->Tp = 8.0*E1*E3*(3 - mu13);
   return;
