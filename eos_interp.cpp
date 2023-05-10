@@ -119,7 +119,10 @@ int eos_nuclei::interp_point(std::vector<std::string> &sv,
   for(int dnB=-window;dnB<=window;dnB++) {
     for(int dYe=-window;dYe<=window;dYe++) {
       for(int dT=-window;dT<=window;dT++) {
-        if (abs(dnB)+abs(dYe)+abs(dT)<=window) {
+        if (abs(dnB)+abs(dYe)+abs(dT)<=window &&
+            inB+dnB>=0 && inB+dnB<n_nB2 &&
+            iYe+dYe>=0 && iYe+dYe<n_Ye2 &&
+            iT+dT>=0 && iT+dT<n_T2) {
           count++;
         }
       }
