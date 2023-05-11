@@ -1,0 +1,298 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0
+  title: output
+paths:
+  paths: "/output/output.yaml"
+components:
+  schemas:
+
+    Observables:
+      title: Physical observables
+      description: Physical observables associated with a given EoS
+      type: array
+      items:
+        type: object
+        properties:
+          n_B:
+            $ref: '#/components/schemas/Baryon_Density'
+          T:
+            $ref: '#/components/schemas/Temperature'
+          Y_e:
+            $ref: '#/components/schemas/Electron_Fraction'
+          A:
+            $ref: '#/components/schemas/A'
+          Z:
+            $ref: '#/components/schemas/Z'
+          fint:
+            $ref: '#/components/schemas/fint'
+          Fint:
+            $ref: '#/components/schemas/Fint'
+          Sint:
+            $ref: '#/components/schemas/Sint'
+          Eint:
+            $ref: '#/components/schemas/Eint'
+          Xn:
+            $ref: '#/components/schemas/Xn'
+          Xp:
+            $ref: '#/components/schemas/Xp'
+          Xd:
+            $ref: '#/components/schemas/Xd'
+          Xt:
+            $ref: '#/components/schemas/Xt'
+          XHe3:
+            $ref: '#/components/schemas/XHe3'
+          XLi4:
+            $ref: '#/components/schemas/XLi4'
+          Xalpha:
+            $ref: '#/components/schemas/Xalpha'
+          Xnuclei:
+            $ref: '#/components/schemas/Xnuclei'
+          Pint:
+            $ref: '#/components/schemas/Pint'
+          mun:
+            $ref: '#/components/schemas/mun'
+          mup:
+            $ref: '#/components/schemas/mup'
+          F:
+            $ref: '#/components/schemas/F'
+          E:
+            $ref: '#/components/schemas/E'
+          S:
+            $ref: '#/components/schemas/S'
+          P:
+            $ref: '#/components/schemas/P'
+          
+          
+
+    Baryon_Density:
+      title: Baryon Density
+      description: "density of baryons in MeV^3"
+      type: number
+      format: float
+      default: 1200000.0
+      example: 1.0e6
+      minimum: 0
+      maximum: .inf
+
+    Temperature:
+      title: Temperature
+      description: "temperature in MeV"
+      type: number
+      format: float
+      default: 0
+      example: 1.0
+      minimum: 0
+      maximum: .inf
+
+    Electron_Fraction:
+      title: Electron Fraction
+      description: "ratio of electric charge density carried by baryons to baryon density"
+      type: number
+      format: float
+      default: 0
+      example: 0.4
+      minimum: -1
+      maximum: 1
+
+    A:
+      title: The average nuclear mass number
+      description: "The average nuclear mass number"
+      type: number
+      format: float
+      default: 0
+      example: 1.0e-8
+      minimum: A_min
+      maximum: A_max
+
+    Z:
+      title: The average nuclear charge number
+      description: "The average nuclear charge number"
+      type: number
+      format: float
+      default: 0
+      example: 1.0e-8
+      minimum: 0
+      maximum: A_max
+
+    Fint:
+      title: the baryon part of the free energy per baryon (in MeV)
+      description: "the baryon part of the free energy per baryon (in MeV)"
+      type: number
+      format: float
+      default: 0
+      example: 1.0e-8
+      minimum: -.inf
+      maximum: .inf
+    
+    Sint:
+      title: the baryon part of the entropy per baryon
+      description: "the baryon part of the entropy per baryon"
+      type: number
+      format: float
+      default: 0
+      example: 1.0e-8
+      minimum: -.inf
+      maximum: .inf
+
+    Eint:
+      title: the baryon part of the internal energy per baryon (in MeV)
+      description: "the baryon part of the internal energy per baryon (in MeV)"
+      type: number
+      format: float
+      default: 0
+      example: 1.0e-8
+      minimum: -.inf
+      maximum: .inf
+
+    Xn:
+      title: the baryon number fraction of neutrons
+      description: "the baryon number fraction of neutrons (this includes only 
+      the neutrons in the low-density phase, i.e. the neutrons not inside nuclei)"
+      type: number
+      format: float
+      default: 0
+      example: 1.0e-8
+      minimum: 0
+      maximum: 1
+
+    Xp:
+      title: the baryon number fraction of protons
+      description: "the baryon number fraction of protons (this includes only 
+      the protons in the low-density phase, i.e. the protons not inside nuclei)"
+      type: number
+      format: float
+      default: 0
+      example: 1.0e-8
+      minimum: 0
+      maximum: 1
+
+    Xd:
+      title: the baryon number fraction of deuterons
+      description: "the baryon number fraction of deuterons"
+      type: number
+      format: float
+      default: 0
+      example: 1.0e-8
+      minimum: 0
+      maximum: 1
+
+    Xt:
+      title: the baryon number fraction of tritons
+      description: "the baryon number fraction of tritons"
+      type: number
+      format: float
+      default: 0
+      example: 1.0e-8
+      minimum: 0
+      maximum: 1
+
+    XHe3:
+      title: the baryon number fraction of 3He
+      description: "the baryon number fraction of 3He"
+      type: number
+      format: float
+      default: 0
+      example: 1.0e-8
+      minimum: 0
+      maximum: 1
+
+    XLi4:
+      title: the baryon number fraction of 4Li
+      description: "the baryon number fraction of 4Li"
+      type: number
+      format: float
+      default: 0
+      example: 1.0e-8
+      minimum: 0
+      maximum: 1
+
+    Xalpha:
+      title: the baryon number fraction of alpha particles
+      description: "the baryon number fraction of alpha particles"
+      type: number
+      format: float
+      default: 0
+      example: 1.0e-8
+      minimum: 0
+      maximum: 1
+
+    Xnuclei:
+      title: the baryon number fraction of nuclei
+      description: "the baryon number fraction of nuclei"
+      type: number
+      format: float
+      default: 0
+      example: 1.0e-8
+      minimum: 0
+      maximum: 1
+
+    Pint:
+      title: the baryon part of the pressure
+      description: "the baryon part of the pressure (in MeV/fm^3)"
+      type: number
+      format: float
+      default: 0
+      example: 1.0e-8
+      minimum: 0
+      maximum: .inf
+
+    mun:
+      title: the neutron chemical potential
+      description: "the neutron chemical potential (in Mev)"
+      type: number
+      format: float
+      default: 0
+      example: 1.0e-8
+      minimum: -.inf
+      maximum: .inf
+    
+    mup:
+      title: the proton chemical potential
+      description: "the proton chemical potential (in Mev)"
+      type: number
+      format: float
+      default: 0
+      example: 1.0e-8
+      minimum: -.inf
+      maximum: .inf
+
+    F:
+      title: the total free energy per baryon
+      description: "the total free energy per baryon (in Mev)"
+      type: number
+      format: float
+      default: 0
+      example: 1.0e-8
+      minimum: 0
+      maximum: .inf
+
+    S:
+      title: the total entropy per baryon
+      description: "the total entropy per baryon"
+      type: number
+      format: float
+      default: 0
+      example: 1.0e-8
+      minimum: 0
+      maximum: .inf
+
+    E:
+      title: the total internal energy per baryon
+      description: "the total internal energy per baryon (in Mev)"
+      type: number
+      format: float
+      default: 0
+      example: 1.0e-8
+      minimum: 0
+      maximum: .inf
+
+    P:
+      title: the total pressure
+      description: "the total pressure (in Mev/fm^3)"
+      type: number
+      format: float
+      default: 0
+      example: 1.0e-8
+      minimum: 0
+      maximum: .inf

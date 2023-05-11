@@ -6807,6 +6807,12 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
   return 0;
 }
 
+int eos_nuclei::muses(std::vector<std::string> &sv,
+			     bool itive_com){
+  point_nuclei(sv,itive_com);
+  return 0;
+}
+
 int eos_nuclei::increase_density(std::vector<std::string> &sv,
 				 bool itive_com) {
 
@@ -10069,7 +10075,7 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
   
   eos::setup_cli(cl,false);
   
-  static const int nopt=26;
+  static const int nopt=27;
 
   o2scl::comm_option_s options[nopt]=
     {{0,"eos-deriv","",0,0,"","",
@@ -10156,6 +10162,10 @@ void eos_nuclei::setup_cli(o2scl::cli &cl) {
       new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::point_nuclei),o2scl::cli::comm_option_both,
       1,"","eos_nuclei","point_nuclei","doc/xml/classeos__nuclei.xml"},
+      {0,"muses","",-1,-1,"","",
+      new o2scl::comm_option_mfptr<eos_nuclei>
+      (this,&eos_nuclei::muses),o2scl::cli::comm_option_both,
+      1,"","eos_nuclei","muses","doc/xml/classeos__nuclei.xml"},
      {0,"increase-density","",7,7,"","",
       new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::increase_density),o2scl::cli::comm_option_both,

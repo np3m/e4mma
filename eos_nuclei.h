@@ -968,6 +968,7 @@ public:
       which holds the full nuclear distribution.
    */
   int point_nuclei(std::vector<std::string> &sv, bool itive_com);
+  int muses(std::vector<std::string> &sv, bool itive_com);
   
   /** \brief Test an EOS at random points in (nB,Ye,T)
 

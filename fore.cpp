@@ -158,6 +158,7 @@
   double fore::inner_integral(double p, double k, funct phase_shift_sum,
                         double m_N, double last_val) {
     // Reduced mass
+    //cout << "ii: m_pi, m_N: " << m_pi << " " << m_N << endl;
     double m_bar=(m_pi*m_N)/(m_pi+m_N); 
     // Fore flips the bounds to keep the larger number as the upper bound.
     // Minus sign has been included in return value.
@@ -178,6 +179,7 @@
                                       upper_bound);
       int_val = integral;
     }
+    //cout << "ii: " << -1*int_val << endl;
     return -1*int_val;
   }
   
@@ -198,16 +200,17 @@
     
     // The result and the uncertainty
     double res_n, err_n, res_p, err_p, tot;
-    quad.tol_rel=1.0e-4;
+    kron.tol_rel=1.0e-2;
 
-    int ret1 = quad.integ_err(fiin, 0.0, 0.0, res_n, err_n);
-    int ret2 = quad.integ_err(fiip, 0.0, 0.0, res_p, err_p);
+    int ret1 = kron.integ_err(fiin, 0.0, 1e8, res_n, err_n);
+    int ret2 = kron.integ_err(fiip, 0.0, 1e8, res_p, err_p);
 
     double m_bar = (m_pi*m_n)/(m_pi+m_n);  // Reduced mass
     tot = ((m_n+m_pi)/(2*pi*p*m_bar*m_bar))*res_n;
     double m_bar_p = (m_pi*m_p)/(m_pi+m_p);  // Reduced mass
     tot += ((m_p+m_pi)/(2*pi*p*m_bar_p*m_bar_p))*res_p;
     
+    cout << "s_e: p, res_n, res_p, se: " << p << " " << res_n << " " << res_p << " " << tot << endl;
     return tot;
   }
 
@@ -260,13 +263,15 @@
   //should only have one minima and another to search near zero.
 
   bool fore::condensation_exists(funct sigma_pi, double mu) {
-
+    std::cout << "m_pi: " << m_pi << std::endl;
     funct pion_energy = [this,sigma_pi](double p) -> double {return sqrt(p*p+m_pi*m_pi) + sigma_pi(p); };
-    
+    std::cout << "p, sigma_pi, pion_energy: " << 100 << " " << sigma_pi(100) << " " << pion_energy(100) << std::endl; 
+    exit(-1);
     double low_p_min, sigma_pi_min, high_p_min; double x1=0.0; double x2=200.0;
 
     mcn.min_bkt(x1, 0.0, numeric_limits<double>::infinity(), low_p_min, pion_energy);
     mcn.min_bkt(x2, 0.0, numeric_limits<double>::infinity(), sigma_pi_min, sigma_pi);
+    std::cout << "pion energy min, self energy min: " << low_p_min << " " << sigma_pi_min << std::endl;
 
     if (sigma_pi_min==0.0){ 
       std::cout << "condensation finding error. bad assumptions" << std::endl; }
@@ -401,7 +406,7 @@
       Y_pi = rel_pion_number_density(T, mu_pi, pseudo_pot_params, nucleon_mod);
 
       if (Y_pi!=0) {
-        Y_pi = Y_pi/n_B;
+        //Y_pi = Y_pi/n_B;
       }
 
       if (Y_pi==0){
@@ -410,10 +415,10 @@
         e_pi = pion_energy(T, mu_pi, pseudo_pot_params, nucleon_mod);
         s_pi = pion_entropy(T, mu_pi, pseudo_pot_params, nucleon_mod)/n_B;
 
-        press_pi = T*s_pi*n_B - e_pi + Y_pi*n_B*mu_pi;
+        press_pi = T*s_pi*n_B - e_pi + Y_pi*mu_pi;
 
-        e_pi = e_pi/(hbar_c*hbar_c*hbar_c);
-        press_pi = press_pi/(hbar_c*hbar_c*hbar_c);
+        e_pi = e_pi/(hc_mev_fm*hc_mev_fm*hc_mev_fm);
+        press_pi = press_pi/(hc_mev_fm*hc_mev_fm*hc_mev_fm);
       } else {
         flag = -1;
       }
@@ -425,7 +430,7 @@
   void fore::calc_mu(boson &b, fermion &n, fermion &p, double T, double n_B) {
 
     // Convert units from 1/fm to MeV to use here..
-
+    T = T*hc_mev_fm;
     mu_n = n.mu*hc_mev_fm;       // Neutron Chemical potential
     mu_p = p.mu*hc_mev_fm;       // Proton chemical potential
     mu_pi = b.mu*hc_mev_fm;      // Pion chemical potential
@@ -466,10 +471,13 @@
     
     
     nucleon_mod.resize(2,2);
-    nucleon_mod(0,0)=n.ms*hc_mev_fm;
-    nucleon_mod(0,1)=(n.mu-U_n-n.m)*hc_mev_fm;
-    nucleon_mod(1,0)=p.ms*hc_mev_fm;
-    nucleon_mod(1,1)=(p.mu-U_p-p.m)*hc_mev_fm;
+    nucleon_mod(0,0)=meff_n;
+    nucleon_mod(0,1)=mu_n-U_n-m_n;
+    nucleon_mod(1,0)=meff_p;
+    nucleon_mod(1,1)=mu_p-U_p-m_p;
+
+    cout << "s_e: nuc_mod: " << nucleon_mod(0,0) << " " << nucleon_mod(0,1) << endl;
+    cout << "s_e: nuc_mod: " << nucleon_mod(1,0) << " " << nucleon_mod(1,1) << endl;
 
     cout << "p_list.size(): " << p_list.size() << endl;
 

@@ -1,0 +1,48 @@
+
+name:
+  short_name: utk-eos
+  display_name: UTK-EOS
+authors:
+  - Andrew W. Steiner
+command:
+  - 'python3'
+  - '/src/main.py'
+image:
+  registry: "registry.gitlab.com"
+  repo: "https://github.com/awsteiner/eos"
+  tag: "2.0.0"
+  source:
+    url: "https://github.com/awsteiner/eos"
+    git: "https://github.com/awsteiner/eos.git"
+    path: "/eos/Dockerfile"
+    targetRevision: "0.5.2"
+docs:
+  path: "docs/src"
+## Labels must be unique across both inputs and outputs
+inputs:
+  - label: config
+    ## The name "config" is a reserved word used by the Calculation Engine to
+    ## identify where to read the exit code
+    description: "Configuration of the module runtime options"
+    path: "/input/config.yaml"
+    api:
+      url: ""
+      targetRevision: ""
+      path: api/input/config.yaml#/components/schemas/Configuration
+outputs:
+  - label: status
+    ## The name "status" is a reserved word used by the Calculation Engine to
+    ## identify where to read the exit code
+    description: "Module execution status"
+    path: "/output/status.yaml"
+    api:
+      url: ""
+      targetRevision: ""
+      path: api/output/status.yaml#/components/schemas/Status
+  - label: equation_of_state
+    description: "Calculated equation of state data"
+    path: "/output/eos.yaml"
+    api:
+      url: ""
+      targetRevision: ""
+      path: api/output/Equation_Of_State.yaml#/components/schemas/Equation_Of_State

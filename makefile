@@ -231,6 +231,8 @@ eos_nompi: eos_nompi.o main_eos_nompi.o \
 		main_eos_nompi.o eos_had_skyrme_ext_nompi.o $(LIBS) \
 		-lreadline
 
+ymltest: 
+	$(LCXX) -I/usr/local/include -L/usr/local/lib -lyaml-cpp -o ymltest ymltest.cpp 
 # ----------------------------------------------------------------
 # Other targets
 # ----------------------------------------------------------------
@@ -466,7 +468,7 @@ mbnew:
 		-set function_verbose 0 \
 		-load data/fid_3_5_22.o2 \
 		-set recompute 1 \
-		-point-nuclei 0.1 0.4 20 
+		-muses 0.1 0.4 20 
 
 mbpi:
 	./eos_nuclei \
