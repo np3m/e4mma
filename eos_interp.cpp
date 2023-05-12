@@ -111,6 +111,7 @@ int eos_nuclei::interp_point(std::vector<std::string> &sv,
   T_cent=T_grid2[iT]/hc_mev_fm;
   cout << "Adjusted to grid, nB, Ye, T[MeV]: " << nB_cent << " "
        << Ye_cent << " " << T_cent*hc_mev_fm << endl;
+  cout << "At grid point: " << inB << " " << iYe << " " << iT << endl;
 
   int window=o2scl::stoi(sv[4]);
   cout << "Using window size: " << window << endl;
