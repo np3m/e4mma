@@ -1,7 +1,8 @@
 version: '2'
 services:
     utk_eos:
-      image: "utk-eos:dev"
+      dockerfile: Dockerfile
+      image: "eostest"
       ports:
         - 8080:8081
       build:
