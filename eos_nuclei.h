@@ -91,19 +91,30 @@ class interpm_krige_eos :
  o2scl_linalg::matrix_invert_det_eigen<Eigen::MatrixXd>> {
   
 public:
+  
+  // Typedefs from the specialized template parameters
+  typedef ubmatrix_row mat_y_row_t;
+  typedef ubmatrix_row mat_x_row_t;
+  typedef Eigen::MatrixXd mat_inv_kxx_t;
+  typedef o2scl_linalg::matrix_invert_det_eigen<Eigen::MatrixXd>
+  mat_inv_t;
 
-  /** \brief Desc
+  /** \brief List of calibration points
    */
-  std::vector<size_t> index_list;
+  std::vector<size_t> calib_list;
 
-  /// \name grids
+  /** \brief List of points to fix
+   */
+  std::vector<size_t> fix_list;
+
+  /// \name Grids
   //@{
   std::vector<double> nB_grid;
   std::vector<double> Ye_grid;
   std::vector<double> T_grid;
   //@}
 
-  /// \name data
+  /// \name Tensor grid data
   //@{
   o2scl::tensor_grid<> *tgp_F;
   o2scl::tensor_grid<> *tgp_P;
@@ -111,12 +122,16 @@ public:
   o2scl::tensor_grid<> *tgp_mun;
   o2scl::tensor_grid<> *tgp_mup;
   o2scl::tensor_grid<> *tgp_mue;
+  o2scl::tensor_grid<> tgp_cs2;
   //@}
 
+  /// Neutron mass
   double mneut;
+  /// Proton mass
   double mprot;
   
-  /** \brief Desc
+  /** \brief Set the interpolator given the specified EOS
+      objects
    */
   virtual void set(std::vector<double> &nB_grid2,
                    std::vector<double> &Ye_grid2,
@@ -127,12 +142,11 @@ public:
                    o2scl::tensor_grid<> &tg_mun,
                    o2scl::tensor_grid<> &tg_mup,
                    o2scl::tensor_grid<> &tg_mue,
-                   double mn, double mp,
-                   int window=0);
+                   double mn, double mpx);
   
-  /** \brief Desc
+  /** \brief Additional constraints for the interpolation
    */
-  virtual int addl_const(double &ret);
+  virtual int addl_const(size_t iout, double &ret);
   
 };
 
@@ -184,19 +198,22 @@ public:
   virtual ~eos_nuclei();
   //@}
 
-  /// Desc
+  /// Partition functions for the nuclei
   o2scl::part_funcs pfuncs;
-  
-  /*
-    o2scl::boson pi_minus;
-    o2scl::boson pi_plus;
-    o2scl::fermion delta_pp;
-  */
+
+  /// Particle object for bosons
   o2scl::boson_rel relb;
+  
+  /// Particle object for bosons
   o2scl::boson_eff effb;
 
+  /** \brief If true, include a hadron resonance gas
+   */
   bool inc_hrg;
-  
+
+  /** \brief Solve for charge neutrality and fixed baryon fraction
+      with a hadron resonance gas
+   */
   int solve_hrg(size_t nv, const ubvector &x,
                 ubvector &y, double nB, double Ye, double T);
   
@@ -740,7 +757,12 @@ public:
   */
   int eos_deriv(std::vector<std::string> &sv, bool itive_com);
 
-  /** \brief Desc
+  /** \brief Interpolate the EOS around a specified point
+
+      <nB> <Ye> <T MeV> <window> [st.o2]
+
+      This function requires that an EOS with leptons has been
+      loaded. 
    */
   int interp_point(std::vector<std::string> &sv, bool itive_com);
 
@@ -916,7 +938,7 @@ public:
   //@{
   /** \brief Setup the command-line interface
    */
-  virtual void setup_cli(o2scl::cli &cli); 
+  virtual void setup_cli_nuclei(o2scl::cli &cli); 
 
   /** \brief Initialize tensors for a new EOS table
    */
@@ -1094,7 +1116,9 @@ public:
       Help.
   */
   int maxwell(std::vector<std::string> &sv, bool itive_com);
-  
+
+  /** \brief Desc
+   */
   int max_fun(size_t nv, const ubvector &x, ubvector &y,
               o2scl::interp_vec<std::vector<double>,ubvector> &itp_P, 
               o2scl::interp_vec<std::vector<double>,ubvector> &itp_mun);

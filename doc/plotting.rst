@@ -1,8 +1,9 @@
 Plotting with o2graph
 =====================
 
-One can plot the EOS data with the O₂sclpy command ``o2graph``.
-To begin, first download an EOS table::
+One can plot the EOS data with the O₂sclpy (see
+https://neutronstars.utk.edu/code/o2sclpy) command ``o2graph``. To
+begin, first download an EOS table::
 
   o2graph -download fid_3_5_22.o2 \
   https://isospin.roam.utk.edu/public_data/eos_tables/du21/fid_3_5_22.o2

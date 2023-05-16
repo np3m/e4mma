@@ -86,7 +86,7 @@ double eos_nuclei::interp_min
 int eos_nuclei::interp_point(std::vector<std::string> &sv,
                              bool itive_com) {
 
-  if (sv.size()<5) {
+  if (sv.size()<6) {
     cerr << "Not enough arguments interp-point." << endl;
     return 1;
   }
@@ -116,115 +116,78 @@ int eos_nuclei::interp_point(std::vector<std::string> &sv,
   int window=o2scl::stoi(sv[4]);
   cout << "Using window size: " << window << endl;
 
-  int count=0;
-  for(int dnB=-window;dnB<=window;dnB++) {
-    for(int dYe=-window;dYe<=window;dYe++) {
-      for(int dT=-window;dT<=window;dT++) {
-        if (abs(dnB)+abs(dYe)+abs(dT)<=window &&
-            inB+dnB>=0 && inB+dnB<n_nB2 &&
-            iYe+dYe>=0 && iYe+dYe<n_Ye2 &&
-            iT+dT>=0 && iT+dT<n_T2) {
-          count++;
-        }
-      }
-    }
-  }
-  
-  cout << "Using " << count << " points to interpolate." << endl;
-  
-  ubmatrix ix(count,3);
-  ubmatrix iy(1,count);
-
-  count=0;
-  for(int dnB=-window;dnB<=window;dnB++) {
-    for(int dYe=-window;dYe<=window;dYe++) {
-      for(int dT=-window;dT<=window;dT++) {
-        
-        if (abs(dnB)+abs(dYe)+abs(dT)<=window &&
-            inB+dnB>=0 && inB+dnB<n_nB2 &&
-            iYe+dYe>=0 && iYe+dYe<n_Ye2 &&
-            iT+dT>=0 && iT+dT<n_T2) {
-          
-          ix(count,0)=inB+dnB;
-          ix(count,1)=iYe+dYe;
-          ix(count,2)=iT+dT;
-          vector<size_t> index={inB+dnB,iYe+dYe,iT+dT};
-          iy(0,count)=tg_F.get(index);
-
-          if (true) {
-            cout << ix(count,0) << " " << ix(count,1) << " "
-                 << ix(count,2) << " " << iy(0,count) << endl;
-          }
-          
-          count++;
-          
-        }
-        
-      }
-    }
-  }
-
-  ubmatrix ix2=ix;
-
+  // Create interpolation object
   interpm_krige_eos ike;
   ike.mode=ike.mode_loo_cv_bf;
   ike.full_min=true;
   ike.def_mmin.verbose=1;
-  vector<mcovar_funct_rbf_noise> mfr(1);
-  mfr[0].len.resize(3);
   
-  //vector<double> len_list={0.1,0.3,0.5,0.75,1.0,2.0,3.0,4.0,5.0,6.0,
-  //8.0,10.0};
-  vector<double> len_list={2.0,3.0};
-  vector<double> l10_list={-15,-13,-11,-9};  
-  vector<vector<double>> ptemp;
-  ptemp.push_back(len_list);
-  ptemp.push_back(len_list);
-  ptemp.push_back(len_list);
-  ptemp.push_back(l10_list);
-  vector<vector<vector<double>>> param_lists;
-  param_lists.push_back(ptemp);
-  cout << "Going to set_covar()." << endl;
-  ike.set_covar(mfr,param_lists);
+  /// Load cs2 from a file
+  std::string st_o2="";
+  st_o2=sv[5];
+  hdf_file hff;
+  hff.open(st_o2);
+  hdf_input(hff,ike.tgp_cs2);
+  hff.close();
 
-  cout << "Going to set_data()." << endl;
-  ike.verbose=2;
-  ike.set_data(3,1,count,ix,iy);
-
-  cout << "Herex." << endl;
+  for(int dnB=-window;dnB<=window;dnB++) {
+    for(int dYe=-window;dYe<=window;dYe++) {
+      for(int dT=-window;dT<=window;dT++) {
+        vector<size_t> index={inB+dnB,iYe+dYe,iT+dT};
+        if (abs(dnB)+abs(dYe)+abs(dT)<=window &&
+            inB+dnB>=0 && inB+dnB<n_nB2 &&
+            iYe+dYe>=0 && iYe+dYe<n_Ye2 &&
+            iT+dT>=0 && iT+dT<n_T2) {
+          if (ike.tgp_cs2.get_rank()>=3 &&
+              (ike.tgp_cs2.get(index)>1.0 ||
+               !std::isfinite(ike.tgp_cs2.get(index)) ||
+               ike.tgp_cs2.get(index)<0.0)) {
+            ike.fix_list.push_back(index[0]);
+            ike.fix_list.push_back(index[1]);
+            ike.fix_list.push_back(index[2]);
+            //cout << "fix: " << index[0] << " " << index[1] << " "
+            //<< index[2] << endl;
+          } else {
+            ike.calib_list.push_back(index[0]);
+            ike.calib_list.push_back(index[1]);
+            ike.calib_list.push_back(index[2]);
+            //cout << "cal: " << index[0] << " " << index[1] << " "
+            //<< index[2] << endl;
+          }
+        }
+      }
+    }
+  }
   
-  for(int k=0;k<count;k++) {
+  cout << "Using " << ike.calib_list.size()/3 << " points to calibrate"
+       << endl;
+  cout << "  and attempting to fix " << ike.fix_list.size()/3 << " points."
+       << endl;
+  size_t count=ike.calib_list.size()/3;
+  
+  ike.set(nB_grid2,Ye_grid2,T_grid2,tg_F,tg_P,tg_S,
+          tg_mun,tg_mup,tg_mue,neutron.m,proton.m);
 
-    cout << "k: " << k << endl;
+  // Use the interpolation results to fix points 
+  std::vector<double> out(1);
+  for(size_t j=0;j<ike.fix_list.size();j+=3) {
+
+    vector<size_t> index={ike.fix_list[j],ike.fix_list[j+1],
+      ike.fix_list[j+2]};
     
-    ix2(k,0)=inB;
-    ix2(k,1)=iYe;
-    ix2(k,2)=iT;
-    
-    vector<size_t> index={((size_t)(ix2(k,0)*1.0001)),
-      ((size_t)(ix2(k,1)*1.0001)),((size_t)(ix2(k,2)*1.0001))};
-    vector<double> point={((double)inB),((double)iYe),((double)iT)};
-    vector<double> out(1);
-
-    double nB=nB_grid2[ix2(k,0)];
-    double Ye=Ye_grid2[ix2(k,1)];
-    double T_MeV=T_grid2[ix2(k,2)];
-
-    cout << nB_cent << " " << Ye_cent << " " << T_cent*hc_mev_fm << endl;
-    cout << inB << " " << iYe << " " << iT << endl;
-    cout << nB << " " << Ye << " " << T_MeV << endl;
+    double nB=nB_grid2[inB];
+    double Ye=Ye_grid2[iYe];
+    double T_MeV=T_grid2[iT];
     
     // Derivatives of the physical coordinates with respect to the indices
     
     double dnBdi=2.0*0.04*log(10.0)*pow(10.0,((double)inB)*0.04-12.0);
     double dYedj=0.01;
     double dTdk=0.1*log(1.046)*pow(1.046,iT);
-
-    // Evaluate the free energy and its derivatives analytically
-    // using the interpolator
     
     ike.eval(index,out);
     double Fintp=out[0];
+    tg_F.get(index)=Fintp;
     
     ike.deriv(index,out,0);
     double dF_dnB=out[0]/hc_mev_fm/dnBdi;
@@ -233,7 +196,7 @@ int eos_nuclei::interp_point(std::vector<std::string> &sv,
     ike.deriv(index,out,2);
     // No hbarc here b/c dTdk has units of MeV as does out[0]
     double dF_dT=out[0]/dTdk;
-
+        
     ike.deriv2(index,out,0,0);
     double F_nBnB=out[0]/hc_mev_fm;
     ike.deriv2(index,out,0,1);
@@ -246,68 +209,22 @@ int eos_nuclei::interp_point(std::vector<std::string> &sv,
     double F_YeT=out[0]/hc_mev_fm;
     ike.deriv2(index,out,2,2);
     double F_TT=out[0]/hc_mev_fm;
-    
-    // Use those derivatives to compute the chemical potentials and
-    // the entropy density
-    
+
     double mun=Fintp/hc_mev_fm-Ye*dF_dYe+nB*dF_dnB;
     double mue=tg_mue.get(index)/hc_mev_fm;
     double mup=Fintp/hc_mev_fm+(1.0-Ye)*dF_dYe+nB*dF_dnB-mue;
     double en=-nB*dF_dT;
-
-    // Compare theose derivatives with the stored values
-
-    cout << "Stored  : mun[MeV],mup[MeV],mue[MeV],S: ";
-    cout << tg_mun.get(index) << " ";
-    cout << tg_mup.get(index) << " ";
-    cout << tg_mue.get(index) << " ";
-    cout << tg_S.get(index) << endl;
-    cout << "Computed: mun[MeV],mup[MeV],mue[MeV],S: " << mun*hc_mev_fm << " "
-         << mup*hc_mev_fm << " " << mue*hc_mev_fm << " ";
-    cout << en/nB << endl;
-
-    // Now compute the second derivatives and the speed of sound
+    tg_mun.get(index)=mun;
+    tg_mup.get(index)=mup;
+    tg_mue.get(index)=mue;
     
-    double f_nnnn=(Ye*Ye*F_YeYe+nB*(2.0*dF_dnB-2.0*Ye*F_nBYe+nB*F_nBnB))/nB;
-    double f_nnnp=((Ye-1.0)*Ye*F_YeYe+nB*(2.0*dF_dnB+(1.0-2.0*Ye)*
-                                          F_nBYe+nB*F_nBnB))/nB;
-    double f_npnp=((Ye-1.0)*(Ye-1.0)*F_YeYe+nB*(2.0*dF_dnB-2.0*(Ye-1.0)*
-                                                F_nBYe+nB*F_nBnB))/nB;
-    double f_nnT=dF_dT-Ye*F_YeT+nB*F_nBT;
-    double f_npT=dF_dT-(Ye-1.0)*F_YeT+nB*F_nBT;
-    double f_TT=nB*F_TT;
-    
-    double den=en*T_MeV/hc_mev_fm+(mun+neutron.m)*nB*(1.0-Ye)+
-      (mup+proton.m)*nB*Ye+mue*nB*Ye;
-    double nn2=nB*(1.0-Ye);
-    double np2=nB*Ye;
-    double cs_sq=(nn2*nn2*(f_nnnn-f_nnT*f_nnT/f_TT)+
-                  2.0*nn2*np2*(f_nnnp-f_nnT*f_npT/f_TT)+
-                  np2*np2*(f_npnp-f_npT*f_npT/f_TT)-
-                  2.0*en*(nn2*f_nnT/f_TT+np2*f_npT/f_TT)-en*en/f_TT)/den;
+    tg_S.get(index)=en/nB;
 
-    cout << "Here: " << cs_sq << endl;
-
-    // Also compute dPdnB
-
-    vector<size_t> im1={index[0]-1,index[1],index[2]};
+    // unverified
+    tg_E.get(index)=tg_F.get(index)+T_MeV*tg_S.get(index);
+    tg_P.get(index)=tg_F.get(index)+mun*neutron.m+mup*proton.m+
+      mue*electron.m;
     
-    double dmun_dnB=2.0*dF_dnB-Ye*F_nBYe+nB*F_nBnB;
-    double dmup_dnB=2.0*dF_dnB-(Ye-1.0)*F_nBYe+nB*F_nBnB;
-    cout << dmun_dnB*hc_mev_fm << " " << dmup_dnB*hc_mev_fm << endl;
-    cout << (tg_mun.get(index)-tg_mun.get(im1))/hc_mev_fm/
-      (nB_grid2[index[0]]-nB_grid2[index[0]-1]) << " ";
-    cout << (tg_mup.get(index)-tg_mup.get(im1))/hc_mev_fm/
-      (nB_grid2[index[0]]-nB_grid2[index[0]-1]) << endl;
-    
-    double dmuden_dnB=((1.0-Ye)*mun+nn2*dmun_dnB+
-                       Ye*(mup+mue)+np2*dmup_dnB);
-    double dPdnB=dmuden_dnB-dF_dnB*nB-Fintp/hc_mev_fm;
-    cout << dPdnB << endl;
-    cout << (tg_P.get(index)-tg_P.get(im1))/hc_mev_fm/
-      (nB_grid2[index[0]]-nB_grid2[index[0]-1]) << endl;
-    
-    exit(-1);
   }
 
   return 0;
@@ -322,8 +239,26 @@ void interpm_krige_eos::set(std::vector<double> &nB_grid2,
                             o2scl::tensor_grid<> &tg_mun,
                             o2scl::tensor_grid<> &tg_mup,
                             o2scl::tensor_grid<> &tg_mue,
-                            double mn, double mpx,
-                            int window) {
+                            double mn, double mpx) {
+
+  ubmatrix ix(calib_list.size()/3,3);
+  ubmatrix iy(1,calib_list.size()/3);
+
+  for(size_t j=0;j<calib_list.size();j+=3) {
+    ix(j/3,0)=calib_list[j];
+    ix(j/3,1)=calib_list[j+1];
+    ix(j/3,2)=calib_list[j+2];
+    vector<size_t> index={calib_list[j],calib_list[j+1],
+      calib_list[j+2]};
+    iy(0,j/3)=tg_F.get(index);
+    if (true) {
+      cout << ix(j/3,0) << " " << ix(j/3,1) << " "
+           << ix(j/3,2) << " " << iy(0,j/3) << endl;
+    }
+  }
+
+  // Make a copy because interpm_krige_eos will keep it
+  ubmatrix ix2=ix;
 
   mneut=mn;
   mprot=mpx;
@@ -343,67 +278,6 @@ void interpm_krige_eos::set(std::vector<double> &nB_grid2,
   size_t n_Ye=Ye_grid2.size();
   size_t n_T=T_grid2.size();
 
-  ubmatrix ix, iy;
-
-  int count;
-    
-  for(size_t irun=0;irun<2;irun++) {
-      
-    count=0;
-    
-    for(int ilist=0;ilist<((int)index_list.size());ilist++) {
-        
-      int inB=index_list[ilist*3];
-      int iYe=index_list[ilist*3+1];
-      int iT=index_list[ilist*3+2];
-        
-      for(int dnB=-window;dnB<=window;dnB++) {
-        for(int dYe=-window;dYe<=window;dYe++) {
-          for(int dT=-window;dT<=window;dT++) {
-            if (inB+dnB>=0 && iYe+dYe>=0 && iT+dT>=0 &&
-                inB+dnB<((int)n_nB) && iYe+dYe<((int)n_Ye) &&
-                iT+dT<((int)n_T) && abs(dnB)+abs(dYe)+abs(dT)<=window) {
-
-              if (irun==1) {
-                ix(count,0)=inB+dnB;
-                ix(count,1)=iYe+dYe;
-                ix(count,2)=iT+dT;
-                std::vector<size_t> index={((size_t)(inB+dnB)),
-                  ((size_t)(iYe+dYe)),((size_t)(iT+dT))};
-                iy(0,count)=tg_F.get(index);
-                  
-                if (true) {
-                  std::cout << ix(count,0) << " " << ix(count,1) << " "
-                            << ix(count,2) << " " << iy(0,count) << std::endl;
-                }
-              }
-
-              count++;
-            }
-          }
-        }
-      }
-    }
-
-    if (irun==0) {
-        
-      std::cout << "Using " << count << " points to interpolate."
-                << std::endl;
-        
-      ix.resize(count,3);
-      iy.resize(1,count);
-    }
-      
-  }
-    
-  mode=mode_loo_cv_bf;
-  full_min=true;
-  def_mmin.verbose=1;
-  std::vector<o2scl::mcovar_funct_rbf_noise> mfr(1);
-  mfr[0].len.resize(3);
-    
-  //vector<double> len_list={0.1,0.3,0.5,0.75,1.0,2.0,3.0,4.0,5.0,6.0,
-  //8.0,10.0};
   std::vector<double> len_list={2.0,3.0};
   std::vector<double> l10_list={-15,-13,-11,-9};  
   std::vector<std::vector<double>> ptemp;
@@ -414,27 +288,103 @@ void interpm_krige_eos::set(std::vector<double> &nB_grid2,
   std::vector<std::vector<std::vector<double>>> param_lists;
   param_lists.push_back(ptemp);
   std::cout << "Going to set_covar()." << std::endl;
+  vector<mcovar_funct_rbf_noise> mfr(1);
+  mfr[0].len.resize(3);
   set_covar(mfr,param_lists);
     
   std::cout << "Going to set_data()." << std::endl;
   verbose=2;
-  set_data(3,1,count,ix,iy);
-    
+  set_data(3,1,calib_list.size()/3,ix,iy);
+
   return;
 }
   
-int interpm_krige_eos::addl_const(double &ret) {
+int interpm_krige_eos::addl_const(size_t iout, double &ret) {
 
+  cout << "addl_const: " << endl;
+  
+  // First, we need to ensure the interpolator has been
+  // setup to be able to use the eval() and deriv()
+  // functions
+  
+  // Select the row of the data matrix
+  mat_y_row_t yiout2(this->y,iout);
+  
+  // Construct the KXX matrix
+  size_t size=this->x.size1();
+  
+  mat_inv_kxx_t KXX(size,size);
+  for(size_t irow=0;irow<size;irow++) {
+    mat_x_row_t xrow(this->x,irow);
+    for(size_t icol=0;icol<size;icol++) {
+      mat_x_row_t xcol(this->x,icol);
+      if (irow>icol) {
+        KXX(irow,icol)=KXX(icol,irow);
+      } else {
+        KXX(irow,icol)=(*cf)[iout](xrow,xcol);
+      }
+    }
+  }
+  
+  if (verbose>2) {
+    std::cout << "Done creating covariance matrix with size "
+              << size << std::endl;
+  }
+  
+  // Perform the matrix inversion and compute the determinant
+  
+  double lndet;
+  
+  // Construct the inverse of KXX
+  if (verbose>2) {
+    std::cout << "Performing matrix inversion with size "
+              << size << std::endl;
+  }
+  this->inv_KXX[iout].resize(size,size);
+  int cret=this->mi.invert_det(size,KXX,this->inv_KXX[iout],lndet);
+  if (cret!=0) {
+    return 2;
+  }
+  
+  lndet=log(lndet);
+  
+  if (verbose>2) {
+    std::cout << "Done performing matrix inversion with size "
+              << size << std::endl;
+  }
+        
+  // Inverse covariance matrix times function vector
+  this->Kinvf[iout].resize(size);
+  o2scl_cblas::dgemv(o2scl_cblas::o2cblas_RowMajor,
+                     o2scl_cblas::o2cblas_NoTrans,
+                     size,size,1.0,this->inv_KXX[iout],
+                     yiout2,0.0,this->Kinvf[iout]);
+
+  // Done setting interpolator
+  // ----------
+  
   ret=0.0;
   bool compare=true;
-    
-  for(size_t ilist=0;ilist<index_list.size();ilist++) {
+
+  for(size_t ilist=0;ilist<(calib_list.size()+fix_list.size())/3;
+      ilist++) {
       
     std::cout << "ilist: " << ilist << std::endl;
-      
-    size_t inB=index_list[ilist*3];
-    size_t iYe=index_list[ilist*3+1];
-    size_t iT=index_list[ilist*3+2];
+
+    size_t inB, iYe, iT;
+    if (ilist<calib_list.size()) {
+      inB=calib_list[ilist*3];
+      iYe=calib_list[ilist*3+1];
+      iT=calib_list[ilist*3+2];
+    } else {
+      inB=fix_list[(ilist-calib_list.size())*3];
+      iYe=fix_list[(ilist-calib_list.size())*3+1];
+      iT=fix_list[(ilist-calib_list.size())*3+2];
+    }
+    inB=3;
+    iYe=49;
+    iT=1;
+    
       
     std::vector<size_t> index={((size_t)inB),((size_t)iYe),((size_t)iT)};
         
@@ -442,6 +392,8 @@ int interpm_krige_eos::addl_const(double &ret) {
     double Ye=Ye_grid[iYe];
     double T_MeV=T_grid[iT];
 
+    cout << nB << " " << Ye << " " << T_MeV << endl;
+    
     // Derivatives of the physical coordinates with respect to the indices
     
     double dnBdi=2.0*0.04*log(10.0)*pow(10.0,((double)inB)*0.04-12.0);
@@ -450,7 +402,7 @@ int interpm_krige_eos::addl_const(double &ret) {
 
     // Evaluate the free energy and its derivatives analytically
     // using the interpolator
-        
+
     std::vector<double> out(1);
     eval(index,out);
     double Fintp=out[0];
@@ -478,7 +430,8 @@ int interpm_krige_eos::addl_const(double &ret) {
         
     // Use those derivatives to compute the chemical potentials and
     // the entropy density
-        
+
+    cout << "Q: " << Fintp << " " << Ye << " " << dF_dYe << endl;
     double mun=Fintp/hc_mev_fm-Ye*dF_dYe+nB*dF_dnB;
     double mue=tgp_mue->get(index)/hc_mev_fm;
     double mup=Fintp/hc_mev_fm+(1.0-Ye)*dF_dYe+nB*dF_dnB-mue;
@@ -487,6 +440,8 @@ int interpm_krige_eos::addl_const(double &ret) {
     // Compare theose derivatives with the stored values
 
     if (compare) {
+      std::cout << "Indices: " << index[0] << " " << index[1] << " "
+                << index[2] << std::endl;
       std::cout << "Stored  : mun[MeV],mup[MeV],mue[MeV],S: ";
       std::cout << tgp_mun->get(index) << " ";
       std::cout << tgp_mup->get(index) << " ";
@@ -519,36 +474,40 @@ int interpm_krige_eos::addl_const(double &ret) {
                   2.0*en*(nn2*f_nnT/f_TT+np2*f_npT/f_TT)-en*en/f_TT)/den;
         
     std::cout << "Here: " << cs_sq << std::endl;
+    cout << tgp_cs2.get(index) << endl;
     if (cs_sq>1.0 || cs_sq<0.0 || !std::isfinite(cs_sq)) {
       return 1;
     }
         
     // Also compute dPdnB
-        
-    std::vector<size_t> im1={index[0]-1,index[1],index[2]};
-        
-    double dmun_dnB=2.0*dF_dnB-Ye*F_nBYe+nB*F_nBnB;
-    double dmup_dnB=2.0*dF_dnB-(Ye-1.0)*F_nBYe+nB*F_nBnB;
-    if (compare) {
-      std::cout << dmun_dnB*hc_mev_fm << " " << dmup_dnB*hc_mev_fm << std::endl;
-      std::cout << (tgp_mun->get(index)-tgp_mun->get(im1))/hc_mev_fm/
-        (nB_grid[index[0]]-nB_grid[index[0]-1]) << " ";
-      std::cout << (tgp_mup->get(index)-tgp_mup->get(im1))/hc_mev_fm/
-        (nB_grid[index[0]]-nB_grid[index[0]-1]) << std::endl;
+
+    if (index[0]>0) {
+      std::vector<size_t> im1={index[0]-1,index[1],index[2]};
+      
+      double dmun_dnB=2.0*dF_dnB-Ye*F_nBYe+nB*F_nBnB;
+      double dmup_dnB=2.0*dF_dnB-(Ye-1.0)*F_nBYe+nB*F_nBnB;
+      if (compare) {
+        std::cout << dmun_dnB*hc_mev_fm << " " << dmup_dnB*hc_mev_fm
+                  << std::endl;
+        std::cout << (tgp_mun->get(index)-tgp_mun->get(im1))/hc_mev_fm/
+          (nB_grid[index[0]]-nB_grid[index[0]-1]) << " ";
+        std::cout << (tgp_mup->get(index)-tgp_mup->get(im1))/hc_mev_fm/
+          (nB_grid[index[0]]-nB_grid[index[0]-1]) << std::endl;
+      }
+      
+      double dmuden_dnB=((1.0-Ye)*mun+nn2*dmun_dnB+
+                         Ye*(mup+mue)+np2*dmup_dnB);
+      double dPdnB=dmuden_dnB-dF_dnB*nB-Fintp/hc_mev_fm;
+      if (compare) {
+        std::cout << dPdnB << std::endl;
+        std::cout << (tgp_P->get(index)-tgp_P->get(im1))/hc_mev_fm/
+          (nB_grid[index[0]]-nB_grid[index[0]-1]) << std::endl;
+      }
+      if (dPdnB<=0.0) return 2;
     }
-        
-    double dmuden_dnB=((1.0-Ye)*mun+nn2*dmun_dnB+
-                       Ye*(mup+mue)+np2*dmup_dnB);
-    double dPdnB=dmuden_dnB-dF_dnB*nB-Fintp/hc_mev_fm;
-    if (compare) {
-      std::cout << dPdnB << std::endl;
-      std::cout << (tgp_P->get(index)-tgp_P->get(im1))/hc_mev_fm/
-        (nB_grid[index[0]]-nB_grid[index[0]-1]) << std::endl;
-    }
-    if (dPdnB<=0.0) return 2;
+    exit(-1);
       
   }
-      
         
   return 0;
 }
