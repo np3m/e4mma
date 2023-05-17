@@ -381,10 +381,9 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
       iYe=fix_list[(ilist-calib_list.size())*3+1];
       iT=fix_list[(ilist-calib_list.size())*3+2];
     }
-    inB=3;
-    iYe=49;
-    iT=1;
-    
+    //inB=8;
+    //iYe=48;
+    //iT=1;
       
     std::vector<size_t> index={((size_t)inB),((size_t)iYe),((size_t)iT)};
         
@@ -480,22 +479,50 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
 
     if (index[0]>0) {
       std::vector<size_t> im1={index[0]-1,index[1],index[2]};
+      std::vector<size_t> ip1={index[0]+1,index[1],index[2]};
+      std::vector<size_t> jm1={index[0],index[1]-1,index[2]};
+      std::vector<size_t> jp1={index[0],index[1]+1,index[2]};
+      std::vector<size_t> km1={index[0],index[1],index[2]-1};
+      std::vector<size_t> kp1={index[0],index[1],index[2]+1};
       cout << "cs22: " << tgp_cs2.get(im1) << endl;
       
+      cout << "6: " << dF_dnB << " "
+           << (tgp_F->get(index)-tgp_F->get(im1))/hc_mev_fm/
+        (nB_grid[index[0]]-nB_grid[index[0]-1]) << " "
+           << (tgp_F->get(ip1)-tgp_F->get(index))/hc_mev_fm/
+        (nB_grid[index[0]+1]-nB_grid[index[0]]) << endl;
+      cout << "7: " << dF_dYe << " "
+           << (tgp_F->get(index)-tgp_F->get(jm1))/hc_mev_fm/
+        (Ye_grid[index[0]]-Ye_grid[index[0]-1]) << " "
+           << (tgp_F->get(jp1)-tgp_F->get(index))/hc_mev_fm/
+        (Ye_grid[index[0]+1]-Ye_grid[index[0]]) << endl;
+      cout << "8: " << dF_dT << " "
+           << (tgp_F->get(index)-tgp_F->get(km1))/hc_mev_fm/
+        (T_grid[index[0]]-T_grid[index[0]-1]) << " "
+           << (tgp_F->get(kp1)-tgp_F->get(index))/hc_mev_fm/
+        (T_grid[index[0]+1]-T_grid[index[0]]) << endl;
+      
+      //double mun=Fintp/hc_mev_fm-Ye*dF_dYe+nB*dF_dnB;
+      //double mup=Fintp/hc_mev_fm+(1.0-Ye)*dF_dYe+nB*dF_dnB-mue;
       double dmun_dnB=2*dF_dnB-Ye*F_nBYe+nB*F_nBnB;
       cout << "9: " << 2*dF_dnB << " " << -Ye*F_nBYe << " "
            << nB*F_nBnB << endl;
         
-      double dmup_dnB=2.0*dF_dnB-(Ye-1.0)*F_nBYe+nB*F_nBnB;
+      double dmup_dnB=2.0*dF_dnB+(Ye-1.0)*F_nBYe+nB*F_nBnB;
       if (compare) {
         std::cout << "dmun_dnB dmup_dnB" << endl;
-        cout << "Computed: ";
+        cout << "Computed:   ";
         std::cout << dmun_dnB << " " << dmup_dnB << std::endl;
         cout << "From table: ";
         std::cout << (tgp_mun->get(index)-tgp_mun->get(im1))/hc_mev_fm/
           (nB_grid[index[0]]-nB_grid[index[0]-1]) << " ";
         std::cout << (tgp_mup->get(index)-tgp_mup->get(im1))/hc_mev_fm/
           (nB_grid[index[0]]-nB_grid[index[0]-1]) << std::endl;
+        cout << "From table: ";
+        std::cout << (tgp_mun->get(ip1)-tgp_mun->get(index))/hc_mev_fm/
+          (nB_grid[index[0]+1]-nB_grid[index[0]]) << " ";
+        std::cout << (tgp_mup->get(ip1)-tgp_mup->get(index))/hc_mev_fm/
+          (nB_grid[index[0]+1]-nB_grid[index[0]]) << std::endl;
       }
       
       double dmuden_dnB=((1.0-Ye)*mun+nn2*dmun_dnB+
