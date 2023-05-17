@@ -493,14 +493,14 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
         (nB_grid[index[0]+1]-nB_grid[index[0]]) << endl;
       cout << "7: " << dF_dYe << " "
            << (tgp_F->get(index)-tgp_F->get(jm1))/hc_mev_fm/
-        (Ye_grid[index[0]]-Ye_grid[index[0]-1]) << " "
+        (Ye_grid[index[1]]-Ye_grid[index[1]-1]) << " "
            << (tgp_F->get(jp1)-tgp_F->get(index))/hc_mev_fm/
-        (Ye_grid[index[0]+1]-Ye_grid[index[0]]) << endl;
+        (Ye_grid[index[1]+1]-Ye_grid[index[1]]) << endl;
       cout << "8: " << dF_dT << " "
            << (tgp_F->get(index)-tgp_F->get(km1))/hc_mev_fm/
-        (T_grid[index[0]]-T_grid[index[0]-1]) << " "
+        (T_grid[index[2]]-T_grid[index[2]-1]) << " "
            << (tgp_F->get(kp1)-tgp_F->get(index))/hc_mev_fm/
-        (T_grid[index[0]+1]-T_grid[index[0]]) << endl;
+        (T_grid[index[2]+1]-T_grid[index[2]]) << endl;
       
       //double mun=Fintp/hc_mev_fm-Ye*dF_dYe+nB*dF_dnB;
       //double mup=Fintp/hc_mev_fm+(1.0-Ye)*dF_dYe+nB*dF_dnB-mue;
