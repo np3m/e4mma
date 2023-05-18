@@ -497,10 +497,29 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
            << (tgp_F->get(jp1)-tgp_F->get(index))/hc_mev_fm/
         (Ye_grid[index[1]+1]-Ye_grid[index[1]]) << endl;
       cout << "8: " << dF_dT << " "
-           << (tgp_F->get(index)-tgp_F->get(km1))/hc_mev_fm/
+           << (tgp_F->get(index)-tgp_F->get(km1))/
         (T_grid[index[2]]-T_grid[index[2]-1]) << " "
-           << (tgp_F->get(kp1)-tgp_F->get(index))/hc_mev_fm/
+           << (tgp_F->get(kp1)-tgp_F->get(index))/
         (T_grid[index[2]+1]-T_grid[index[2]]) << endl;
+      
+      double t1=(tgp_F->get(index)-tgp_F->get(im1))/hc_mev_fm/
+        (nB_grid[index[0]]-nB_grid[index[0]-1]);
+      double t2=(tgp_F->get(ip1)-tgp_F->get(index))/hc_mev_fm/
+        (nB_grid[index[0]+1]-nB_grid[index[0]]);
+      double t3=(t1-t2)*2.0/(nB_grid[index[0]+1]-nB_grid[index[0]-1]);
+      cout << "a: " << F_nBnB << " " << t3 << endl;
+      t1=(tgp_F->get(index)-tgp_F->get(jm1))/hc_mev_fm/
+        (Ye_grid[index[1]]-Ye_grid[index[1]-1]);
+      t2=(tgp_F->get(jp1)-tgp_F->get(index))/hc_mev_fm/
+        (Ye_grid[index[1]+1]-Ye_grid[index[1]]);
+      t3=(t1-t2)*2.0/(Ye_grid[index[1]+1]-Ye_grid[index[1]-1]);
+      cout << "b: " << F_YeYe << " " << t3 << endl;
+      t1=(tgp_F->get(index)-tgp_F->get(km1))/
+        (T_grid[index[2]]-T_grid[index[2]-1]);
+      t2=(tgp_F->get(kp1)-tgp_F->get(index))/
+        (T_grid[index[2]+1]-T_grid[index[2]]);
+      t3=(t1-t2)*2.0/(T_grid[index[2]+1]-T_grid[index[2]-1]);
+      cout << "c: " << F_TT << " " << t3 << endl;
       
       //double mun=Fintp/hc_mev_fm-Ye*dF_dYe+nB*dF_dnB;
       //double mup=Fintp/hc_mev_fm+(1.0-Ye)*dF_dYe+nB*dF_dnB-mue;
