@@ -399,6 +399,13 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
     double dYedj=0.01;
     double dTdk=0.1*log(1.046)*pow(1.046,iT);
 
+    double didnB=25.0/nB/log(10.0);
+    double d2idnB2=-25.0/nB/nB/log(10.0);
+    double djdYe=100.0;
+    double d2jdYe2=0.0;
+    double dkdT=1.0/T_MeV/log(1.046);
+    double d2kdT2=-1.0/T_MeV/T_MeV/log(1.046);
+  
     // Evaluate the free energy and its derivatives analytically
     // using the interpolator
 
@@ -407,25 +414,38 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
     double Fintp=out[0];
         
     deriv(index,out,0);
-    double dF_dnB=out[0]/hc_mev_fm/dnBdi;
+    double dFdi=out[0]/hc_mev_fm;
+    double dF_dnB=dFdi*didnB;
     deriv(index,out,1);
-    double dF_dYe=out[0]/hc_mev_fm/dYedj;
+    double dFdj=out[0]/hc_mev_fm;
+    double dF_dYe=dFdj*djdYe;
     deriv(index,out,2);
-    // No hbarc here b/c dTdk has units of MeV as does out[0]
-    double dF_dT=out[0]/dTdk;
+    double dFdk=out[0]/hc_mev_fm;
+    double dF_dT=dFdk*dkdT*hc_mev_fm;
         
     deriv2(index,out,0,0);
-    double F_nBnB=out[0]/hc_mev_fm/dnBdi/dnBdi;
+    double d2Fdi2=out[0]/hc_mev_fm;
+    double F_nBnB=d2Fdi2*didnB*didnB+dFdi*d2idnB2;
+    
     deriv2(index,out,0,1);
-    double F_nBYe=out[0]/hc_mev_fm/dnBdi/dYedj;
+    double d2Fdidj=out[0]/hc_mev_fm;
+    double F_nBYe=d2Fdidj*didnB*djdYe;
+    
     deriv2(index,out,1,1);
-    double F_YeYe=out[0]/hc_mev_fm/dYedj/dYedj;
+    double d2Fdj2=out[0]/hc_mev_fm;
+    double F_YeYe=d2Fdj2*djdYe*djdYe+dFdj*d2jdYe2;
+    
     deriv2(index,out,0,2);
-    double F_nBT=out[0]/dnBdi/dTdk;
+    double d2Fdidk=out[0]/hc_mev_fm;
+    double F_nBT=d2Fdidk*didnB*dkdT*hc_mev_fm;
+    
     deriv2(index,out,1,2);
-    double F_YeT=out[0]/dYedj/dTdk;
+    double d2Fdjdk=out[0]/hc_mev_fm;
+    double F_YeT=d2Fdjdk*djdYe*dkdT*hc_mev_fm;
+    
     deriv2(index,out,2,2);
-    double F_TT=out[0]*hc_mev_fm/dTdk/dTdk;
+    double d2Fdk2=out[0]/hc_mev_fm;
+    double F_TT=(d2Fdk2*dkdT*dkdT+dFdk*d2kdT2)*hc_mev_fm*hc_mev_fm;
 
     // Use those derivatives to compute the chemical potentials and
     // the entropy density
@@ -518,7 +538,7 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
         (T_grid[index[2]]-T_grid[index[2]-1]);
       t2=(tgp_F->get(kp1)-tgp_F->get(index))/
         (T_grid[index[2]+1]-T_grid[index[2]]);
-      t3=(t1-t2)*2.0/(T_grid[index[2]+1]-T_grid[index[2]-1]);
+      t3=hc_mev_fm*(t1-t2)*2.0/(T_grid[index[2]+1]-T_grid[index[2]-1]);
       cout << "c: " << F_TT << " " << t3 << endl;
       
       //double mun=Fintp/hc_mev_fm-Ye*dF_dYe+nB*dF_dnB;
@@ -552,7 +572,9 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
         std::cout << "Computed: " << dPdnB << std::endl;
         std::cout << "From table: "
                   << (tgp_P->get(index)-tgp_P->get(im1))/hc_mev_fm/
-          (nB_grid[index[0]]-nB_grid[index[0]-1]) << std::endl;
+          (nB_grid[index[0]]-nB_grid[index[0]-1]) << " "
+                  << (tgp_P->get(ip1)-tgp_P->get(index))/hc_mev_fm/
+          (nB_grid[index[0]+1]-nB_grid[index[0]]) << std::endl;
       }
       exit(-1);
       if (dPdnB<=0.0) return 2;
