@@ -1,99 +1,69 @@
-# This dockerfile is for the full development version directly from
-# main branch in the current repo, complete with python, armadillo,
-# eigen, fftw, OpenMP, regex, and HDF5 compression support. It
-# attempts to run all of the o2scl test and examples. It also installs
-# and tests the main branch github version of o2sclpy
+FROM python:3.10 as o2scl
 
-FROM ubuntu:latest 
-MAINTAINER Andrew W. Steiner (awsteiner@mykolab.com)
-
-# -----------------------------------------------------------------
-# To fix tzdata asking for a timezone during installation
-# can set up later using sudo dpkg-reconfigure tzdata I think.
-
-ARG DEBIAN_FRONTEND=noninteractive
-
-# -----------------------------------------------------------------
-# apt packages
-
-RUN apt-get -y update
-# compiler, make and gsl
-RUN apt-get -y install g++ make libgsl-dev autoconf automake libtool git
-# HDF5, ncurses, and readline
-RUN apt-get -y install libhdf5-dev libncurses-dev libreadline-dev
-# Boost and Eigen
-RUN apt-get -y install libboost-all-dev libeigen3-dev
-# Armadillo and dependencies
-RUN apt-get -y install cmake libopenblas-dev liblapack-dev libarpack2-dev
-RUN apt-get -y install libsuperlu-dev libarmadillo-dev libfftw3-dev
-# We need curl to test downloading EOSs for o2sclpy
-RUN apt-get -y install curl
-
-# --------------------------------------------------------------------------
-# Since we're enabling python extensions, we need to install python
-# before we install o2scl, so we do that now
-
-RUN apt-get -y install python3 python3-pip
-# Ubuntu libhdf5 is outdated relative to the version used by pip install
-# h5py, so we have to explicitly use the old Ubuntu one
-RUN HDF5_DIR=/usr/lib/x86_64-linux-gnu/hdf5/serial pip3 install --no-binary=h5py h5py
-RUN apt-get -y install texlive dvipng texlive-latex-extra cm-super
-# We need pillow to compare images for o2sclpy tests
-RUN pip3 install numpy scipy yt matplotlib requests pytest Pillow
-RUN pip3 install scikit-learn tensorflow-cpu
-
-# -----------------------------------------------------------------
-# Install o2scl
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -yq \
+        g++ \
+        make \
+        libgsl-dev \
+        autoconf \
+        automake \
+        libtool \
+        git \
+        libhdf5-dev \
+        libncurses-dev \
+        libreadline-dev \
+        libboost-all-dev \
+        libeigen3-dev \
+        cmake \
+        libopenblas-dev \
+        liblapack-dev \
+        libarpack2-dev \
+        libsuperlu-dev \
+        libarmadillo-dev \
+        libfftw3-dev \
+        curl \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /opt
-RUN git clone https://github.com/awsteiner/o2scl
+RUN git clone https://github.com/awsteiner/o2scl && \
+    cd o2scl && \
+    git checkout e7b62ca63047ae183b209755a77e51380ecd8780
+
+COPY requirements.o2scl.txt requirements.txt
+RUN pip install -r requirements.txt
+
 WORKDIR /opt/o2scl
 RUN autoreconf -i
-RUN LDFLAGS="-larmadillo -llapack -lblas -lncurses" CXXFLAGS="-O3 -DO2SCL_UBUNTU_HDF5 -DO2SCL_HDF5_PRE_1_12 -DO2SCL_REGEX -DO2SCL_HDF5_COMP -I/usr/include -I/usr/lib/x86_64-linux-gnu/hdf5/serial/include -I/usr/local/lib/python3.10/dist-packages/numpy/core/include" ./configure --enable-eigen --enable-armadillo --enable-openmp --enable-fftw --enable-python
+RUN export LDFLAGS="-larmadillo -llapack -lblas -lncurses" && \
+    export CXXFLAGS="" && \
+    export CXXFLAGS="${CXXFLAGS} -O3 -DO2SCL_UBUNTU_HDF5 -DO2SCL_HDF5_PRE_1_12 -DO2SCL_REGEX -DO2SCL_HDF5_COMP" && \
+    export CXXFLAGS="${CXXFLAGS} -I/usr/include -I/usr/lib/x86_64-linux-gnu/hdf5/serial/include" && \
+    export CXXFLAGS="${CXXFLAGS} -I/usr/local/lib/python3.10/site-packages/numpy/core/include" && \
+    ./configure --enable-eigen --enable-armadillo --enable-openmp --enable-fftw --enable-python
 RUN make blank-doc
 RUN make 
 RUN make install
-WORKDIR /
+
+RUN pip install h5py
 ENV LD_LIBRARY_PATH /usr/local/lib
-RUN acol -h
-RUN acol -v
+# RUN acol -h ## acol -h executes successfully here
+ENV HDF5_DIR=/usr/lib/x86_64-linux-gnu/hdf5/serial
+RUN make o2scl-test
 
-# --------------------------------------------------------------------------
-# Install o2sclpy via pip
 
-WORKDIR /opt
-RUN git clone https://github.com/awsteiner/o2sclpy
+FROM python:3.10 as o2sclpy
+
+RUN git clone https://github.com/awsteiner/o2sclpy /opt/o2sclpy && \
+    cd /opt/o2sclpy && \
+    git checkout 7125dd645f3f0bfd334e8f25a66e325dab571579
 WORKDIR /opt/o2sclpy
-RUN pip3 install .
-
-# --------------------------------------------------------------------------
-# To ensure o2graph loads OpenMP appropriately
-ENV O2SCL_ADDL_LIBS /usr/lib/gcc/x86_64-linux-gnu/11/libgomp.so
-RUN export CFLAGS="-I/usr/local/lib/python3.10/dist-packages/numpy/core/include $CFLAGS"
-# --------------------------------------------------------------------------
-# O2scl testing and examples
-
-WORKDIR /opt/o2scl
-#RUN make o2scl-test
-#RUN make o2scl-examples
-
-# --------------------------------------------------------------------------
-# Test o2sclpy
-RUN o2graph -h
-#RUN o2graph -v
-#RUN make test
-
-# UTK EOS
-WORKDIR /opt
-RUN git clone https://github.com/awsteiner/eos
-WORKDIR /opt/eos
-RUN git switch v2
-RUN make eos_nuclei
+RUN pip install .
 
 
+FROM python:3.10
 
+COPY requirements.txt requirements.txt
+RUN pip install -r requirements.txt
 
-
-
-
-
+COPY --from=o2sclpy /usr/local/lib/python3.10/site-packages/o2sclpy /usr/local/lib/python3.10/site-packages/o2sclpy
+COPY --from=o2scl /opt/o2scl /opt/o2scl
