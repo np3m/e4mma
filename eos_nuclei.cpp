@@ -1952,6 +1952,11 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
     outfile=sv[1];
   }
   
+  std::ofstream csvfile;
+/*  if (true) {
+    csvfile.open("superluminal.csv");
+  }*/
+
   /// Compute the stability matrix and its eigenvalues at each point
   for (size_t i=ilo;i<ihi;i++) {
     double nB=nB_grid2[i];
@@ -2154,6 +2159,11 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
                << nB << " " << Ye << " " << T_MeV << " "
                << cs_sq << " " << cs2_hom.get(ix) << endl;
           superlum_count++;
+          if (nB<0.16) {
+            csvfile.open("superluminal.csv", ios:: app);
+            csvfile << nB << "," << Ye << "," << T_MeV << ",\n";
+            csvfile.close();
+          }
           i_nB_fix.push_back(i);
           i_Ye_fix.push_back(j);
           i_T_fix.push_back(k);
@@ -2163,6 +2173,9 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
         
       }
     }
+/*    if (true) {
+        csvfile.close();
+    }*/
   }
   
   cout << "Unstable count (type 3): " << unstable_count << endl;
