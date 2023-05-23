@@ -164,9 +164,45 @@ int eos_nuclei::interp_point(std::vector<std::string> &sv,
   cout << "  and attempting to fix " << ike.fix_list.size()/3 << " points."
        << endl;
   size_t count=ike.calib_list.size()/3;
+
+  std::vector<double> len_list={2.0,3.0};
+  std::vector<double> l10_list={-15,-13,-11,-9};  
+  std::vector<std::vector<double>> ptemp;
+  ptemp.push_back(len_list);
+  ptemp.push_back(len_list);
+  ptemp.push_back(len_list);
+  ptemp.push_back(l10_list);
+  std::vector<std::vector<std::vector<double>>> param_lists;
+  param_lists.push_back(ptemp);
+  std::cout << "Going to set_covar()." << std::endl;
+  vector<mcovar_funct_rbf_noise> mfr(1);
+  mfr[0].len.resize(3);
+  ike.set_covar(mfr,param_lists);
   
+  ike.skip_optim=true;
   ike.set(nB_grid2,Ye_grid2,T_grid2,tg_F,tg_P,tg_S,
           tg_mun,tg_mup,tg_mue,neutron.m,proton.m);
+
+  double min_qual=1.0e99;
+  vector<double> p(4), min_p;
+  for(p[0]=2.0;p[0]<20.0;p[0]*=1.5) {
+    for(p[1]=2.0;p[1]<20.0;p[1]*=1.5) {
+      for(p[2]=2.0;p[2]<20.0;p[2]*=1.5) {
+        for(p[3]=-15.0;p[3]<-8.99;p[3]+=2.0) {
+          vector_out(cout,p,true);
+          (*ike.cf)[0].set_params(p);
+          int success;
+          double q=ike.qual_fun(0,success);
+          cout << q << " " << success << endl;
+          if (q<min_qual) {
+            min_p=p;
+          }
+        }
+      }
+    }
+  }
+  vector_out(cout,min_p,true);
+  exit(-1);
 
   // Use the interpolation results to fix points 
   std::vector<double> out(1);
@@ -277,20 +313,6 @@ void interpm_krige_eos::set(std::vector<double> &nB_grid2,
   size_t n_nB=nB_grid2.size();
   size_t n_Ye=Ye_grid2.size();
   size_t n_T=T_grid2.size();
-
-  std::vector<double> len_list={2.0,3.0};
-  std::vector<double> l10_list={-15,-13,-11,-9};  
-  std::vector<std::vector<double>> ptemp;
-  ptemp.push_back(len_list);
-  ptemp.push_back(len_list);
-  ptemp.push_back(len_list);
-  ptemp.push_back(l10_list);
-  std::vector<std::vector<std::vector<double>>> param_lists;
-  param_lists.push_back(ptemp);
-  std::cout << "Going to set_covar()." << std::endl;
-  vector<mcovar_funct_rbf_noise> mfr(1);
-  mfr[0].len.resize(3);
-  set_covar(mfr,param_lists);
     
   std::cout << "Going to set_data()." << std::endl;
   verbose=2;
@@ -365,6 +387,9 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
   ret=0.0;
   bool compare=true;
 
+  cout << "i nB Ye T cs2_itp cs2_tab d2FdnB2_itp d2FdnB2_tab "
+       << "d2FdYe2_itp d2FdYe2_tab "
+       << "dPdnB_itp dPdnB_tab1 dPdnB_tab2" << endl;
   for(size_t ilist=0;ilist<(calib_list.size()+fix_list.size())/3;
       ilist++) {
       
@@ -527,17 +552,17 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
         (nB_grid[index[0]]-nB_grid[index[0]-1]);
       double t2=(tgp_F->get(ip1)-tgp_F->get(index))/hc_mev_fm/
         (nB_grid[index[0]+1]-nB_grid[index[0]]);
-      double t3=(t1-t2)*2.0/(nB_grid[index[0]+1]-nB_grid[index[0]-1]);
-      
+      double t3=(t2-t1)*2.0/(nB_grid[index[0]+1]-nB_grid[index[0]-1]);
       cout << F_nBnB << " " << t3 << " ";
-
+      
+      t1=(tgp_F->get(index)-tgp_F->get(jm1))/hc_mev_fm/
+        (Ye_grid[index[1]]-Ye_grid[index[1]-1]);
+      t2=(tgp_F->get(jp1)-tgp_F->get(index))/hc_mev_fm/
+        (Ye_grid[index[1]+1]-Ye_grid[index[1]]);
+      t3=(t2-t1)*2.0/(Ye_grid[index[1]+1]-Ye_grid[index[1]-1]);
+      cout << F_YeYe << " " << t3 << " ";
+      
       if (false) {
-        t1=(tgp_F->get(index)-tgp_F->get(jm1))/hc_mev_fm/
-          (Ye_grid[index[1]]-Ye_grid[index[1]-1]);
-        t2=(tgp_F->get(jp1)-tgp_F->get(index))/hc_mev_fm/
-          (Ye_grid[index[1]+1]-Ye_grid[index[1]]);
-        t3=(t1-t2)*2.0/(Ye_grid[index[1]+1]-Ye_grid[index[1]-1]);
-        cout << "b: " << F_YeYe << " " << t3 << endl;
         t1=(tgp_F->get(index)-tgp_F->get(km1))/
           (T_grid[index[2]]-T_grid[index[2]-1]);
         t2=(tgp_F->get(kp1)-tgp_F->get(index))/
