@@ -34,6 +34,8 @@ More documentation will be added as time permits.
    chem_pot
    trans
    cs2
+   plotting
+   docker
 
 * :ref:`genindex`
 * :ref:`modindex`
