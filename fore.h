@@ -28,6 +28,8 @@ using namespace o2scl_const;
 using namespace o2scl_hdf;
 
 class fore {
+
+protected:
   
 public:
 
@@ -36,10 +38,10 @@ public:
   double hbar, hbar_c, n_0, n_0_MeV3, m_n, m_p, m_e, m_mu, m_pi;
   double Y_p, n_B, mu_n, mu_p, meff_n, meff_p, U_n, U_p,mu_pi;
   int flag = 1; // 1 when values are computed, 0 for condensation
-  double Y_pi = 0; // Pion abundance n_pi/n_B
-  double e_pi = 0; // Energy density of pions
-  double s_pi = 0; // entropy of pions
-  double press_pi = 0; // pressure of pions
+  double Y_pi; // Pion abundance n_pi/n_B
+  double e_pi; // Energy density of pions
+  double s_pi; // entropy of pions
+  double press_pi; // pressure of pions
 
   ubmatrix nucleon_mod;
 
@@ -56,24 +58,28 @@ public:
 
   o2scl::interp_vec<> neutron_sum, proton_sum, interp_se;
 
+  bool include_p_wave, const_after_data;
+
   // The integration methods
   // Fixed-order Gaussian quadrature of order 8-16
   o2scl::inte_gauss_cern<> fixed_quad;
   // Basic Gauss-Kronrod integration class (GSL)
   o2scl::inte_kronrod_boost<> kron;
-  o2scl::inte_qagiu_gsl<> quad;
+  o2scl::inte_qagiu_gsl<> gu;
+  
   // One-dimensional minimization (CERNLIB)
   o2scl::min_cern<> mcn;
-
-  bool include_p_wave=true; 
-  bool const_after_data=true;
 
   // heaviside function
   int heaviside(double x);
 
   // Nucleon distribution function for a non-rel fermion.
+  // Depends on the mass, temperature and chemical potential
+  // of the fermion.
   funct NR_fermion_distro(double m, double T, double mu);
   
+  // Read pion-nucleon phase shifts from data files
+  // and compute center of mass energy and momentum
   void get_phase_shifts();
 
   void interp_phase_shift_sum(std::vector<double> params);
@@ -82,17 +88,14 @@ public:
                         double m_N, double last_val);
   
   // Computes self energy for a pion momentum p
-
   double self_energy(double p, std::vector<double> params, ubmatrix nuc_mod, double T);
 
   // Sets up the interpolation vector and returns self energy for a given pion 
   // momentum through interpolation
-
   funct self_energy_interp(vector<double> params, ubmatrix nuc_mod, double T);
   //---------------------------------------------------------------------------------------
   //---------------------------------------------------------------------------------------
   // Nucleon distribution function for a non-rel boson.
-
   funct rel_boson_distro(double m, double T, double mu, funct sigma);
 
   //Return True if the given self energy has a minimum less than $\mu$.
@@ -103,38 +106,34 @@ public:
   //for the location of the potential minimum at finite momentum
   //starting the minimum function near the minimum of $\Sigma_\pi$ which
   //should only have one minima and another to search near zero.
-
   bool condensation_exists(funct sigma_pi, double mu);
 
   // Computes the number density of interacting pions
-
   double rel_pion_number_density(double T, double mu, vector<double> params, ubmatrix nuc_mod);
 
   // Computes the number density of non-interacting pions
-
   double non_int_rel_pion_number_density(double T, double mu);
 
   // Calculate entropy of bosons given their distribution function.
-
-  //  Input is unitless distribution function which takes in momentum in
-  //  MeV Output is MeV^3
-
+  // Input is unitless distribution function which takes in momentum in
+  // MeV Output is MeV^3
   double pion_entropy(double T, double mu, vector<double> params, ubmatrix nuc_mod);
 
   // Energy of pions in medium given by nucleon_mod using 
   // pseudo-potential.
-
   //  Function includes interaction energy.
-
   double pion_energy(double T, double mu, vector<double> params, ubmatrix nuc_mod);
 
   // Computes non-interacting boson entropy without self-energy contributions
   // given their distribution function.
-
   double boson_entropy(funct distro);
 
   void single_point_data(double Y_p, double T, double n_B, double mu_n, 
                   double mu_p, double meff_n, double meff_p, double U_n, double U_p);
 
   void calc_mu(boson &b, fermion &n, fermion &p, double T, double n_B);
+
+  void load_pion();
+
+  void con_chk(double T, double n_B);
 };          

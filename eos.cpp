@@ -455,6 +455,9 @@ int eos::hrg_load(std::vector<std::string> &sv, bool itive_com) {
   cout << "Read " << nferm << " fermions and " << nbos << " bosons."
        << endl;
   
+  cout << "Reading Pion phase shifts" << endl;
+  fr.load_pion();
+  
   return 0;
 }
 

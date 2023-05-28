@@ -2656,7 +2656,8 @@ int eos_nuclei::solve_nuclei(size_t nv, const ubvector &x, ubvector &y,
     // End of loop over nuclei
   }
   
-  if (inc_hrg) {
+  //inc_hrg loop
+  if (false) {
 
     double nn_tilde_old=nn_tilde;
     double np_tilde_old=np_tilde;
@@ -2693,15 +2694,15 @@ int eos_nuclei::solve_nuclei(size_t nv, const ubvector &x, ubvector &y,
           part_db[j].charge*(proton.mu+proton.m-neutron.mu-neutron.m);
         relf.calc_mu(res_f[iferm],T);
         if (j>700) {
-          cout << j << " " << part_db[j].baryon << " "
-               << part_db[j].charge << " "
-               << res_f[iferm].mu << " " << res_f[iferm].n << endl;
+          //cout << j << " " << part_db[j].baryon << " "
+            //   << part_db[j].charge << " "
+            //   << res_f[iferm].mu << " " << res_f[iferm].n << endl;
         }
         nB2+=part_db[j].baryon*res_f[iferm].n;
         Ye2+=part_db[j].charge*res_f[iferm].n;
         iferm++;
       } else if (part_db[j].id==-211 && part_db[j].charge==-1){
-        cout <<"solve_nuclei5: " << j << part_db[j].id << " " << part_db[j].name << endl;
+        cout <<"solve_nuclei: " << j << part_db[j].id << " " << part_db[j].name << endl;
         if (ibos>=((int)res_b.size())) {
           O2SCL_ERR("Indexing problem with bosons.",o2scl::exc_efailed);
         }
@@ -2714,11 +2715,12 @@ int eos_nuclei::solve_nuclei(size_t nv, const ubvector &x, ubvector &y,
         Ye2+=part_db[j].charge*res_b[ibos].n;
         ibos++;
       } else {
-        if (part_db[j].spin_deg%2==0) {
-          iferm++;}
-        else{
-          ibos++;
-        }
+      res_b[ibos].mu=part_db[j].baryon*(neutron.mu+neutron.m)+
+        part_db[j].charge*(proton.mu+proton.m-neutron.mu-neutron.m);
+      effb.calc_mu(res_b[ibos],T);
+      //nB2+=part_db[j].baryon*res_b[ibos].n;
+      //Ye2+=part_db[j].charge*res_b[ibos].n;
+      ibos++;
       }
       if (!std::isfinite(nB2) ||
           !std::isfinite(Ye2)) {
@@ -3204,6 +3206,8 @@ int eos_nuclei::eos_fixed_ZN(double nB, double Ye, double T,
 int eos_nuclei::solve_hrg(size_t nv, const ubvector &x,
                           ubvector &y, double nB, double Ye, double T) {
 
+  //exit(-1);
+
   double nB2, Ye2;
 
   neutron.n=x[0];
@@ -3216,42 +3220,97 @@ int eos_nuclei::solve_hrg(size_t nv, const ubvector &x,
   eosp_alt->calc_temp_e(neutron,proton,T,th);
 
   double nn_total=neutron.n, np_total=proton.n;
+
+  double nn_tilde=neutron.n;
+  double np_tilde=proton.n;
+
+  double nn_tilde_old=nn_tilde;
+  double np_tilde_old=np_tilde;
+    
+  nB2=0.0, Ye2=0.0;
     
   int iferm=0;
   int ibos=0;
   for(size_t j=0;j<part_db.size();j++) {
     if (part_db[j].id==2212 && part_db[j].charge==1) {
+      if (iferm>=((int)res_f.size())) {
+        O2SCL_ERR("Indexing problem with fermions.",o2scl::exc_efailed);
+      }
       res_f[iferm]=proton;
       iferm++;
     } else if (part_db[j].id==2212 && part_db[j].charge==0) {
+      if (iferm>=((int)res_f.size())) {
+        O2SCL_ERR("Indexing problem with fermions.",o2scl::exc_efailed);
+      }
       res_f[iferm]=neutron;
       iferm++;
+    } else if (part_db[j].id==22 && part_db[j].charge==0) {
+      if (ibos>=((int)res_b.size())) {
+        O2SCL_ERR("Indexing problem with bosons.",o2scl::exc_efailed);
+      }
+      photon.massless_calc(T);
+      res_b[ibos]=photon;
+      ibos++;
     } else if (part_db[j].spin_deg%2==0) {
+      if (iferm>=((int)res_f.size())) {
+        O2SCL_ERR("Indexing problem with fermions.",o2scl::exc_efailed);
+      }
       res_f[iferm].mu=part_db[j].baryon*(neutron.mu+neutron.m)+
         part_db[j].charge*(proton.mu+proton.m-neutron.mu-neutron.m);
       relf.calc_mu(res_f[iferm],T);
-      //nB2+=
-      //Ye2+=part_db[j].charge*res_f[iferm].n;
+      if (j>700) {
+        //cout << j << " " << part_db[j].baryon << " "
+          //   << part_db[j].charge << " "
+          //   << res_f[iferm].mu << " " << res_f[iferm].n << endl;
+      }
+      nB2+=part_db[j].baryon*res_f[iferm].n;
+      Ye2+=part_db[j].charge*res_f[iferm].n;
       iferm++;
+    } else if (part_db[j].id==-211 && part_db[j].charge==-1){
+      cout <<"solve_nuclei: " << j << part_db[j].id << " " << part_db[j].name << endl;
+      if (ibos>=((int)res_b.size())) {
+        O2SCL_ERR("Indexing problem with bosons.",o2scl::exc_efailed);
+      }
+      cout << "pion mass: " << res_b[ibos].m*hc_mev_fm << endl;
+      res_b[ibos].mu=part_db[j].baryon*(neutron.mu+neutron.m)+
+        part_db[j].charge*(proton.mu+proton.m-neutron.mu-neutron.m);
+      cout <<"Pion chem pot: " << res_b[ibos].mu*hc_mev_fm << endl;
+      fr.calc_mu(res_b[ibos], neutron, proton, T, nB);
+      nB2+=part_db[j].baryon*res_b[ibos].n;
+      Ye2+=part_db[j].charge*res_b[ibos].n;
+      ibos++;
     } else {
       res_b[ibos].mu=part_db[j].baryon*(neutron.mu+neutron.m)+
         part_db[j].charge*(proton.mu+proton.m-neutron.mu-neutron.m);
       effb.calc_mu(res_b[ibos],T);
-      //nB2+=part_db[j].baryon*res_b[ibos].n;
-      //Ye2+=part_db[j].charge*res_b[ibos].n;
+      nB2+=part_db[j].baryon*res_b[ibos].n;
+      Ye2+=part_db[j].charge*res_b[ibos].n;
       ibos++;
+    }
+    if (!std::isfinite(nB2) ||
+          !std::isfinite(Ye2)) {
+        cout << j << " " << part_db[j].id << " "
+             << nB2 << " " << Ye2 << endl;
+        O2SCL_ERR("HRG problem.",o2scl::exc_einval);
     }
   }
   Ye2/=nB2;
   
   // I'm not 100% sure this is right
-  //nn_tilde+=nB2*(1.0-Ye2);
-  //np_tilde+=nB2*Ye2;
+  nn_tilde+=nB2*(1.0-Ye2);
+  np_tilde+=nB2*Ye2;
   
-  nB2=0.0;
-  Ye2=0.0;
+  //nB2=0.0;
+  //Ye2=0.0;
   //nB2=neutron.n+proton.n+delta_pp.n;
   //Ye2=(proton.n-pi_minus.n+pi_plus.n)/nB2;
+  cout << "HRG: " << neutron.mu << " " << proton.mu << " "
+       << nn_tilde_old << " " << np_tilde_old << " "
+       << nn_tilde << " " << np_tilde << endl;
+  if (!std::isfinite(nn_tilde) ||
+      !std::isfinite(np_tilde)) {
+     O2SCL_ERR("HRG problem.",o2scl::exc_einval);
+  }
 
   y[0]=(nB2-nB)/nB;
   y[1]=(Ye2-Ye)/Ye;
@@ -3396,7 +3455,6 @@ int eos_nuclei::eos_vary_dist
   // or if the 'no_nuclei' flag is true. 
 
   if (no_nuclei==true || nB>0.16) {
-    cout << "going in nuc_matter" << endl;
     nuc_matter(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,thx,mun_full,
 	       mup_full,A_min,A_max,NmZ_min,NmZ_max,vdet);
     return 0;
@@ -3437,7 +3495,6 @@ int eos_nuclei::eos_vary_dist
     }
 
     // Compute the EOS with the current nuclear distribution
-    cout << "going into eos_fixed_dist" << endl;
     int ret=eos_fixed_dist
       (nB,Ye,T,log_xn,log_xp,thx,mun_full,mup_full,
        A_min,A_max,NmZ_min,NmZ_max,vdet,dist_changed,no_nuclei);
@@ -6539,7 +6596,6 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
 			A_min,A_max,NmZ_min,NmZ_max,vdet,
 			true,false);
     } else {
-      cout << "going for eos_vary_ZN" << endl;
       ret=eos_vary_ZN(nB,Ye,T,log_xn,log_xp,nuc_Z1,nuc_N1,
 		      thx,mun_full,mup_full,false);
       Nbar=nuc_N1;

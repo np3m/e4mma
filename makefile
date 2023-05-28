@@ -477,7 +477,7 @@ mbpi:
 		-load data/fid_3_5_22.o2 \
 		-hrg-load ./pdg_uh_nonp.dat \
 		-set recompute 1 \
-		-point-nuclei 0.1 0.4 30 
+		-point-nuclei 0.1 0.077 30 
 
 mbmuses:
 	./eos_nuclei \

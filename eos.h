@@ -51,6 +51,7 @@
 #include <o2scl/eos_had_rmf_hyp.h>
 #include <o2scl/eos_had_virial.h>
 #include <o2scl/part_pdg.h>
+#include "fore.h"
 
 typedef boost::numeric::ublas::vector<double> ubvector;
 typedef boost::numeric::ublas::matrix<double> ubmatrix;
@@ -257,6 +258,9 @@ public:
   /** \brief Bosonic resonances
    */
   std::vector<o2scl::boson> res_b;
+  
+  /// pion class to compute pion properties
+  fore fr;
   
  protected:
 
