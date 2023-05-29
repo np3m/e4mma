@@ -85,15 +85,33 @@ double eos_nuclei::interp_min
 
 int eos_nuclei::interp_point(std::vector<std::string> &sv,
                              bool itive_com) {
-
   if (sv.size()<6) {
     cerr << "Not enough arguments interp-point." << endl;
     return 1;
   }
+
+  std::vector<double> results;
   
   double nB_cent=o2scl::function_to_double(sv[1]);
   double Ye_cent=o2scl::function_to_double(sv[2]);
   double T_cent=o2scl::function_to_double(sv[3])/hc_mev_fm;
+  
+  int window=o2scl::stoi(sv[4]);
+
+  std::string st_o2=sv[5];
+
+  results = eos_nuclei::interpolate(nB_cent, Ye_cent, T_cent, window, st_o2, itive_com);
+
+  return 0;
+}
+
+
+std::vector<double> eos_nuclei::interpolate(double nB_cent,
+                                            double Ye_cent,
+                                            double T_cent,
+                                            int window,
+                                            std::string st_o2,
+                                            bool itive_com) {
 
   if (!loaded) {
     O2SCL_ERR("No EOS loaded in interp_point.",o2scl::exc_einval);
@@ -102,6 +120,9 @@ int eos_nuclei::interp_point(std::vector<std::string> &sv,
     O2SCL_ERR("No EOS leptons in interp_point.",o2scl::exc_einval);
   }
   
+  std::vector<double> results;
+  results.assign(0.0, 4);
+
   size_t inB=0, iYe=0, iT=0;
   inB=vector_lookup(n_nB2,nB_grid2,nB_cent);
   nB_cent=nB_grid2[inB];
@@ -113,7 +134,6 @@ int eos_nuclei::interp_point(std::vector<std::string> &sv,
        << Ye_cent << " " << T_cent*hc_mev_fm << endl;
   cout << "At grid point: " << inB << " " << iYe << " " << iT << endl;
 
-  int window=o2scl::stoi(sv[4]);
   cout << "Using window size: " << window << endl;
 
   // Create interpolation object
@@ -123,8 +143,6 @@ int eos_nuclei::interp_point(std::vector<std::string> &sv,
   ike.def_mmin.verbose=1;
   
   /// Load cs2 from a file
-  std::string st_o2="";
-  st_o2=sv[5];
   hdf_file hff;
   hff.open(st_o2);
   hdf_input(hff,ike.tgp_cs2);
@@ -179,7 +197,6 @@ int eos_nuclei::interp_point(std::vector<std::string> &sv,
   mfr[0].len.resize(3);
   ike.set_covar(mfr,param_lists);
   
-  ike.skip_optim=true;
   ike.set(nB_grid2,Ye_grid2,T_grid2,tg_F,tg_P,tg_S,
           tg_mun,tg_mup,tg_mue,neutron.m,proton.m);
 
@@ -261,6 +278,52 @@ int eos_nuclei::interp_point(std::vector<std::string> &sv,
     tg_P.get(index)=tg_F.get(index)+mun*neutron.m+mup*proton.m+
       mue*electron.m;
     
+  }
+
+  return results;
+}
+
+int eos_nuclei::interp_file(std::vector<std::string> &sv,
+                            bool itive_com) {
+  if (sv.size()<3) {
+    cerr << "Not enough arguments interp-file." << endl;
+    return 1;
+  }
+
+  std::vector<double> results;
+  std::vector<double> point;
+  point.assign(0.0, 3);
+
+  std::string csv_path = sv[1];
+  int window=o2scl::stoi(sv[2]);
+  std::string st_o2=sv[3];
+  std::ofstream file;
+  std::ifstream csvfile;
+  csvfile.open(csv_path, ios::in);
+
+  std::string line;
+  int col = 0;
+  int x;
+  std::string val;
+  while (std::getline(csvfile, line)) {
+      std::stringstream s(line);
+      if (true) {
+          x=0;
+          while (s>>val) {
+              point[x] = std::stod(val);
+              x++;
+              if (s.peek()==',') {
+                  s.ignore();
+              }
+          }
+        results = eos_nuclei::interpolate(point[0], point[1], point[2], window, st_o2, itive_com);
+        file.open("superluminalfix.csv", ios::app);
+        file << point[0] << "," << point[1] << "," << point[2] << "," << results[0];
+        file.close();
+      }
+      else {
+          cout<<"csv file of superliminal points must have 3 terms in each line";
+      }
   }
 
   return 0;
