@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8' standalone='no'?>
-<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.6" xml:lang="en-US">
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.7" xml:lang="en-US">
   <compounddef id="classeos__nuclei" kind="class" language="C++" prot="public">
     <compoundname>eos_nuclei</compoundname>
     <basecompoundref refid="classeos" prot="public" virt="non-virtual">eos</basecompoundref>
@@ -13,13 +13,13 @@
         <name>pfuncs</name>
         <qualifiedname>eos_nuclei::pfuncs</qualifiedname>
         <briefdescription>
-<para>Desc. </para>
+<para>Partition functions for the nuclei. </para>
         </briefdescription>
         <detaileddescription>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="188" column="21" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="188" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="202" column="21" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="202" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a59bbe55fff67dcdb57b902e323932d8e" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1boson__rel" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::boson_rel</ref></type>
@@ -28,12 +28,13 @@
         <name>relb</name>
         <qualifiedname>eos_nuclei::relb</qualifiedname>
         <briefdescription>
+<para>Particle object for bosons. </para>
         </briefdescription>
         <detaileddescription>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="195" column="20" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="195" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="205" column="20" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="205" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a8b7222738b1708c9e2fb067a0d8fd407" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1boson__eff" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::boson_eff</ref></type>
@@ -42,12 +43,13 @@
         <name>effb</name>
         <qualifiedname>eos_nuclei::effb</qualifiedname>
         <briefdescription>
+<para>Particle object for bosons. </para>
         </briefdescription>
         <detaileddescription>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="196" column="20" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="196" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="208" column="20" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="208" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1aa26805a032925090b41943025ff92b61" prot="public" static="no" mutable="no">
         <type>bool</type>
@@ -56,12 +58,13 @@
         <name>inc_hrg</name>
         <qualifiedname>eos_nuclei::inc_hrg</qualifiedname>
         <briefdescription>
+<para>If true, include a hadron resonance gas. </para>
         </briefdescription>
         <detaileddescription>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="198" column="8" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="198" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="212" column="8" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="212" bodyend="-1"/>
       </memberdef>
       <memberdef kind="function" id="classeos__nuclei_1a89e02af0348fcfafaf330ab26d22c7af" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type></type>
@@ -75,7 +78,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="182" column="3"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="196" column="3"/>
       </memberdef>
       <memberdef kind="function" id="classeos__nuclei_1a58ccebd0fe88fbe499d7e88e739d2fd2" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
         <type></type>
@@ -89,7 +92,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="184" column="11"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="198" column="11"/>
       </memberdef>
       <memberdef kind="function" id="classeos__nuclei_1ade2effe8a0653d0359467fee5f387f25" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -122,12 +125,13 @@
           <declname>T</declname>
         </param>
         <briefdescription>
+<para>Solve for charge neutrality and fixed baryon fraction with a hadron resonance gas. </para>
         </briefdescription>
         <detaileddescription>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="200" column="7"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="217" column="7"/>
       </memberdef>
       </sectiondef>
       <sectiondef kind="user-defined">
@@ -144,7 +148,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="205" column="10" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="205" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="222" column="10" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="222" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1aa78cff585679ca83ce4faae2ac11ef08" prot="public" static="no" mutable="no">
         <type>size_t</type>
@@ -158,7 +162,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="206" column="10" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="206" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="223" column="10" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="223" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a0c7287732760fcb2f9811bbb8f7ea571" prot="public" static="no" mutable="no">
         <type>size_t</type>
@@ -172,7 +176,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="207" column="10" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="207" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="224" column="10" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="224" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1abff5a99f10e3fadf06d088a4e1377b12" prot="public" static="no" mutable="no">
         <type>size_t</type>
@@ -186,7 +190,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="208" column="10" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="208" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="225" column="10" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="225" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1aa35cdb1ef03cd7004e7775f9fff5b326" prot="public" static="no" mutable="no">
         <type>std::vector&lt; double &gt;</type>
@@ -200,7 +204,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="209" column="15" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="209" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="226" column="15" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="226" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a0e6983e5c37d4203b6d3c467774d3966" prot="public" static="no" mutable="no">
         <type>std::vector&lt; double &gt;</type>
@@ -214,7 +218,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="210" column="15" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="210" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="227" column="15" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="227" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a70464c87915d9cecf9161e1d9aad2d76" prot="public" static="no" mutable="no">
         <type>std::vector&lt; double &gt;</type>
@@ -228,7 +232,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="211" column="15" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="211" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="228" column="15" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="228" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1ac0b5c62b2f374365904eaa4bd4c62bd2" prot="public" static="no" mutable="no">
         <type>std::vector&lt; double &gt;</type>
@@ -242,7 +246,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="212" column="15" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="212" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="229" column="15" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="229" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a84917126cdf34b7899627c705ad72e45" prot="public" static="no" mutable="no">
         <type>std::string</type>
@@ -258,7 +262,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="218" column="15" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="218" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="235" column="15" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="235" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1abcd0a5feca72f18f6b789d3d1709fb35" prot="public" static="no" mutable="no">
         <type>std::string</type>
@@ -274,7 +278,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="224" column="15" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="224" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="241" column="15" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="241" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1ad6cc0c08c901eb35afabcc6f6b0d9a86" prot="public" static="no" mutable="no">
         <type>std::string</type>
@@ -290,7 +294,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="230" column="15" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="230" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="247" column="15" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="247" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a42b5029c314928bcfafc3487d6840ce3" prot="public" static="no" mutable="no">
         <type>std::string</type>
@@ -305,7 +309,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="233" column="15" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="233" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="250" column="15" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="250" bodyend="-1"/>
       </memberdef>
       </sectiondef>
       <sectiondef kind="user-defined">
@@ -323,7 +327,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="249" column="24" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="249" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="266" column="24" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="266" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a1b46f1ba98caef463efb3d0b5b9ff492" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1nucmass__hfb__sp" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::nucmass_hfb_sp</ref></type>
@@ -338,7 +342,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="253" column="25" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="253" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="270" column="25" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="270" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a413ada2b57a752222ed73c5c5feb468f" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1nucmass__ame" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::nucmass_ame</ref></type>
@@ -353,7 +357,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="257" column="22" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="257" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="274" column="22" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="274" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a61720a84d5f6af3136b150a7beb58efd" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1nucmass__frdm" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::nucmass_frdm</ref></type>
@@ -368,7 +372,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="261" column="23" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="261" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="278" column="23" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="278" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a617715389811945428a28aac994f2d4d" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1nucmass__fit" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::nucmass_fit</ref></type>
@@ -383,7 +387,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="265" column="22" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="265" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="282" column="22" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="282" bodyend="-1"/>
       </memberdef>
       <memberdef kind="function" id="classeos__nuclei_1af66a0c79f0a2cdbc4167ec7d94e72ffd" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -408,7 +412,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="244" column="7"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="261" column="7"/>
       </memberdef>
       </sectiondef>
       <sectiondef kind="user-defined">
@@ -425,7 +429,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="270" column="15" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="270" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="287" column="15" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="287" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a4f4849d6d4b5181abf10851f80fe0e79" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1nucleus" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::nucleus</ref> *</type>
@@ -439,7 +443,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="271" column="18" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="271" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="288" column="18" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="288" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1ad96854c380c8a06cb7920a5a73efa06a" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1nucleus" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::nucleus</ref> *</type>
@@ -453,7 +457,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="272" column="18" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="272" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="289" column="18" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="289" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a3d109091b9cc536e258b427902cc9a8a" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1nucleus" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::nucleus</ref> *</type>
@@ -467,7 +471,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="273" column="18" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="273" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="290" column="18" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="290" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a52be68ebd33895f19d2bd8938d64f928" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1nucleus" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::nucleus</ref> *</type>
@@ -481,7 +485,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="274" column="18" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="274" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="291" column="18" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="291" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a83302306c61e924014d3a3de8a2a9522" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1nucleus" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::nucleus</ref> *</type>
@@ -495,7 +499,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="275" column="18" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="275" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="292" column="18" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="292" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a5eeb7c88917d123776bae1b3117ab9ad" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1nucleus" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::nucleus</ref> *</type>
@@ -509,7 +513,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="276" column="18" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="276" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="293" column="18" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="293" bodyend="-1"/>
       </memberdef>
       </sectiondef>
       <sectiondef kind="user-defined">
@@ -527,7 +531,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="282" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="282" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="299" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="299" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a7f24be12bb5c16ff00fe8e152155202a" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1mroot__hybrids" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::mroot_hybrids</ref></type>
@@ -542,7 +546,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="286" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="286" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="303" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="303" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1ae294cb0d74607054bd37ba0b4b32941e" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1root__brent__gsl" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::root_brent_gsl</ref></type>
@@ -557,7 +561,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="290" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="290" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="307" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="307" bodyend="-1"/>
       </memberdef>
       </sectiondef>
       <sectiondef kind="user-defined">
@@ -575,7 +579,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="296" column="18" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="296" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="313" column="18" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="313" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a42747d737de3ca6f9631c2ef653e43ab" prot="public" static="no" mutable="no">
         <type><ref refid="classboost_1_1numeric_1_1ublas_1_1vector" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">ubvector</ref></type>
@@ -590,7 +594,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="300" column="12" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="300" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="317" column="12" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="317" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1afd0e2e87dbe65ff8cf7488606e870b8c" prot="public" static="no" mutable="no">
         <type><ref refid="classboost_1_1numeric_1_1ublas_1_1vector" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">ubvector</ref></type>
@@ -605,7 +609,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="304" column="12" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="304" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="321" column="12" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="321" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a1be55c7bf591a308ee150480cc2c6dcd" prot="public" static="no" mutable="no">
         <type><ref refid="classboost_1_1numeric_1_1ublas_1_1vector" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">ubvector</ref></type>
@@ -620,7 +624,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="308" column="12" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="308" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="325" column="12" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="325" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a2f2cbf1eaf75f60d69f4f6c4e95659d5" prot="public" static="no" mutable="no">
         <type><ref refid="classboost_1_1numeric_1_1ublas_1_1vector" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">ubvector</ref></type>
@@ -635,7 +639,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="313" column="12" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="313" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="330" column="12" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="330" bodyend="-1"/>
       </memberdef>
       </sectiondef>
       <sectiondef kind="user-defined">
@@ -653,7 +657,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="327" column="10" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="327" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="344" column="10" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="344" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1aa68e7326e3954b0c2e50fef2d5d612dc" prot="public" static="no" mutable="no">
         <type>int</type>
@@ -668,7 +672,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="330" column="7" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="330" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="347" column="7" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="347" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1afdec88d36c8891280a981df1d998889d" prot="public" static="no" mutable="no">
         <type>int</type>
@@ -683,7 +687,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="335" column="7" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="335" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="352" column="7" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="352" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1ada7cee58f713ad6905ceb30a328e71ff" prot="public" static="no" mutable="no">
         <type>bool</type>
@@ -698,7 +702,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="340" column="8" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="340" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="357" column="8" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="357" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a38f192295a91ff802335cf8e06e1c30e" prot="public" static="no" mutable="no">
         <type>double</type>
@@ -713,7 +717,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="343" column="10" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="343" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="360" column="10" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="360" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a19904b5c40236839a7782c80474eb852" prot="public" static="no" mutable="no">
         <type>double</type>
@@ -728,7 +732,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="348" column="10" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="348" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="365" column="10" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="365" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1acf9211fc713e0bd204c9e78c9266e85f" prot="public" static="no" mutable="no">
         <type>std::string</type>
@@ -743,7 +747,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="353" column="15" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="353" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="370" column="15" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="370" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a035ec31a7ad9d0341f71515d00ed966f" prot="public" static="no" mutable="no">
         <type>std::string</type>
@@ -759,7 +763,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="361" column="15" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="361" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="378" column="15" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="378" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a579ac167d74c08da18cb75d6df7e1cd1" prot="public" static="no" mutable="no">
         <type>double</type>
@@ -774,7 +778,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="367" column="10" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="367" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="384" column="10" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="384" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a149f15c25567f030d59ad187ffbffaff" prot="public" static="no" mutable="no">
         <type>bool</type>
@@ -790,7 +794,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="375" column="8" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="375" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="392" column="8" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="392" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a23b5e4c392132ae728edc34fa564a02a" prot="public" static="no" mutable="no">
         <type>bool</type>
@@ -805,7 +809,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="380" column="8" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="380" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="397" column="8" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="397" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a78227dbf57ccbffc1cd8684894cfa55a" prot="public" static="no" mutable="no">
         <type>std::map&lt; std::string, std::string &gt;</type>
@@ -820,7 +824,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="383" column="12" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="383" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="400" column="12" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="400" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a765a1a973e5ad6f59fb78c996c0755b0" prot="public" static="no" mutable="no">
         <type>bool</type>
@@ -836,7 +840,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="390" column="8" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="390" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="407" column="8" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="407" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a7aa168037269f4ef8ab626b079988ec9" prot="public" static="no" mutable="no">
         <type>bool</type>
@@ -851,7 +855,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="395" column="8" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="395" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="412" column="8" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="412" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a0a604d4a31718e53752b439ab11a053f" prot="public" static="no" mutable="no">
         <type>std::string</type>
@@ -866,7 +870,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="400" column="15" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="400" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="417" column="15" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="417" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1af212462812d08ec8110d201c18d4a271" prot="public" static="no" mutable="no">
         <type>int</type>
@@ -882,7 +886,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="407" column="7" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="407" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="424" column="7" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="424" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a5c6efdbb42094ec4d757a5410f3826aa" prot="public" static="no" mutable="no">
         <type>int</type>
@@ -898,7 +902,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="418" column="7" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="418" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="435" column="7" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="435" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1add3c0308b16526ddc563d8b68ad4c69d" prot="public" static="no" mutable="no">
         <type>int</type>
@@ -914,7 +918,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="430" column="7" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="430" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="447" column="7" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="447" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a213862312a3f3a6f966e5e49520575d7" prot="public" static="no" mutable="no">
         <type>int</type>
@@ -935,7 +939,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="440" column="7" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="440" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="457" column="7" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="457" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1acc7abc9cd375b05f20f47afb34782720" prot="public" static="no" mutable="no">
         <type>bool</type>
@@ -950,7 +954,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="449" column="8" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="449" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="466" column="8" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="466" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1aefdd3a39cdf13c2bbd1348c7958c0b5f" prot="public" static="no" mutable="no">
         <type>bool</type>
@@ -965,7 +969,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="454" column="8" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="454" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="471" column="8" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="471" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a93cb54979a0223ec380db70969121a06" prot="public" static="no" mutable="no">
         <type>bool</type>
@@ -981,7 +985,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="461" column="8" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="461" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="478" column="8" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="478" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1af3884c83f3345c284e49d40cf4d74e02" prot="public" static="no" mutable="no">
         <type>bool</type>
@@ -996,7 +1000,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="465" column="8" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="465" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="482" column="8" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="482" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1ab1a3b47a2f9843632f6a539d42283d1d" prot="public" static="no" mutable="no">
         <type>bool</type>
@@ -1012,7 +1016,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="471" column="8" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="471" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="488" column="8" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="488" bodyend="-1"/>
       </memberdef>
       <memberdef kind="function" id="classeos__nuclei_1a64732e062b6e199e56723ff363eb18de" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>void</type>
@@ -1050,7 +1054,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="442" column="8"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="459" column="8"/>
       </memberdef>
       </sectiondef>
       <sectiondef kind="user-defined">
@@ -1069,7 +1073,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="481" column="12" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="481" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="498" column="12" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="498" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a3f1117145eaf9cbce21f15078b6dc9cc" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1vec__index" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::vec_index</ref></type>
@@ -1084,7 +1088,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="484" column="20" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="484" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="501" column="20" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="501" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1afb96a831c4da38e5c05c4ad2738ff50c" prot="public" static="no" mutable="no">
         <type>bool</type>
@@ -1099,7 +1103,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="487" column="8" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="487" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="504" column="8" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="504" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a0295e987ef254dbccdb5e342180e77f0" prot="public" static="no" mutable="no">
         <type>std::vector&lt; double &gt;</type>
@@ -1114,7 +1118,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="492" column="15" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="492" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="509" column="15" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="509" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1ad51274167059b031089982cbe81a0325" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1slack__messenger" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::slack_messenger</ref></type>
@@ -1129,7 +1133,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="496" column="26" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="496" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="513" column="26" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="513" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1aaf1dde49bf14b9a91f9524881943225b" prot="public" static="no" mutable="no">
         <type>std::string</type>
@@ -1145,7 +1149,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="504" column="15" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="504" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="521" column="15" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="521" bodyend="-1"/>
       </memberdef>
       </sectiondef>
       <sectiondef kind="user-defined">
@@ -1163,7 +1167,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="510" column="22" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="510" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="527" column="22" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="527" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1aca1afa3074c80479fdc0081c1e58e218" prot="public" static="no" mutable="no">
         <type><ref refid="classeos__had__lim__holt" kindref="compound">eos_had_lim_holt</ref></type>
@@ -1178,7 +1182,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="513" column="20" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="513" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="530" column="20" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="530" bodyend="-1"/>
       </memberdef>
       </sectiondef>
       <sectiondef kind="user-defined">
@@ -1195,7 +1199,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="532" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="532" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="549" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="549" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a88b62625548fb17a98d8716888dc669f" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1tensor__grid" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::tensor_grid</ref></type>
@@ -1209,7 +1213,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="533" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="533" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="550" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="550" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1ae6a19c2cd1fa1ccd87b86601534f9e91" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1tensor__grid" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::tensor_grid</ref></type>
@@ -1223,7 +1227,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="534" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="534" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="551" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="551" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a03672e8e1f20bead45740c7ec72e2ebb" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1tensor__grid" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::tensor_grid</ref></type>
@@ -1237,7 +1241,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="535" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="535" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="552" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="552" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a4d8dcea83e8b11e9ae3f3a4dec0b6867" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1tensor__grid" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::tensor_grid</ref></type>
@@ -1251,7 +1255,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="536" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="536" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="553" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="553" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1abc4cbbc24d7ecefb41643829035f132a" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1tensor__grid" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::tensor_grid</ref></type>
@@ -1265,7 +1269,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="537" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="537" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="554" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="554" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a7190a56772676f59e7cfe4fec4c11373" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1tensor__grid" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::tensor_grid</ref></type>
@@ -1279,7 +1283,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="538" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="538" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="555" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="555" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1aeba5d7466002ea08bc1808e639ff4ade" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1tensor__grid" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::tensor_grid</ref></type>
@@ -1293,7 +1297,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="539" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="539" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="556" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="556" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a70d2dda04bbcf60854b7670102f56de0" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1tensor__grid" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::tensor_grid</ref></type>
@@ -1307,7 +1311,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="540" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="540" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="557" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="557" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a5350ccc3f6a84937d808d76ce5bc3535" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1tensor__grid" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::tensor_grid</ref></type>
@@ -1321,7 +1325,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="541" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="541" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="558" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="558" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1ab6c02707e4ccfc85a57dc392312b858d" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1tensor__grid" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::tensor_grid</ref></type>
@@ -1335,7 +1339,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="542" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="542" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="559" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="559" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a06b8c9725c02758c06e28a90b9a0b460" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1tensor__grid" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::tensor_grid</ref></type>
@@ -1349,7 +1353,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="543" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="543" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="560" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="560" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a0e46415ceec10241748d3b7e3975eb35" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1tensor__grid" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::tensor_grid</ref></type>
@@ -1363,7 +1367,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="544" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="544" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="561" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="561" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1ad1227ef10b6e0d48d443f2acc1429193" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1tensor__grid" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::tensor_grid</ref></type>
@@ -1377,7 +1381,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="545" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="545" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="562" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="562" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1abfff102abee916ed3e89a84c6880192e" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1tensor__grid" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::tensor_grid</ref></type>
@@ -1391,7 +1395,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="546" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="546" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="563" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="563" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a11c1b1969e2ba5ef9b18d4b57330da4e" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1tensor__grid" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::tensor_grid</ref></type>
@@ -1405,7 +1409,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="547" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="547" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="564" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="564" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a004b4b83f1dffcd1b5d1800cfdc29b0b" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1tensor__grid" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::tensor_grid</ref></type>
@@ -1419,7 +1423,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="548" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="548" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="565" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="565" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1ab64ab28f693c6d3ef0b87da1343dbd6e" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1tensor__grid" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::tensor_grid</ref></type>
@@ -1433,7 +1437,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="549" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="549" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="566" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="566" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1af444fb252ee474ed57564452c030a3cf" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1tensor__grid" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::tensor_grid</ref></type>
@@ -1447,7 +1451,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="550" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="550" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="567" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="567" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a492319b4f6e26525c5d42b3b283d872f" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1tensor__grid" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::tensor_grid</ref></type>
@@ -1461,7 +1465,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="551" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="551" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="568" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="568" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1aeb396b53697b9f1de3e69d8e9dada40e" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1tensor__grid" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::tensor_grid</ref></type>
@@ -1475,7 +1479,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="552" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="552" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="569" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="569" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a4b71c77ee78348145eafe9672ad01218" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1tensor__grid" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::tensor_grid</ref></type>
@@ -1489,7 +1493,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="553" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="553" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="570" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="570" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1af3a8eefc23db6b6a6e172812e5d2df68" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1tensor__grid" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::tensor_grid</ref></type>
@@ -1503,7 +1507,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="554" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="554" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="571" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="571" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a9c19aba86fcc0a6fc081ffdfc1f60472" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1tensor__grid" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::tensor_grid</ref></type>
@@ -1517,7 +1521,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="555" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="555" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="572" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="572" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1af7ead89609f0c6327a49bda1b6842a61" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1tensor__grid" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::tensor_grid</ref></type>
@@ -1531,7 +1535,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="556" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="556" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="573" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="573" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a0b37376081ff2573fcb59161c8a92493" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1tensor__grid" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::tensor_grid</ref></type>
@@ -1545,7 +1549,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="557" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="557" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="574" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="574" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1ad2b9d2603630db4db8f4213d4e181e4f" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1tensor__grid" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::tensor_grid</ref></type>
@@ -1559,7 +1563,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="558" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="558" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="575" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="575" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1aeb4ced40ed759436e405de206be713bd" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1tensor__grid" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::tensor_grid</ref></type>
@@ -1573,7 +1577,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="559" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="559" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="576" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="576" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1abf3b5e7073974ace451d0bc93e970178" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1tensor__grid" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::tensor_grid</ref></type>
@@ -1587,7 +1591,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="560" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="560" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="577" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="577" bodyend="-1"/>
       </memberdef>
       </sectiondef>
       <sectiondef kind="user-defined">
@@ -1604,7 +1608,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="565" column="8" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="565" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="582" column="8" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="582" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a34f07f57a646e68b7ad8224cbff2cb25" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1tensor__grid" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::tensor_grid</ref></type>
@@ -1618,7 +1622,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="566" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="566" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="583" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="583" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a11ce9720370ac275fc54f1ed15e4b828" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1tensor__grid" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::tensor_grid</ref></type>
@@ -1632,7 +1636,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="567" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="567" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="584" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="584" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a12d5b08736061d3354419adeaa01ed0d" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1tensor__grid" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::tensor_grid</ref></type>
@@ -1646,7 +1650,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="568" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="568" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="585" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="585" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a407c06a8301cc809db24f8f63b970c6d" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1tensor__grid" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::tensor_grid</ref></type>
@@ -1660,7 +1664,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="569" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="569" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="586" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="586" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a7881bc2e6030cf83cdcd1c754c09cf42" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1tensor__grid" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::tensor_grid</ref></type>
@@ -1674,7 +1678,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="570" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="570" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="587" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="587" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a425f1eead1cd755e75d5025d20d55472" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1tensor__grid" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::tensor_grid</ref></type>
@@ -1688,7 +1692,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="571" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="571" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="588" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="588" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a0c84525c44c79e4320ef133c3cd6e1b0" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1tensor__grid" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::tensor_grid</ref></type>
@@ -1702,7 +1706,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="572" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="572" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="589" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="589" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1ad42647c219ad62f7423cb2d9d6a5d4f6" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1tensor__grid" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::tensor_grid</ref></type>
@@ -1716,7 +1720,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="573" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="573" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="590" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="590" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a60e60a375f8beb2ad39b61be54916367" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1tensor__grid" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::tensor_grid</ref></type>
@@ -1730,7 +1734,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="574" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="574" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="591" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="591" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a68bf7f276dc5453eca3fca821f8c97d6" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1tensor__grid" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::tensor_grid</ref></type>
@@ -1744,7 +1748,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="575" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="575" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="592" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="592" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a4a931b5aaf9df3a9449aa03ad9a11d3a" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1tensor__grid" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::tensor_grid</ref></type>
@@ -1758,7 +1762,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="576" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="576" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="593" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="593" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a4bd3b59e17f2d95cbf169616908096cb" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1tensor__grid" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::tensor_grid</ref></type>
@@ -1772,7 +1776,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="577" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="577" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="594" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="594" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1aee6292cf424f9351204441b8ce30be2f" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1tensor__grid" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::tensor_grid</ref></type>
@@ -1786,7 +1790,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="578" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="578" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="595" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="595" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a19d601be68cfda684729148306f5dbe6" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1tensor__grid" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::tensor_grid</ref></type>
@@ -1800,7 +1804,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="579" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="579" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="596" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="596" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a3f74250a2d6fe46f41e8f4663ef4c534" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1tensor__grid" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::tensor_grid</ref></type>
@@ -1814,7 +1818,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="580" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="580" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="597" column="4" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="597" bodyend="-1"/>
       </memberdef>
       </sectiondef>
       <sectiondef kind="user-defined">
@@ -1831,7 +1835,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="585" column="30" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="585" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="602" column="30" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="602" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a704214f3aa577b0a5696b69120803831" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1cli_1_1parameter__bool" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::cli::parameter_bool</ref></type>
@@ -1845,7 +1849,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="586" column="30" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="586" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="603" column="30" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="603" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a4558095e40049f6d2b96253e2c8482c3" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1cli_1_1parameter__bool" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::cli::parameter_bool</ref></type>
@@ -1859,7 +1863,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="587" column="30" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="587" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="604" column="30" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="604" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a40f7a07df5b1fc5f083b6607683ba14d" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1cli_1_1parameter__bool" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::cli::parameter_bool</ref></type>
@@ -1873,7 +1877,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="588" column="30" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="588" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="605" column="30" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="605" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1ad632b8055ddb2a7793f41a194e4d1795" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1cli_1_1parameter__int" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::cli::parameter_int</ref></type>
@@ -1887,7 +1891,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="589" column="29" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="589" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="606" column="29" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="606" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a3f8925afd7f4de41d40f834e34ef9bf3" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1cli_1_1parameter__bool" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::cli::parameter_bool</ref></type>
@@ -1901,7 +1905,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="590" column="30" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="590" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="607" column="30" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="607" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a555f7b4054913327461106517f79d28d" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1cli_1_1parameter__bool" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::cli::parameter_bool</ref></type>
@@ -1915,7 +1919,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="591" column="30" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="591" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="608" column="30" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="608" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1ade3866fc48028463c7c835442d7d0363" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1cli_1_1parameter__string" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::cli::parameter_string</ref></type>
@@ -1929,7 +1933,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="592" column="32" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="592" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="609" column="32" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="609" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a5f4c08d089d974b91bf45d789dd91727" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1cli_1_1parameter__string" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::cli::parameter_string</ref></type>
@@ -1943,7 +1947,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="593" column="32" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="593" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="610" column="32" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="610" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1aec3ff2601bac9ab73f45c1dfb09eda02" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1cli_1_1parameter__int" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::cli::parameter_int</ref></type>
@@ -1957,7 +1961,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="594" column="29" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="594" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="611" column="29" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="611" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1ad77de576bae71fb8e81673b2e9e807d1" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1cli_1_1parameter__bool" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::cli::parameter_bool</ref></type>
@@ -1971,7 +1975,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="595" column="30" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="595" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="612" column="30" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="612" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1aa41b4da957490f1b93fbdd9bc81ee728" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1cli_1_1parameter__bool" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::cli::parameter_bool</ref></type>
@@ -1985,7 +1989,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="596" column="30" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="596" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="613" column="30" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="613" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a3fd9e2feae434accf048f448f005c73d" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1cli_1_1parameter__bool" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::cli::parameter_bool</ref></type>
@@ -1999,7 +2003,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="597" column="30" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="597" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="614" column="30" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="614" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a2a48ce9f315d748fa4a0d52bbffe38c6" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1cli_1_1parameter__bool" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::cli::parameter_bool</ref></type>
@@ -2013,7 +2017,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="598" column="30" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="598" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="615" column="30" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="615" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a6a8c00a8fd74aa9bd595efb64683ffe0" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1cli_1_1parameter__bool" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::cli::parameter_bool</ref></type>
@@ -2027,7 +2031,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="599" column="30" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="599" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="616" column="30" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="616" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a3dda8480375e0275294318c3b0aec51d" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1cli_1_1parameter__bool" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::cli::parameter_bool</ref></type>
@@ -2041,7 +2045,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="600" column="30" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="600" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="617" column="30" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="617" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1af05574b96e9f8433d350760b33ddbdc9" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1cli_1_1parameter__double" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::cli::parameter_double</ref></type>
@@ -2055,7 +2059,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="601" column="32" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="601" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="618" column="32" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="618" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a70c28ddbc7ded7525cb341f0cec82e94" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1cli_1_1parameter__double" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::cli::parameter_double</ref></type>
@@ -2069,7 +2073,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="602" column="32" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="602" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="619" column="32" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="619" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a5d8c1d46c698d9aa6e933c1b8e70a736" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1cli_1_1parameter__string" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::cli::parameter_string</ref></type>
@@ -2083,7 +2087,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="603" column="32" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="603" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="620" column="32" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="620" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a61150726ea0811558024ed26d3d2367c" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1cli_1_1parameter__int" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::cli::parameter_int</ref></type>
@@ -2097,7 +2101,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="604" column="29" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="604" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="621" column="29" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="621" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a6a6a351fb02b2a53c7a6ddb9c3165a4a" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1cli_1_1parameter__int" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::cli::parameter_int</ref></type>
@@ -2111,7 +2115,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="605" column="29" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="605" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="622" column="29" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="622" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a85a93ac08fb1b6c4016055a7b2eb3b3d" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1cli_1_1parameter__int" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::cli::parameter_int</ref></type>
@@ -2125,7 +2129,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="606" column="29" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="606" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="623" column="29" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="623" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1ac3ff86e1f1d5506e5f74db8435b7a962" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1cli_1_1parameter__int" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::cli::parameter_int</ref></type>
@@ -2139,7 +2143,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="607" column="29" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="607" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="624" column="29" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="624" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a92d43e4a994e334a5000d8ab6e015f72" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1cli_1_1parameter__string" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::cli::parameter_string</ref></type>
@@ -2153,7 +2157,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="608" column="32" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="608" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="625" column="32" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="625" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a9d1c51cb604ba83f9debb378078301c1" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1cli_1_1parameter__double" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::cli::parameter_double</ref></type>
@@ -2167,7 +2171,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="609" column="32" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="609" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="626" column="32" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="626" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1aec90cff67945b9560619cb4516add781" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1cli_1_1parameter__double" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::cli::parameter_double</ref></type>
@@ -2181,7 +2185,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="610" column="32" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="610" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="627" column="32" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="627" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a00ce6347b39d3bed4cde37a65d2217fa" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1cli_1_1parameter__int" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::cli::parameter_int</ref></type>
@@ -2195,7 +2199,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="611" column="29" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="611" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="628" column="29" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="628" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1ac2e5b3410f1cc8bba78fb4f4fd1e0a43" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1cli_1_1parameter__string" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::cli::parameter_string</ref></type>
@@ -2209,7 +2213,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="612" column="32" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="612" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="629" column="32" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="629" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a6c3159186083694169a1facc7c8bd3f7" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1cli_1_1parameter__string" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::cli::parameter_string</ref></type>
@@ -2223,7 +2227,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="613" column="32" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="613" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="630" column="32" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="630" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a085c4f10a505c02c83e1b6f4658c1b37" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1cli_1_1parameter__string" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::cli::parameter_string</ref></type>
@@ -2237,7 +2241,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="614" column="32" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="614" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="631" column="32" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="631" bodyend="-1"/>
       </memberdef>
       </sectiondef>
       <sectiondef kind="user-defined">
@@ -2255,7 +2259,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="318" column="20" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="318" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="335" column="20" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="335" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a08709c65212e72fefa2c0c9741e3b7d5" prot="public" static="yes" mutable="no">
         <type>const int</type>
@@ -2270,7 +2274,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="319" column="20" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="319" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="336" column="20" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="336" bodyend="-1"/>
       </memberdef>
       </sectiondef>
       <sectiondef kind="user-defined">
@@ -2289,7 +2293,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="519" column="20" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="519" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="536" column="20" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="536" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a3bf59116e634ce79d04192044581b5e4" prot="public" static="yes" mutable="no">
         <type>const int</type>
@@ -2305,7 +2309,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="521" column="20" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="521" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="538" column="20" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="538" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a85dd3228def3fdaba7c6c2796fb5e66e" prot="public" static="yes" mutable="no">
         <type>const int</type>
@@ -2321,7 +2325,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="523" column="20" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="523" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="540" column="20" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="540" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a01be0524b53a5b2ab21b2e694b796030" prot="public" static="yes" mutable="no">
         <type>const int</type>
@@ -2337,7 +2341,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="525" column="20" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="525" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="542" column="20" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="542" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos__nuclei_1a96b2d980473d1553b69bc39312b4b06a" prot="public" static="yes" mutable="no">
         <type>const int</type>
@@ -2353,7 +2357,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="527" column="20" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="527" bodyend="-1"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="544" column="20" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="544" bodyend="-1"/>
       </memberdef>
       </sectiondef>
       <sectiondef kind="user-defined">
@@ -2411,7 +2415,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="622" column="10"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="639" column="10"/>
       </memberdef>
       <memberdef kind="function" id="classeos__nuclei_1af2977d2c5707b931f2c9d79977f4988e" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>double</type>
@@ -2458,7 +2462,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="629" column="10"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="646" column="10"/>
       </memberdef>
       <memberdef kind="function" id="classeos__nuclei_1a40aac5b607cd8c5d7f0b5ab22380c9b6" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -2517,7 +2521,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="637" column="7"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="654" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos__nuclei_1a534fa250430a6bee6e10d8d8368387e5" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -2572,7 +2576,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="646" column="7"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="663" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos__nuclei_1a0a87adc1ff5b65ce4d033a6336cb932e" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -2667,7 +2671,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="654" column="7"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="671" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos__nuclei_1a9860dc645b8d0378a4d5e19fa0f32808" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -2727,7 +2731,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="665" column="7"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="682" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos__nuclei_1affdd30692a9b5ab5de04dedc1292c127" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -2802,7 +2806,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="675" column="7"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="692" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos__nuclei_1a8e5130033d82c8b74e2e186642fa109e" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -2873,7 +2877,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="685" column="7"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="702" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos__nuclei_1aaec4a435a6806773068024b2aad1eea4" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -2948,7 +2952,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="693" column="7"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="710" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos__nuclei_1ae21ac91d7c6ca23d42f30153b461a973" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -2991,7 +2995,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="703" column="7"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="720" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos__nuclei_1a1c1b4b4617ed20e5a268ae56db02c639" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -3038,7 +3042,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="709" column="7"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="726" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos__nuclei_1a49ab1d375fad40db59052d1c93c77162" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -3121,7 +3125,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="717" column="7"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="734" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos__nuclei_1aceee50342315ece4e551fe9fb12918aa" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -3146,7 +3150,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="730" column="7"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="747" column="7"/>
       </memberdef>
       </sectiondef>
       <sectiondef kind="user-defined">
@@ -3174,7 +3178,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="741" column="7"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="758" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos__nuclei_1ad92837e4e809c507200b8f6d1e9b3ce9" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -3191,13 +3195,15 @@
           <declname>itive_com</declname>
         </param>
         <briefdescription>
-<para>Desc. </para>
+<para>Interpolate the EOS around a specified point. </para>
         </briefdescription>
         <detaileddescription>
+<para>&lt;nB&gt; &lt;Ye&gt; &lt;T MeV&gt; &lt;window&gt; [st.o2]</para>
+<para>This function requires that an EOS with leptons has been loaded. </para>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="745" column="7"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="767" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos__nuclei_1a157a32216b4cb525ff782dd8018488c8" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -3220,7 +3226,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="749" column="7"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="771" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos__nuclei_1aa73cb0cc717abbee7d37004b5c1cd347" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -3243,7 +3249,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="753" column="7"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="775" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos__nuclei_1af76d052dfa9dd1b11245f66c74d0a4eb" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -3268,7 +3274,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="761" column="7"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="783" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos__nuclei_1a5f3e04dca895ed3694189561efc431c7" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -3293,7 +3299,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="769" column="7"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="791" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos__nuclei_1a063ca5e97144d1d9b9ab08e715c88110" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -3318,7 +3324,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="781" column="7"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="803" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos__nuclei_1a1870d4fe51570422d3e1948510e87bec" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -3343,7 +3349,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="798" column="7"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="820" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos__nuclei_1a5316ad41fe6d07c03f9d03b4536db4bb" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -3372,7 +3378,7 @@ F, E, P, and S, are also available for comparisons. Any current &quot;+ EOS data
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="815" column="7"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="837" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos__nuclei_1ade7ea962d1f3bb5f5bec604850bfcff9" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -3397,7 +3403,7 @@ F, E, P, and S, are also available for comparisons. Any current &quot;+ EOS data
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="827" column="7"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="849" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos__nuclei_1a59e80bdb0d3d6a663a3be4df506c9c74" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -3422,7 +3428,7 @@ F, E, P, and S, are also available for comparisons. Any current &quot;+ EOS data
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="845" column="7"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="867" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos__nuclei_1a6851712e5fcbb0a02eaf79e3b2164bbd" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -3448,7 +3454,7 @@ F, E, P, and S, are also available for comparisons. Any current &quot;+ EOS data
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="860" column="7"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="882" column="7"/>
       </memberdef>
       </sectiondef>
       <sectiondef kind="user-defined">
@@ -3476,7 +3482,7 @@ F, E, P, and S, are also available for comparisons. Any current &quot;+ EOS data
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="872" column="7"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="894" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos__nuclei_1a5d7466960fa588348c42d83561e0ae07" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -3501,7 +3507,7 @@ F, E, P, and S, are also available for comparisons. Any current &quot;+ EOS data
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="881" column="7"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="903" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos__nuclei_1ae8a14d1cd9bd89aade37fe44507226ae" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -3522,7 +3528,7 @@ F, E, P, and S, are also available for comparisons. Any current &quot;+ EOS data
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="887" column="7"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="909" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos__nuclei_1a0a17e1d732e68d9df401491bcc282d87" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -3543,7 +3549,7 @@ F, E, P, and S, are also available for comparisons. Any current &quot;+ EOS data
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="893" column="7"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="915" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos__nuclei_1a2fdd3ed505fccdb2ccd0c76f74461aef" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -3568,7 +3574,7 @@ F, E, P, and S, are also available for comparisons. Any current &quot;+ EOS data
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="901" column="7"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="923" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos__nuclei_1a589e9ce90ed45f886adf9d57d1f05a64" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>void</type>
@@ -3584,7 +3590,7 @@ F, E, P, and S, are also available for comparisons. Any current &quot;+ EOS data
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="908" column="8"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="930" column="8"/>
       </memberdef>
       <memberdef kind="function" id="classeos__nuclei_1ad9e6df69a1d17e370375477ae090de08" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>void</type>
@@ -3603,17 +3609,17 @@ F, E, P, and S, are also available for comparisons. Any current &quot;+ EOS data
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="912" column="8"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="934" column="8"/>
       </memberdef>
       </sectiondef>
       <sectiondef kind="user-defined">
       <header>Miscellaneous functions</header>
-      <memberdef kind="function" id="classeos__nuclei_1a740b74ccb19bac55a9d067dc15a618a0" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
+      <memberdef kind="function" id="classeos__nuclei_1ab1c0e0b4ba78e0c9180d3432f086ad66" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
         <type>void</type>
-        <definition>virtual void eos_nuclei::setup_cli</definition>
+        <definition>virtual void eos_nuclei::setup_cli_nuclei</definition>
         <argsstring>(o2scl::cli &amp;cli)</argsstring>
-        <name>setup_cli</name>
-        <qualifiedname>eos_nuclei::setup_cli</qualifiedname>
+        <name>setup_cli_nuclei</name>
+        <qualifiedname>eos_nuclei::setup_cli_nuclei</qualifiedname>
         <param>
           <type><ref refid="classo2scl_1_1cli" kindref="compound" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag">o2scl::cli</ref> &amp;</type>
           <declname>cli</declname>
@@ -3625,7 +3631,7 @@ F, E, P, and S, are also available for comparisons. Any current &quot;+ EOS data
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="919" column="16"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="941" column="16"/>
       </memberdef>
       <memberdef kind="function" id="classeos__nuclei_1a4ed2d01020c376d09c7e80d4691a0002" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>void</type>
@@ -3640,7 +3646,7 @@ F, E, P, and S, are also available for comparisons. Any current &quot;+ EOS data
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="923" column="8"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="945" column="8"/>
       </memberdef>
       <memberdef kind="function" id="classeos__nuclei_1a5d1fa0a49d55a9a7ceecb6f2dc814f85" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -3666,7 +3672,7 @@ F, E, P, and S, are also available for comparisons. Any current &quot;+ EOS data
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="943" column="7"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="965" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos__nuclei_1a53160bce70df3565db4721db3920fed8" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -3692,7 +3698,7 @@ file&gt;</para>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="958" column="7"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="980" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos__nuclei_1a782cead037ec487215ed702046efbf94" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -3717,7 +3723,7 @@ file&gt;</para>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="966" column="7"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="988" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos__nuclei_1adc76328f89a19ae582e33e94f5fdf012" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -3747,7 +3753,7 @@ file&gt;, or &quot;point&quot; &lt;output file&gt; &lt;nB&gt; &lt;Ye&gt; &lt;T&g
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="1004" column="7"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="1026" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos__nuclei_1aacc21e32b0592eeb32aa4d4fbc5446d2" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -3772,7 +3778,7 @@ file&gt;, or &quot;point&quot; &lt;output file&gt; &lt;nB&gt; &lt;Ye&gt; &lt;T&g
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="1012" column="7"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="1034" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos__nuclei_1ab2f73f5619e98bf20d0b8eb311fdf3b2" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -3797,7 +3803,7 @@ file&gt;, or &quot;point&quot; &lt;output file&gt; &lt;nB&gt; &lt;Ye&gt; &lt;T&g
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="1020" column="7"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="1042" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos__nuclei_1a346357bfcc8220ed56316ed23686d53a" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -3822,7 +3828,7 @@ file&gt;, or &quot;point&quot; &lt;output file&gt; &lt;nB&gt; &lt;Ye&gt; &lt;T&g
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="1028" column="7"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="1050" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos__nuclei_1a8f6e17f580929833eeb11ac054274b69" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -3847,7 +3853,7 @@ file&gt;, or &quot;point&quot; &lt;output file&gt; &lt;nB&gt; &lt;Ye&gt; &lt;T&g
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="1036" column="7"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="1058" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos__nuclei_1abc6f1bc0f5b05dd7cc9cf6d1b6fd3f6d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>void</type>
@@ -3870,7 +3876,7 @@ file&gt;, or &quot;point&quot; &lt;output file&gt; &lt;nB&gt; &lt;Ye&gt; &lt;T&g
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="1039" column="8"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="1061" column="8"/>
       </memberdef>
       <memberdef kind="function" id="classeos__nuclei_1a3d212298dad98cae2d6d1310c52a136c" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -3892,7 +3898,7 @@ file&gt;, or &quot;point&quot; &lt;output file&gt; &lt;nB&gt; &lt;Ye&gt; &lt;T&g
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="1046" column="7"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="1068" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos__nuclei_1a20563ca9ef25a2a3d6dc44c3c3105206" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -3919,7 +3925,7 @@ file&gt;, or &quot;point&quot; &lt;output file&gt; &lt;nB&gt; &lt;Ye&gt; &lt;T&g
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="1068" column="7"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="1090" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos__nuclei_1a5f19d4a4c83e3d76edf03e01fe8e3df6" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -3944,7 +3950,7 @@ file&gt;, or &quot;point&quot; &lt;output file&gt; &lt;nB&gt; &lt;Ye&gt; &lt;T&g
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="1079" column="7"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="1101" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos__nuclei_1ab940f90e1dc234212bd9d20bfd4c5e0a" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>double</type>
@@ -3979,7 +3985,7 @@ file&gt;, or &quot;point&quot; &lt;output file&gt; &lt;nB&gt; &lt;Ye&gt; &lt;T&g
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="1083" column="10"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="1105" column="10"/>
       </memberdef>
       <memberdef kind="function" id="classeos__nuclei_1aa13a2c14da94d5d854399dc357410cb5" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -4006,7 +4012,7 @@ file&gt;, or &quot;point&quot; &lt;output file&gt; &lt;nB&gt; &lt;Ye&gt; &lt;T&g
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="1088" column="7"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="1110" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos__nuclei_1a80e2a3f16b57acaeae0352a665986e2c" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -4031,7 +4037,7 @@ file&gt;, or &quot;point&quot; &lt;output file&gt; &lt;nB&gt; &lt;Ye&gt; &lt;T&g
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="1096" column="7"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="1118" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos__nuclei_1a90757fda0ca76057b31e58215d7d3079" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -4060,12 +4066,13 @@ file&gt;, or &quot;point&quot; &lt;output file&gt; &lt;nB&gt; &lt;Ye&gt; &lt;T&g
           <declname>itp_mun</declname>
         </param>
         <briefdescription>
+<para>Desc. </para>
         </briefdescription>
         <detaileddescription>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="1098" column="7"/>
+        <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="1122" column="7"/>
       </memberdef>
       </sectiondef>
     <briefdescription>
@@ -4927,7 +4934,7 @@ located or to manually specify the nuclear model?
         <link refid="classboost_1_1numeric_1_1ublas_1_1vector" external="/Users/awsteiner2/wcs/eos/doc/o2scl.tag"/>
       </node>
     </collaborationgraph>
-    <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="176" column="1" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="176" bodyend="1104"/>
+    <location file="/Users/awsteiner2/wcs/eos/eos_nuclei.h" line="190" column="1" bodyfile="/Users/awsteiner2/wcs/eos/eos_nuclei.h" bodystart="190" bodyend="1128"/>
     <listofallmembers>
       <member refid="classeos_1a5a1b813d87a973d3552ddcbcaae4c2eb" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>a_virial</name></member>
       <member refid="classeos__nuclei_1af76d052dfa9dd1b11245f66c74d0a4eb" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>add_eg</name></member>
@@ -5152,8 +5159,8 @@ located or to manually specify the nuclear model?
       <member refid="classeos__nuclei_1a3d212298dad98cae2d6d1310c52a136c" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>select_high_T_internal</name></member>
       <member refid="classeos_1aa6e242360755e084e3845f8ad7ca5034" prot="protected" virt="non-virtual"><scope>eos_nuclei</scope><name>select_internal</name></member>
       <member refid="classeos_1aa3bc65fa01f0eb33e795b5f2fe0c7d21" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>select_model</name></member>
-      <member refid="classeos__nuclei_1a740b74ccb19bac55a9d067dc15a618a0" prot="public" virt="virtual"><scope>eos_nuclei</scope><name>setup_cli</name></member>
-      <member refid="classeos_1a95f4ca5114228035d40de725eefc521a" prot="public" virt="virtual" ambiguityscope="eos::"><scope>eos_nuclei</scope><name>setup_cli</name></member>
+      <member refid="classeos_1a95f4ca5114228035d40de725eefc521a" prot="public" virt="virtual"><scope>eos_nuclei</scope><name>setup_cli</name></member>
+      <member refid="classeos__nuclei_1ab1c0e0b4ba78e0c9180d3432f086ad66" prot="public" virt="virtual"><scope>eos_nuclei</scope><name>setup_cli_nuclei</name></member>
       <member refid="classeos__nuclei_1a149f15c25567f030d59ad187ffbffaff" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>show_all_nuclei</name></member>
       <member refid="classeos__nuclei_1add3c0308b16526ddc563d8b68ad4c69d" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>six_neighbors</name></member>
       <member refid="classeos_1a1ce709670f5e43caba65e040b9cc02f9" prot="protected" virt="non-virtual"><scope>eos_nuclei</scope><name>sk</name></member>
