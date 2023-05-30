@@ -155,6 +155,10 @@ eos_nuclei::eos_nuclei() {
   
   inc_hrg=false;
 
+  save_to_csv=true;
+  max_nB_inter=0.16;
+  csv_location = "superluminal.csv";
+
   pfuncs.spin_deg_mode=1;
 }
 
@@ -1951,7 +1955,8 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
   } else {
     outfile=sv[1];
   }
-  
+ 
+  std::ofstream csvfile;
   /// Compute the stability matrix and its eigenvalues at each point
   for (size_t i=ilo;i<ihi;i++) {
     double nB=nB_grid2[i];
@@ -2154,6 +2159,11 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
                << nB << " " << Ye << " " << T_MeV << " "
                << cs_sq << " " << cs2_hom.get(ix) << endl;
           superlum_count++;
+          if ((nB<max_nB_inter) && (save_to_csv==true)) {
+             csvfile.open(csv_location, ios:: app);
+             csvfile << nB << "," << Ye << "," << T_MeV << ",\n";
+             csvfile.close();
+          }
           i_nB_fix.push_back(i);
           i_Ye_fix.push_back(j);
           i_T_fix.push_back(k);
@@ -10058,7 +10068,7 @@ void eos_nuclei::setup_cli_nuclei(o2scl::cli &cl) {
   
   eos::setup_cli(cl,false);
   
-  static const int nopt=26;
+  static const int nopt=27;
 
   o2scl::comm_option_s options[nopt]=
     {{0,"eos-deriv","",0,0,"","",
@@ -10164,7 +10174,11 @@ void eos_nuclei::setup_cli_nuclei(o2scl::cli &cl) {
      {0,"select-high-T","",1,1,"","",
       new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::select_high_T),o2scl::cli::comm_option_both,
-      1,"","eos_nuclei","select_high_T","doc/xml/classeos__nuclei.xml"}
+      1,"","eos_nuclei","select_high_T","doc/xml/classeos__nuclei.xml"},
+     {0,"interp-file","",3,3,"","",
+      new o2scl::comm_option_mfptr<eos_nuclei>
+      (this,&eos_nuclei::interp_file),o2scl::cli::comm_option_both,
+      1,"","eos_nuclei","interp_file","doc/xml/classeos__nuclei.xml"},
     };
 
   cl.doc_o2_file="data/eos_nuclei_docs.o2";
@@ -10364,7 +10378,14 @@ void eos_nuclei::setup_cli_nuclei(o2scl::cli &cl) {
   p_inc_hrg.doc_name="inc_hrg";
   p_inc_hrg.doc_xml_file="doc/xml/classeos__nuclei.xml";
   cl.par_list.insert(make_pair("inc_hrg",&p_inc_hrg));
-  
+
+  p_save_to_csv.b=&save_to_csv;
+  p_save_to_csv.help="If true, save acausal and undefined cs_sq to a csv file";
+  p_save_to_csv.doc_class="eos_nuclei";
+  p_save_to_csv.doc_name="save_to_csv";
+  p_save_to_csv.doc_xml_file="doc/xml/classeos__nuclei.xml";
+  cl.par_list.insert(make_pair("save_to_csv",&p_save_to_csv));
+
   cl.set_comm_option_vec(nopt,options);
   
   cl.xml_subs.push_back("<formula> $ 10^{-6} $ </formula>");

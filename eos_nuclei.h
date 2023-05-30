@@ -211,6 +211,21 @@ public:
    */
   bool inc_hrg;
 
+  /** \brief If true, will save points with a baryon density under a value
+   * set in max_nB_inter to csv file for later correction with the interpolation
+   * function.
+   */
+  bool save_to_csv;
+
+  /** \brief Maximum baryon density of points with acausal speeds of sound squared
+   * to be saved in a csv file for later corrections with the interpolation function.
+   */
+  double max_nB_inter;
+
+  /** \brief Location where csv file will be saved
+   */
+  std::string csv_location;
+
   /** \brief Solve for charge neutrality and fixed baryon fraction
       with a hadron resonance gas
    */
@@ -629,6 +644,7 @@ public:
   o2scl::cli::parameter_string p_nB_grid_spec;
   o2scl::cli::parameter_string p_Ye_grid_spec;
   o2scl::cli::parameter_string p_T_grid_spec;
+  o2scl::cli::parameter_bool p_save_to_csv;
   //@}
 
   /// \name Functions for the main algorithm
@@ -757,6 +773,10 @@ public:
   */
   int eos_deriv(std::vector<std::string> &sv, bool itive_com);
 
+  /** \brief Interpolates the EOS around a point
+   */
+  std::vector<double> interpolate(double nB_cent, double Ye_cent, double T_cent, int window, std::string st_o2, bool itive_com);
+
   /** \brief Interpolate the EOS around a specified point
 
       <nB> <Ye> <T MeV> <window> [st.o2]
@@ -765,6 +785,14 @@ public:
       loaded. 
    */
   int interp_point(std::vector<std::string> &sv, bool itive_com);
+
+  /** \brief Interpolate the EOS around the points specified ina csv file.
+   *
+   * <csv file> <window> [st.o2]
+   *
+   * This function requires that an EOS with leptons be loaded
+   */
+  int interp_file(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Desc
    */
