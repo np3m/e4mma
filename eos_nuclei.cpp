@@ -10386,6 +10386,13 @@ void eos_nuclei::setup_cli_nuclei(o2scl::cli &cl) {
   p_save_to_csv.doc_xml_file="doc/xml/classeos__nuclei.xml";
   cl.par_list.insert(make_pair("save_to_csv",&p_save_to_csv));
 
+  p_max_nB_inter.d=&max_nB_inter;
+  p_max_nB_inter.help="The electron fraction underwhich acausal points will be saved to the csv.";
+  p_max_nB_inter.doc_class="eos_nuclei";
+  p_max_nB_inter.doc_name="max_nB_inter";
+  p_max_nB_inter.doc_xml_file="doc/xml/classeos__nuclei.xml";
+  cl.par_list.insert(make_pair("max_nB_inter",&p_max_nB_inter));
+
   cl.set_comm_option_vec(nopt,options);
   
   cl.xml_subs.push_back("<formula> $ 10^{-6} $ </formula>");

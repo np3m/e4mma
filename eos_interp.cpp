@@ -118,10 +118,10 @@ std::vector<double> eos_nuclei::interpolate(double nB_cent,
   }
   if (with_leptons==false) {
     O2SCL_ERR("No EOS leptons in interp_point.",o2scl::exc_einval);
-  }
-  
+  } 
+
   std::vector<double> results;
-  results.assign(0.0, 4);
+  results.assign(0.0, 5);
 
   size_t inB=0, iYe=0, iT=0;
   inB=vector_lookup(n_nB2,nB_grid2,nB_cent);
@@ -196,9 +196,11 @@ std::vector<double> eos_nuclei::interpolate(double nB_cent,
   vector<mcovar_funct_rbf_noise> mfr(1);
   mfr[0].len.resize(3);
   ike.set_covar(mfr,param_lists);
-  
+ 
+  ike.skip_optim=true;
   ike.set(nB_grid2,Ye_grid2,T_grid2,tg_F,tg_P,tg_S,
           tg_mun,tg_mup,tg_mue,neutron.m,proton.m);
+
 
   double min_qual=1.0e99;
   vector<double> p(4), min_p;
@@ -279,7 +281,7 @@ std::vector<double> eos_nuclei::interpolate(double nB_cent,
       mue*electron.m;
     
   }
-
+  
   return results;
 }
 
@@ -297,6 +299,11 @@ int eos_nuclei::interp_file(std::vector<std::string> &sv,
   std::string csv_path = sv[1];
   int window=o2scl::stoi(sv[2]);
   std::string st_o2=sv[3];
+//  hdf_file hff;
+//  o2scl::tensor_grid<> tgp_cs2;
+//  hff.open(st_o2);
+//  hdf_input(hff, tgp_cs2);
+
   std::ofstream file;
   std::ifstream csvfile;
   csvfile.open(csv_path, ios::in);
@@ -318,14 +325,16 @@ int eos_nuclei::interp_file(std::vector<std::string> &sv,
           }
         results = eos_nuclei::interpolate(point[0], point[1], point[2], window, st_o2, itive_com);
         file.open("superluminalfix.csv", ios::app);
-        file << point[0] << "," << point[1] << "," << point[2] << "," << results[0];
+        file << point[0] << "," << point[1] << "," << point[2] << "," << results[4];
         file.close();
+        //tg_cs2(point)=results[4]
       }
       else {
           cout<<"csv file of superliminal points must have 3 terms in each line";
       }
   }
-
+//  hdf_output(hff,tg_cs2);
+//  hff.close();
   return 0;
 }
 
@@ -690,5 +699,5 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
       
   }
         
-  return 0;
+return 0;
 }

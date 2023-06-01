@@ -2,6 +2,7 @@
 # $1 csv of superluminal points with fixed speed of sound.
 # $2 st.o2
 # $3 Where fixed st.o2 file will be saved
+# TODO change st.o2 file in interp_file function instead of this script.
 if [[ "$#" -ne 3 ]]; then
     echo "There must be three arguments"
     exit 1

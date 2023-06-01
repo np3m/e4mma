@@ -645,6 +645,7 @@ public:
   o2scl::cli::parameter_string p_Ye_grid_spec;
   o2scl::cli::parameter_string p_T_grid_spec;
   o2scl::cli::parameter_bool p_save_to_csv;
+  o2scl::cli::parameter_double p_max_nB_inter;
   //@}
 
   /// \name Functions for the main algorithm
