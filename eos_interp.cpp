@@ -223,7 +223,6 @@ double eos_nuclei::interpolate(double nB_cent,
     }
   }
   vector_out(cout,min_p,true);
-  exit(-1);
 
   // Use the interpolation results to fix points 
   std::vector<double> out(1);
@@ -526,7 +525,7 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
        << "dPdnB_itp dPdnB_tab1 dPdnB_tab2" << endl;
   for(size_t ilist=0;ilist<(calib_list.size()+fix_list.size())/3;
       ilist++) {
-
+      
     std::cout << ilist << " ";
 
     size_t inB, iYe, iT;
