@@ -526,18 +526,18 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
        << "dPdnB_itp dPdnB_tab1 dPdnB_tab2" << endl;
   for(size_t ilist=0;ilist<(calib_list.size()+fix_list.size())/3;
       ilist++) {
-      
+
     std::cout << ilist << " ";
 
     size_t inB, iYe, iT;
-    if (ilist<calib_list.size()) {
+    if (ilist<calib_list.size()/3) {
       inB=calib_list[ilist*3];
       iYe=calib_list[ilist*3+1];
       iT=calib_list[ilist*3+2];
     } else {
-      inB=fix_list[(ilist-calib_list.size())*3];
-      iYe=fix_list[(ilist-calib_list.size())*3+1];
-      iT=fix_list[(ilist-calib_list.size())*3+2];
+      inB=fix_list[(ilist-calib_list.size()/3)*3];
+      iYe=fix_list[(ilist-calib_list.size()/3)*3+1];
+      iT=fix_list[(ilist-calib_list.size()/3)*3+2];
     }
     //inB=8;
     //iYe=48;
