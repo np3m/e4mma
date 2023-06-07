@@ -48,12 +48,18 @@ LCFLAGS = $(UTKNA_O2SCL_INCS) $(UTKNA_CFLAGS) -DNO_MPI \
 	-DO2SCL_NEW_BOOST_INTEGRATION 
 LMPI_CFLAGS = $(UTKNA_O2SCL_INCS) $(UTKNA_CFLAGS) \
 	$(UTKNA_OPENMP_FLAGS) $(UTKNA_MPI_CFLAGS) \
-	-DO2SCL_NEW_BOOST_INTEGRATION 
+	-DO2SCL_NEW_BOOST_INTEGRATION
 endif
 
 # ----------------------------------------------------------------
 # Main
 # ----------------------------------------------------------------
+
+DEBUG ?= 0
+ifeq ($(DEBUG), 1)
+	LCFLAGS += -g -Wall -Wextra
+	LMPI_CFLAGS += -g -Wall -Wextra
+endif
 
 eos.o: eos.cpp eos.h
 	$(LMPI_CXX) $(LMPI_CFLAGS) \
@@ -448,5 +454,8 @@ docker_build:
 	sudo docker build - < docker \
 		> docker.out 2>&1 &
 
+test:
+	./eos_nuclei -load /home/awsteiner/fid_3_14_23.o2 \
+	-interp-point 0.000550846 0.05 1.8602 2 ~/st.o2
 
 -include makefile.aws

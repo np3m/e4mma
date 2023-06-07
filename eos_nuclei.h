@@ -25,6 +25,7 @@
 #include <o2scl/part_funcs.h>
 #include <o2scl/interpm_krige.h>
 #include <map>
+#include <filesystem>
 
 typedef boost::numeric::ublas::vector<double> ubvector;
 typedef boost::numeric::ublas::matrix<double> ubmatrix;
@@ -776,7 +777,7 @@ public:
 
   /** \brief Interpolates the EOS around a point
    */
-  std::vector<double> interpolate(double nB_cent, double Ye_cent, double T_cent, int window, std::string st_o2, bool itive_com);
+  double interpolate(double nB_cent, double Ye_cent, double T_cent, int window, std::string st_o2, bool itive_com);
 
   /** \brief Interpolate the EOS around a specified point
 
