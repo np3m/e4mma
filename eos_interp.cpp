@@ -299,6 +299,7 @@ double eos_nuclei::interpolate(double nB_cent,
                   2.0*nn2*np2*(f_nnnp-f_nnT*f_npT/f_TT)+
                   np2*np2*(f_npnp-f_npT*f_npT/f_TT)-
                   2.0*en*(nn2*f_nnT/f_TT+np2*f_npT/f_TT)-en*en/f_TT)/den;
+    results=cs_sq;
 
     cout << "Here: " << cs_sq << endl;
 
@@ -308,9 +309,10 @@ double eos_nuclei::interpolate(double nB_cent,
     vector<size_t> im1={index[0]-1,index[1],index[2]};
     double dmundnB=(f_nnnn*(1-Ye))+(f_nnnp*Ye);
     double dmupmuednB=(f_nnnp*(1-Ye))+(f_npnp*Ye);
+    //double dmundnB=F_nBnB-(Ye*(((1/nB)*F_nBYe)-((1/(nB*nB))*dF_dYe)));
+    //double dmupmuednB=F_nBnB-((1-Ye)*(((1/nB)*F_nBYe)-((1/(nB*nB))*dF_dYe)));
     double dPdnB=(dmundnB*nB*(1-Ye))+(mun*(1-Ye))+(dmupmuednB*Ye*nB)+(Ye*(mup+mue))-((mun*(1-Ye))+((mup+mue)*Ye));
 
-//    double dPdnB=((1-Ye)*(mun+(nB*F_nBnB)))+(Ye*(mup+mue+(nB*F_nBnB)))-(dF_dnB*nB);
     cout << "Calculated: mun[MeV],mup[MeV],mue[MeV]: " << mun << " " << mup << " " << mue << " \n";
     cout << "dmundnB: " << dmundnB << endl;
     cout << "dmupmuednB: " << dmupmuednB << endl;
@@ -323,10 +325,6 @@ double eos_nuclei::interpolate(double nB_cent,
     cout << "dPdnB: " << dPdnB << endl;
     cout << "dPdnB from table: " << (tg_P.get(index)-tg_P.get(im1))/hc_mev_fm/
       (nB_grid2[index[0]]-nB_grid2[index[0]-1]) << endl;
-//    cout << "dmun and dmup " << dmun_dnB << " " << dmun_dnB << endl;
-//    cout << "dfdnBnB*nB" << (nB*F_nBnB) << endl;
-//    cout << "dfdnB*nB" << (dF_dnB*nB) << endl;
-//    cout << "dPdnB" << dPdnB << endl;
     if (dPdnB>0.0) {
         cout<<"success\n";
     }
@@ -687,13 +685,14 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
         (nB_grid[index[0]+1]-nB_grid[index[0]]);
       double t3=(t2-t1)*2.0/(nB_grid[index[0]+1]-nB_grid[index[0]-1]);
       cout << F_nBnB << " " << t3 << " ";
-      
-      t1=(tgp_F->get(index)-tgp_F->get(jm1))/hc_mev_fm/
-        (Ye_grid[index[1]]-Ye_grid[index[1]-1]);
-      t2=(tgp_F->get(jp1)-tgp_F->get(index))/hc_mev_fm/
-        (Ye_grid[index[1]+1]-Ye_grid[index[1]]);
-      t3=(t2-t1)*2.0/(Ye_grid[index[1]+1]-Ye_grid[index[1]-1]);
-      cout << F_YeYe << " " << t3 << " ";
+     if (!(index[1]==0)) { 
+        t1=(tgp_F->get(index)-tgp_F->get(jm1))/hc_mev_fm/
+          (Ye_grid[index[1]]-Ye_grid[index[1]-1]);
+        t2=(tgp_F->get(jp1)-tgp_F->get(index))/hc_mev_fm/
+          (Ye_grid[index[1]+1]-Ye_grid[index[1]]);
+        t3=(t2-t1)*2.0/(Ye_grid[index[1]+1]-Ye_grid[index[1]-1]);
+        cout << F_YeYe << " " << t3 << " ";
+     }
       
       if (false) {
         t1=(tgp_F->get(index)-tgp_F->get(km1))/
@@ -714,8 +713,10 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
 
       double dmundnB=(f_nnnn*(1-Ye))+(f_nnnp*Ye);
       double dmupmuednB=(f_nnnp*(1-Ye))+(f_npnp*Ye);
+      //double dmundnB=F_nBnB-(Ye*(((1/nB)*F_nBYe)-((1/(nB*nB))*dF_dYe)));
+      //double dmupmuednB=F_nBnB-((1-Ye)*(((1/nB)*F_nBYe)-((1/(nB*nB))*dF_dYe)));
       double dPdnB=(dmundnB*nB*(1-Ye))+(mun*(1-Ye))+(dmupmuednB*Ye*nB)+(Ye*(mup+mue))-((mun*(1-Ye))+((mup+mue)*Ye));
-      if (false && compare) {
+      if (compare) {
         //std::cout << "dmun_dnB dmup_dnB" << endl;
         std::cout << "dmun_dnB d(mup+mue)_dnB" << endl;
         cout << "Computed:   ";
