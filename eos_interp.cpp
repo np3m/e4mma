@@ -151,8 +151,12 @@ int eos_nuclei::interp_point(std::vector<std::string> &sv,
   if (min_qual>0.9e99) {
     cout << "All points failed." << endl;
   } else {
-    cout << min_qual << " ";
+    (*ike.cf)[0].set_params(min_p);
+    int st;
+    double qt=ike.qual_fun(0,st);
+    cout << min_qual << " " << qt << " " << st << " ";
     vector_out(cout,min_p,true);
+    cout << "Success." << endl;
   }
   exit(-1);
 
@@ -339,13 +343,13 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
   ret=0.0;
   bool compare=true;
 
-  cout << "i nB Ye T cs2_itp cs2_tab d2FdnB2_itp d2FdnB2_tab "
-       << "d2FdYe2_itp d2FdYe2_tab "
-       << "dPdnB_itp dPdnB_tab1 dPdnB_tab2" << endl;
+  //cout << "i nB Ye T cs2_itp cs2_tab d2FdnB2_itp d2FdnB2_tab "
+  //<< "d2FdYe2_itp d2FdYe2_tab "
+  //<< "dPdnB_itp dPdnB_tab1 dPdnB_tab2" << endl;
   for(size_t ilist=0;ilist<(calib_list.size()+fix_list.size())/3;
       ilist++) {
       
-    std::cout << ilist << " ";
+    std::cout << "i,nB,Ye,T: " << ilist << " ";
 
     size_t inB, iYe, iT;
     if (ilist<calib_list.size()/3) {
@@ -367,7 +371,7 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
     double Ye=Ye_grid[iYe];
     double T_MeV=T_grid[iT];
 
-    cout << nB << " " << Ye << " " << T_MeV << " ";
+    cout << nB << " " << Ye << " " << T_MeV << endl;
     
     // Derivatives of the physical coordinates with respect to the indices
     
@@ -468,129 +472,139 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
                   2.0*en*(nn2*f_nnT/f_TT+np2*f_npT/f_TT)-en*en/f_TT)/den;
 
     cout.setf(ios::showpos);
-    std::cout << cs_sq << " ";
-    cout << tgp_cs2.get(index) << " ";
+    std::cout << "  cs2,cs2_intp: " << cs_sq << " ";
+    cout << tgp_cs2.get(index) << endl;
         
     // Also compute dPdnB
     
-    if (index[0]>0 && index[1]>0 && index[2]>0 &&
-        index[0]<nB_grid.size()-1 && index[1]<Ye_grid.size()-1 &&
-        index[2]<T_grid.size()-1) {
-      std::vector<size_t> im1={index[0]-1,index[1],index[2]};
-      std::vector<size_t> ip1={index[0]+1,index[1],index[2]};
-      std::vector<size_t> jm1={index[0],index[1]-1,index[2]};
-      std::vector<size_t> jp1={index[0],index[1]+1,index[2]};
-      std::vector<size_t> km1={index[0],index[1],index[2]-1};
-      std::vector<size_t> kp1={index[0],index[1],index[2]+1};
-      //cout << "cs22: " << tgp_cs2.get(im1) << endl;
-      
-      /*
-        cout << "6: " << dF_dnB << " "
-        << (tgp_F->get(index)-tgp_F->get(im1))/hc_mev_fm/
-        (nB_grid[index[0]]-nB_grid[index[0]-1]) << " "
-        << (tgp_F->get(ip1)-tgp_F->get(index))/hc_mev_fm/
-        (nB_grid[index[0]+1]-nB_grid[index[0]]) << " ";
-        cout << "7: " << dF_dYe << " "
-        << (tgp_F->get(index)-tgp_F->get(jm1))/hc_mev_fm/
-        (Ye_grid[index[1]]-Ye_grid[index[1]-1]) << " "
-        << (tgp_F->get(jp1)-tgp_F->get(index))/hc_mev_fm/
-        (Ye_grid[index[1]+1]-Ye_grid[index[1]]) << endl;
-        cout << "8: " << dF_dT << " "
-        << (tgp_F->get(index)-tgp_F->get(km1))/
-        (T_grid[index[2]]-T_grid[index[2]-1]) << " "
-        << (tgp_F->get(kp1)-tgp_F->get(index))/
-        (T_grid[index[2]+1]-T_grid[index[2]]) << endl;
-      */
-      
+    std::vector<size_t> im1, ip1, jm1, jp1, km1, kp1;
+    
+    if (index[0]>0) im1={index[0]-1,index[1],index[2]};
+    else im1={0,0,0};
+    if (index[1]>0) jm1={index[0],index[1]-1,index[2]};
+    else jm1={0,0,0};
+    if (index[2]>0) km1={index[0],index[1],index[2]-1};
+    else km1={0,0,0};
+    if (index[0]<nB_grid.size()-1) ip1={index[0]+1,index[1],index[2]};
+    else ip1={0,0,0};
+    if (index[0]<Ye_grid.size()-1) jp1={index[0],index[1]+1,index[2]};
+    else jp1={0,0,0};
+    if (index[0]<T_grid.size()-1) kp1={index[0],index[1],index[2]+1};
+    else kp1={0,0,0};
+    
+    /*
+      cout << "6: " << dF_dnB << " "
+      << (tgp_F->get(index)-tgp_F->get(im1))/hc_mev_fm/
+      (nB_grid[index[0]]-nB_grid[index[0]-1]) << " "
+      << (tgp_F->get(ip1)-tgp_F->get(index))/hc_mev_fm/
+      (nB_grid[index[0]+1]-nB_grid[index[0]]) << " ";
+      cout << "7: " << dF_dYe << " "
+      << (tgp_F->get(index)-tgp_F->get(jm1))/hc_mev_fm/
+      (Ye_grid[index[1]]-Ye_grid[index[1]-1]) << " "
+      << (tgp_F->get(jp1)-tgp_F->get(index))/hc_mev_fm/
+      (Ye_grid[index[1]+1]-Ye_grid[index[1]]) << endl;
+      cout << "8: " << dF_dT << " "
+      << (tgp_F->get(index)-tgp_F->get(km1))/
+      (T_grid[index[2]]-T_grid[index[2]-1]) << " "
+      << (tgp_F->get(kp1)-tgp_F->get(index))/
+      (T_grid[index[2]+1]-T_grid[index[2]]) << endl;
+    */
+    
+    if (index[0]>0 && index[0]<nB_grid.size()-1) {
       double t1=(tgp_F->get(index)-tgp_F->get(im1))/hc_mev_fm/
         (nB_grid[index[0]]-nB_grid[index[0]-1]);
       double t2=(tgp_F->get(ip1)-tgp_F->get(index))/hc_mev_fm/
         (nB_grid[index[0]+1]-nB_grid[index[0]]);
       double t3=(t2-t1)*2.0/(nB_grid[index[0]+1]-nB_grid[index[0]-1]);
-      cout << F_nBnB << " " << t3 << " ";
-      
-      t1=(tgp_F->get(index)-tgp_F->get(jm1))/hc_mev_fm/
-        (Ye_grid[index[1]]-Ye_grid[index[1]-1]);
-      t2=(tgp_F->get(jp1)-tgp_F->get(index))/hc_mev_fm/
-        (Ye_grid[index[1]+1]-Ye_grid[index[1]]);
-      t3=(t2-t1)*2.0/(Ye_grid[index[1]+1]-Ye_grid[index[1]-1]);
-      cout << F_YeYe << " " << t3 << "\n  ";
-
-      cout << nB*(1.0-Ye)*mun+(mup+mue)*nB*Ye-
-        tgp_P->get(index)/hc_mev_fm << " "
-           << Fintp*nB/hc_mev_fm << "\n  ";
-      
-      if (false) {
-        t1=(tgp_F->get(index)-tgp_F->get(km1))/
-          (T_grid[index[2]]-T_grid[index[2]-1]);
-        t2=(tgp_F->get(kp1)-tgp_F->get(index))/
-          (T_grid[index[2]+1]-T_grid[index[2]]);
-        t3=hc_mev_fm*(t1-t2)*2.0/(T_grid[index[2]+1]-T_grid[index[2]-1]);
-        cout << "c: " << F_TT << " " << t3 << endl;
-      }
-      
-      //double mun=Fintp/hc_mev_fm-Ye*dF_dYe+nB*dF_dnB;
-      //double mup=Fintp/hc_mev_fm+(1.0-Ye)*dF_dYe+nB*dF_dnB-mue;
-      //double dmun_dnB=2*dF_dnB-Ye*F_nBYe+nB*F_nBnB;
-      double dmun_dnB=f_nnnn*(1.0-Ye)+f_nnnp*Ye;
-      //cout << "9: " << 2*dF_dnB << " " << -Ye*F_nBYe << " "
-      //<< nB*F_nBnB << endl;
-        
-      //double dmup_dnB=2.0*dF_dnB+(Ye-1.0)*F_nBYe+nB*F_nBnB;
-      double dmupmue_dnB=f_nnnp*(1.0-Ye)+f_npnp*Ye;
-      if (compare) {
-        /*
-        std::cout << "dmun_dnB dmup_dnB" << endl;
-        cout << "Computed:   ";
-        */
-        std::cout << dmun_dnB << " " << dmupmue_dnB << " ";
-        //cout << "From table: ";
-        std::cout << (tgp_mun->get(index)-tgp_mun->get(im1))/hc_mev_fm/
-          (nB_grid[index[0]]-nB_grid[index[0]-1]) << " ";
-        std::cout << (tgp_mup->get(index)+tgp_mue->get(index)-
-                      tgp_mup->get(im1)-tgp_mue->get(im1))/hc_mev_fm/
-          (nB_grid[index[0]]-nB_grid[index[0]-1]) << " ";
-        //cout << "From table: ";
-        std::cout << (tgp_mun->get(ip1)-tgp_mun->get(index))/hc_mev_fm/
-          (nB_grid[index[0]+1]-nB_grid[index[0]]) << " ";
-        std::cout << (tgp_mup->get(ip1)+tgp_mue->get(ip1)-
-                      tgp_mup->get(index)-tgp_mue->get(index))/hc_mev_fm/
-          (nB_grid[index[0]+1]-nB_grid[index[0]]) << " ";
-      }
-      
-      //double dmuden_dnB=((1.0-Ye)*mun+nn2*dmun_dnB+
-      //Ye*(mup+mue)+np2*dmup_dnB);
-      //double dPdnB=dmuden_dnB-dF_dnB*nB-Fintp/hc_mev_fm;
-      double dfdnB=mun*(1.0-Ye)+(mup+mue)*Ye;
-      double dPdnB=dmun_dnB*nB*(1.0-Ye)+mun*(1.0-Ye)+
-        dmupmue_dnB*nB*Ye+(mup+mue)*nB*Ye-dfdnB;
-      if (compare) {
-        cout << dPdnB << " ";
-        /*
-          cout << "dP_dnB: " << endl;
-          std::cout << "Computed: " << dPdnB << std::endl;
-          std::cout << "From table: "
-          << (tgp_P->get(index)-tgp_P->get(im1))/hc_mev_fm/
-          (nB_grid[index[0]]-nB_grid[index[0]-1]) << " "
-          << (tgp_P->get(ip1)-tgp_P->get(index))/hc_mev_fm/
-          (nB_grid[index[0]+1]-nB_grid[index[0]]) << std::endl;
-        */
-        cout << (tgp_P->get(index)-tgp_P->get(im1))/hc_mev_fm/
-          (nB_grid[index[0]]-nB_grid[index[0]-1]) << " "
-             << (tgp_P->get(ip1)-tgp_P->get(index))/hc_mev_fm/
-          (nB_grid[index[0]+1]-nB_grid[index[0]]) << std::endl;
-        
-      }
-      cout.unsetf(ios::showpos);
-      if (dPdnB<=0.0) {
-        cout << "Return failure for dPdnB<=0.0." << endl;
-        return 2;
-      }
+      cout << "  F_nBnB,F_nBnB_intp: "
+           << F_nBnB << " " << t3 << endl;
     }
+      
+    if (index[1]>0 && index[1]<Ye_grid.size()-1) {
+      double t1=(tgp_F->get(index)-tgp_F->get(jm1))/hc_mev_fm/
+        (Ye_grid[index[1]]-Ye_grid[index[1]-1]);
+      double t2=(tgp_F->get(jp1)-tgp_F->get(index))/hc_mev_fm/
+        (Ye_grid[index[1]+1]-Ye_grid[index[1]]);
+      double t3=(t2-t1)*2.0/(Ye_grid[index[1]+1]-Ye_grid[index[1]-1]);
+      cout << "  F_YeYe,F_YeYe_intp: " << F_YeYe << " " << t3 << endl;
+    }
+
+    cout << "  TI1,TI2: " << nB*(1.0-Ye)*mun+(mup+mue)*nB*Ye-
+      tgp_P->get(index)/hc_mev_fm << " "
+         << Fintp*nB/hc_mev_fm << endl;
+      
+    if (index[2]>0 && index[2]<T_grid.size()-1) {
+      double t1=(tgp_F->get(index)-tgp_F->get(km1))/
+        (T_grid[index[2]]-T_grid[index[2]-1]);
+      double t2=(tgp_F->get(kp1)-tgp_F->get(index))/
+        (T_grid[index[2]+1]-T_grid[index[2]]);
+      double t3=hc_mev_fm*(t1-t2)*2.0/(T_grid[index[2]+1]-T_grid[index[2]-1]);
+      cout << "  F_TT,F_TT_intp: " << F_TT << " " << t3 << endl;
+    }
+    
+    //double mun=Fintp/hc_mev_fm-Ye*dF_dYe+nB*dF_dnB;
+    //double mup=Fintp/hc_mev_fm+(1.0-Ye)*dF_dYe+nB*dF_dnB-mue;
+    //double dmun_dnB=2*dF_dnB-Ye*F_nBYe+nB*F_nBnB;
+    double dmun_dnB=f_nnnn*(1.0-Ye)+f_nnnp*Ye;
+    //cout << "9: " << 2*dF_dnB << " " << -Ye*F_nBYe << " "
+    //<< nB*F_nBnB << endl;
+    
+    //double dmup_dnB=2.0*dF_dnB+(Ye-1.0)*F_nBYe+nB*F_nBnB;
+    double dmupmue_dnB=f_nnnp*(1.0-Ye)+f_npnp*Ye;
+    
+    if (index[0]>0 && index[0]<nB_grid.size()-1) {
+      std::cout << "  dmun_dnB,dmupmue_dnB,dmun_dnB_intp,"
+                << "dmupmue_dnB_intp,dmun_dnB_intp2,dmupmue_dnB_intp2:\n  "
+                << dmun_dnB << " " << dmupmue_dnB << " ";
+      std::cout << (tgp_mun->get(index)-tgp_mun->get(im1))/hc_mev_fm/
+        (nB_grid[index[0]]-nB_grid[index[0]-1]) << " ";
+      std::cout << (tgp_mup->get(index)+tgp_mue->get(index)-
+                    tgp_mup->get(im1)-tgp_mue->get(im1))/hc_mev_fm/
+        (nB_grid[index[0]]-nB_grid[index[0]-1]) << " ";
+      std::cout << (tgp_mun->get(ip1)-tgp_mun->get(index))/hc_mev_fm/
+        (nB_grid[index[0]+1]-nB_grid[index[0]]) << " ";
+      std::cout << (tgp_mup->get(ip1)+tgp_mue->get(ip1)-
+                    tgp_mup->get(index)-tgp_mue->get(index))/hc_mev_fm/
+        (nB_grid[index[0]+1]-nB_grid[index[0]]) << endl;
+    }
+    
+    //double dmuden_dnB=((1.0-Ye)*mun+nn2*dmun_dnB+
+    //Ye*(mup+mue)+np2*dmup_dnB);
+    //double dPdnB=dmuden_dnB-dF_dnB*nB-Fintp/hc_mev_fm;
+    double dfdnB=mun*(1.0-Ye)+(mup+mue)*Ye;
+    double dPdnB=dmun_dnB*nB*(1.0-Ye)+mun*(1.0-Ye)+
+      dmupmue_dnB*nB*Ye+(mup+mue)*nB*Ye-dfdnB;
+    if (index[0]>0) {
+      cout << "  dPdnB,dPdnB_intp: " << dPdnB << " ";
+      /*
+        cout << "dP_dnB: " << endl;
+        std::cout << "Computed: " << dPdnB << std::endl;
+        std::cout << "From table: "
+        << (tgp_P->get(index)-tgp_P->get(im1))/hc_mev_fm/
+        (nB_grid[index[0]]-nB_grid[index[0]-1]) << " "
+        << (tgp_P->get(ip1)-tgp_P->get(index))/hc_mev_fm/
+        (nB_grid[index[0]+1]-nB_grid[index[0]]) << std::endl;
+      */
+      cout << (tgp_P->get(index)-tgp_P->get(im1))/hc_mev_fm/
+        (nB_grid[index[0]]-nB_grid[index[0]-1]) << " "
+           << (tgp_P->get(ip1)-tgp_P->get(index))/hc_mev_fm/
+        (nB_grid[index[0]+1]-nB_grid[index[0]]) << std::endl;
+      
+    }
+    cout.unsetf(ios::showpos);
+    
+    if (dPdnB<=0.0) {
+      cout << "Return failure for dPdnB<=0.0." << endl;
+      cout << endl;
+      return 2;
+    }
+
     if (cs_sq>1.0 || cs_sq<0.0 || !std::isfinite(cs_sq)) {
       cout << "Return failure for unphysical cs_sq." << endl;
+      cout << endl;
       return 1;
     }
+    cout << endl;
       
   }
 
