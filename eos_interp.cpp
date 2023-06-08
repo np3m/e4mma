@@ -128,26 +128,32 @@ int eos_nuclei::interp_point(std::vector<std::string> &sv,
   ike.skip_optim=true;
   ike.set(nB_grid2,Ye_grid2,T_grid2,tg_F,tg_P,tg_S,
           tg_mun,tg_mup,tg_mue,neutron.m,proton.m);
-
+  
   double min_qual=1.0e99;
   vector<double> p(4), min_p;
-  for(p[0]=2.0;p[0]<20.0;p[0]*=1.5) {
-    for(p[1]=2.0;p[1]<20.0;p[1]*=1.5) {
-      for(p[2]=2.0;p[2]<20.0;p[2]*=1.5) {
-        for(p[3]=-15.0;p[3]<-8.99;p[3]+=2.0) {
+  for(p[0]=2.0;p[0]<20.0;p[0]*=1.4) {
+    for(p[1]=2.0;p[1]<20.0;p[1]*=1.4) {
+      for(p[2]=2.0;p[2]<20.0;p[2]*=1.4) {
+        for(p[3]=-15.0;p[3]<-2.99;p[3]+=1.0) {
           vector_out(cout,p,true);
           (*ike.cf)[0].set_params(p);
           int success;
           double q=ike.qual_fun(0,success);
-          cout << q << " " << success << endl;
-          if (q<min_qual) {
+          cout << q << " " << min_qual << " " << success << endl;
+          if (success==0 && q<min_qual) {
             min_p=p;
+            min_qual=q;
           }
         }
       }
     }
   }
-  vector_out(cout,min_p,true);
+  if (min_qual>0.9e99) {
+    cout << "All points failed." << endl;
+  } else {
+    cout << min_qual << " ";
+    vector_out(cout,min_p,true);
+  }
   exit(-1);
 
   // Use the interpolation results to fix points 
@@ -342,14 +348,14 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
     std::cout << ilist << " ";
 
     size_t inB, iYe, iT;
-    if (ilist<calib_list.size()) {
+    if (ilist<calib_list.size()/3) {
       inB=calib_list[ilist*3];
       iYe=calib_list[ilist*3+1];
       iT=calib_list[ilist*3+2];
     } else {
-      inB=fix_list[(ilist-calib_list.size())*3];
-      iYe=fix_list[(ilist-calib_list.size())*3+1];
-      iT=fix_list[(ilist-calib_list.size())*3+2];
+      inB=fix_list[(ilist-calib_list.size()/3)*3];
+      iYe=fix_list[(ilist-calib_list.size()/3)*3+1];
+      iT=fix_list[(ilist-calib_list.size()/3)*3+2];
     }
     //inB=8;
     //iYe=48;
@@ -466,8 +472,10 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
     cout << tgp_cs2.get(index) << " ";
         
     // Also compute dPdnB
-
-    if (index[0]>0) {
+    
+    if (index[0]>0 && index[1]>0 && index[2]>0 &&
+        index[0]<nB_grid.size()-1 && index[1]<Ye_grid.size()-1 &&
+        index[2]<T_grid.size()-1) {
       std::vector<size_t> im1={index[0]-1,index[1],index[2]};
       std::vector<size_t> ip1={index[0]+1,index[1],index[2]};
       std::vector<size_t> jm1={index[0],index[1]-1,index[2]};
@@ -507,6 +515,10 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
         (Ye_grid[index[1]+1]-Ye_grid[index[1]]);
       t3=(t2-t1)*2.0/(Ye_grid[index[1]+1]-Ye_grid[index[1]-1]);
       cout << F_YeYe << " " << t3 << "\n  ";
+
+      cout << nB*(1.0-Ye)*mun+(mup+mue)*nB*Ye-
+        tgp_P->get(index)/hc_mev_fm << " "
+           << Fintp*nB/hc_mev_fm << "\n  ";
       
       if (false) {
         t1=(tgp_F->get(index)-tgp_F->get(km1))/
@@ -581,6 +593,7 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
     }
       
   }
-        
+
+  cout << "Return success." << endl;
   return 0;
 }
