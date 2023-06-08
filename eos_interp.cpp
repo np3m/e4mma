@@ -107,9 +107,9 @@ int eos_nuclei::interp_point(std::vector<std::string> &sv,
 }
 
 
-double eos_nuclei::interpolate(double nB_cent,
-                                            double Ye_cent,
-                                            double T_cent,
+double eos_nuclei::interpolate(double nB_p,
+                                            double Ye_p,
+                                            double T_p,
                                             int window,
                                             std::string st_o2,
                                             bool itive_com) {
@@ -124,7 +124,9 @@ double eos_nuclei::interpolate(double nB_cent,
   double results=0.0;
 //  std::vector<double> results;
 //  results.assign(0.0, 5);
-
+  double nB_cent=nB_p;
+  double Ye_cent=Ye_p;
+  double T_cent=T_p/hc_mev_fm;
   size_t inB=0, iYe=0, iT=0;
   inB=vector_lookup(n_nB2,nB_grid2,nB_cent);
   nB_cent=nB_grid2[inB];
@@ -178,7 +180,13 @@ double eos_nuclei::interpolate(double nB_cent,
       }
     }
   }
-  
+  /*
+  if (ike.fix_list.size()==0) {
+    ike.fix_list.push_back(nB_p);
+    ike.fix_list.push_back(Ye_p);
+    ike.fix_list.push_back(T_p);
+  }*/
+
   cout << "Using " << ike.calib_list.size()/3 << " points to calibrate"
        << endl;
   cout << "  and attempting to fix " << ike.fix_list.size()/3 << " points."
@@ -318,13 +326,15 @@ double eos_nuclei::interpolate(double nB_cent,
     cout << "dmupmuednB: " << dmupmuednB << endl;
     cout << "dmundnB*hc: " << dmundnB*hc_mev_fm << endl;
     cout << "dmupmuednB*hc: " << dmupmuednB*hc_mev_fm << endl;
-    cout << "dmundnB from table: " << (tg_mun.get(index)-tg_mun.get(im1))/hc_mev_fm/
-      (nB_grid2[index[0]]-nB_grid2[index[0]-1]) << " ";
-    cout << "dmupmuednB from table: " << ((tg_mup.get(index)+tg_mue.get(index))-(tg_mup.get(im1)+tg_mue.get(im1)))/hc_mev_fm/
-      (nB_grid2[index[0]]-nB_grid2[index[0]-1]) << endl;
     cout << "dPdnB: " << dPdnB << endl;
-    cout << "dPdnB from table: " << (tg_P.get(index)-tg_P.get(im1))/hc_mev_fm/
+    if (!(index[0]==0)){
+        cout << "dmundnB from table: " << (tg_mun.get(index)-tg_mun.get(im1))/hc_mev_fm/
+        (nB_grid2[index[0]]-nB_grid2[index[0]-1]) << " ";
+        cout << "dmupmuednB from table: " << ((tg_mup.get(index)+tg_mue.get(index))-(tg_mup.get(im1)+tg_mue.get(im1)))/hc_mev_fm/
+        (nB_grid2[index[0]]-nB_grid2[index[0]-1]) << endl;
+        cout << "dPdnB from table: " << (tg_P.get(index)-tg_P.get(im1))/hc_mev_fm/
       (nB_grid2[index[0]]-nB_grid2[index[0]-1]) << endl;
+    }
     if (dPdnB>0.0) {
         cout<<"success\n";
     }
@@ -332,10 +342,10 @@ double eos_nuclei::interpolate(double nB_cent,
         cout<<"failure\n";
     }
 
-    return results;
-    exit(-1);
+    
+    break;
   }
-  
+  return results;
 }
 
 int eos_nuclei::interp_file(std::vector<std::string> &sv,
