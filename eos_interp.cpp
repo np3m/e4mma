@@ -706,19 +706,28 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
       
       //double mun=Fintp/hc_mev_fm-Ye*dF_dYe+nB*dF_dnB;
       //double mup=Fintp/hc_mev_fm+(1.0-Ye)*dF_dYe+nB*dF_dnB-mue;
-      double dmun_dnB=2*dF_dnB-Ye*F_nBYe+nB*F_nBnB;
+     // double dmun_dnB=2*dF_dnB-Ye*F_nBYe+nB*F_nBnB;
       //cout << "9: " << 2*dF_dnB << " " << -Ye*F_nBYe << " "
       //<< nB*F_nBnB << endl;
         
-      double dmup_dnB=2.0*dF_dnB+(Ye-1.0)*F_nBYe+nB*F_nBnB;
+      //double dmup_dnB=2.0*dF_dnB+(Ye-1.0)*F_nBYe+nB*F_nBnB;
+
+      double dmundnB=(f_nnnn*(1-Ye))+(f_nnnp*Ye);
+      double dmupmuednB=(f_nnnp*(1-Ye))+(f_npnp*Ye);
+      double dPdnB=(dmundnB*nB*(1-Ye))+(mun*(1-Ye))+(dmupmuednB*Ye*nB)+(Ye*(mup+mue))-((mun*(1-Ye))+((mup+mue)*Ye));
       if (false && compare) {
-        std::cout << "dmun_dnB dmup_dnB" << endl;
+        //std::cout << "dmun_dnB dmup_dnB" << endl;
+        std::cout << "dmun_dnB d(mup+mue)_dnB" << endl;
         cout << "Computed:   ";
-        std::cout << dmun_dnB << " " << dmup_dnB << std::endl;
+        //std::cout << dmun_dnB << " " << dmup_dnB << std::endl;
+        std::cout << dmundnB << " " << dmupmuednB << std::endl;
         cout << "From table: ";
         std::cout << (tgp_mun->get(index)-tgp_mun->get(im1))/hc_mev_fm/
           (nB_grid[index[0]]-nB_grid[index[0]-1]) << " ";
-        std::cout << (tgp_mup->get(index)-tgp_mup->get(im1))/hc_mev_fm/
+        //std::cout << (tgp_mup->get(index)-tgp_mup->get(im1))/hc_mev_fm/
+         // (nB_grid[index[0]]-nB_grid[index[0]-1]) << std::endl;
+
+        std::cout << ((tgp_mup->get(index)+tgp_mue->get(index))-(tgp_mup->get(im1)+tgp_mue->get(im1)))/hc_mev_fm/
           (nB_grid[index[0]]-nB_grid[index[0]-1]) << std::endl;
         cout << "From table: ";
         std::cout << (tgp_mun->get(ip1)-tgp_mun->get(index))/hc_mev_fm/
@@ -727,9 +736,9 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
           (nB_grid[index[0]+1]-nB_grid[index[0]]) << std::endl;
       }
       
-      double dmuden_dnB=((1.0-Ye)*mun+nn2*dmun_dnB+
-                         Ye*(mup+mue)+np2*dmup_dnB);
-      double dPdnB=dmuden_dnB-dF_dnB*nB-Fintp/hc_mev_fm;
+      //double dmuden_dnB=((1.0-Ye)*mun+nn2*dmun_dnB+
+      //                   Ye*(mup+mue)+np2*dmup_dnB);
+      //double dPdnB=dmuden_dnB-dF_dnB*nB-Fintp/hc_mev_fm;
       if (compare) {
         cout << dPdnB << " ";
         /*
