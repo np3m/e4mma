@@ -777,7 +777,7 @@ public:
 
   /** \brief Interpolates the EOS around a point
    */
-  double interpolate(double nB_cent, double Ye_cent, double T_cent, int window, std::string st_o2, bool itive_com);
+  void interpolate(double nB_cent, double Ye_cent, double T_cent, int window, std::string st_o2, o2scl::tensor_grid<> &tg_cs2, bool itive_com);
 
   /** \brief Interpolate the EOS around a specified point
 

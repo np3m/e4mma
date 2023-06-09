@@ -90,9 +90,6 @@ int eos_nuclei::interp_point(std::vector<std::string> &sv,
     return 1;
   }
 
-  double results=0.0;
-  //std::vector<double> results;
-  
   double nB_cent=o2scl::function_to_double(sv[1]);
   double Ye_cent=o2scl::function_to_double(sv[2]);
   double T_cent=o2scl::function_to_double(sv[3])/hc_mev_fm;
@@ -100,18 +97,24 @@ int eos_nuclei::interp_point(std::vector<std::string> &sv,
   int window=o2scl::stoi(sv[4]);
 
   std::string st_o2=sv[5];
+  hdf_file hff;
+  o2scl::tensor_grid<> tgp_cs2;
+  hff.open(st_o2);
+  hdf_input(hff, tgp_cs2);
 
-  results = eos_nuclei::interpolate(nB_cent, Ye_cent, T_cent, window, st_o2, itive_com);
-
+  eos_nuclei::interpolate(nB_cent, Ye_cent, T_cent, window, st_o2, tgp_cs2, itive_com);
+  
+  hff.close();
   return 0;
 }
 
 
-double eos_nuclei::interpolate(double nB_p,
+void eos_nuclei::interpolate(double nB_p,
                                             double Ye_p,
                                             double T_p,
                                             int window,
                                             std::string st_o2,
+                                            o2scl::tensor_grid<> &tg_cs2,
                                             bool itive_com) {
 
   if (!loaded) {
@@ -121,7 +124,6 @@ double eos_nuclei::interpolate(double nB_p,
     O2SCL_ERR("No EOS leptons in interp_point.",o2scl::exc_einval);
   } 
 
-  double results=0.0;
 //  std::vector<double> results;
 //  results.assign(0.0, 5);
   double nB_cent=nB_p;
@@ -307,9 +309,9 @@ double eos_nuclei::interpolate(double nB_p,
                   2.0*nn2*np2*(f_nnnp-f_nnT*f_npT/f_TT)+
                   np2*np2*(f_npnp-f_npT*f_npT/f_TT)-
                   2.0*en*(nn2*f_nnT/f_TT+np2*f_npT/f_TT)-en*en/f_TT)/den;
-    results=cs_sq;
 
     cout << "Here: " << cs_sq << endl;
+    tg_cs2.get(index)=cs_sq;
 
     // Attempt at calculating dP/dnB
     // code taken from main/eos_interp.cpp
@@ -341,11 +343,7 @@ double eos_nuclei::interpolate(double nB_p,
     else {
         cout<<"failure\n";
     }
-
-    
-    break;
   }
-  return results;
 }
 
 int eos_nuclei::interp_file(std::vector<std::string> &sv,
@@ -365,13 +363,15 @@ int eos_nuclei::interp_file(std::vector<std::string> &sv,
   std::string st_o2=sv[3];
   std::string stfix_o2=sv[4];
   hdf_file hff;
+  hdf_file hff2;
   o2scl::tensor_grid<> tgp_cs2;
+  o2scl::tensor_grid<> tgp_cs2_old;
   hff.open(st_o2);
   hdf_input(hff, tgp_cs2);
-
-//  std::ofstream file;
+  hdf_input(hff, tgp_cs2_old);
+  std::filesystem::copy_file(st_o2, stfix_o2, std::filesystem::copy_options::overwrite_existing);
+  hff2.open(stfix_o2);
   std::ifstream csvfile;
-//  csvfile.open(csv_path, ios::in);
 
   std::string line;
   int col = 0;
@@ -388,19 +388,36 @@ int eos_nuclei::interp_file(std::vector<std::string> &sv,
                   s.ignore();
               }
           }
-        results = eos_nuclei::interpolate(point[0], point[1], point[2], window, st_o2, itive_com);
-        //file.open("superluminalfix.csv", ios::app);
-        //file << point[0] << "," << point[1] << "," << point[2] << "," << results;
-        //file.close();
-        tgp_cs2.get(point)=results;
+        eos_nuclei::interpolate(point[0], point[1], point[2], window, st_o2, tgp_cs2, itive_com);
       }
       else {
           cout<<"csv file of superliminal points must have 3 terms in each line";
       }
   }
-  std::filesystem::copy_file(st_o2, stfix_o2, std::filesystem::copy_options::overwrite_existing);
-  hdf_file hff2;
-  hff2.open(stfix_o2);
+
+  //solution for reseting file to beginning taken from stack exchange.
+  csvfile.clear();
+  csvfile.seekg(0, ios::beg);
+  double fixed = 0.0;
+  col = 0;
+  while (std::getline(csvfile, line)) {
+      std::stringstream s(line);
+      if (true) {
+          x=0;
+          while (s>>val) {
+              point[x] = std::stod(val);
+              x++;
+              if (s.peek()==',') {
+                  s.ignore();
+              }
+          }
+        //fixed= some function of tgp_cs2.get(point) and tgp_cs2_old.get(point);
+        tgp_cs2.get(point)=fixed;
+      }
+      else {
+          cout<<"csv file of superliminal points must have 3 terms in each line";
+      }
+  }
   hdf_output(hff2,tgp_cs2,"cs_sq");
   hff.close();
   hff2.close();
