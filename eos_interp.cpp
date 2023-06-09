@@ -162,10 +162,14 @@ void eos_nuclei::interpolate(double nB_p,
             inB+dnB>=0 && inB+dnB<n_nB2 &&
             iYe+dYe>=0 && iYe+dYe<n_Ye2 &&
             iT+dT>=0 && iT+dT<n_T2) {
-          if (ike.tgp_cs2.get_rank()>=3 &&
+          if ((ike.tgp_cs2.get_rank()>=3 &&
               (ike.tgp_cs2.get(index)>1.0 ||
                !std::isfinite(ike.tgp_cs2.get(index)) ||
-               ike.tgp_cs2.get(index)<0.0)) {
+               ike.tgp_cs2.get(index)<0.0)) &&
+               (tg_cs2.get_rank()>=3 &&
+               (tg_cs2.get(index)>1.0 ||
+               !std::isfinite(tg_cs2.get(index)) ||
+               tg_cs2.get(index)<0.0))) {
             ike.fix_list.push_back(index[0]);
             ike.fix_list.push_back(index[1]);
             ike.fix_list.push_back(index[2]);
