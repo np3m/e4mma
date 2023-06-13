@@ -456,6 +456,6 @@ docker_build:
 
 test:
 	./eos_nuclei -load /home/awsteiner/fid_3_14_23.o2 \
-	-interp-point 0.000550846 0.05 1.8602 2 ~/st.o2
+	-interp-point 0.0502377 0.67 2.128 2 /home/jbaut001/st.o2
 
 -include makefile.aws

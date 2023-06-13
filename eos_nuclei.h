@@ -796,6 +796,10 @@ public:
    */
   int interp_file(std::vector<std::string> &sv, bool itive_com);
 
+  /** \brief finds distance between two size_t vectors of arbitrary length as long as both vectors have the same length.
+   */
+  std::vector<double> vector_distance(std::vector<size_t> start, std::map<std::vector<size_t>, double> points);
+
   /** \brief Desc
    */
   int eos_deriv_v2(std::vector<std::string> &sv, bool itive_com);

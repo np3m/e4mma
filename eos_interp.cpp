@@ -124,8 +124,7 @@ void eos_nuclei::interpolate(double nB_p,
     O2SCL_ERR("No EOS leptons in interp_point.",o2scl::exc_einval);
   } 
 
-//  std::vector<double> results;
-//  results.assign(0.0, 5);
+  std::map<std::vector<size_t>, double> results;
   double nB_cent=nB_p;
   double Ye_cent=Ye_p;
   double T_cent=T_p/hc_mev_fm;
@@ -175,7 +174,10 @@ void eos_nuclei::interpolate(double nB_p,
             ike.fix_list.push_back(index[2]);
             //cout << "fix: " << index[0] << " " << index[1] << " "
             //<< index[2] << endl;
-          } else {
+          } else if (ike.tgp_cs2.get_rank()>=3 &&
+              (ike.tgp_cs2.get(index)<=1.0 &&
+               std::isfinite(ike.tgp_cs2.get(index)) &&
+               ike.tgp_cs2.get(index)>=0.0)) {
             ike.calib_list.push_back(index[0]);
             ike.calib_list.push_back(index[1]);
             ike.calib_list.push_back(index[2]);
@@ -316,6 +318,7 @@ void eos_nuclei::interpolate(double nB_p,
 
     cout << "Here: " << cs_sq << endl;
     tg_cs2.get(index)=cs_sq;
+    results[index]=cs_sq;
 
     // Attempt at calculating dP/dnB
     // code taken from main/eos_interp.cpp
@@ -348,6 +351,19 @@ void eos_nuclei::interpolate(double nB_p,
         cout<<"failure\n";
     }
   }
+
+  //begin fixing acausal cs_sq.
+  if (ike.fix_list.size() != 0) {
+    double fixed = 0.0;
+    std::vector<double> dist = {0.0, 0.0};
+    double eta = 0.2;
+    for (size_t i=0; i < ike.calib_list.size(); i+=3) {
+      std::vector<size_t> index={ike.calib_list[i], ike.calib_list[i+1], ike.calib_list[i+2]};
+      dist=vector_distance(index, results);
+      fixed=ike.tgp_cs2.get(index)+((dist[1]-ike.tgp_cs2.get(index))*std::exp(-std::pow(dist[0], 2.0)/std::pow(eta, 2.0)));
+      tg_cs2.get(index)=fixed;
+    }
+  }
 }
 
 int eos_nuclei::interp_file(std::vector<std::string> &sv,
@@ -357,8 +373,6 @@ int eos_nuclei::interp_file(std::vector<std::string> &sv,
     return 1;
   }
   
-  double results=0.0;
-//  std::vector<double> results;
   std::vector<double> point;
   point.assign(0.0, 3);
 
@@ -369,16 +383,13 @@ int eos_nuclei::interp_file(std::vector<std::string> &sv,
   hdf_file hff;
   hdf_file hff2;
   o2scl::tensor_grid<> tgp_cs2;
-  o2scl::tensor_grid<> tgp_cs2_old;
   hff.open(st_o2);
   hdf_input(hff, tgp_cs2);
-  hdf_input(hff, tgp_cs2_old);
   std::filesystem::copy_file(st_o2, stfix_o2, std::filesystem::copy_options::overwrite_existing);
   hff2.open(stfix_o2);
   std::ifstream csvfile;
 
   std::string line;
-  int col = 0;
   int x;
   std::string val;
   while (std::getline(csvfile, line)) {
@@ -399,33 +410,37 @@ int eos_nuclei::interp_file(std::vector<std::string> &sv,
       }
   }
 
-  //solution for reseting file to beginning taken from stack exchange.
-  csvfile.clear();
-  csvfile.seekg(0, ios::beg);
-  double fixed = 0.0;
-  col = 0;
-  while (std::getline(csvfile, line)) {
-      std::stringstream s(line);
-      if (true) {
-          x=0;
-          while (s>>val) {
-              point[x] = std::stod(val);
-              x++;
-              if (s.peek()==',') {
-                  s.ignore();
-              }
-          }
-        //fixed= some function of tgp_cs2.get(point) and tgp_cs2_old.get(point);
-        tgp_cs2.get(point)=fixed;
-      }
-      else {
-          cout<<"csv file of superliminal points must have 3 terms in each line";
-      }
-  }
   hdf_output(hff2,tgp_cs2,"cs_sq");
   hff.close();
   hff2.close();
   return 0;
+}
+
+  std::vector<double> eos_nuclei::vector_distance(std::vector<size_t> start, 
+                                                  std::map<std::vector<size_t>, double> points) {
+    std::vector<double> results = {0.0, 0.0};
+    double distance=0.0;
+    std::map<std::vector<size_t>, double>::iterator i;
+    for (i=points.begin(); i != points.end(); ++i) {
+        if (start.size() != i->first.size()) {
+            results={0.0, 0.0};
+            return results;
+        }
+        for (int x=0; x<start.size(); x++) {
+            if (i->first.at(x)>start.at(x)) {
+                distance+=std::pow((i->first.at(x)-start.at(x)), 2.0);
+            }
+            else {
+                distance+=std::pow((start.at(x)-i->first.at(x)), 2.0);
+            }
+        }
+        distance=std::sqrt(distance);
+        if ((results[0]==0.0) || (distance<results[0])) {
+            results[0]=distance;
+            results[1]=i->second;
+        }
+    }
+    return results;
 }
 
 void interpm_krige_eos::set(std::vector<double> &nB_grid2,
