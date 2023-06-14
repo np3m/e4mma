@@ -354,10 +354,11 @@ void eos_nuclei::interpolate(double nB_p,
     std::pair<double, double> closest;
     double nearest_internal=0.0;
     double nearest_external=0.0;
+    bool isEmpty=false;
 
     for (int dnB=-(neighborhood*2); dnB<(neighborhood*2); dnB++) {
-      for (int dYe=-(neighborhood*2); dnB<(neighborhood*2); dnB++) {
-        for (int dT=-(neighborhood*2); dnB<(neighborhood*2); dnB++) {
+      for (int dYe=-(neighborhood*2); dYe<(neighborhood*2); dYe++) {
+        for (int dT=-(neighborhood*2); dT<(neighborhood*2); dT++) {
           std::vector<size_t> index = {(inB+dnB), (iYe+dYe), (iT+dT)};
           if ((std::abs(dnB)<(neighborhood*2)) && (std::abs(dYe)<(neighborhood*2)) && (std::abs(dT)<(neighborhood*2)) &&
               inB+dnB>=0 && inB+dnB<n_nB2 &&
@@ -392,22 +393,29 @@ void eos_nuclei::interpolate(double nB_p,
     }
 
     for (int dnB=-neighborhood; dnB<neighborhood; dnB++) {
-      for (int dYe=-neighborhood; dnB<neighborhood; dnB++) {
-        for (int dT=-neighborhood; dnB<neighborhood; dnB++) {
+      for (int dYe=-neighborhood; dYe<neighborhood; dYe++) {
+        for (int dT=-neighborhood; dT<neighborhood; dT++) {
           std::vector<size_t> index = {(inB+dnB), (iYe+dYe), (iT+dT)};
           if ((std::abs(dnB)<neighborhood) && (std::abs(dYe)<neighborhood) && (std::abs(dT)<neighborhood) &&
               inB+dnB>=0 && inB+dnB<n_nB2 &&
               iYe+dYe>=0 && iYe+dYe<n_Ye2 &&
               iT+dT>=0 && iT+dT<n_T2) {
+                isEmpty=false;
                 if ((ike.tgp_cs2.get_rank()>=3 &&
                     (ike.tgp_cs2.get(index)<=1.0 ||
                     std::isfinite(ike.tgp_cs2.get(index)) ||
                     ike.tgp_cs2.get(index)>=0.0))) {
-                    closest=vector_distance<double>(index, external_acausal_points);
-                    nearest_external=closest.first;
+                    if (external_acausal_points.empty()) {
+                      closest=vector_distance<double>(index, external_acausal_points);
+                      nearest_external=closest.first;
+                    }
+                    else {
+                      nearest_external=0.0;
+                      isEmpty=true;
+                    }
                     closest=vector_distance<double>(index, results);
                     nearest_internal=closest.first;
-                    if (nearest_internal<=nearest_external) {
+                    if ((nearest_internal<=nearest_external) || (isEmpty==true)) {
                         fix_list[index]=std::make_pair(closest.second,nearest_internal);
                     }
                 }
