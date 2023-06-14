@@ -469,9 +469,9 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
     else km1={0,0,0};
     if (index[0]<nB_grid.size()-1) ip1={index[0]+1,index[1],index[2]};
     else ip1={0,0,0};
-    if (index[0]<Ye_grid.size()-1) jp1={index[0],index[1]+1,index[2]};
+    if (index[1]<Ye_grid.size()-1) jp1={index[0],index[1]+1,index[2]};
     else jp1={0,0,0};
-    if (index[0]<T_grid.size()-1) kp1={index[0],index[1],index[2]+1};
+    if (index[2]<T_grid.size()-1) kp1={index[0],index[1],index[2]+1};
     else kp1={0,0,0};
 
     // Now compute the second derivatives and the speed of sound
@@ -524,16 +524,6 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
       double t3=(t2-t1)*2.0/(nB_grid[index[0]+1]-nB_grid[index[0]-1]);
       cout << "  F_nBnB,F_nBnB_intp: "
            << F_nBnB << " " << t3 << endl;
-      if (false) {
-        vector<size_t> index2={0,index[1],index[2]};
-        cout << endl;
-        for(size_t jk=0;jk<nB_grid.size();jk++) {
-          index2[0]=jk;
-          cout << jk << " " << nB_grid[jk] << " " <<
-            tgp_F->get(index2) << endl;
-        }
-        cout << endl;
-      }
     }
 
     if (index[1]>0 && index[1]<Ye_grid.size()-1) {
@@ -543,16 +533,6 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
         (Ye_grid[index[1]+1]-Ye_grid[index[1]]);
       double t3=(t2-t1)*2.0/(Ye_grid[index[1]+1]-Ye_grid[index[1]-1]);
       cout << "  F_YeYe,F_YeYe_intp: " << F_YeYe << " " << t3 << endl;
-      if (true) {
-        vector<size_t> index2={index[0],0,index[2]};
-        cout << endl;
-        for(size_t jk=0;jk<Ye_grid.size();jk++) {
-          index2[1]=jk;
-          cout << jk << " " << Ye_grid[jk] << " " <<
-            tgp_F->get(index2) << endl;
-        }
-        cout << endl;
-      }
     }
         
     if (index[2]>0 && index[2]<T_grid.size()-1) {
