@@ -359,12 +359,12 @@ void eos_nuclei::interpolate(double nB_p,
     for (int dnB=-(neighborhood*2); dnB<(neighborhood*2); dnB++) {
       for (int dYe=-(neighborhood*2); dYe<(neighborhood*2); dYe++) {
         for (int dT=-(neighborhood*2); dT<(neighborhood*2); dT++) {
-          std::vector<size_t> index = {(inB+dnB), (iYe+dYe), (iT+dT)};
-          if ((std::abs(dnB)<(neighborhood*2)) && (std::abs(dYe)<(neighborhood*2)) && (std::abs(dT)<(neighborhood*2)) &&
+          std::vector<size_t> index = {inB+dnB,iYe+dYe,iT+dT};
+          if (std::abs(dnB)+std::abs(dYe)+std::abs(dT)<=(neighborhood*2) &&
               inB+dnB>=0 && inB+dnB<n_nB2 &&
               iYe+dYe>=0 && iYe+dYe<n_Ye2 &&
               iT+dT>=0 && iT+dT<n_T2) {
-                  if ((std::abs(dnB)<window) && (std::abs(dYe)<window) && (std::abs(dT)<window) &&
+                  if (std::abs(dnB)+std::abs(dYe)+std::abs(dT)>window &&
                     inB+dnB>=0 && inB+dnB<n_nB2 &&
                     iYe+dYe>=0 && iYe+dYe<n_Ye2 &&
                     iT+dT>=0 && iT+dT<n_T2) {
@@ -375,7 +375,10 @@ void eos_nuclei::interpolate(double nB_p,
                       external_acausal_points[index]=0.0;
                     }
                   }
-                  else {
+                  else if (std::abs(dnB)+std::abs(dYe)+std::abs(dT)<=window &&
+                    inB+dnB>=0 && inB+dnB<n_nB2 &&
+                    iYe+dYe>=0 && iYe+dYe<n_Ye2 &&
+                    iT+dT>=0 && iT+dT<n_T2) {
                     if ((ike.tgp_cs2.get_rank()>=3 &&
                     (ike.tgp_cs2.get(index)>1.0 ||
                     !std::isfinite(ike.tgp_cs2.get(index)) ||
@@ -395,8 +398,8 @@ void eos_nuclei::interpolate(double nB_p,
     for (int dnB=-neighborhood; dnB<neighborhood; dnB++) {
       for (int dYe=-neighborhood; dYe<neighborhood; dYe++) {
         for (int dT=-neighborhood; dT<neighborhood; dT++) {
-          std::vector<size_t> index = {(inB+dnB), (iYe+dYe), (iT+dT)};
-          if ((std::abs(dnB)<neighborhood) && (std::abs(dYe)<neighborhood) && (std::abs(dT)<neighborhood) &&
+          std::vector<size_t> index = {inB+dnB,iYe+dYe,iT+dT};
+          if (std::abs(dnB)+std::abs(dYe)+std::abs(dT)<=neighborhood &&
               inB+dnB>=0 && inB+dnB<n_nB2 &&
               iYe+dYe>=0 && iYe+dYe<n_Ye2 &&
               iT+dT>=0 && iT+dT<n_T2) {
@@ -405,7 +408,7 @@ void eos_nuclei::interpolate(double nB_p,
                     (ike.tgp_cs2.get(index)<=1.0 ||
                     std::isfinite(ike.tgp_cs2.get(index)) ||
                     ike.tgp_cs2.get(index)>=0.0))) {
-                    if (external_acausal_points.empty()) {
+                    if (!external_acausal_points.empty()) {
                       closest=vector_distance<double>(index, external_acausal_points);
                       nearest_external=closest.first;
                     }
