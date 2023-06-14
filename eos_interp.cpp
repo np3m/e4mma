@@ -410,14 +410,17 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
         
     deriv2(index,out,0,0);
     double d2Fdi2=out[0]/hc_mev_fm;
+    // d2FdnB2 in fm^5
     double F_nBnB=d2Fdi2*didnB*didnB+dFdi*d2idnB2;
     
     deriv2(index,out,0,1);
     double d2Fdidj=out[0]/hc_mev_fm;
+    // d2FdnBdYe in fm^2
     double F_nBYe=d2Fdidj*didnB*djdYe;
     
     deriv2(index,out,1,1);
     double d2Fdj2=out[0]/hc_mev_fm;
+    // d2FdYe2 in fm^{-1}
     double F_YeYe=d2Fdj2*djdYe*djdYe+dFdj*d2jdYe2;
     
     deriv2(index,out,0,2);
@@ -455,7 +458,22 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
                 << mue*hc_mev_fm << " ";
       std::cout << en/nB << std::endl;
     }
-        
+
+    std::vector<size_t> im1, ip1, jm1, jp1, km1, kp1;
+    
+    if (index[0]>0) im1={index[0]-1,index[1],index[2]};
+    else im1={0,0,0};
+    if (index[1]>0) jm1={index[0],index[1]-1,index[2]};
+    else jm1={0,0,0};
+    if (index[2]>0) km1={index[0],index[1],index[2]-1};
+    else km1={0,0,0};
+    if (index[0]<nB_grid.size()-1) ip1={index[0]+1,index[1],index[2]};
+    else ip1={0,0,0};
+    if (index[0]<Ye_grid.size()-1) jp1={index[0],index[1]+1,index[2]};
+    else jp1={0,0,0};
+    if (index[0]<T_grid.size()-1) kp1={index[0],index[1],index[2]+1};
+    else kp1={0,0,0};
+
     // Now compute the second derivatives and the speed of sound
         
     double f_nnnn=(Ye*Ye*F_YeYe+nB*(2.0*dF_dnB-2.0*Ye*F_nBYe+nB*F_nBnB))/nB;
@@ -482,39 +500,22 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
         
     // Also compute dPdnB
     
-    std::vector<size_t> im1, ip1, jm1, jp1, km1, kp1;
-    
-    if (index[0]>0) im1={index[0]-1,index[1],index[2]};
-    else im1={0,0,0};
-    if (index[1]>0) jm1={index[0],index[1]-1,index[2]};
-    else jm1={0,0,0};
-    if (index[2]>0) km1={index[0],index[1],index[2]-1};
-    else km1={0,0,0};
-    if (index[0]<nB_grid.size()-1) ip1={index[0]+1,index[1],index[2]};
-    else ip1={0,0,0};
-    if (index[0]<Ye_grid.size()-1) jp1={index[0],index[1]+1,index[2]};
-    else jp1={0,0,0};
-    if (index[0]<T_grid.size()-1) kp1={index[0],index[1],index[2]+1};
-    else kp1={0,0,0};
-    
-    /*
-      cout << "6: " << dF_dnB << " "
-      << (tgp_F->get(index)-tgp_F->get(im1))/hc_mev_fm/
+    cout << "  dF_dnB: " << dF_dnB << " "
+         << (tgp_F->get(index)-tgp_F->get(im1))/hc_mev_fm/
       (nB_grid[index[0]]-nB_grid[index[0]-1]) << " "
-      << (tgp_F->get(ip1)-tgp_F->get(index))/hc_mev_fm/
-      (nB_grid[index[0]+1]-nB_grid[index[0]]) << " ";
-      cout << "7: " << dF_dYe << " "
-      << (tgp_F->get(index)-tgp_F->get(jm1))/hc_mev_fm/
+         << (tgp_F->get(ip1)-tgp_F->get(index))/hc_mev_fm/
+      (nB_grid[index[0]+1]-nB_grid[index[0]]) << endl;
+    cout << "  dF_dYe: " << dF_dYe << " "
+         << (tgp_F->get(index)-tgp_F->get(jm1))/hc_mev_fm/
       (Ye_grid[index[1]]-Ye_grid[index[1]-1]) << " "
-      << (tgp_F->get(jp1)-tgp_F->get(index))/hc_mev_fm/
+         << (tgp_F->get(jp1)-tgp_F->get(index))/hc_mev_fm/
       (Ye_grid[index[1]+1]-Ye_grid[index[1]]) << endl;
-      cout << "8: " << dF_dT << " "
-      << (tgp_F->get(index)-tgp_F->get(km1))/
+    cout << "  dF_dT: " << dF_dT << " "
+         << (tgp_F->get(index)-tgp_F->get(km1))/
       (T_grid[index[2]]-T_grid[index[2]-1]) << " "
-      << (tgp_F->get(kp1)-tgp_F->get(index))/
+         << (tgp_F->get(kp1)-tgp_F->get(index))/
       (T_grid[index[2]+1]-T_grid[index[2]]) << endl;
-    */
-    
+ 
     if (index[0]>0 && index[0]<nB_grid.size()-1) {
       double t1=(tgp_F->get(index)-tgp_F->get(im1))/hc_mev_fm/
         (nB_grid[index[0]]-nB_grid[index[0]-1]);
@@ -523,8 +524,18 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
       double t3=(t2-t1)*2.0/(nB_grid[index[0]+1]-nB_grid[index[0]-1]);
       cout << "  F_nBnB,F_nBnB_intp: "
            << F_nBnB << " " << t3 << endl;
+      if (false) {
+        vector<size_t> index2={0,index[1],index[2]};
+        cout << endl;
+        for(size_t jk=0;jk<nB_grid.size();jk++) {
+          index2[0]=jk;
+          cout << jk << " " << nB_grid[jk] << " " <<
+            tgp_F->get(index2) << endl;
+        }
+        cout << endl;
+      }
     }
-      
+
     if (index[1]>0 && index[1]<Ye_grid.size()-1) {
       double t1=(tgp_F->get(index)-tgp_F->get(jm1))/hc_mev_fm/
         (Ye_grid[index[1]]-Ye_grid[index[1]-1]);
@@ -532,14 +543,24 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
         (Ye_grid[index[1]+1]-Ye_grid[index[1]]);
       double t3=(t2-t1)*2.0/(Ye_grid[index[1]+1]-Ye_grid[index[1]-1]);
       cout << "  F_YeYe,F_YeYe_intp: " << F_YeYe << " " << t3 << endl;
+      if (true) {
+        vector<size_t> index2={index[0],0,index[2]};
+        cout << endl;
+        for(size_t jk=0;jk<Ye_grid.size();jk++) {
+          index2[1]=jk;
+          cout << jk << " " << Ye_grid[jk] << " " <<
+            tgp_F->get(index2) << endl;
+        }
+        cout << endl;
+      }
     }
-
+        
     if (index[2]>0 && index[2]<T_grid.size()-1) {
       double t1=(tgp_F->get(index)-tgp_F->get(km1))/
         (T_grid[index[2]]-T_grid[index[2]-1]);
       double t2=(tgp_F->get(kp1)-tgp_F->get(index))/
         (T_grid[index[2]+1]-T_grid[index[2]]);
-      double t3=hc_mev_fm*(t1-t2)*2.0/(T_grid[index[2]+1]-T_grid[index[2]-1]);
+      double t3=hc_mev_fm*(t2-t1)*2.0/(T_grid[index[2]+1]-T_grid[index[2]-1]);
       cout << "  F_TT,F_TT_intp: " << F_TT << " " << t3 << endl;
     }
     
