@@ -392,11 +392,11 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
     double d2kdT2=-1.0/T_MeV/T_MeV/log(1.046);
   
     // Evaluate the free energy and its derivatives analytically
-    // using the interpolator
+    // using the interpolator, and then remove a factor of hbar c
 
     std::vector<double> out(1);
     eval(index,out);
-    double Fintp=out[0];
+    double Fintp=out[0]/hc_mev_fm;
         
     deriv(index,out,0);
     double dFdi=out[0]/hc_mev_fm;
@@ -438,18 +438,27 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
     // Use those derivatives to compute the chemical potentials and
     // the entropy density
 
-    double mun=Fintp/hc_mev_fm-Ye*dF_dYe+nB*dF_dnB;
+    double mun=Fintp-Ye*dF_dYe+nB*dF_dnB;
     double mue=tgp_mue->get(index)/hc_mev_fm;
-    double mup=Fintp/hc_mev_fm+(1.0-Ye)*dF_dYe+nB*dF_dnB-mue;
+    double mup=Fintp+(1.0-Ye)*dF_dYe+nB*dF_dnB-mue;
     double en=-nB*dF_dT;
         
     // Compare theose derivatives with the stored values
 
-    if (false && compare) {
+    if (compare) {
+      /*
       std::cout << "Indices: " << index[0] << " " << index[1] << " "
                 << index[2] << std::endl;
       std::cout << "Stored  : mun[MeV],mup[MeV],mue[MeV],S: ";
-      std::cout << tgp_mun->get(index) << " ";
+      */
+      std::cout << "  mun [1/fm], mun_intp [1/fm]: "
+                << tgp_mun->get(index)/hc_mev_fm << " "
+                << mun << endl;
+      cout << "    " << Fintp << " " << -Ye*dF_dYe << " " << nB*dF_dnB << endl;
+      std::cout << "  mup [1/fm], mup_intp [1/fm]: "
+                << tgp_mup->get(index)/hc_mev_fm << " "
+                << mup << endl;
+      /*
       std::cout << tgp_mup->get(index) << " ";
       std::cout << tgp_mue->get(index) << " ";
       std::cout << tgp_S->get(index) << std::endl;
@@ -457,6 +466,7 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
                 << mun*hc_mev_fm << " " << mup*hc_mev_fm << " "
                 << mue*hc_mev_fm << " ";
       std::cout << en/nB << std::endl;
+      */
     }
 
     std::vector<size_t> im1, ip1, jm1, jp1, km1, kp1;
@@ -548,8 +558,8 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
       tgp_P->get(index)/hc_mev_fm << " "
          << Fintp*nB/hc_mev_fm << endl;
       
-    //double mun=Fintp/hc_mev_fm-Ye*dF_dYe+nB*dF_dnB;
-    //double mup=Fintp/hc_mev_fm+(1.0-Ye)*dF_dYe+nB*dF_dnB-mue;
+    //double mun=Fintp-Ye*dF_dYe+nB*dF_dnB;
+    //double mup=Fintp+(1.0-Ye)*dF_dYe+nB*dF_dnB-mue;
     //double dmun_dnB=2*dF_dnB-Ye*F_nBYe+nB*F_nBnB;
     double dmun_dnB=f_nnnn*(1.0-Ye)+f_nnnp*Ye;
     //cout << "9: " << 2*dF_dnB << " " << -Ye*F_nBYe << " "
@@ -576,7 +586,7 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
     
     //double dmuden_dnB=((1.0-Ye)*mun+nn2*dmun_dnB+
     //Ye*(mup+mue)+np2*dmup_dnB);
-    //double dPdnB=dmuden_dnB-dF_dnB*nB-Fintp/hc_mev_fm;
+    //double dPdnB=dmuden_dnB-dF_dnB*nB-Fintp;
     double dfdnB=mun*(1.0-Ye)+(mup+mue)*Ye;
     double dPdnB=dmun_dnB*nB*(1.0-Ye)+mun*(1.0-Ye)+
       dmupmue_dnB*nB*Ye+(mup+mue)*nB*Ye-dfdnB;

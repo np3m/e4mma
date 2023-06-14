@@ -6693,14 +6693,14 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
       cout << "mue: " << tg_mue.get(ix) << " MeV" << endl;
     }
     if (derivs_computed) {
-      cout << "Pint: " << tg_Pint.get(ix) << endl;
-      cout << "mun: " << tg_mun.get(ix) << endl;
-      cout << "mup: " << tg_mup.get(ix) << endl;
+      cout << "Pint: " << tg_Pint.get(ix) << " MeV/fm^3" << endl;
+      cout << "mun: " << tg_mun.get(ix) << " MeV" << endl;
+      cout << "mup: " << tg_mup.get(ix) << " MeV" << endl;
       if (with_leptons) {
-        cout << "F: " << tg_F.get(ix) << endl;
-        cout << "E: " << tg_E.get(ix) << endl;
+        cout << "F: " << tg_F.get(ix) << " MeV" << endl;
+        cout << "E: " << tg_E.get(ix) << " MeV" << endl;
         cout << "S: " << tg_S.get(ix) << endl;
-        cout << "P: " << tg_P.get(ix) << endl;
+        cout << "P: " << tg_P.get(ix) << " MeV/fm^3" << endl;
       }
     }
     if (include_detail) {
