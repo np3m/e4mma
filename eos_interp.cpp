@@ -139,7 +139,9 @@ int eos_nuclei::interp_point(std::vector<std::string> &sv,
           (*ike.cf)[0].set_params(p);
           int success;
           double q=ike.qual_fun(0,success);
-          cout << q << " " << min_qual << " " << success << endl;
+          cout << "q,min_qual,succes: "
+               << q << " " << min_qual << " " << success << endl;
+          cout << endl;
           if (success==0 && q<min_qual) {
             min_p=p;
             min_qual=q;
@@ -148,13 +150,16 @@ int eos_nuclei::interp_point(std::vector<std::string> &sv,
       }
     }
   }
+  
   if (min_qual>0.9e99) {
     cout << "All points failed." << endl;
   } else {
     (*ike.cf)[0].set_params(min_p);
     int st;
+    cout << "Last run:\n" << endl;
     double qt=ike.qual_fun(0,st);
-    cout << min_qual << " " << qt << " " << st << " ";
+    cout << "min_qual,qt,st,min_p: "
+         << min_qual << " " << qt << " " << st << " ";
     vector_out(cout,min_p,true);
     cout << "Success." << endl;
   }
@@ -529,10 +534,6 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
       cout << "  F_YeYe,F_YeYe_intp: " << F_YeYe << " " << t3 << endl;
     }
 
-    cout << "  TI1,TI2: " << nB*(1.0-Ye)*mun+(mup+mue)*nB*Ye-
-      tgp_P->get(index)/hc_mev_fm << " "
-         << Fintp*nB/hc_mev_fm << endl;
-      
     if (index[2]>0 && index[2]<T_grid.size()-1) {
       double t1=(tgp_F->get(index)-tgp_F->get(km1))/
         (T_grid[index[2]]-T_grid[index[2]-1]);
@@ -542,6 +543,10 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
       cout << "  F_TT,F_TT_intp: " << F_TT << " " << t3 << endl;
     }
     
+    cout << "  TI1,TI2: " << nB*(1.0-Ye)*mun+(mup+mue)*nB*Ye-
+      tgp_P->get(index)/hc_mev_fm << " "
+         << Fintp*nB/hc_mev_fm << endl;
+      
     //double mun=Fintp/hc_mev_fm-Ye*dF_dYe+nB*dF_dnB;
     //double mup=Fintp/hc_mev_fm+(1.0-Ye)*dF_dYe+nB*dF_dnB-mue;
     //double dmun_dnB=2*dF_dnB-Ye*F_nBYe+nB*F_nBnB;
