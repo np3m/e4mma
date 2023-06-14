@@ -777,7 +777,7 @@ public:
 
   /** \brief Interpolates the EOS around a point
    */
-  void interpolate(double nB_cent, double Ye_cent, double T_cent, int window, std::string st_o2, o2scl::tensor_grid<> &tg_cs2, bool itive_com);
+  void interpolate(double nB_cent, double Ye_cent, double T_cent, int window, int neighborhood, std::string st_o2, o2scl::tensor_grid<> &tg_cs2, bool itive_com);
 
   /** \brief Interpolate the EOS around a specified point
 
@@ -798,7 +798,8 @@ public:
 
   /** \brief finds distance between two size_t vectors of arbitrary length as long as both vectors have the same length.
    */
-  std::vector<double> vector_distance(std::vector<size_t> start, std::map<std::vector<size_t>, double> points);
+  template<typename T>
+  std::pair<double, T> vector_distance(std::vector<size_t> start, std::map<std::vector<size_t>, T> points);
 
   /** \brief Desc
    */

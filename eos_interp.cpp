@@ -102,7 +102,7 @@ int eos_nuclei::interp_point(std::vector<std::string> &sv,
   hff.open(st_o2);
   hdf_input(hff, tgp_cs2);
 
-  eos_nuclei::interpolate(nB_cent, Ye_cent, T_cent, window, st_o2, tgp_cs2, itive_com);
+  eos_nuclei::interpolate(nB_cent, Ye_cent, T_cent, window, (window*2), st_o2, tgp_cs2, itive_com);
   
   hff.close();
   return 0;
@@ -113,6 +113,7 @@ void eos_nuclei::interpolate(double nB_p,
                                             double Ye_p,
                                             double T_p,
                                             int window,
+                                            int neighborhood,
                                             std::string st_o2,
                                             o2scl::tensor_grid<> &tg_cs2,
                                             bool itive_com) {
@@ -188,12 +189,6 @@ void eos_nuclei::interpolate(double nB_p,
       }
     }
   }
-  /*
-  if (ike.fix_list.size()==0) {
-    ike.fix_list.push_back(nB_p);
-    ike.fix_list.push_back(Ye_p);
-    ike.fix_list.push_back(T_p);
-  }*/
 
   cout << "Using " << ike.calib_list.size()/3 << " points to calibrate"
        << endl;
@@ -352,16 +347,81 @@ void eos_nuclei::interpolate(double nB_p,
     }
   }
 
-  //begin fixing acausal cs_sq.
+  //begin fixing points near acausal cs_sq.
   if (ike.fix_list.size() != 0) {
+    std::map<std::vector<size_t>, double> external_acausal_points;
+    std::map<std::vector<size_t>, std::pair<double, double>> fix_list;
+    std::pair<double, double> closest;
+    double nearest_internal=0.0;
+    double nearest_external=0.0;
+
+    for (int dnB=-(neighborhood*2); dnB<(neighborhood*2); dnB++) {
+      for (int dYe=-(neighborhood*2); dnB<(neighborhood*2); dnB++) {
+        for (int dT=-(neighborhood*2); dnB<(neighborhood*2); dnB++) {
+          std::vector<size_t> index = {(inB+dnB), (iYe+dYe), (iT+dT)};
+          if ((std::abs(dnB)<(neighborhood*2)) && (std::abs(dYe)<(neighborhood*2)) && (std::abs(dT)<(neighborhood*2)) &&
+              inB+dnB>=0 && inB+dnB<n_nB2 &&
+              iYe+dYe>=0 && iYe+dYe<n_Ye2 &&
+              iT+dT>=0 && iT+dT<n_T2) {
+                  if ((std::abs(dnB)<window) && (std::abs(dYe)<window) && (std::abs(dT)<window) &&
+                    inB+dnB>=0 && inB+dnB<n_nB2 &&
+                    iYe+dYe>=0 && iYe+dYe<n_Ye2 &&
+                    iT+dT>=0 && iT+dT<n_T2) {
+                    if ((ike.tgp_cs2.get_rank()>=3 &&
+                    (ike.tgp_cs2.get(index)>1.0 ||
+                    !std::isfinite(ike.tgp_cs2.get(index)) ||
+                    ike.tgp_cs2.get(index)<0.0))) {
+                      external_acausal_points[index]=0.0;
+                    }
+                  }
+                  else {
+                    if ((ike.tgp_cs2.get_rank()>=3 &&
+                    (ike.tgp_cs2.get(index)>1.0 ||
+                    !std::isfinite(ike.tgp_cs2.get(index)) ||
+                    ike.tgp_cs2.get(index)<0.0)) &&
+                    (tg_cs2.get_rank()>=3 &&
+                    (tg_cs2.get(index)<=1.0 &&
+                    std::isfinite(tg_cs2.get(index)) &&
+                    tg_cs2.get(index)>=0.0))) {
+                      external_acausal_points[index]=0.0;
+                    }
+                  }
+                }
+            }
+        }
+    }
+
+    for (int dnB=-neighborhood; dnB<neighborhood; dnB++) {
+      for (int dYe=-neighborhood; dnB<neighborhood; dnB++) {
+        for (int dT=-neighborhood; dnB<neighborhood; dnB++) {
+          std::vector<size_t> index = {(inB+dnB), (iYe+dYe), (iT+dT)};
+          if ((std::abs(dnB)<neighborhood) && (std::abs(dYe)<neighborhood) && (std::abs(dT)<neighborhood) &&
+              inB+dnB>=0 && inB+dnB<n_nB2 &&
+              iYe+dYe>=0 && iYe+dYe<n_Ye2 &&
+              iT+dT>=0 && iT+dT<n_T2) {
+                if ((ike.tgp_cs2.get_rank()>=3 &&
+                    (ike.tgp_cs2.get(index)<=1.0 ||
+                    std::isfinite(ike.tgp_cs2.get(index)) ||
+                    ike.tgp_cs2.get(index)>=0.0))) {
+                    closest=vector_distance<double>(index, external_acausal_points);
+                    nearest_external=closest.first;
+                    closest=vector_distance<double>(index, results);
+                    nearest_internal=closest.first;
+                    if (nearest_internal<=nearest_external) {
+                        fix_list[index]=std::make_pair(closest.second,nearest_internal);
+                    }
+                }
+          }
+        }
+      }
+    }
+
     double fixed = 0.0;
-    std::vector<double> dist = {0.0, 0.0};
     double eta = 0.2;
-    for (size_t i=0; i < ike.calib_list.size(); i+=3) {
-      std::vector<size_t> index={ike.calib_list[i], ike.calib_list[i+1], ike.calib_list[i+2]};
-      dist=vector_distance(index, results);
-      fixed=ike.tgp_cs2.get(index)+((dist[1]-ike.tgp_cs2.get(index))*std::exp(-std::pow(dist[0], 2.0)/std::pow(eta, 2.0)));
-      tg_cs2.get(index)=fixed;
+    std::map<std::vector<size_t>, std::pair<double, double>>::iterator it;
+    for (it=fix_list.begin(); it != fix_list.end(); ++it) {
+      fixed=ike.tgp_cs2.get(it->first)+((it->second.first-ike.tgp_cs2.get(it->first))*std::exp(-std::pow(it->second.second, 2.0)/std::pow(eta, 2.0)));
+      tg_cs2.get(it->first)=fixed;
     }
   }
 }
@@ -403,7 +463,7 @@ int eos_nuclei::interp_file(std::vector<std::string> &sv,
                   s.ignore();
               }
           }
-        eos_nuclei::interpolate(point[0], point[1], point[2], window, st_o2, tgp_cs2, itive_com);
+        eos_nuclei::interpolate(point[0], point[1], point[2], window, (window*2), st_o2, tgp_cs2, itive_com);
       }
       else {
           cout<<"csv file of superliminal points must have 3 terms in each line";
@@ -416,17 +476,18 @@ int eos_nuclei::interp_file(std::vector<std::string> &sv,
   return 0;
 }
 
-  std::vector<double> eos_nuclei::vector_distance(std::vector<size_t> start, 
-                                                  std::map<std::vector<size_t>, double> points) {
-    std::vector<double> results = {0.0, 0.0};
+  template<typename T>
+  std::pair<double, T> eos_nuclei::vector_distance(std::vector<size_t> start, 
+                                                  std::map<std::vector<size_t>, T> points) {
+    std::pair<double, T> results;
     double distance=0.0;
-    std::map<std::vector<size_t>, double>::iterator i;
+    typename std::map<std::vector<size_t>, T>::iterator i;
     for (i=points.begin(); i != points.end(); ++i) {
-        if (start.size() != i->first.size()) {
-            results={0.0, 0.0};
+        if ((start.size() != i->first.size()) || (start.size()==0)) {
+            results = std::make_pair(0.0,T());
             return results;
         }
-        for (int x=0; x<start.size(); x++) {
+        for (size_t x=0; x<start.size(); x++) {
             if (i->first.at(x)>start.at(x)) {
                 distance+=std::pow((i->first.at(x)-start.at(x)), 2.0);
             }
@@ -435,9 +496,9 @@ int eos_nuclei::interp_file(std::vector<std::string> &sv,
             }
         }
         distance=std::sqrt(distance);
-        if ((results[0]==0.0) || (distance<results[0])) {
-            results[0]=distance;
-            results[1]=i->second;
+        if ((results.first==0.0) || (distance<results.first)) {
+            results.first=distance;
+            results.second=i->second;
         }
     }
     return results;
