@@ -238,13 +238,11 @@ void eos_nuclei::interpolate(double nB_p,
   // Use the interpolation results to fix points 
   std::vector<double> out(1);
   for(size_t j=0;j<ike.fix_list.size();j+=3) {
-
-    vector<size_t> index={ike.fix_list[j],ike.fix_list[j+1],
-      ike.fix_list[j+2]};
-    
     size_t pnB=ike.fix_list[j];
     size_t pYe=ike.fix_list[j+1];
     size_t pT=ike.fix_list[j+2];
+
+    vector<size_t> index={(size_t) pnB,(size_t) pYe,(size_t) pT};
 
     double nB=nB_grid2[pnB];
     double Ye=Ye_grid2[pYe];
@@ -255,7 +253,7 @@ void eos_nuclei::interpolate(double nB_p,
     double dnBdi=2.0*0.04*log(10.0)*pow(10.0,((double)pnB)*0.04-12.0);
     double dYedj=0.01;
     double dTdk=0.1*log(1.046)*pow(1.046,pT);
-/*
+
 //from addl_const() remove if wrong
     double didnB=25.0/nB/log(10.0);
     double d2idnB2=-25.0/nB/nB/log(10.0);
@@ -266,7 +264,6 @@ void eos_nuclei::interpolate(double nB_p,
   
     // Evaluate the free energy and its derivatives analytically
     // using the interpolator
-
     ike.eval(index,out);
     double Fintp=out[0];
         
@@ -302,8 +299,9 @@ void eos_nuclei::interpolate(double nB_p,
     
     ike.deriv2(index,out,2,2);
     double d2Fdk2=out[0]/hc_mev_fm;
-    double F_TT=(d2Fdk2*dkdT*dkdT+dFdk*d2kdT2)*hc_mev_fm*hc_mev_fm;*/
+    double F_TT=(d2Fdk2*dkdT*dkdT+dFdk*d2kdT2)*hc_mev_fm*hc_mev_fm;
     
+    /*
     ike.eval(index,out);
     double Fintp=out[0];
     tg_F.get(index)=Fintp;
@@ -327,7 +325,7 @@ void eos_nuclei::interpolate(double nB_p,
     ike.deriv2(index,out,1,2);
     double F_YeT=out[0]/hc_mev_fm;
     ike.deriv2(index,out,2,2);
-    double F_TT=out[0]/hc_mev_fm;
+    double F_TT=out[0]/hc_mev_fm;*/
 
     double mun=Fintp/hc_mev_fm-Ye*dF_dYe+nB*dF_dnB;
     double mue=tg_mue.get(index)/hc_mev_fm;
@@ -364,12 +362,23 @@ void eos_nuclei::interpolate(double nB_p,
                   2.0*en*(nn2*f_nnT/f_TT+np2*f_npT/f_TT)-en*en/f_TT)/den;
 
     cout << "Here: " << cs_sq << endl;
+    cout << "cs_sq_tab " << ike.tgp_cs2.get(index) << endl;
     tg_cs2.get(index)=cs_sq;
     results[index]=cs_sq;
+
+    cout << "F_intp " << Fintp << endl;
+    cout << "F_tab " << tg_F.get(index) << endl;
+    if (std::abs(std::abs(tg_F.get(index)-Fintp)/tg_F.get(index)) < (1/1000)) {
+        cout << "success\n";
+    }
+    else {
+        cout << "failure\n";
+    }
 
     // Attempt at calculating dP/dnB
     // code taken from main/eos_interp.cpp
     cout << "starting to calc dP/dnB\n";
+    cout << index[0] << " " << index[1] << " " << index[2] << endl;
     vector<size_t> im1={index[0]-1,index[1],index[2]};
     double dmundnB=(f_nnnn*(1-Ye))+(f_nnnp*Ye);
     double dmupmuednB=(f_nnnp*(1-Ye))+(f_npnp*Ye);
@@ -381,6 +390,12 @@ void eos_nuclei::interpolate(double nB_p,
     cout << "Stored: mun[MeV],mup[MeV],mue[MeV]: " << tg_mun.get(index) << " ";
     cout << tg_mup.get(index) << " ";
     cout << tg_mue.get(index) << " " << " \n";
+    if ((std::abs(std::abs((tg_mun.get(index)-mun))/tg_mun.get(index)))<(1/100)) {
+        cout<<"mun: success\n";
+    }
+    else {
+        cout<<"mun: failure\n";
+    }
     cout << "dmundnB: " << dmundnB << endl;
     cout << "dmupmuednB: " << dmupmuednB << endl;
     cout << "dmundnB*hc: " << dmundnB*hc_mev_fm << endl;
@@ -394,7 +409,10 @@ void eos_nuclei::interpolate(double nB_p,
         cout << "dPdnB from table: " << (tg_P.get(index)-tg_P.get(im1))/hc_mev_fm/
       (nB_grid2[index[0]]-nB_grid2[index[0]-1]) << endl;
     }
-    if (dPdnB>0.0) {
+    double tab_dPdnB=(tg_P.get(index)-tg_P.get(im1))/hc_mev_fm/
+      (nB_grid2[index[0]]-nB_grid2[index[0]-1]);
+
+    if (dPdnB>0.0 && std::abs(std::abs((tab_dPdnB-dPdnB))/tab_dPdnB)<(0.10)) {
         cout<<"success\n";
     }
     else {
@@ -501,6 +519,9 @@ int eos_nuclei::interp_file(std::vector<std::string> &sv,
   
   std::vector<double> point;
   point.assign(0.0, 3);
+  double nB = 0.0;
+  double Ye = 0.0;
+  double T_MeV = 0.0;
 
   std::string csv_path = sv[1];
   int window=o2scl::stoi(sv[2]);
@@ -508,13 +529,30 @@ int eos_nuclei::interp_file(std::vector<std::string> &sv,
   std::string stfix_o2=sv[4];
   hdf_file hff;
   hdf_file hff2;
-  o2scl::tensor_grid<> tgp_cs2;
+  o2scl::tensor_grid<> tgp_cs2, tgp_cs2_old;
   hff.open(st_o2);
   hdf_input(hff, tgp_cs2);
+  hdf_input(hff, tgp_cs2_old);
   std::filesystem::copy_file(st_o2, stfix_o2, std::filesystem::copy_options::overwrite_existing);
   hff2.open(stfix_o2);
   std::ifstream csvfile;
 
+  for (size_t inB=0; inB<nB_grid2.size(); inB++) {
+    for (size_t iYe=0; iYe<Ye_grid2.size(); iYe++) {
+      for (size_t iT=0; iT<T_grid2.size(); iT++) {
+        std::vector<size_t> index = {inB, iYe, iT};
+        if ((tgp_cs2_old.get_rank()>=3 &&
+            (tgp_cs2_old.get(index)>1.0 ||
+            !std::isfinite(tgp_cs2_old.get(index)) ||
+            tgp_cs2_old.get(index)<0.0))) {
+          point = {nB_grid2[inB], Ye_grid2[iYe], T_grid2[iT]};
+          eos_nuclei::interpolate(point[0], point[1], point[2], window, (window*2), st_o2, tgp_cs2, itive_com);
+        }
+      }
+    }
+  }
+
+  /*
   std::string line;
   int x;
   std::string val;
@@ -534,7 +572,7 @@ int eos_nuclei::interp_file(std::vector<std::string> &sv,
       else {
           cout<<"csv file of superliminal points must have 3 terms in each line";
       }
-  }
+  }*/
 
   hdf_output(hff2,tgp_cs2,"cs_sq");
   hff.close();
