@@ -150,6 +150,7 @@ int eos_nuclei::interp_point(std::vector<std::string> &sv,
       }
     }
   }
+  exit(-1);
   
   if (min_qual>0.9e99) {
     cout << "All points failed." << endl;
@@ -589,7 +590,7 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
     //double dPdnB=dmuden_dnB-dF_dnB*nB-Fintp;
     double dfdnB=mun*(1.0-Ye)+(mup+mue)*Ye;
     double dPdnB=dmun_dnB*nB*(1.0-Ye)+mun*(1.0-Ye)+
-      dmupmue_dnB*nB*Ye+(mup+mue)*nB*Ye-dfdnB;
+      dmupmue_dnB*nB*Ye+(mup+mue)*Ye-dfdnB;
     if (index[0]>0) {
       cout << "  dPdnB,dPdnB_intp: " << dPdnB << " ";
       /*
