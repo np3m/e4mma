@@ -242,15 +242,67 @@ void eos_nuclei::interpolate(double nB_p,
     vector<size_t> index={ike.fix_list[j],ike.fix_list[j+1],
       ike.fix_list[j+2]};
     
-    double nB=nB_grid2[inB];
-    double Ye=Ye_grid2[iYe];
-    double T_MeV=T_grid2[iT];
+    size_t pnB=ike.fix_list[j];
+    size_t pYe=ike.fix_list[j+1];
+    size_t pT=ike.fix_list[j+2];
+
+    double nB=nB_grid2[pnB];
+    double Ye=Ye_grid2[pYe];
+    double T_MeV=T_grid2[pT];
     
     // Derivatives of the physical coordinates with respect to the indices
     
-    double dnBdi=2.0*0.04*log(10.0)*pow(10.0,((double)inB)*0.04-12.0);
+    double dnBdi=2.0*0.04*log(10.0)*pow(10.0,((double)pnB)*0.04-12.0);
     double dYedj=0.01;
-    double dTdk=0.1*log(1.046)*pow(1.046,iT);
+    double dTdk=0.1*log(1.046)*pow(1.046,pT);
+/*
+//from addl_const() remove if wrong
+    double didnB=25.0/nB/log(10.0);
+    double d2idnB2=-25.0/nB/nB/log(10.0);
+    double djdYe=100.0;
+    double d2jdYe2=0.0;
+    double dkdT=1.0/T_MeV/log(1.046);
+    double d2kdT2=-1.0/T_MeV/T_MeV/log(1.046);
+  
+    // Evaluate the free energy and its derivatives analytically
+    // using the interpolator
+
+    ike.eval(index,out);
+    double Fintp=out[0];
+        
+    ike.deriv(index,out,0);
+    double dFdi=out[0]/hc_mev_fm;
+    double dF_dnB=dFdi*didnB;
+    ike.deriv(index,out,1);
+    double dFdj=out[0]/hc_mev_fm;
+    double dF_dYe=dFdj*djdYe;
+    ike.deriv(index,out,2);
+    double dFdk=out[0]/hc_mev_fm;
+    double dF_dT=dFdk*dkdT*hc_mev_fm;
+        
+    ike.deriv2(index,out,0,0);
+    double d2Fdi2=out[0]/hc_mev_fm;
+    double F_nBnB=d2Fdi2*didnB*didnB+dFdi*d2idnB2;
+    
+    ike.deriv2(index,out,0,1);
+    double d2Fdidj=out[0]/hc_mev_fm;
+    double F_nBYe=d2Fdidj*didnB*djdYe;
+    
+    ike.deriv2(index,out,1,1);
+    double d2Fdj2=out[0]/hc_mev_fm;
+    double F_YeYe=d2Fdj2*djdYe*djdYe+dFdj*d2jdYe2;
+    
+    ike.deriv2(index,out,0,2);
+    double d2Fdidk=out[0]/hc_mev_fm;
+    double F_nBT=d2Fdidk*didnB*dkdT*hc_mev_fm;
+    
+    ike.deriv2(index,out,1,2);
+    double d2Fdjdk=out[0]/hc_mev_fm;
+    double F_YeT=d2Fdjdk*djdYe*dkdT*hc_mev_fm;
+    
+    ike.deriv2(index,out,2,2);
+    double d2Fdk2=out[0]/hc_mev_fm;
+    double F_TT=(d2Fdk2*dkdT*dkdT+dFdk*d2kdT2)*hc_mev_fm*hc_mev_fm;*/
     
     ike.eval(index,out);
     double Fintp=out[0];
@@ -281,16 +333,16 @@ void eos_nuclei::interpolate(double nB_p,
     double mue=tg_mue.get(index)/hc_mev_fm;
     double mup=Fintp/hc_mev_fm+(1.0-Ye)*dF_dYe+nB*dF_dnB-mue;
     double en=-nB*dF_dT;
-    tg_mun.get(index)=mun;
-    tg_mup.get(index)=mup;
-    tg_mue.get(index)=mue;
+    //tg_mun.get(index)=mun;
+    //tg_mup.get(index)=mup;
+    //tg_mue.get(index)=mue;
     
-    tg_S.get(index)=en/nB;
+    //tg_S.get(index)=en/nB;
 
     // unverified
-    tg_E.get(index)=tg_F.get(index)+T_MeV*tg_S.get(index);
-    tg_P.get(index)=tg_F.get(index)+mun*neutron.m+mup*proton.m+
-      mue*electron.m;
+    //tg_E.get(index)=tg_F.get(index)+T_MeV*tg_S.get(index);
+    //tg_P.get(index)=tg_F.get(index)+mun*neutron.m+mup*proton.m+
+      //mue*electron.m;
 //  code for speed of sound squared taken from main/eos_interp.cpp
     double f_nnnn=(Ye*Ye*F_YeYe+nB*(2.0*dF_dnB-2.0*Ye*F_nBYe+nB*F_nBnB))/nB;
     double f_nnnp=((Ye-1.0)*Ye*F_YeYe+nB*(2.0*dF_dnB+(1.0-2.0*Ye)*
@@ -326,6 +378,9 @@ void eos_nuclei::interpolate(double nB_p,
     double dPdnB=(dmundnB*nB*(1-Ye))+(mun*(1-Ye))+(dmupmuednB*Ye*nB)+(Ye*(mup+mue))-((mun*(1-Ye))+((mup+mue)*Ye));
 
     cout << "Calculated: mun[MeV],mup[MeV],mue[MeV]: " << mun << " " << mup << " " << mue << " \n";
+    cout << "Stored: mun[MeV],mup[MeV],mue[MeV]: " << tg_mun.get(index) << " ";
+    cout << tg_mup.get(index) << " ";
+    cout << tg_mue.get(index) << " " << " \n";
     cout << "dmundnB: " << dmundnB << endl;
     cout << "dmupmuednB: " << dmupmuednB << endl;
     cout << "dmundnB*hc: " << dmundnB*hc_mev_fm << endl;
@@ -730,7 +785,7 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
         
     // Compare theose derivatives with the stored values
 
-    if (false && compare) {
+    if (true && compare) {
       std::cout << "Indices: " << index[0] << " " << index[1] << " "
                 << index[2] << std::endl;
       std::cout << "Stored  : mun[MeV],mup[MeV],mue[MeV],S: ";
