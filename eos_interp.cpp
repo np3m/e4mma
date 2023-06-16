@@ -92,7 +92,7 @@ int eos_nuclei::interp_point(std::vector<std::string> &sv,
 
   double nB_cent=o2scl::function_to_double(sv[1]);
   double Ye_cent=o2scl::function_to_double(sv[2]);
-  double T_cent=o2scl::function_to_double(sv[3])/hc_mev_fm;
+  double T_cent=o2scl::function_to_double(sv[3]);
   
   int window=o2scl::stoi(sv[4]);
 
@@ -254,6 +254,7 @@ void eos_nuclei::interpolate(double nB_p,
     double dYedj=0.01;
     double dTdk=0.1*log(1.046)*pow(1.046,pT);
 
+    /*
 //from addl_const() remove if wrong
     double didnB=25.0/nB/log(10.0);
     double d2idnB2=-25.0/nB/nB/log(10.0);
@@ -299,12 +300,11 @@ void eos_nuclei::interpolate(double nB_p,
     
     ike.deriv2(index,out,2,2);
     double d2Fdk2=out[0]/hc_mev_fm;
-    double F_TT=(d2Fdk2*dkdT*dkdT+dFdk*d2kdT2)*hc_mev_fm*hc_mev_fm;
+    double F_TT=(d2Fdk2*dkdT*dkdT+dFdk*d2kdT2)*hc_mev_fm*hc_mev_fm;*/
     
-    /*
     ike.eval(index,out);
     double Fintp=out[0];
-    tg_F.get(index)=Fintp;
+    //tg_F.get(index)=Fintp;
     
     ike.deriv(index,out,0);
     double dF_dnB=out[0]/hc_mev_fm/dnBdi;
@@ -325,7 +325,7 @@ void eos_nuclei::interpolate(double nB_p,
     ike.deriv2(index,out,1,2);
     double F_YeT=out[0]/hc_mev_fm;
     ike.deriv2(index,out,2,2);
-    double F_TT=out[0]/hc_mev_fm;*/
+    double F_TT=out[0]/hc_mev_fm;
 
     double mun=Fintp/hc_mev_fm-Ye*dF_dYe+nB*dF_dnB;
     double mue=tg_mue.get(index)/hc_mev_fm;
