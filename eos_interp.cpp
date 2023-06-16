@@ -516,8 +516,7 @@ int eos_nuclei::interp_file(std::vector<std::string> &sv,
     return 1;
   }
   
-  std::vector<double> point;
-  point.assign(0.0, 3);
+  std::vector<double> point = {0.0, 0.0, 0.0};
   double nB = 0.0;
   double Ye = 0.0;
   double T_MeV = 0.0;
@@ -525,8 +524,9 @@ int eos_nuclei::interp_file(std::vector<std::string> &sv,
   std::string st_o2=sv[1];
   std::string stfix_o2=sv[2];
   int window=o2scl::stoi(sv[3]);
+  std::string csv_path = "";
   if (sv.size()>=5) {
-    std::string csv_path = sv[4];
+    csv_path = sv[4];
   }
   hdf_file hff;
   hdf_file hff2;
@@ -554,6 +554,7 @@ int eos_nuclei::interp_file(std::vector<std::string> &sv,
     }
   }
   else {
+    csvfile.open(csv_path);
     std::string line;
     int x;
     std::string val;
@@ -561,7 +562,7 @@ int eos_nuclei::interp_file(std::vector<std::string> &sv,
         std::stringstream s(line);
         if (true) {
             x=0;
-            while (s>>val) {
+            while (std::getline(s, val, ',')) {
                 point[x] = std::stod(val);
                 x++;
                 if (s.peek()==',') {
@@ -970,6 +971,30 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
           (nB_grid[index[0]+1]-nB_grid[index[0]]) << std::endl;
         
       }
+
+    cout << "\nF_intp " << Fintp << endl;
+    cout << "F_tab " << tgp_F->get(index) << endl;
+    if (std::abs(std::abs(tgp_F->get(index)-Fintp)/tgp_F->get(index)) < (1/1000)) {
+        cout << "success\n";
+    }
+    else {
+        cout << "failure\n";
+    }
+    if ((std::abs(std::abs((tgp_mun->get(index)-(mun*hc_mev_fm)))/tgp_mun->get(index)))<(1/100)) {
+        cout<<"mun: success\n";
+    }
+    else {
+        cout<<"mun: failure\n";
+    }
+    double tab_dPdnB=(tgp_P->get(index)-tgp_P->get(im1))/hc_mev_fm/
+      (nB_grid[index[0]]-nB_grid[index[0]-1]);
+
+    if (dPdnB>0.0 && std::abs(std::abs((tab_dPdnB-dPdnB))/tab_dPdnB)<(0.10)) {
+        cout<<"dPdnB: success\n";
+    }
+    else {
+        cout<<"dPdnB: failure\n";
+    }
       cout.unsetf(ios::showpos);
       if (dPdnB<=0.0) {
         cout << "Return failure for dPdnB<=0.0." << endl;

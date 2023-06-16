@@ -790,7 +790,7 @@ public:
 
   /** \brief Interpolate the EOS around the points specified ina csv file.
    *
-   * <csv file> <window> [st.o2]
+   * <st.o2> <fixed st.o2> <window> [csv file]
    *
    * This function requires that an EOS with leptons be loaded
    */
