@@ -254,7 +254,6 @@ void eos_nuclei::interpolate(double nB_p,
     double dYedj=0.01;
     double dTdk=0.1*log(1.046)*pow(1.046,pT);
 
-    /*
 //from addl_const() remove if wrong
     double didnB=25.0/nB/log(10.0);
     double d2idnB2=-25.0/nB/nB/log(10.0);
@@ -300,8 +299,8 @@ void eos_nuclei::interpolate(double nB_p,
     
     ike.deriv2(index,out,2,2);
     double d2Fdk2=out[0]/hc_mev_fm;
-    double F_TT=(d2Fdk2*dkdT*dkdT+dFdk*d2kdT2)*hc_mev_fm*hc_mev_fm;*/
-    
+    double F_TT=(d2Fdk2*dkdT*dkdT+dFdk*d2kdT2)*hc_mev_fm*hc_mev_fm;
+    /*
     ike.eval(index,out);
     double Fintp=out[0];
     //tg_F.get(index)=Fintp;
@@ -325,8 +324,8 @@ void eos_nuclei::interpolate(double nB_p,
     ike.deriv2(index,out,1,2);
     double F_YeT=out[0]/hc_mev_fm;
     ike.deriv2(index,out,2,2);
-    double F_TT=out[0]/hc_mev_fm;
-
+    double F_TT=out[0]/hc_mev_fm;*/
+    
     double mun=Fintp/hc_mev_fm-Ye*dF_dYe+nB*dF_dnB;
     double mue=tg_mue.get(index)/hc_mev_fm;
     double mup=Fintp/hc_mev_fm+(1.0-Ye)*dF_dYe+nB*dF_dnB-mue;
@@ -386,11 +385,11 @@ void eos_nuclei::interpolate(double nB_p,
     //double dmupmuednB=F_nBnB-((1-Ye)*(((1/nB)*F_nBYe)-((1/(nB*nB))*dF_dYe)));
     double dPdnB=(dmundnB*nB*(1-Ye))+(mun*(1-Ye))+(dmupmuednB*Ye*nB)+(Ye*(mup+mue))-((mun*(1-Ye))+((mup+mue)*Ye));
 
-    cout << "Calculated: mun[MeV],mup[MeV],mue[MeV]: " << mun << " " << mup << " " << mue << " \n";
+    cout << "Calculated: mun[MeV],mup[MeV],mue[MeV]: " << mun*hc_mev_fm << " " << mup*hc_mev_fm << " " << mue*hc_mev_fm << " \n";
     cout << "Stored: mun[MeV],mup[MeV],mue[MeV]: " << tg_mun.get(index) << " ";
     cout << tg_mup.get(index) << " ";
     cout << tg_mue.get(index) << " " << " \n";
-    if ((std::abs(std::abs((tg_mun.get(index)-mun))/tg_mun.get(index)))<(1/100)) {
+    if ((std::abs(std::abs((tg_mun.get(index)-(mun*hc_mev_fm)))/tg_mun.get(index)))<(1/100)) {
         cout<<"mun: success\n";
     }
     else {
@@ -512,7 +511,7 @@ void eos_nuclei::interpolate(double nB_p,
 
 int eos_nuclei::interp_file(std::vector<std::string> &sv,
                             bool itive_com) {
-  if (sv.size()<5) {
+  if (sv.size()<4) {
     cerr << "Not enough arguments interp-file." << endl;
     return 1;
   }
@@ -523,10 +522,12 @@ int eos_nuclei::interp_file(std::vector<std::string> &sv,
   double Ye = 0.0;
   double T_MeV = 0.0;
 
-  std::string csv_path = sv[1];
-  int window=o2scl::stoi(sv[2]);
-  std::string st_o2=sv[3];
-  std::string stfix_o2=sv[4];
+  std::string st_o2=sv[1];
+  std::string stfix_o2=sv[2];
+  int window=o2scl::stoi(sv[3]);
+  if (sv.size()>=5) {
+    std::string csv_path = sv[4];
+  }
   hdf_file hff;
   hdf_file hff2;
   o2scl::tensor_grid<> tgp_cs2, tgp_cs2_old;
@@ -536,43 +537,44 @@ int eos_nuclei::interp_file(std::vector<std::string> &sv,
   std::filesystem::copy_file(st_o2, stfix_o2, std::filesystem::copy_options::overwrite_existing);
   hff2.open(stfix_o2);
   std::ifstream csvfile;
-
-  for (size_t inB=0; inB<nB_grid2.size(); inB++) {
-    for (size_t iYe=0; iYe<Ye_grid2.size(); iYe++) {
-      for (size_t iT=0; iT<T_grid2.size(); iT++) {
-        std::vector<size_t> index = {inB, iYe, iT};
-        if ((tgp_cs2_old.get_rank()>=3 &&
-            (tgp_cs2_old.get(index)>1.0 ||
-            !std::isfinite(tgp_cs2_old.get(index)) ||
-            tgp_cs2_old.get(index)<0.0))) {
-          point = {nB_grid2[inB], Ye_grid2[iYe], T_grid2[iT]};
-          eos_nuclei::interpolate(point[0], point[1], point[2], window, (window*2), st_o2, tgp_cs2, itive_com);
+  if (sv.size()==4) {
+    for (size_t inB=0; inB<nB_grid2.size(); inB++) {
+      for (size_t iYe=0; iYe<Ye_grid2.size(); iYe++) {
+        for (size_t iT=0; iT<T_grid2.size(); iT++) {
+          std::vector<size_t> index = {inB, iYe, iT};
+          if ((tgp_cs2_old.get_rank()>=3 &&
+              (tgp_cs2_old.get(index)>1.0 ||
+              !std::isfinite(tgp_cs2_old.get(index)) ||
+              tgp_cs2_old.get(index)<0.0))) {
+            point = {nB_grid2[inB], Ye_grid2[iYe], T_grid2[iT]};
+            eos_nuclei::interpolate(point[0], point[1], point[2], window, (window*2), st_o2, tgp_cs2, itive_com);
+          }
         }
       }
     }
   }
-
-  /*
-  std::string line;
-  int x;
-  std::string val;
-  while (std::getline(csvfile, line)) {
-      std::stringstream s(line);
-      if (true) {
-          x=0;
-          while (s>>val) {
-              point[x] = std::stod(val);
-              x++;
-              if (s.peek()==',') {
-                  s.ignore();
-              }
-          }
-        eos_nuclei::interpolate(point[0], point[1], point[2], window, (window*2), st_o2, tgp_cs2, itive_com);
-      }
-      else {
-          cout<<"csv file of superliminal points must have 3 terms in each line";
-      }
-  }*/
+  else {
+    std::string line;
+    int x;
+    std::string val;
+    while (std::getline(csvfile, line)) {
+        std::stringstream s(line);
+        if (true) {
+            x=0;
+            while (s>>val) {
+                point[x] = std::stod(val);
+                x++;
+                if (s.peek()==',') {
+                    s.ignore();
+                }
+            }
+          eos_nuclei::interpolate(point[0], point[1], point[2], window, (window*2), st_o2, tgp_cs2, itive_com);
+        }
+        else {
+            cout<<"csv file of superliminal points must have 3 terms in each line";
+        }
+    }
+  }
 
   hdf_output(hff2,tgp_cs2,"cs_sq");
   hff.close();
