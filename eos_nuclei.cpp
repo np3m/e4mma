@@ -10175,7 +10175,7 @@ void eos_nuclei::setup_cli_nuclei(o2scl::cli &cl) {
       new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::select_high_T),o2scl::cli::comm_option_both,
       1,"","eos_nuclei","select_high_T","doc/xml/classeos__nuclei.xml"},
-     {0,"interp-file","",4,5,"","",
+     {0,"interp-file","",3,4,"","",
       new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::interp_file),o2scl::cli::comm_option_both,
       1,"","eos_nuclei","interp_file","doc/xml/classeos__nuclei.xml"},
