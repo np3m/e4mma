@@ -211,7 +211,7 @@ void eos_nuclei::interpolate(double nB_p,
   ike.set_covar(mfr,param_lists);
  
   ike.skip_optim=true;
-  ike.set(nB_grid2,Ye_grid2,T_grid2,tg_F,tg_P,tg_S,
+  ike.set(nB_grid2,Ye_grid2,T_grid2,tg_Fint,tg_P,tg_S,
           tg_mun,tg_mup,tg_mue,neutron.m,proton.m);
 
 
@@ -898,6 +898,8 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
       double t2=(tgp_F->get(ip1)-tgp_F->get(index))/hc_mev_fm/
         (nB_grid[index[0]+1]-nB_grid[index[0]]);
       double t3=(t2-t1)*2.0/(nB_grid[index[0]+1]-nB_grid[index[0]-1]);
+      cout << "F_nB: " << dF_dnB << " " << t1 << " " << t2 << endl;
+      double tab_dF_dnB = t1;
       cout << F_nBnB << " " << t3 << " ";
      if (!(index[1]==0)) { 
         t1=(tgp_F->get(index)-tgp_F->get(jm1))/hc_mev_fm/
@@ -905,7 +907,12 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
         t2=(tgp_F->get(jp1)-tgp_F->get(index))/hc_mev_fm/
           (Ye_grid[index[1]+1]-Ye_grid[index[1]]);
         t3=(t2-t1)*2.0/(Ye_grid[index[1]+1]-Ye_grid[index[1]-1]);
+        cout << "F_Ye: " << dF_dYe << " " << t1 << " " << t2 << endl;
         cout << F_YeYe << " " << t3 << " ";
+
+        double tab_mun=tgp_F->get(index)/hc_mev_fm-Ye*t1+nB*tab_dF_dnB;
+        double tab_mup=tgp_F->get(index)/hc_mev_fm+(1.0-Ye)*t1+nB*tab_dF_dnB-mue;
+        cout << "tab mun, mup: " << tab_mun << " " << tab_mup << endl;
      }
       
       if (false) {
@@ -974,13 +981,17 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
 
     cout << "\nF_intp " << Fintp << endl;
     cout << "F_tab " << tgp_F->get(index) << endl;
-    if (std::abs(std::abs(tgp_F->get(index)-Fintp)/tgp_F->get(index)) < (1/1000)) {
+    double diff = std::abs(tgp_F->get(index)-Fintp)/std::abs(tgp_F->get(index));
+    cout << diff << endl;
+    if (diff < 0.001) {
         cout << "success\n";
     }
     else {
         cout << "failure\n";
     }
-    if ((std::abs(std::abs((tgp_mun->get(index)-(mun*hc_mev_fm)))/tgp_mun->get(index)))<(1/100)) {
+    diff = std::abs(tgp_mun->get(index)-(mun*hc_mev_fm))/std::abs(tgp_mun->get(index));
+    cout << diff << endl;
+    if (diff < 0.01) {
         cout<<"mun: success\n";
     }
     else {
@@ -988,8 +999,10 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
     }
     double tab_dPdnB=(tgp_P->get(index)-tgp_P->get(im1))/hc_mev_fm/
       (nB_grid[index[0]]-nB_grid[index[0]-1]);
-
-    if (dPdnB>0.0 && std::abs(std::abs((tab_dPdnB-dPdnB))/tab_dPdnB)<(0.10)) {
+    
+    diff = std::abs(tab_dPdnB-dPdnB)/std::abs(tab_dPdnB);
+    cout << diff << endl;
+    if (dPdnB>0.0 && diff<0.10) {
         cout<<"dPdnB: success\n";
     }
     else {
