@@ -1,3 +1,4 @@
+*.o2
 eos_nompi
 eos
 eos_nuclei
@@ -9,3 +10,5 @@ eos
 enn
 makefile.aws
 
+
+st.out
