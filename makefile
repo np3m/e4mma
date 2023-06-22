@@ -455,11 +455,23 @@ docker_build:
 		> docker.out 2>&1 &
 
 test:
-	./eos_nuclei -load /home/awsteiner/fid_3_14_23.o2 \
+	./eos_nuclei -load /home/awsteiner/wcs/eos/fid_3_14_23.o2 \
 	-interp-point 1.0e-10 0.4 10 2 /home/jbaut001/st.o2
 
 test2:
-	./eos_nuclei -load /home/awsteiner/fid_3_14_23.o2 \
-	-interp-point 0.0502377 0.67 2.128 2 /home/jbaut001/st.o2
+	./eos_nuclei -load /home/awsteiner/wcs/eos/fid_3_14_23.o2 \
+	-interp-point 0.06 0.67 10 2 /home/jbaut001/st.o2
+
+test3:
+	./eos_nuclei -load /home/awsteiner/wcs/eos/fid_3_14_23.o2 \
+	-interp-point 4.178592e-12 5.000000e-01 10 2 /home/jbaut001/st.o2
+
+test4:
+	./eos_nuclei -load /home/awsteiner/wcs/eos/fid_3_14_23.o2 \
+	-interp-point 0.000550846 0.05 10 2 /home/jbaut001/st.o2
+
+test5:
+	./eos_nuclei -load /home/awsteiner/wcs/eos/fid_3_14_23.o2 \
+	-interp-point 0.000550846 0.05 0.1 2 /home/jbaut001/st.o2
 
 -include makefile.aws
