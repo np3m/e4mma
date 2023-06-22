@@ -328,7 +328,7 @@ void eos_nuclei::interpolate(double nB_p,
     
     double mun=Fintp/hc_mev_fm-Ye*dF_dYe+nB*dF_dnB;
     double mue=tg_mue.get(index)/hc_mev_fm;
-    double mup=Fintp/hc_mev_fm+(1.0-Ye)*dF_dYe+nB*dF_dnB-mue;
+    double mup=Fintp/hc_mev_fm+(1.0-Ye)*dF_dYe+nB*dF_dnB;
     double en=-nB*dF_dT;
     //tg_mun.get(index)=mun;
     //tg_mup.get(index)=mup;
@@ -821,7 +821,7 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
 
     double mun=Fintp/hc_mev_fm-Ye*dF_dYe+nB*dF_dnB;
     double mue=tgp_mue->get(index)/hc_mev_fm;
-    double mup=Fintp/hc_mev_fm+(1.0-Ye)*dF_dYe+nB*dF_dnB-mue;
+    double mup=Fintp/hc_mev_fm+(1.0-Ye)*dF_dYe+nB*dF_dnB;
     double en=-nB*dF_dT;
         
     // Compare theose derivatives with the stored values
@@ -840,8 +840,17 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
       std::cout << en/nB << std::endl;
     }
         
-    // Now compute the second derivatives and the speed of sound
-        
+    // Now compute the second derivatives and the speed of sound 
+    /*
+    double f_nnnn=(Ye*Ye*F_YeYe+nB*(2.0*dF_dnB-2.0*Ye*F_nBYe+nB*F_nBnB))/nB;
+    double f_nnnp=((1.0-Ye)*Ye*F_YeYe+nB*(2.0*dF_dnB+(1.0-2.0*Ye)*
+                                          F_nBYe+nB*F_nBnB))/nB;
+    double f_npnp=((1.0-Ye)*(1.0-Ye)*F_YeYe+nB*(2.0*dF_dnB-2.0*(1.0-Ye)*
+                                                F_nBYe+nB*F_nBnB))/nB;*/
+    //alternate f_nnnn, f_nnnp, f_npnp
+    //double f_nnnn=F_nBnB+(2.0*(Ye/(nB*nB))*dF_dYe)-(2.0*(Ye/nB)*F_nBYe)+(((Ye*Ye)/(nB*nB))*F_YeYe);
+    //double f_npnp=F_nBnB-(2.0*((1.0-Ye)/(nB*nB))*dF_dYe)+(2.0*((1.0-Ye)/nB)*F_nBYe)+((((1.0-Ye)*(1.0-Ye))/(nB*nB))*F_YeYe);
+    //double f_nnnp=F_nBnB-(2.0*(1.0/(nB*nB))*dF_dYe)+(2.0*(1/nB)*F_nBYe)+(((Ye*(1.0-Ye))/(nB*nB))*F_YeYe);
     double f_nnnn=(Ye*Ye*F_YeYe+nB*(2.0*dF_dnB-2.0*Ye*F_nBYe+nB*F_nBnB))/nB;
     double f_nnnp=((Ye-1.0)*Ye*F_YeYe+nB*(2.0*dF_dnB+(1.0-2.0*Ye)*
                                           F_nBYe+nB*F_nBnB))/nB;
@@ -849,7 +858,11 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
                                                 F_nBYe+nB*F_nBnB))/nB;
     double f_nnT=dF_dT-Ye*F_YeT+nB*F_nBT;
     double f_npT=dF_dT-(Ye-1.0)*F_YeT+nB*F_nBT;
-    double f_TT=nB*F_TT;
+    double f_TT=nB*F_TT; 
+    /*
+    double f_nnT=dF_dT-Ye*F_YeT+nB*F_nBT;
+    double f_npT=dF_dT-(1.0-Ye)*F_YeT+nB*F_nBT;
+    double f_TT=nB*F_TT;*/
     
     double den=en*T_MeV/hc_mev_fm+(mun+mneut)*nB*(1.0-Ye)+
       (mup+mprot)*nB*Ye+mue*nB*Ye;
@@ -911,7 +924,7 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
         cout << F_YeYe << " " << t3 << " ";
 
         double tab_mun=tgp_F->get(index)/hc_mev_fm-Ye*t1+nB*tab_dF_dnB;
-        double tab_mup=tgp_F->get(index)/hc_mev_fm+(1.0-Ye)*t1+nB*tab_dF_dnB-mue;
+        double tab_mup=tgp_F->get(index)/hc_mev_fm+(1.0-Ye)*t1+nB*tab_dF_dnB;
         cout << "tab mun, mup: " << tab_mun << " " << tab_mup << endl;
      }
       
@@ -932,11 +945,11 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
         
       //double dmup_dnB=2.0*dF_dnB+(Ye-1.0)*F_nBYe+nB*F_nBnB;
 
-      double dmundnB=(f_nnnn*(1-Ye))+(f_nnnp*Ye);
-      double dmupmuednB=(f_nnnp*(1-Ye))+(f_npnp*Ye);
+      double dmundnB=(f_nnnn*(1.0-Ye))+(f_nnnp*Ye);
+      double dmupmuednB=(f_nnnp*(1.0-Ye))+(f_npnp*Ye);
       //double dmundnB=F_nBnB-(Ye*(((1/nB)*F_nBYe)-((1/(nB*nB))*dF_dYe)));
       //double dmupmuednB=F_nBnB-((1-Ye)*(((1/nB)*F_nBYe)-((1/(nB*nB))*dF_dYe)));
-      double dPdnB=(dmundnB*nB*(1-Ye))+(mun*(1-Ye))+(dmupmuednB*Ye*nB)+(Ye*(mup+mue))-((mun*(1-Ye))+((mup+mue)*Ye));
+      double dPdnB=(dmundnB*nB*(1.0-Ye))+(mun*(1.0-Ye))+(dmupmuednB*Ye*nB)+(Ye*mup)-((mun*(1.0-Ye))+(mup*Ye));
       if (compare) {
         //std::cout << "dmun_dnB dmup_dnB" << endl;
         std::cout << "dmun_dnB d(mup+mue)_dnB" << endl;
