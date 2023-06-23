@@ -1862,7 +1862,7 @@ int eos::table_Ye(std::vector<std::string> &sv, bool itive_com) {
 
   vector<double> nB_grid, T_grid;
   
-  calculator calc;
+  calc_utf8<> calc;
   std::map<std::string,double> vars;
   
   calc.compile(nB_grid_spec.c_str());
@@ -1958,7 +1958,7 @@ int eos::table_nB(std::vector<std::string> &sv, bool itive_com) {
 
   vector<double> Ye_grid, T_grid;
   
-  calculator calc;
+  calc_utf8<> calc;
   std::map<std::string,double> vars;
   
   calc.compile(Ye_grid_spec.c_str());
@@ -2019,7 +2019,7 @@ int eos::table_full(std::vector<std::string> &sv, bool itive_com) {
 
   vector<double> nB_grid, T_grid, Ye_grid;
   
-  calculator calc;
+  calc_utf8<> calc;
   std::map<std::string,double> vars;
   
   calc.compile(nB_grid_spec.c_str());
@@ -3677,7 +3677,7 @@ int eos::test_eg(std::vector<std::string> &sv,
 
   vector<double> nB_grid, T_grid, Ye_grid;
   
-  calculator calc;
+  calc_utf8<> calc;
   std::map<std::string,double> vars;
   
   calc.compile(nB_grid_spec.c_str());
