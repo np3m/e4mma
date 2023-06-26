@@ -125,6 +125,9 @@ void eos_nuclei::interpolate(double nB_p,
     O2SCL_ERR("No EOS leptons in interp_point.",o2scl::exc_einval);
   } 
 
+  std::map<std::vector<size_t>, std::vector<double>> results_no_mue;
+  std::map<std::vector<size_t>, std::vector<double>> results_with_mue;
+  std::map<std::vector<size_t>, std::vector<double>> results_table;
   std::map<std::vector<size_t>, double> results;
   double nB_cent=nB_p;
   double Ye_cent=Ye_p;
@@ -143,15 +146,19 @@ void eos_nuclei::interpolate(double nB_p,
   cout << "Using window size: " << window << endl;
 
   // Create interpolation object
-  interpm_krige_eos ike;
+  interpm_krige_eos ike, ike_with_e;
   ike.mode=ike.mode_loo_cv_bf;
   ike.full_min=true;
   ike.def_mmin.verbose=1;
+  ike_with_e.mode=ike.mode_loo_cv_bf;
+  ike_with_e.full_min=true;
+  ike_with_e.def_mmin.verbose=1;
   
   /// Load cs2 from a file
   hdf_file hff;
   hff.open(st_o2);
   hdf_input(hff,ike.tgp_cs2);
+  hdf_input(hff,ike_with_e.tgp_cs2);
   hff.close();
 
   for(int dnB=-window;dnB<=window;dnB++) {
@@ -173,6 +180,9 @@ void eos_nuclei::interpolate(double nB_p,
             ike.fix_list.push_back(index[0]);
             ike.fix_list.push_back(index[1]);
             ike.fix_list.push_back(index[2]);
+            ike_with_e.fix_list.push_back(index[0]);
+            ike_with_e.fix_list.push_back(index[1]);
+            ike_with_e.fix_list.push_back(index[2]);
             //cout << "fix: " << index[0] << " " << index[1] << " "
             //<< index[2] << endl;
           } else if (ike.tgp_cs2.get_rank()>=3 &&
@@ -182,6 +192,9 @@ void eos_nuclei::interpolate(double nB_p,
             ike.calib_list.push_back(index[0]);
             ike.calib_list.push_back(index[1]);
             ike.calib_list.push_back(index[2]);
+            ike_with_e.calib_list.push_back(index[0]);
+            ike_with_e.calib_list.push_back(index[1]);
+            ike_with_e.calib_list.push_back(index[2]);
             //cout << "cal: " << index[0] << " " << index[1] << " "
             //<< index[2] << endl;
           }
@@ -209,218 +222,87 @@ void eos_nuclei::interpolate(double nB_p,
   vector<mcovar_funct_rbf_noise> mfr(1);
   mfr[0].len.resize(3);
   ike.set_covar(mfr,param_lists);
+  ike_with_e.set_covar(mfr,param_lists);
  
   ike.skip_optim=true;
   ike.set(nB_grid2,Ye_grid2,T_grid2,tg_Fint,tg_P,tg_S,
           tg_mun,tg_mup,tg_mue,neutron.m,proton.m);
+  ike_with_e.skip_optim=true;
+  ike_with_e.set(nB_grid2,Ye_grid2,T_grid2,tg_F,tg_P,tg_S,
+          tg_mun,tg_mup,tg_mue,neutron.m,proton.m);
+  ike_with_e.includeMue=true;
 
+  minimize_parameters(ike);
+  minimize_parameters(ike_with_e);
 
-  double min_qual=1.0e99;
-  vector<double> pnt(4), min_p;  
-  for(pnt[0]=2.0;pnt[0]<20.0;pnt[0]*=1.5) {
-    for(pnt[1]=2.0;pnt[1]<20.0;pnt[1]*=1.5) {
-      for(pnt[2]=2.0;pnt[2]<20.0;pnt[2]*=1.5) {
-        for(pnt[3]=-15.0;pnt[3]<-8.99;pnt[3]+=2.0) {
-          vector_out(cout,pnt,true);
-          (*ike.cf)[0].set_params(pnt);
-          int success;
-          double q=ike.qual_fun(0,success);
-          cout << q << " " << success << endl;
-          if (q<min_qual) {
-            min_p=pnt;
-          }
-        }
-      }
+  // Use the interpolation results to fix points
+  cout << "\nstarting to interpolate here: \n";
+  results_no_mue=ike.interpolate_points(ike.calib_list);
+  results_with_mue=ike_with_e.interpolate_points(ike_with_e.calib_list);
+  results_table=calculate_table_values(ike.calib_list, ike);
+
+  double eta2 = 1400.0;
+  std::map<std::vector<size_t>, std::vector<double>> intermediary_results;
+  std::map<std::vector<size_t>, std::vector<double>>::iterator it, it2;
+  it2=results_with_mue.begin();
+  for (it=results_no_mue.begin();it!=results_no_mue.end();++it) {
+    std::vector<double> value;
+    for (size_t x=0;x<it->second.size();x++) {
+      value.push_back(std::exp(-eta2*nB_grid2[it->first.at(0)])*it->second.at(x)+(-exp(-eta2*nB_grid2[it2->first.at(0)])+1.0)*it2->second.at(x));
     }
+    intermediary_results[it->first]=value;
+    results[it->first]=value[5];
+    ++it2;
   }
-  vector_out(cout,min_p,true);
+  it2=results_table.begin();
+  for (it=intermediary_results.begin(); it!=intermediary_results.end();++it) {
+    cout << "Point: " << it->first.at(0) << " " << it->first.at(1) << " " << it->first.at(2) << endl;
+    cout << "Here: " << it->second.at(5) << endl;
+    cout << "cs_sq_tab " << it2->second.at(5) << endl;
 
-  // Use the interpolation results to fix points 
-  std::vector<double> out(1);
-  for(size_t j=0;j<ike.fix_list.size();j+=3) {
-    size_t pnB=ike.fix_list[j];
-    size_t pYe=ike.fix_list[j+1];
-    size_t pT=ike.fix_list[j+2];
-
-    vector<size_t> index={(size_t) pnB,(size_t) pYe,(size_t) pT};
-
-    double nB=nB_grid2[pnB];
-    double Ye=Ye_grid2[pYe];
-    double T_MeV=T_grid2[pT];
-    
-    // Derivatives of the physical coordinates with respect to the indices
-    
-    double dnBdi=2.0*0.04*log(10.0)*pow(10.0,((double)pnB)*0.04-12.0);
-    double dYedj=0.01;
-    double dTdk=0.1*log(1.046)*pow(1.046,pT);
-
-//from addl_const() remove if wrong
-    double didnB=25.0/nB/log(10.0);
-    double d2idnB2=-25.0/nB/nB/log(10.0);
-    double djdYe=100.0;
-    double d2jdYe2=0.0;
-    double dkdT=1.0/T_MeV/log(1.046);
-    double d2kdT2=-1.0/T_MeV/T_MeV/log(1.046);
-  
-    // Evaluate the free energy and its derivatives analytically
-    // using the interpolator
-    ike.eval(index,out);
-    double Fintp=out[0];
+    cout << "F_intp " << it->second.at(0) << endl;
+    cout << "F_tab " << it2->second.at(0) << endl;
+    double diff = std::abs(std::abs(it2->second.at(0)-it->second.at(0))/it2->second.at(0));
+    cout << diff << endl;
+    if (diff < 0.001) {
         
-    ike.deriv(index,out,0);
-    double dFdi=out[0]/hc_mev_fm;
-    double dF_dnB=dFdi*didnB;
-    ike.deriv(index,out,1);
-    double dFdj=out[0]/hc_mev_fm;
-    double dF_dYe=dFdj*djdYe;
-    ike.deriv(index,out,2);
-    double dFdk=out[0]/hc_mev_fm;
-    double dF_dT=dFdk*dkdT*hc_mev_fm;
-        
-    ike.deriv2(index,out,0,0);
-    double d2Fdi2=out[0]/hc_mev_fm;
-    double F_nBnB=d2Fdi2*didnB*didnB+dFdi*d2idnB2;
-    
-    ike.deriv2(index,out,0,1);
-    double d2Fdidj=out[0]/hc_mev_fm;
-    double F_nBYe=d2Fdidj*didnB*djdYe;
-    
-    ike.deriv2(index,out,1,1);
-    double d2Fdj2=out[0]/hc_mev_fm;
-    double F_YeYe=d2Fdj2*djdYe*djdYe+dFdj*d2jdYe2;
-    
-    ike.deriv2(index,out,0,2);
-    double d2Fdidk=out[0]/hc_mev_fm;
-    double F_nBT=d2Fdidk*didnB*dkdT*hc_mev_fm;
-    
-    ike.deriv2(index,out,1,2);
-    double d2Fdjdk=out[0]/hc_mev_fm;
-    double F_YeT=d2Fdjdk*djdYe*dkdT*hc_mev_fm;
-    
-    ike.deriv2(index,out,2,2);
-    double d2Fdk2=out[0]/hc_mev_fm;
-    double F_TT=(d2Fdk2*dkdT*dkdT+dFdk*d2kdT2)*hc_mev_fm*hc_mev_fm;
-    /*
-    ike.eval(index,out);
-    double Fintp=out[0];
-    //tg_F.get(index)=Fintp;
-    
-    ike.deriv(index,out,0);
-    double dF_dnB=out[0]/hc_mev_fm/dnBdi;
-    ike.deriv(index,out,1);
-    double dF_dYe=out[0]/hc_mev_fm/dYedj;
-    ike.deriv(index,out,2);
-    // No hbarc here b/c dTdk has units of MeV as does out[0]
-    double dF_dT=out[0]/dTdk;
-        
-    ike.deriv2(index,out,0,0);
-    double F_nBnB=out[0]/hc_mev_fm;
-    ike.deriv2(index,out,0,1);
-    double F_nBYe=out[0]/hc_mev_fm;
-    ike.deriv2(index,out,1,1);
-    double F_YeYe=out[0]/hc_mev_fm;
-    ike.deriv2(index,out,0,2);
-    double F_nBT=out[0]/hc_mev_fm;
-    ike.deriv2(index,out,1,2);
-    double F_YeT=out[0]/hc_mev_fm;
-    ike.deriv2(index,out,2,2);
-    double F_TT=out[0]/hc_mev_fm;*/
-    
-    double mun=Fintp/hc_mev_fm-Ye*dF_dYe+nB*dF_dnB;
-    double mue=tg_mue.get(index)/hc_mev_fm;
-    double mup=Fintp/hc_mev_fm+(1.0-Ye)*dF_dYe+nB*dF_dnB;
-    double en=-nB*dF_dT;
-    //tg_mun.get(index)=mun;
-    //tg_mup.get(index)=mup;
-    //tg_mue.get(index)=mue;
-    
-    //tg_S.get(index)=en/nB;
-
-    // unverified
-    //tg_E.get(index)=tg_F.get(index)+T_MeV*tg_S.get(index);
-    //tg_P.get(index)=tg_F.get(index)+mun*neutron.m+mup*proton.m+
-      //mue*electron.m;
-//  code for speed of sound squared taken from main/eos_interp.cpp
-    double f_nnnn=(Ye*Ye*F_YeYe+nB*(2.0*dF_dnB-2.0*Ye*F_nBYe+nB*F_nBnB))/nB;
-    double f_nnnp=((Ye-1.0)*Ye*F_YeYe+nB*(2.0*dF_dnB+(1.0-2.0*Ye)*
-                                          F_nBYe+nB*F_nBnB))/nB;
-    double f_npnp=((Ye-1.0)*(Ye-1.0)*F_YeYe+nB*(2.0*dF_dnB-2.0*(Ye-1.0)*
-                                                F_nBYe+nB*F_nBnB))/nB;
-    double f_nnT=dF_dT-Ye*F_YeT+nB*F_nBT;
-    double f_npT=dF_dT-(Ye-1.0)*F_YeT+nB*F_nBT;
-    double f_TT=nB*F_TT;
-    
-    double den=en*T_MeV/hc_mev_fm+(mun+neutron.m)*nB*(1.0-Ye)+
-      (mup+proton.m)*nB*Ye+mue*nB*Ye;
-    double nn2=nB*(1.0-Ye);
-    double np2=nB*Ye;
-
-    double cs_sq=(nn2*nn2*(f_nnnn-f_nnT*f_nnT/f_TT)+
-                  2.0*nn2*np2*(f_nnnp-f_nnT*f_npT/f_TT)+
-                  np2*np2*(f_npnp-f_npT*f_npT/f_TT)-
-                  2.0*en*(nn2*f_nnT/f_TT+np2*f_npT/f_TT)-en*en/f_TT)/den;
-
-    cout << "Here: " << cs_sq << endl;
-    cout << "cs_sq_tab " << ike.tgp_cs2.get(index) << endl;
-    tg_cs2.get(index)=cs_sq;
-    results[index]=cs_sq;
-
-    cout << "F_intp " << Fintp << endl;
-    cout << "F_tab " << tg_F.get(index) << endl;
-    if (std::abs(std::abs(tg_F.get(index)-Fintp)/tg_F.get(index)) < (1/1000)) {
         cout << "success\n";
     }
     else {
         cout << "failure\n";
     }
 
-    // Attempt at calculating dP/dnB
-    // code taken from main/eos_interp.cpp
-    cout << "starting to calc dP/dnB\n";
-    cout << index[0] << " " << index[1] << " " << index[2] << endl;
-    vector<size_t> im1={index[0]-1,index[1],index[2]};
-    double dmundnB=(f_nnnn*(1-Ye))+(f_nnnp*Ye);
-    double dmupmuednB=(f_nnnp*(1-Ye))+(f_npnp*Ye);
-    //double dmundnB=F_nBnB-(Ye*(((1/nB)*F_nBYe)-((1/(nB*nB))*dF_dYe)));
-    //double dmupmuednB=F_nBnB-((1-Ye)*(((1/nB)*F_nBYe)-((1/(nB*nB))*dF_dYe)));
-    double dPdnB=(dmundnB*nB*(1-Ye))+(mun*(1-Ye))+(dmupmuednB*Ye*nB)+(Ye*(mup+mue))-((mun*(1-Ye))+((mup+mue)*Ye));
-
-    cout << "Calculated: mun[MeV],mup[MeV],mue[MeV]: " << mun*hc_mev_fm << " " << mup*hc_mev_fm << " " << mue*hc_mev_fm << " \n";
-    cout << "Stored: mun[MeV],mup[MeV],mue[MeV]: " << tg_mun.get(index) << " ";
-    cout << tg_mup.get(index) << " ";
-    cout << tg_mue.get(index) << " " << " \n";
-    if ((std::abs(std::abs((tg_mun.get(index)-(mun*hc_mev_fm)))/tg_mun.get(index)))<(1/100)) {
+    cout << "Calculated: mun[MeV],mup[MeV],mue[MeV]: " << it->second.at(1)*hc_mev_fm << " " << it->second.at(3)*hc_mev_fm << " " << it->second.at(2)*hc_mev_fm << " \n";
+    cout << "Stored: mun[MeV],mup[MeV],mue[MeV]: " << it2->second.at(1) << " ";
+    cout << it2->second.at(3) << " ";
+    cout << it2->second.at(2) << " " << " \n";
+    diff = (std::abs(std::abs((it2->second.at(1)-(it->second.at(1)*hc_mev_fm)))/it2->second.at(1)));
+    cout << diff << endl;
+    if (diff<0.01) {
         cout<<"mun: success\n";
     }
     else {
         cout<<"mun: failure\n";
     }
-    cout << "dmundnB: " << dmundnB << endl;
-    cout << "dmupmuednB: " << dmupmuednB << endl;
-    cout << "dmundnB*hc: " << dmundnB*hc_mev_fm << endl;
-    cout << "dmupmuednB*hc: " << dmupmuednB*hc_mev_fm << endl;
-    cout << "dPdnB: " << dPdnB << endl;
-    if (!(index[0]==0)){
-        cout << "dmundnB from table: " << (tg_mun.get(index)-tg_mun.get(im1))/hc_mev_fm/
-        (nB_grid2[index[0]]-nB_grid2[index[0]-1]) << " ";
-        cout << "dmupmuednB from table: " << ((tg_mup.get(index)+tg_mue.get(index))-(tg_mup.get(im1)+tg_mue.get(im1)))/hc_mev_fm/
-        (nB_grid2[index[0]]-nB_grid2[index[0]-1]) << endl;
-        cout << "dPdnB from table: " << (tg_P.get(index)-tg_P.get(im1))/hc_mev_fm/
-      (nB_grid2[index[0]]-nB_grid2[index[0]-1]) << endl;
-    }
-    double tab_dPdnB=(tg_P.get(index)-tg_P.get(im1))/hc_mev_fm/
-      (nB_grid2[index[0]]-nB_grid2[index[0]-1]);
-
-    if (dPdnB>0.0 && std::abs(std::abs((tab_dPdnB-dPdnB))/tab_dPdnB)<(0.10)) {
+    cout << "dmundnB: " << it->second.at(6) << endl;
+    cout << "dmupmuednB: " << it->second.at(7) << endl;
+    cout << "dPdnB: " << it->second.at(8) << endl;
+    cout << "dmundnB from table: " << it2->second.at(6) << endl;
+    cout << "dmupmuednB from table: " << it2->second.at(7) << endl;
+    cout << "dPdnB from table: " << it2->second.at(8) << endl;
+    diff = std::abs(std::abs((it2->second.at(8)-it->second.at(8)))/it2->second.at(8));
+    cout << diff << endl;
+    if (it->second.at(8)>0.0 && diff<0.10) {
         cout<<"success\n";
     }
     else {
         cout<<"failure\n";
     }
+    ++it2;
   }
 
   //begin fixing points near acausal cs_sq.
-  if (ike.fix_list.size() != 0) {
+  if (ike.fix_list.size() != 0 && false) {
     std::map<std::vector<size_t>, double> external_acausal_points;
     std::map<std::vector<size_t>, std::pair<double, double>> fix_list;
     std::pair<double, double> closest;
@@ -611,6 +493,28 @@ int eos_nuclei::interp_file(std::vector<std::string> &sv,
     return results;
 }
 
+void eos_nuclei::minimize_parameters(interpm_krige_eos& ike) {
+  double min_qual=1.0e99;
+  vector<double> pnt(4), min_p;  
+  for(pnt[0]=2.0;pnt[0]<20.0;pnt[0]*=1.5) {
+    for(pnt[1]=2.0;pnt[1]<20.0;pnt[1]*=1.5) {
+      for(pnt[2]=2.0;pnt[2]<20.0;pnt[2]*=1.5) {
+        for(pnt[3]=-15.0;pnt[3]<-8.99;pnt[3]+=2.0) {
+          vector_out(cout,pnt,true);
+          (*ike.cf)[0].set_params(pnt);
+          int success;
+          double q=ike.qual_fun(0,success);
+          cout << q << " " << success << endl;
+          if (q<min_qual) {
+            min_p=pnt;
+          }
+        }
+      }
+    }
+  }
+  vector_out(cout,min_p,true);
+}
+
 void interpm_krige_eos::set(std::vector<double> &nB_grid2,
                             std::vector<double> &Ye_grid2,
                             std::vector<double> &T_grid2,
@@ -658,6 +562,8 @@ void interpm_krige_eos::set(std::vector<double> &nB_grid2,
   size_t n_nB=nB_grid2.size();
   size_t n_Ye=Ye_grid2.size();
   size_t n_T=T_grid2.size();
+
+  includeMue=false;
     
   std::cout << "Going to set_data()." << std::endl;
   verbose=2;
@@ -665,9 +571,199 @@ void interpm_krige_eos::set(std::vector<double> &nB_grid2,
 
   return;
 }
+
+std::map<std::vector<size_t>, std::vector<double>> eos_nuclei::calculate_table_values(std::vector<size_t> points_list, interpm_krige_eos& ike) {
+  std::map<std::vector<size_t>, std::vector<double>> results_map;
+  for(size_t j=0;j<points_list.size();j+=3) {
+    std::vector<double> results;
+    size_t pnB=points_list[j];
+    size_t pYe=points_list[j+1];
+    size_t pT=points_list[j+2];
+
+    vector<size_t> index={(size_t) pnB,(size_t) pYe,(size_t) pT};
+
+    double nB=nB_grid2[pnB];
+    double Ye=Ye_grid2[pYe];
+    double T_MeV=T_grid2[pT];
+    
+    results.push_back(tg_F.get(index));
+    results.push_back(tg_mun.get(index));
+    results.push_back(tg_mue.get(index));
+    results.push_back(tg_mup.get(index));
+    results.push_back(tg_S.get(index));
+    results.push_back(ike.tgp_cs2.get(index));
+
+    vector<size_t> im1={index[0]-1,index[1],index[2]};
+    if (!(index[0]==0)){
+        double dmundnB = (tg_mun.get(index)-tg_mun.get(im1))/hc_mev_fm/(nB_grid2[index[0]]-nB_grid2[index[0]-1]);
+        double dmupmuednB = ((tg_mup.get(index)+tg_mue.get(index))-(tg_mup.get(im1)+tg_mue.get(im1)))/hc_mev_fm/(nB_grid2[index[0]]-nB_grid2[index[0]-1]);
+        double dPdnB=(tg_P.get(index)-tg_P.get(im1))/hc_mev_fm/(nB_grid2[index[0]]-nB_grid2[index[0]-1]);
+        results.push_back(dmundnB);
+        results.push_back(dmupmuednB);
+        results.push_back(dPdnB);
+    }
+    else {
+        results.push_back(0.0);
+        results.push_back(0.0);
+        results.push_back(0.0);
+    }
+    results_map[index]=results;
+  }
+  return results_map;
+}
+
+std::map<std::vector<size_t>, std::vector<double>> interpm_krige_eos::interpolate_points(std::vector<size_t> points_list) {
+  std::vector<double> out(1);
+  std::map<std::vector<size_t>, std::vector<double>> results_map;
+  for(size_t j=0;j<points_list.size();j+=3) {
+    std::vector<double> results;
+    size_t pnB=points_list[j];
+    size_t pYe=points_list[j+1];
+    size_t pT=points_list[j+2];
+
+    vector<size_t> index={(size_t) pnB,(size_t) pYe,(size_t) pT};
+
+    double nB=nB_grid[pnB];
+    double Ye=Ye_grid[pYe];
+    double T_MeV=T_grid[pT];
+    
+    // Derivatives of the physical coordinates with respect to the indices
+    
+    double dnBdi=2.0*0.04*log(10.0)*pow(10.0,((double)pnB)*0.04-12.0);
+    double dYedj=0.01;
+    double dTdk=0.1*log(1.046)*pow(1.046,pT);
+
+//from addl_const() remove if wrong
+    double didnB=25.0/nB/log(10.0);
+    double d2idnB2=-25.0/nB/nB/log(10.0);
+    double djdYe=100.0;
+    double d2jdYe2=0.0;
+    double dkdT=1.0/T_MeV/log(1.046);
+    double d2kdT2=-1.0/T_MeV/T_MeV/log(1.046);
+  
+    // Evaluate the free energy and its derivatives analytically
+    // using the interpolator
+    eval(index,out);
+    double Fintp=out[0];
+    results.push_back(Fintp);
+        
+    deriv(index,out,0);
+    double dFdi=out[0]/hc_mev_fm;
+    double dF_dnB=dFdi*didnB;
+    deriv(index,out,1);
+    double dFdj=out[0]/hc_mev_fm;
+    double dF_dYe=dFdj*djdYe;
+    deriv(index,out,2);
+    double dFdk=out[0]/hc_mev_fm;
+    double dF_dT=dFdk*dkdT*hc_mev_fm;
+        
+    deriv2(index,out,0,0);
+    double d2Fdi2=out[0]/hc_mev_fm;
+    double F_nBnB=d2Fdi2*didnB*didnB+dFdi*d2idnB2;
+    
+    deriv2(index,out,0,1);
+    double d2Fdidj=out[0]/hc_mev_fm;
+    double F_nBYe=d2Fdidj*didnB*djdYe;
+    
+    deriv2(index,out,1,1);
+    double d2Fdj2=out[0]/hc_mev_fm;
+    double F_YeYe=d2Fdj2*djdYe*djdYe+dFdj*d2jdYe2;
+    
+    deriv2(index,out,0,2);
+    double d2Fdidk=out[0]/hc_mev_fm;
+    double F_nBT=d2Fdidk*didnB*dkdT*hc_mev_fm;
+    
+    deriv2(index,out,1,2);
+    double d2Fdjdk=out[0]/hc_mev_fm;
+    double F_YeT=d2Fdjdk*djdYe*dkdT*hc_mev_fm;
+    
+    deriv2(index,out,2,2);
+    double d2Fdk2=out[0]/hc_mev_fm;
+    double F_TT=(d2Fdk2*dkdT*dkdT+dFdk*d2kdT2)*hc_mev_fm*hc_mev_fm;
+    /*
+    ike.eval(index,out);
+    double Fintp=out[0];
+    //tg_F.get(index)=Fintp;
+    
+    ike.deriv(index,out,0);
+    double dF_dnB=out[0]/hc_mev_fm/dnBdi;
+    ike.deriv(index,out,1);
+    double dF_dYe=out[0]/hc_mev_fm/dYedj;
+    ike.deriv(index,out,2);
+    // No hbarc here b/c dTdk has units of MeV as does out[0]
+    double dF_dT=out[0]/dTdk;
+        
+    ike.deriv2(index,out,0,0);
+    double F_nBnB=out[0]/hc_mev_fm;
+    ike.deriv2(index,out,0,1);
+    double F_nBYe=out[0]/hc_mev_fm;
+    ike.deriv2(index,out,1,1);
+    double F_YeYe=out[0]/hc_mev_fm;
+    ike.deriv2(index,out,0,2);
+    double F_nBT=out[0]/hc_mev_fm;
+    ike.deriv2(index,out,1,2);
+    double F_YeT=out[0]/hc_mev_fm;
+    ike.deriv2(index,out,2,2);
+    double F_TT=out[0]/hc_mev_fm;*/
+    
+    double mun=Fintp/hc_mev_fm-Ye*dF_dYe+nB*dF_dnB;
+    results.push_back(mun);
+    double mue=tgp_mue->get(index)/hc_mev_fm;
+    results.push_back(mue);
+    if (includeMue==false) {
+        mue=0.0;
+    }
+    double mup=Fintp/hc_mev_fm+(1.0-Ye)*dF_dYe+nB*dF_dnB-mue;
+    results.push_back(mup);
+    double en=-nB*dF_dT;
+    results.push_back(en);
+    //tg_mun.get(index)=mun;
+    //tg_mup.get(index)=mup;
+    //tg_mue.get(index)=mue;
+    
+    //tg_S.get(index)=en/nB;
+
+    // unverified
+    //tg_E.get(index)=tg_F.get(index)+T_MeV*tg_S.get(index);
+    //tg_P.get(index)=tg_F.get(index)+mun*neutron.m+mup*proton.m+
+      //mue*electron.m;
+//  code for speed of sound squared taken from main/eos_interp.cpp
+    double f_nnnn=(Ye*Ye*F_YeYe+nB*(2.0*dF_dnB-2.0*Ye*F_nBYe+nB*F_nBnB))/nB;
+    double f_nnnp=((Ye-1.0)*Ye*F_YeYe+nB*(2.0*dF_dnB+(1.0-2.0*Ye)*
+                                          F_nBYe+nB*F_nBnB))/nB;
+    double f_npnp=((Ye-1.0)*(Ye-1.0)*F_YeYe+nB*(2.0*dF_dnB-2.0*(Ye-1.0)*
+                                                F_nBYe+nB*F_nBnB))/nB;
+    double f_nnT=dF_dT-Ye*F_YeT+nB*F_nBT;
+    double f_npT=dF_dT-(Ye-1.0)*F_YeT+nB*F_nBT;
+    double f_TT=nB*F_TT;
+    
+    double den=en*T_MeV/hc_mev_fm+(mun+mneut)*nB*(1.0-Ye)+
+      (mup+mprot)*nB*Ye+mue*nB*Ye;
+    double nn2=nB*(1.0-Ye);
+    double np2=nB*Ye;
+
+    double cs_sq=(nn2*nn2*(f_nnnn-f_nnT*f_nnT/f_TT)+
+                  2.0*nn2*np2*(f_nnnp-f_nnT*f_npT/f_TT)+
+                  np2*np2*(f_npnp-f_npT*f_npT/f_TT)-
+                  2.0*en*(nn2*f_nnT/f_TT+np2*f_npT/f_TT)-en*en/f_TT)/den;
+    results.push_back(cs_sq);
+
+    // Attempt at calculating dP/dnB
+    // code taken from main/eos_interp.cpp
+    double dmundnB=(f_nnnn*(1-Ye))+(f_nnnp*Ye);
+    results.push_back(dmundnB);
+    double dmupmuednB=(f_nnnp*(1-Ye))+(f_npnp*Ye);
+    results.push_back(dmupmuednB);
+    //double dmundnB=F_nBnB-(Ye*(((1/nB)*F_nBYe)-((1/(nB*nB))*dF_dYe)));
+    //double dmupmuednB=F_nBnB-((1-Ye)*(((1/nB)*F_nBYe)-((1/(nB*nB))*dF_dYe)));
+    double dPdnB=(dmundnB*nB*(1-Ye))+(mun*(1-Ye))+(dmupmuednB*Ye*nB)+(Ye*(mup+mue))-((mun*(1-Ye))+((mup+mue)*Ye));
+    results.push_back(dPdnB);
+    results_map[index]=results;
+  }
+  return results_map;
+}
   
 int interpm_krige_eos::addl_const(size_t iout, double &ret) {
-
   // First, we need to ensure the interpolator has been
   // setup to be able to use the eval() and deriv()
   // functions
@@ -736,7 +832,7 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
        << "d2FdYe2_itp d2FdYe2_tab "
        << "dPdnB_itp dPdnB_tab1 dPdnB_tab2" << endl;
   for(size_t ilist=0;ilist<(calib_list.size()+fix_list.size())/3;
-      ilist++) {
+      ilist+=3) {
       
     std::cout << ilist << " ";
 
@@ -745,16 +841,21 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
       inB=calib_list[ilist*3];
       iYe=calib_list[ilist*3+1];
       iT=calib_list[ilist*3+2];
+      cout << "calib" << endl;
     } else {
       inB=fix_list[(ilist-calib_list.size()/3)*3];
       iYe=fix_list[(ilist-calib_list.size()/3)*3+1];
       iT=fix_list[(ilist-calib_list.size()/3)*3+2];
+      cout << "fix" << endl;
     }
     //inB=8;
     //iYe=48;
     //iT=1;
       
     std::vector<size_t> index={((size_t)inB),((size_t)iYe),((size_t)iT)};
+    cout << index[0] << " " << index[1] << " "
+                << index[2] << std::endl;
+
         
     double nB=nB_grid[inB];
     double Ye=Ye_grid[iYe];
@@ -821,14 +922,17 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
 
     double mun=Fintp/hc_mev_fm-Ye*dF_dYe+nB*dF_dnB;
     double mue=tgp_mue->get(index)/hc_mev_fm;
-    double mup=Fintp/hc_mev_fm+(1.0-Ye)*dF_dYe+nB*dF_dnB;
+    if (includeMue==false) {
+        mue=0.0;
+    }
+    double mup=Fintp/hc_mev_fm+(1.0-Ye)*dF_dYe+nB*dF_dnB-mue;
     double en=-nB*dF_dT;
         
     // Compare theose derivatives with the stored values
 
     if (true && compare) {
-      std::cout << "Indices: " << index[0] << " " << index[1] << " "
-                << index[2] << std::endl;
+      //std::cout << "Indices: " << index[0] << " " << index[1] << " "
+      //          << index[2] << std::endl;
       std::cout << "Stored  : mun[MeV],mup[MeV],mue[MeV],S: ";
       std::cout << tgp_mun->get(index) << " ";
       std::cout << tgp_mup->get(index) << " ";
@@ -949,7 +1053,7 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
       double dmupmuednB=(f_nnnp*(1.0-Ye))+(f_npnp*Ye);
       //double dmundnB=F_nBnB-(Ye*(((1/nB)*F_nBYe)-((1/(nB*nB))*dF_dYe)));
       //double dmupmuednB=F_nBnB-((1-Ye)*(((1/nB)*F_nBYe)-((1/(nB*nB))*dF_dYe)));
-      double dPdnB=(dmundnB*nB*(1.0-Ye))+(mun*(1.0-Ye))+(dmupmuednB*Ye*nB)+(Ye*mup)-((mun*(1.0-Ye))+(mup*Ye));
+      double dPdnB=(dmundnB*nB*(1.0-Ye))+(mun*(1.0-Ye))+(dmupmuednB*Ye*nB)+(Ye*(mup+mue))-((mun*(1.0-Ye))+((mup+mue)*Ye));
       if (compare) {
         //std::cout << "dmun_dnB dmup_dnB" << endl;
         std::cout << "dmun_dnB d(mup+mue)_dnB" << endl;

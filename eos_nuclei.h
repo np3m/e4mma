@@ -130,6 +130,8 @@ public:
   double mneut;
   /// Proton mass
   double mprot;
+  /// Include electrons and positrons in calculation of the free energy
+  bool includeMue;
   
   /** \brief Set the interpolator given the specified EOS
       objects
@@ -148,7 +150,11 @@ public:
   /** \brief Additional constraints for the interpolation
    */
   virtual int addl_const(size_t iout, double &ret);
-  
+
+  /** \brief calculate interpolated values for points in list
+   */
+  std::map<std::vector<size_t>, std::vector<double>> interpolate_points(std::vector<size_t> points_list);
+
 };
 
 /** \brief Solve for the EOS including nuclei
@@ -800,6 +806,13 @@ public:
    */
   template<typename T>
   std::pair<double, T> vector_distance(std::vector<size_t> start, std::map<std::vector<size_t>, T> points);
+  /** \brief calculate results from table for points in list
+   */
+  std::map<std::vector<size_t>, std::vector<double>> calculate_table_values(std::vector<size_t> points_list, interpm_krige_eos& ike);
+
+  /** \brief minimize parameters for interpolation object
+   */
+  void minimize_parameters(interpm_krige_eos& ike);
 
   /** \brief Desc
    */
