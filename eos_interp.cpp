@@ -241,14 +241,17 @@ void eos_nuclei::interpolate(double nB_p,
   results_with_mue=ike_with_e.interpolate_points(ike_with_e.calib_list);
   results_table=calculate_table_values(ike.calib_list, ike);
 
-  double eta2 = 1400.0;
+  double eta2 = 20000.0;
   std::map<std::vector<size_t>, std::vector<double>> intermediary_results;
   std::map<std::vector<size_t>, std::vector<double>>::iterator it, it2;
   it2=results_with_mue.begin();
   for (it=results_no_mue.begin();it!=results_no_mue.end();++it) {
+    cout << "Point: " << it->first.at(0) << " " << it->first.at(1) << " " << it->first.at(2) << endl;
+    cout << "without e, with e\n";
     std::vector<double> value;
     for (size_t x=0;x<it->second.size();x++) {
       value.push_back(std::exp(-eta2*nB_grid2[it->first.at(0)])*it->second.at(x)+(-exp(-eta2*nB_grid2[it2->first.at(0)])+1.0)*it2->second.at(x));
+      cout << it->second.at(x) << " " << it2->second.at(x) << endl;
     }
     intermediary_results[it->first]=value;
     results[it->first]=value[5];
