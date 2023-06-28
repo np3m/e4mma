@@ -1,7 +1,7 @@
 /*
   -------------------------------------------------------------------
   
-  Copyright (C) 2022-2023, Andrew W. Steiner
+  Copyright (C) 2022-2023, Andrew W. Steiner, Josue Bautista
   
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -243,7 +243,7 @@ void eos_nuclei::interpolate(double nB_p,
 
   double eta2 = 20000.0;
   std::map<std::vector<size_t>, std::vector<double>> intermediary_results;
-  std::map<std::vector<size_t>, std::vector<double>>::iterator it, it2;
+  std::map<std::vector<size_t>, std::vector<double>>::iterator it, it2, it3, it4;
   it2=results_with_mue.begin();
   for (it=results_no_mue.begin();it!=results_no_mue.end();++it) {
     cout << "Point: " << it->first.at(0) << " " << it->first.at(1) << " " << it->first.at(2) << endl;
@@ -258,14 +258,29 @@ void eos_nuclei::interpolate(double nB_p,
     ++it2;
   }
   it2=results_table.begin();
+  it3=results_no_mue.begin();
+  it4=results_with_mue.begin();
+  std::ofstream latex{"table.tex"};
   for (it=intermediary_results.begin(); it!=intermediary_results.end();++it) {
     cout << "Point: " << it->first.at(0) << " " << it->first.at(1) << " " << it->first.at(2) << endl;
+    latex << "Point: " << it->first.at(0) << " " << it->first.at(1) << " " << it->first.at(2) << "\\\\\n";
+    latex << "\\begin{center}" << endl;
+    latex << " \\begin{tabular}{|c|c|c|c|c|c|c|c|}" << endl;
+    latex << "  \\hline" << endl;
+    latex << "  Variable & Fint & error & F & error & Combined & error & Table \\\\" << endl;
+    latex << "  \\hline" << endl;
+    double diff = std::abs(std::abs(it2->second.at(5)-it3->second.at(5))/it2->second.at(5));
+    latex << "  cs_sq & " << it3->second.at(5) << " & " << diff << " & ";
+    diff = std::abs(std::abs(it2->second.at(5)-it4->second.at(5))/it2->second.at(5));
+    latex << it4->second.at(5) << " & " << diff << " & ";
+    diff = std::abs(std::abs(it2->second.at(5)-it->second.at(5))/it2->second.at(5));
+    latex << it->second.at(5) << " & " << diff << " & " << it2->second.at(5) << " \\\\ " << endl;
     cout << "Here: " << it->second.at(5) << endl;
     cout << "cs_sq_tab " << it2->second.at(5) << endl;
 
     cout << "F_intp " << it->second.at(0) << endl;
     cout << "F_tab " << it2->second.at(0) << endl;
-    double diff = std::abs(std::abs(it2->second.at(0)-it->second.at(0))/it2->second.at(0));
+    diff = std::abs(std::abs(it2->second.at(0)-it->second.at(0))/it2->second.at(0));
     cout << diff << endl;
     if (diff < 0.001) {
         
@@ -274,7 +289,6 @@ void eos_nuclei::interpolate(double nB_p,
     else {
         cout << "failure\n";
     }
-
     cout << "Calculated: mun[MeV],mup[MeV],mue[MeV]: " << it->second.at(1)*hc_mev_fm << " " << it->second.at(3)*hc_mev_fm << " " << it->second.at(2)*hc_mev_fm << " \n";
     cout << "Stored: mun[MeV],mup[MeV],mue[MeV]: " << it2->second.at(1) << " ";
     cout << it2->second.at(3) << " ";
@@ -293,7 +307,16 @@ void eos_nuclei::interpolate(double nB_p,
     cout << "dmundnB from table: " << it2->second.at(6) << endl;
     cout << "dmupmuednB from table: " << it2->second.at(7) << endl;
     cout << "dPdnB from table: " << it2->second.at(8) << endl;
-    diff = std::abs(std::abs((it2->second.at(8)-it->second.at(8)))/it2->second.at(8));
+    latex << "  \\hline" << endl;
+    diff = std::abs(std::abs(it2->second.at(8)-it3->second.at(8))/it2->second.at(8));
+    latex << "  dPdnB & " << it3->second.at(8) << " & " << diff << " & ";
+    diff = std::abs(std::abs(it2->second.at(8)-it4->second.at(8))/it2->second.at(8));
+    latex << it4->second.at(8) << " & " << diff << " & ";
+    diff = std::abs(std::abs(it2->second.at(8)-it->second.at(8))/it2->second.at(8));
+    latex << it->second.at(8) << " & " << diff << " & " << it2->second.at(8) << " \\\\ " << endl;
+    latex << "  \\hline" << endl;
+    latex << " \\end{tabular}" << endl;
+    latex << "\\end{center}" << endl;
     cout << diff << endl;
     if (it->second.at(8)>0.0 && diff<0.10) {
         cout<<"success\n";
@@ -713,6 +736,7 @@ std::map<std::vector<size_t>, std::vector<double>> interpm_krige_eos::interpolat
     results.push_back(mun);
     double mue=tgp_mue->get(index)/hc_mev_fm;
     results.push_back(mue);
+    double mue_keep=mue;
     if (includeMue==false) {
         mue=0.0;
     }
@@ -736,8 +760,12 @@ std::map<std::vector<size_t>, std::vector<double>> interpm_krige_eos::interpolat
                                           F_nBYe+nB*F_nBnB))/nB;
     double f_npnp=((Ye-1.0)*(Ye-1.0)*F_YeYe+nB*(2.0*dF_dnB-2.0*(Ye-1.0)*
                                                 F_nBYe+nB*F_nBnB))/nB;
+    //alternate f_nnnn, f_nnnp, f_npnp
+    //double f_npnp=F_nBnB-(((1-Ye)/(nB*nB))*dF_dYe)-((((1-Ye)*(1-Ye))/(nB*nB))*F_YeYe);
+    //double f_nnnn=F_nBnB-((Ye/(nB*nB))*dF_dYe)-(((Ye*Ye)/(nB*nB))*F_YeYe);
+    //double f_nnnp=0.0;
     double f_nnT=dF_dT-Ye*F_YeT+nB*F_nBT;
-    double f_npT=dF_dT-(Ye-1.0)*F_YeT+nB*F_nBT;
+    double f_npT=dF_dT+(Ye-1.0)*F_YeT+nB*F_nBT;
     double f_TT=nB*F_TT;
     
     double den=en*T_MeV/hc_mev_fm+(mun+mneut)*nB*(1.0-Ye)+
@@ -925,6 +953,7 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
 
     double mun=Fintp/hc_mev_fm-Ye*dF_dYe+nB*dF_dnB;
     double mue=tgp_mue->get(index)/hc_mev_fm;
+    double mue_keep=mue;
     if (includeMue==false) {
         mue=0.0;
     }
@@ -955,16 +984,16 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
     double f_npnp=((1.0-Ye)*(1.0-Ye)*F_YeYe+nB*(2.0*dF_dnB-2.0*(1.0-Ye)*
                                                 F_nBYe+nB*F_nBnB))/nB;*/
     //alternate f_nnnn, f_nnnp, f_npnp
-    //double f_nnnn=F_nBnB+(2.0*(Ye/(nB*nB))*dF_dYe)-(2.0*(Ye/nB)*F_nBYe)+(((Ye*Ye)/(nB*nB))*F_YeYe);
-    //double f_npnp=F_nBnB-(2.0*((1.0-Ye)/(nB*nB))*dF_dYe)+(2.0*((1.0-Ye)/nB)*F_nBYe)+((((1.0-Ye)*(1.0-Ye))/(nB*nB))*F_YeYe);
-    //double f_nnnp=F_nBnB-(2.0*(1.0/(nB*nB))*dF_dYe)+(2.0*(1/nB)*F_nBYe)+(((Ye*(1.0-Ye))/(nB*nB))*F_YeYe);
+    //double f_npnp=F_nBnB-(((1-Ye)/(nB*nB))*dF_dYe)-((((1-Ye)*(1-Ye))/(nB*nB))*F_YeYe);
+    //double f_nnnn=F_nBnB-((Ye/(nB*nB))*dF_dYe)-(((Ye*Ye)/(nB*nB))*F_YeYe);
+    //double f_nnnp=0.0;
     double f_nnnn=(Ye*Ye*F_YeYe+nB*(2.0*dF_dnB-2.0*Ye*F_nBYe+nB*F_nBnB))/nB;
     double f_nnnp=((Ye-1.0)*Ye*F_YeYe+nB*(2.0*dF_dnB+(1.0-2.0*Ye)*
                                           F_nBYe+nB*F_nBnB))/nB;
     double f_npnp=((Ye-1.0)*(Ye-1.0)*F_YeYe+nB*(2.0*dF_dnB-2.0*(Ye-1.0)*
                                                 F_nBYe+nB*F_nBnB))/nB;
     double f_nnT=dF_dT-Ye*F_YeT+nB*F_nBT;
-    double f_npT=dF_dT-(Ye-1.0)*F_YeT+nB*F_nBT;
+    double f_npT=dF_dT+(Ye-1.0)*F_YeT+nB*F_nBT;
     double f_TT=nB*F_TT; 
     /*
     double f_nnT=dF_dT-Ye*F_YeT+nB*F_nBT;
