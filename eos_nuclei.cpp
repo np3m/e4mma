@@ -158,6 +158,7 @@ eos_nuclei::eos_nuclei() {
   save_to_csv=true;
   max_nB_inter=0.16;
   csv_location = "superluminal.csv";
+  table_path="";
 
   pfuncs.spin_deg_mode=1;
 }
@@ -441,6 +442,7 @@ int eos_nuclei::load(std::vector<std::string> &sv,
     return 1;
   }
   cout << "Loading: " << sv[1] << endl;
+  table_path=sv[1];
   read_results(sv[1]);
   return 0;
 }
@@ -10127,7 +10129,7 @@ void eos_nuclei::setup_cli_nuclei(o2scl::cli &cl) {
       new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::compare_tables),o2scl::cli::comm_option_both,
       1,"","eos_nuclei","compare_tables","doc/xml/classeos__nuclei.xml"},
-     {0,"interp-point","",5,5,"","",
+     {0,"interp-point","",5,6,"","",
       new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::interp_point),o2scl::cli::comm_option_both,
       1,"","eos_nuclei","interp_point","doc/xml/classeos__nuclei.xml"},

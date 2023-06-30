@@ -233,6 +233,10 @@ public:
    */
   std::string csv_location;
 
+  /** \brief Location of eos table file
+   */
+  std::string table_path;
+
   /** \brief Solve for charge neutrality and fixed baryon fraction
       with a hadron resonance gas
    */
@@ -783,11 +787,11 @@ public:
 
   /** \brief Interpolates the EOS around a point
    */
-  void interpolate(double nB_cent, double Ye_cent, double T_cent, int window, int neighborhood, std::string st_o2, o2scl::tensor_grid<> &tg_cs2, bool itive_com);
+  void interpolate(double nB_cent, double Ye_cent, double T_cent, int window, int neighborhood, std::string st_o2, o2scl::tensor_grid<> &tg_cs2, o2scl::tensor_grid<> &tg_file, bool itive_com);
 
   /** \brief Interpolate the EOS around a specified point
 
-      <nB> <Ye> <T MeV> <window> [st.o2]
+      <nB> <Ye> <T MeV> <window> [st.o2] [file.o2]
 
       This function requires that an EOS with leptons has been
       loaded. 
@@ -796,7 +800,7 @@ public:
 
   /** \brief Interpolate the EOS around the points specified ina csv file.
    *
-   * <st.o2> <fixed st.o2> <window> [csv file]
+   * <st.o2> <fixed file.o2> <window> [csv file]
    *
    * This function requires that an EOS with leptons be loaded
    */
@@ -809,6 +813,10 @@ public:
   /** \brief calculate results from table for points in list
    */
   std::map<std::vector<size_t>, std::vector<double>> calculate_table_values(std::vector<size_t> points_list, interpm_krige_eos& ike);
+
+  /** \brief calculate results from table for points in list
+   */
+  void remove_eg(std::map<std::vector<size_t>, std::vector<double>>& points, interpm_krige_eos& with_eg, interpm_krige_eos& without_eg);
 
   /** \brief minimize parameters for interpolation object
    */
