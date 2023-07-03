@@ -6660,7 +6660,8 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
   
   if ((ret==0 || flag==10) && loaded) {
     cout << "Results stored in table:" << endl;
-    cout << "nB,Ye,T[MeV]: " << nB << " " << Ye << " " << T*hc_mev_fm << endl;
+    cout << "nB,Ye,T: " << nB << " " << Ye << " " << T*hc_mev_fm
+         << " MeV" << endl;
     cout << "flag: " << tg_flag.get(ix) << endl;
     cout << "log_xn: " << tg_log_xn.get(ix) << endl;
     cout << "log_xp: " << tg_log_xp.get(ix) << endl;
@@ -6682,15 +6683,24 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
     cout << "Xalpha: " << tg_Xalpha.get(ix) << endl;
     cout << "Xnuclei: " << tg_Xnuclei.get(ix) << endl;
     if (rmf_fields) {
-      cout << "sigma: " << tg_sigma.get(ix) << endl;
-      cout << "omega: " << tg_omega.get(ix) << endl;
-      cout << "rho: " << tg_rho.get(ix) << endl;
+      cout << "sigma: " << tg_sigma.get(ix) << " MeV" << endl;
+      cout << "omega: " << tg_omega.get(ix) << " MeV" << endl;
+      cout << "rho: " << tg_rho.get(ix) << " MeV" << endl;
     }
     if (include_muons) {
       cout << "Ymu: " << tg_Ymu.get(ix) << endl;
     }
     if (include_muons || with_leptons) {
       cout << "mue: " << tg_mue.get(ix) << " MeV" << endl;
+      if (include_muons==false) {
+        electron.mu=tg_mue.get(ix)/hc_mev_fm;
+        relf.calc_mu(electron,T);
+        double eminus=electron.n;
+        double eplus=eminus-Ye*nB;
+        cout << "Density of electrons: " << eminus << " positrons: "
+             << eplus << " Ye*nB: " << Ye*nB << endl;
+        electron.n=Ye*nB;
+      }
     }
     if (derivs_computed) {
       cout << "Pint: " << tg_Pint.get(ix) << " MeV/fm^3" << endl;
