@@ -249,10 +249,18 @@ void eos_nuclei::interpolate(double nB_p,
   minimize_parameters(ike_with_e);
 
   // Use the interpolation results to fix points
-/*  cout << "\nstarting to interpolate here: \n";
-  results_no_mue=ike.interpolate_points(ike.calib_list);
-  results_with_mue=ike_with_e.interpolate_points(ike_with_e.calib_list);
-  results_table=calculate_table_values(ike.calib_list, ike);
+  cout << "\nstarting to interpolate here: \n";
+  if (ike.fix_list.size() != 0) {
+    results_no_mue=ike.interpolate_points(ike.fix_list);
+    results_with_mue=ike_with_e.interpolate_points(ike_with_e.fix_list);
+    results_table=calculate_table_values(ike.fix_list, ike);
+  }
+  else {
+    results_no_mue=ike.interpolate_points(ike.calib_list);
+    results_with_mue=ike_with_e.interpolate_points(ike_with_e.calib_list);
+    results_table=calculate_table_values(ike.calib_list, ike);
+  }
+  std::map<std::vector<size_t>, double> results_final;
 
   double eta2 = 20000.0;
   std::map<std::vector<size_t>, std::vector<double>> intermediary_results;
@@ -269,6 +277,7 @@ void eos_nuclei::interpolate(double nB_p,
     }
     intermediary_results[it->first]=value;
     results[it->first]=value[5];
+    results_final[it->first]=value[0];
     ++it2;
   }
   it2=results_table.begin();
@@ -276,16 +285,17 @@ void eos_nuclei::interpolate(double nB_p,
   it4=results_with_mue.begin();
   std::ofstream latex{"table.tex"};
   for (it=intermediary_results.begin(); it!=intermediary_results.end();++it) {
-    cout << "Point: " << it->first.at(0) << " " << it->first.at(1) << " " << it->first.at(2) << endl;
-    latex << "Point: " << it->first.at(0) << " " << it->first.at(1) << " " << it->first.at(2) << "\\\\\n";
-    latex << "\\begin{center}" << endl;
-    latex << " \\begin{tabular}{|c|c|c|c|c|c|c|c|}" << endl;
-    latex << "  \\hline" << endl;
-    latex << "  Variable & Fint & error & F & error & Combined & error & Table \\\\" << endl;
-    latex << "  \\hline" << endl;
-    double diff = std::abs(std::abs(it2->second.at(5)-it3->second.at(5))/it2->second.at(5));
-    latex << "  cs_sq & " << it3->second.at(5) << " & " << diff << " & ";
-    diff = std::abs(std::abs(it2->second.at(5)-it4->second.at(5))/it2->second.at(5));
+  cout << "Point: " << it->first.at(0) << " " << it->first.at(1) << " " << it->first.at(2) << endl;
+  latex << "Point: " << it->first.at(0) << " " << it->first.at(1) << " " << it->first.at(2) << "\\\\\n";
+  latex << nB_grid2[it->first.at(0)] << " " << Ye_grid2[it->first.at(1)] << " " << T_grid2[it->first.at(2)] << endl;
+  latex << "\\begin{center}" << endl;
+  latex << " \\begin{tabular}{|c|c|c|c|c|c|c|c|}" << endl;
+  latex << "  \\hline" << endl;
+  latex << "  Variable & Fint & error & F & error & Combined & error & Table \\\\" << endl;
+  latex << "  \\hline" << endl;
+  double diff = std::abs(std::abs(it2->second.at(5)-it3->second.at(5))/it2->second.at(5));
+  latex << "  cs_sq & " << it3->second.at(5) << " & " << diff << " & ";
+  diff = std::abs(std::abs(it2->second.at(5)-it4->second.at(5))/it2->second.at(5));
     latex << it4->second.at(5) << " & " << diff << " & ";
     diff = std::abs(std::abs(it2->second.at(5)-it->second.at(5))/it2->second.at(5));
     latex << it->second.at(5) << " & " << diff << " & " << it2->second.at(5) << " \\\\ " << endl;
@@ -296,8 +306,7 @@ void eos_nuclei::interpolate(double nB_p,
     cout << "F_tab " << it2->second.at(0) << endl;
     diff = std::abs(std::abs(it2->second.at(0)-it->second.at(0))/it2->second.at(0));
     cout << diff << endl;
-    if (diff < 0.001) {
-        
+    if (diff < 0.001) {  
         cout << "success\n";
     }
     else {
@@ -339,103 +348,11 @@ void eos_nuclei::interpolate(double nB_p,
         cout<<"failure\n";
     }
     ++it2;
-  }*/
-
+    ++it3;
+    ++it4;
+  }
   //begin fixing points near acausal cs_sq.
   if (ike.fix_list.size() != 0) {
-    cout << "\nstarting to interpolate here: \n";
-    results_no_mue=ike.interpolate_points(ike.fix_list);
-    results_with_mue=ike_with_e.interpolate_points(ike_with_e.fix_list);
-    results_table=calculate_table_values(ike.fix_list, ike);
-    std::map<std::vector<size_t>, double> results_final;
-
-    double eta2 = 20000.0;
-    std::map<std::vector<size_t>, std::vector<double>> intermediary_results;
-    std::map<std::vector<size_t>, std::vector<double>>::iterator it, it2, it3, it4;
-    remove_eg(results_with_mue, ike_with_e, ike);
-    it2=results_with_mue.begin();
-    for (it=results_no_mue.begin();it!=results_no_mue.end();++it) {
-      cout << "Point: " << it->first.at(0) << " " << it->first.at(1) << " " << it->first.at(2) << endl;
-      cout << "without e, with e\n";
-      std::vector<double> value;
-      for (size_t x=0;x<it->second.size();x++) {
-        value.push_back(std::exp(-eta2*nB_grid2[it->first.at(0)])*it->second.at(x)+(-exp(-eta2*nB_grid2[it2->first.at(0)])+1.0)*it2->second.at(x));
-        cout << it->second.at(x) << " " << it2->second.at(x) << endl;
-      }
-      intermediary_results[it->first]=value;
-      results[it->first]=value[5];
-      results_final[it->first]=value[0];
-      ++it2;
-    }
-    it2=results_table.begin();
-    it3=results_no_mue.begin();
-    it4=results_with_mue.begin();
-    std::ofstream latex{"table.tex"};
-    for (it=intermediary_results.begin(); it!=intermediary_results.end();++it) {
-      cout << "Point: " << it->first.at(0) << " " << it->first.at(1) << " " << it->first.at(2) << endl;
-      latex << "Point: " << it->first.at(0) << " " << it->first.at(1) << " " << it->first.at(2) << "\\\\\n";
-      latex << "\\begin{center}" << endl;
-      latex << " \\begin{tabular}{|c|c|c|c|c|c|c|c|}" << endl;
-      latex << "  \\hline" << endl;
-      latex << "  Variable & Fint & error & F & error & Combined & error & Table \\\\" << endl;
-      latex << "  \\hline" << endl;
-      double diff = std::abs(std::abs(it2->second.at(5)-it3->second.at(5))/it2->second.at(5));
-      latex << "  cs_sq & " << it3->second.at(5) << " & " << diff << " & ";
-      diff = std::abs(std::abs(it2->second.at(5)-it4->second.at(5))/it2->second.at(5));
-      latex << it4->second.at(5) << " & " << diff << " & ";
-      diff = std::abs(std::abs(it2->second.at(5)-it->second.at(5))/it2->second.at(5));
-      latex << it->second.at(5) << " & " << diff << " & " << it2->second.at(5) << " \\\\ " << endl;
-      cout << "Here: " << it->second.at(5) << endl;
-      cout << "cs_sq_tab " << it2->second.at(5) << endl;
-
-      cout << "F_intp " << it->second.at(0) << endl;
-      cout << "F_tab " << it2->second.at(0) << endl;
-      diff = std::abs(std::abs(it2->second.at(0)-it->second.at(0))/it2->second.at(0));
-      cout << diff << endl;
-      if (diff < 0.001) {  
-          cout << "success\n";
-      }
-      else {
-          cout << "failure\n";
-      }
-      cout << "Calculated: mun[MeV],mup[MeV],mue[MeV],S: " << it->second.at(1)*hc_mev_fm << " " << it->second.at(3)*hc_mev_fm << " " << it->second.at(2)*hc_mev_fm << " " << it->second.at(4) << " \n";
-      cout << "Stored: mun[MeV],mup[MeV],mue[MeV],S: " << it2->second.at(1) << " ";
-      cout << it2->second.at(3) << " ";
-      cout << it2->second.at(2) << " " << it2->second.at(4) << " " << it3->second.at(4) << " " << it4->second.at(4) << " \n";
-      diff = (std::abs(std::abs((it2->second.at(1)-(it->second.at(1)*hc_mev_fm)))/it2->second.at(1)));
-      cout << diff << endl;
-      if (diff<0.01) {
-          cout<<"mun: success\n";
-      }
-      else {
-          cout<<"mun: failure\n";
-      }
-      cout << "dmundnB: " << it->second.at(6) << endl;
-      cout << "dmupmuednB: " << it->second.at(7) << endl;
-      cout << "dPdnB: " << it->second.at(8) << endl;
-      cout << "dmundnB from table: " << it2->second.at(6) << endl;
-      cout << "dmupmuednB from table: " << it2->second.at(7) << endl;
-      cout << "dPdnB from table: " << it2->second.at(8) << endl;
-      latex << "  \\hline" << endl;
-      diff = std::abs(std::abs(it2->second.at(8)-it3->second.at(8))/it2->second.at(8));
-      latex << "  dPdnB & " << it3->second.at(8) << " & " << diff << " & ";
-      diff = std::abs(std::abs(it2->second.at(8)-it4->second.at(8))/it2->second.at(8));
-      latex << it4->second.at(8) << " & " << diff << " & ";
-      diff = std::abs(std::abs(it2->second.at(8)-it->second.at(8))/it2->second.at(8));
-      latex << it->second.at(8) << " & " << diff << " & " << it2->second.at(8) << " \\\\ " << endl;
-      latex << "  \\hline" << endl;
-      latex << " \\end{tabular}" << endl;
-      latex << "\\end{center}" << endl;
-      cout << diff << endl;
-      if (it->second.at(8)>0.0 && diff<0.10) {
-          cout<<"success\n";
-      }
-      else {
-          cout<<"failure\n";
-      }
-      ++it2;
-    }
-
     std::map<std::vector<size_t>, double> external_acausal_points;
     std::map<std::vector<size_t>, std::pair<double, double>> fix_list;
     std::pair<double, double> closest;
@@ -513,13 +430,20 @@ void eos_nuclei::interpolate(double nB_p,
         }
       }
     }
+    
+    std::map<std::vector<size_t>,double>::iterator it7;
+    for (it7=results_final.begin(); it7 != results_final.end(); ++it7) {
+      fix_list[it7->first]=std::make_pair(it7->second,0.0);
+    }
 
     double fixed = 0.0;
     double eta = 0.2;
     std::map<std::vector<size_t>, std::pair<double, double>>::iterator it5;
     for (it5=fix_list.begin(); it5 != fix_list.end(); ++it5) {
       fixed=ike.tgp_F->get(it5->first)+((it5->second.first-ike.tgp_F->get(it5->first))*std::exp(-std::pow(it5->second.second, 2.0)/std::pow(eta, 2.0)));
+      cout << tg_file.get(it5->first) << " " << fixed << endl;
       tg_file.get(it5->first)=fixed;
+      cout << tg_file.get(it5->first) << endl;
     }
     std::map<std::vector<size_t>, double>::iterator it6;
     for (it6=results.begin(); it6 != results.end(); ++it6) {
