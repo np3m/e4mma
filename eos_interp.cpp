@@ -83,6 +83,42 @@ double eos_nuclei::interp_min
 
 #endif
 
+int eos_nuclei::test_hdf5io () {
+    std::string cs2in = "/home/jbaut001/st.o2";
+    std::string Fintin = "/home/awsteiner/wcs/eos/fid_3_14_23.o2";
+    std::string cs2o2 = "/home/jbaut001/test/sttest.o2";
+    std::string Finto2 = "/home/jbaut001/test/fidtest.o2";
+    std::filesystem::copy_file(cs2in, cs2o2, std::filesystem::copy_options::overwrite_existing);
+    std::filesystem::copy_file(Fintin, Finto2, std::filesystem::copy_options::overwrite_existing);
+
+    hdf_file hff, hff2;
+    o2scl::tensor_grid<> tgp_cs2, tgp_Fint;
+    hff.open_or_create(cs2o2);
+    hff2.open_or_create(Finto2);
+    hdf_input(hff, tgp_cs2, "cs2");
+    hdf_input(hff2, tgp_Fint, "Fint");
+    eos_nuclei::change_tgp(tgp_cs2, 3.0);
+    eos_nuclei::change_tgp(tgp_Fint, 50.0);
+    hdf_output(hff, tgp_cs2, "cs2");
+    hdf_output(hff2, tgp_Fint, "Fint");
+    hff.close();
+    hff2.close();
+    return 0;
+}
+
+void eos_nuclei::change_tgp(o2scl::tensor_grid<>& tg_file, double value) {
+    for (size_t inB=210;inB<=213;inB++) {
+        for (size_t iYe=2;iYe<=5;iYe++) {
+            for (size_t iT=64;iT<=65;iT++) {
+                vector<size_t> index={inB, iYe, iT};
+                cout << tg_file.get(index) << endl;
+                tg_file.get(index)=value;
+                cout << tg_file.get(index) << endl;
+            }
+        }
+    }
+}
+
 int eos_nuclei::interp_point(std::vector<std::string> &sv,
                              bool itive_com) {
   if (sv.size()<6) {
@@ -93,7 +129,7 @@ int eos_nuclei::interp_point(std::vector<std::string> &sv,
   double nB_cent=o2scl::function_to_double(sv[1]);
   double Ye_cent=o2scl::function_to_double(sv[2]);
   double T_cent=o2scl::function_to_double(sv[3]);
-  
+
   int window=o2scl::stoi(sv[4]);
 
   std::string st_o2=sv[5];
@@ -277,7 +313,7 @@ void eos_nuclei::interpolate(double nB_p,
     }
     intermediary_results[it->first]=value;
     results[it->first]=value[5];
-    results_final[it->first]=value[0];
+    results_final[it->first]=it->second.at(0);
     ++it2;
   }
   it2=results_table.begin();
@@ -337,6 +373,13 @@ void eos_nuclei::interpolate(double nB_p,
     latex << it4->second.at(8) << " & " << diff << " & ";
     diff = std::abs(std::abs(it2->second.at(8)-it->second.at(8))/it2->second.at(8));
     latex << it->second.at(8) << " & " << diff << " & " << it2->second.at(8) << " \\\\ " << endl;
+    latex << "  \\hline" << endl;
+    diff = std::abs(std::abs(it2->second.at(0)-it3->second.at(0))/it2->second.at(0));
+    latex << " Fint & " << it3->second.at(0) << " & " << diff << " & ";
+    diff = std::abs(std::abs(it2->second.at(0)-it4->second.at(0))/it2->second.at(0));
+    latex << it4->second.at(0) << " & " << diff << " & ";
+    diff = std::abs(std::abs(it2->second.at(0)-it->second.at(0))/it2->second.at(0));
+    latex << it->second.at(0) << " & " << diff << " & " << it2->second.at(0) << " \\\\ " << endl;
     latex << "  \\hline" << endl;
     latex << " \\end{tabular}" << endl;
     latex << "\\end{center}" << endl;
@@ -467,7 +510,6 @@ int eos_nuclei::interp_file(std::vector<std::string> &sv,
     return 1;
   }
   
-  std::vector<double> point = {0.0, 0.0, 0.0};
   double nB = 0.0;
   double Ye = 0.0;
   double T_MeV = 0.0;
@@ -489,7 +531,7 @@ int eos_nuclei::interp_file(std::vector<std::string> &sv,
   std::filesystem::copy_file(table_path, stfix_o2, std::filesystem::copy_options::overwrite_existing);
   hff2.open_or_create(stfix_o2);
   std::ifstream csvfile;
-  if (sv.size()==5) {
+  if (sv.size()==4) {
     for (size_t inB=0; inB<nB_grid2.size(); inB++) {
       for (size_t iYe=0; iYe<Ye_grid2.size(); iYe++) {
         for (size_t iT=0; iT<T_grid2.size(); iT++) {
@@ -499,7 +541,7 @@ int eos_nuclei::interp_file(std::vector<std::string> &sv,
               !std::isfinite(tgp_cs2_old.get(index)) ||
               tgp_cs2_old.get(index)<0.0) &&
               nB_grid2[inB]<max_nB_inter) {
-            point = {nB_grid2[inB], Ye_grid2[iYe], T_grid2[iT]};
+              std::vector<double> point = {nB_grid2[inB], Ye_grid2[iYe], T_grid2[iT]};
             eos_nuclei::interpolate(point[0], point[1], point[2], window, (window*2), st_o2, tgp_cs2, tgp_file, itive_com);
           }
         }
@@ -514,15 +556,16 @@ int eos_nuclei::interp_file(std::vector<std::string> &sv,
     while (std::getline(csvfile, line)) {
         std::stringstream s(line);
         if (true) {
+            std::vector<double> file_point;
             x=0;
             while (std::getline(s, val, ',')) {
-                point[x] = std::stod(val);
+                file_point.push_back(std::stod(val));
                 x++;
                 if (s.peek()==',') {
                     s.ignore();
                 }
             }
-            eos_nuclei::interpolate(point[0], point[1], point[2], window, (window*2), st_o2, tgp_cs2, tgp_file, itive_com);
+            eos_nuclei::interpolate(file_point[0], file_point[1], file_point[2], window, (window*2), st_o2, tgp_cs2, tgp_file, itive_com);
         }
         else {
             cout<<"csv file of superliminal points must have 3 terms in each line";
@@ -1096,7 +1139,7 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
       cout << "F_nB: " << dF_dnB << " " << t1 << " " << t2 << endl;
       double tab_dF_dnB = t1;
       cout << F_nBnB << " " << t3 << " ";
-     if (!(index[1]==0)) { 
+     if (!(index[1]==0) && !(index[1]==69)) { 
         t1=(tgp_F->get(index)-tgp_F->get(jm1))/hc_mev_fm/
           (Ye_grid[index[1]]-Ye_grid[index[1]-1]);
         t2=(tgp_F->get(jp1)-tgp_F->get(index))/hc_mev_fm/

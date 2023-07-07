@@ -123,6 +123,9 @@ eos_nuclei: eos.o main.o eos_nuclei.o eos_had_skyrme_ext.o eos_interp.o \
 		neutrino/PolarizationNonRelv2Apr8.o neutrino/jacobi_rule.o \
 		$(LIBS) -lreadline
 
+test_program: test.cpp
+	$(LMPI_CXX) $(LMPI_CFLAGS) \
+		-o test -c test.cpp
 # ----------------------------------------------------------------
 # Version without MPI
 # ----------------------------------------------------------------
@@ -474,4 +477,15 @@ test5:
 	./eos_nuclei -load /home/awsteiner/wcs/eos/fid_3_14_23.o2 \
 	-interp-point 0.000550846 0.05 0.1 2 /home/jbaut001/st.o2
 
+point-test:
+	./eos_nuclei \
+		-set select_cs2_test 1 \
+		-select-model $(P_FIDUCIAL) \
+		-set a_virial 10 -set b_virial 10 \
+		-set extend_frdm 0 \
+		-set fd_A_max 600 -set max_ratio 7.0 \
+		-set fixed_dist_alg 1999 \
+		-set function_verbose 0 \
+		-load /home/awsteiner/wcs/eos/fid_3_14_23.o2 \
+		-point-nuclei 0.000502377 0.04 1.8602
 -include makefile.aws

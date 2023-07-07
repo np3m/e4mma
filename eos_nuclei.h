@@ -243,6 +243,14 @@ public:
   int solve_hrg(size_t nv, const ubvector &x,
                 ubvector &y, double nB, double Ye, double T);
   
+  /** \brief Used to change values in hdf5 i/o test function
+   */
+  void change_tgp(o2scl::tensor_grid<>& tg_file, double value);
+
+  /** \brief Test input and output to o2 files.
+   */
+  int test_hdf5io ();
+
   /// \name Grid specification
   //@{
   size_t n_nB2;
