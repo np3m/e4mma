@@ -101,6 +101,10 @@ int eos_nuclei::test_hdf5io () {
     eos_nuclei::change_tgp(tgp_Fint, 50.0);
     hdf_output(hff, tgp_cs2, "cs2");
     hdf_output(hff2, tgp_Fint, "Fint");
+    hff.seti("derivs_computed", 0);
+    hff.seti("with_leptons", 0);
+    hff2.seti("derivs_computed", 0);
+    hff.seti("with_leptons", 0);
     hff.close();
     hff2.close();
     return 0;
@@ -149,6 +153,8 @@ int eos_nuclei::interp_point(std::vector<std::string> &sv,
 
   if (sv.size()>=7) {
       hdf_output(hff2, tgp_file, "Fint");
+      hff2.seti("derivs_computed", 0);
+      hff2.seti("with_leptons", 0);
       hff2.close();
   }
 
@@ -330,16 +336,16 @@ void eos_nuclei::interpolate(double nB_p,
   latex << "  Variable & Fint & error & F & error & Combined & error & Table \\\\" << endl;
   latex << "  \\hline" << endl;
   double diff = std::abs(std::abs(it2->second.at(5)-it3->second.at(5))/it2->second.at(5));
-  latex << "  cs_sq & " << it3->second.at(5) << " & " << diff << " & ";
+  latex << "  $\\mathrm{cs}^2$ & " << it3->second.at(5) << " & " << diff << " & ";
   diff = std::abs(std::abs(it2->second.at(5)-it4->second.at(5))/it2->second.at(5));
     latex << it4->second.at(5) << " & " << diff << " & ";
     diff = std::abs(std::abs(it2->second.at(5)-it->second.at(5))/it2->second.at(5));
     latex << it->second.at(5) << " & " << diff << " & " << it2->second.at(5) << " \\\\ " << endl;
     cout << "Here: " << it->second.at(5) << endl;
-    cout << "cs_sq_tab " << it2->second.at(5) << endl;
+    cout << "$\\mathrm{cs}^2\\_\\mathrm{tab}$ " << it2->second.at(5) << endl;
 
-    cout << "F_intp " << it->second.at(0) << endl;
-    cout << "F_tab " << it2->second.at(0) << endl;
+    cout << "F\\_intp " << it->second.at(0) << endl;
+    cout << "F\\_tab " << it2->second.at(0) << endl;
     diff = std::abs(std::abs(it2->second.at(0)-it->second.at(0))/it2->second.at(0));
     cout << diff << endl;
     if (diff < 0.001) {  
@@ -484,7 +490,7 @@ void eos_nuclei::interpolate(double nB_p,
     std::map<std::vector<size_t>, std::pair<double, double>>::iterator it5;
     for (it5=fix_list.begin(); it5 != fix_list.end(); ++it5) {
       fixed=ike.tgp_F->get(it5->first)+((it5->second.first-ike.tgp_F->get(it5->first))*std::exp(-std::pow(it5->second.second, 2.0)/std::pow(eta, 2.0)));
-      cout << tg_file.get(it5->first) << " " << fixed << endl;
+      cout << tg_file.get(it5->first) << " " << fixed << " Original: " << ike.tgp_F->get(it5->first) << " Closest: " << it5->second.first << " Distance: " << it5->second.second << endl;
       tg_file.get(it5->first)=fixed;
       cout << tg_file.get(it5->first) << endl;
     }
@@ -574,6 +580,8 @@ int eos_nuclei::interp_file(std::vector<std::string> &sv,
   }
 
   hdf_output(hff2,tgp_file,"Fint");
+  hff2.seti("derivs_computed", 0);
+  hff2.seti("with_leptons", 0);
   hff.close();
   hff2.close();
   return 0;
