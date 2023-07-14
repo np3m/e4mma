@@ -192,7 +192,7 @@ double fore::self_energy(double p, std::vector<double> params, ubmatrix nuc_mod,
   double last_val_p = proton_phase_shift_sum(com_momentum[com_momentum.size()-1]);
   funct fp = NR_fermion_distro(nuc_mod(1,0),T,nuc_mod(1,1));
 
-  if(verbose>1){
+  if(verbose>2){
     cout << "se: fn, fp: " << fn(p) << " " << fp(p) << endl;
   }
   
@@ -201,7 +201,7 @@ double fore::self_energy(double p, std::vector<double> params, ubmatrix nuc_mod,
   funct fiip=[this,p,fp,last_val_p] (double k) -> double { return k*fp(k)*
                     inner_integral(p,k,proton_phase_shift_sum,m_p,last_val_p); };
 
-  if(verbose>1){
+  if(verbose>2){
     cout << "se: fiin, fiip: " << fiin(p) << " " << fiip(p) << endl;
   }
   // The result and the uncertainty
@@ -216,7 +216,7 @@ double fore::self_energy(double p, std::vector<double> params, ubmatrix nuc_mod,
   int ret_p = gu.integ_err(fiip, 0.0, 0.0, res_p, err_p);
   //int ret_p1 = kron.integ_err(fiip, 0.0, 1.0e8, res_p1, err_p1);
 
-  if(verbose>0){
+  if(verbose>2){
     cout << "Result(gu): " << res_n << " Uncertainty: " << err_n << endl;
     //cout << "Result(kron): " << res_n1 << " Uncertainty: " << err_n1 << endl;
     cout << "Result(gu): " << res_p << " Uncertainty: " << err_p << endl;
@@ -229,7 +229,7 @@ double fore::self_energy(double p, std::vector<double> params, ubmatrix nuc_mod,
   double m_bar_p = (m_pi*m_p)/(m_pi+m_p);  // Reduced mass
   tot += ((m_p+m_pi)/(2*pi*p*m_bar_p*m_bar_p))*res_p;
 
-  if(verbose>0){  
+  if(verbose>2){  
     cout << "se: p, se: " << p << " " << tot << endl;
   }
   return tot;
@@ -283,13 +283,13 @@ funct fore::rel_boson_distro(double m, double T, double mu, funct sigma) {
   return distro;
 }
 
-bool fore::condensation_exists(funct sigma_pi, double mu) {
+double fore::condensation_exists(funct sigma_pi, double mu) {
   funct pi_en = [this,sigma_pi](double p) -> double {return sqrt(p*p+m_pi*m_pi) + sigma_pi(p); };
   double low_p_min, sigma_pi_min, high_p_min, x3; double x1=0.0; double x2=200.0;
 
   mcn.min_bkt(x1, 0, 1.0e4, low_p_min, pi_en);
   mcn.min_bkt(x2, 0, 1.0e4, sigma_pi_min, sigma_pi);
-  if (verbose>0) {
+  if (verbose>2) {
     std::cout << "pion energy min: " << low_p_min << " at momentum: " << x1 << std::endl;
     std::cout << "self energy min: " << sigma_pi_min << " at momentum: " << x2 << std::endl;
     std::cout << "self energy at p=200: " << sigma_pi(200) << std::endl;
@@ -303,21 +303,26 @@ bool fore::condensation_exists(funct sigma_pi, double mu) {
   }
 
   mcn.min_bkt(x3,x1,x2, high_p_min, pi_en);
-  if (verbose>0) { 
+  if (verbose>2) { 
     std::cout << "high p min: " << high_p_min << " at " << x3 << std::endl;
     std::cout << "high p min: " << pi_en(0) << " at 0" << std::endl;
     std::cout << "high p min: " << pi_en(x2) << " at " << x2 << std::endl;
   }
   double global_min = min(low_p_min, high_p_min);
-  if (global_min<=mu) { return true;}
-  else {return false;}
+  if (global_min<=mu) {
+    mu=global_min;
+    //return true;
+  }
+  //else {return false;}
+  return mu;
 }
 
 double fore::rel_pion_number_density(double T, double mu, vector<double> params, ubmatrix nuc_mod) {
     
   funct sigma_pi = self_energy_interp(params, nuc_mod, T);
 
-  if (condensation_exists(sigma_pi,mu)) {return 0.0;}
+  //if (condensation_exists(sigma_pi,mu)) {return 0.0;}
+  mu = condensation_exists(sigma_pi,mu);
 
   funct integrand = [this,T,mu,sigma_pi](double p) -> double { 
     return p*p*rel_boson_distro(m_pi,T,mu,sigma_pi)(p); };
@@ -415,91 +420,6 @@ double fore::boson_entropy(funct distro) {
   return -res/(2*pi*pi);
 }
 
-void fore::single_point_data(double Y_p, double T, double n_B, double mu_n, 
-                double mu_p, double meff_n, double meff_p, double U_n, double U_p){
-
-  Y_pi=0.0, e_pi=0.0, s_pi=0.0, press_pi=0.0;
-
-  funct sigma_pi = self_energy_interp(pseudo_pot_params, nucleon_mod, T);
-
-  if (mu_pi>(m_pi+sigma_pi(0))){
-    flag = 0;
-  } else {
-    Y_pi = rel_pion_number_density(T, mu_pi, pseudo_pot_params, nucleon_mod);
-
-    if (Y_pi!=0) {
-      Y_pi = Y_pi/n_B;
-    }
-
-    if (Y_pi==0){
-      flag = 0;
-    } else if (Y_pi>0) {
-      e_pi = pion_energy(T, mu_pi, pseudo_pot_params, nucleon_mod);
-      s_pi = pion_entropy(T, mu_pi, pseudo_pot_params, nucleon_mod)/n_B;
-
-      press_pi = T*s_pi*n_B - e_pi + Y_pi*n_B*mu_pi;
-
-      e_pi = e_pi/(hc_mev_fm*hc_mev_fm*hc_mev_fm);
-      press_pi = press_pi/(hc_mev_fm*hc_mev_fm*hc_mev_fm);
-    } else {
-      flag = -1;
-    }
-    cout << "Y_pi, e, s, P: " << Y_pi << " " << e_pi << " " << s_pi << " " << press_pi << endl;
-  }
-  return;
-}
-
-void fore::calc_mu(boson &b, fermion &n, fermion &p, double T, double n_B) {
-
-  // Convert units from 1/fm to MeV to use here..
-  T = T*hc_mev_fm;
-  mu_n = n.mu*hc_mev_fm;       // Neutron Chemical potential
-  mu_p = p.mu*hc_mev_fm;       // Proton chemical potential
-  mu_pi = b.mu*hc_mev_fm;      // Pion chemical potential
-  meff_n = n.ms*hc_mev_fm;     // Neutron effective mass
-  meff_p = p.ms*hc_mev_fm;     // Proton effective mass
-  U_n=(n.mu+n.nu)*hc_mev_fm;   // Neutron single particle potential
-  U_p=(p.mu+p.nu)*hc_mev_fm;   // Proton single particle potential
-
-  m_n = n.m*hc_mev_fm;         // Neutron rest mass
-  m_p = p.m*hc_mev_fm;         // Proton rest mass
-  m_pi = b.m*hc_mev_fm;        // Pion rest mass
-
-  if (verbose>0) {
-    cout << "n_B, T: " << n_B << " " << T << endl;
-    cout << "mu_n, mu_p, mu_pi: " << mu_n << " " << mu_p << " " << mu_pi << endl;
-    cout << "meff_n, meff_p: " << meff_n << " " << meff_p << endl;
-    cout << "U_n, U_p: " << U_n << " " << U_p << endl;
-    cout << "m_n, m_p, m_pi:  " << m_n << " " << m_p << " " << m_pi << endl;
-  }
-
-  double n_0 = .16;
-  double n_0_MeV3 = n_0*(hc_mev_fm*hc_mev_fm*hc_mev_fm);
-
-  nucleon_mod.resize(2,2);
-  nucleon_mod(0,0)=meff_n;
-  nucleon_mod(0,1)=mu_n-U_n-m_n;
-  nucleon_mod(1,0)=meff_p;
-  nucleon_mod(1,1)=mu_p-U_p-m_p;
-
-if (verbose>0) {
-  cout << "nuc_mod(0,1): " << nucleon_mod(0,0) << " " << nucleon_mod(0,1) << endl;
-  cout << "nuc_mod(2,3): " << nucleon_mod(1,0) << " " << nucleon_mod(1,1) << endl;
-  cout << "p_list.size(): " << p_list.size() << endl;
-  cout << "p_list: " << p_list[0] << " - " << p_list[p_list.size()-1] << std::endl;
-}
-
-  //con_chk(T,n_B);
-  //exit(-1);
-
-  single_point_data(Y_p, T, n_B, mu_n, mu_p, meff_n, meff_p, U_n, U_p);
-  b.n=Y_pi;
-  b.pr=press_pi;
-  b.ed=e_pi;
-  b.en=s_pi;
-  return;
-}
-
 void fore::load_pion(){
   verbose=0;
   pseudo_pot_params = {1, 0.3081465, 1, 0.3081465};
@@ -521,6 +441,98 @@ void fore::load_pion(){
   interp_phase_shift_sum(pseudo_pot_params);
   return;
 }
+
+void fore::single_point_data(double Y_p, double T, double n_B, double mu_n, 
+                double mu_p, double meff_n, double meff_p){
+
+  Y_pi=0.0, e_pi=0.0, s_pi=0.0, press_pi=0.0;
+
+  funct sigma_pi = self_energy_interp(pseudo_pot_params, nucleon_mod, T);
+
+  // I think the condesation check here is wrong since self-energy has 
+  // minimums around pion momentum of 300 MeV and not at 0.
+  //if (mu_pi>(m_pi+sigma_pi(0))){
+  //  flag = 0;
+  //} else {
+  mu_pi=condensation_exists(sigma_pi, mu_pi);
+    Y_pi = rel_pion_number_density(T, mu_pi, pseudo_pot_params, nucleon_mod);
+
+    if (Y_pi!=0) {
+      Y_pi = Y_pi/n_B;
+    }
+
+    if (Y_pi==0){
+      flag = 0;
+    } else if (Y_pi>0) {
+      e_pi = pion_energy(T, mu_pi, pseudo_pot_params, nucleon_mod);
+      s_pi = pion_entropy(T, mu_pi, pseudo_pot_params, nucleon_mod)/n_B;
+
+      press_pi = T*s_pi*n_B - e_pi + Y_pi*n_B*mu_pi;
+
+      e_pi = e_pi/(hc_mev_fm*hc_mev_fm*hc_mev_fm);
+      press_pi = press_pi/(hc_mev_fm*hc_mev_fm*hc_mev_fm);
+    } else {
+      flag = -1;
+    }
+    cout << "n_pi, e, s, P: " << Y_pi*n_B << " " << e_pi << " " << s_pi << " " << press_pi << endl;
+  //}
+  return;
+}
+
+int fore::calc_mu(boson &b, fermion &n, fermion &p, double T, double n_B) {
+
+  verbose=1;
+  // Convert units from 1/fm to MeV to use here..
+  T = T*hc_mev_fm;
+  mu_n = n.mu*hc_mev_fm;       // Neutron Chemical potential
+  mu_p = p.mu*hc_mev_fm;       // Proton chemical potential
+  mu_pi = b.mu*hc_mev_fm;      // Pion chemical potential
+  meff_n = n.ms*hc_mev_fm;     // Neutron effective mass
+  meff_p = p.ms*hc_mev_fm;     // Proton effective mass
+  U_n = n.nu*hc_mev_fm;        // Neutron single particle potential
+  U_p = p.nu*hc_mev_fm;        // Proton single particle potential
+
+  m_n = n.m*hc_mev_fm;         // Neutron rest mass
+  m_p = p.m*hc_mev_fm;         // Proton rest mass
+  m_pi = b.m*hc_mev_fm;        // Pion rest mass
+
+  if (verbose>0) {
+    cout << "n_B, T, n_e: " << n_B <<" "<< T <<" "<< n_e << endl;
+    cout << "mu_n, mu_p, mu_pi: " << mu_n << " " << mu_p << " " << mu_pi << endl;
+    cout << "meff_n, meff_p: " << meff_n << " " << meff_p << endl;
+    cout << "U_n, U_p: " << U_n << " " << U_p << endl;
+    //cout << "mu-U: " << -mu_n+U_n << " " << -mu_p+U_p << endl;
+    cout << "nu_n, nu_p: " << n.nu << " " << p.nu << endl;
+    cout << "m_n, m_p, m_pi:  " << m_n << " " << m_p << " " << m_pi << endl;
+  }
+
+  double n_0 = .16;
+  double n_0_MeV3 = n_0*(hc_mev_fm*hc_mev_fm*hc_mev_fm);
+
+  nucleon_mod.resize(2,2);
+  nucleon_mod(0,0)=meff_n;
+  nucleon_mod(0,1)=mu_n-U_n-m_n;
+  nucleon_mod(1,0)=meff_p;
+  nucleon_mod(1,1)=mu_p-U_p-m_p;
+
+  if (verbose>0) {
+    cout << "nuc_mod(0,1): " << nucleon_mod(0,0) << " " << nucleon_mod(0,1) << endl;
+    cout << "nuc_mod(2,3): " << nucleon_mod(1,0) << " " << nucleon_mod(1,1) << endl;
+    cout << "p_list.size(): " << p_list.size() << endl;
+    cout << "p_list: " << p_list[0] << " - " << p_list[p_list.size()-1] << std::endl;
+  }
+
+  single_point_data(Y_p, T, n_B, mu_n, mu_p, meff_n, meff_p);
+
+  b.n=Y_pi*n_B;
+  b.pr=press_pi;
+  b.ed=e_pi;
+  b.en=s_pi;
+  return 0;
+}
+
+// This is an initial version, the final version will need to be in 
+// the eos_nuclei.cpp
 
 void fore::con_chk(double T, double n_B){
 

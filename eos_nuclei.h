@@ -819,6 +819,12 @@ public:
 		 int &NmZ_min, int &NmZ_max,
 		 std::map<std::string,double> &vdet);
 
+  /** \brief Solve pions in homogeneous nuclear matter
+   */
+  double solve_pion(double x, boson &b, 
+      fermion &n, fermion &p, fermion &e, 
+      double T, double nB, thermo &thx, std::map<string,double> &vdet);
+
   /** \brief Compute muons in nuclear matter
    */
   int nuc_matter_muons(size_t nv, const ubvector &x, ubvector &y,

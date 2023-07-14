@@ -8,6 +8,8 @@
 #include <o2scl/inte_gauss_cern.h>
 #include <o2scl/inte_qagiu_gsl.h>
 #include <o2scl/min_cern.h>
+#include <o2scl/root_cern.h>
+#include <o2scl/root_brent_gsl.h>
 
 #include <functional>
 #include <o2scl/root_brent_gsl.h>
@@ -36,7 +38,7 @@ public:
   int verbose;
 
   double hbar, hbar_c, n_0, n_0_MeV3, m_n, m_p, m_e, m_mu, m_pi;
-  double Y_p, n_B, mu_n, mu_p, meff_n, meff_p, U_n, U_p,mu_pi;
+  double Y_p, n_B, mu_n, mu_p, meff_n, meff_p, U_n, U_p,mu_pi, n_e, n_pi;
   int flag = 1; // 1 when values are computed, 0 for condensation
   double Y_pi; // Pion abundance n_pi/n_B
   double e_pi; // Energy density of pions
@@ -106,7 +108,7 @@ public:
   //for the location of the potential minimum at finite momentum
   //starting the minimum function near the minimum of $\Sigma_\pi$ which
   //should only have one minima and another to search near zero.
-  bool condensation_exists(funct sigma_pi, double mu);
+  double condensation_exists(funct sigma_pi, double mu);
 
   // Computes the number density of interacting pions
   double rel_pion_number_density(double T, double mu, vector<double> params, ubmatrix nuc_mod);
@@ -129,9 +131,9 @@ public:
   double boson_entropy(funct distro);
 
   void single_point_data(double Y_p, double T, double n_B, double mu_n, 
-                  double mu_p, double meff_n, double meff_p, double U_n, double U_p);
+                  double mu_p, double meff_n, double meff_p);
 
-  void calc_mu(boson &b, fermion &n, fermion &p, double T, double n_B);
+  int calc_mu(boson &b, fermion &n, fermion &p, double T, double n_B);
 
   void load_pion();
 
