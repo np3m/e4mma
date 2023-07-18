@@ -822,10 +822,6 @@ public:
    */
   std::map<std::vector<size_t>, std::vector<double>> calculate_table_values(std::vector<size_t> points_list, interpm_krige_eos& ike);
 
-  /** \brief calculate results from table for points in list
-   */
-  void remove_eg(std::map<std::vector<size_t>, std::vector<double>>& points, interpm_krige_eos& with_eg, interpm_krige_eos& without_eg);
-
   /** \brief minimize parameters for interpolation object
    */
   void minimize_parameters(interpm_krige_eos& ike);

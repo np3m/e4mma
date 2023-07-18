@@ -201,19 +201,15 @@ void eos_nuclei::interpolate(double nB_p,
   cout << "Using window size: " << window << endl;
 
   // Create interpolation object
-  interpm_krige_eos ike, ike_with_e;
+  interpm_krige_eos ike;
   ike.mode=ike.mode_loo_cv_bf;
   ike.full_min=true;
   ike.def_mmin.verbose=1;
-  ike_with_e.mode=ike.mode_loo_cv_bf;
-  ike_with_e.full_min=true;
-  ike_with_e.def_mmin.verbose=1;
   
   /// Load cs2 from a file
   hdf_file hff;
   hff.open(st_o2);
   hdf_input(hff,ike.tgp_cs2);
-  hdf_input(hff,ike_with_e.tgp_cs2);
   hff.close();
 
   for(int dnB=-window;dnB<=window;dnB++) {
@@ -235,9 +231,6 @@ void eos_nuclei::interpolate(double nB_p,
             ike.fix_list.push_back(index[0]);
             ike.fix_list.push_back(index[1]);
             ike.fix_list.push_back(index[2]);
-            ike_with_e.fix_list.push_back(index[0]);
-            ike_with_e.fix_list.push_back(index[1]);
-            ike_with_e.fix_list.push_back(index[2]);
             //cout << "fix: " << index[0] << " " << index[1] << " "
             //<< index[2] << endl;
           } else if (ike.tgp_cs2.get_rank()>=3 &&
@@ -247,9 +240,6 @@ void eos_nuclei::interpolate(double nB_p,
             ike.calib_list.push_back(index[0]);
             ike.calib_list.push_back(index[1]);
             ike.calib_list.push_back(index[2]);
-            ike_with_e.calib_list.push_back(index[0]);
-            ike_with_e.calib_list.push_back(index[1]);
-            ike_with_e.calib_list.push_back(index[2]);
             //cout << "cal: " << index[0] << " " << index[1] << " "
             //<< index[2] << endl;
           }
@@ -277,70 +267,44 @@ void eos_nuclei::interpolate(double nB_p,
   vector<mcovar_funct_rbf_noise> mfr(1);
   mfr[0].len.resize(3);
   ike.set_covar(mfr,param_lists);
-  ike_with_e.set_covar(mfr,param_lists);
  
   ike.skip_optim=true;
   ike.set(nB_grid2,Ye_grid2,T_grid2,tg_Fint,tg_P,tg_S,
           tg_mun,tg_mup,tg_mue,neutron.m,proton.m);
-  ike_with_e.skip_optim=true;
-  ike_with_e.set(nB_grid2,Ye_grid2,T_grid2,tg_F,tg_P,tg_S,
-          tg_mun,tg_mup,tg_mue,neutron.m,proton.m);
-  ike_with_e.includeMue=true;
 
   minimize_parameters(ike);
-  minimize_parameters(ike_with_e);
 
   // Use the interpolation results to fix points
   cout << "\nstarting to interpolate here: \n";
   if (ike.fix_list.size() != 0) {
     results_no_mue=ike.interpolate_points(ike.fix_list);
-    results_with_mue=ike_with_e.interpolate_points(ike_with_e.fix_list);
     results_table=calculate_table_values(ike.fix_list, ike);
   }
   else {
     results_no_mue=ike.interpolate_points(ike.calib_list);
-    results_with_mue=ike_with_e.interpolate_points(ike_with_e.calib_list);
     results_table=calculate_table_values(ike.calib_list, ike);
   }
   std::map<std::vector<size_t>, double> results_final;
 
-  double eta2 = 20000.0;
-  std::map<std::vector<size_t>, std::vector<double>> intermediary_results;
-  std::map<std::vector<size_t>, std::vector<double>>::iterator it, it2, it3, it4;
-  remove_eg(results_with_mue, ike_with_e, ike);
-  it2=results_with_mue.begin();
+  std::map<std::vector<size_t>, std::vector<double>>::iterator it, it2;
   for (it=results_no_mue.begin();it!=results_no_mue.end();++it) {
-    cout << "Point: " << it->first.at(0) << " " << it->first.at(1) << " " << it->first.at(2) << endl;
-    cout << "without e, with e\n";
-    std::vector<double> value;
-    for (size_t x=0;x<it->second.size();x++) {
-      value.push_back(std::exp(-eta2*nB_grid2[it->first.at(0)])*it->second.at(x)+(-exp(-eta2*nB_grid2[it2->first.at(0)])+1.0)*it2->second.at(x));
-      cout << it->second.at(x) << " " << it2->second.at(x) << endl;
-    }
-    intermediary_results[it->first]=value;
-    results[it->first]=value[5];
+    results[it->first]=it->second.at(5);
     results_final[it->first]=it->second.at(0);
-    ++it2;
   }
   it2=results_table.begin();
-  it3=results_no_mue.begin();
-  it4=results_with_mue.begin();
-  std::ofstream latex{"table.tex"};
-  for (it=intermediary_results.begin(); it!=intermediary_results.end();++it) {
+  std::ofstream latex{"table.tex", std::ios_base::app};
+  for (it=results_no_mue.begin(); it!=results_no_mue.end();++it) {
   cout << "Point: " << it->first.at(0) << " " << it->first.at(1) << " " << it->first.at(2) << endl;
   latex << "Point: " << it->first.at(0) << " " << it->first.at(1) << " " << it->first.at(2) << "\\\\\n";
   latex << nB_grid2[it->first.at(0)] << " " << Ye_grid2[it->first.at(1)] << " " << T_grid2[it->first.at(2)] << endl;
   latex << "\\begin{center}" << endl;
-  latex << " \\begin{tabular}{|c|c|c|c|c|c|c|c|}" << endl;
+  latex << " \\begin{tabular}{|c|c|c|c|}" << endl;
   latex << "  \\hline" << endl;
-  latex << "  Variable & Fint & error & F & error & Combined & error & Table \\\\" << endl;
+  latex << "  Variable & Fint & error & Table \\\\" << endl;
   latex << "  \\hline" << endl;
-  double diff = std::abs(std::abs(it2->second.at(5)-it3->second.at(5))/it2->second.at(5));
-  latex << "  $\\mathrm{cs}^2$ & " << it3->second.at(5) << " & " << diff << " & ";
-  diff = std::abs(std::abs(it2->second.at(5)-it4->second.at(5))/it2->second.at(5));
-    latex << it4->second.at(5) << " & " << diff << " & ";
-    diff = std::abs(std::abs(it2->second.at(5)-it->second.at(5))/it2->second.at(5));
-    latex << it->second.at(5) << " & " << diff << " & " << it2->second.at(5) << " \\\\ " << endl;
+  double diff = std::abs(std::abs(it2->second.at(5)-it->second.at(5))/it2->second.at(5));
+  latex << "  $\\mathrm{cs}^2$ & " << it->second.at(5) << " & " << diff << " & ";
+    latex << it2->second.at(5) << " \\\\ " << endl;
     cout << "Here: " << it->second.at(5) << endl;
     cout << "$\\mathrm{cs}^2\\_\\mathrm{tab}$ " << it2->second.at(5) << endl;
 
@@ -357,7 +321,7 @@ void eos_nuclei::interpolate(double nB_p,
     cout << "Calculated: mun[MeV],mup[MeV],mue[MeV],S: " << it->second.at(1)*hc_mev_fm << " " << it->second.at(3)*hc_mev_fm << " " << it->second.at(2)*hc_mev_fm << " " << it->second.at(4) << " \n";
     cout << "Stored: mun[MeV],mup[MeV],mue[MeV],S: " << it2->second.at(1) << " ";
     cout << it2->second.at(3) << " ";
-    cout << it2->second.at(2) << " " << it2->second.at(4) << " " << it3->second.at(4) << " " << it4->second.at(4) << " \n";
+    cout << it2->second.at(2) << " " << it2->second.at(4) << " \n";
     diff = (std::abs(std::abs((it2->second.at(1)-(it->second.at(1)*hc_mev_fm)))/it2->second.at(1)));
     cout << diff << endl;
     if (diff<0.01) {
@@ -373,19 +337,13 @@ void eos_nuclei::interpolate(double nB_p,
     cout << "dmupmuednB from table: " << it2->second.at(7) << endl;
     cout << "dPdnB from table: " << it2->second.at(8) << endl;
     latex << "  \\hline" << endl;
-    diff = std::abs(std::abs(it2->second.at(8)-it3->second.at(8))/it2->second.at(8));
-    latex << "  dPdnB & " << it3->second.at(8) << " & " << diff << " & ";
-    diff = std::abs(std::abs(it2->second.at(8)-it4->second.at(8))/it2->second.at(8));
-    latex << it4->second.at(8) << " & " << diff << " & ";
-    diff = std::abs(std::abs(it2->second.at(8)-it->second.at(8))/it2->second.at(8));
-    latex << it->second.at(8) << " & " << diff << " & " << it2->second.at(8) << " \\\\ " << endl;
+    diff = std::abs(std::abs(it2->second.at(8)-it2->second.at(8))/it2->second.at(8));
+    latex << "  dPdnB & " << it2->second.at(8) << " & " << diff << " & ";
+    latex << it->second.at(8) << it2->second.at(8) << " \\\\ " << endl;
     latex << "  \\hline" << endl;
-    diff = std::abs(std::abs(it2->second.at(0)-it3->second.at(0))/it2->second.at(0));
-    latex << " Fint & " << it3->second.at(0) << " & " << diff << " & ";
-    diff = std::abs(std::abs(it2->second.at(0)-it4->second.at(0))/it2->second.at(0));
-    latex << it4->second.at(0) << " & " << diff << " & ";
     diff = std::abs(std::abs(it2->second.at(0)-it->second.at(0))/it2->second.at(0));
-    latex << it->second.at(0) << " & " << diff << " & " << it2->second.at(0) << " \\\\ " << endl;
+    latex << " Fint & " << it->second.at(0) << " & " << diff << " & ";
+    latex << it2->second.at(0) << " \\\\ " << endl;
     latex << "  \\hline" << endl;
     latex << " \\end{tabular}" << endl;
     latex << "\\end{center}" << endl;
@@ -397,8 +355,6 @@ void eos_nuclei::interpolate(double nB_p,
         cout<<"failure\n";
     }
     ++it2;
-    ++it3;
-    ++it4;
   }
   //begin fixing points near acausal cs_sq.
   if (ike.fix_list.size() != 0) {
@@ -480,32 +436,24 @@ void eos_nuclei::interpolate(double nB_p,
       }
     }
     
-    std::map<std::vector<size_t>,double>::iterator it7;
-    for (it7=results_final.begin(); it7 != results_final.end(); ++it7) {
-      fix_list[it7->first]=std::make_pair(it7->second,0.0);
+    std::map<std::vector<size_t>,double>::iterator it3;
+    for (it3=results_final.begin(); it3 != results_final.end(); ++it3) {
+      fix_list[it3->first]=std::make_pair(it3->second,0.0);
     }
 
     double fixed = 0.0;
     double eta = 0.2;
-    std::map<std::vector<size_t>, std::pair<double, double>>::iterator it5;
-    for (it5=fix_list.begin(); it5 != fix_list.end(); ++it5) {
-      fixed=ike.tgp_F->get(it5->first)+((it5->second.first-ike.tgp_F->get(it5->first))*std::exp(-std::pow(it5->second.second, 2.0)/std::pow(eta, 2.0)));
-      cout << tg_file.get(it5->first) << " " << fixed << " Original: " << ike.tgp_F->get(it5->first) << " Closest: " << it5->second.first << " Distance: " << it5->second.second << endl;
-      tg_file.get(it5->first)=fixed;
-      cout << tg_file.get(it5->first) << endl;
+    std::map<std::vector<size_t>, std::pair<double, double>>::iterator it4;
+    for (it4=fix_list.begin(); it4 != fix_list.end(); ++it4) {
+      fixed=ike.tgp_F->get(it4->first)+((it4->second.first-ike.tgp_F->get(it4->first))*std::exp(-std::pow(it4->second.second, 2.0)/std::pow(eta, 2.0)));
+      cout << tg_file.get(it4->first) << " " << fixed << " Original: " << ike.tgp_F->get(it4->first) << " Closest: " << it4->second.first << " Distance: " << it4->second.second << endl;
+      tg_file.get(it4->first)=fixed;
+      cout << tg_file.get(it4->first) << endl;
     }
-    std::map<std::vector<size_t>, double>::iterator it6;
-    for (it6=results.begin(); it6 != results.end(); ++it6) {
-      tg_cs2.get(it6->first)=it6->second;
+    std::map<std::vector<size_t>, double>::iterator it5;
+    for (it5=results.begin(); it5 != results.end(); ++it5) {
+      tg_cs2.get(it5->first)=it5->second;
     }
-  }
-}
-
-void eos_nuclei::remove_eg(std::map<std::vector<size_t>,std::vector<double>>& points, interpm_krige_eos& with_eg, interpm_krige_eos& without_eg) {
-  std::map<std::vector<size_t>,std::vector<double>>::iterator it;
-  for (it=points.begin(); it!=points.end(); ++it) {
-    double diff = with_eg.tgp_F->get(it->first)-without_eg.tgp_F->get(it->first);
-    it->second.at(0)=it->second.at(0)-diff;
   }
 }
 
