@@ -127,7 +127,7 @@ int eos_nuclei::interp_point(std::vector<std::string> &sv,
   
   ike.skip_optim=true;
   ike.set(nB_grid2,Ye_grid2,T_grid2,tg_F,tg_P,tg_S,
-          tg_mun,tg_mup,tg_mue,neutron.m,proton.m);
+          tg_mun,tg_mup,tg_mue,tg_Fint,neutron.m,proton.m);
   
   double min_qual=1.0e99;
   vector<double> p(4), min_p;
@@ -237,18 +237,20 @@ void interpm_krige_eos::set(std::vector<double> &nB_grid2,
                             o2scl::tensor_grid<> &tg_mun,
                             o2scl::tensor_grid<> &tg_mup,
                             o2scl::tensor_grid<> &tg_mue,
+                            o2scl::tensor_grid<> &tg_Fint,
                             double mn, double mpx) {
 
   ubmatrix ix(calib_list.size()/3,3);
   ubmatrix iy(1,calib_list.size()/3);
 
+  cout << "ix[0] ix[1] ix[2] Fint" << endl;
   for(size_t j=0;j<calib_list.size();j+=3) {
     ix(j/3,0)=calib_list[j];
     ix(j/3,1)=calib_list[j+1];
     ix(j/3,2)=calib_list[j+2];
     vector<size_t> index={calib_list[j],calib_list[j+1],
       calib_list[j+2]};
-    iy(0,j/3)=tg_F.get(index);
+    iy(0,j/3)=tg_Fint.get(index);
     if (true) {
       cout << ix(j/3,0) << " " << ix(j/3,1) << " "
            << ix(j/3,2) << " " << iy(0,j/3) << endl;
@@ -266,6 +268,7 @@ void interpm_krige_eos::set(std::vector<double> &nB_grid2,
   T_grid=T_grid2;
 
   tgp_F=&tg_F;
+  tgp_Fint=&tg_Fint;
   tgp_P=&tg_P;
   tgp_S=&tg_S;
   tgp_mun=&tg_mun;
@@ -367,9 +370,6 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
       iYe=fix_list[(ilist-calib_list.size()/3)*3+1];
       iT=fix_list[(ilist-calib_list.size()/3)*3+2];
     }
-    //inB=8;
-    //iYe=48;
-    //iT=1;
       
     std::vector<size_t> index={((size_t)inB),((size_t)iYe),((size_t)iT)};
         
@@ -397,18 +397,30 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
 
     std::vector<double> out(1);
     eval(index,out);
-    double Fintp=out[0]/hc_mev_fm;
-        
+    // Interacting free energy per baryon in units of 1/fm
+    double Fint=out[0]/hc_mev_fm;
+
+    // Electron and photon contribution to the free energy
+    // per baryon, in units of 1/fm
+    double Feg=(tgp_F->get(index)-tgp_Fint->get(index))/hc_mev_fm;
+
+    // First derivatives of the free energy
     deriv(index,out,0);
     double dFdi=out[0]/hc_mev_fm;
-    double dF_dnB=dFdi*didnB;
+    double dFint_dnB=dFdi*didnB;
+    
     deriv(index,out,1);
     double dFdj=out[0]/hc_mev_fm;
-    double dF_dYe=dFdj*djdYe;
+    double dFint_dYe=dFdj*djdYe;
+    
     deriv(index,out,2);
     double dFdk=out[0]/hc_mev_fm;
-    double dF_dT=dFdk*dkdT*hc_mev_fm;
-        
+    double dFint_dT=dFdk*dkdT*hc_mev_fm;
+
+    double dF_dnB=0.0;
+    double dF_dYe=0.0;
+    double dF_dT=dFint_dT;
+
     deriv2(index,out,0,0);
     double d2Fdi2=out[0]/hc_mev_fm;
     // d2FdnB2 in fm^5
@@ -438,10 +450,9 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
 
     // Use those derivatives to compute the chemical potentials and
     // the entropy density
-
-    double mun=Fintp-Ye*dF_dYe+nB*dF_dnB;
+    double mun=Fint-Ye*dF_dYe+nB*dF_dnB;
     double mue=tgp_mue->get(index)/hc_mev_fm;
-    double mup=Fintp+(1.0-Ye)*dF_dYe+nB*dF_dnB-mue;
+    double mup=Fint+(1.0-Ye)*dF_dYe+nB*dF_dnB;
     double en=-nB*dF_dT;
         
     // Compare theose derivatives with the stored values
@@ -455,7 +466,8 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
       std::cout << "  mun [1/fm], mun_intp [1/fm]: "
                 << tgp_mun->get(index)/hc_mev_fm << " "
                 << mun << endl;
-      cout << "    " << Fintp << " " << -Ye*dF_dYe << " " << nB*dF_dnB << endl;
+      //cout << "    " << Fintp << " " << -Ye*dF_dYe << " "
+      //<< nB*dF_dnB << endl;
       std::cout << "  mup [1/fm], mup_intp [1/fm]: "
                 << tgp_mup->get(index)/hc_mev_fm << " "
                 << mup << endl;
@@ -609,6 +621,9 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
       
     }
     cout.unsetf(ios::showpos);
+
+    cout << "Test." << endl;
+    exit(-1);
     
     if (dPdnB<=0.0) {
       cout << "Return failure for dPdnB<=0.0." << endl;
