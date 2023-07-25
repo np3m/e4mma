@@ -117,12 +117,13 @@ public:
   /// \name Tensor grid data
   //@{
   o2scl::tensor_grid<> *tgp_F;
-  o2scl::tensor_grid<> *tgp_Fint;
   o2scl::tensor_grid<> *tgp_P;
   o2scl::tensor_grid<> *tgp_S;
   o2scl::tensor_grid<> *tgp_mun;
   o2scl::tensor_grid<> *tgp_mup;
   o2scl::tensor_grid<> *tgp_mue;
+  o2scl::tensor_grid<> *tgp_Fint;
+  o2scl::tensor_grid<> *tgp_Sint;
   o2scl::tensor_grid<> tgp_cs2;
   //@}
 
@@ -130,6 +131,13 @@ public:
   double mneut;
   /// Proton mass
   double mprot;
+
+  /// Lepton EOS object
+  o2scl::eos_leptons elep;
+
+  interpm_krige_eos() {
+    elep.include_photons=true;
+  }    
   
   /** \brief Set the interpolator given the specified EOS
       objects
@@ -144,6 +152,7 @@ public:
                    o2scl::tensor_grid<> &tg_mup,
                    o2scl::tensor_grid<> &tg_mue,
                    o2scl::tensor_grid<> &tg_Fint,
+                   o2scl::tensor_grid<> &tg_Sint,
                    double mn, double mpx);
   
   /** \brief Additional constraints for the interpolation
