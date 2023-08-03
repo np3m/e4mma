@@ -1160,8 +1160,8 @@ double eos::free_energy_density_detail
     vdet["dgdnp"]=0.0;
     vdet["msn"]=neutron.ms*hc_mev_fm;
     vdet["msp"]=proton.ms*hc_mev_fm;
-    vdet["Un"]=0.0;
-    vdet["Up"]=0.0;
+    vdet["Un"]=neutron.nu*hc_mev_fm;
+    vdet["Up"]=proton.nu*hc_mev_fm;
     if (rmf_fields) {
       double sigma, omega, rho;
       rmf.get_fields(sigma,omega,rho);

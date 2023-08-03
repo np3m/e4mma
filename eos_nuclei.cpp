@@ -5125,18 +5125,23 @@ int eos_nuclei::store_point
   }
   
   if (include_detail) {
-    tg_zn.set(ix,vdet["zn"]);
-    tg_zp.set(ix,vdet["zp"]);
-    tg_F1.set(ix,vdet["F1"]);
-    tg_F2.set(ix,vdet["F2"]);
-    tg_F3.set(ix,vdet["F3"]);
-    tg_F4.set(ix,vdet["F4"]);
-    tg_Un.set(ix,vdet["Un"]);
-    tg_Up.set(ix,vdet["Up"]);
-    tg_msn.set(ix,vdet["msn"]);
-    tg_msp.set(ix,vdet["msp"]);
-    tg_g.set(ix,vdet["g"]);
-    tg_dgdT.set(ix,vdet["dgdT"]);
+    if (tg_zn.get_rank()<=1) {
+      cout << "Value of include_detail is true but the associated "
+           << "tensor_grid objects have not been allocated." << endl;
+    } else {
+      tg_zn.set(ix,vdet["zn"]);
+      tg_zp.set(ix,vdet["zp"]);
+      tg_F1.set(ix,vdet["F1"]);
+      tg_F2.set(ix,vdet["F2"]);
+      tg_F3.set(ix,vdet["F3"]);
+      tg_F4.set(ix,vdet["F4"]);
+      tg_Un.set(ix,vdet["Un"]);
+      tg_Up.set(ix,vdet["Up"]);
+      tg_msn.set(ix,vdet["msn"]);
+      tg_msp.set(ix,vdet["msp"]);
+      tg_g.set(ix,vdet["g"]);
+      tg_dgdT.set(ix,vdet["dgdT"]);
+    }
   }
   
   // AWS 8/4/2020: This section is commented out because the code does
@@ -6473,8 +6478,13 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
   if (guess_provided==false) {
     cout << "Function point_nuclei(): "
 	 << "Using hard-coded initial guess." << endl;
-    log_xn=-1.0;
-    log_xp=-1.0;
+    if (nB<0.16) {
+      log_xn=log10(nB*(1.0-Ye)/2.0);
+      log_xp=log10(nB*Ye/2.0);
+    } else {
+      log_xn=log10(nB*(1.0-Ye));
+      log_xp=log10(nB*Ye);
+    }
     if (alg_mode==2 || alg_mode==3) {
       A_min=20;
       A_max=40;
@@ -6495,13 +6505,21 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
   // If necessary and possible, compute the point
   
   int ret=-1;
+
+  if (use_alt_eos==false && model_selected==false) {
+    cout << "Cannot compute point because model_selected is false "
+         << "and use_alt_eos is false." << endl;
+  }
   
-  if (flag<10 || recompute==true) {
+  if ((use_alt_eos==true || model_selected==true) &&
+      (flag<10 || recompute==true || loaded==false)) {
 
     if (flag<10) {
       cout << "Computing point because flag < 10." << endl;
-    } else {
+    } else if (recompute==true) {
       cout << "Computing point because recompute is true." << endl;
+    } else if (loaded==false) {
+      cout << "Computing point because loaded is false." << endl;
     }
 
     if (loaded && inB>0 && inB<n_nB2-1 &&
@@ -6548,6 +6566,7 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
       store_point(inB,iYe,iT,nB,Ye,T,thx,log_xn,log_xp,Zbar,Nbar,
 		  mun_full,mup_full,X,A_min,A_max,NmZ_min,NmZ_max,
 		  10.0,vdet);
+      
     } else {
       cout << "Point succeeded." << endl;
     }

@@ -150,7 +150,6 @@ int eos_nuclei::interp_point(std::vector<std::string> &sv,
       }
     }
   }
-  exit(-1);
   
   if (min_qual>0.9e99) {
     cout << "All points failed." << endl;
@@ -405,7 +404,7 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
     // Electron and photon contribution to the free energy
     // per baryon, in units of 1/fm
     double Feg=(tgp_F->get(index)-tgp_Fint->get(index))/hc_mev_fm;
-    double Seg=(tgp_S->get(index)-tgp_Sint->get(index))/hc_mev_fm;
+    double Seg=tgp_S->get(index)-tgp_Sint->get(index);
 
     // Total free energy
     double F=Fint+Feg;
@@ -413,12 +412,22 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
     // Electron chemical potential in 1/fm
     double mue=tgp_mue->get(index)/hc_mev_fm;
 
-    if (false) {
-      cout << "Here." << endl;
+    if (true) {
+      //cout << "Here." << endl;
       elep.include_deriv=true;
+      elep.include_muons=false;
+      elep.include_photons=true;
       elep.e.mu=elep.e.m;
+      elep.e.n=Ye*nB;
+      //cout << elep.e.n << " " << elep.e.mu << endl;
       elep.pair_density_eq(Ye*nB,T_MeV/hc_mev_fm);
-      cout << "Here2." << endl;
+      //cout << elep.e.n << " " << elep.e.mu << " "
+      //<< elep.e.ed << " " << elep.ed.dndmu << endl;
+      cout << "Seg,Se,Sg,Seg[table]: " << elep.th.en/nB << " "
+           << elep.e.en/nB << " " 
+           << elep.ph.en/nB << " " << Seg << endl;
+      cout << "mue,mue[table]: " << elep.e.mu << " "
+           << tgp_mue->get(index)/hc_mev_fm << endl;
     }
     
     // First derivatives of the free energy
@@ -536,6 +545,9 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
     
     double den=en*T_MeV/hc_mev_fm+(mun+mneut)*nB*(1.0-Ye)+
       (mup+mprot)*nB*Ye+mue*nB*Ye;
+    std::cout << den << " " << en*T_MeV/hc_mev_fm << " "
+              << (mun+mneut)*nB*(1.0-Ye) << " "
+              << (mup+mprot)*nB*Ye << " " << mue*nB*Ye << std::endl;
     double nn2=nB*(1.0-Ye);
     double np2=nB*Ye;
     double cs_sq=(nn2*nn2*(f_nnnn-f_nnT*f_nnT/f_TT)+
@@ -544,7 +556,8 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
                   2.0*en*(nn2*f_nnT/f_TT+np2*f_npT/f_TT)-en*en/f_TT)/den;
 
     cout.setf(ios::showpos);
-    std::cout << "  cs2,cs2_intp: " << cs_sq << " ";
+    std::cout << "  cs2 (interp,table): " << den << " "
+              << nn2*nn2*f_nnnn/den << " " << cs_sq << " ";
     cout << tgp_cs2.get(index) << endl;
         
     // Also compute dPdnB
@@ -659,7 +672,7 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
     double dPdnB=dmun_dnB*nB*(1.0-Ye)+mun*(1.0-Ye)+
       dmupmue_dnB*nB*Ye+(mup+mue)*Ye-dfdnB;
     if (index[0]>0) {
-      cout << "  dPdnB,dPdnB_intp: " << dPdnB << " ";
+      cout << "  dPdnB (interp, table lo, table hi): " << dPdnB << " ";
       /*
         cout << "dP_dnB: " << endl;
         std::cout << "Computed: " << dPdnB << std::endl;
@@ -677,9 +690,6 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
     }
     cout.unsetf(ios::showpos);
 
-    cout << "Test." << endl;
-    exit(-1);
-    
     if (dPdnB<=0.0) {
       cout << "Return failure for dPdnB<=0.0." << endl;
       cout << endl;
