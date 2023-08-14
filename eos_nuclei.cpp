@@ -1205,9 +1205,6 @@ int eos_nuclei::eg_table(std::vector<std::string> &sv,
     return 2;
   }
   
-  // This is similar to eos::eg_table(), so I need
-  // to figure out how to combine them sensibly.
-
   if (loaded==false || n_nB2==0 || n_Ye2==0 || n_T2==0) {
     new_table();
   }
@@ -1236,9 +1233,6 @@ int eos_nuclei::eg_table(std::vector<std::string> &sv,
   S.set_grid(grid);
   F.set_grid(grid);
 
-  eos_sn_base esb;
-  esb.include_muons=include_muons;
-
   for (size_t i=0;i<n_nB2;i++) {
     double nB=nB_grid2[i];
     for (size_t j=0;j<n_Ye2;j++) {
@@ -1247,15 +1241,15 @@ int eos_nuclei::eg_table(std::vector<std::string> &sv,
         
 	double T_MeV=T_grid2[k];
 	
-	thermo lep;
-	double mue;
-	esb.compute_eg_point(nB_grid2[i],Ye_grid2[j],T_grid2[k],lep,mue);
-
-	mu_e.set(ix,mue*hc_mev_fm);
-	E.set(ix,lep.ed/nB*hc_mev_fm);
-	P.set(ix,lep.pr*hc_mev_fm);
-	S.set(ix,lep.en/nB);
-	F.set(ix,(lep.ed-T_MeV*lep.en)/nB*hc_mev_fm);
+        elep.include_muons=include_muons;
+        elep.pair_density_eq(nB_grid2[i]*Ye_grid2[j],
+                             T_grid2[k]/hc_mev_fm);
+        
+	mu_e.set(ix,elep.e.mu*hc_mev_fm);
+	E.set(ix,elep.th.ed/nB*hc_mev_fm);
+	P.set(ix,elep.th.pr*hc_mev_fm);
+	S.set(ix,elep.th.en/nB);
+	F.set(ix,(elep.th.ed-T_MeV*elep.th.en)/nB*hc_mev_fm);
 	if (include_muons) {
 	  Ymu.set(ix,muon.n*hc_mev_fm/nB);
 	}
@@ -1915,7 +1909,7 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
   ubmatrix mat(4,4), V(4,4);
   ubvector sing(4), work(4);
   
-  int unstable_count=0;
+  int unstable_count,count=0;
   int superlum_count=0;
   int dPdnB_negative_count=0;
   int PS_negative_count=0;
