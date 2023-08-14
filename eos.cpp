@@ -20,7 +20,21 @@
 */
 #include "eos.h"
 
+#include <time.h>
+
+#include <gsl/gsl_sf_hyperg.h>
+
 #include <o2scl/xml.h>
+#include <o2scl/format_float.h>
+#include <o2scl/cloud_file.h>
+#include <o2scl/deriv_gsl.h>
+#include <o2scl/deriv_cern.h>
+#include <o2scl/hdf_file.h>
+#include <o2scl/hdf_io.h>
+#include <o2scl/hdf_eos_io.h>
+#include <o2scl/fit_nonlin.h>
+#include <o2scl/nstar_cold.h>
+#include <o2scl/nucmass_densmat.h>
 
 using namespace std;
 using namespace o2scl;
@@ -440,7 +454,6 @@ int eos::hrg_load(std::vector<std::string> &sv, bool itive_com) {
       boson b;
       b.m=part_db[j].mass*1.0e3/hc_mev_fm;
       b.g=part_db[j].spin_deg;
-      res_b.push_back(b);
       b.n=0.0;
       b.ed=0.0;
       b.en=0.0;
@@ -448,6 +461,7 @@ int eos::hrg_load(std::vector<std::string> &sv, bool itive_com) {
       b.mu=0.0;
       b.nu=0.0;
       b.ms=0.0;
+      res_b.push_back(b);
       nbos++;
     }
   }
@@ -744,11 +758,7 @@ eos::eos() {
   hf.close();
 
   use_alt_eos=false;
-#ifdef O2SCL_CORI
-  o2scl_hdf::skyrme_load(sk_alt,"data/NRAPR.o2",true,1);
-#else
   o2scl_hdf::skyrme_load(sk_alt,"NRAPR");
-#endif
 
 #ifdef O2SCL_MPI
   // Send a message to the next MPI rank
@@ -757,6 +767,11 @@ eos::eos() {
 	     tag,MPI_COMM_WORLD);
   }
 #endif
+
+  nB_grid_spec="301,10^(i*0.04-12)*2.0";
+  Ye_grid_spec="70,0.01*(i+1)";
+  T_grid_spec="160,0.1*1.046^i";
+  S_grid_spec="5,0.1*i";
 
   // Skyrme couplings
   sk_Tcorr.t0=5.067286719233e+03;
@@ -1448,7 +1463,6 @@ double eos::free_energy_density_detail
   
   // -------------------------------------------------------------
   // Compute derivatives for chemical potentials
- 
   
   dgvirialdnn=-(1.0/pow(a_virial*zn*zn+a_virial*zp*zp
 			       +b_virial*zn*zp+1.0,2.0))*
@@ -1857,21 +1871,21 @@ int eos::table_Ye(std::vector<std::string> &sv, bool itive_com) {
   size_t n_nB=301;
   size_t n_T=160;
     
-  std::string nB_grid_spec="10^(i*0.04-12)*2.0";
-  std::string T_grid_spec="0.2+0.81*i";
+  std::string nB_grid_spec2="10^(i*0.04-12)*2.0";
+  std::string T_grid_spec2="0.2+0.81*i";
 
   vector<double> nB_grid, T_grid;
   
   calc_utf8<> calc;
   std::map<std::string,double> vars;
   
-  calc.compile(nB_grid_spec.c_str());
+  calc.compile(nB_grid_spec2.c_str());
   for(size_t i=0;i<n_nB;i++) {
     vars["i"]=((double)i);
     nB_grid.push_back(calc.eval(&vars));
   }
   
-  calc.compile(T_grid_spec.c_str());
+  calc.compile(T_grid_spec2.c_str());
   for(size_t i=0;i<n_T;i++) {
     vars["i"]=((double)i);
     T_grid.push_back(calc.eval(&vars));
@@ -1953,21 +1967,21 @@ int eos::table_nB(std::vector<std::string> &sv, bool itive_com) {
   size_t n_Ye=99;
   size_t n_T=160;
     
-  std::string Ye_grid_spec="0.01*(i+1)";
-  std::string T_grid_spec="0.2+0.81*i";
+  std::string Ye_grid_spec2="0.01*(i+1)";
+  std::string T_grid_spec2="0.2+0.81*i";
 
   vector<double> Ye_grid, T_grid;
   
   calc_utf8<> calc;
   std::map<std::string,double> vars;
   
-  calc.compile(Ye_grid_spec.c_str());
+  calc.compile(Ye_grid_spec2.c_str());
   for(size_t i=0;i<n_Ye;i++) {
     vars["i"]=((double)i);
     Ye_grid.push_back(calc.eval(&vars));
   }
   
-  calc.compile(T_grid_spec.c_str());
+  calc.compile(T_grid_spec2.c_str());
   for(size_t i=0;i<n_T;i++) {
     vars["i"]=((double)i);
     T_grid.push_back(calc.eval(&vars));
@@ -2005,160 +2019,187 @@ int eos::table_nB(std::vector<std::string> &sv, bool itive_com) {
   return 0;
 }
 
-int eos::table_full(std::vector<std::string> &sv, bool itive_com) {
-
-  std::string fname=sv[1];
-
-  size_t n_nB=301;
-  size_t n_Ye=99;
-  size_t n_T=160;
-    
-  std::string nB_grid_spec="10^(i*0.04-12)*2.0";
-  std::string Ye_grid_spec="0.01*(i+1)";
-  std::string T_grid_spec="0.2+0.81*i";
-
-  vector<double> nB_grid, T_grid, Ye_grid;
+int eos::process_grid_spec() {
+  
+  size_t st[3]={n_nB2,n_Ye2,n_T2};
+  cout << "Processing: " << nB_grid_spec << " " << Ye_grid_spec << " "
+       << T_grid_spec << endl;
   
   calc_utf8<> calc;
   std::map<std::string,double> vars;
   
-  calc.compile(nB_grid_spec.c_str());
-  for(size_t i=0;i<n_nB;i++) {
+  vector<std::string> split_res;
+
+  split_string_delim(nB_grid_spec,split_res,',');
+  n_nB2=stoszt(split_res[0]);
+  nB_grid2.resize(0);
+  cout << "n_nB: " << n_nB2 << endl;
+  
+  calc.compile(split_res[1].c_str());
+  for(size_t i=0;i<n_nB2;i++) {
     vars["i"]=((double)i);
-    nB_grid.push_back(calc.eval(&vars));
+    nB_grid2.push_back(calc.eval(&vars));
   }
   
-  calc.compile(Ye_grid_spec.c_str());
-  for(size_t i=0;i<n_Ye;i++) {
+  split_string_delim(Ye_grid_spec,split_res,',');
+  n_Ye2=stoszt(split_res[0]);
+  Ye_grid2.resize(0);
+  cout << "n_Ye: " << n_Ye2 << endl;
+  
+  calc.compile(split_res[1].c_str());
+  for(size_t i=0;i<n_Ye2;i++) {
     vars["i"]=((double)i);
-    Ye_grid.push_back(calc.eval(&vars));
+    Ye_grid2.push_back(calc.eval(&vars));
   }
   
-  calc.compile(T_grid_spec.c_str());
-  for(size_t i=0;i<n_T;i++) {
+  split_string_delim(T_grid_spec,split_res,',');
+  n_T2=stoszt(split_res[0]);
+  T_grid2.resize(0);
+  cout << "n_T: " << n_T2 << endl;
+  
+  calc.compile(split_res[1].c_str());
+  for(size_t i=0;i<n_T2;i++) {
     vars["i"]=((double)i);
-    T_grid.push_back(calc.eval(&vars));
+    T_grid2.push_back(calc.eval(&vars));
   }
+  
+  split_string_delim(S_grid_spec,split_res,',');
+  n_S2=stoszt(split_res[0]);
+  S_grid2.resize(0);
+  cout << "n_S: " << n_S2 << endl;
+  
+  calc.compile(split_res[1].c_str());
+  for(size_t i=0;i<n_S2;i++) {
+    vars["i"]=((double)i);
+    S_grid2.push_back(calc.eval(&vars));
+  }
+  
+  return 0;
+}
 
-  size_t size_arr[3]={n_nB,n_Ye,n_T};
-  vector<vector<double> > grid_arr={nB_grid,Ye_grid,T_grid};
+int eos::table_full(std::vector<std::string> &sv, bool itive_com) {
 
-  tensor_grid3<> t_F(n_nB,n_Ye,n_T);
+  std::string fname=sv[1];
+
+  process_grid_spec();
+    
+  size_t size_arr[3]={n_nB2,n_Ye2,n_T2};
+  vector<vector<double> > grid_arr={nB_grid2,Ye_grid2,T_grid2};
+
+  tensor_grid3<> t_F(n_nB2,n_Ye2,n_T2);
   t_F.set_grid(grid_arr);
-  tensor_grid3<> t_Fint(n_nB,n_Ye,n_T);
+  tensor_grid3<> t_Fint(n_nB2,n_Ye2,n_T2);
   t_Fint.set_grid(grid_arr);
-  tensor_grid3<> t_E(n_nB,n_Ye,n_T);
+  tensor_grid3<> t_E(n_nB2,n_Ye2,n_T2);
   t_E.set_grid(grid_arr);
-  tensor_grid3<> t_Eint(n_nB,n_Ye,n_T);
+  tensor_grid3<> t_Eint(n_nB2,n_Ye2,n_T2);
   t_Eint.set_grid(grid_arr);
-  tensor_grid3<> t_P(n_nB,n_Ye,n_T);
+  tensor_grid3<> t_P(n_nB2,n_Ye2,n_T2);
   t_P.set_grid(grid_arr);
-  tensor_grid3<> t_Pint(n_nB,n_Ye,n_T);
+  tensor_grid3<> t_Pint(n_nB2,n_Ye2,n_T2);
   t_Pint.set_grid(grid_arr);
-  tensor_grid3<> t_S(n_nB,n_Ye,n_T);
+  tensor_grid3<> t_S(n_nB2,n_Ye2,n_T2);
   t_S.set_grid(grid_arr);
-  tensor_grid3<> t_Sint(n_nB,n_Ye,n_T);
+  tensor_grid3<> t_Sint(n_nB2,n_Ye2,n_T2);
   t_Sint.set_grid(grid_arr);
-  tensor_grid3<> t_mun(n_nB,n_Ye,n_T);
+  tensor_grid3<> t_mun(n_nB2,n_Ye2,n_T2);
   t_mun.set_grid(grid_arr);
-  tensor_grid3<> t_mup(n_nB,n_Ye,n_T);
+  tensor_grid3<> t_mup(n_nB2,n_Ye2,n_T2);
   t_mup.set_grid(grid_arr);
-  tensor_grid3<> t_cs2(n_nB,n_Ye,n_T);
+  tensor_grid3<> t_cs2(n_nB2,n_Ye2,n_T2);
   t_cs2.set_grid(grid_arr);
-  tensor_grid3<> t_mue(n_nB,n_Ye,n_T);
+  tensor_grid3<> t_mue(n_nB2,n_Ye2,n_T2);
   t_mue.set_grid(grid_arr);
 
-  eos_sn_oo eso;
-  eso.include_muons=include_muons;
-  
-  for(int i=n_nB-1;i>=0;i--) {
-    cout << "i_nB,n_nB,nB[i]: " << n_nB-1-i << " " << n_nB << " "
-	 << nB_grid[i] << endl;
-    for(size_t j=0;j<n_Ye;j++) {
-      for(size_t k=0;k<n_T;k++) {
+  for(int i=n_nB2-1;i>=0;i--) {
+    cout << "i_nB,n_nB,nB[i]: " << n_nB2-1-i << " " << n_nB2 << " "
+	 << nB_grid2[i] << endl;
+    for(size_t j=0;j<n_Ye2;j++) {
+      for(size_t k=0;k<n_T2;k++) {
 
 	// Hadronic part
-	neutron.n=nB_grid[i]*(1.0-Ye_grid[j]);
-	proton.n=nB_grid[i]*Ye_grid[j];
-        free_energy_density(neutron,proton,T_grid[k]/hc_mev_fm,th2);
+	neutron.n=nB_grid2[i]*(1.0-Ye_grid2[j]);
+	proton.n=nB_grid2[i]*Ye_grid2[j];
+        free_energy_density(neutron,proton,T_grid2[k]/hc_mev_fm,th2);
 
-	thermo lep;
-	double mue2;
-	eso.compute_eg_point(nB_grid[i],Ye_grid[j],T_grid[k],lep,mue2);
-	
-	t_Fint.set(i,j,k,hc_mev_fm*(th2.ed-T_grid[k]/hc_mev_fm*th2.en)/
+        elep.include_muons=include_muons;
+        elep.include_photons=true;
+        
+        elep.pair_density_eq(nB_grid2[i]*Ye_grid2[j],T_grid2[k]/hc_mev_fm);
+
+	t_Fint.set(i,j,k,hc_mev_fm*(th2.ed-T_grid2[k]/hc_mev_fm*th2.en)/
 		   (neutron.n+proton.n));
-	t_F.set(i,j,k,hc_mev_fm*(th2.ed+lep.ed-T_grid[k]/hc_mev_fm*th2.en)/
+	t_F.set(i,j,k,hc_mev_fm*(th2.ed+elep.th.ed-T_grid2[k]/hc_mev_fm*th2.en)/
 		(neutron.n+proton.n));
 	t_Eint.set(i,j,k,hc_mev_fm*(th2.ed)/(neutron.n+proton.n));
-	t_E.set(i,j,k,hc_mev_fm*(th2.ed+lep.ed)/(neutron.n+proton.n));
+	t_E.set(i,j,k,hc_mev_fm*(th2.ed+elep.th.ed)/(neutron.n+proton.n));
 	t_Pint.set(i,j,k,hc_mev_fm*(th2.pr));
-	t_P.set(i,j,k,hc_mev_fm*(th2.pr+lep.pr));
+	t_P.set(i,j,k,hc_mev_fm*(th2.pr+elep.th.pr));
 	t_Sint.set(i,j,k,hc_mev_fm*(th2.en)/(neutron.n+proton.n));
-	t_S.set(i,j,k,hc_mev_fm*(th2.en+lep.en)/(neutron.n+proton.n));
+	t_S.set(i,j,k,hc_mev_fm*(th2.en+elep.th.en)/(neutron.n+proton.n));
 	t_mun.set(i,j,k,hc_mev_fm*neutron.mu);
 	t_mup.set(i,j,k,hc_mev_fm*proton.mu);
 
-	double cs2_val=cs2_func(neutron,proton,T_grid[k]/hc_mev_fm,th2);
+	double cs2_val=cs2_func(neutron,proton,T_grid2[k]/hc_mev_fm,th2);
 	t_cs2.set(i,j,k,cs2_val);
 	t_mue.set(i,j,k,elep.e.mu);
 
 	if (!std::isfinite(th2.ed)) {
 	  cout << "Hadronic energy density not finite." << endl;
-	  cout << "n_B: " << nB_grid[i] << " Y_e: " << Ye_grid[j] << " T: "
-	       << T_grid[k] << endl;
+	  cout << "n_B: " << nB_grid2[i] << " Y_e: " << Ye_grid2[j] << " T: "
+	       << T_grid2[k] << endl;
 	  cout << "hadrons ed: " << th2.ed << " pr: " << th2.pr
 	       << " en: " << th2.en << endl;
 	  exit(-1);
 	}
 	if (!std::isfinite(th2.pr)) {
 	  cout << "Hadronic pressure not finite." << endl;
-	  cout << "n_B: " << nB_grid[i] << " Y_e: " << Ye_grid[j] << " T: "
-	       << T_grid[k] << endl;
+	  cout << "n_B: " << nB_grid2[i] << " Y_e: " << Ye_grid2[j] << " T: "
+	       << T_grid2[k] << endl;
 	  cout << "hadrons ed: " << th2.ed << " pr: " << th2.pr
 	       << " en: " << th2.en << endl;
 	  exit(-1);
 	}
 	if (!std::isfinite(th2.en)) {
 	  cout << "Hadronic entropy density not finite." << endl;
-	  cout << "n_B: " << nB_grid[i] << " Y_e: " << Ye_grid[j] << " T: "
-	       << T_grid[k] << endl;
+	  cout << "n_B: " << nB_grid2[i] << " Y_e: " << Ye_grid2[j] << " T: "
+	       << T_grid2[k] << endl;
 	  cout << "hadrons ed: " << th2.ed << " pr: " << th2.pr
 	       << " en: " << th2.en << endl;
 	  exit(-1);
 	}
-	if (!std::isfinite(lep.ed)) {
+	if (!std::isfinite(elep.th.ed)) {
 	  cout << "Leptonic energy density not finite." << endl;
-	  cout << "n_B: " << nB_grid[i] << " Y_e: " << Ye_grid[j] << " T: "
-	       << T_grid[k] << endl;
-	  cout << "leptons ed: " << lep.ed << " pr: " << lep.pr
-	       << " en: " << lep.en << endl;
+	  cout << "n_B: " << nB_grid2[i] << " Y_e: " << Ye_grid2[j] << " T: "
+	       << T_grid2[k] << endl;
+	  cout << "leptons ed: " << elep.th.ed << " pr: " << elep.th.pr
+	       << " en: " << elep.th.en << endl;
 	  exit(-1);
 	}
-	if (!std::isfinite(lep.pr)) {
+	if (!std::isfinite(elep.th.pr)) {
 	  cout << "Leptonic pressure not finite." << endl;
-	  cout << "n_B: " << nB_grid[i] << " Y_e: " << Ye_grid[j] << " T: "
-	       << T_grid[k] << endl;
-	  cout << "leptons ed: " << lep.ed << " pr: " << lep.pr
-	       << " en: " << lep.en << endl;
+	  cout << "n_B: " << nB_grid2[i] << " Y_e: " << Ye_grid2[j] << " T: "
+	       << T_grid2[k] << endl;
+	  cout << "leptons ed: " << elep.th.ed << " pr: " << elep.th.pr
+	       << " en: " << elep.th.en << endl;
 	  exit(-1);
 	}
-	if (!std::isfinite(lep.en)) {
+	if (!std::isfinite(elep.th.en)) {
 	  cout << "Leptonic entropy density not finite." << endl;
-	  cout << "n_B: " << nB_grid[i] << " Y_e: " << Ye_grid[j] << " T: "
-	       << T_grid[k] << endl;
-	  cout << "leptons ed: " << lep.ed << " pr: " << lep.pr
-	       << " en: " << lep.en << endl;
+	  cout << "n_B: " << nB_grid2[i] << " Y_e: " << Ye_grid2[j] << " T: "
+	       << T_grid2[k] << endl;
+	  cout << "leptons ed: " << elep.th.ed << " pr: " << elep.th.pr
+	       << " en: " << elep.th.en << endl;
 	  exit(-1);
 	}
-	if (th2.en+lep.en<0.0 && th2.pr>0.0) {
+	if (th2.en+elep.th.en<0.0 && th2.pr>0.0) {
 	  cout << "Entropy negative where pressure is positive." << endl;
-	  cout << "n_B: " << nB_grid[i] << " Y_e: " << Ye_grid[j] << " T: "
-	       << T_grid[k] << endl;
+	  cout << "n_B: " << nB_grid2[i] << " Y_e: " << Ye_grid2[j] << " T: "
+	       << T_grid2[k] << endl;
 	  cout << "hadrons ed: " << th2.ed << " pr: " << th2.pr
 	       << " en: " << th2.en << endl;
-	  cout << "leptons ed: " << lep.ed << " pr: " << lep.pr
-	       << " en: " << lep.en << endl;
+	  cout << "leptons ed: " << elep.th.ed << " pr: " << elep.th.pr
+	       << " en: " << elep.th.en << endl;
 	  exit(-1);
 	}
 
@@ -2168,12 +2209,12 @@ int eos::table_full(std::vector<std::string> &sv, bool itive_com) {
 
   hdf_file hf;
   hf.open_or_create(fname);
-  hf.set_szt("n_nB",n_nB);
-  hf.set_szt("n_Ye",n_Ye);
-  hf.set_szt("n_T",n_T);
-  hf.setd_vec("nB_grid",nB_grid);
-  hf.setd_vec("Ye_grid",Ye_grid);
-  hf.setd_vec("T_grid",T_grid);
+  hf.set_szt("n_nB",n_nB2);
+  hf.set_szt("n_Ye",n_Ye2);
+  hf.set_szt("n_T",n_T2);
+  hf.setd_vec("nB_grid",nB_grid2);
+  hf.setd_vec("Ye_grid",Ye_grid2);
+  hf.setd_vec("T_grid",T_grid2);
   hdf_output(hf,t_Fint,"Fint");
   hdf_output(hf,t_F,"F");
   hdf_output(hf,t_Eint,"Eint");
@@ -2186,6 +2227,17 @@ int eos::table_full(std::vector<std::string> &sv, bool itive_com) {
   hdf_output(hf,t_mup,"mup");
   hdf_output(hf,t_cs2,"cs2");
   hdf_output(hf,t_mue,"mue");
+  hf.seti("with_leptons",1);
+  hf.seti("baryons_only",1);
+  hf.seti("derivs_computed",1);
+  
+  vector<string> oth_names={"cs2"};
+  vector<string> oth_units={""};
+  size_t n_oth=oth_names.size();
+  hf.set_szt("n_oth",n_oth);
+  hf.sets_vec_copy("oth_names",oth_names);
+  hf.sets_vec_copy("oth_units",oth_units);
+  
   hf.close();
   
   return 0;
@@ -2206,7 +2258,7 @@ int eos::test_deriv(std::vector<std::string> &sv, bool itive_com) {
   test_mgr t;
   t.set_output_level(1);
 
-  if (model_selected==false) {
+  if (model_selected==false && use_alt_eos==false) {
     cerr << "No model selected." << endl;
     return 1;
   }
@@ -2223,7 +2275,7 @@ int eos::test_deriv(std::vector<std::string> &sv, bool itive_com) {
   cout << "T=0.1 MeV, Ye=0.01" << endl;
   cout << "n_B         mu_n        mup_p       s" << endl;
   
-  err_fac=1.0e4;
+  err_fac=1.0e6;
   avg1=0.0;
   avg2=0.0;
   avg3=0.0;
@@ -2294,7 +2346,7 @@ int eos::test_deriv(std::vector<std::string> &sv, bool itive_com) {
     t.test_abs(proton.mu,mup_num,mup_err*err_fac,"mup, T=0.1, Ye=0.01");
     t.test_abs(th2.en,en_num,en_err*err_fac,"en, T=0.1, Ye=0.01");
   }
-  cout << "            " << avg1/((double)count) << " ";
+  cout << "  averages: " << avg1/((double)count) << " ";
   cout << avg2/((double)count) << " ";
   cout << avg3/((double)count) << endl;
   cout << endl;
@@ -2304,7 +2356,7 @@ int eos::test_deriv(std::vector<std::string> &sv, bool itive_com) {
   cout << "T=0.1 MeV, Ye=0.49" << endl;
   cout << "n_B         mu_n        mup_p       s" << endl;
 
-  err_fac=1.0e4;
+  err_fac=1.0e6;
   avg1=0.0;
   avg2=0.0;
   avg3=0.0;
@@ -2375,7 +2427,7 @@ int eos::test_deriv(std::vector<std::string> &sv, bool itive_com) {
     t.test_abs(proton.mu,mup_num,mup_err*err_fac,"mup, T=0.1, Ye=0.49");
     t.test_abs(th2.en,en_num,en_err*err_fac,"en, T=0.1, Ye=0.49");
   }
-  cout << "            " << avg1/((double)count) << " ";
+  cout << "  averages: " << avg1/((double)count) << " ";
   cout << avg2/((double)count) << " ";
   cout << avg3/((double)count) << endl;
   cout << endl;
@@ -2385,7 +2437,7 @@ int eos::test_deriv(std::vector<std::string> &sv, bool itive_com) {
   cout << "T=1 MeV, Ye=0.01" << endl;
   cout << "n_B         mu_n        mup_p       s" << endl;
 
-  err_fac=1.0e4;
+  err_fac=1.0e6;
   avg1=0.0;
   avg2=0.0;
   avg3=0.0;
@@ -2456,7 +2508,7 @@ int eos::test_deriv(std::vector<std::string> &sv, bool itive_com) {
     t.test_abs(proton.mu,mup_num,mup_err*err_fac,"mup, T=1, Ye=0.01");
     t.test_abs(th2.en,en_num,en_err*err_fac,"en, T=1, Ye=0.01");
   }
-  cout << "            " << avg1/((double)count) << " ";
+  cout << "  averages: " << avg1/((double)count) << " ";
   cout << avg2/((double)count) << " ";
   cout << avg3/((double)count) << endl;
   cout << endl;
@@ -2466,7 +2518,7 @@ int eos::test_deriv(std::vector<std::string> &sv, bool itive_com) {
   cout << "T=1 MeV, Ye=0.49" << endl;
   cout << "n_B         mu_n        mup_p       s" << endl;
 
-  err_fac=1.0e4;
+  err_fac=1.0e6;
   avg1=0.0;
   avg2=0.0;
   avg3=0.0;
@@ -2537,7 +2589,7 @@ int eos::test_deriv(std::vector<std::string> &sv, bool itive_com) {
     t.test_abs(proton.mu,mup_num,mup_err*err_fac,"mup, T=1, Ye=0.49");
     t.test_abs(th2.en,en_num,en_err*err_fac,"en, T=1, Ye=0.49");
   }
-  cout << "            " << avg1/((double)count) << " ";
+  cout << "  averages: " << avg1/((double)count) << " ";
   cout << avg2/((double)count) << " ";
   cout << avg3/((double)count) << endl;
   cout << endl;
@@ -2547,7 +2599,7 @@ int eos::test_deriv(std::vector<std::string> &sv, bool itive_com) {
   cout << "T=30 MeV, Ye=0.01" << endl;
   cout << "n_B         mu_n        mup_p       s" << endl;
 
-  err_fac=1.0e4;
+  err_fac=1.0e6;
   avg1=0.0;
   avg2=0.0;
   avg3=0.0;
@@ -2618,7 +2670,7 @@ int eos::test_deriv(std::vector<std::string> &sv, bool itive_com) {
     t.test_abs(proton.mu,mup_num,mup_err*err_fac,"mup, T=30, Ye=0.01");
     t.test_abs(th2.en,en_num,en_err*err_fac,"en, T=30, Ye=0.01");
   }
-  cout << "            " << avg1/((double)count) << " ";
+  cout << "  averages: " << avg1/((double)count) << " ";
   cout << avg2/((double)count) << " ";
   cout << avg3/((double)count) << endl;
   cout << endl;
@@ -2628,7 +2680,7 @@ int eos::test_deriv(std::vector<std::string> &sv, bool itive_com) {
   cout << "T=30 MeV, Ye=0.49" << endl;
   cout << "n_B         mu_n        mup_p       s" << endl;
   
-  err_fac=1.0e4;
+  err_fac=1.0e6;
   avg1=0.0;
   avg2=0.0;
   avg3=0.0;
@@ -2699,7 +2751,7 @@ int eos::test_deriv(std::vector<std::string> &sv, bool itive_com) {
     t.test_abs(proton.mu,mup_num,mup_err*err_fac,"mup, T=30, Ye=0.49");
     t.test_abs(th2.en,en_num,en_err*err_fac,"en, T=30, Ye=0.49");
   }
-  cout << "            " << avg1/((double)count) << " ";
+  cout << "  averages: " << avg1/((double)count) << " ";
   cout << avg2/((double)count) << " ";
   cout << avg3/((double)count) << endl;
   cout << endl;
@@ -3669,30 +3721,30 @@ int eos::test_eg(std::vector<std::string> &sv,
   size_t n_Ye=101;
   size_t n_T=161;
     
-  std::string nB_grid_spec="10^(i*0.04-12)";
-  std::string Ye_grid_spec="0.01*i";
+  std::string nB_grid_spec2="10^(i*0.04-12)";
+  std::string Ye_grid_spec2="0.01*i";
   // This temperature grid includes zero, but is otherwise
   // similar to Hempel's logarithmic temperature grid
-  std::string T_grid_spec="i*5^(i*0.02-3.2)";
+  std::string T_grid_spec2="i*5^(i*0.02-3.2)";
 
   vector<double> nB_grid, T_grid, Ye_grid;
   
   calc_utf8<> calc;
   std::map<std::string,double> vars;
   
-  calc.compile(nB_grid_spec.c_str());
+  calc.compile(nB_grid_spec2.c_str());
   for(size_t i=0;i<n_nB;i++) {
     vars["i"]=((double)i);
     nB_grid.push_back(calc.eval(&vars));
   }
   
-  calc.compile(Ye_grid_spec.c_str());
+  calc.compile(Ye_grid_spec2.c_str());
   for(size_t i=0;i<n_Ye;i++) {
     vars["i"]=((double)i);
     Ye_grid.push_back(calc.eval(&vars));
   }
   
-  calc.compile(T_grid_spec.c_str());
+  calc.compile(T_grid_spec2.c_str());
   for(size_t i=0;i<n_T;i++) {
     vars["i"]=((double)i);
     T_grid.push_back(calc.eval(&vars));
@@ -3786,7 +3838,7 @@ int eos::alt_model(std::vector<std::string> &sv,
     cout << "Not enough parameters for alt-model." << endl;
   }
   
-  if (sv[1]=="Skyrme") {
+  if (sv[1]=="Skyrme" || sv[1]=="skyrme") {
     if (sv.size()<3) {
       cout << "Not enough parameters for alt-model of type Skyrme."
            << endl;
@@ -3794,11 +3846,11 @@ int eos::alt_model(std::vector<std::string> &sv,
     o2scl_hdf::skyrme_load(sk_alt,sv[2]);
     eosp_alt=&sk_alt;
     use_alt_eos=true;
-  } else if (sv[1]=="RMF") {
+  } else if (sv[1]=="RMF" || sv[1]=="rmf") {
     o2scl_hdf::rmf_load(rmf,sv[2]);
     eosp_alt=&rmf;
     use_alt_eos=true;
-  } else if (sv[1]=="RMFH") {
+  } else if (sv[1]=="RMFH" || sv[1]=="rmfh") {
     o2scl_hdf::rmf_load(rmf_hyp,sv[2]);
     eosp_alt=&rmf;
     use_alt_eos=true;

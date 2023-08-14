@@ -243,14 +243,22 @@ void interpm_krige_eos::set(std::vector<double> &nB_grid2,
   ubmatrix ix(calib_list.size()/3,3);
   ubmatrix iy(1,calib_list.size()/3);
 
-  cout << "ix[0] ix[1] ix[2] Fint" << endl;
+  if (interp_Fint) {
+    cout << "ix[0] ix[1] ix[2] Fint" << endl;
+  } else {
+    cout << "ix[0] ix[1] ix[2] F" << endl;
+  }
   for(size_t j=0;j<calib_list.size();j+=3) {
     ix(j/3,0)=calib_list[j];
     ix(j/3,1)=calib_list[j+1];
     ix(j/3,2)=calib_list[j+2];
     vector<size_t> index={calib_list[j],calib_list[j+1],
       calib_list[j+2]};
-    iy(0,j/3)=tg_Fint.get(index);
+    if (interp_Fint) {
+      iy(0,j/3)=tg_Fint.get(index);
+    } else {
+      iy(0,j/3)=tg_F.get(index);
+    }
     if (true) {
       cout << ix(j/3,0) << " " << ix(j/3,1) << " "
            << ix(j/3,2) << " " << iy(0,j/3) << endl;
@@ -398,17 +406,24 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
 
     std::vector<double> out(1);
     eval(index,out);
-    // Interacting free energy per baryon in units of 1/fm
-    double Fint=out[0]/hc_mev_fm;
 
-    // Electron and photon contribution to the free energy
-    // per baryon, in units of 1/fm
-    double Feg=(tgp_F->get(index)-tgp_Fint->get(index))/hc_mev_fm;
     double Seg=tgp_S->get(index)-tgp_Sint->get(index);
-
-    // Total free energy
-    double F=Fint+Feg;
+    double Feg=(tgp_F->get(index)-tgp_Fint->get(index))/hc_mev_fm;
     
+    double Fint, F;
+
+    if (interp_Fint) {
+      // Interacting free energy per baryon in units of 1/fm
+      Fint=out[0]/hc_mev_fm;
+      // Total free energy
+      F=Fint+Feg;
+    } else {
+      // Total free energy
+      F=out[0]/hc_mev_fm;
+      // Interacting free energy per baryon in units of 1/fm
+      Fint=F-Feg;
+    }
+
     // Electron chemical potential in 1/fm
     double mue=tgp_mue->get(index)/hc_mev_fm;
 
@@ -429,60 +444,124 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
       cout << "mue,mue[table]: " << elep.e.mu << " "
            << tgp_mue->get(index)/hc_mev_fm << endl;
     }
-    
-    // First derivatives of the free energy
-    deriv(index,out,0);
-    double dFdi=out[0]/hc_mev_fm;
-    double dFint_dnB=dFdi*didnB;
-    
-    deriv(index,out,1);
-    double dFdj=out[0]/hc_mev_fm;
-    double dFint_dYe=dFdj*djdYe;
-    
-    deriv(index,out,2);
-    double dFdk=out[0]/hc_mev_fm;
-    double dFint_dT=dFdk*dkdT*hc_mev_fm;
 
-    // Convert derivatives of Fint to derivatives of F
-    double dF_dnB=dFint_dnB+Ye*mue/nB-Feg/nB;
-    double dF_dYe=dFint_dYe+mue;
-    double dF_dT=dFint_dT-Seg;
+    double dFint_dnB, dFint_dYe, dFint_dT, dF_dnB, dF_dYe, dF_dT;
+    double Fint_nBnB, Fint_nBYe, Fint_YeYe, Fint_nBT, Fint_YeT, Fint_TT;
+    double F_nBnB, F_nBYe, F_YeYe, F_nBT, F_YeT, F_TT;
 
-    deriv2(index,out,0,0);
-    double d2Fdi2=out[0]/hc_mev_fm;
-    // d2FdnB2 in fm^5
-    double Fint_nBnB=d2Fdi2*didnB*didnB+dFdi*d2idnB2;
-    
-    deriv2(index,out,0,1);
-    double d2Fdidj=out[0]/hc_mev_fm;
-    // d2FdnBdYe in fm^2
-    double Fint_nBYe=d2Fdidj*didnB*djdYe;
-    
-    deriv2(index,out,1,1);
-    double d2Fdj2=out[0]/hc_mev_fm;
-    // d2FdYe2 in fm^{-1}
-    double Fint_YeYe=d2Fdj2*djdYe*djdYe+dFdj*d2jdYe2;
-    
-    deriv2(index,out,0,2);
-    double d2Fdidk=out[0]/hc_mev_fm;
-    double Fint_nBT=d2Fdidk*didnB*dkdT*hc_mev_fm;
-    
-    deriv2(index,out,1,2);
-    double d2Fdjdk=out[0]/hc_mev_fm;
-    double Fint_YeT=d2Fdjdk*djdYe*dkdT*hc_mev_fm;
-    
-    deriv2(index,out,2,2);
-    double d2Fdk2=out[0]/hc_mev_fm;
-    double Fint_TT=(d2Fdk2*dkdT*dkdT+dFdk*d2kdT2)*hc_mev_fm*hc_mev_fm;
+    if (interp_Fint) {
+      
+      // First derivatives of the free energy
+      deriv(index,out,0);
+      double dFdi=out[0]/hc_mev_fm;
+      dFint_dnB=dFdi*didnB;
+      
+      deriv(index,out,1);
+      double dFdj=out[0]/hc_mev_fm;
+      dFint_dYe=dFdj*djdYe;
+      
+      deriv(index,out,2);
+      double dFdk=out[0]/hc_mev_fm;
+      dFint_dT=dFdk*dkdT*hc_mev_fm;
+      
+      // Convert derivatives of Fint to derivatives of F
+      dF_dnB=dFint_dnB+Ye*mue/nB-Feg/nB;
+      dF_dYe=dFint_dYe+mue;
+      dF_dT=dFint_dT-Seg;
+      
+      deriv2(index,out,0,0);
+      double d2Fdi2=out[0]/hc_mev_fm;
+      // d2FdnB2 in fm^5
+      Fint_nBnB=d2Fdi2*didnB*didnB+dFdi*d2idnB2;
+      
+      deriv2(index,out,0,1);
+      double d2Fdidj=out[0]/hc_mev_fm;
+      // d2FdnBdYe in fm^2
+      Fint_nBYe=d2Fdidj*didnB*djdYe;
+      
+      deriv2(index,out,1,1);
+      double d2Fdj2=out[0]/hc_mev_fm;
+      // d2FdYe2 in fm^{-1}
+      Fint_YeYe=d2Fdj2*djdYe*djdYe+dFdj*d2jdYe2;
+      
+      deriv2(index,out,0,2);
+      double d2Fdidk=out[0]/hc_mev_fm;
+      Fint_nBT=d2Fdidk*didnB*dkdT*hc_mev_fm;
+      
+      deriv2(index,out,1,2);
+      double d2Fdjdk=out[0]/hc_mev_fm;
+      Fint_YeT=d2Fdjdk*djdYe*dkdT*hc_mev_fm;
+      
+      deriv2(index,out,2,2);
+      double d2Fdk2=out[0]/hc_mev_fm;
+      Fint_TT=(d2Fdk2*dkdT*dkdT+dFdk*d2kdT2)*hc_mev_fm*hc_mev_fm;
+      
+      // Convert second derivatives of Fint to second derivatives of F
+      F_nBnB=Fint_nBnB+Ye*Ye/nB/elep.ed.dndmu-2.0*Ye*mue/nB/nB+
+        2.0*Feg/nB/nB;
+      F_nBYe=Fint_nBYe+Ye/elep.ed.dndmu;
+      F_YeYe=Fint_YeYe+nB/elep.ed.dndmu;
+      F_nBT=Fint_nBT+Ye/nB/elep.ed.dndmu*elep.ed.dndT;
+      F_YeT=Fint_YeT+1.0/elep.ed.dndmu*elep.ed.dndT;
+      F_TT=Fint_TT-elep.ed.dsdT/nB;
 
-    // Convert second derivatives of Fint to second derivatives of F
-    double F_nBnB=Fint_nBnB+Ye*Ye/nB/elep.ed.dndmu-2.0*Ye*mue/nB/nB+
-      2.0*Feg/nB/nB;
-    double F_nBYe=Fint_nBYe+Ye/elep.ed.dndmu;
-    double F_YeYe=Fint_YeYe+nB/elep.ed.dndmu;
-    double F_nBT=Fint_nBT+Ye/nB/elep.ed.dndmu*elep.ed.dndT;
-    double F_YeT=Fint_YeT+1.0/elep.ed.dndmu*elep.ed.dndT;
-    double F_TT=Fint_TT-elep.ed.dsdT/nB;
+    } else {
+
+      // First derivatives of the free energy
+      deriv(index,out,0);
+      double dFdi=out[0]/hc_mev_fm;
+      dF_dnB=dFdi*didnB;
+      
+      deriv(index,out,1);
+      double dFdj=out[0]/hc_mev_fm;
+      dF_dYe=dFdj*djdYe;
+      
+      deriv(index,out,2);
+      double dFdk=out[0]/hc_mev_fm;
+      dF_dT=dFdk*dkdT*hc_mev_fm;
+      
+      // Convert derivatives of Fint to derivatives of F
+      dFint_dnB=dF_dnB-Ye*mue/nB+Feg/nB;
+      dFint_dYe=dF_dYe-mue;
+      dFint_dT=dF_dT+Seg;
+      
+      deriv2(index,out,0,0);
+      double d2Fdi2=out[0]/hc_mev_fm;
+      // d2FdnB2 in fm^5
+      F_nBnB=d2Fdi2*didnB*didnB+dFdi*d2idnB2;
+      
+      deriv2(index,out,0,1);
+      double d2Fdidj=out[0]/hc_mev_fm;
+      // d2FdnBdYe in fm^2
+      F_nBYe=d2Fdidj*didnB*djdYe;
+      
+      deriv2(index,out,1,1);
+      double d2Fdj2=out[0]/hc_mev_fm;
+      // d2FdYe2 in fm^{-1}
+      F_YeYe=d2Fdj2*djdYe*djdYe+dFdj*d2jdYe2;
+      
+      deriv2(index,out,0,2);
+      double d2Fdidk=out[0]/hc_mev_fm;
+      F_nBT=d2Fdidk*didnB*dkdT*hc_mev_fm;
+      
+      deriv2(index,out,1,2);
+      double d2Fdjdk=out[0]/hc_mev_fm;
+      F_YeT=d2Fdjdk*djdYe*dkdT*hc_mev_fm;
+      
+      deriv2(index,out,2,2);
+      double d2Fdk2=out[0]/hc_mev_fm;
+      F_TT=(d2Fdk2*dkdT*dkdT+dFdk*d2kdT2)*hc_mev_fm*hc_mev_fm;
+      
+      // Convert second derivatives of Fint to second derivatives of F
+      Fint_nBnB=F_nBnB-Ye*Ye/nB/elep.ed.dndmu+2.0*Ye*mue/nB/nB-
+        2.0*Feg/nB/nB;
+      Fint_nBYe=F_nBYe-Ye/elep.ed.dndmu;
+      Fint_YeYe=F_YeYe-nB/elep.ed.dndmu;
+      Fint_nBT=F_nBT-Ye/nB/elep.ed.dndmu*elep.ed.dndT;
+      Fint_YeT=F_YeT-1.0/elep.ed.dndmu*elep.ed.dndT;
+      Fint_TT=F_TT+elep.ed.dsdT/nB;
+
+    }
 
     // Use those derivatives to compute the chemical potentials and
     // the entropy density
@@ -540,12 +619,14 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
     double f_npnp=((Ye-1.0)*(Ye-1.0)*F_YeYe+nB*(2.0*dF_dnB-2.0*(Ye-1.0)*
                                                 F_nBYe+nB*F_nBnB))/nB;
     double f_nnT=dF_dT-Ye*F_YeT+nB*F_nBT;
-    double f_npT=dF_dT-(Ye-1.0)*F_YeT+nB*F_nBT;
+    double f_npT=dF_dT+(Ye-1.0)*F_YeT+nB*F_nBT;
     double f_TT=nB*F_TT;
     
     double den=en*T_MeV/hc_mev_fm+(mun+mneut)*nB*(1.0-Ye)+
       (mup+mprot)*nB*Ye+mue*nB*Ye;
-    std::cout << den << " " << en*T_MeV/hc_mev_fm << " "
+    std::cout << mun << " " << mup << " " << mneut << " " << mprot << std::endl;
+    std::cout << "den,sT,mun*nn,mup*np,mue*np: "
+              << den << " " << en*T_MeV/hc_mev_fm << " "
               << (mun+mneut)*nB*(1.0-Ye) << " "
               << (mup+mprot)*nB*Ye << " " << mue*nB*Ye << std::endl;
     double nn2=nB*(1.0-Ye);
@@ -554,10 +635,20 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
                   2.0*nn2*np2*(f_nnnp-f_nnT*f_npT/f_TT)+
                   np2*np2*(f_npnp-f_npT*f_npT/f_TT)-
                   2.0*en*(nn2*f_nnT/f_TT+np2*f_npT/f_TT)-en*en/f_TT)/den;
+    cout << "f_nnnn, f_nnnp, f_npnp, f_nnT, f_npT, f_TT, den:\n  "
+         << f_nnnn << " " << f_nnnp << " " << f_npnp << " "
+         << f_nnT << "\n  " << f_npT << " " << f_TT << " "
+         << den << endl;
 
     cout.setf(ios::showpos);
-    std::cout << "  cs2 (interp,table): " << den << " "
-              << nn2*nn2*f_nnnn/den << " " << cs_sq << " ";
+    cout << "en,f_TT,den: " << en << " " << f_TT << " " << den << endl;
+    std::cout << "  t1,t2,t3,t4,t5,t6,cs2 (interp,table): " 
+              << nn2*nn2*(f_nnnn-f_nnT*f_nnT/f_TT)/den << " "
+              << 2.0*nn2*np2*(f_nnnp-f_nnT*f_npT/f_TT)/den << " "
+              << np2*np2*(f_npnp-f_npT*f_npT/f_TT)/den << " "
+              << 2.0*en*nn2*f_nnT/f_TT/den << " " 
+              << 2.0*en*np2*f_npT/f_TT/den << " "
+              << -en*en/f_TT/den << " " << cs_sq << " ";
     cout << tgp_cs2.get(index) << endl;
         
     // Also compute dPdnB
@@ -594,6 +685,7 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
          << (tgp_Fint->get(kp1)-tgp_Fint->get(index))/
       (T_grid[index[2]+1]-T_grid[index[2]]) << endl;
  
+    cout << "\nSecond derivatives of Fint and F:" << endl;
     if (index[0]>0 && index[0]<nB_grid.size()-1) {
       double t1=(tgp_Fint->get(index)-tgp_Fint->get(im1))/hc_mev_fm/
         (nB_grid[index[0]]-nB_grid[index[0]-1]);
@@ -611,6 +703,41 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
            << F_nBnB << " " << t3 << endl;
     }
 
+    if (index[0]>0 && index[0]<nB_grid.size()-1) {
+      double t1=(tgp_Fint->get(index)-tgp_Fint->get(im1))/hc_mev_fm/
+        (nB_grid[index[0]]-nB_grid[index[0]-1]);
+      double t2=(tgp_Fint->get(ip1)-tgp_Fint->get(index))/hc_mev_fm/
+        (nB_grid[index[0]+1]-nB_grid[index[0]]);
+      double t3=(t2-t1)*2.0/
+        (Ye_grid[index[1]+1]-Ye_grid[index[1]-1]);
+      cout << "  Fint_nBYe,Fint_nBYe_intp: "
+           << Fint_nBYe << " " << t3 << endl;
+      t1=(tgp_F->get(index)-tgp_F->get(im1))/hc_mev_fm/
+        (nB_grid[index[0]]-nB_grid[index[0]-1]);
+      t2=(tgp_F->get(ip1)-tgp_F->get(index))/hc_mev_fm/
+        (nB_grid[index[0]+1]-nB_grid[index[0]]);
+      t3=(t2-t1)*2.0/
+        (Ye_grid[index[1]+1]-Ye_grid[index[1]-1]);
+      cout << "  F_nBYe,F_nBYe_intp: "
+           << F_nBYe << " " << t3 << endl;
+      t1=(tgp_Fint->get(index)-tgp_Fint->get(jm1))/hc_mev_fm/
+        (Ye_grid[index[1]]-Ye_grid[index[1-1]]);
+      t2=(tgp_Fint->get(jp1)-tgp_Fint->get(index))/hc_mev_fm/
+        (Ye_grid[index[1+1]]-Ye_grid[index[1]]);
+      t3=(t2-t1)*2.0/
+        (nB_grid[index[0]+1]-nB_grid[index[0]-1]);
+      cout << "  Fint_nBYe,Fint_nBYe_intp (2): "
+           << Fint_nBYe << " " << t3 << endl;
+      t1=(tgp_F->get(index)-tgp_F->get(jm1))/hc_mev_fm/
+        (Ye_grid[index[1]]-Ye_grid[index[1-1]]);
+      t2=(tgp_F->get(jp1)-tgp_F->get(index))/hc_mev_fm/
+        (Ye_grid[index[1+1]]-Ye_grid[index[1]]);
+      t3=(t2-t1)*2.0/
+        (nB_grid[index[0]+1]-nB_grid[index[0]-1]);
+      cout << "  F_nBYe,F_nBYe_intp (2): "
+           << F_nBYe << " " << t3 << endl;
+    }
+
     if (index[1]>0 && index[1]<Ye_grid.size()-1) {
       double t1=(tgp_Fint->get(index)-tgp_Fint->get(jm1))/hc_mev_fm/
         (Ye_grid[index[1]]-Ye_grid[index[1]-1]);
@@ -626,14 +753,59 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
       cout << "  F_YeYe,F_YeYe_intp: " << F_YeYe << " " << t3 << endl;
     }
         
+    if (index[0]>0 && index[0]<nB_grid.size()-1) {
+      double t1=(tgp_Fint->get(index)-tgp_Fint->get(im1))/hc_mev_fm/
+        (nB_grid[index[0]]-nB_grid[index[0]-1]);
+      double t2=(tgp_Fint->get(ip1)-tgp_Fint->get(index))/hc_mev_fm/
+        (nB_grid[index[0]+1]-nB_grid[index[0]]);
+      double t3=(t2-t1)*2.0*hc_mev_fm/
+        (T_grid[index[2]+1]-T_grid[index[2]-1]);
+      cout << "  Fint_nBT,Fint_nBT_intp: "
+           << Fint_nBT << " " << t3 << endl;
+      t1=(tgp_F->get(index)-tgp_F->get(im1))/hc_mev_fm/
+        (nB_grid[index[0]]-nB_grid[index[0]-1]);
+      t2=(tgp_F->get(ip1)-tgp_F->get(index))/hc_mev_fm/
+        (nB_grid[index[0]+1]-nB_grid[index[0]]);
+      t3=(t2-t1)*2.0*hc_mev_fm/
+        (T_grid[index[2]+1]-T_grid[index[2]-1]);
+      cout << "  F_nBT,F_nBT_intp: "
+           << F_nBT << " " << t3 << endl;
+    }
+
+    if (index[1]>0 && index[1]<Ye_grid.size()-1) {
+      double t1=(tgp_Fint->get(index)-tgp_Fint->get(jm1))/hc_mev_fm/
+        (Ye_grid[index[1]]-Ye_grid[index[1]-1]);
+      double t2=(tgp_Fint->get(jp1)-tgp_Fint->get(index))/hc_mev_fm/
+        (Ye_grid[index[1]+1]-Ye_grid[index[1]]);
+      double t3=(t2-t1)*2.0*hc_mev_fm/
+        (T_grid[index[2]+1]-T_grid[index[2]-1]);
+      cout << "  Fint_YeT,Fint_YeT_intp: "
+           << Fint_YeT << " " << t3 << endl;
+      t1=(tgp_F->get(index)-tgp_F->get(jm1))/hc_mev_fm/
+        (Ye_grid[index[1]]-Ye_grid[index[1]-1]);
+      t2=(tgp_F->get(jp1)-tgp_F->get(index))/hc_mev_fm/
+        (Ye_grid[index[1]+1]-Ye_grid[index[1]]);
+      t3=(t2-t1)*2.0*hc_mev_fm/
+        (T_grid[index[2]+1]-T_grid[index[2]-1]);
+      cout << "  F_YeT,F_YeT_intp: "
+           << F_YeT << " " << t3 << endl;
+    }
+
     if (index[2]>0 && index[2]<T_grid.size()-1) {
-      double t1=(tgp_F->get(index)-tgp_F->get(km1))/
+      double t1=(tgp_Fint->get(index)-tgp_Fint->get(km1))/
         (T_grid[index[2]]-T_grid[index[2]-1]);
-      double t2=(tgp_F->get(kp1)-tgp_F->get(index))/
+      double t2=(tgp_Fint->get(kp1)-tgp_Fint->get(index))/
         (T_grid[index[2]+1]-T_grid[index[2]]);
       double t3=hc_mev_fm*(t2-t1)*2.0/(T_grid[index[2]+1]-T_grid[index[2]-1]);
+      cout << "  Fint_TT,Fint_TT_intp: " << Fint_TT << " " << t3 << endl;
+      t1=(tgp_F->get(index)-tgp_F->get(km1))/
+        (T_grid[index[2]]-T_grid[index[2]-1]);
+      t2=(tgp_F->get(kp1)-tgp_F->get(index))/
+        (T_grid[index[2]+1]-T_grid[index[2]]);
+      t3=hc_mev_fm*(t2-t1)*2.0/(T_grid[index[2]+1]-T_grid[index[2]-1]);
       cout << "  F_TT,F_TT_intp: " << F_TT << " " << t3 << endl;
     }
+    cout << endl;
     
     cout << "  TI1,TI2: " << nB*(1.0-Ye)*mun+(mup+mue)*nB*Ye-
       tgp_P->get(index)/hc_mev_fm << " "

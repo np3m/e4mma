@@ -20,10 +20,12 @@
 */
 #include "eos.h"
 #include "eos_had_skyrme_ext.h"
+
 #include <o2scl/nucmass_fit.h>
 #include <o2scl/slack_messenger.h>
 #include <o2scl/part_funcs.h>
 #include <o2scl/interpm_krige.h>
+#include <o2scl/boson_rel.h>
 #include <map>
 
 typedef boost::numeric::ublas::vector<double> ubvector;
@@ -135,8 +137,12 @@ public:
   /// Lepton EOS object
   o2scl::eos_leptons elep;
 
+  /// If true, interpolate Fint, otherwise, interpolate F
+  bool interp_Fint;
+  
   interpm_krige_eos() {
     elep.include_photons=true;
+    interp_Fint=false;
   }    
   
   /** \brief Set the interpolator given the specified EOS
@@ -228,39 +234,6 @@ public:
   int solve_hrg(size_t nv, const ubvector &x,
                 ubvector &y, double nB, double Ye, double T);
   
-  /// \name Grid specification
-  //@{
-  size_t n_nB2;
-  size_t n_Ye2;
-  size_t n_T2;
-  size_t n_S2;
-  std::vector<double> nB_grid2;
-  std::vector<double> Ye_grid2;
-  std::vector<double> T_grid2;
-  std::vector<double> S_grid2;
-  /** \brief The function for default baryon density grid. 
-      
-      This parameter is used by the new_table() function, and the
-      \c check-virial and \c eos-deriv commands.
-  */
-  std::string nB_grid_spec;
-  /** \brief The function for default electron fraction grid. 
-      
-      This parameter is used by the new_table() function, and the
-      \c check-virial and eos-deriv \c commands.
-  */
-  std::string Ye_grid_spec;
-  /** \brief The function for default temperature grid. 
-      
-      This parameter is used by the new_table() function, and the
-      \c check-virial and \c eos-deriv commands.
-  */
-  std::string T_grid_spec;
-  /** \brief The function for default strangeness grid
-   */
-  std::string S_grid_spec;
-  //@}
-
   /// \name Nuclear masses and their fits
   //@{
   /** \brief Fit the FRDM mass model

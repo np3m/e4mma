@@ -53,11 +53,6 @@ eos_nuclei::eos_nuclei() {
   nuc_li4=&nuclei[4];
   nuc_heavy=&nuclei[5];
 
-  nB_grid_spec="301,10^(i*0.04-12)*2.0";
-  Ye_grid_spec="70,0.01*(i+1)";
-  T_grid_spec="160,0.1*1.046^i";
-  S_grid_spec="5,0.1*i";
-
   extend_frdm=false;
   show_all_nuclei=false;
   recompute=false;
@@ -1935,6 +1930,7 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
   size_t ilo=0, ihi=n_nB2;
   size_t jlo=0, jhi=n_Ye2;
   size_t klo=0, khi=n_T2;
+
   if (sv.size()>=4) {
     double nBx=o2scl::function_to_double(sv[1]);
     double Yex=o2scl::function_to_double(sv[2]);
@@ -2109,18 +2105,20 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
           tg_mue.get(ix)*np2/hc_mev_fm;
         if (cs2_verbose>0) {
           cout << endl;
-          cout << "fr: " << tg_F.get(ix)/hc_mev_fm*nB << endl;
-          cout << "en: " << tg_S.get(ix)*nB << endl;
+          cout << "nB,Ye,T[MeV],fr,en: " << nB << " " << Ye << " "
+               << T_MeV << " "
+               << tg_F.get(ix)/hc_mev_fm*nB << " ";
+          cout << tg_S.get(ix)*nB << endl;
           cout << "mun[1/fm],mup[1/fm],mue[1/fm]: "
                << tg_mun.get(ix)/hc_mev_fm << " "
                << tg_mup.get(ix)/hc_mev_fm << " "
                << tg_mue.get(ix)/hc_mev_fm
                << endl;
-          cout << "den1,den2,den3,den4 (all [1/fm^3]):\n  "
+          cout << "den: en*T,nn*mun,np*mup,ne*mue: (all [1/fm^3]):\n  "
                << en*T_MeV/hc_mev_fm << " " 
                << (tg_mun.get(ix)/hc_mev_fm+neutron.m)*nn2 << " " 
                << (tg_mup.get(ix)/hc_mev_fm+proton.m)*np2 << " "
-               << tg_mue.get(ix)/hc_mev_fm << " " << np2 << endl;
+               << tg_mue.get(ix)/hc_mev_fm*np2 << endl;
           cout << "nn,np,en: " << nn2 << " " << np2 << " " << en << endl;
           cout << "f_nnnn, f_nnnp, f_npnp, f_nnT, f_npT, f_TT, den:\n  "
                << f_nnnn << " " << f_nnnp << " " << f_npnp << " "
@@ -2133,6 +2131,14 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
                       2.0*en*(nn2*f_nnT/f_TT+np2*f_npT/f_TT)-en*en/f_TT)/den;
         
         cs2.get(ix)=cs_sq;
+        cout << "en,f_TT,den: " << en << " " << f_TT << " " << den << endl;
+        cout << "t1,t2,t3,t4,t5,t6,cs2: "
+             << nn2*nn2*(f_nnnn-f_nnT*f_nnT/f_TT)/den << " "
+             << 2.0*nn2*np2*(f_nnnp-f_nnT*f_npT/f_TT)/den << " "
+             << np2*np2*(f_npnp-f_npT*f_npT/f_TT)/den << " "
+             << 2.0*en*nn2*f_nnT/f_TT/den << " "
+             << 2.0*en*np2*f_npT/f_TT/den << " "
+             << -en*en/f_TT/den << " " << cs_sq << endl;
         
         // This code requires a model to compute the homogeneous cs2
         if (true) {
@@ -5974,7 +5980,7 @@ int eos_nuclei::read_results(std::string fname) {
   // Flags
 
   int itmp;
-  if (verbose>2) cout << "Reading strange_axis." << endl;
+  if (verbose>2) cout << "Reading strange_axis (if present)." << endl;
   hf.geti_def("strange_axis",0,itmp);
   if (itmp==1) strange_axis=true;
   else strange_axis=false;
@@ -6032,20 +6038,22 @@ int eos_nuclei::read_results(std::string fname) {
   // ----------------------------------------------------------------
   // Main data
 
-  if (hf.find_object_by_name("log_xn",type)!=0 || type!="tensor_grid") {
-    O2SCL_ERR("Couldn't find tensor log_xn in file.",
-	      o2scl::exc_enotfound);
+  if (hf.find_object_by_name("log_xn",type)==0 && type=="tensor_grid") {
+    if (verbose>2) cout << "Reading log_xn." << endl;
+    hdf_input(hf,tg_log_xn,"log_xn");
+    if (verbose>2) cout << "Reading log_xp." << endl;
+    hdf_input(hf,tg_log_xp,"log_xp");
   }
-  if (verbose>2) cout << "Reading log_xn." << endl;
-  hdf_input(hf,tg_log_xn,"log_xn");
-  if (verbose>2) cout << "Reading log_xp." << endl;
-  hdf_input(hf,tg_log_xp,"log_xp");
-  if (verbose>2) cout << "Reading Z." << endl;
-  hdf_input(hf,tg_Z,"Z");
-  if (verbose>2) cout << "Reading A." << endl;
-  hdf_input(hf,tg_A,"A");
-  if (verbose>2) cout << "Reading flag." << endl;
-  hdf_input(hf,tg_flag,"flag");
+  if (hf.find_object_by_name("Z",type)==0 && type=="tensor_grid") {
+    if (verbose>2) cout << "Reading Z." << endl;
+    hdf_input(hf,tg_Z,"Z");
+    if (verbose>2) cout << "Reading A." << endl;
+    hdf_input(hf,tg_A,"A");
+  }
+  if (hf.find_object_by_name("flag",type)==0 && type=="tensor_grid") {
+    if (verbose>2) cout << "Reading flag." << endl;
+    hdf_input(hf,tg_flag,"flag");
+  }
   if (verbose>2) cout << "Reading Fint." << endl;
   hdf_input(hf,tg_Fint,"Fint");
   
@@ -6057,22 +6065,24 @@ int eos_nuclei::read_results(std::string fname) {
   if (verbose>2) cout << "Reading Sint." << endl;
   hdf_input(hf,tg_Sint,"Sint");
   
-  if (verbose>2) cout << "Reading Xn." << endl;
-  hdf_input(hf,tg_Xn,"Xn");
-  if (verbose>2) cout << "Reading Xp." << endl;
-  hdf_input(hf,tg_Xp,"Xp");
-  if (verbose>2) cout << "Reading Xalpha." << endl;
-  hdf_input(hf,tg_Xalpha,"Xalpha");
-  if (verbose>2) cout << "Reading Xnuclei." << endl;
-  hdf_input(hf,tg_Xnuclei,"Xnuclei");
-  if (verbose>2) cout << "Reading Xd." << endl;
-  hdf_input(hf,tg_Xd,"Xd");
-  if (verbose>2) cout << "Reading Xt." << endl;
-  hdf_input(hf,tg_Xt,"Xt");
-  if (verbose>2) cout << "Reading XHe3." << endl;
-  hdf_input(hf,tg_XHe3,"XHe3");
-  if (verbose>2) cout << "Reading XLi4." << endl;
-  hdf_input(hf,tg_XLi4,"XLi4");
+  if (hf.find_object_by_name("Xn",type)==0 && type=="tensor_grid") {
+    if (verbose>2) cout << "Reading Xn." << endl;
+    hdf_input(hf,tg_Xn,"Xn");
+    if (verbose>2) cout << "Reading Xp." << endl;
+    hdf_input(hf,tg_Xp,"Xp");
+    if (verbose>2) cout << "Reading Xalpha." << endl;
+    hdf_input(hf,tg_Xalpha,"Xalpha");
+    if (verbose>2) cout << "Reading Xnuclei." << endl;
+    hdf_input(hf,tg_Xnuclei,"Xnuclei");
+    if (verbose>2) cout << "Reading Xd." << endl;
+    hdf_input(hf,tg_Xd,"Xd");
+    if (verbose>2) cout << "Reading Xt." << endl;
+    hdf_input(hf,tg_Xt,"Xt");
+    if (verbose>2) cout << "Reading XHe3." << endl;
+    hdf_input(hf,tg_XHe3,"XHe3");
+    if (verbose>2) cout << "Reading XLi4." << endl;
+    hdf_input(hf,tg_XLi4,"XLi4");
+  }
 
   if (rmf_fields) {
     if (verbose>2) cout << "Reading σ." << endl;
@@ -6086,25 +6096,30 @@ int eos_nuclei::read_results(std::string fname) {
   // ----------------------------------------------------------------
   // Nuclear distribution
   
-  if (alg_mode==2 || alg_mode==3 || (alg_mode==4 && true)) {
+  if ((alg_mode==2 || alg_mode==3 || alg_mode==4) &&
+      hf.find_object_by_name("A_min",type)==0 && type=="tensor_grid") {
+    
     if (hf.find_object_by_name("A_min",type)!=0 || type!="tensor_grid") {
       O2SCL_ERR("Couldn't find tensor A_min in file.",
 		o2scl::exc_enotfound);
     }
     if (verbose>2) cout << "Reading A_min." << endl;
     hdf_input(hf,tg_A_min,"A_min");
+    
     if (hf.find_object_by_name("A_max",type)!=0 || type!="tensor_grid") {
       O2SCL_ERR("Couldn't find tensor A_max in file.",
 		o2scl::exc_enotfound);
     }
     if (verbose>2) cout << "Reading A_max." << endl;
     hdf_input(hf,tg_A_max,"A_max");
+    
     if (hf.find_object_by_name("NmZ_min",type)!=0 || type!="tensor_grid") {
       O2SCL_ERR("Couldn't find tensor NmZ_min in file.",
 		o2scl::exc_enotfound);
     }
     if (verbose>2) cout << "Reading NmZ_min." << endl;
     hdf_input(hf,tg_NmZ_min,"NmZ_min");
+    
     if (hf.find_object_by_name("NmZ_max",type)!=0 || type!="tensor_grid") {
       O2SCL_ERR("Couldn't find tensor NmZ_max in file.",
 		o2scl::exc_enotfound);
@@ -6732,7 +6747,7 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
         cout << "P: " << tg_P.get(ix) << " MeV/fm^3" << endl;
       }
     }
-    if (include_detail) {
+    if (include_detail && tg_zn.get_rank()>=3) {
       cout << "zn: " << tg_zn.get(ix) << endl;
       cout << "zp: " << tg_zp.get(ix) << endl;
       cout << "F1: " << tg_F1.get(ix) << " MeV" << endl;

@@ -24,30 +24,15 @@
 #include <mpi.h>
 #endif
 
-#include <time.h>
-
-#include <gsl/gsl_sf_hyperg.h>
-
 #include <o2scl/test_mgr.h>
 #include <o2scl/eos_had_skyrme.h>
 #include <o2scl/fermion_nonrel.h>
-#include <o2scl/nstar_cold.h>
-#include <o2scl/format_float.h>
-#include <o2scl/hdf_file.h>
-#include <o2scl/hdf_io.h>
-#include <o2scl/hdf_eos_io.h>
 #include <o2scl/cli.h>
 #include <o2scl/lib_settings.h>
-#include <o2scl/fit_nonlin.h>
 #include <o2scl/eos_crust_virial.h>
-#include <o2scl/nucmass_densmat.h>
 #include <o2scl/eos_sn.h>
-#include <o2scl/cloud_file.h>
 #include <o2scl/rng.h>
 #include <o2scl/root_brent_gsl.h>
-#include <o2scl/smooth_func.h>
-#include <o2scl/deriv_gsl.h>
-#include <o2scl/deriv_cern.h>
 #include <o2scl/eos_had_rmf_hyp.h>
 #include <o2scl/eos_had_virial.h>
 #include <o2scl/part_pdg.h>
@@ -259,6 +244,41 @@ public:
   std::vector<o2scl::boson> res_b;
   
  protected:
+
+  int process_grid_spec();
+  
+  /// \name Grid specification
+  //@{
+  size_t n_nB2;
+  size_t n_Ye2;
+  size_t n_T2;
+  size_t n_S2;
+  std::vector<double> nB_grid2;
+  std::vector<double> Ye_grid2;
+  std::vector<double> T_grid2;
+  std::vector<double> S_grid2;
+  /** \brief The function for default baryon density grid. 
+      
+      This parameter is used by the new_table() function, and the
+      \c check-virial and \c eos-deriv commands.
+  */
+  std::string nB_grid_spec;
+  /** \brief The function for default electron fraction grid. 
+      
+      This parameter is used by the new_table() function, and the
+      \c check-virial and eos-deriv \c commands.
+  */
+  std::string Ye_grid_spec;
+  /** \brief The function for default temperature grid. 
+      
+      This parameter is used by the new_table() function, and the
+      \c check-virial and \c eos-deriv commands.
+  */
+  std::string T_grid_spec;
+  /** \brief The function for default strangeness grid
+   */
+  std::string S_grid_spec;
+  //@}
 
   /// \name Main EOS parameters [protected]
   //@{
@@ -768,11 +788,14 @@ public:
    */
   int table_full(std::vector<std::string> &sv, bool itive_com);
 
-  /** \brief Test the first derivatives of the free energy
+  /** \brief Test the first derivatives of the free energy (no nuclei)
 
-      Params.
+      (no parameters)
 
-      Help.
+      This function tests the first derivatives of the homogeneous
+      matter EOS without nuclei. The model must be selected before
+      running this function. It tests derivatives over a range of
+      densities for three temperatures and two electron fractions.
    */
   int test_deriv(std::vector<std::string> &sv, bool itive_com);
 
@@ -780,7 +803,7 @@ public:
 
       <i_ns> <i_skyrme> <alpha> <a> <L> <S> <phi>
 
-      Help.
+      Select an EOS model given the 7 specified parameters.
    */
   int select_model(std::vector<std::string> &sv, bool itive_com);
 
@@ -878,7 +901,7 @@ public:
   //@{
   /** \brief Solve for fixed entropy per baryon and fixed
       lepton fraction
-   */
+  */
   int solve_fixed_sonb_YL(size_t nv, const ubvector &x, ubvector &y,
 			  double nB, double sonb, double YL);
 
