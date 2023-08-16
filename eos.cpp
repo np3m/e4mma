@@ -773,6 +773,8 @@ eos::eos() {
   T_grid_spec="160,0.1*1.046^i";
   S_grid_spec="5,0.1*i";
 
+  this->process_grid_spec();
+
   // Skyrme couplings
   sk_Tcorr.t0=5.067286719233e+03;
   sk_Tcorr.t1=1.749251370992e+00;
@@ -2135,14 +2137,14 @@ int eos::table_full(std::vector<std::string> &sv, bool itive_com) {
 	t_E.set(i,j,k,hc_mev_fm*(th2.ed+elep.th.ed)/(neutron.n+proton.n));
 	t_Pint.set(i,j,k,hc_mev_fm*(th2.pr));
 	t_P.set(i,j,k,hc_mev_fm*(th2.pr+elep.th.pr));
-	t_Sint.set(i,j,k,hc_mev_fm*(th2.en)/(neutron.n+proton.n));
-	t_S.set(i,j,k,hc_mev_fm*(th2.en+elep.th.en)/(neutron.n+proton.n));
+	t_Sint.set(i,j,k,(th2.en)/(neutron.n+proton.n));
+	t_S.set(i,j,k,(th2.en+elep.th.en)/(neutron.n+proton.n));
 	t_mun.set(i,j,k,hc_mev_fm*neutron.mu);
 	t_mup.set(i,j,k,hc_mev_fm*proton.mu);
 
 	double cs2_val=cs2_func(neutron,proton,T_grid2[k]/hc_mev_fm,th2);
 	t_cs2.set(i,j,k,cs2_val);
-	t_mue.set(i,j,k,elep.e.mu);
+	t_mue.set(i,j,k,elep.e.mu*hc_mev_fm);
 
 	if (!std::isfinite(th2.ed)) {
 	  cout << "Hadronic energy density not finite." << endl;
@@ -3796,9 +3798,8 @@ int eos::test_eg(std::vector<std::string> &sv,
         t_F.set(i,j,k,(hc_mev_fm*elep.th.ed-T_grid[k]*elep.th.en)/nB);
         t_E.set(i,j,k,hc_mev_fm*elep.th.ed/nB);
         t_P.set(i,j,k,hc_mev_fm*elep.th.pr);
-        t_S.set(i,j,k,hc_mev_fm*elep.th.en/nB);
+        t_S.set(i,j,k,elep.th.en/nB);
         t_mue.set(i,j,k,hc_mev_fm*elep.e.mu);
-
       }
     }
   }
@@ -3861,8 +3862,22 @@ int eos::alt_model(std::vector<std::string> &sv,
   return 0;
 }
 
+int eos::comm_set(std::vector<std::string> &sv, bool itive_com) {
+
+  if (sv.size()>=2 && (sv[1]=="nB_grid_spec" ||
+                       sv[1]=="Ye_grid_spec" ||
+                       sv[1]=="T_grid_spec")) {
+    process_grid_spec();
+  }
+  
+  return 0;
+}
+
 void eos::setup_cli(o2scl::cli &cl, bool read_docs) {
 
+  o2scl::comm_option_mfptr<eos> *cset=
+    new o2scl::comm_option_mfptr<eos>(this,&eos::comm_set);
+  
   static const int nopt=15;
   o2scl::comm_option_s options[nopt]=
     {{0,"test-deriv","",0,0,"","",

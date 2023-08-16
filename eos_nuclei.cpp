@@ -117,11 +117,6 @@ eos_nuclei::eos_nuclei() {
 
   baryons_only=true;
 
-  n_nB2=0;
-  n_Ye2=0;
-  n_T2=0;
-  n_S2=0;
-
   ext_guess="";
   include_detail=false;
 
@@ -1215,7 +1210,7 @@ int eos_nuclei::eg_table(std::vector<std::string> &sv,
   o2scl::tensor_grid<> P;
   o2scl::tensor_grid<> S;
   o2scl::tensor_grid<> F;
-  
+
   size_t st[3]={n_nB2,n_Ye2,n_T2};
   vector<vector<double> > grid={nB_grid2,Ye_grid2,T_grid2};
 
@@ -1233,6 +1228,15 @@ int eos_nuclei::eg_table(std::vector<std::string> &sv,
   S.set_grid(grid);
   F.set_grid(grid);
 
+  elep.include_muons=include_muons;
+  if (sv.size()>=3) {
+    if (sv[2]=="ld") {
+      elep.ld_acc();
+    } else if (sv[2]=="fp_25") {
+      elep.fp_25_acc();
+    }
+  }
+  
   for (size_t i=0;i<n_nB2;i++) {
     double nB=nB_grid2[i];
     for (size_t j=0;j<n_Ye2;j++) {
@@ -1240,8 +1244,7 @@ int eos_nuclei::eg_table(std::vector<std::string> &sv,
         vector<size_t> ix={i,j,k};
         
 	double T_MeV=T_grid2[k];
-	
-        elep.include_muons=include_muons;
+
         elep.pair_density_eq(nB_grid2[i]*Ye_grid2[j],
                              T_grid2[k]/hc_mev_fm);
         
@@ -1251,7 +1254,7 @@ int eos_nuclei::eg_table(std::vector<std::string> &sv,
 	S.set(ix,elep.th.en/nB);
 	F.set(ix,(elep.th.ed-T_MeV*elep.th.en)/nB*hc_mev_fm);
 	if (include_muons) {
-	  Ymu.set(ix,muon.n*hc_mev_fm/nB);
+	  Ymu.set(ix,elep.mu.n*hc_mev_fm/nB);
 	}
       }
     }
@@ -1909,7 +1912,8 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
   ubmatrix mat(4,4), V(4,4);
   ubvector sing(4), work(4);
   
-  int unstable_count,count=0;
+  int unstable_count=0;
+  int count=0;
   int superlum_count=0;
   int dPdnB_negative_count=0;
   int PS_negative_count=0;
@@ -10107,7 +10111,7 @@ void eos_nuclei::setup_cli_nuclei(o2scl::cli &cl) {
       new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::add_eg),o2scl::cli::comm_option_both,
       1,"","eos_nuclei","add_eg","doc/xml/classeos__nuclei.xml"},
-     {0,"eg-table","",1,1,"","",
+     {0,"eg-table","",1,2,"","",
       new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::eg_table),o2scl::cli::comm_option_both,
       1,"","eos_nuclei","eg_table","doc/xml/classeos__nuclei.xml"},

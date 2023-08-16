@@ -779,12 +779,15 @@ public:
    */
   int pns_eos(std::vector<std::string> &sv, bool itive_com);
   
-  /** \brief Construct a full 3D EOS table 
+  /** \brief Construct a full 3D EOS table without nuclei
 
       <filename>
 
-      Stores grid information, Fint, Eint, Pint, Sint, mun,
-      mup, cs2, mue, F, E, P, and S.
+      This constructs a full 3D EOS table without nuclei using the
+      specified model. The resulting file has several tensor_grid
+      objects including Fint, Eint, Pint, Sint, mun, mup, cs2, mue, F,
+      E, P, and S. This function does not yet support muons or
+      strangeness.
    */
   int table_full(std::vector<std::string> &sv, bool itive_com);
 
@@ -915,6 +918,9 @@ public:
       parameters
    */
   virtual void setup_cli(o2scl::cli &cl, bool read_docs=true);
+
+  int comm_set(std::vector<std::string> &sv, bool itive_com);
+  
   //@}
   
 };
