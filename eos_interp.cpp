@@ -131,9 +131,9 @@ int eos_nuclei::interp_point(std::vector<std::string> &sv,
   
   double min_qual=1.0e99;
   vector<double> p(4), min_p;
-  for(p[0]=2.0;p[0]<20.0;p[0]*=1.4) {
-    for(p[1]=2.0;p[1]<20.0;p[1]*=1.4) {
-      for(p[2]=2.0;p[2]<20.0;p[2]*=1.4) {
+  for(p[0]=8.0;p[0]<80.0;p[0]*=1.4) {
+    for(p[1]=8.0;p[1]<80.0;p[1]*=1.4) {
+      for(p[2]=8.0;p[2]<80.0;p[2]*=1.4) {
         for(p[3]=-15.0;p[3]<-2.99;p[3]+=1.0) {
           vector_out(cout,p,true);
           (*ike.cf)[0].set_params(p);
@@ -157,12 +157,23 @@ int eos_nuclei::interp_point(std::vector<std::string> &sv,
     (*ike.cf)[0].set_params(min_p);
     int st;
     cout << "Last run:\n" << endl;
+    vector_out(cout,min_p,true);
     double qt=ike.qual_fun(0,st);
     cout << "min_qual,qt,st,min_p: "
          << min_qual << " " << qt << " " << st << " ";
     vector_out(cout,min_p,true);
     cout << "Success." << endl;
   }
+
+  for(double i3=85;i3<=95;i3+=0.25) {
+    vector<double> list={i3,20,20};
+    vector<double> out(1);
+    vector<double> list2={nB_grid2[i3],Ye_grid2[20],T_grid2[20]};
+    ike.eval(list,out);
+    cout << i3 << " "
+         << out[0] << " " << tg_F.interp_linear(list2) << endl;
+  }
+  
   exit(-1);
 
   // Use the interpolation results to fix points 
@@ -386,20 +397,34 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
     double Ye=Ye_grid[iYe];
     double T_MeV=T_grid[iT];
 
-    cout << nB << " " << Ye << " " << T_MeV << endl;
+    cout << inB << " " << iYe <<  " " << iT << " "
+         << nB << " " << Ye << " " << T_MeV << endl;
     
     // Derivatives of the physical coordinates with respect to the indices
-    
-    double dnBdi=2.0*0.04*log(10.0)*pow(10.0,((double)inB)*0.04-12.0);
-    double dYedj=0.01;
-    double dTdk=0.1*log(1.046)*pow(1.046,iT);
 
+    /*
+      double dnBdi=2.0*0.04*log(10.0)*pow(10.0,((double)inB)*0.04-12.0);
+      double dYedj=0.01;
+      double dTdk=0.1*log(1.046)*pow(1.046,iT);
+    */
+    double dnBdi=1.0/10000.0;
+    double dYedj=1.0/400.0;
+    double dTdk=1.0/4.0;
+
+    /*
     double didnB=25.0/nB/log(10.0);
     double d2idnB2=-25.0/nB/nB/log(10.0);
     double djdYe=100.0;
     double d2jdYe2=0.0;
     double dkdT=1.0/T_MeV/log(1.046);
     double d2kdT2=-1.0/T_MeV/T_MeV/log(1.046);
+    */
+    double didnB=10000.0;
+    double djdYe=400.0;
+    double dkdT=4.0;
+    double d2idnB2=0.0;
+    double d2jdYe2=0.0;
+    double d2kdT2=0.0;
   
     // Evaluate the free energy and its derivatives analytically
     // using the interpolator, and then remove a factor of hbar c
@@ -580,8 +605,8 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
       std::cout << "  mun table [1/fm], mun interp [1/fm]: "
                 << tgp_mun->get(index)/hc_mev_fm << " "
                 << mun << endl;
-      //cout << "    " << Fintp << " " << -Ye*dF_dYe << " "
-      //<< nB*dF_dnB << endl;
+      cout << "    " << F << " " << -Ye*dF_dYe << " "
+           << nB*dF_dnB << endl;
       std::cout << "  mup table [1/fm], mup interp [1/fm]: "
                 << tgp_mup->get(index)/hc_mev_fm << " "
                 << mup << endl;
