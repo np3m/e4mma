@@ -2129,9 +2129,19 @@ int eos::table_full(std::vector<std::string> &sv, bool itive_com) {
         
         elep.pair_density_eq(nB_grid2[i]*Ye_grid2[j],T_grid2[k]/hc_mev_fm);
 
+        if (false && fabs(nB_grid2[i]-0.0102)<1.0e-6 &&
+            fabs(Ye_grid2[j]-0.45)<1.0e-4 &&
+            fabs(T_grid2[k]-15.0)<1.0e-4) {
+          cout << elep.th.ed-T_grid2[k]/hc_mev_fm*elep.th.en << " "
+               << elep.ph.ed-T_grid2[k]/hc_mev_fm*elep.ph.en << " "
+               << elep.e.ed-T_grid2[k]/hc_mev_fm*elep.e.en << endl;
+          exit(-1);
+        }
+        
 	t_Fint.set(i,j,k,hc_mev_fm*(th2.ed-T_grid2[k]/hc_mev_fm*th2.en)/
 		   (neutron.n+proton.n));
-	t_F.set(i,j,k,hc_mev_fm*(th2.ed+elep.th.ed-T_grid2[k]/hc_mev_fm*th2.en)/
+	t_F.set(i,j,k,hc_mev_fm*(th2.ed+elep.th.ed-
+                                 T_grid2[k]/hc_mev_fm*(th2.en+elep.th.en))/
 		(neutron.n+proton.n));
 	t_Eint.set(i,j,k,hc_mev_fm*(th2.ed)/(neutron.n+proton.n));
 	t_E.set(i,j,k,hc_mev_fm*(th2.ed+elep.th.ed)/(neutron.n+proton.n));

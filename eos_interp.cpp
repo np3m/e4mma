@@ -165,14 +165,27 @@ int eos_nuclei::interp_point(std::vector<std::string> &sv,
     cout << "Success." << endl;
   }
 
-  for(double i3=85;i3<=95;i3+=0.25) {
+  for(double i3=85;i3<=95;i3+=1.0) {
     vector<double> list={i3,20,20};
     vector<double> out(1);
     vector<double> list2={nB_grid2[i3],Ye_grid2[20],T_grid2[20]};
     ike.eval(list,out);
+    double F=out[0];
     cout << i3 << " "
-         << out[0] << " " << tg_F.interp_linear(list2) << endl;
+         << F << " " << tg_F.interp_linear(list2) << endl;
   }
+  cout << endl;
+  
+  for(double j3=15;j3<=25;j3+=1.0) {
+    vector<double> list={90,j3,20};
+    vector<double> out(1);
+    vector<double> list2={nB_grid2[90],Ye_grid2[j3],T_grid2[20]};
+    ike.eval(list,out);
+    double F=out[0];
+    cout << j3 << " "
+         << F << " " << tg_F.interp_linear(list2) << endl;
+  }
+  cout << endl;
   
   exit(-1);
 
@@ -399,6 +412,7 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
 
     cout << inB << " " << iYe <<  " " << iT << " "
          << nB << " " << Ye << " " << T_MeV << endl;
+    cout << "interp_Fint: " << interp_Fint << endl;
     
     // Derivatives of the physical coordinates with respect to the indices
 
@@ -463,6 +477,9 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
       elep.pair_density_eq(Ye*nB,T_MeV/hc_mev_fm);
       //cout << elep.e.n << " " << elep.e.mu << " "
       //<< elep.e.ed << " " << elep.ed.dndmu << endl;
+      cout << "Feg[elep],Feg[table]: "
+           << (elep.th.ed-T_MeV/hc_mev_fm*elep.th.en)/nB << " "
+           << Feg << endl;
       cout << "Seg,Se,Sg,Seg[table]: " << elep.th.en/nB << " "
            << elep.e.en/nB << " " 
            << elep.ph.en/nB << " " << Seg << endl;
@@ -591,7 +608,8 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
     // Use those derivatives to compute the chemical potentials and
     // the entropy density
     double mun=F-Ye*dF_dYe+nB*dF_dnB;
-    double mup=F+(1.0-Ye)*dF_dYe+nB*dF_dnB;
+    double mupmue=F+(1.0-Ye)*dF_dYe+nB*dF_dnB;
+    double mup=mupmue-mue;
     double en=-nB*dF_dT;
         
     // Compare theose derivatives with the stored values
@@ -746,17 +764,17 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
       cout << "  F_nBYe,F_nBYe_intp: "
            << F_nBYe << " " << t3 << endl;
       t1=(tgp_Fint->get(index)-tgp_Fint->get(jm1))/hc_mev_fm/
-        (Ye_grid[index[1]]-Ye_grid[index[1-1]]);
+        (Ye_grid[index[1]]-Ye_grid[index[1]-1]);
       t2=(tgp_Fint->get(jp1)-tgp_Fint->get(index))/hc_mev_fm/
-        (Ye_grid[index[1+1]]-Ye_grid[index[1]]);
+        (Ye_grid[index[1]+1]-Ye_grid[index[1]]);
       t3=(t2-t1)*2.0/
         (nB_grid[index[0]+1]-nB_grid[index[0]-1]);
       cout << "  Fint_nBYe,Fint_nBYe_intp (2): "
            << Fint_nBYe << " " << t3 << endl;
       t1=(tgp_F->get(index)-tgp_F->get(jm1))/hc_mev_fm/
-        (Ye_grid[index[1]]-Ye_grid[index[1-1]]);
+        (Ye_grid[index[1]]-Ye_grid[index[1]-1]);
       t2=(tgp_F->get(jp1)-tgp_F->get(index))/hc_mev_fm/
-        (Ye_grid[index[1+1]]-Ye_grid[index[1]]);
+        (Ye_grid[index[1]+1]-Ye_grid[index[1]]);
       t3=(t2-t1)*2.0/
         (nB_grid[index[0]+1]-nB_grid[index[0]-1]);
       cout << "  F_nBYe,F_nBYe_intp (2): "
