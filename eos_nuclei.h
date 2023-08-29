@@ -101,9 +101,19 @@ public:
   typedef o2scl_linalg::matrix_invert_det_eigen<Eigen::MatrixXd>
   mat_inv_t;
 
+  /// Desc
+  double dist_cf(size_t i_calib, size_t i_fix);
+
+  /// Desc
+  void compute_dists();
+  
   /** \brief List of calibration points
    */
   std::vector<size_t> calib_list;
+
+  /** \brief List of distances
+   */
+  std::vector<double> calib_dists;
 
   /** \brief List of points to fix
    */

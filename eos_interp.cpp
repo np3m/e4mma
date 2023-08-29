@@ -111,6 +111,13 @@ int eos_nuclei::interp_point(std::vector<std::string> &sv,
        << endl;
   size_t count=ike.calib_list.size()/3;
 
+  // 
+  ike.compute_dists();
+  if (ike.calib_list.size()/3!=ike.calib_dists.size()) {
+    cerr << "Problem x2." << endl;
+    exit(-1);
+  }
+  
   std::vector<double> len_list={2.0,3.0};
   std::vector<double> l10_list={-15,-13,-11,-9};  
   std::vector<std::vector<double>> ptemp;
@@ -251,6 +258,27 @@ int eos_nuclei::interp_point(std::vector<std::string> &sv,
   return 0;
 }
 
+double interpm_krige_eos::dist_cf(size_t i_calib, size_t i_fix) {
+  double dist1=calib_list[i_calib*3]-fix_list[i_fix*3];
+  double dist2=calib_list[i_calib*3+1]-fix_list[i_fix*3+1];
+  double dist3=calib_list[i_calib*3+2]-fix_list[i_fix*3+2];
+  return sqrt(dist1*dist1+dist2*dist2+dist3*dist3);
+}
+
+void interpm_krige_eos::compute_dists() {
+  size_t calib_count=calib_list.size()/3;
+  size_t fix_count=fix_list.size()/3;
+  for(size_t i_calib=0;i_calib<calib_count;i_calib++) {
+    double dist_min=dist_cf(i_calib,0);
+    for(size_t i_fix=1;i_fix<fix_count;i_fix++) {
+      double dist=dist_cf(i_calib,i_fix);
+      if (dist<dist_min) dist_min=dist;
+    }
+    calib_dists.push_back(dist_min);
+  }
+  return;
+}
+
 void interpm_krige_eos::set(std::vector<double> &nB_grid2,
                             std::vector<double> &Ye_grid2,
                             std::vector<double> &T_grid2,
@@ -285,9 +313,11 @@ void interpm_krige_eos::set(std::vector<double> &nB_grid2,
     }
     if (true) {
       cout << ix(j/3,0) << " " << ix(j/3,1) << " "
-           << ix(j/3,2) << " " << iy(0,j/3) << endl;
+           << ix(j/3,2) << " " << iy(0,j/3) << " " << calib_dists[j/3]
+           << endl;
     }
   }
+  exit(-1);
 
   // Make a copy because interpm_krige_eos will keep it
   ubmatrix ix2=ix;
