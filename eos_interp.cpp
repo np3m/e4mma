@@ -640,6 +640,7 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
     }
 
     std::vector<size_t> im1, ip1, jm1, jp1, km1, kp1;
+    std::vector<size_t> ip1jp1, ip1kp1, jp1kp1;
     
     if (index[0]>0) im1={index[0]-1,index[1],index[2]};
     else im1={0,0,0};
@@ -653,6 +654,17 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
     else jp1={0,0,0};
     if (index[2]<T_grid.size()-1) kp1={index[0],index[1],index[2]+1};
     else kp1={0,0,0};
+    if (index[0]<nB_grid.size()-1 && index[1]<Ye_grid.size()-1) {
+      ip1jp1={index[0]+1,index[1]+1,index[2]};
+    }
+    if (index[0]<nB_grid.size()-1 && index[2]<T_grid.size()-1) {
+      ip1kp1={index[0]+1,index[1],index[2]+1};
+    }
+    if (index[1]<Ye_grid.size()-1 && index[2]<T_grid.size()-1) {
+      jp1kp1={index[0],index[1]+1,index[2]+1};
+    }
+        
+    else jp1={0,0,0};
 
     // Now compute the second derivatives and the speed of sound
         
@@ -747,37 +759,19 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
     }
 
     if (index[0]>0 && index[0]<nB_grid.size()-1) {
-      double t1=(tgp_Fint->get(index)-tgp_Fint->get(im1))/hc_mev_fm/
-        (nB_grid[index[0]]-nB_grid[index[0]-1]);
-      double t2=(tgp_Fint->get(ip1)-tgp_Fint->get(index))/hc_mev_fm/
+      double t1=(tgp_Fint->get(ip1)-tgp_Fint->get(index))/hc_mev_fm/
         (nB_grid[index[0]+1]-nB_grid[index[0]]);
-      double t3=(t2-t1)*2.0/
-        (Ye_grid[index[1]+1]-Ye_grid[index[1]-1]);
+      double t2=(tgp_Fint->get(ip1jp1)-tgp_Fint->get(jp1))/hc_mev_fm/
+        (nB_grid[index[0]+1]-nB_grid[index[0]]);
+      double t3=(t2-t1)/(Ye_grid[index[1]+1]-Ye_grid[index[1]]);
       cout << "  Fint_nBYe,Fint_nBYe_intp: "
            << Fint_nBYe << " " << t3 << endl;
-      t1=(tgp_F->get(index)-tgp_F->get(im1))/hc_mev_fm/
+      t1=(tgp_F->get(ip1)-tgp_F->get(index))/hc_mev_fm/
         (nB_grid[index[0]]-nB_grid[index[0]-1]);
-      t2=(tgp_F->get(ip1)-tgp_F->get(index))/hc_mev_fm/
+      t2=(tgp_F->get(ip1jp1)-tgp_F->get(jp1))/hc_mev_fm/
         (nB_grid[index[0]+1]-nB_grid[index[0]]);
-      t3=(t2-t1)*2.0/
-        (Ye_grid[index[1]+1]-Ye_grid[index[1]-1]);
+      t3=(t2-t1)/(Ye_grid[index[1]+1]-Ye_grid[index[1]]);
       cout << "  F_nBYe,F_nBYe_intp: "
-           << F_nBYe << " " << t3 << endl;
-      t1=(tgp_Fint->get(index)-tgp_Fint->get(jm1))/hc_mev_fm/
-        (Ye_grid[index[1]]-Ye_grid[index[1]-1]);
-      t2=(tgp_Fint->get(jp1)-tgp_Fint->get(index))/hc_mev_fm/
-        (Ye_grid[index[1]+1]-Ye_grid[index[1]]);
-      t3=(t2-t1)*2.0/
-        (nB_grid[index[0]+1]-nB_grid[index[0]-1]);
-      cout << "  Fint_nBYe,Fint_nBYe_intp (2): "
-           << Fint_nBYe << " " << t3 << endl;
-      t1=(tgp_F->get(index)-tgp_F->get(jm1))/hc_mev_fm/
-        (Ye_grid[index[1]]-Ye_grid[index[1]-1]);
-      t2=(tgp_F->get(jp1)-tgp_F->get(index))/hc_mev_fm/
-        (Ye_grid[index[1]+1]-Ye_grid[index[1]]);
-      t3=(t2-t1)*2.0/
-        (nB_grid[index[0]+1]-nB_grid[index[0]-1]);
-      cout << "  F_nBYe,F_nBYe_intp (2): "
            << F_nBYe << " " << t3 << endl;
     }
 
@@ -797,39 +791,39 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
     }
         
     if (index[0]>0 && index[0]<nB_grid.size()-1) {
-      double t1=(tgp_Fint->get(index)-tgp_Fint->get(im1))/hc_mev_fm/
-        (nB_grid[index[0]]-nB_grid[index[0]-1]);
-      double t2=(tgp_Fint->get(ip1)-tgp_Fint->get(index))/hc_mev_fm/
+      double t1=(tgp_Fint->get(ip1)-tgp_Fint->get(index))/hc_mev_fm/
         (nB_grid[index[0]+1]-nB_grid[index[0]]);
-      double t3=(t2-t1)*2.0*hc_mev_fm/
-        (T_grid[index[2]+1]-T_grid[index[2]-1]);
+      double t2=(tgp_Fint->get(ip1kp1)-tgp_Fint->get(kp1))/hc_mev_fm/
+        (nB_grid[index[0]+1]-nB_grid[index[0]]);
+     double t3=(t2-t1)*hc_mev_fm/
+        (T_grid[index[2]+1]-T_grid[index[2]]);
       cout << "  Fint_nBT,Fint_nBT_intp: "
            << Fint_nBT << " " << t3 << endl;
-      t1=(tgp_F->get(index)-tgp_F->get(im1))/hc_mev_fm/
-        (nB_grid[index[0]]-nB_grid[index[0]-1]);
-      t2=(tgp_F->get(ip1)-tgp_F->get(index))/hc_mev_fm/
+      t1=(tgp_F->get(ip1)-tgp_F->get(index))/hc_mev_fm/
         (nB_grid[index[0]+1]-nB_grid[index[0]]);
-      t3=(t2-t1)*2.0*hc_mev_fm/
-        (T_grid[index[2]+1]-T_grid[index[2]-1]);
+      t2=(tgp_F->get(ip1kp1)-tgp_F->get(kp1))/hc_mev_fm/
+        (nB_grid[index[0]+1]-nB_grid[index[0]]);
+      t3=(t2-t1)*hc_mev_fm/
+        (T_grid[index[2]+1]-T_grid[index[2]]);
       cout << "  F_nBT,F_nBT_intp: "
            << F_nBT << " " << t3 << endl;
     }
 
     if (index[1]>0 && index[1]<Ye_grid.size()-1) {
-      double t1=(tgp_Fint->get(index)-tgp_Fint->get(jm1))/hc_mev_fm/
-        (Ye_grid[index[1]]-Ye_grid[index[1]-1]);
-      double t2=(tgp_Fint->get(jp1)-tgp_Fint->get(index))/hc_mev_fm/
+      double t1=(tgp_Fint->get(jp1)-tgp_Fint->get(index))/hc_mev_fm/
         (Ye_grid[index[1]+1]-Ye_grid[index[1]]);
-      double t3=(t2-t1)*2.0*hc_mev_fm/
-        (T_grid[index[2]+1]-T_grid[index[2]-1]);
+      double t2=(tgp_Fint->get(jp1kp1)-tgp_Fint->get(kp1))/hc_mev_fm/
+        (Ye_grid[index[1]+1]-Ye_grid[index[1]]);
+      double t3=(t2-t1)*hc_mev_fm/
+        (T_grid[index[2]+1]-T_grid[index[2]]);
       cout << "  Fint_YeT,Fint_YeT_intp: "
            << Fint_YeT << " " << t3 << endl;
-      t1=(tgp_F->get(index)-tgp_F->get(jm1))/hc_mev_fm/
-        (Ye_grid[index[1]]-Ye_grid[index[1]-1]);
-      t2=(tgp_F->get(jp1)-tgp_F->get(index))/hc_mev_fm/
+      t1=(tgp_F->get(jp1)-tgp_F->get(index))/hc_mev_fm/
         (Ye_grid[index[1]+1]-Ye_grid[index[1]]);
-      t3=(t2-t1)*2.0*hc_mev_fm/
-        (T_grid[index[2]+1]-T_grid[index[2]-1]);
+      t2=(tgp_F->get(jp1kp1)-tgp_F->get(kp1))/hc_mev_fm/
+        (Ye_grid[index[1]+1]-Ye_grid[index[1]]);
+      t3=(t2-t1)*hc_mev_fm/
+        (T_grid[index[2]+1]-T_grid[index[2]]);
       cout << "  F_YeT,F_YeT_intp: "
            << F_YeT << " " << t3 << endl;
     }
