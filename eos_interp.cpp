@@ -259,6 +259,10 @@ int eos_nuclei::interp_point(std::vector<std::string> &sv,
 }
 
 double interpm_krige_eos::dist_cf(size_t i_calib, size_t i_fix) {
+  std::cout << "Here: " << i_calib << " " << i_calib*3 << " "
+            << calib_list.size() << endl;
+  std::cout << "Here2: " << i_fix << " " << i_fix*3 << " "
+            << fix_list.size() << endl;
   double dist1=calib_list[i_calib*3]-fix_list[i_fix*3];
   double dist2=calib_list[i_calib*3+1]-fix_list[i_fix*3+1];
   double dist3=calib_list[i_calib*3+2]-fix_list[i_fix*3+2];
