@@ -111,11 +111,12 @@ int eos_nuclei::interp_point(std::vector<std::string> &sv,
        << endl;
   size_t count=ike.calib_list.size()/3;
 
-  // 
-  ike.compute_dists();
-  if (ike.calib_list.size()/3!=ike.calib_dists.size()) {
-    cerr << "Problem x2." << endl;
-    exit(-1);
+  if (ike.fix_list.size()>0) {
+    ike.compute_dists();
+    if (ike.calib_list.size()/3!=ike.calib_dists.size()) {
+      cerr << "Problem x2." << endl;
+      exit(-1);
+    }
   }
   
   std::vector<double> len_list={2.0,3.0};
@@ -317,11 +318,13 @@ void interpm_krige_eos::set(std::vector<double> &nB_grid2,
     }
     if (true) {
       cout << ix(j/3,0) << " " << ix(j/3,1) << " "
-           << ix(j/3,2) << " " << iy(0,j/3) << " " << calib_dists[j/3]
-           << endl;
+           << ix(j/3,2) << " " << iy(0,j/3) << " ";
+      if (fix_list.size()>3) {
+        cout << calib_dists[j/3];
+      }
+      cout << endl;
     }
   }
-  exit(-1);
 
   // Make a copy because interpm_krige_eos will keep it
   ubmatrix ix2=ix;
@@ -450,30 +453,63 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
     
     // Derivatives of the physical coordinates with respect to the indices
 
-    /*
-      double dnBdi=2.0*0.04*log(10.0)*pow(10.0,((double)inB)*0.04-12.0);
-      double dYedj=0.01;
-      double dTdk=0.1*log(1.046)*pow(1.046,iT);
-    */
-    double dnBdi=1.0/10000.0;
-    double dYedj=1.0/400.0;
-    double dTdk=1.0/4.0;
-
-    /*
-    double didnB=25.0/nB/log(10.0);
-    double d2idnB2=-25.0/nB/nB/log(10.0);
-    double djdYe=100.0;
-    double d2jdYe2=0.0;
-    double dkdT=1.0/T_MeV/log(1.046);
-    double d2kdT2=-1.0/T_MeV/T_MeV/log(1.046);
-    */
-    double didnB=10000.0;
-    double djdYe=400.0;
-    double dkdT=4.0;
-    double d2idnB2=0.0;
-    double d2jdYe2=0.0;
-    double d2kdT2=0.0;
-  
+    double didnB, djdYe, dkdT, dnBdi, dYedj, dTdk;
+    double d2idnB2, d2jdYe2, d2kdT2;
+    if (inB>0 && inB<nB_grid.size()-1) {
+      dnBdi=(nB_grid[inB+1]-nB_grid[inB-1])/2;
+      double t2=(nB_grid[inB+1]-nB_grid[inB]);
+      double t1=(nB_grid[inB]-nB_grid[inB-1]);
+      d2idnB2=(1.0/t2-1.0/t1)/(nB_grid[inB+1]-nB_grid[inB-1])*2.0;
+    } else if (inB==0) {
+      dnBdi=(nB_grid[1]-nB_grid[0]);
+      double t2=(nB_grid[2]-nB_grid[1]);
+      double t1=(nB_grid[1]-nB_grid[0]);
+      d2idnB2=(1.0/t2-1.0/t1)/(nB_grid[2]-nB_grid[0])*2.0;
+    } else {
+      dnBdi=(nB_grid[nB_grid.size()-1]-nB_grid[nB_grid.size()-2]);
+      double t2=(nB_grid[nB_grid.size()-1]-nB_grid[nB_grid.size()-2]);
+      double t1=(nB_grid[nB_grid.size()-2]-nB_grid[nB_grid.size()-3]);
+      d2idnB2=(1.0/t2-1.0/t1)/(nB_grid[nB_grid.size()-1]-
+                               nB_grid[nB_grid.size()-3])*2.0;
+    }
+    if (iYe>0 && iYe<Ye_grid.size()-1) {
+      dYedj=(Ye_grid[iYe+1]-Ye_grid[iYe-1])/2;
+      double t2=(Ye_grid[iYe+1]-Ye_grid[iYe]);
+      double t1=(Ye_grid[iYe]-Ye_grid[iYe-1]);
+      d2jdYe2=(1.0/t2-1.0/t1)/(Ye_grid[iYe+1]-Ye_grid[iYe-1])*2.0;
+    } else if (iYe==0) {
+      dYedj=(Ye_grid[1]-Ye_grid[0]);
+      double t2=(Ye_grid[2]-Ye_grid[1]);
+      double t1=(Ye_grid[1]-Ye_grid[0]);
+      d2jdYe2=(1.0/t2-1.0/t1)/(Ye_grid[2]-Ye_grid[0])*2.0;
+    } else {
+      dYedj=(Ye_grid[Ye_grid.size()-1]-Ye_grid[Ye_grid.size()-1]);
+      double t2=(Ye_grid[Ye_grid.size()-1]-Ye_grid[Ye_grid.size()-2]);
+      double t1=(Ye_grid[Ye_grid.size()-2]-Ye_grid[Ye_grid.size()-3]);
+      d2jdYe2=(1.0/t2-1.0/t1)/(Ye_grid[Ye_grid.size()-1]-
+                               Ye_grid[Ye_grid.size()-3])*2.0;
+    }
+    if (iT>0 && iT<T_grid.size()-1) {
+      dTdk=(T_grid[iT+1]-T_grid[iT-1])/2;
+      double t2=(T_grid[iT+1]-T_grid[iT]);
+      double t1=(T_grid[iT]-T_grid[iT-1]);
+      d2kdT2=(1.0/t2-1.0/t1)/(T_grid[iT+1]-T_grid[iT-1])*2.0;
+    } else if (iT==0) {
+      dTdk=(T_grid[1]-T_grid[0]);
+      double t2=(T_grid[2]-T_grid[1]);
+      double t1=(T_grid[1]-T_grid[0]);
+      d2kdT2=(1.0/t2-1.0/t1)/(T_grid[2]-T_grid[0])*2.0;
+    } else {
+      dTdk=(T_grid[T_grid.size()-1]-T_grid[T_grid.size()-1]);
+      double t2=(T_grid[T_grid.size()-1]-T_grid[T_grid.size()-2]);
+      double t1=(T_grid[T_grid.size()-2]-T_grid[T_grid.size()-3]);
+      d2kdT2=(1.0/t2-1.0/t1)/(T_grid[T_grid.size()-1]-
+                               T_grid[T_grid.size()-3])*2.0;
+    }
+    didnB=1.0/dnBdi;
+    djdYe=1.0/dYedj;
+    dkdT=1.0/dTdk;
+    
     // Evaluate the free energy and its derivatives analytically
     // using the interpolator, and then remove a factor of hbar c
 
