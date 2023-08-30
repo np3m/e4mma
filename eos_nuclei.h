@@ -772,7 +772,8 @@ public:
 
       <no parameters>
       
-      Help.
+      This is typically done after derivatives are computed with
+      the "eos-deriv" command.
   */
   int add_eg(std::vector<std::string> &sv, bool itive_com);
 

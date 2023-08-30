@@ -173,30 +173,6 @@ int eos_nuclei::interp_point(std::vector<std::string> &sv,
     cout << "Success." << endl;
   }
 
-  for(double i3=85;i3<=95;i3+=1.0) {
-    vector<double> list={i3,20,20};
-    vector<double> out(1);
-    vector<double> list2={nB_grid2[i3],Ye_grid2[20],T_grid2[20]};
-    ike.eval(list,out);
-    double F=out[0];
-    cout << i3 << " "
-         << F << " " << tg_F.interp_linear(list2) << endl;
-  }
-  cout << endl;
-  
-  for(double j3=15;j3<=25;j3+=1.0) {
-    vector<double> list={90,j3,20};
-    vector<double> out(1);
-    vector<double> list2={nB_grid2[90],Ye_grid2[j3],T_grid2[20]};
-    ike.eval(list,out);
-    double F=out[0];
-    cout << j3 << " "
-         << F << " " << tg_F.interp_linear(list2) << endl;
-  }
-  cout << endl;
-  
-  exit(-1);
-
   // Use the interpolation results to fix points 
   std::vector<double> out(1);
   for(size_t j=0;j<ike.fix_list.size();j+=3) {
@@ -207,70 +183,85 @@ int eos_nuclei::interp_point(std::vector<std::string> &sv,
     double nB=nB_grid2[inB];
     double Ye=Ye_grid2[iYe];
     double T_MeV=T_grid2[iT];
-    
-    // Derivatives of the physical coordinates with respect to the indices
-    
-    double dnBdi=2.0*0.04*log(10.0)*pow(10.0,((double)inB)*0.04-12.0);
-    double dYedj=0.01;
-    double dTdk=0.1*log(1.046)*pow(1.046,iT);
+
+    // Electron photon contribution in MeV
+    double F_eg=tg_F.get(index)-tg_Fint.get(index);
     
     ike.eval(index,out);
-    double Fintp=out[0];
-    tg_F.get(index)=Fintp;
-    
-    ike.deriv(index,out,0);
-    double dF_dnB=out[0]/hc_mev_fm/dnBdi;
-    ike.deriv(index,out,1);
-    double dF_dYe=out[0]/hc_mev_fm/dYedj;
-    ike.deriv(index,out,2);
-    // No hbarc here b/c dTdk has units of MeV as does out[0]
-    double dF_dT=out[0]/dTdk;
-        
-    ike.deriv2(index,out,0,0);
-    double F_nBnB=out[0]/hc_mev_fm;
-    ike.deriv2(index,out,0,1);
-    double F_nBYe=out[0]/hc_mev_fm;
-    ike.deriv2(index,out,1,1);
-    double F_YeYe=out[0]/hc_mev_fm;
-    ike.deriv2(index,out,0,2);
-    double F_nBT=out[0]/hc_mev_fm;
-    ike.deriv2(index,out,1,2);
-    double F_YeT=out[0]/hc_mev_fm;
-    ike.deriv2(index,out,2,2);
-    double F_TT=out[0]/hc_mev_fm;
-
-    double mun=Fintp/hc_mev_fm-Ye*dF_dYe+nB*dF_dnB;
-    double mue=tg_mue.get(index)/hc_mev_fm;
-    double mup=Fintp/hc_mev_fm+(1.0-Ye)*dF_dYe+nB*dF_dnB-mue;
-    double en=-nB*dF_dT;
-    tg_mun.get(index)=mun;
-    tg_mup.get(index)=mup;
-    tg_mue.get(index)=mue;
-    
-    tg_S.get(index)=en/nB;
-
-    // unverified
-    tg_E.get(index)=tg_F.get(index)+T_MeV*tg_S.get(index);
-    tg_P.get(index)=tg_F.get(index)+mun*neutron.m+mup*proton.m+
-      mue*electron.m;
+    if (ike.interp_Fint==false) {
+      cout << "Correcting (1) from " << tg_F.get(index) << " to "
+           << out[0] << endl;
+      cout << "Correcting (1b) from " << tg_Fint.get(index) << " to "
+           << out[0]-F_eg << endl;
+      tg_F.get(index)=out[0];
+      tg_Fint.get(index)=out[0]-F_eg;
+    } else {
+      cout << "Correcting (2) from " << tg_Fint.get(index) << " to "
+           << out[0] << endl;
+      tg_Fint.get(index)=out[0];
+      tg_F.get(index)=out[0]+F_eg;
+    }
     
   }
 
+  for(size_t j=0;j<ike.calib_list.size();j+=3) {
+
+    vector<size_t> index={ike.calib_list[j],ike.calib_list[j+1],
+      ike.calib_list[j+2]};
+    
+    double nB=nB_grid2[inB];
+    double Ye=Ye_grid2[iYe];
+    double T_MeV=T_grid2[iT];
+    
+    double fact=1.0/(1.0+exp(2.0*(ike.calib_dists[j/3]-2.5)));
+
+    // Electron photon contribution in MeV
+    double F_eg=tg_F.get(index)-tg_Fint.get(index);
+    
+    ike.eval(index,out);
+    if (ike.interp_Fint==false) {
+      double corr=out[0]-tg_F.get(index);
+      cout << "Correcting (3) from " << tg_F.get(index) << " to "
+           << tg_F.get(index)+fact*corr << " at dist: "
+           << ike.calib_dists[j/3] << endl;
+      cout << "Correcting (3b) from " << tg_Fint.get(index) << " to "
+           << tg_F.get(index)-F_eg << " at dist: "
+           << ike.calib_dists[j/3] << endl;
+      tg_F.get(index)+=fact*corr;
+      tg_Fint.get(index)=tg_F.get(index)-F_eg;
+    } else {
+      double corr=out[0]-tg_Fint.get(index);
+      cout << "Correcting (4) from " << tg_Fint.get(index) << " to "
+           << tg_Fint.get(index)+fact*corr << " at dist: "
+           << ike.calib_dists[j/3] << endl;
+      tg_Fint.get(index)+=fact*corr;
+      tg_F.get(index)=out[0]+F_eg;
+    }
+
+  }
+
+  derivs_computed=false;
+  with_leptons=false;
+  
   return 0;
 }
 
 double interpm_krige_eos::dist_cf(size_t i_calib, size_t i_fix) {
-  std::cout << "Here: " << i_calib << " " << i_calib*3 << " "
-            << calib_list.size() << endl;
-  std::cout << "Here2: " << i_fix << " " << i_fix*3 << " "
-            << fix_list.size() << endl;
-  double dist1=calib_list[i_calib*3]-fix_list[i_fix*3];
-  double dist2=calib_list[i_calib*3+1]-fix_list[i_fix*3+1];
-  double dist3=calib_list[i_calib*3+2]-fix_list[i_fix*3+2];
+
+  // These are size_t's so we have to convert to double before
+  // we subtract
+  double dist1=((double)calib_list[i_calib*3])-
+    ((double)fix_list[i_fix*3]);
+  double dist2=((double)calib_list[i_calib*3+1])-
+    ((double)fix_list[i_fix*3+1]);
+  double dist3=((double)calib_list[i_calib*3+2])-
+    ((double)fix_list[i_fix*3+2]);
+  
   return sqrt(dist1*dist1+dist2*dist2+dist3*dist3);
 }
 
 void interpm_krige_eos::compute_dists() {
+  
   size_t calib_count=calib_list.size()/3;
   size_t fix_count=fix_list.size()/3;
   for(size_t i_calib=0;i_calib<calib_count;i_calib++) {
@@ -281,6 +272,7 @@ void interpm_krige_eos::compute_dists() {
     }
     calib_dists.push_back(dist_min);
   }
+  
   return;
 }
 
@@ -613,7 +605,7 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
         2.0*Feg/nB/nB;
       F_nBYe=Fint_nBYe+Ye/elep.ed.dndmu;
       F_YeYe=Fint_YeYe+nB/elep.ed.dndmu;
-      F_nBT=Fint_nBT+Ye/nB/elep.ed.dndmu*elep.ed.dndT;
+      F_nBT=Fint_nBT+Ye/nB/elep.ed.dndmu*elep.ed.dndT+Seg/nB;
       F_YeT=Fint_YeT+1.0/elep.ed.dndmu*elep.ed.dndT;
       F_TT=Fint_TT-elep.ed.dsdT/nB;
 
@@ -669,7 +661,7 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
         2.0*Feg/nB/nB;
       Fint_nBYe=F_nBYe-Ye/elep.ed.dndmu;
       Fint_YeYe=F_YeYe-nB/elep.ed.dndmu;
-      Fint_nBT=F_nBT-Ye/nB/elep.ed.dndmu*elep.ed.dndT;
+      Fint_nBT=F_nBT-Ye/nB/elep.ed.dndmu*elep.ed.dndT-Seg/nB;
       Fint_YeT=F_YeT-1.0/elep.ed.dndmu*elep.ed.dndT;
       Fint_TT=F_TT+elep.ed.dsdT/nB;
 
