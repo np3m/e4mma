@@ -101,17 +101,20 @@ public:
   typedef o2scl_linalg::matrix_invert_det_eigen<Eigen::MatrixXd>
   mat_inv_t;
 
-  /// Desc
+  /** \brief Compute the distance between calibration point with index
+      \c i_calib and point to fix with index \c i_fix
+  */
   double dist_cf(size_t i_calib, size_t i_fix);
 
-  /// Desc
+  /// Compute \ref calib_dists
   void compute_dists();
   
   /** \brief List of calibration points
    */
   std::vector<size_t> calib_list;
 
-  /** \brief List of distances
+  /** \brief List of minium distances between the calibration points
+      and the points to fix
    */
   std::vector<double> calib_dists;
 
@@ -137,6 +140,7 @@ public:
   o2scl::tensor_grid<> *tgp_Fint;
   o2scl::tensor_grid<> *tgp_Sint;
   o2scl::tensor_grid<> tgp_cs2;
+  o2scl::tensor_grid<> tgp_dPdnB;
   //@}
 
   /// Neutron mass
@@ -223,6 +227,12 @@ public:
   eos_nuclei();
   
   virtual ~eos_nuclei();
+  //@}
+
+  /// \name Stability tensors
+  //@{
+  o2scl::tensor_grid<> dmundYe, dmundnB, dmupdYe, dsdT, dsdnB, dsdYe;
+  o2scl::tensor_grid<> egv[4], tg_cs2, tg_cs2_hom;
   //@}
 
   /// Partition functions for the nuclei
@@ -762,6 +772,15 @@ public:
 
   /** \brief Desc
    */
+  int interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
+                      size_t window, interpm_krige_eos &ike);
+
+  /** \brief Desc
+   */
+  int interp_fix_table(std::vector<std::string> &sv, bool itive_com);
+  
+  /** \brief Desc
+   */
   int eos_deriv_v2(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Compute second derivatives numerically
@@ -781,7 +800,12 @@ public:
 
       <output file>
 
-      Help.
+      Construct a file consisting only of the electron and photon EOS.
+      Muons are included if \ref eos::include_muons is set to true.
+      The output file has five tensor grid objects, \c F, \c E, \c P,
+      \c S, and \c mue. If muons are included, then the file also
+      includes \c Ymu. The electron (and muon) masses are also written
+      to the table.
   */
   int eg_table(std::vector<std::string> &sv, bool itive_com);
 

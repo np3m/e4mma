@@ -29,6 +29,342 @@ using namespace o2scl;
 using namespace o2scl_const;
 using namespace o2scl_hdf;
 
+int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
+                             bool itive_com) {
+
+  std::string st_in, st_out;
+  std::string table_out;
+  st_in=sv[1];
+  size_t window=o2scl::stoszt(sv[2]);
+  table_out=sv[3];
+  st_out=sv[4];
+  
+  // Create interpolation object
+  interpm_krige_eos ike;
+  ike.mode=ike.mode_loo_cv_bf;
+  ike.full_min=true;
+  ike.def_mmin.verbose=1;
+  
+  /// Load cs2 from a file
+  hdf_file hff;
+  hff.open(st_in);
+  hdf_input(hff,ike.tgp_cs2,"cs2");
+  hff.close();
+
+  for(size_t i=0;i<nB_grid2.size();i++) {
+    for(size_t j=0;j<Ye_grid2.size();j++) {
+      for(size_t k=0;k<T_grid2.size();k++) {
+
+        vector<size_t> ix={i,j,k};
+        
+        double dPdnB;
+        if (i>0 && i<nB_grid2.size()-1) {
+          vector<size_t> ixp1={i+1,j,k};
+          vector<size_t> ixm1={i-1,j,k};
+          dPdnB=(tg_P.get(ixp1)-tg_P.get(ixm1))/
+            (nB_grid2[i+1]-nB_grid2[i-1])/2;
+        } else if (i>0) {
+          vector<size_t> ixm1={i-1,j,k};
+          dPdnB=(tg_P.get(ix)-tg_P.get(ixm1))/
+            (nB_grid2[i]-nB_grid2[i-1]);
+        } else {
+          vector<size_t> ixp1={i+1,j,k};
+          dPdnB=(tg_P.get(ixp1)-tg_P.get(ix))/
+            (nB_grid2[i+1]-nB_grid2[i]);
+        }
+        
+        if (ike.tgp_cs2.get(ix)>1.0 ||
+            ike.tgp_cs2.get(ix)<0.0 || 
+            !std::isfinite(ike.tgp_cs2.get(ix)) || 
+            dPdnB<0.0) {
+          
+          size_t i_fix=i, j_fix=j, k_fix=k;
+          cout << "Found point to fix at (" << i << "," << j << ","
+               << k << ") = (" << nB_grid2[i] << ","
+               << Ye_grid2[j] << "," << T_grid2[k] << ")." << endl;
+
+          interp_internal(i_fix,j_fix,k_fix,window,ike);
+
+          std::vector<std::string> sv2;
+          eos_deriv(sv2,itive_com);
+          add_eg(sv2,itive_com);
+
+          size_t i_min, i_max, j_min, j_max, k_min, k_max;
+          i_min=ike.fix_list[0];
+          i_max=ike.fix_list[0];
+          j_min=ike.fix_list[1];
+          j_max=ike.fix_list[1];
+          k_min=ike.fix_list[2];
+          k_max=ike.fix_list[2];
+          
+          for(size_t ifx=3;ifx<ike.fix_list.size();ifx+=3) {
+            if (ike.fix_list[ifx]<i_min) {
+              i_min=ike.fix_list[ifx];
+            }
+            if (ike.fix_list[ifx]>i_max) {
+              i_max=ike.fix_list[ifx];
+            }
+            if (ike.fix_list[ifx+1]<j_min) {
+              j_min=ike.fix_list[ifx+1];
+            }
+            if (ike.fix_list[ifx+1]>j_max) {
+              j_max=ike.fix_list[ifx+1];
+            }
+            if (ike.fix_list[ifx+2]<k_min) {
+              k_min=ike.fix_list[ifx+2];
+            }
+            if (ike.fix_list[ifx+2]>k_max) {
+              k_max=ike.fix_list[ifx+2];
+            }
+          }
+          for(size_t icx=3;icx<ike.calib_list.size();icx+=3) {
+            if (ike.calib_list[icx]<i_min) {
+              i_min=ike.calib_list[icx];
+            }
+            if (ike.calib_list[icx]>i_max) {
+              i_max=ike.calib_list[icx];
+            }
+            if (ike.calib_list[icx+1]<j_min) {
+              j_min=ike.calib_list[icx+1];
+            }
+            if (ike.calib_list[icx+1]>j_max) {
+              j_max=ike.calib_list[icx+1];
+            }
+            if (ike.calib_list[icx+2]<k_min) {
+              k_min=ike.calib_list[icx+2];
+            }
+            if (ike.calib_list[icx+2]>k_max) {
+              k_max=ike.calib_list[icx+2];
+            }
+          }
+          for(size_t ii=0;ii<window;ii++) {
+            if (i_min>0) i_min--;
+            if (i_max<nB_grid2.size()-1) i_max++;
+            if (j_min>0) j_min--;
+            if (j_max<Ye_grid2.size()-1) j_max++;
+            if (k_min>0) k_min--;
+            if (k_max<T_grid2.size()-1) k_max++;
+          }
+
+          cout << "Computed i_min, i_max: " << i_min << " " << i_max << endl;
+          cout << "Computed j_min, j_max: " << j_min << " " << j_max << endl;
+          cout << "Computed k_min, k_max: " << k_min << " " << k_max << endl;
+
+          std::vector<std::string> sv2;
+          sv2={"stability",o2scl::stoszt(i_min),o2scl::stoszt(i_min),
+            o2scl::stoszt(j_min),o2scl::stoszt(j_min),
+            o2scl::stoszt(k_min),o2scl::stoszt(k_min)};
+          stability(sv2,itive_com);
+
+          ike.tgp_cs2=tg_cs2;
+
+          k+=window*2;
+          
+        }
+        
+      }
+    }
+  }
+
+  return 0;
+}
+
+int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
+                                size_t window, interpm_krige_eos &ike) {
+  
+  // Using the specified window, compute the list of points to fix,
+  // and the list of calibration points
+
+  int iwindow=((int)window);
+  for(int dnB=-iwindow;dnB<=iwindow;dnB++) {
+    for(int dYe=-iwindow;dYe<=iwindow;dYe++) {
+      for(int dT=-iwindow;dT<=iwindow;dT++) {
+        vector<size_t> index={i_fix+dnB,j_fix+dYe,k_fix+dT};
+        if (abs(dnB)+abs(dYe)+abs(dT)<=iwindow &&
+            i_fix+dnB>=0 && i_fix+dnB<n_nB2 &&
+            j_fix+dYe>=0 && j_fix+dYe<n_Ye2 &&
+            k_fix+dT>=0 && k_fix+dT<n_T2) {
+          if (ike.tgp_cs2.get_rank()>=3 &&
+              (ike.tgp_cs2.get(index)>1.0 ||
+               !std::isfinite(ike.tgp_cs2.get(index)) ||
+               ike.tgp_cs2.get(index)<0.0)) {
+            ike.fix_list.push_back(index[0]);
+            ike.fix_list.push_back(index[1]);
+            ike.fix_list.push_back(index[2]);
+          } else {
+            ike.calib_list.push_back(index[0]);
+            ike.calib_list.push_back(index[1]);
+            ike.calib_list.push_back(index[2]);
+          }
+        }
+      }
+    }
+  }
+  
+  cout << "Using " << ike.calib_list.size()/3 << " points to calibrate"
+       << endl;
+  cout << "  and attempting to fix " << ike.fix_list.size()/3 << " points."
+       << endl;
+  size_t count=ike.calib_list.size()/3;
+
+  if (ike.fix_list.size()==0) {
+    cerr << "No points to fix." << endl;
+    return 1;
+  }
+
+  // Compute the distanes between the calibration points and the
+  // points to fix
+  
+  ike.compute_dists();
+  if (ike.calib_list.size()/3!=ike.calib_dists.size()) {
+    O2SCL_ERR("Error in calibration distance math.",o2scl::exc_esanity);
+  }
+
+  // Initialize the covariance object 
+  
+  std::vector<double> len_list={2.0,3.0};
+  std::vector<double> l10_list={-15,-13,-11,-9};  
+  std::vector<std::vector<double>> ptemp;
+  ptemp.push_back(len_list);
+  ptemp.push_back(len_list);
+  ptemp.push_back(len_list);
+  ptemp.push_back(l10_list);
+  std::vector<std::vector<std::vector<double>>> param_lists;
+  param_lists.push_back(ptemp);
+  std::cout << "Going to set_covar()." << std::endl;
+  vector<mcovar_funct_rbf_noise> mfr(1);
+  mfr[0].len.resize(3);
+  ike.set_covar(mfr,param_lists);
+
+  // Use the covariance object to set the data, skipping the
+  // optimization for now and performing it manually
+  
+  ike.skip_optim=true;
+  ike.set(nB_grid2,Ye_grid2,T_grid2,tg_F,tg_P,tg_S,
+          tg_mun,tg_mup,tg_mue,tg_Fint,tg_Sint,neutron.m,proton.m);
+
+  // Manually optimize the Gaussian process interpolation by
+  // exhaustively searching
+  
+  double min_qual=1.0e99;
+  vector<double> p(4), min_p;
+  for(p[0]=8.0;p[0]<80.0;p[0]*=1.4) {
+    for(p[1]=8.0;p[1]<80.0;p[1]*=1.4) {
+      for(p[2]=8.0;p[2]<80.0;p[2]*=1.4) {
+        for(p[3]=-15.0;p[3]<-2.99;p[3]+=1.0) {
+          vector_out(cout,p,true);
+          (*ike.cf)[0].set_params(p);
+          int success;
+          double q=ike.qual_fun(0,success);
+          cout << "q,min_qual,succes: "
+               << q << " " << min_qual << " " << success << endl;
+          cout << endl;
+          if (success==0 && q<min_qual) {
+            min_p=p;
+            min_qual=q;
+          }
+        }
+      }
+    }
+  }
+
+  // Choose the best point
+  
+  if (min_qual>0.9e99) {
+    cerr << "All points failed in Gaussian process interpolation." << endl;
+    return 2;
+  } else {
+    (*ike.cf)[0].set_params(min_p);
+    int st;
+    cout << "Last run:\n" << endl;
+    vector_out(cout,min_p,true);
+    double qt=ike.qual_fun(0,st);
+    cout << "min_qual,qt,st,min_p: "
+         << min_qual << " " << qt << " " << st << " ";
+    vector_out(cout,min_p,true);
+    cout << "Success." << endl;
+  }
+
+  // Use the interpolation results to modify the points to be fixed
+  
+  std::vector<double> out(1);
+  
+  for(size_t j=0;j<ike.fix_list.size();j+=3) {
+
+    vector<size_t> index={ike.fix_list[j],ike.fix_list[j+1],
+      ike.fix_list[j+2]};
+    
+    double nB=nB_grid2[index[0]];
+    double Ye=Ye_grid2[index[1]];
+    double T_MeV=T_grid2[index[2]];
+
+    // Electron photon contribution in MeV
+    double F_eg=tg_F.get(index)-tg_Fint.get(index);
+    
+    ike.eval(index,out);
+    if (ike.interp_Fint==false) {
+      cout << "Correcting (1) from " << tg_F.get(index) << " to "
+           << out[0] << endl;
+      cout << "Correcting (1b) from " << tg_Fint.get(index) << " to "
+           << out[0]-F_eg << endl;
+      tg_F.get(index)=out[0];
+      tg_Fint.get(index)=out[0]-F_eg;
+    } else {
+      cout << "Correcting (2) from " << tg_Fint.get(index) << " to "
+           << out[0] << endl;
+      tg_Fint.get(index)=out[0];
+      tg_F.get(index)=out[0]+F_eg;
+    }
+    
+  }
+
+  // Use the interpolation results to modify the calibration points nearby
+
+  for(size_t j=0;j<ike.calib_list.size();j+=3) {
+
+    vector<size_t> index={ike.calib_list[j],ike.calib_list[j+1],
+      ike.calib_list[j+2]};
+    
+    double nB=nB_grid2[index[0]];
+    double Ye=Ye_grid2[index[1]];
+    double T_MeV=T_grid2[index[2]];
+    
+    double fact=1.0/(1.0+exp(2.0*(ike.calib_dists[j/3]-2.5)));
+
+    // Electron photon contribution in MeV
+    double F_eg=tg_F.get(index)-tg_Fint.get(index);
+    
+    ike.eval(index,out);
+    if (ike.interp_Fint==false) {
+      double corr=out[0]-tg_F.get(index);
+      cout << "Correcting (3) from " << tg_F.get(index) << " to "
+           << tg_F.get(index)+fact*corr << " at dist: "
+           << ike.calib_dists[j/3] << endl;
+      cout << "Correcting (3b) from " << tg_Fint.get(index) << " to "
+           << tg_F.get(index)-F_eg << " at dist: "
+           << ike.calib_dists[j/3] << endl;
+      tg_F.get(index)+=fact*corr;
+      tg_Fint.get(index)=tg_F.get(index)-F_eg;
+    } else {
+      double corr=out[0]-tg_Fint.get(index);
+      cout << "Correcting (4) from " << tg_Fint.get(index) << " to "
+           << tg_Fint.get(index)+fact*corr << " at dist: "
+           << ike.calib_dists[j/3] << endl;
+      tg_Fint.get(index)+=fact*corr;
+      tg_F.get(index)=out[0]+F_eg;
+    }
+    
+  }
+  
+  // Make sure to set the derivative and lepton flags so that they
+  // can be recomputed later
+  
+  derivs_computed=false;
+  with_leptons=false;
+
+  return 0;
+}
+
 int eos_nuclei::interp_point(std::vector<std::string> &sv,
                              bool itive_com) {
 
@@ -59,7 +395,7 @@ int eos_nuclei::interp_point(std::vector<std::string> &sv,
        << Ye_cent << " " << T_cent*hc_mev_fm << endl;
   cout << "At grid point: " << inB << " " << iYe << " " << iT << endl;
 
-  int window=o2scl::stoi(sv[4]);
+  size_t window=o2scl::stoszt(sv[4]);
   cout << "Using window size: " << window << endl;
 
   // Create interpolation object
@@ -76,173 +412,8 @@ int eos_nuclei::interp_point(std::vector<std::string> &sv,
   hdf_input(hff,ike.tgp_cs2);
   hff.close();
 
-  for(int dnB=-window;dnB<=window;dnB++) {
-    for(int dYe=-window;dYe<=window;dYe++) {
-      for(int dT=-window;dT<=window;dT++) {
-        vector<size_t> index={inB+dnB,iYe+dYe,iT+dT};
-        if (abs(dnB)+abs(dYe)+abs(dT)<=window &&
-            inB+dnB>=0 && inB+dnB<n_nB2 &&
-            iYe+dYe>=0 && iYe+dYe<n_Ye2 &&
-            iT+dT>=0 && iT+dT<n_T2) {
-          if (ike.tgp_cs2.get_rank()>=3 &&
-              (ike.tgp_cs2.get(index)>1.0 ||
-               !std::isfinite(ike.tgp_cs2.get(index)) ||
-               ike.tgp_cs2.get(index)<0.0)) {
-            ike.fix_list.push_back(index[0]);
-            ike.fix_list.push_back(index[1]);
-            ike.fix_list.push_back(index[2]);
-            //cout << "fix: " << index[0] << " " << index[1] << " "
-            //<< index[2] << endl;
-          } else {
-            ike.calib_list.push_back(index[0]);
-            ike.calib_list.push_back(index[1]);
-            ike.calib_list.push_back(index[2]);
-            //cout << "cal: " << index[0] << " " << index[1] << " "
-            //<< index[2] << endl;
-          }
-        }
-      }
-    }
-  }
-  
-  cout << "Using " << ike.calib_list.size()/3 << " points to calibrate"
-       << endl;
-  cout << "  and attempting to fix " << ike.fix_list.size()/3 << " points."
-       << endl;
-  size_t count=ike.calib_list.size()/3;
+  interp_internal(inB,iYe,iT,window,ike);
 
-  if (ike.fix_list.size()>0) {
-    ike.compute_dists();
-    if (ike.calib_list.size()/3!=ike.calib_dists.size()) {
-      cerr << "Problem x2." << endl;
-      exit(-1);
-    }
-  }
-  
-  std::vector<double> len_list={2.0,3.0};
-  std::vector<double> l10_list={-15,-13,-11,-9};  
-  std::vector<std::vector<double>> ptemp;
-  ptemp.push_back(len_list);
-  ptemp.push_back(len_list);
-  ptemp.push_back(len_list);
-  ptemp.push_back(l10_list);
-  std::vector<std::vector<std::vector<double>>> param_lists;
-  param_lists.push_back(ptemp);
-  std::cout << "Going to set_covar()." << std::endl;
-  vector<mcovar_funct_rbf_noise> mfr(1);
-  mfr[0].len.resize(3);
-  ike.set_covar(mfr,param_lists);
-  
-  ike.skip_optim=true;
-  ike.set(nB_grid2,Ye_grid2,T_grid2,tg_F,tg_P,tg_S,
-          tg_mun,tg_mup,tg_mue,tg_Fint,tg_Sint,neutron.m,proton.m);
-  
-  double min_qual=1.0e99;
-  vector<double> p(4), min_p;
-  for(p[0]=8.0;p[0]<80.0;p[0]*=1.4) {
-    for(p[1]=8.0;p[1]<80.0;p[1]*=1.4) {
-      for(p[2]=8.0;p[2]<80.0;p[2]*=1.4) {
-        for(p[3]=-15.0;p[3]<-2.99;p[3]+=1.0) {
-          vector_out(cout,p,true);
-          (*ike.cf)[0].set_params(p);
-          int success;
-          double q=ike.qual_fun(0,success);
-          cout << "q,min_qual,succes: "
-               << q << " " << min_qual << " " << success << endl;
-          cout << endl;
-          if (success==0 && q<min_qual) {
-            min_p=p;
-            min_qual=q;
-          }
-        }
-      }
-    }
-  }
-  
-  if (min_qual>0.9e99) {
-    cout << "All points failed." << endl;
-  } else {
-    (*ike.cf)[0].set_params(min_p);
-    int st;
-    cout << "Last run:\n" << endl;
-    vector_out(cout,min_p,true);
-    double qt=ike.qual_fun(0,st);
-    cout << "min_qual,qt,st,min_p: "
-         << min_qual << " " << qt << " " << st << " ";
-    vector_out(cout,min_p,true);
-    cout << "Success." << endl;
-  }
-
-  // Use the interpolation results to fix points 
-  std::vector<double> out(1);
-  for(size_t j=0;j<ike.fix_list.size();j+=3) {
-
-    vector<size_t> index={ike.fix_list[j],ike.fix_list[j+1],
-      ike.fix_list[j+2]};
-    
-    double nB=nB_grid2[inB];
-    double Ye=Ye_grid2[iYe];
-    double T_MeV=T_grid2[iT];
-
-    // Electron photon contribution in MeV
-    double F_eg=tg_F.get(index)-tg_Fint.get(index);
-    
-    ike.eval(index,out);
-    if (ike.interp_Fint==false) {
-      cout << "Correcting (1) from " << tg_F.get(index) << " to "
-           << out[0] << endl;
-      cout << "Correcting (1b) from " << tg_Fint.get(index) << " to "
-           << out[0]-F_eg << endl;
-      tg_F.get(index)=out[0];
-      tg_Fint.get(index)=out[0]-F_eg;
-    } else {
-      cout << "Correcting (2) from " << tg_Fint.get(index) << " to "
-           << out[0] << endl;
-      tg_Fint.get(index)=out[0];
-      tg_F.get(index)=out[0]+F_eg;
-    }
-    
-  }
-
-  for(size_t j=0;j<ike.calib_list.size();j+=3) {
-
-    vector<size_t> index={ike.calib_list[j],ike.calib_list[j+1],
-      ike.calib_list[j+2]};
-    
-    double nB=nB_grid2[inB];
-    double Ye=Ye_grid2[iYe];
-    double T_MeV=T_grid2[iT];
-    
-    double fact=1.0/(1.0+exp(2.0*(ike.calib_dists[j/3]-2.5)));
-
-    // Electron photon contribution in MeV
-    double F_eg=tg_F.get(index)-tg_Fint.get(index);
-    
-    ike.eval(index,out);
-    if (ike.interp_Fint==false) {
-      double corr=out[0]-tg_F.get(index);
-      cout << "Correcting (3) from " << tg_F.get(index) << " to "
-           << tg_F.get(index)+fact*corr << " at dist: "
-           << ike.calib_dists[j/3] << endl;
-      cout << "Correcting (3b) from " << tg_Fint.get(index) << " to "
-           << tg_F.get(index)-F_eg << " at dist: "
-           << ike.calib_dists[j/3] << endl;
-      tg_F.get(index)+=fact*corr;
-      tg_Fint.get(index)=tg_F.get(index)-F_eg;
-    } else {
-      double corr=out[0]-tg_Fint.get(index);
-      cout << "Correcting (4) from " << tg_Fint.get(index) << " to "
-           << tg_Fint.get(index)+fact*corr << " at dist: "
-           << ike.calib_dists[j/3] << endl;
-      tg_Fint.get(index)+=fact*corr;
-      tg_F.get(index)=out[0]+F_eg;
-    }
-
-  }
-
-  derivs_computed=false;
-  with_leptons=false;
-  
   return 0;
 }
 
@@ -261,15 +432,21 @@ double interpm_krige_eos::dist_cf(size_t i_calib, size_t i_fix) {
 }
 
 void interpm_krige_eos::compute_dists() {
-  
+
+  // Collect counts
   size_t calib_count=calib_list.size()/3;
   size_t fix_count=fix_list.size()/3;
+
+  // Compute a distance for each calibration points
   for(size_t i_calib=0;i_calib<calib_count;i_calib++) {
+
+    // Compute the minimum distance over all points to fix
     double dist_min=dist_cf(i_calib,0);
     for(size_t i_fix=1;i_fix<fix_count;i_fix++) {
       double dist=dist_cf(i_calib,i_fix);
       if (dist<dist_min) dist_min=dist;
     }
+    
     calib_dists.push_back(dist_min);
   }
   
@@ -289,6 +466,9 @@ void interpm_krige_eos::set(std::vector<double> &nB_grid2,
                             o2scl::tensor_grid<> &tg_Sint,
                             double mn, double mpx) {
 
+  // Reformat the data into the format which interpm_krige_eos
+  // uses
+  
   ubmatrix ix(calib_list.size()/3,3);
   ubmatrix iy(1,calib_list.size()/3);
 
@@ -323,6 +503,8 @@ void interpm_krige_eos::set(std::vector<double> &nB_grid2,
 
   mneut=mn;
   mprot=mpx;
+
+  // Set the grids and the pointers to the tensor_grid objects
   
   nB_grid=nB_grid2;
   Ye_grid=Ye_grid2;
@@ -340,7 +522,9 @@ void interpm_krige_eos::set(std::vector<double> &nB_grid2,
   size_t n_nB=nB_grid2.size();
   size_t n_Ye=Ye_grid2.size();
   size_t n_T=T_grid2.size();
-    
+
+  // Call the Gaussian process set_data() function
+  
   std::cout << "Going to set_data()." << std::endl;
   verbose=2;
   set_data(3,1,calib_list.size()/3,ix,iy);
@@ -414,9 +598,6 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
   ret=0.0;
   bool compare=true;
 
-  //cout << "i nB Ye T cs2_itp cs2_tab d2FdnB2_itp d2FdnB2_tab "
-  //<< "d2FdYe2_itp d2FdYe2_tab "
-  //<< "dPdnB_itp dPdnB_tab1 dPdnB_tab2" << endl;
   for(size_t ilist=0;ilist<(calib_list.size()+fix_list.size())/3;
       ilist++) {
       
@@ -496,7 +677,7 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
       double t2=(T_grid[T_grid.size()-1]-T_grid[T_grid.size()-2]);
       double t1=(T_grid[T_grid.size()-2]-T_grid[T_grid.size()-3]);
       d2kdT2=(1.0/t2-1.0/t1)/(T_grid[T_grid.size()-1]-
-                               T_grid[T_grid.size()-3])*2.0;
+                              T_grid[T_grid.size()-3])*2.0;
     }
     didnB=1.0/dnBdi;
     djdYe=1.0/dYedj;
@@ -677,11 +858,6 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
     // Compare theose derivatives with the stored values
 
     if (compare) {
-      /*
-      std::cout << "Indices: " << index[0] << " " << index[1] << " "
-                << index[2] << std::endl;
-      std::cout << "Stored  : mun[MeV],mup[MeV],mue[MeV],S: ";
-      */
       std::cout << "  mun table [1/fm], mun interp [1/fm]: "
                 << tgp_mun->get(index)/hc_mev_fm << " "
                 << mun << endl;
@@ -690,15 +866,6 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
       std::cout << "  mup table [1/fm], mup interp [1/fm]: "
                 << tgp_mup->get(index)/hc_mev_fm << " "
                 << mup << endl;
-      /*
-      std::cout << tgp_mup->get(index) << " ";
-      std::cout << tgp_mue->get(index) << " ";
-      std::cout << tgp_S->get(index) << std::endl;
-      std::cout << "Computed: mun[MeV],mup[MeV],mue[MeV],S: "
-                << mun*hc_mev_fm << " " << mup*hc_mev_fm << " "
-                << mue*hc_mev_fm << " ";
-      std::cout << en/nB << std::endl;
-      */
     }
 
     std::vector<size_t> im1, ip1, jm1, jp1, km1, kp1;
@@ -741,186 +908,202 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
     
     double den=en*T_MeV/hc_mev_fm+(mun+mneut)*nB*(1.0-Ye)+
       (mup+mprot)*nB*Ye+mue*nB*Ye;
-    std::cout << mun << " " << mup << " " << mneut << " " << mprot << std::endl;
-    std::cout << "den,sT,mun*nn,mup*np,mue*np: "
-              << den << " " << en*T_MeV/hc_mev_fm << " "
-              << (mun+mneut)*nB*(1.0-Ye) << " "
-              << (mup+mprot)*nB*Ye << " " << mue*nB*Ye << std::endl;
+    if (compare) {
+      std::cout << "mun,mup,mn,mp: " << mun << " " << mup << " " << mneut << " "
+                << mprot << std::endl;
+      std::cout << "den,sT,mun*nn,mup*np,mue*np: "
+                << den << " " << en*T_MeV/hc_mev_fm << " "
+                << (mun+mneut)*nB*(1.0-Ye) << " "
+                << (mup+mprot)*nB*Ye << " " << mue*nB*Ye << std::endl;
+    }
     double nn2=nB*(1.0-Ye);
     double np2=nB*Ye;
     double cs_sq=(nn2*nn2*(f_nnnn-f_nnT*f_nnT/f_TT)+
                   2.0*nn2*np2*(f_nnnp-f_nnT*f_npT/f_TT)+
                   np2*np2*(f_npnp-f_npT*f_npT/f_TT)-
                   2.0*en*(nn2*f_nnT/f_TT+np2*f_npT/f_TT)-en*en/f_TT)/den;
-    cout << "f_nnnn, f_nnnp, f_npnp, f_nnT, f_npT, f_TT, den:\n  "
-         << f_nnnn << " " << f_nnnp << " " << f_npnp << " "
-         << f_nnT << "\n  " << f_npT << " " << f_TT << " "
-         << den << endl;
-
-    cout.setf(ios::showpos);
-    cout << "en,f_TT,den: " << en << " " << f_TT << " " << den << endl;
-    std::cout << "  t1,t2,t3,t4,t5,t6,cs2 (interp,table): " 
-              << nn2*nn2*(f_nnnn-f_nnT*f_nnT/f_TT)/den << " "
-              << 2.0*nn2*np2*(f_nnnp-f_nnT*f_npT/f_TT)/den << " "
-              << np2*np2*(f_npnp-f_npT*f_npT/f_TT)/den << " "
-              << 2.0*en*nn2*f_nnT/f_TT/den << " " 
-              << 2.0*en*np2*f_npT/f_TT/den << " "
-              << -en*en/f_TT/den << " " << cs_sq << " ";
-    cout << tgp_cs2.get(index) << endl;
+    if (compare) {
+      cout << "f_nnnn, f_nnnp, f_npnp, f_nnT, f_npT, f_TT, den:\n  "
+           << f_nnnn << " " << f_nnnp << " " << f_npnp << " "
+           << f_nnT << "\n  " << f_npT << " " << f_TT << " "
+           << den << endl;
+      
+      cout.setf(ios::showpos);
+      cout << "en,f_TT,den: " << en << " " << f_TT << " " << den << endl;
+      std::cout << "  t1,t2,t3,t4,t5,t6,cs2 (interp,table): " 
+                << nn2*nn2*(f_nnnn-f_nnT*f_nnT/f_TT)/den << " "
+                << 2.0*nn2*np2*(f_nnnp-f_nnT*f_npT/f_TT)/den << " "
+                << np2*np2*(f_npnp-f_npT*f_npT/f_TT)/den << " "
+                << 2.0*en*nn2*f_nnT/f_TT/den << " " 
+                << 2.0*en*np2*f_npT/f_TT/den << " "
+                << -en*en/f_TT/den << " " << cs_sq << " ";
+      cout << tgp_cs2.get(index) << endl;
+    }
         
     // Also compute dPdnB
-    
-    cout << "  dF_dnB (interp, table lo, table hi): " << dF_dnB << " "
-         << (tgp_F->get(index)-tgp_F->get(im1))/hc_mev_fm/
-      (nB_grid[index[0]]-nB_grid[index[0]-1]) << " "
-         << (tgp_F->get(ip1)-tgp_F->get(index))/hc_mev_fm/
-      (nB_grid[index[0]+1]-nB_grid[index[0]]) << endl;
-    cout << "  dF_dYe (interp, table lo, table hi): " << dF_dYe << " "
-         << (tgp_F->get(index)-tgp_F->get(jm1))/hc_mev_fm/
-      (Ye_grid[index[1]]-Ye_grid[index[1]-1]) << " "
-         << (tgp_F->get(jp1)-tgp_F->get(index))/hc_mev_fm/
-      (Ye_grid[index[1]+1]-Ye_grid[index[1]]) << endl;
-    cout << "  dF_dT (interp, table lo, table hi): " << dF_dT << " "
-         << (tgp_F->get(index)-tgp_F->get(km1))/
-      (T_grid[index[2]]-T_grid[index[2]-1]) << " "
-         << (tgp_F->get(kp1)-tgp_F->get(index))/
-      (T_grid[index[2]+1]-T_grid[index[2]]) << endl;
- 
-    cout << "  dFint_dnB (interp, table lo, table hi): " << dFint_dnB << " "
-         << (tgp_Fint->get(index)-tgp_Fint->get(im1))/hc_mev_fm/
-      (nB_grid[index[0]]-nB_grid[index[0]-1]) << " "
-         << (tgp_Fint->get(ip1)-tgp_Fint->get(index))/hc_mev_fm/
-      (nB_grid[index[0]+1]-nB_grid[index[0]]) << endl;
-    cout << "  dFint_dYe (interp, table lo, table hi): " << dFint_dYe << " "
-         << (tgp_Fint->get(index)-tgp_Fint->get(jm1))/hc_mev_fm/
-      (Ye_grid[index[1]]-Ye_grid[index[1]-1]) << " "
-         << (tgp_Fint->get(jp1)-tgp_Fint->get(index))/hc_mev_fm/
-      (Ye_grid[index[1]+1]-Ye_grid[index[1]]) << endl;
-    cout << "  dFint_dT (interp, table lo, table hi): " << dFint_dT << " "
-         << (tgp_Fint->get(index)-tgp_Fint->get(km1))/
-      (T_grid[index[2]]-T_grid[index[2]-1]) << " "
-         << (tgp_Fint->get(kp1)-tgp_Fint->get(index))/
-      (T_grid[index[2]+1]-T_grid[index[2]]) << endl;
- 
-    cout << "\nSecond derivatives of Fint and F:" << endl;
-    if (index[0]>0 && index[0]<nB_grid.size()-1) {
-      double t1=(tgp_Fint->get(index)-tgp_Fint->get(im1))/hc_mev_fm/
-        (nB_grid[index[0]]-nB_grid[index[0]-1]);
-      double t2=(tgp_Fint->get(ip1)-tgp_Fint->get(index))/hc_mev_fm/
-        (nB_grid[index[0]+1]-nB_grid[index[0]]);
-      double t3=(t2-t1)*2.0/(nB_grid[index[0]+1]-nB_grid[index[0]-1]);
-      cout << "  Fint_nBnB,Fint_nBnB_intp: "
-           << Fint_nBnB << " " << t3 << endl;
-      t1=(tgp_F->get(index)-tgp_F->get(im1))/hc_mev_fm/
-        (nB_grid[index[0]]-nB_grid[index[0]-1]);
-      t2=(tgp_F->get(ip1)-tgp_F->get(index))/hc_mev_fm/
-        (nB_grid[index[0]+1]-nB_grid[index[0]]);
-      t3=(t2-t1)*2.0/(nB_grid[index[0]+1]-nB_grid[index[0]-1]);
-      cout << "  F_nBnB,F_nBnB_intp: "
-           << F_nBnB << " " << t3 << endl;
-    }
 
-    if (index[0]>0 && index[0]<nB_grid.size()-1) {
-      double t1=(tgp_Fint->get(ip1)-tgp_Fint->get(index))/hc_mev_fm/
-        (nB_grid[index[0]+1]-nB_grid[index[0]]);
-      double t2=(tgp_Fint->get(ip1jp1)-tgp_Fint->get(jp1))/hc_mev_fm/
-        (nB_grid[index[0]+1]-nB_grid[index[0]]);
-      double t3=(t2-t1)/(Ye_grid[index[1]+1]-Ye_grid[index[1]]);
-      cout << "  Fint_nBYe,Fint_nBYe_intp: "
-           << Fint_nBYe << " " << t3 << endl;
-      t1=(tgp_F->get(ip1)-tgp_F->get(index))/hc_mev_fm/
-        (nB_grid[index[0]]-nB_grid[index[0]-1]);
-      t2=(tgp_F->get(ip1jp1)-tgp_F->get(jp1))/hc_mev_fm/
-        (nB_grid[index[0]+1]-nB_grid[index[0]]);
-      t3=(t2-t1)/(Ye_grid[index[1]+1]-Ye_grid[index[1]]);
-      cout << "  F_nBYe,F_nBYe_intp: "
-           << F_nBYe << " " << t3 << endl;
-    }
+    if (compare) {
+      if (index[0]>0 && index[0]<nB_grid.size()-1) {
+        cout << "  dF_dnB (interp, table lo, table hi): " << dF_dnB << " "
+             << (tgp_F->get(index)-tgp_F->get(im1))/hc_mev_fm/
+          (nB_grid[index[0]]-nB_grid[index[0]-1]) << " "
+             << (tgp_F->get(ip1)-tgp_F->get(index))/hc_mev_fm/
+          (nB_grid[index[0]+1]-nB_grid[index[0]]) << endl;
+      }
+      if (index[1]>0 && index[1]<Ye_grid.size()-1) {
+        cout << "  dF_dYe (interp, table lo, table hi): " << dF_dYe << " "
+             << (tgp_F->get(index)-tgp_F->get(jm1))/hc_mev_fm/
+          (Ye_grid[index[1]]-Ye_grid[index[1]-1]) << " "
+             << (tgp_F->get(jp1)-tgp_F->get(index))/hc_mev_fm/
+          (Ye_grid[index[1]+1]-Ye_grid[index[1]]) << endl;
+      }
+      if (index[2]>0 && index[2]<T_grid.size()-1) {
+        cout << "  dF_dT (interp, table lo, table hi): " << dF_dT << " "
+             << (tgp_F->get(index)-tgp_F->get(km1))/
+          (T_grid[index[2]]-T_grid[index[2]-1]) << " "
+             << (tgp_F->get(kp1)-tgp_F->get(index))/
+          (T_grid[index[2]+1]-T_grid[index[2]]) << endl;
+      }
 
-    if (index[1]>0 && index[1]<Ye_grid.size()-1) {
-      double t1=(tgp_Fint->get(index)-tgp_Fint->get(jm1))/hc_mev_fm/
-        (Ye_grid[index[1]]-Ye_grid[index[1]-1]);
-      double t2=(tgp_Fint->get(jp1)-tgp_Fint->get(index))/hc_mev_fm/
-        (Ye_grid[index[1]+1]-Ye_grid[index[1]]);
-      double t3=(t2-t1)*2.0/(Ye_grid[index[1]+1]-Ye_grid[index[1]-1]);
-      cout << "  Fint_YeYe,Fint_YeYe_intp: " << Fint_YeYe << " " << t3 << endl;
-      t1=(tgp_F->get(index)-tgp_F->get(jm1))/hc_mev_fm/
-        (Ye_grid[index[1]]-Ye_grid[index[1]-1]);
-      t2=(tgp_F->get(jp1)-tgp_F->get(index))/hc_mev_fm/
-        (Ye_grid[index[1]+1]-Ye_grid[index[1]]);
-      t3=(t2-t1)*2.0/(Ye_grid[index[1]+1]-Ye_grid[index[1]-1]);
-      cout << "  F_YeYe,F_YeYe_intp: " << F_YeYe << " " << t3 << endl;
-    }
+      if (index[0]>0 && index[0]<nB_grid.size()-1) {
+        cout << "  dFint_dnB (interp, table lo, table hi): " << dFint_dnB << " "
+             << (tgp_Fint->get(index)-tgp_Fint->get(im1))/hc_mev_fm/
+          (nB_grid[index[0]]-nB_grid[index[0]-1]) << " "
+             << (tgp_Fint->get(ip1)-tgp_Fint->get(index))/hc_mev_fm/
+          (nB_grid[index[0]+1]-nB_grid[index[0]]) << endl;
+      }
+      if (index[1]>0 && index[1]<Ye_grid.size()-1) {
+        cout << "  dFint_dYe (interp, table lo, table hi): " << dFint_dYe << " "
+             << (tgp_Fint->get(index)-tgp_Fint->get(jm1))/hc_mev_fm/
+          (Ye_grid[index[1]]-Ye_grid[index[1]-1]) << " "
+             << (tgp_Fint->get(jp1)-tgp_Fint->get(index))/hc_mev_fm/
+          (Ye_grid[index[1]+1]-Ye_grid[index[1]]) << endl;
+      }
+      if (index[2]>0 && index[2]<T_grid.size()-1) {
+        cout << "  dFint_dT (interp, table lo, table hi): " << dFint_dT << " "
+             << (tgp_Fint->get(index)-tgp_Fint->get(km1))/
+          (T_grid[index[2]]-T_grid[index[2]-1]) << " "
+             << (tgp_Fint->get(kp1)-tgp_Fint->get(index))/
+          (T_grid[index[2]+1]-T_grid[index[2]]) << endl;
+      }
+ 
+      cout << "\nSecond derivatives of Fint and F:" << endl;
+      if (index[0]>0 && index[0]<nB_grid.size()-1) {
+        double t1=(tgp_Fint->get(index)-tgp_Fint->get(im1))/hc_mev_fm/
+          (nB_grid[index[0]]-nB_grid[index[0]-1]);
+        double t2=(tgp_Fint->get(ip1)-tgp_Fint->get(index))/hc_mev_fm/
+          (nB_grid[index[0]+1]-nB_grid[index[0]]);
+        double t3=(t2-t1)*2.0/(nB_grid[index[0]+1]-nB_grid[index[0]-1]);
+        cout << "  Fint_nBnB,Fint_nBnB_intp: "
+             << Fint_nBnB << " " << t3 << endl;
+        t1=(tgp_F->get(index)-tgp_F->get(im1))/hc_mev_fm/
+          (nB_grid[index[0]]-nB_grid[index[0]-1]);
+        t2=(tgp_F->get(ip1)-tgp_F->get(index))/hc_mev_fm/
+          (nB_grid[index[0]+1]-nB_grid[index[0]]);
+        t3=(t2-t1)*2.0/(nB_grid[index[0]+1]-nB_grid[index[0]-1]);
+        cout << "  F_nBnB,F_nBnB_intp: "
+             << F_nBnB << " " << t3 << endl;
+      }
+
+      if (index[0]>0 && index[0]<nB_grid.size()-1 &&
+          index[1]>0 && index[1]<Ye_grid.size()-1) {
+        double t1=(tgp_Fint->get(ip1)-tgp_Fint->get(index))/hc_mev_fm/
+          (nB_grid[index[0]+1]-nB_grid[index[0]]);
+        double t2=(tgp_Fint->get(ip1jp1)-tgp_Fint->get(jp1))/hc_mev_fm/
+          (nB_grid[index[0]+1]-nB_grid[index[0]]);
+        double t3=(t2-t1)/(Ye_grid[index[1]+1]-Ye_grid[index[1]]);
+        cout << "  Fint_nBYe,Fint_nBYe_intp: "
+             << Fint_nBYe << " " << t3 << endl;
+        t1=(tgp_F->get(ip1)-tgp_F->get(index))/hc_mev_fm/
+          (nB_grid[index[0]]-nB_grid[index[0]-1]);
+        t2=(tgp_F->get(ip1jp1)-tgp_F->get(jp1))/hc_mev_fm/
+          (nB_grid[index[0]+1]-nB_grid[index[0]]);
+        t3=(t2-t1)/(Ye_grid[index[1]+1]-Ye_grid[index[1]]);
+        cout << "  F_nBYe,F_nBYe_intp: "
+             << F_nBYe << " " << t3 << endl;
+      }
+
+      if (index[1]>0 && index[1]<Ye_grid.size()-1) {
+        double t1=(tgp_Fint->get(index)-tgp_Fint->get(jm1))/hc_mev_fm/
+          (Ye_grid[index[1]]-Ye_grid[index[1]-1]);
+        double t2=(tgp_Fint->get(jp1)-tgp_Fint->get(index))/hc_mev_fm/
+          (Ye_grid[index[1]+1]-Ye_grid[index[1]]);
+        double t3=(t2-t1)*2.0/(Ye_grid[index[1]+1]-Ye_grid[index[1]-1]);
+        cout << "  Fint_YeYe,Fint_YeYe_intp: " << Fint_YeYe << " "
+             << t3 << endl;
+        t1=(tgp_F->get(index)-tgp_F->get(jm1))/hc_mev_fm/
+          (Ye_grid[index[1]]-Ye_grid[index[1]-1]);
+        t2=(tgp_F->get(jp1)-tgp_F->get(index))/hc_mev_fm/
+          (Ye_grid[index[1]+1]-Ye_grid[index[1]]);
+        t3=(t2-t1)*2.0/(Ye_grid[index[1]+1]-Ye_grid[index[1]-1]);
+        cout << "  F_YeYe,F_YeYe_intp: " << F_YeYe << " " << t3 << endl;
+      }
         
-    if (index[0]>0 && index[0]<nB_grid.size()-1) {
-      double t1=(tgp_Fint->get(ip1)-tgp_Fint->get(index))/hc_mev_fm/
-        (nB_grid[index[0]+1]-nB_grid[index[0]]);
-      double t2=(tgp_Fint->get(ip1kp1)-tgp_Fint->get(kp1))/hc_mev_fm/
-        (nB_grid[index[0]+1]-nB_grid[index[0]]);
-     double t3=(t2-t1)*hc_mev_fm/
-        (T_grid[index[2]+1]-T_grid[index[2]]);
-      cout << "  Fint_nBT,Fint_nBT_intp: "
-           << Fint_nBT << " " << t3 << endl;
-      t1=(tgp_F->get(ip1)-tgp_F->get(index))/hc_mev_fm/
-        (nB_grid[index[0]+1]-nB_grid[index[0]]);
-      t2=(tgp_F->get(ip1kp1)-tgp_F->get(kp1))/hc_mev_fm/
-        (nB_grid[index[0]+1]-nB_grid[index[0]]);
-      t3=(t2-t1)*hc_mev_fm/
-        (T_grid[index[2]+1]-T_grid[index[2]]);
-      cout << "  F_nBT,F_nBT_intp: "
-           << F_nBT << " " << t3 << endl;
-    }
+      if (index[0]>0 && index[0]<nB_grid.size()-1 &&
+          index[2]>0 && index[2]<T_grid.size()-1) {
+        double t1=(tgp_Fint->get(ip1)-tgp_Fint->get(index))/hc_mev_fm/
+          (nB_grid[index[0]+1]-nB_grid[index[0]]);
+        double t2=(tgp_Fint->get(ip1kp1)-tgp_Fint->get(kp1))/hc_mev_fm/
+          (nB_grid[index[0]+1]-nB_grid[index[0]]);
+        double t3=(t2-t1)*hc_mev_fm/
+          (T_grid[index[2]+1]-T_grid[index[2]]);
+        cout << "  Fint_nBT,Fint_nBT_intp: "
+             << Fint_nBT << " " << t3 << endl;
+        t1=(tgp_F->get(ip1)-tgp_F->get(index))/hc_mev_fm/
+          (nB_grid[index[0]+1]-nB_grid[index[0]]);
+        t2=(tgp_F->get(ip1kp1)-tgp_F->get(kp1))/hc_mev_fm/
+          (nB_grid[index[0]+1]-nB_grid[index[0]]);
+        t3=(t2-t1)*hc_mev_fm/
+          (T_grid[index[2]+1]-T_grid[index[2]]);
+        cout << "  F_nBT,F_nBT_intp: "
+             << F_nBT << " " << t3 << endl;
+      }
 
-    if (index[1]>0 && index[1]<Ye_grid.size()-1) {
-      double t1=(tgp_Fint->get(jp1)-tgp_Fint->get(index))/hc_mev_fm/
-        (Ye_grid[index[1]+1]-Ye_grid[index[1]]);
-      double t2=(tgp_Fint->get(jp1kp1)-tgp_Fint->get(kp1))/hc_mev_fm/
-        (Ye_grid[index[1]+1]-Ye_grid[index[1]]);
-      double t3=(t2-t1)*hc_mev_fm/
-        (T_grid[index[2]+1]-T_grid[index[2]]);
-      cout << "  Fint_YeT,Fint_YeT_intp: "
-           << Fint_YeT << " " << t3 << endl;
-      t1=(tgp_F->get(jp1)-tgp_F->get(index))/hc_mev_fm/
-        (Ye_grid[index[1]+1]-Ye_grid[index[1]]);
-      t2=(tgp_F->get(jp1kp1)-tgp_F->get(kp1))/hc_mev_fm/
-        (Ye_grid[index[1]+1]-Ye_grid[index[1]]);
-      t3=(t2-t1)*hc_mev_fm/
-        (T_grid[index[2]+1]-T_grid[index[2]]);
-      cout << "  F_YeT,F_YeT_intp: "
-           << F_YeT << " " << t3 << endl;
-    }
+      if (index[1]>0 && index[1]<Ye_grid.size()-1 &&
+          index[2]>0 && index[2]<T_grid.size()-1) {
+        double t1=(tgp_Fint->get(jp1)-tgp_Fint->get(index))/hc_mev_fm/
+          (Ye_grid[index[1]+1]-Ye_grid[index[1]]);
+        double t2=(tgp_Fint->get(jp1kp1)-tgp_Fint->get(kp1))/hc_mev_fm/
+          (Ye_grid[index[1]+1]-Ye_grid[index[1]]);
+        double t3=(t2-t1)*hc_mev_fm/
+          (T_grid[index[2]+1]-T_grid[index[2]]);
+        cout << "  Fint_YeT,Fint_YeT_intp: "
+             << Fint_YeT << " " << t3 << endl;
+        t1=(tgp_F->get(jp1)-tgp_F->get(index))/hc_mev_fm/
+          (Ye_grid[index[1]+1]-Ye_grid[index[1]]);
+        t2=(tgp_F->get(jp1kp1)-tgp_F->get(kp1))/hc_mev_fm/
+          (Ye_grid[index[1]+1]-Ye_grid[index[1]]);
+        t3=(t2-t1)*hc_mev_fm/
+          (T_grid[index[2]+1]-T_grid[index[2]]);
+        cout << "  F_YeT,F_YeT_intp: "
+             << F_YeT << " " << t3 << endl;
+      }
 
-    if (index[2]>0 && index[2]<T_grid.size()-1) {
-      double t1=(tgp_Fint->get(index)-tgp_Fint->get(km1))/
-        (T_grid[index[2]]-T_grid[index[2]-1]);
-      double t2=(tgp_Fint->get(kp1)-tgp_Fint->get(index))/
-        (T_grid[index[2]+1]-T_grid[index[2]]);
-      double t3=hc_mev_fm*(t2-t1)*2.0/(T_grid[index[2]+1]-T_grid[index[2]-1]);
-      cout << "  Fint_TT,Fint_TT_intp: " << Fint_TT << " " << t3 << endl;
-      t1=(tgp_F->get(index)-tgp_F->get(km1))/
-        (T_grid[index[2]]-T_grid[index[2]-1]);
-      t2=(tgp_F->get(kp1)-tgp_F->get(index))/
-        (T_grid[index[2]+1]-T_grid[index[2]]);
-      t3=hc_mev_fm*(t2-t1)*2.0/(T_grid[index[2]+1]-T_grid[index[2]-1]);
-      cout << "  F_TT,F_TT_intp: " << F_TT << " " << t3 << endl;
-    }
-    cout << endl;
-    
-    cout << "  TI1,TI2: " << nB*(1.0-Ye)*mun+(mup+mue)*nB*Ye-
-      tgp_P->get(index)/hc_mev_fm << " "
-         << F*nB/hc_mev_fm << endl;
+      if (index[2]>0 && index[2]<T_grid.size()-1) {
+        double t1=(tgp_Fint->get(index)-tgp_Fint->get(km1))/
+          (T_grid[index[2]]-T_grid[index[2]-1]);
+        double t2=(tgp_Fint->get(kp1)-tgp_Fint->get(index))/
+          (T_grid[index[2]+1]-T_grid[index[2]]);
+        double t3=hc_mev_fm*(t2-t1)*2.0/(T_grid[index[2]+1]-T_grid[index[2]-1]);
+        cout << "  Fint_TT,Fint_TT_intp: " << Fint_TT << " " << t3 << endl;
+        t1=(tgp_F->get(index)-tgp_F->get(km1))/
+          (T_grid[index[2]]-T_grid[index[2]-1]);
+        t2=(tgp_F->get(kp1)-tgp_F->get(index))/
+          (T_grid[index[2]+1]-T_grid[index[2]]);
+        t3=hc_mev_fm*(t2-t1)*2.0/(T_grid[index[2]+1]-T_grid[index[2]-1]);
+        cout << "  F_TT,F_TT_intp: " << F_TT << " " << t3 << endl;
+      }
+      cout << endl;
       
-    //double mun=Fintp-Ye*dF_dYe+nB*dF_dnB;
-    //double mup=Fintp+(1.0-Ye)*dF_dYe+nB*dF_dnB-mue;
-    //double dmun_dnB=2*dF_dnB-Ye*F_nBYe+nB*F_nBnB;
+      cout << "  TI1,TI2: " << nB*(1.0-Ye)*mun+(mup+mue)*nB*Ye-
+        tgp_P->get(index)/hc_mev_fm << " "
+           << F*nB/hc_mev_fm << endl;
+    }
+      
     double dmun_dnB=f_nnnn*(1.0-Ye)+f_nnnp*Ye;
-    //cout << "9: " << 2*dF_dnB << " " << -Ye*F_nBYe << " "
-    //<< nB*F_nBnB << endl;
-    
-    //double dmup_dnB=2.0*dF_dnB+(Ye-1.0)*F_nBYe+nB*F_nBnB;
     double dmupmue_dnB=f_nnnp*(1.0-Ye)+f_npnp*Ye;
     
-    if (index[0]>0 && index[0]<nB_grid.size()-1) {
+    if (compare && index[0]>0 && index[0]<nB_grid.size()-1) {
       std::cout << "  dmun_dnB,dmupmue_dnB,dmun_dnB_intp,"
                 << "dmupmue_dnB_intp,dmun_dnB_intp2,dmupmue_dnB_intp2:\n  "
                 << dmun_dnB << " " << dmupmue_dnB << " ";
@@ -936,30 +1119,17 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
         (nB_grid[index[0]+1]-nB_grid[index[0]]) << endl;
     }
     
-    //double dmuden_dnB=((1.0-Ye)*mun+nn2*dmun_dnB+
-    //Ye*(mup+mue)+np2*dmup_dnB);
-    //double dPdnB=dmuden_dnB-dF_dnB*nB-Fintp;
     double dfdnB=mun*(1.0-Ye)+(mup+mue)*Ye;
     double dPdnB=dmun_dnB*nB*(1.0-Ye)+mun*(1.0-Ye)+
       dmupmue_dnB*nB*Ye+(mup+mue)*Ye-dfdnB;
-    if (index[0]>0) {
+    if (compare && index[0]>0 && index[0]<nB_grid.size()-1) {
       cout << "  dPdnB (interp, table lo, table hi): " << dPdnB << " ";
-      /*
-        cout << "dP_dnB: " << endl;
-        std::cout << "Computed: " << dPdnB << std::endl;
-        std::cout << "From table: "
-        << (tgp_P->get(index)-tgp_P->get(im1))/hc_mev_fm/
-        (nB_grid[index[0]]-nB_grid[index[0]-1]) << " "
-        << (tgp_P->get(ip1)-tgp_P->get(index))/hc_mev_fm/
-        (nB_grid[index[0]+1]-nB_grid[index[0]]) << std::endl;
-      */
       cout << (tgp_P->get(index)-tgp_P->get(im1))/hc_mev_fm/
         (nB_grid[index[0]]-nB_grid[index[0]-1]) << " "
            << (tgp_P->get(ip1)-tgp_P->get(index))/hc_mev_fm/
         (nB_grid[index[0]+1]-nB_grid[index[0]]) << std::endl;
-      
+      cout.unsetf(ios::showpos);
     }
-    cout.unsetf(ios::showpos);
 
     if (dPdnB<=0.0) {
       cout << "Return failure for dPdnB<=0.0." << endl;
@@ -972,8 +1142,12 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
       cout << endl;
       return 1;
     }
-    cout << endl;
-      
+
+    if (compare) {
+      cout << endl;
+    }
+
+    // End of loop over ilist
   }
 
   cout << "Return success." << endl;

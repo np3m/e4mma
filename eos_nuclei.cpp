@@ -1271,6 +1271,10 @@ int eos_nuclei::eg_table(std::vector<std::string> &sv,
   hdf_output(hf,E,"E");
   hdf_output(hf,P,"P");
   hdf_output(hf,S,"S");
+  hf.setd("m_elec",electron.m*hc_mev_fm);
+  if (include_muons) {
+    hf.setd("m_muon",muon.m*hc_mev_fm);
+  }
   hf.close();
   
   return 0;
@@ -1804,10 +1808,6 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
     return 2;
   }
   
-  // The six second derivatives we need to compute
-  o2scl::tensor_grid<> dmundYe, dmundnB, dmupdYe, dsdT, dsdnB, dsdYe;
-  o2scl::tensor_grid<> egv[4], cs2, cs2_hom;
-
   interp_vec<vector<double> > itp_sta_a, itp_sta_b, itp_sta_c;
 
   vector<double> packed;
@@ -1831,8 +1831,8 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
   for(size_t i=0;i<4;i++) {
     egv[i].resize(3,st);
   }
-  cs2.resize(3,st);
-  cs2_hom.resize(3,st);
+  tg_cs2.resize(3,st);
+  tg_cs2_hom.resize(3,st);
 
   dmundYe.set_grid_packed(packed);
   dmundnB.set_grid_packed(packed);
@@ -1843,8 +1843,8 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
   for(size_t i=0;i<4;i++) {
     egv[i].set_grid_packed(packed);
   }
-  cs2.set_grid_packed(packed);
-  cs2_hom.set_grid_packed(packed);
+  tg_cs2.set_grid_packed(packed);
+  tg_cs2_hom.set_grid_packed(packed);
   
   // The baryon density derivatives
   for (size_t j=0;j<n_Ye2;j++) {
@@ -2128,7 +2128,7 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
                       np2*np2*(f_npnp-f_npT*f_npT/f_TT)-
                       2.0*en*(nn2*f_nnT/f_TT+np2*f_npT/f_TT)-en*en/f_TT)/den;
         
-        cs2.get(ix)=cs_sq;
+        tg_cs2.get(ix)=cs_sq;
         cout << "en,f_TT,den: " << en << " " << f_TT << " " << den << endl;
         cout << "t1,t2,t3,t4,t5,t6,cs2: "
              << nn2*nn2*(f_nnnn-f_nnT*f_nnT/f_TT)/den << " "
@@ -2143,11 +2143,11 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
           neutron.n=nB*(1.0-Ye);
           proton.n=nB*Ye;
           thermo th;
-          cs2_hom.get(ix)=cs2_func(neutron,proton,T_MeV/hc_mev_fm,th);
+          tg_cs2_hom.get(ix)=cs2_func(neutron,proton,T_MeV/hc_mev_fm,th);
           
           if (cs2_verbose>0 || sv.size()>=4) {
             cout << "cs2 (het,hom): " << cs_sq << " "
-                 << cs2_hom.get(ix) << endl;
+                 << tg_cs2_hom.get(ix) << endl;
           }
         }
         
@@ -2156,7 +2156,7 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
           //<< electron.mu << " " << electron.n << endl;
           cout << "Superluminal: nB,Ye,T[MeV],cs2,cs2_hom:\n  "
                << nB << " " << Ye << " " << T_MeV << " "
-               << cs_sq << " " << cs2_hom.get(ix) << endl;
+               << cs_sq << " " << tg_cs2_hom.get(ix) << endl;
           superlum_count++;
           i_nB_fix.push_back(i);
           i_Ye_fix.push_back(j);
@@ -2339,8 +2339,8 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
     hdf_output(hf,egv[1],"egv1");
     hdf_output(hf,egv[2],"egv2");
     hdf_output(hf,egv[3],"egv3");
-    hdf_output(hf,cs2,"cs2");
-    hdf_output(hf,cs2_hom,"cs2_hom");
+    hdf_output(hf,tg_cs2,"cs2");
+    hdf_output(hf,tg_cs2_hom,"cs2_hom");
     hf.close();
   }
   
