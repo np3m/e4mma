@@ -928,8 +928,8 @@ public:
 
       <filename> 
 
-      Loads an EOS table in to memory. In the case
-      where MPI is used, only one MPI rank reads the table at a time.
+      Loads an EOS table in \c filename to memory. In the case where
+      MPI is used, only one MPI rank reads the table at a time.
   */
   int load(std::vector<std::string> &sv, bool itive_com);
 
@@ -937,8 +937,8 @@ public:
 
       <filename>
 
-      Loads an EOS table in to memory. In the case where MPI is used,
-      only one MPI rank writes the table at a time.
+      Write an EOS table to a file. This command does not 
+      currently support multiple MPI ranks.
   */
   int output(std::vector<std::string> &sv, bool itive_com);
 

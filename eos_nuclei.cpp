@@ -5112,13 +5112,13 @@ int eos_nuclei::write_nuclei(std::vector<std::string> &sv,
     cerr << "No filename specified in write_nuclei()." << endl;
     return 1;
   }
-  write_nuclei(sv[1]);
+  write_nuclei_intl(sv[1]);
   return 0;
 }
 
 void eos_nuclei::write_nuclei_intl(std::string fname) {
 
-  cout << "Function write_nuclei() file " << fname << endl;
+  cout << "Function write_nuclei_intl() file " << fname << endl;
   
   hdf_file hf;
   
@@ -5248,26 +5248,19 @@ void eos_nuclei::write_nuclei_intl(std::string fname) {
 int eos_nuclei::write_results(std::string fname) {
 
   int mpi_rank=0, mpi_size=1;
+
 #ifndef NO_MPI
+
   // Get MPI rank, etc.
   MPI_Comm_rank(MPI_COMM_WORLD,&mpi_rank);
   MPI_Comm_size(MPI_COMM_WORLD,&mpi_size);
 
-  /*
-  // Ensure that multiple MPI ranks aren't reading from the
-  // filesystem at the same time
-  int tag=0, buffer=0;
-  if (mpi_size>1 && mpi_rank>=1) {
-  MPI_Recv(&buffer,1,MPI_INT,mpi_rank-1,
-  tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
-  }
-  */
-  
   if (mpi_size>1 && mpi_rank>0) {
     cerr << "Shouldn't output multiple ranks to the same file "
          << "in write_results." << endl;
     return 2;
   }
+
 #endif
   
   cout << "Function write_results(): rank " << mpi_rank
@@ -5505,23 +5498,15 @@ int eos_nuclei::write_results(std::string fname) {
   cout << "Function write_results(): rank " << mpi_rank
        << " done writing file." << endl;
 
-#ifndef NO_MPI
-  // Send a message to the next MPI rank
-  /*
-    if (mpi_size>1 && mpi_rank<mpi_size-1) {
-    MPI_Send(&buffer,1,MPI_INT,mpi_rank+1,
-    tag,MPI_COMM_WORLD);
-    }
-  */
-#endif
-
   return 0;
 }
 
 int eos_nuclei::read_results(std::string fname) {
 
   int mpi_rank=0, mpi_size=1;
+
 #ifndef NO_MPI
+
   // Get MPI rank, etc.
   MPI_Comm_rank(MPI_COMM_WORLD,&mpi_rank);
   MPI_Comm_size(MPI_COMM_WORLD,&mpi_size);
@@ -5533,6 +5518,7 @@ int eos_nuclei::read_results(std::string fname) {
     MPI_Recv(&buffer,1,MPI_INT,mpi_rank-1,
 	     tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
   }
+
 #endif
   
   cout << "Function read_results(): rank " << mpi_rank

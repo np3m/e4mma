@@ -150,7 +150,9 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
           cout << "Computed i_min, i_max: " << i_min << " " << i_max << endl;
           cout << "Computed j_min, j_max: " << j_min << " " << j_max << endl;
           cout << "Computed k_min, k_max: " << k_min << " " << k_max << endl;
-
+          cout << "ipxe" << endl;
+          exit(-1);
+          
           std::vector<std::string> sv3;
           sv3={"stability",o2scl::szttos(i_min),o2scl::szttos(i_min),
             o2scl::szttos(j_min),o2scl::szttos(j_min),
@@ -253,15 +255,16 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
     for(p[1]=8.0;p[1]<80.0;p[1]*=1.4) {
       for(p[2]=8.0;p[2]<80.0;p[2]*=1.4) {
         for(p[3]=-15.0;p[3]<-2.99;p[3]+=1.0) {
+          
+          cout << "Covariance parameters: ";
           vector_out(cout,p,true);
           (*ike.cf)[0].set_params(p);
           int success;
           double q=ike.qual_fun(0,success);
           cout << "q,min_qual,success: "
                << q << " " << min_qual << " " << success << endl;
-          if (ike.addl_verbose>=2) {
-            cout << endl;
-          }
+          cout << endl;
+          
           if (success==0 && q<min_qual) {
             min_p=p;
             min_qual=q;
@@ -599,7 +602,7 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
   // ----------
   
   ret=0.0;
-  addl_verbose=2;
+  addl_verbose=0;
 
   for(size_t ilist=0;ilist<(calib_list.size()+fix_list.size())/3;
       ilist++) {
@@ -624,8 +627,8 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
     double T_MeV=T_grid[iT];
 
     cout << inB << " " << iYe <<  " " << iT << " "
-         << nB << " " << Ye << " " << T_MeV << endl;
-    cout << "interp_Fint: " << interp_Fint << endl;
+         << nB << " " << Ye << " " << T_MeV << " "
+         << interp_Fint << endl;
     
     // Derivatives of the physical coordinates with respect to the indices
 
@@ -1132,13 +1135,17 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
 
     if (dPdnB<=0.0) {
       cout << "Return failure for dPdnB<=0.0." << endl;
-      cout << endl;
+      if (addl_verbose>=2) {
+        cout << endl;
+      }
       return 2;
     }
-
+    
     if (cs_sq>1.0 || cs_sq<0.0 || !std::isfinite(cs_sq)) {
       cout << "Return failure for unphysical cs_sq." << endl;
-      cout << endl;
+      if (addl_verbose>=2) {
+        cout << endl;
+      }
       return 1;
     }
     
@@ -1146,11 +1153,9 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
       cout << endl;
     }
 
-    cout << "ipxc." << endl;
-    exit(-1);
     // End of loop over ilist
   }
-
+  
   cout << "Return success." << endl;
   return 0;
 }
