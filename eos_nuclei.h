@@ -1134,6 +1134,10 @@ public:
       specified, the \c stability command compares the heterogeneous
       and homogeneous matter sound speeds at the grid point nearest
       to the specified values.
+
+      This command currently requires that a model has been 
+      selected so it can compute the speed of sound of homogeneous
+      matter at acausal points for comparison. 
   */
   int stability(std::vector<std::string> &sv,
 		bool itive_com);

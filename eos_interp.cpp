@@ -150,14 +150,32 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
           cout << "Computed i_min, i_max: " << i_min << " " << i_max << endl;
           cout << "Computed j_min, j_max: " << j_min << " " << j_max << endl;
           cout << "Computed k_min, k_max: " << k_min << " " << k_max << endl;
-          cout << "ipxe" << endl;
-          exit(-1);
           
           std::vector<std::string> sv3;
-          sv3={"stability",o2scl::szttos(i_min),o2scl::szttos(i_min),
-            o2scl::szttos(j_min),o2scl::szttos(j_min),
-            o2scl::szttos(k_min),o2scl::szttos(k_min)};
+          sv3={"stability",o2scl::szttos(i_min),o2scl::szttos(i_max),
+            o2scl::szttos(j_min),o2scl::szttos(j_max),
+            o2scl::szttos(k_min),o2scl::szttos(k_max)};
           stability(sv3,itive_com);
+
+          if (true) {
+            hdf_file hf;
+            hf.open_or_create("stx.o2");
+            hdf_output(hf,dmundnB,"dmundnB");
+            hdf_output(hf,dmundYe,"dmundYe");
+            hdf_output(hf,dmupdYe,"dmupdYe");
+            hdf_output(hf,dsdnB,"dsdnB");
+            hdf_output(hf,dsdYe,"dsdYe");
+            hdf_output(hf,dsdT,"dsdT");
+            hdf_output(hf,egv[0],"egv0");
+            hdf_output(hf,egv[1],"egv1");
+            hdf_output(hf,egv[2],"egv2");
+            hdf_output(hf,egv[3],"egv3");
+            hdf_output(hf,tg_cs2,"cs2");
+            hdf_output(hf,tg_cs2_hom,"cs2_hom");
+            hf.close();
+          }            
+          cout << "ipxf" << endl;
+          exit(-1);
 
           ike.tgp_cs2=tg_cs2;
 

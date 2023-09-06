@@ -1592,7 +1592,17 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
   size_t jlo=0, jhi=n_Ye2;
   size_t klo=0, khi=n_T2;
 
-  if (sv.size()>=4) {
+  if (range_mode) {
+    ilo=o2scl::stoszt(sv[1]);
+    ihi=o2scl::stoszt(sv[2]);
+    jlo=o2scl::stoszt(sv[3]);
+    jhi=o2scl::stoszt(sv[4]);
+    klo=o2scl::stoszt(sv[5]);
+    khi=o2scl::stoszt(sv[6]);
+    cout << "Stability function in range mode, from ("
+         << ilo << "," << jlo << "," << klo << ") to ("
+         << ihi << "," << jhi << "," << khi << ")." << endl;
+  } else if (sv.size()>=4) {
     double nBx=o2scl::function_to_double(sv[1]);
     double Yex=o2scl::function_to_double(sv[2]);
     double Tx=o2scl::function_to_double(sv[3]);
@@ -1602,10 +1612,12 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
     jhi=jlo+1;
     klo=vector_lookup(n_T2,T_grid2,Tx);
     khi=klo+1;
+    cout << "Stability function in point mode." << endl;
     cout << "Density " << nBx << " index " << ilo << endl;
     cout << "Electron fraction " << Yex << " index " << jlo << endl;
     cout << "Temperature " << Tx << " index " << klo << endl;
   } else {
+    cout << "Stability function creating full table." << endl;
     outfile=sv[1];
   }
   
