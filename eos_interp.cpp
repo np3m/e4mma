@@ -30,10 +30,11 @@ using namespace o2scl_const;
 using namespace o2scl_hdf;
 
 int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
-                             bool itive_com) {
+                                 bool itive_com) {
 
   std::string st_in, st_out;
   std::string table_out;
+  cout << "H: " << sv[1] << " " << sv[2] << " " << sv[3] << endl;
   st_in=sv[1];
   size_t window=o2scl::stoszt(sv[2]);
   table_out=sv[3];
@@ -150,11 +151,11 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
           cout << "Computed j_min, j_max: " << j_min << " " << j_max << endl;
           cout << "Computed k_min, k_max: " << k_min << " " << k_max << endl;
 
-          std::vector<std::string> sv2;
-          sv2={"stability",o2scl::stoszt(i_min),o2scl::stoszt(i_min),
-            o2scl::stoszt(j_min),o2scl::stoszt(j_min),
-            o2scl::stoszt(k_min),o2scl::stoszt(k_min)};
-          stability(sv2,itive_com);
+          std::vector<std::string> sv3;
+          sv3={"stability",o2scl::szttos(i_min),o2scl::szttos(i_min),
+            o2scl::szttos(j_min),o2scl::szttos(j_min),
+            o2scl::szttos(k_min),o2scl::szttos(k_min)};
+          stability(sv3,itive_com);
 
           ike.tgp_cs2=tg_cs2;
 
@@ -256,9 +257,11 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
           (*ike.cf)[0].set_params(p);
           int success;
           double q=ike.qual_fun(0,success);
-          cout << "q,min_qual,succes: "
+          cout << "q,min_qual,success: "
                << q << " " << min_qual << " " << success << endl;
-          cout << endl;
+          if (ike.addl_verbose>=2) {
+            cout << endl;
+          }
           if (success==0 && q<min_qual) {
             min_p=p;
             min_qual=q;
@@ -596,7 +599,7 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
   // ----------
   
   ret=0.0;
-  bool compare=true;
+  addl_verbose=2;
 
   for(size_t ilist=0;ilist<(calib_list.size()+fix_list.size())/3;
       ilist++) {
@@ -709,17 +712,13 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
     // Electron chemical potential in 1/fm
     double mue=tgp_mue->get(index)/hc_mev_fm;
 
-    if (true) {
-      //cout << "Here." << endl;
-      elep.include_deriv=true;
-      elep.include_muons=false;
-      elep.include_photons=true;
-      elep.e.mu=elep.e.m;
-      elep.e.n=Ye*nB;
-      //cout << elep.e.n << " " << elep.e.mu << endl;
-      elep.pair_density_eq(Ye*nB,T_MeV/hc_mev_fm);
-      //cout << elep.e.n << " " << elep.e.mu << " "
-      //<< elep.e.ed << " " << elep.ed.dndmu << endl;
+    elep.include_deriv=true;
+    elep.include_muons=false;
+    elep.include_photons=true;
+    elep.e.mu=elep.e.m;
+    elep.e.n=Ye*nB;
+    elep.pair_density_eq(Ye*nB,T_MeV/hc_mev_fm);
+    if (addl_verbose>=2) {
       cout << "Feg[elep],Feg[table]: "
            << (elep.th.ed-T_MeV/hc_mev_fm*elep.th.en)/nB << " "
            << Feg << endl;
@@ -857,7 +856,7 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
         
     // Compare theose derivatives with the stored values
 
-    if (compare) {
+    if (addl_verbose>=2) {
       std::cout << "  mun table [1/fm], mun interp [1/fm]: "
                 << tgp_mun->get(index)/hc_mev_fm << " "
                 << mun << endl;
@@ -908,7 +907,7 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
     
     double den=en*T_MeV/hc_mev_fm+(mun+mneut)*nB*(1.0-Ye)+
       (mup+mprot)*nB*Ye+mue*nB*Ye;
-    if (compare) {
+    if (addl_verbose>=2) {
       std::cout << "mun,mup,mn,mp: " << mun << " " << mup << " " << mneut << " "
                 << mprot << std::endl;
       std::cout << "den,sT,mun*nn,mup*np,mue*np: "
@@ -922,7 +921,7 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
                   2.0*nn2*np2*(f_nnnp-f_nnT*f_npT/f_TT)+
                   np2*np2*(f_npnp-f_npT*f_npT/f_TT)-
                   2.0*en*(nn2*f_nnT/f_TT+np2*f_npT/f_TT)-en*en/f_TT)/den;
-    if (compare) {
+    if (addl_verbose>=2) {
       cout << "f_nnnn, f_nnnp, f_npnp, f_nnT, f_npT, f_TT, den:\n  "
            << f_nnnn << " " << f_nnnp << " " << f_npnp << " "
            << f_nnT << "\n  " << f_npT << " " << f_TT << " "
@@ -942,7 +941,7 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
         
     // Also compute dPdnB
 
-    if (compare) {
+    if (addl_verbose>=2) {
       if (index[0]>0 && index[0]<nB_grid.size()-1) {
         cout << "  dF_dnB (interp, table lo, table hi): " << dF_dnB << " "
              << (tgp_F->get(index)-tgp_F->get(im1))/hc_mev_fm/
@@ -1103,7 +1102,7 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
     double dmun_dnB=f_nnnn*(1.0-Ye)+f_nnnp*Ye;
     double dmupmue_dnB=f_nnnp*(1.0-Ye)+f_npnp*Ye;
     
-    if (compare && index[0]>0 && index[0]<nB_grid.size()-1) {
+    if (addl_verbose>=2 && index[0]>0 && index[0]<nB_grid.size()-1) {
       std::cout << "  dmun_dnB,dmupmue_dnB,dmun_dnB_intp,"
                 << "dmupmue_dnB_intp,dmun_dnB_intp2,dmupmue_dnB_intp2:\n  "
                 << dmun_dnB << " " << dmupmue_dnB << " ";
@@ -1122,7 +1121,7 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
     double dfdnB=mun*(1.0-Ye)+(mup+mue)*Ye;
     double dPdnB=dmun_dnB*nB*(1.0-Ye)+mun*(1.0-Ye)+
       dmupmue_dnB*nB*Ye+(mup+mue)*Ye-dfdnB;
-    if (compare && index[0]>0 && index[0]<nB_grid.size()-1) {
+    if (addl_verbose>=2 && index[0]>0 && index[0]<nB_grid.size()-1) {
       cout << "  dPdnB (interp, table lo, table hi): " << dPdnB << " ";
       cout << (tgp_P->get(index)-tgp_P->get(im1))/hc_mev_fm/
         (nB_grid[index[0]]-nB_grid[index[0]-1]) << " "
@@ -1142,11 +1141,13 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
       cout << endl;
       return 1;
     }
-
-    if (compare) {
+    
+    if (addl_verbose>=2) {
       cout << endl;
     }
 
+    cout << "ipxc." << endl;
+    exit(-1);
     // End of loop over ilist
   }
 

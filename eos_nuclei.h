@@ -153,10 +153,14 @@ public:
 
   /// If true, interpolate Fint, otherwise, interpolate F
   bool interp_Fint;
+
+  /// Desc
+  int addl_verbose;
   
   interpm_krige_eos() {
     elep.include_photons=true;
     interp_Fint=false;
+    addl_verbose=0;
   }    
   
   /** \brief Set the interpolator given the specified EOS
@@ -746,7 +750,10 @@ public:
 
       [out file]
 
-      Help.
+      This command is the full MPI calculation of the EOS table,
+      given a model and using the current grid. If no output
+      file name is specified, the results are placed in a file
+      called \c eos_nuclei.o2 .
   */
   int generate_table(std::vector<std::string> &sv, bool itive_com);
   //@}
@@ -757,42 +764,51 @@ public:
 
       <no parameters>
 
-      Help.
+      This command requires that an EOS has been loaded. It 
+      uses Steffen's monotonic interpolation to compute 
+      the neutron and proton chemical potentials, and
+      the interacting part of the internal energy, pressure,
+      and entropy. The value of \ref derivs_computed is set to
+      true.
   */
   int eos_deriv(std::vector<std::string> &sv, bool itive_com);
 
-  /** \brief Interpolate the EOS around a specified point
+  /** \brief Interpolate the EOS to fix the table near a specified
+      point
 
-      <nB> <Ye> <T MeV> <window> [st.o2]
+      <nB> <Ye> <T MeV> <window> <st.o2>
 
       This function requires that an EOS with leptons has been
       loaded. 
    */
   int interp_point(std::vector<std::string> &sv, bool itive_com);
 
-  /** \brief Desc
+  /** \brief The internal interpolation function
+
+      Use interpolation to fix the table in the neighborhood of
+      size \c window around \c (i_fix,j_fix,k_fix) using 
+      interpolation object \c ike. 
    */
   int interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
                       size_t window, interpm_krige_eos &ike);
 
-  /** \brief Desc
+  /** \brief Use interpolation to fix an entire table
+
+      <input stability file> <window> <output table> 
+      <output stability file>
+
+      Under development.
    */
   int interp_fix_table(std::vector<std::string> &sv, bool itive_com);
   
-  /** \brief Desc
-   */
-  int eos_deriv_v2(std::vector<std::string> &sv, bool itive_com);
-
-  /** \brief Compute second derivatives numerically
-   */
-  int eos_second_deriv(std::vector<std::string> &sv, bool itive_com);
-
   /** \brief Add electrons and photons
 
       <no parameters>
       
-      This is typically done after derivatives are computed with
-      the "eos-deriv" command.
+      This command is typically used after derivatives are computed
+      with the "eos-deriv" command. This command requires a table has
+      been loaded with \c derivs_computed equal to true, but
+      does not require that a model has been selected.
   */
   int add_eg(std::vector<std::string> &sv, bool itive_com);
 
@@ -801,11 +817,17 @@ public:
       <output file>
 
       Construct a file consisting only of the electron and photon EOS.
+      The grid is determined by the current grid specification.
       Muons are included if \ref eos::include_muons is set to true.
       The output file has five tensor grid objects, \c F, \c E, \c P,
       \c S, and \c mue. If muons are included, then the file also
       includes \c Ymu. The electron (and muon) masses are also written
       to the table.
+
+      This command works independent of whether or not a table
+      was loaded or if a model was selected. However, if a table
+      is loaded when this command is invoked, the current table is
+      cleared. 
   */
   int eg_table(std::vector<std::string> &sv, bool itive_com);
 
@@ -859,11 +881,10 @@ public:
 
       <no parameters>
 
-      If an EOS is loaded, this function counts
-      the number of points with each flag value, checks that
-      the nuclear fractions add up to 1, checks that the free energy
-      internal energy, and entropy are consistent, and checks the
-      thermodynamic identity.
+      If an EOS is loaded, this function counts the number of points
+      with each flag value, checks that the nuclear fractions add up
+      to 1, checks that the free energy internal energy, and entropy
+      are consistent, and checks the thermodynamic identity.
   */
   int stats(std::vector<std::string> &sv, bool itive_com);
 
@@ -916,8 +937,8 @@ public:
 
       <filename>
 
-      Loads an EOS table in to memory. In the case
-      where MPI is used, only one MPI rank writes the table at a time.
+      Loads an EOS table in to memory. In the case where MPI is used,
+      only one MPI rank writes the table at a time.
   */
   int output(std::vector<std::string> &sv, bool itive_com);
 
@@ -937,7 +958,12 @@ public:
 
       <output file>
 
-      Help.
+      This command creates a \ref o2scl::table object and outputs that
+      table to the specified file. The table contains a list of all
+      nuclei used in the EOS, together with their spin degeneracy,
+      mass, binding energy, neutron and proton separation energies,
+      and flags which indicate where the masses and spins are
+      obtained.
   */
   int write_nuclei(std::vector<std::string> &sv,
                    bool itive_com);
@@ -949,8 +975,10 @@ public:
   void load_nuclei();
   
   /** \brief Write nuclear masses to a file
+
+      This function is called by \ref write_nuclei().
    */
-  void write_nuclei(std::string fname);
+  void write_nuclei_intl(std::string fname);
   //@}
   
   /// \name Miscellaneous functions
@@ -1088,7 +1116,8 @@ public:
 
   /** \brief Compute the second derivatives and the stability matrix
       
-      <output file> or <nB> <Ye> <T>
+      <output file> or <nB> <Ye> <T> or 
+      <inB low> <inB high> <iYe low> <iYe high> <iT low> <iT high>
 
       This command computes the second derivatives, speed of sound,
       and stability matrix of the current EOS table. A table with

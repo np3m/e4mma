@@ -1276,6 +1276,8 @@ int eos_nuclei::eg_table(std::vector<std::string> &sv,
     hf.setd("m_muon",muon.m*hc_mev_fm);
   }
   hf.close();
+
+  loaded=false;
   
   return 0;
 }
@@ -1453,354 +1455,8 @@ int eos_nuclei::eos_deriv(std::vector<std::string> &sv,
     
 }
 
-int eos_nuclei::eos_deriv_v2(std::vector<std::string> &sv,
-                             bool itive_com) {
-  
-  std::cout << "Computing derivatives." << endl;
-  
-  // -----------------------------------------------------
-  // Read table
-    
-  if (derivs_computed==false) {
-    
-    derivs_computed=true;
-    
-    size_t st[3]={n_nB2,n_Ye2,n_T2};
-    
-    calc_utf8<> calc;
-    std::map<std::string,double> vars;
-    
-    vector<double> packed;
-    vector<std::string> split_res;
-
-    split_string_delim(nB_grid_spec,split_res,',');
-    n_nB2=stoszt(split_res[0]);
-    
-    calc.compile(split_res[1].c_str());
-    for(size_t i=0;i<n_nB2;i++) {
-      vars["i"]=((double)i);
-      packed.push_back(nB_grid2[i]);
-    }
-    
-    split_string_delim(Ye_grid_spec,split_res,',');
-    n_Ye2=stoszt(split_res[0]);
-    
-    calc.compile(split_res[1].c_str());
-    for(size_t i=0;i<n_Ye2;i++) {
-      vars["i"]=((double)i);
-      packed.push_back(Ye_grid2[i]);
-    }
-    
-    split_string_delim(T_grid_spec,split_res,',');
-    n_T2=stoszt(split_res[0]);
-    
-    calc.compile(split_res[1].c_str());
-    for(size_t i=0;i<n_T2;i++) {
-      vars["i"]=((double)i);
-      packed.push_back(T_grid2[i]);
-    }
-    
-    tg_Eint.resize(3,st);
-    tg_Pint.resize(3,st);
-    tg_Sint.resize(3,st);
-    tg_mun.resize(3,st);
-    tg_mup.resize(3,st);
-    
-    tg_Eint.set_grid_packed(packed);
-    tg_Pint.set_grid_packed(packed);
-    tg_Sint.set_grid_packed(packed);
-    tg_mun.set_grid_packed(packed);
-    tg_mup.set_grid_packed(packed);
-    
-    tg_Eint.set_all(0.0);
-    tg_Pint.set_all(0.0);
-    tg_Sint.set_all(0.0);
-    tg_mun.set_all(0.0);
-    tg_mup.set_all(0.0);
-  }
-
-  o2scl::tensor_grid<> tg_dmundnB;
-  o2scl::tensor_grid<> tg_dmundYe;
-  o2scl::tensor_grid<> tg_dmundT;
-  o2scl::tensor_grid<> tg_dmupdYe;
-  o2scl::tensor_grid<> tg_dmupdT;
-  o2scl::tensor_grid<> tg_dsdT;
-  
-  size_t st[3]={n_nB2,n_Ye2,n_T2};
-  vector<vector<double> > grid={nB_grid2,Ye_grid2,T_grid2};
-  
-  tg_dmundnB.resize(3,st);
-  tg_dmundYe.resize(3,st);
-  tg_dmundT.resize(3,st);
-  tg_dmupdYe.resize(3,st);
-  tg_dmupdT.resize(3,st);
-  tg_dsdT.resize(3,st);
-  
-  tg_dmundnB.set_grid(grid);
-  tg_dmundYe.set_grid(grid);
-  tg_dmundT.set_grid(grid);
-  tg_dmupdYe.set_grid(grid);
-  tg_dmupdT.set_grid(grid);
-  tg_dsdT.set_grid(grid);
-  
-  // Temporary vectors which store the free energy density in
-  // MeV/fm^3
-  ubvector fint_vec_nB(n_nB2), fint_vec_Ye(n_Ye2), fint_vec_T(n_T2);
-
-  // The interpolator
-  interp_steffen<vector<double>,ubvector> itp_stf;
-
-  // Temporary vectors for derivatives in the nB, Ye, and T directions
-  fint_vec_nB.resize(n_nB2);
-  fint_vec_Ye.resize(n_Ye2);
-  fint_vec_T.resize(n_T2);
-
-  // First, compute the temperature derivative, which is just the
-  // entropy times minus one
-  for (size_t i=0;i<n_nB2;i++) {
-    for (size_t j=0;j<n_Ye2;j++) {
-      for(size_t k=0;k<n_T2;k++) {
-        vector<size_t> ix={i,j,k};
-	fint_vec_T[k]=tg_Fint.get(ix)*nB_grid2[i];
-      }
-      itp_stf.set(n_T2,T_grid2,fint_vec_T);
-      for(size_t k=0;k<n_T2;k++) {
-        vector<size_t> ix={i,j,k};
-	// Note that fint_vec_T above is stored in MeV/fm^3, so
-	// when we take a derivative wrt to temperature (stored
-	// in MeV), we get the correct units of 1/fm^3, and then
-	// we divide by the baryon density in units of 1/fm^3
-	tg_Sint.set(ix,-itp_stf.deriv(T_grid2[k])/nB_grid2[i]);
-      }
-    }
-  }
-
-  // Second, compute the electron fraction derivative, which we
-  // temporarily store in tg_mup
-  for (size_t i=0;i<n_nB2;i++) {
-    for(size_t k=0;k<n_T2;k++) {
-      for (size_t j=0;j<n_Ye2;j++) {
-        vector<size_t> ix={i,j,k};
-	fint_vec_Ye[j]=tg_Fint.get(ix)*nB_grid2[i];
-      }
-      itp_stf.set(n_Ye2,Ye_grid2,fint_vec_Ye);
-      for (size_t j=0;j<n_Ye2;j++) {
-        vector<size_t> ix={i,j,k};
-	tg_mup.set(ix,itp_stf.deriv(Ye_grid2[j]));
-      }
-    }
-  }
-
-  // Third, compute the baryon density derivative, which we
-  // temporarily store in tg_mun
-  for (size_t j=0;j<n_Ye2;j++) {
-    for(size_t k=0;k<n_T2;k++) {
-      for (size_t i=0;i<n_nB2;i++) {
-        vector<size_t> ix={i,j,k};
-	fint_vec_nB[i]=tg_Fint.get(ix)*nB_grid2[i];
-      }
-      itp_stf.set(n_nB2,nB_grid2,fint_vec_nB);
-      for (size_t i=0;i<n_nB2;i++) {
-        vector<size_t> ix={i,j,k};
-	tg_mun.set(ix,itp_stf.deriv(nB_grid2[i]));
-      }
-    }
-  }
-
-  // Now go through every point and compute the remaining
-  // quantities
-  for (size_t i=0;i<n_nB2;i++) {
-    for (size_t j=0;j<n_Ye2;j++) {
-      for (size_t k=0;k<n_T2;k++) {
-	
-        vector<size_t> ix={i,j,k};
-        
-	double en=tg_Sint.get(ix)*nB_grid2[i];
-	double dfdnB=tg_mun.get(ix);
-	double dfdYe=tg_mup.get(ix);
-
-	tg_mun.get(ix)=dfdnB-dfdYe*Ye_grid2[j]/nB_grid2[i];
-	tg_mup.get(ix)=dfdnB-dfdYe*(Ye_grid2[j]-1.0)/nB_grid2[i];
-
-	// E = F + T S
-	tg_Eint.get(ix)=tg_Fint.get(ix)+
-	  T_grid2[k]*tg_Sint.get(ix);
-	
-	// P = - F + mun * nn + mup * np
-	tg_Pint.get(ix)=-tg_Fint.get(ix)*nB_grid2[i]+
-	  nB_grid2[i]*(1.0-Ye_grid2[j])*tg_mun.get(ix)+
-	  nB_grid2[i]*Ye_grid2[j]*tg_mup.get(ix);
-      }
-    }
-  }
-  
-  std::cout << "Finished computing derivatives." << endl;
-
-  return 0;
-    
-}
-
-int eos_nuclei::eos_second_deriv(std::vector<std::string> &sv,
-				 bool itive_com) {
-
-  std::cout << "Computing second derivatives." << endl;
-  
-  // -----------------------------------------------------
-  // Read table
-    
-  if (derivs_computed==false) {
-    cerr << "Fail." << endl;
-    return 3;
-  }
-
-  o2scl::tensor_grid<> tg_dmundnB;
-  o2scl::tensor_grid<> tg_dmundYe;
-  o2scl::tensor_grid<> tg_dmundT;
-  o2scl::tensor_grid<> tg_dmupdYe;
-  o2scl::tensor_grid<> tg_dmupdT;
-  o2scl::tensor_grid<> tg_dsdT;
-  
-  derivs_computed=true;
-  
-  size_t st[3]={n_nB2,n_Ye2,n_T2};
-  vector<vector<double> > grid={nB_grid2,Ye_grid2,T_grid2};
-  
-  tg_dmundnB.resize(3,st);
-  tg_dmundYe.resize(3,st);
-  tg_dmundT.resize(3,st);
-  tg_dmupdYe.resize(3,st);
-  tg_dmupdT.resize(3,st);
-  tg_dsdT.resize(3,st);
-  
-  tg_dmundnB.set_grid(grid);
-  tg_dmundYe.set_grid(grid);
-  tg_dmundT.set_grid(grid);
-  tg_dmupdYe.set_grid(grid);
-  tg_dmupdT.set_grid(grid);
-  tg_dsdT.set_grid(grid);
-  
-  // Temporary vectors
-  ubvector mun_vec_nB(n_nB2), mun_vec_Ye(n_Ye2), mun_vec_T(n_T2);
-  ubvector mup_vec_Ye(n_Ye2), mup_vec_T(n_T2);
-  ubvector s_vec_T(n_T2);
-
-  // The interpolator
-  interp_steffen<vector<double>,ubvector> itp_stf;
-
-  // First, compute the temperature derivatives
-  for (size_t i=0;i<n_nB2;i++) {
-    double nB=nB_grid2[i];
-    for (size_t j=0;j<n_Ye2;j++) {
-      for(size_t k=0;k<n_T2;k++) {
-        vector<size_t> ix={i,j,k};
-	mun_vec_T[k]=tg_mun.get(ix);
-	mup_vec_T[k]=tg_mup.get(ix);
-	s_vec_T[k]=tg_S.get(ix)/nB;
-      }
-      itp_stf.set(n_T2,T_grid2,mun_vec_T);
-      for(size_t k=0;k<n_T2;k++) {
-        vector<size_t> ix={i,j,k};
-	tg_dmundT.set(ix,itp_stf.deriv(T_grid2[k]));
-      }
-      itp_stf.set(n_T2,T_grid2,mup_vec_T);
-      for(size_t k=0;k<n_T2;k++) {
-        vector<size_t> ix={i,j,k};
-	tg_dmupdT.set(ix,itp_stf.deriv(T_grid2[k]));
-      }
-      itp_stf.set(n_T2,T_grid2,s_vec_T);
-      for(size_t k=0;k<n_T2;k++) {
-        vector<size_t> ix={i,j,k};
-	tg_dsdT.set(ix,itp_stf.deriv(T_grid2[k]));
-      }
-    }
-  }
-
-  // Second, compute the Ye derivatives
-  for (size_t i=0;i<n_nB2;i++) {
-    for(size_t k=0;k<n_T2;k++) {
-      for (size_t j=0;j<n_Ye2;j++) {
-        vector<size_t> ix={i,j,k};
-	mun_vec_Ye[j]=tg_mun.get(ix);
-	mup_vec_Ye[j]=tg_mup.get(ix);
-      }
-      itp_stf.set(n_Ye2,Ye_grid2,mun_vec_Ye);
-      for (size_t j=0;j<n_Ye2;j++) {
-        vector<size_t> ix={i,j,k};
-	tg_dmundYe.set(ix,itp_stf.deriv(Ye_grid2[j]));
-      }
-      itp_stf.set(n_Ye2,Ye_grid2,mup_vec_Ye);
-      for (size_t j=0;j<n_Ye2;j++) {
-        vector<size_t> ix={i,j,k};
-	tg_dmupdYe.set(ix,itp_stf.deriv(Ye_grid2[j]));
-      }
-    }
-  }
-
-  // Third, compute the baryon density derivative
-  for (size_t j=0;j<n_Ye2;j++) {
-    for(size_t k=0;k<n_T2;k++) {
-      for (size_t i=0;i<n_nB2;i++) {
-        vector<size_t> ix={i,j,k};
-	mun_vec_nB[i]=tg_mun.get(ix);
-      }
-      itp_stf.set(n_nB2,nB_grid2,mun_vec_nB);
-      for (size_t i=0;i<n_nB2;i++) {
-        vector<size_t> ix={i,j,k};
-	tg_dmundnB.set(ix,itp_stf.deriv(nB_grid2[i]));
-      }
-    }
-  }
-
-  // Now go through every point and compute the remaining
-  // quantities
-  
-  for (size_t i=0;i<n_nB2;i++) {
-    double nB=nB_grid2[i];
-    for (size_t j=0;j<n_Ye2;j++) {
-      double Ye=Ye_grid2[j];
-      for (size_t k=0;k<n_T2;k++) {
-	double T_MeV=T_grid2[k];
-        vector<size_t> ix={i,j,k};
-
-	double dmupdnB=tg_dmundnB.get(ix)+
-	  tg_dmundYe.get(ix)*(1.0-Ye)/nB+
-	  tg_dmupdYe.get(ix)*Ye/nB;
-	  
-	double f_nnnn=tg_dmundnB.get(ix)-
-	  Ye*tg_dmundYe.get(ix)/nB;
-	double f_nnnp=tg_dmundnB.get(ix)+
-	  (1.0-Ye)*tg_dmundYe.get(ix)/nB;
-	double f_npnp=dmupdnB+
-	  (1.0-Ye)*tg_dmupdYe.get(ix)/nB;
-	double f_nnT=tg_dmundT.get(ix);
-	double f_npT=tg_dmupdT.get(ix);
-	double f_TT=-tg_dsdT.get(ix);
-	double nn=nB*(1.0-Ye);
-	double np=nB*Ye;
-	double en=tg_Sint.get(ix)*nB;
-
-	double mue=0.0;
-	double den=en*T_MeV+(tg_mun.get(ix)+neutron.m)*nn+
-	  (tg_mup.get(ix)+proton.m+mue)*np;
-	
-	double cs_sq=(nn*nn*(f_nnnn-f_nnT*f_nnT/f_TT)+
-		      2.0*nn*np*(f_nnnp-f_nnT*f_npT/f_TT)+
-		      np*np*(f_npnp-f_npT*f_npT/f_TT)-
-		      2.0*en*(nn*f_nnT/f_TT+np*f_npT/f_TT)-en*en/f_TT)/den;
-	
-      }
-    }
-  }
-  
-  std::cout << "Finished computing second derivatives." << endl;
-
-  return 0;
-    
-}
-
 int eos_nuclei::stability(std::vector<std::string> &sv,
                           bool itive_com) {
-
 
   if (with_leptons==false) {
     cerr << "The 'stability' command requires an EOS table with "
@@ -1808,43 +1464,50 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
     return 2;
   }
   
-  interp_vec<vector<double> > itp_sta_a, itp_sta_b, itp_sta_c;
+  bool range_mode=false;
+  if (sv.size()>=7) range_mode=true;
 
-  vector<double> packed;
-  for(size_t i=0;i<n_nB2;i++) {
-    packed.push_back(nB_grid2[i]);
+  if (!range_mode || dmundYe.get_rank()==0) {
+    
+    vector<double> packed;
+    for(size_t i=0;i<n_nB2;i++) {
+      packed.push_back(nB_grid2[i]);
+    }
+    for(size_t i=0;i<n_Ye2;i++) {
+      packed.push_back(Ye_grid2[i]);
+    }
+    for(size_t i=0;i<n_T2;i++) {
+      packed.push_back(T_grid2[i]);
+    }
+    size_t st[3]={n_nB2,n_Ye2,n_T2};
+    
+    dmundYe.resize(3,st);
+    dmundnB.resize(3,st);
+    dmupdYe.resize(3,st);
+    dsdT.resize(3,st);
+    dsdnB.resize(3,st);
+    dsdYe.resize(3,st);
+    for(size_t i=0;i<4;i++) {
+      egv[i].resize(3,st);
+    }
+    tg_cs2.resize(3,st);
+    tg_cs2_hom.resize(3,st);
+    
+    dmundYe.set_grid_packed(packed);
+    dmundnB.set_grid_packed(packed);
+    dmupdYe.set_grid_packed(packed);
+    dsdT.set_grid_packed(packed);
+    dsdnB.set_grid_packed(packed);
+    dsdYe.set_grid_packed(packed);
+    for(size_t i=0;i<4;i++) {
+      egv[i].set_grid_packed(packed);
+    }
+    tg_cs2.set_grid_packed(packed);
+    tg_cs2_hom.set_grid_packed(packed);
+    
   }
-  for(size_t i=0;i<n_Ye2;i++) {
-    packed.push_back(Ye_grid2[i]);
-  }
-  for(size_t i=0;i<n_T2;i++) {
-    packed.push_back(T_grid2[i]);
-  }
-  size_t st[3]={n_nB2,n_Ye2,n_T2};
   
-  dmundYe.resize(3,st);
-  dmundnB.resize(3,st);
-  dmupdYe.resize(3,st);
-  dsdT.resize(3,st);
-  dsdnB.resize(3,st);
-  dsdYe.resize(3,st);
-  for(size_t i=0;i<4;i++) {
-    egv[i].resize(3,st);
-  }
-  tg_cs2.resize(3,st);
-  tg_cs2_hom.resize(3,st);
-
-  dmundYe.set_grid_packed(packed);
-  dmundnB.set_grid_packed(packed);
-  dmupdYe.set_grid_packed(packed);
-  dsdT.set_grid_packed(packed);
-  dsdnB.set_grid_packed(packed);
-  dsdYe.set_grid_packed(packed);
-  for(size_t i=0;i<4;i++) {
-    egv[i].set_grid_packed(packed);
-  }
-  tg_cs2.set_grid_packed(packed);
-  tg_cs2_hom.set_grid_packed(packed);
+  interp_vec<vector<double> > itp_sta_a, itp_sta_b, itp_sta_c;
   
   // The baryon density derivatives
   for (size_t j=0;j<n_Ye2;j++) {
@@ -5453,7 +5116,7 @@ int eos_nuclei::write_nuclei(std::vector<std::string> &sv,
   return 0;
 }
 
-void eos_nuclei::write_nuclei(std::string fname) {
+void eos_nuclei::write_nuclei_intl(std::string fname) {
 
   cout << "Function write_nuclei() file " << fname << endl;
   
@@ -10100,7 +9763,7 @@ void eos_nuclei::setup_cli_nuclei(o2scl::cli &cl) {
   
   eos::setup_cli(cl,false);
   
-  static const int nopt=26;
+  static const int nopt=27;
 
   o2scl::comm_option_s options[nopt]=
     {{0,"eos-deriv","",0,0,"","",
@@ -10163,6 +9826,10 @@ void eos_nuclei::setup_cli_nuclei(o2scl::cli &cl) {
       new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::interp_point),o2scl::cli::comm_option_both,
       1,"","eos_nuclei","interp_point","doc/xml/classeos__nuclei.xml"},
+     {0,"interp-fix-table","",-1,-1,"","",
+      new o2scl::comm_option_mfptr<eos_nuclei>
+      (this,&eos_nuclei::interp_fix_table),o2scl::cli::comm_option_both,
+      1,"","eos_nuclei","interp_fix_table","doc/xml/classeos__nuclei.xml"},
      {0,"stats","",0,0,"","",
       new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::stats),o2scl::cli::comm_option_both,
