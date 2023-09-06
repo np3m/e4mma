@@ -488,4 +488,39 @@ point-test:
 		-set function_verbose 0 \
 		-load /home/awsteiner/wcs/eos/fid_3_14_23.o2 \
 		-point-nuclei 0.000502377 0.04 1.8602
+makeimg:
+	o2graph -read /home/jbaut001/eos/fid_7_21_23_multi_final.o2 Fint -set logx 1 -set xlo 0.01 -set xhi 0.1 -set ylo "(-1)" -set yhi 1 -to-table 0 nB Fint 0.04 1.77839 -function "Fint/10^3" Fs -plot nB Fs -xtitle "$$ n_B$$" -ytitle "$$ Fint$$" -ttext 0.1 0.45 "$$ Fint$$" -ttext 0.1 0.6 "$$ \frac{\partial Fint}{\partial n_B}$$" -ttext 0.67 0.75 "$$ \frac{\partial^2 Fint}{\partial n_B^2}$$" -ttext 0.5 0.95 " $$ Fint$$, $$ \frac{\partial Fint}{\partial n_B}$$, and $$ \frac{\partial Fint}{\partial n_B}$$ vs $$ n_B$$ " \
+	       -deriv nB Fint Fp -function "Fp/10^3" Fs2 -plot nB Fs2\
+	       -deriv2 nB Fint Fw -function "Fw/10^3" Fs3 -plot nB Fs3\
+       	       -save fint_after.png
+
+
+makeimga:
+	o2graph -read /home/jbaut001/eos/fid_7_21_23_multi_final.o2 Fint -set logx 1 -set xlo 0.01 -set xhi 0.1 -set ylo "(-1)" -set yhi 1 -to-table 0 nB Fint 0.04 1.77839 -function "Fint/10^4" Fs -plot nB Fs -xtitle "$$ n_B$$" -ytitle "$$ Fint$$" -ttext 0.1 0.45 "$$ Fint$$" -ttext 0.1 0.55 "$$ \frac{\partial Fint}{\partial n_B}$$" -ttext 0.67 0.4 "$$ \frac{\partial^2 Fint}{\partial n_B^2}$$" -ttext 0.5 0.95 " $$ Fint$$, $$ \frac{\partial Fint}{\partial n_B}$$, and $$ \frac{\partial Fint}{\partial n_B}$$ vs $$ n_B$$ " \
+	       -deriv nB Fint Fp -function "Fp/10^4" Fs2 -plot nB Fs2\
+	       -deriv2 nB Fint Fw -function "Fw/10^4" Fs3 -plot nB Fs3\
+       	       -save finta_after.png
+
+makeimg2:
+	o2graph -read /home/awsteiner/wcs/eos/fid_3_14_23.o2 Fint -set logx 1 -set xlo 0.01 -set xhi 0.1 --set ylo "(-50)" -set yhi 50 -to-table 0 nB Fint 0.05 1.8602 -plot nB Fint -xtitle "$$ n_B$$" -ytitle "$$ Fint$$" -ttext 0.5 1.021 " $$ Fint$$ vs $$ n_B$$ " \
+       	       -save fint2_after.png
+
+
+makeimg3:
+	o2graph -read /home/awsteiner/wcs/eos/fid_3_14_23.o2 Fint -set logx 1 -to-table 0 nB Fint 0.05 1.8602 -function "Fint/10^23" Fs -plot nB Fs -xtitle "$$ n_B$$" -ytitle "$$ Fint$$" -ttext 0.5 1.021 " $$ Fint$$ vs $$ n_B$$ " \
+       	       -save fint3_after.png
+
+makeimg4:
+	o2graph -read /home/awsteiner/wcs/eos/fid_3_14_23.o2 Fint -set logx 1 -set xlo 0.01 -set xhi 0.1 -set ylo "(-1)" -set yhi 1 -to-table 0 nB Fint 0.04 1.77839 -function "Fint/10^3" Fs -plot nB Fs -xtitle "$$ n_B$$" -ytitle "$$ Fint$$" -ttext 0.1 0.45 "$$ Fint$$" -ttext 0.1 0.6 "$$ \frac{\partial Fint}{\partial n_B}$$" -ttext 0.67 0.75 "$$ \frac{\partial^2 Fint}{\partial n_B^2}$$" -ttext 0.5 0.95 " $$ Fint$$, $$ \frac{\partial Fint}{\partial n_B}$$, and $$ \frac{\partial Fint}{\partial n_B}$$ vs $$ n_B$$ " \
+	       -deriv nB Fint Fp -function "Fp/10^3" Fs2 -plot nB Fs2\
+	       -deriv2 nB Fint Fw -function "Fw/10^3" Fs3 -plot nB Fs3\
+       	       -save fint4_after.png
+
+
+makeimg5:
+	o2graph -read /home/awsteiner/wcs/eos/fid_3_14_23.o2 Fint -set logx 1 -set xlo 0.01 -set xhi 0.1 -set ylo "(-1)" -set yhi 1 -to-table 0 nB Fint 0.04 1.77839 -function "Fint/10^4" Fs -plot nB Fs -xtitle "$$ n_B$$" -ytitle "$$ Fint$$" -ttext 0.1 0.45 "$$ Fint$$" -ttext 0.1 0.55 "$$ \frac{\partial Fint}{\partial n_B}$$" -ttext 0.67 0.4 "$$ \frac{\partial^2 Fint}{\partial n_B^2}$$" -ttext 0.5 0.95 " $$ Fint$$, $$ \frac{\partial Fint}{\partial n_B}$$, and $$ \frac{\partial Fint}{\partial n_B}$$ vs $$ n_B$$ " \
+	       -deriv nB Fint Fp -function "Fp/10^4" Fs2 -plot nB Fs2\
+	       -deriv2 nB Fint Fw -function "Fw/10^4" Fs3 -plot nB Fs3\
+       	       -save fint5_after.png
+
 -include makefile.aws

@@ -83,46 +83,6 @@ double eos_nuclei::interp_min
 
 #endif
 
-int eos_nuclei::test_hdf5io () {
-    std::string cs2in = "/home/jbaut001/st.o2";
-    std::string Fintin = "/home/awsteiner/wcs/eos/fid_3_14_23.o2";
-    std::string cs2o2 = "/home/jbaut001/test/sttest.o2";
-    std::string Finto2 = "/home/jbaut001/test/fidtest.o2";
-    std::filesystem::copy_file(cs2in, cs2o2, std::filesystem::copy_options::overwrite_existing);
-    std::filesystem::copy_file(Fintin, Finto2, std::filesystem::copy_options::overwrite_existing);
-
-    hdf_file hff, hff2;
-    o2scl::tensor_grid<> tgp_cs2, tgp_Fint;
-    hff.open_or_create(cs2o2);
-    hff2.open_or_create(Finto2);
-    hdf_input(hff, tgp_cs2, "cs2");
-    hdf_input(hff2, tgp_Fint, "Fint");
-    eos_nuclei::change_tgp(tgp_cs2, 3.0);
-    eos_nuclei::change_tgp(tgp_Fint, 50.0);
-    hdf_output(hff, tgp_cs2, "cs2");
-    hdf_output(hff2, tgp_Fint, "Fint");
-    hff.seti("derivs_computed", 0);
-    hff.seti("with_leptons", 0);
-    hff2.seti("derivs_computed", 0);
-    hff.seti("with_leptons", 0);
-    hff.close();
-    hff2.close();
-    return 0;
-}
-
-void eos_nuclei::change_tgp(o2scl::tensor_grid<>& tg_file, double value) {
-    for (size_t inB=210;inB<=213;inB++) {
-        for (size_t iYe=2;iYe<=5;iYe++) {
-            for (size_t iT=64;iT<=65;iT++) {
-                vector<size_t> index={inB, iYe, iT};
-                cout << tg_file.get(index) << endl;
-                tg_file.get(index)=value;
-                cout << tg_file.get(index) << endl;
-            }
-        }
-    }
-}
-
 int eos_nuclei::interp_point(std::vector<std::string> &sv,
                              bool itive_com) {
   if (sv.size()<6) {
@@ -692,25 +652,77 @@ std::map<std::vector<size_t>, std::vector<double>> interpm_krige_eos::interpolat
     size_t pT=points_list[j+2];
 
     vector<size_t> index={(size_t) pnB,(size_t) pYe,(size_t) pT};
+    double mue=tgp_mue->get(index)/hc_mev_fm;
+    double mue_keep=mue;
+    if (includeMue==false) {
+        mue=0.0;
+    }
+    double Feg=tgp_F->get(index)-tgp_Fint->get(index);
+    double Seg=tgp_S->get(index)-tgp_Sint->get(index);
 
     double nB=nB_grid[pnB];
     double Ye=Ye_grid[pYe];
     double T_MeV=T_grid[pT];
     
     // Derivatives of the physical coordinates with respect to the indices
+    // new derivation of these variables taken from Dr. Steiner's branch.
+    double didnB, djdYe, dkdT, dnBdi, dYedj, dTdk;
+    double d2idnB2, d2jdYe2, d2kdT2;
+    if (pnB>0 && pnB<nB_grid.size()-1) {
+      dnBdi=(nB_grid[pnB+1]-nB_grid[pnB-1])/2;
+      double t2=(nB_grid[pnB+1]-nB_grid[pnB]);
+      double t1=(nB_grid[pnB]-nB_grid[pnB-1]);
+      d2idnB2=(1.0/t2-1.0/t1)/(nB_grid[pnB+1]-nB_grid[pnB-1])*2.0;
+    } else if (pnB==0) {
+      dnBdi=(nB_grid[1]-nB_grid[0]);
+      double t2=(nB_grid[2]-nB_grid[1]);
+      double t1=(nB_grid[1]-nB_grid[0]);
+      d2idnB2=(1.0/t2-1.0/t1)/(nB_grid[2]-nB_grid[0])*2.0;
+    } else {
+      dnBdi=(nB_grid[nB_grid.size()-1]-nB_grid[nB_grid.size()-2]);
+      double t2=(nB_grid[nB_grid.size()-1]-nB_grid[nB_grid.size()-2]);
+      double t1=(nB_grid[nB_grid.size()-2]-nB_grid[nB_grid.size()-3]);
+      d2idnB2=(1.0/t2-1.0/t1)/(nB_grid[nB_grid.size()-1]-
+                               nB_grid[nB_grid.size()-3])*2.0;
+    }
+    if (pYe>0 && pYe<Ye_grid.size()-1) {
+      dYedj=(Ye_grid[pYe+1]-Ye_grid[pYe-1])/2;
+      double t2=(Ye_grid[pYe+1]-Ye_grid[pYe]);
+      double t1=(Ye_grid[pYe]-Ye_grid[pYe-1]);
+      d2jdYe2=(1.0/t2-1.0/t1)/(Ye_grid[pYe+1]-Ye_grid[pYe-1])*2.0;
+    } else if (pYe==0) {
+      dYedj=(Ye_grid[1]-Ye_grid[0]);
+      double t2=(Ye_grid[2]-Ye_grid[1]);
+      double t1=(Ye_grid[1]-Ye_grid[0]);
+      d2jdYe2=(1.0/t2-1.0/t1)/(Ye_grid[2]-Ye_grid[0])*2.0;
+    } else {
+      dYedj=(Ye_grid[Ye_grid.size()-1]-Ye_grid[Ye_grid.size()-1]);
+      double t2=(Ye_grid[Ye_grid.size()-1]-Ye_grid[Ye_grid.size()-2]);
+      double t1=(Ye_grid[Ye_grid.size()-2]-Ye_grid[Ye_grid.size()-3]);
+      d2jdYe2=(1.0/t2-1.0/t1)/(Ye_grid[Ye_grid.size()-1]-
+                               Ye_grid[Ye_grid.size()-3])*2.0;
+    }
+    if (pT>0 && pT<T_grid.size()-1) {
+      dTdk=(T_grid[pT+1]-T_grid[pT-1])/2;
+      double t2=(T_grid[pT+1]-T_grid[pT]);
+      double t1=(T_grid[pT]-T_grid[pT-1]);
+      d2kdT2=(1.0/t2-1.0/t1)/(T_grid[pT+1]-T_grid[pT-1])*2.0;
+    } else if (pT==0) {
+      dTdk=(T_grid[1]-T_grid[0]);
+      double t2=(T_grid[2]-T_grid[1]);
+      double t1=(T_grid[1]-T_grid[0]);
+      d2kdT2=(1.0/t2-1.0/t1)/(T_grid[2]-T_grid[0])*2.0;
+    } else {
+      dTdk=(T_grid[T_grid.size()-1]-T_grid[T_grid.size()-1]);
+      double t2=(T_grid[T_grid.size()-1]-T_grid[T_grid.size()-2]);
+      double t1=(T_grid[T_grid.size()-2]-T_grid[T_grid.size()-3]);
+      d2kdT2=(1.0/t2-1.0/t1)/(T_grid[T_grid.size()-1]-
+                               T_grid[T_grid.size()-3])*2.0;
+    }
+    didnB=1.0/dnBdi;
+    djdYe=1.0/dYedj;
+    dkdT=1.0/dTdk;
     
-    double dnBdi=2.0*0.04*log(10.0)*pow(10.0,((double)pnB)*0.04-12.0);
-    double dYedj=0.01;
-    double dTdk=0.1*log(1.046)*pow(1.046,pT);
-
-//from addl_const() remove if wrong
-    double didnB=25.0/nB/log(10.0);
-    double d2idnB2=-25.0/nB/nB/log(10.0);
-    double djdYe=100.0;
-    double d2jdYe2=0.0;
-    double dkdT=1.0/T_MeV/log(1.046);
-    double d2kdT2=-1.0/T_MeV/T_MeV/log(1.046);
-  
     // Evaluate the free energy and its derivatives analytically
     // using the interpolator
     eval(index,out);
@@ -720,71 +732,90 @@ std::map<std::vector<size_t>, std::vector<double>> interpm_krige_eos::interpolat
     deriv(index,out,0);
     double dFdi=out[0]/hc_mev_fm;
     double dF_dnB=dFdi*didnB;
+    if (interp_Fint) {
+        dF_dnB=dF_dnB+((Ye*mue)/nB)-(Feg/nB);
+    }
     deriv(index,out,1);
     double dFdj=out[0]/hc_mev_fm;
     double dF_dYe=dFdj*djdYe;
+    if (interp_Fint) {
+        dF_dYe=dF_dYe+mue;
+    }
     deriv(index,out,2);
     double dFdk=out[0]/hc_mev_fm;
     double dF_dT=dFdk*dkdT*hc_mev_fm;
-        
+    if (interp_Fint) {
+        dF_dT=dF_dT-Seg;
+    }
+
+    //This section of code calculates second derivatives used to add contribtion from photons and electrons back to Fint. Taken from Dr. Steiner's code.
+    if (true) {
+      //cout << "Here." << endl;
+      elep.include_deriv=true;
+      elep.include_muons=false;
+      elep.include_photons=true;
+      elep.e.mu=elep.e.m;
+      elep.e.n=Ye*nB;
+      //cout << elep.e.n << " " << elep.e.mu << endl;
+      elep.pair_density_eq(Ye*nB,T_MeV/hc_mev_fm);
+      //cout << elep.e.n << " " << elep.e.mu << " "
+      //<< elep.e.ed << " " << elep.ed.dndmu << endl;
+      cout << "Feg[elep],Feg[table]: "
+           << (elep.th.ed-T_MeV/hc_mev_fm*elep.th.en)/nB << " "
+           << Feg << endl;
+      cout << "Seg,Se,Sg,Seg[table]: " << elep.th.en/nB << " "
+           << elep.e.en/nB << " " 
+           << elep.ph.en/nB << " " << Seg << endl;
+      cout << "mue,mue[table]: " << elep.e.mu << " "
+           << tgp_mue->get(index)/hc_mev_fm << endl;
+    }
+
     deriv2(index,out,0,0);
     double d2Fdi2=out[0]/hc_mev_fm;
     double F_nBnB=d2Fdi2*didnB*didnB+dFdi*d2idnB2;
-    
+    if (!interp_Fint) {
+        F_nBnB=F_nBnB+(((Ye*Ye)/nB)*(1/elep.ed.dndmu))-((2*Ye*mue)/(nB*nB))+((2*Feg)/(nB*nB));
+    }
+
     deriv2(index,out,0,1);
     double d2Fdidj=out[0]/hc_mev_fm;
     double F_nBYe=d2Fdidj*didnB*djdYe;
-    
+    if (interp_Fint) {
+        F_nBYe=F_nBYe+(Ye*(1/elep.ed.dndmu));
+    }
+
     deriv2(index,out,1,1);
     double d2Fdj2=out[0]/hc_mev_fm;
     double F_YeYe=d2Fdj2*djdYe*djdYe+dFdj*d2jdYe2;
-    
+    if (interp_Fint) {
+        F_YeYe=F_YeYe+(nB*(1/elep.ed.dndmu));
+    }
+
     deriv2(index,out,0,2);
     double d2Fdidk=out[0]/hc_mev_fm;
-    double F_nBT=d2Fdidk*didnB*dkdT*hc_mev_fm;
-    
+    double F_nBT=d2Fdidk*didnB*dkdT*hc_mev_fm; 
+    if (interp_Fint) {
+        F_nBT=F_YeYe+((Ye/nB)*(elep.ed.dndT/elep.ed.dndmu))+(Seg/nB);
+    }
+
     deriv2(index,out,1,2);
     double d2Fdjdk=out[0]/hc_mev_fm;
     double F_YeT=d2Fdjdk*djdYe*dkdT*hc_mev_fm;
-    
+    if (interp_Fint) {
+        F_YeT=F_YeT+(elep.ed.dndT/elep.ed.dndmu);
+    }
+
     deriv2(index,out,2,2);
     double d2Fdk2=out[0]/hc_mev_fm;
     double F_TT=(d2Fdk2*dkdT*dkdT+dFdk*d2kdT2)*hc_mev_fm*hc_mev_fm;
-    /*
-    ike.eval(index,out);
-    double Fintp=out[0];
-    //tg_F.get(index)=Fintp;
-    
-    ike.deriv(index,out,0);
-    double dF_dnB=out[0]/hc_mev_fm/dnBdi;
-    ike.deriv(index,out,1);
-    double dF_dYe=out[0]/hc_mev_fm/dYedj;
-    ike.deriv(index,out,2);
-    // No hbarc here b/c dTdk has units of MeV as does out[0]
-    double dF_dT=out[0]/dTdk;
-        
-    ike.deriv2(index,out,0,0);
-    double F_nBnB=out[0]/hc_mev_fm;
-    ike.deriv2(index,out,0,1);
-    double F_nBYe=out[0]/hc_mev_fm;
-    ike.deriv2(index,out,1,1);
-    double F_YeYe=out[0]/hc_mev_fm;
-    ike.deriv2(index,out,0,2);
-    double F_nBT=out[0]/hc_mev_fm;
-    ike.deriv2(index,out,1,2);
-    double F_YeT=out[0]/hc_mev_fm;
-    ike.deriv2(index,out,2,2);
-    double F_TT=out[0]/hc_mev_fm;*/
-    
-    double mun=Fintp/hc_mev_fm-Ye*dF_dYe+nB*dF_dnB;
-    results.push_back(mun);
-    double mue=tgp_mue->get(index)/hc_mev_fm;
-    results.push_back(mue);
-    double mue_keep=mue;
-    if (includeMue==false) {
-        mue=0.0;
+    if (interp_Fint) {
+        F_TT=F_TT-((1/nB)*(elep.ed.dsdT));
     }
-    double mup=Fintp/hc_mev_fm+(1.0-Ye)*dF_dYe+nB*dF_dnB-mue;
+    
+    results.push_back(mue_keep);
+    double mun=Fintp/hc_mev_fm+(nB*(dF_dnB+((Ye*mue)/nB)-(Feg/nB)))-(Ye*(dF_dYe+mue));
+    results.push_back(mun);
+    double mup=Fintp/hc_mev_fm+(nB*(dF_dnB+((Ye*mue)/nB)-(Feg/nB)))+((1-Ye)*(dF_dYe+mue));
     results.push_back(mup);
     double en=-nB*dF_dT;
     results.push_back(en);
@@ -938,23 +969,72 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
     double T_MeV=T_grid[iT];
 
     cout << nB << " " << Ye << " " << T_MeV << " ";
+
+    double mue=tgp_mue->get(index)/hc_mev_fm;
+    double Feg=tgp_F->get(index)-tgp_Fint->get(index);
+    double Seg=tgp_S->get(index)-tgp_Sint->get(index);
     
     // Derivatives of the physical coordinates with respect to the indices
+    // new derivation of these variables taken from Dr. Steiner's branch.
+    double didnB, djdYe, dkdT, dnBdi, dYedj, dTdk;
+    double d2idnB2, d2jdYe2, d2kdT2;
+    if (inB>0 && inB<nB_grid.size()-1) {
+      dnBdi=(nB_grid[inB+1]-nB_grid[inB-1])/2;
+      double t2=(nB_grid[inB+1]-nB_grid[inB]);
+      double t1=(nB_grid[inB]-nB_grid[inB-1]);
+      d2idnB2=(1.0/t2-1.0/t1)/(nB_grid[inB+1]-nB_grid[inB-1])*2.0;
+    } else if (inB==0) {
+      dnBdi=(nB_grid[1]-nB_grid[0]);
+      double t2=(nB_grid[2]-nB_grid[1]);
+      double t1=(nB_grid[1]-nB_grid[0]);
+      d2idnB2=(1.0/t2-1.0/t1)/(nB_grid[2]-nB_grid[0])*2.0;
+    } else {
+      dnBdi=(nB_grid[nB_grid.size()-1]-nB_grid[nB_grid.size()-2]);
+      double t2=(nB_grid[nB_grid.size()-1]-nB_grid[nB_grid.size()-2]);
+      double t1=(nB_grid[nB_grid.size()-2]-nB_grid[nB_grid.size()-3]);
+      d2idnB2=(1.0/t2-1.0/t1)/(nB_grid[nB_grid.size()-1]-
+                               nB_grid[nB_grid.size()-3])*2.0;
+    }
+    if (iYe>0 && iYe<Ye_grid.size()-1) {
+      dYedj=(Ye_grid[iYe+1]-Ye_grid[iYe-1])/2;
+      double t2=(Ye_grid[iYe+1]-Ye_grid[iYe]);
+      double t1=(Ye_grid[iYe]-Ye_grid[iYe-1]);
+      d2jdYe2=(1.0/t2-1.0/t1)/(Ye_grid[iYe+1]-Ye_grid[iYe-1])*2.0;
+    } else if (iYe==0) {
+      dYedj=(Ye_grid[1]-Ye_grid[0]);
+      double t2=(Ye_grid[2]-Ye_grid[1]);
+      double t1=(Ye_grid[1]-Ye_grid[0]);
+      d2jdYe2=(1.0/t2-1.0/t1)/(Ye_grid[2]-Ye_grid[0])*2.0;
+    } else {
+      dYedj=(Ye_grid[Ye_grid.size()-1]-Ye_grid[Ye_grid.size()-1]);
+      double t2=(Ye_grid[Ye_grid.size()-1]-Ye_grid[Ye_grid.size()-2]);
+      double t1=(Ye_grid[Ye_grid.size()-2]-Ye_grid[Ye_grid.size()-3]);
+      d2jdYe2=(1.0/t2-1.0/t1)/(Ye_grid[Ye_grid.size()-1]-
+                               Ye_grid[Ye_grid.size()-3])*2.0;
+    }
+    if (iT>0 && iT<T_grid.size()-1) {
+      dTdk=(T_grid[iT+1]-T_grid[iT-1])/2;
+      double t2=(T_grid[iT+1]-T_grid[iT]);
+      double t1=(T_grid[iT]-T_grid[iT-1]);
+      d2kdT2=(1.0/t2-1.0/t1)/(T_grid[iT+1]-T_grid[iT-1])*2.0;
+    } else if (iT==0) {
+      dTdk=(T_grid[1]-T_grid[0]);
+      double t2=(T_grid[2]-T_grid[1]);
+      double t1=(T_grid[1]-T_grid[0]);
+      d2kdT2=(1.0/t2-1.0/t1)/(T_grid[2]-T_grid[0])*2.0;
+    } else {
+      dTdk=(T_grid[T_grid.size()-1]-T_grid[T_grid.size()-1]);
+      double t2=(T_grid[T_grid.size()-1]-T_grid[T_grid.size()-2]);
+      double t1=(T_grid[T_grid.size()-2]-T_grid[T_grid.size()-3]);
+      d2kdT2=(1.0/t2-1.0/t1)/(T_grid[T_grid.size()-1]-
+                               T_grid[T_grid.size()-3])*2.0;
+    }
+    didnB=1.0/dnBdi;
+    djdYe=1.0/dYedj;
+    dkdT=1.0/dTdk;
     
-    double dnBdi=2.0*0.04*log(10.0)*pow(10.0,((double)inB)*0.04-12.0);
-    double dYedj=0.01;
-    double dTdk=0.1*log(1.046)*pow(1.046,iT);
-
-    double didnB=25.0/nB/log(10.0);
-    double d2idnB2=-25.0/nB/nB/log(10.0);
-    double djdYe=100.0;
-    double d2jdYe2=0.0;
-    double dkdT=1.0/T_MeV/log(1.046);
-    double d2kdT2=-1.0/T_MeV/T_MeV/log(1.046);
-  
     // Evaluate the free energy and its derivatives analytically
     // using the interpolator
-
     std::vector<double> out(1);
     eval(index,out);
     double Fintp=out[0];
@@ -962,47 +1042,91 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
     deriv(index,out,0);
     double dFdi=out[0]/hc_mev_fm;
     double dF_dnB=dFdi*didnB;
+    if (interp_Fint) {
+        dF_dnB=dF_dnB+((Ye*mue)/nB)-(Feg/nB);
+    }
     deriv(index,out,1);
     double dFdj=out[0]/hc_mev_fm;
     double dF_dYe=dFdj*djdYe;
+    if (interp_Fint) {
+        dF_dYe=dF_dYe+mue;
+    }
     deriv(index,out,2);
     double dFdk=out[0]/hc_mev_fm;
     double dF_dT=dFdk*dkdT*hc_mev_fm;
-        
+    if (interp_Fint) {
+        dF_dT=dF_dT-Seg;
+    }
+
+    //This section of code calculates second derivatives used to add contribtion from photons and electrons back to Fint. Taken from Dr. Steiner's code.
+    if (true) {
+      //cout << "Here." << endl;
+      elep.include_deriv=true;
+      elep.include_muons=false;
+      elep.include_photons=true;
+      elep.e.mu=elep.e.m;
+      elep.e.n=Ye*nB;
+      //cout << elep.e.n << " " << elep.e.mu << endl;
+      elep.pair_density_eq(Ye*nB,T_MeV/hc_mev_fm);
+      //cout << elep.e.n << " " << elep.e.mu << " "
+      //<< elep.e.ed << " " << elep.ed.dndmu << endl;
+      cout << "Feg[elep],Feg[table]: "
+           << (elep.th.ed-T_MeV/hc_mev_fm*elep.th.en)/nB << " "
+           << Feg << endl;
+      cout << "Seg,Se,Sg,Seg[table]: " << elep.th.en/nB << " "
+           << elep.e.en/nB << " " 
+           << elep.ph.en/nB << " " << Seg << endl;
+      cout << "mue,mue[table]: " << elep.e.mu << " "
+           << tgp_mue->get(index)/hc_mev_fm << endl;
+    }
+
     deriv2(index,out,0,0);
     double d2Fdi2=out[0]/hc_mev_fm;
     double F_nBnB=d2Fdi2*didnB*didnB+dFdi*d2idnB2;
-    
+    if (interp_Fint) {
+        F_nBnB=F_nBnB+(((Ye*Ye)/nB)*(1/elep.ed.dndmu))-((2*Ye*mue)/(nB*nB))+((2*Feg)/(nB*nB));
+    }
+
     deriv2(index,out,0,1);
     double d2Fdidj=out[0]/hc_mev_fm;
     double F_nBYe=d2Fdidj*didnB*djdYe;
-    
+    if (interp_Fint) {
+        F_nBYe=F_nBYe+(Ye*(1/elep.ed.dndmu));
+    }
+
     deriv2(index,out,1,1);
     double d2Fdj2=out[0]/hc_mev_fm;
     double F_YeYe=d2Fdj2*djdYe*djdYe+dFdj*d2jdYe2;
-    
+    if (interp_Fint) {
+        F_YeYe=F_YeYe+(nB*(1/elep.ed.dndmu));
+    }
+
     deriv2(index,out,0,2);
     double d2Fdidk=out[0]/hc_mev_fm;
-    double F_nBT=d2Fdidk*didnB*dkdT*hc_mev_fm;
-    
+    double F_nBT=d2Fdidk*didnB*dkdT*hc_mev_fm; 
+    if (interp_Fint) {
+        F_nBT=F_YeYe+((Ye/nB)*(elep.ed.dndT/elep.ed.dndmu))+(Seg/nB);
+    }
+
     deriv2(index,out,1,2);
     double d2Fdjdk=out[0]/hc_mev_fm;
     double F_YeT=d2Fdjdk*djdYe*dkdT*hc_mev_fm;
-    
+    if (interp_Fint) {
+        F_YeT=F_YeT+(elep.ed.dndT/elep.ed.dndmu);
+    }
+
     deriv2(index,out,2,2);
     double d2Fdk2=out[0]/hc_mev_fm;
     double F_TT=(d2Fdk2*dkdT*dkdT+dFdk*d2kdT2)*hc_mev_fm*hc_mev_fm;
+    if (interp_Fint) {
+        F_TT=F_TT-((1/nB)*(elep.ed.dsdT));
+    }
 
     // Use those derivatives to compute the chemical potentials and
     // the entropy density
 
-    double mun=Fintp/hc_mev_fm-Ye*dF_dYe+nB*dF_dnB;
-    double mue=tgp_mue->get(index)/hc_mev_fm;
-    double mue_keep=mue;
-    if (includeMue==false) {
-        mue=0.0;
-    }
-    double mup=Fintp/hc_mev_fm+(1.0-Ye)*dF_dYe+nB*dF_dnB-mue;
+    double mun=Fintp/hc_mev_fm+(nB*(dF_dnB+((Ye*mue)/nB)-(Feg/nB)))-(Ye*(dF_dYe+mue));
+    double mup=Fintp/hc_mev_fm+(nB*(dF_dnB+((Ye*mue)/nB)-(Feg/nB)))+((1-Ye)*(dF_dYe+mue));
     double en=-nB*dF_dT;
         
     // Compare theose derivatives with the stored values

@@ -123,6 +123,8 @@ public:
   o2scl::tensor_grid<> *tgp_mun;
   o2scl::tensor_grid<> *tgp_mup;
   o2scl::tensor_grid<> *tgp_mue;
+  o2scl::tensor_grid<> *tgp_Fint;
+  o2scl::tensor_grid<> *tgp_Sint;
   o2scl::tensor_grid<> tgp_cs2;
   //@}
 
@@ -132,7 +134,18 @@ public:
   double mprot;
   /// Include electrons and positrons in calculation of the free energy
   bool includeMue;
+
+  /// Lepton EOS object
+  o2scl::eos_leptons elep;
+
+  /// If true, interpolate Fint, otherwise, interpolate F
+  bool interp_Fint;
   
+  interpm_krige_eos() {
+    elep.include_photons=true;
+    interp_Fint=false;
+  } 
+
   /** \brief Set the interpolator given the specified EOS
       objects
    */
@@ -243,14 +256,6 @@ public:
   int solve_hrg(size_t nv, const ubvector &x,
                 ubvector &y, double nB, double Ye, double T);
   
-  /** \brief Used to change values in hdf5 i/o test function
-   */
-  void change_tgp(o2scl::tensor_grid<>& tg_file, double value);
-
-  /** \brief Test input and output to o2 files.
-   */
-  int test_hdf5io ();
-
   /// \name Grid specification
   //@{
   size_t n_nB2;
