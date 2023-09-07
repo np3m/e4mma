@@ -34,7 +34,6 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
 
   std::string st_in, st_out;
   std::string table_out;
-  cout << "H: " << sv[1] << " " << sv[2] << " " << sv[3] << endl;
   st_in=sv[1];
   size_t window=o2scl::stoszt(sv[2]);
   table_out=sv[3];
@@ -82,7 +81,8 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
           size_t i_fix=i, j_fix=j, k_fix=k;
           cout << "Found point to fix at (" << i << "," << j << ","
                << k << ") = (" << nB_grid2[i] << ","
-               << Ye_grid2[j] << "," << T_grid2[k] << ")." << endl;
+               << Ye_grid2[j] << "," << T_grid2[k] << ") "
+               << ike.tgp_cs2.get(ix) << " " << dPdnB << endl;
 
           interp_internal(i_fix,j_fix,k_fix,window,ike);
 
@@ -173,6 +173,8 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
             hdf_output(hf,tg_cs2,"cs2");
             hdf_output(hf,tg_cs2_hom,"cs2_hom");
             hf.close();
+
+            write_results("tabx.o2");
           }            
           cout << "ipxf" << endl;
           exit(-1);
@@ -273,15 +275,20 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
     for(p[1]=8.0;p[1]<80.0;p[1]*=1.4) {
       for(p[2]=8.0;p[2]<80.0;p[2]*=1.4) {
         for(p[3]=-15.0;p[3]<-2.99;p[3]+=1.0) {
+
+          if (ike.addl_verbose>=1) {
+            cout << "Covariance parameters: ";
+            vector_out(cout,p,true);
+          }
           
-          cout << "Covariance parameters: ";
-          vector_out(cout,p,true);
           (*ike.cf)[0].set_params(p);
           int success;
           double q=ike.qual_fun(0,success);
-          cout << "q,min_qual,success: "
-               << q << " " << min_qual << " " << success << endl;
-          cout << endl;
+          if (ike.addl_verbose>=1) {
+            cout << "q,min_qual,success: "
+                 << q << " " << min_qual << " " << success << endl;
+            cout << endl;
+          }
           
           if (success==0 && q<min_qual) {
             min_p=p;
@@ -624,9 +631,11 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
 
   for(size_t ilist=0;ilist<(calib_list.size()+fix_list.size())/3;
       ilist++) {
-      
-    std::cout << "i,nB,Ye,T: " << ilist << " ";
-
+    
+    if (addl_verbose>=1) {
+      std::cout << "i,nB,Ye,T: " << ilist << " ";
+    }
+    
     size_t inB, iYe, iT;
     if (ilist<calib_list.size()/3) {
       inB=calib_list[ilist*3];
@@ -643,10 +652,12 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
     double nB=nB_grid[inB];
     double Ye=Ye_grid[iYe];
     double T_MeV=T_grid[iT];
-
-    cout << inB << " " << iYe <<  " " << iT << " "
-         << nB << " " << Ye << " " << T_MeV << " "
-         << interp_Fint << endl;
+    
+    if (addl_verbose>=1) {
+      cout << inB << " " << iYe <<  " " << iT << " "
+           << nB << " " << Ye << " " << T_MeV << " "
+           << interp_Fint << endl;
+    }
     
     // Derivatives of the physical coordinates with respect to the indices
 
@@ -1152,7 +1163,9 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
     }
 
     if (dPdnB<=0.0) {
-      cout << "Return failure for dPdnB<=0.0." << endl;
+      if (addl_verbose>=1) {
+        cout << "Return failure for dPdnB<=0.0." << endl;
+      }
       if (addl_verbose>=2) {
         cout << endl;
       }
@@ -1160,7 +1173,9 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
     }
     
     if (cs_sq>1.0 || cs_sq<0.0 || !std::isfinite(cs_sq)) {
-      cout << "Return failure for unphysical cs_sq." << endl;
+      if (addl_verbose>=1) {
+        cout << "Return failure for unphysical cs_sq." << endl;
+      }
       if (addl_verbose>=2) {
         cout << endl;
       }
@@ -1174,6 +1189,8 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
     // End of loop over ilist
   }
   
-  cout << "Return success." << endl;
+  if (addl_verbose>=1) {
+    cout << "Return success." << endl;
+  }
   return 0;
 }

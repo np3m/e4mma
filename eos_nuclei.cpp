@@ -1804,14 +1804,16 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
                       2.0*en*(nn2*f_nnT/f_TT+np2*f_npT/f_TT)-en*en/f_TT)/den;
         
         tg_cs2.get(ix)=cs_sq;
-        cout << "en,f_TT,den: " << en << " " << f_TT << " " << den << endl;
-        cout << "t1,t2,t3,t4,t5,t6,cs2: "
-             << nn2*nn2*(f_nnnn-f_nnT*f_nnT/f_TT)/den << " "
-             << 2.0*nn2*np2*(f_nnnp-f_nnT*f_npT/f_TT)/den << " "
-             << np2*np2*(f_npnp-f_npT*f_npT/f_TT)/den << " "
-             << 2.0*en*nn2*f_nnT/f_TT/den << " "
-             << 2.0*en*np2*f_npT/f_TT/den << " "
-             << -en*en/f_TT/den << " " << cs_sq << endl;
+        if (cs2_verbose>0) {
+          cout << "en,f_TT,den: " << en << " " << f_TT << " " << den << endl;
+          cout << "t1,t2,t3,t4,t5,t6,cs2: "
+               << nn2*nn2*(f_nnnn-f_nnT*f_nnT/f_TT)/den << " "
+               << 2.0*nn2*np2*(f_nnnp-f_nnT*f_npT/f_TT)/den << " "
+               << np2*np2*(f_npnp-f_npT*f_npT/f_TT)/den << " "
+               << 2.0*en*nn2*f_nnT/f_TT/den << " "
+               << 2.0*en*np2*f_npT/f_TT/den << " "
+               << -en*en/f_TT/den << " " << cs_sq << endl;
+        }
         
         // This code requires a model to compute the homogeneous cs2
         if (true) {
@@ -1820,7 +1822,7 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
           thermo th;
           tg_cs2_hom.get(ix)=cs2_func(neutron,proton,T_MeV/hc_mev_fm,th);
           
-          if (cs2_verbose>0 || sv.size()>=4) {
+          if (cs2_verbose>0 || (sv.size()>=4 && range_mode==false)) {
             cout << "cs2 (het,hom): " << cs_sq << " "
                  << tg_cs2_hom.get(ix) << endl;
           }
