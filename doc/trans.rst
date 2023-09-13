@@ -8,7 +8,7 @@ the "bars" and simply write :math:`n_n,n_p` for
 densities below are presumed to include nucleons both inside and
 outside of nuclei.
 
-Converting between (nn,np) and (nB,Ye)
+Converting between (nn,np) and (nB,ne)
 --------------------------------------
 
 Since :math:`n_p=n_e` and :math:`n_n=n_B-n_e`,
@@ -46,6 +46,9 @@ For second derivatives
    2\left(\frac{\partial^2 }{\partial n_p \partial n_n}\right) +
    \left(\frac{\partial^2 }{\partial n_n^2}\right)_{n_p}
    
+Converting between (nn,np) and (nB,Ye)
+--------------------------------------
+
 Since :math:`n_p=n_B Y_e` and :math:`n_n=n_B(1-Y_e)`,
 
 .. math::
