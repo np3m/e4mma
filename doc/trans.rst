@@ -8,11 +8,10 @@ the "bars" and simply write :math:`n_n,n_p` for
 densities below are presumed to include nucleons both inside and
 outside of nuclei.
 
-Converting between :math:`(n_n,n_p)` and :math:`(n_B,n_e)`
-----------------------------------------------------------
+Converting between (nn,np) and (nB,Ye)
+--------------------------------------
 
-Since :math:`n_p=n_e` and
-:math:`n_n=n_B-n_e`,
+Since :math:`n_p=n_e` and :math:`n_n=n_B-n_e`,
 
 .. math::
    
@@ -47,9 +46,6 @@ For second derivatives
    2\left(\frac{\partial^2 }{\partial n_p \partial n_n}\right) +
    \left(\frac{\partial^2 }{\partial n_n^2}\right)_{n_p}
    
-Converting between :math:`(n_n,n_p)` and :math:`(n_B,Y_e)`
-----------------------------------------------------------
-
 Since :math:`n_p=n_B Y_e` and :math:`n_n=n_B(1-Y_e)`,
 
 .. math::
@@ -126,8 +122,8 @@ thus
 
 This equality is also used in ``stability()`` in ``eos_nuclei.cpp``.
 
-Converting between :math:`(n_n,n_p)` and :math:`(n_B,n_e)` with muons
----------------------------------------------------------------------
+Converting between (nn,np) and (nB,Ye) with muons
+-------------------------------------------------
 
 When muons are included, the expressions change, since :math:`n_p =
 n_e + n_{\mu}(n_e)` and :math:`n_n = n_B - n_e - n_{\mu}(n_e)`,

@@ -191,20 +191,20 @@ public:
 
     .. todo::
 
-    Class eos_nuclei:
+       Class eos_nuclei:
 
-    - Rename n_nB2 to n_nB, etc.
-    - Make child of eos_sn_base
-    - Use \c loaded instead of testing n_nB2==0
-    - Move select_high_T to the parent
-    - 1/15/22: I'm not sure if fix_cc() is really useful or 
-    not anymore?
-    - 1/15/22: I'm not sure the non-derivative virial solver
-    is needed anymore?
-    - Future: Allow different form for the NS fit
-    - Future: Allow user to specify where data files are
-    located or to manually specify the nuclear model?
-    - Future: Allow RMF rather than just Skyrme.
+       - Rename n_nB2 to n_nB, etc.
+       - Make child of eos_sn_base
+       - Use \c loaded instead of testing n_nB2==0
+       - Move select_high_T to the parent
+       - 1/15/22: I'm not sure if fix_cc() is really useful or 
+         not anymore?
+       - 1/15/22: I'm not sure the non-derivative virial solver
+         is needed anymore?
+       - Future: Allow different form for the NS fit
+       - Future: Allow user to specify where data files are
+         located or to manually specify the nuclear model?
+       - Future: Allow RMF rather than just Skyrme.
 
     \endverbatim
 

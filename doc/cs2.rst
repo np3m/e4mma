@@ -151,3 +151,41 @@ Note that, when applying this expression, one must be consistent about
 the free energy which one differentiates and the densities and
 chemical potentials which are used. See :ref:`Chemical Potentials` for
 more information regarding this issue. 
+
+In terms of baryon density and electron fraction
+------------------------------------------------
+
+In the expression above there are three terms in square brackets, the
+double sum, the single sum, and the final term. In nondegenerate
+matter, the double and single sums involve significant cancelations.
+To resolve these, it is helpful to re-express these sums in terms of
+:math:`n_B` and :math:`Y_e`. Since our degrees of freedom are
+neutrons and protons, one finds
+
+.. math::
+
+   \begin{eqnarray}
+   &\sum_i \sum_k n_i n_k \left(f_{n_i n_k}- f_{n_k T}
+   f_{n_i T} f_{TT}^{-1}\right) = & \nonumber \\
+   & n_n^2 \left(f_{n_n n_n}- f_{n_n T}^2
+   f_{TT}^{-1}\right) + 2 n_n n_p \left(f_{n_n n_p}- f_{n_n T}
+   f_{n_p T} f_{TT}^{-1}\right) +
+   n_p^2 \left(f_{n_p n_p}- f_{n_p T}^2
+   f_{TT}^{-1}\right) = & \nonumber \\
+   & n_B^2 \left(\frac{\partial \mu_n}{\partial n_B}\right)_{Y_e,T} +
+   n_B^2 \left(\frac{\partial s}{\partial n_B}\right)_{Y_e,T}^2
+   \left(\frac{\partial s}{\partial T}\right)_{n_B,Y_e}^{-1} + &
+   \nonumber \\
+   & n_B Y_e (1-Y_e)
+   \left(\frac{\partial \mu_n}{\partial Y_e}\right)_{n_B,T} +
+   n_B Y_e^2 \left(\frac{\partial \mu_p}{\partial Y_e}\right)_{n_B,T} &
+   \end{eqnarray}
+
+and 
+
+.. math::
+
+   \sum_i n_i f_{n_i T} f_{TT}^{-1} =
+   n_B \left(\frac{\partial s}{\partial n_B}\right)_{Y_e,T}
+   \left(\frac{\partial s}{\partial T}\right)_{n_B,Y_e}^{-1}
+   

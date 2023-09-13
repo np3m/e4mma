@@ -1807,7 +1807,7 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
           np2*np2*(f_npnp-f_npT*f_npT/f_TT)-
           2.0*en*(nn2*f_nnT/f_TT+np2*f_npT/f_TT)-en*en/f_TT)/den;
         */
-        cs_sq=(expr1-2.0*en*expr2-en*en/f_TT)/den;
+        double cs_sq=(expr1-2.0*en*expr2-en*en/f_TT)/den;
         
         tg_cs2.get(ix)=cs_sq;
         if (cs2_verbose>0) {
