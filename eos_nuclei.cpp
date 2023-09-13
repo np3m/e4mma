@@ -1577,7 +1577,7 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
   
   int unstable_count=0;
   int count=0;
-  int superlum_count=0;
+  int cs2_count=0;
   int dPdnB_negative_count=0;
   int PS_negative_count=0;
   int total_count=0;
@@ -1798,10 +1798,16 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
                << f_nnT << "\n  " << f_npT << " " << f_TT << " "
                << den << endl;
         }
-        double cs_sq=(nn2*nn2*(f_nnnn-f_nnT*f_nnT/f_TT)+
-                      2.0*nn2*np2*(f_nnnp-f_nnT*f_npT/f_TT)+
-                      np2*np2*(f_npnp-f_npT*f_npT/f_TT)-
-                      2.0*en*(nn2*f_nnT/f_TT+np2*f_npT/f_TT)-en*en/f_TT)/den;
+        double expr1=dmundnBv*nB*nB+dsdnBv*dsdnBv*nB*nB/dsdTv+
+          dmundYev*nB*Ye-dmundYev*nB*Ye*Ye+dmupdYev*nB*Ye*Ye;
+        double expr2=dsdnBv*nB/dsdTv;
+        /*
+          double cs_sq=(nn2*nn2*(f_nnnn-f_nnT*f_nnT/f_TT)+
+          2.0*nn2*np2*(f_nnnp-f_nnT*f_npT/f_TT)+
+          np2*np2*(f_npnp-f_npT*f_npT/f_TT)-
+          2.0*en*(nn2*f_nnT/f_TT+np2*f_npT/f_TT)-en*en/f_TT)/den;
+        */
+        cs_sq=(expr1-2.0*en*expr2-en*en/f_TT)/den;
         
         tg_cs2.get(ix)=cs_sq;
         if (cs2_verbose>0) {
@@ -1810,11 +1816,11 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
                << nn2*nn2*(f_nnnn-f_nnT*f_nnT/f_TT)/den << " "
                << 2.0*nn2*np2*(f_nnnp-f_nnT*f_npT/f_TT)/den << " "
                << np2*np2*(f_npnp-f_npT*f_npT/f_TT)/den << " "
-               << 2.0*en*nn2*f_nnT/f_TT/den << " "
-               << 2.0*en*np2*f_npT/f_TT/den << " "
+               << -2.0*en*nn2*f_nnT/f_TT/den << " "
+               << -2.0*en*np2*f_npT/f_TT/den << " "
                << -en*en/f_TT/den << " " << cs_sq << endl;
         }
-        
+
         // This code requires a model to compute the homogeneous cs2
         if (true) {
           neutron.n=nB*(1.0-Ye);
@@ -1831,10 +1837,10 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
         if (cs_sq>1.0 || !std::isfinite(cs_sq)) {
           //cout << tg_mun.get(ix) << " " << neutron.m << " "
           //<< electron.mu << " " << electron.n << endl;
-          cout << "Superluminal: nB,Ye,T[MeV],cs2,cs2_hom:\n  "
+          cout << "Unphysical cs2: nB,Ye,T[MeV],cs2,cs2_hom:\n  "
                << nB << " " << Ye << " " << T_MeV << " "
                << cs_sq << " " << tg_cs2_hom.get(ix) << endl;
-          superlum_count++;
+          cs2_count++;
           i_nB_fix.push_back(i);
           i_Ye_fix.push_back(j);
           i_T_fix.push_back(k);
@@ -1847,7 +1853,7 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
   }
   
   cout << "Unstable count (type 3): " << unstable_count << endl;
-  cout << "Superluminal count (type 4): " << superlum_count << endl;
+  cout << "Unphysical cs2 count (type 4): " << cs2_count << endl;
   cout << "dPdnB<0 count (type 2): " << dPdnB_negative_count << endl;
   cout << "P|S<0 count (type 1): " << PS_negative_count << endl;
   cout << "Total count: " << total_count << endl;
@@ -9878,27 +9884,6 @@ void eos_nuclei::setup_cli_nuclei(o2scl::cli &cl) {
 
   cl.doc_o2_file="data/eos_nuclei_docs.o2";
 
-  p_nB_grid_spec.str=&nB_grid_spec;
-  p_nB_grid_spec.help="";
-  p_nB_grid_spec.doc_class="eos_nuclei";
-  p_nB_grid_spec.doc_name="nB_grid_spec";
-  p_nB_grid_spec.doc_xml_file="doc/xml/classeos__nuclei.xml";
-  cl.par_list.insert(make_pair("nB_grid_spec",&p_nB_grid_spec));
-  
-  p_Ye_grid_spec.str=&Ye_grid_spec;
-  p_Ye_grid_spec.help="";
-  p_Ye_grid_spec.doc_class="eos_nuclei";
-  p_Ye_grid_spec.doc_name="Ye_grid_spec";
-  p_Ye_grid_spec.doc_xml_file="doc/xml/classeos__nuclei.xml";
-  cl.par_list.insert(make_pair("Ye_grid_spec",&p_Ye_grid_spec));
-  
-  p_T_grid_spec.str=&T_grid_spec;
-  p_T_grid_spec.help="";
-  p_T_grid_spec.doc_class="eos_nuclei";
-  p_T_grid_spec.doc_name="T_grid_spec";
-  p_T_grid_spec.doc_xml_file="doc/xml/classeos__nuclei.xml";
-  cl.par_list.insert(make_pair("T_grid_spec",&p_T_grid_spec));
-  
   p_show_all_nuclei.b=&show_all_nuclei;
   p_show_all_nuclei.help="";
   p_show_all_nuclei.doc_class="eos_nuclei";
@@ -10010,13 +9995,6 @@ void eos_nuclei::setup_cli_nuclei(o2scl::cli &cl) {
   p_alg_mode.doc_name="alg_mode";
   p_alg_mode.doc_xml_file="doc/xml/classeos__nuclei.xml";
   cl.par_list.insert(make_pair("alg_mode",&p_alg_mode));
-  
-  p_cs2_verbose.i=&cs2_verbose;
-  p_cs2_verbose.help="";
-  p_cs2_verbose.doc_class="eos_nuclei";
-  p_cs2_verbose.doc_name="cs2_verbose";
-  p_cs2_verbose.doc_xml_file="doc/xml/classeos__nuclei.xml";
-  cl.par_list.insert(make_pair("cs2_verbose",&p_cs2_verbose));
   
   p_fixed_dist_alg.i=&fixed_dist_alg;
   p_fixed_dist_alg.help="";

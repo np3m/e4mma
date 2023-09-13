@@ -227,7 +227,7 @@ class eos {
   
 public:
 
-  /** \brief If true, increase the verbosity for cs2
+  /** \brief If true, increase the verbosity for cs2 (default false)
    */
   int cs2_verbose;
   
@@ -257,25 +257,32 @@ public:
   std::vector<double> Ye_grid2;
   std::vector<double> T_grid2;
   std::vector<double> S_grid2;
+  
   /** \brief The function for default baryon density grid. 
       
       This parameter is used by the new_table() function, and the
       \c check-virial and \c eos-deriv commands.
   */
   std::string nB_grid_spec;
+  
   /** \brief The function for default electron fraction grid. 
       
       This parameter is used by the new_table() function, and the
       \c check-virial and eos-deriv \c commands.
   */
   std::string Ye_grid_spec;
+  
   /** \brief The function for default temperature grid. 
       
       This parameter is used by the new_table() function, and the
       \c check-virial and \c eos-deriv commands.
   */
   std::string T_grid_spec;
+  
   /** \brief The function for default strangeness grid
+
+      This parameter is used by the new_table() function, and the
+      \c check-virial and \c eos-deriv commands.
    */
   std::string S_grid_spec;
   //@}
@@ -500,6 +507,11 @@ public:
   o2scl::cli::parameter_bool p_use_alt_eos;
   o2scl::cli::parameter_double p_a_virial;
   o2scl::cli::parameter_double p_b_virial;
+  o2scl::cli::parameter_int p_cs2_verbose;
+  o2scl::cli::parameter_string p_nB_grid_spec;
+  o2scl::cli::parameter_string p_Ye_grid_spec;
+  o2scl::cli::parameter_string p_T_grid_spec;
+  o2scl::cli::parameter_string p_S_grid_spec;
   //@}
 
   /// If true, then RMF fields are included

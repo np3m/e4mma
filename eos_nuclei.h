@@ -248,7 +248,7 @@ public:
   /// Particle object for bosons
   o2scl::boson_eff effb;
 
-  /** \brief If true, include a hadron resonance gas
+  /** \brief If true, include a hadron resonance gas (default false)
    */
   bool inc_hrg;
 
@@ -416,11 +416,14 @@ public:
 
   /** \brief If true, verify points only and do not attempt to solve
       (default false)
+
+      This setting is principally used by the \c verify command
+      which automatically flips this from false to true and then back.
   */
   bool verify_only;
 
-  /** \brief If true, recompute points where Z, A, log_xn, 
-      or log_xp reach a maximum or minimum (default false)
+  /** \brief If not empty, then recompute points where Z, A, log_xn, 
+      or log_xp reach a maximum or minimum (default is empty)
   */
   std::string edge_list;
 
@@ -585,9 +588,12 @@ public:
   o2scl::tensor_grid<> tg_NmZ_max;
   //@}
 
+  /** \brief If true, include details in EOS file (default false)
+   */
+  bool include_detail;
+  
   /// \name Detail storage
   //@{
-  bool include_detail;
   o2scl::tensor_grid<> tg_zn;
   o2scl::tensor_grid<> tg_zp;
   o2scl::tensor_grid<> tg_F1;
@@ -627,16 +633,12 @@ public:
   o2scl::cli::parameter_double p_max_time;
   o2scl::cli::parameter_string p_nucleon_func;
   o2scl::cli::parameter_int p_alg_mode;
-  o2scl::cli::parameter_int p_cs2_verbose;
   o2scl::cli::parameter_int p_fixed_dist_alg;
   o2scl::cli::parameter_int p_function_verbose;
   o2scl::cli::parameter_string p_Ye_list;
   o2scl::cli::parameter_double p_max_ratio;
   o2scl::cli::parameter_double p_file_update_time;
   o2scl::cli::parameter_int p_file_update_iters;
-  o2scl::cli::parameter_string p_nB_grid_spec;
-  o2scl::cli::parameter_string p_Ye_grid_spec;
-  o2scl::cli::parameter_string p_T_grid_spec;
   //@}
 
   /// \name Functions for the main algorithm
@@ -773,8 +775,7 @@ public:
   */
   int eos_deriv(std::vector<std::string> &sv, bool itive_com);
 
-  /** \brief Interpolate the EOS to fix the table near a specified
-      point
+  /** \brief Interpolate the EOS to fix the table near a point
 
       <nB> <Ye> <T MeV> <window> <st.o2>
 

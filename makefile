@@ -223,6 +223,14 @@ doc: empty
 	cd doc; doxygen doxyfile
 	cd doc; make html
 
+doc-auto: enn
+	cd doc; cp ~/o2scl/doc/o2scl/o2scl.tag .
+	cd doc; cp ~/o2scl/doc/o2scl/html/objects.inv \
+		o2scl_objects.inv
+	cd doc; doxygen doxyfile
+	enn -xml-to-o2
+	cd doc; make html
+
 BROWSER = 
 UNAME_S := $(shell uname -s)
     ifeq ($(UNAME_S),Linux)

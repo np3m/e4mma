@@ -771,7 +771,7 @@ eos::eos() {
   nB_grid_spec="301,10^(i*0.04-12)*2.0";
   Ye_grid_spec="70,0.01*(i+1)";
   T_grid_spec="160,0.1*1.046^i";
-  S_grid_spec="5,0.1*i";
+  S_grid_spec="5,i/12.0";
 
   this->process_grid_spec();
 
@@ -4003,6 +4003,41 @@ void eos::setup_cli(o2scl::cli &cl, bool read_docs) {
   p_use_alt_eos.doc_xml_file="doc/xml/classeos.xml";
   cl.par_list.insert(make_pair("use_alt_eos",&p_use_alt_eos));
 
+  p_nB_grid_spec.str=&nB_grid_spec;
+  p_nB_grid_spec.help="";
+  p_nB_grid_spec.doc_class="eos_nuclei";
+  p_nB_grid_spec.doc_name="nB_grid_spec";
+  p_nB_grid_spec.doc_xml_file="doc/xml/classeos.xml";
+  cl.par_list.insert(make_pair("nB_grid_spec",&p_nB_grid_spec));
+  
+  p_Ye_grid_spec.str=&Ye_grid_spec;
+  p_Ye_grid_spec.help="";
+  p_Ye_grid_spec.doc_class="eos_nuclei";
+  p_Ye_grid_spec.doc_name="Ye_grid_spec";
+  p_Ye_grid_spec.doc_xml_file="doc/xml/classeos.xml";
+  cl.par_list.insert(make_pair("Ye_grid_spec",&p_Ye_grid_spec));
+  
+  p_T_grid_spec.str=&T_grid_spec;
+  p_T_grid_spec.help="";
+  p_T_grid_spec.doc_class="eos_nuclei";
+  p_T_grid_spec.doc_name="T_grid_spec";
+  p_T_grid_spec.doc_xml_file="doc/xml/classeos.xml";
+  cl.par_list.insert(make_pair("T_grid_spec",&p_T_grid_spec));
+  
+  p_S_grid_spec.str=&S_grid_spec;
+  p_S_grid_spec.help="";
+  p_S_grid_spec.doc_class="eos_nuclei";
+  p_S_grid_spec.doc_name="S_grid_spec";
+  p_S_grid_spec.doc_xml_file="doc/xml/classeos.xml";
+  cl.par_list.insert(make_pair("S_grid_spec",&p_S_grid_spec));
+  
+  p_cs2_verbose.i=&cs2_verbose;
+  p_cs2_verbose.help="";
+  p_cs2_verbose.doc_class="eos_nuclei";
+  p_cs2_verbose.doc_name="cs2_verbose";
+  p_cs2_verbose.doc_xml_file="doc/xml/classeos.xml";
+  cl.par_list.insert(make_pair("cs2_verbose",&p_cs2_verbose));
+  
   p_a_virial.d=&a_virial;
   p_a_virial.help="";
   p_a_virial.doc_class="eos";
