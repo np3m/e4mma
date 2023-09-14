@@ -184,6 +184,9 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
           }            
 
           ipx_count++;
+          
+          cout << "Incrementing ipx_count." << endl;
+          
           if (ipx_count==10) {
             exit(-1);
           }
@@ -473,6 +476,9 @@ double interpm_krige_eos::dist_cf(size_t i_calib, size_t i_fix) {
 
 void interpm_krige_eos::compute_dists() {
 
+  // Make sure we start with an empty array
+  calib_dists.clear();
+  
   // Collect counts
   size_t calib_count=calib_list.size()/3;
   size_t fix_count=fix_list.size()/3;
