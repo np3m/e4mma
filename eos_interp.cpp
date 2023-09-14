@@ -153,12 +153,14 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
           cout << "Computed j_min, j_max: " << j_min << " " << j_max << endl;
           cout << "Computed k_min, k_max: " << k_min << " " << k_max << endl;
           
+          tg_cs2=ike.tgp_cs2;
+          
           std::vector<std::string> sv3;
           sv3={"stability",o2scl::szttos(i_min),o2scl::szttos(i_max),
             o2scl::szttos(j_min),o2scl::szttos(j_max),
             o2scl::szttos(k_min),o2scl::szttos(k_max)};
-          tg_cs2=ike.tgp_cs2;
           stability(sv3,itive_com);
+          
           ike.tgp_cs2=tg_cs2;
 
           if (true) {
@@ -182,7 +184,7 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
           }            
 
           ipx_count++;
-          if (ipx_count==2) {
+          if (ipx_count==10) {
             exit(-1);
           }
 
