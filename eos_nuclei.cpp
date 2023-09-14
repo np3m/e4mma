@@ -1490,7 +1490,9 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
     for(size_t i=0;i<4;i++) {
       egv[i].resize(3,st);
     }
-    tg_cs2.resize(3,st);
+    if (!range_mode) {
+      tg_cs2.resize(3,st);
+    }
     tg_cs2_hom.resize(3,st);
     
     dmundYe.set_grid_packed(packed);
@@ -1502,7 +1504,9 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
     for(size_t i=0;i<4;i++) {
       egv[i].set_grid_packed(packed);
     }
-    tg_cs2.set_grid_packed(packed);
+    if (!range_mode) {
+      tg_cs2.set_grid_packed(packed);
+    }
     tg_cs2_hom.set_grid_packed(packed);
     
   }

@@ -2022,10 +2022,13 @@ int eos::table_nB(std::vector<std::string> &sv, bool itive_com) {
 }
 
 int eos::process_grid_spec() {
+
+  // AWS, 9/14/23, we comment out the output this function precedes
+  // the cli setup
   
   size_t st[3]={n_nB2,n_Ye2,n_T2};
-  cout << "Processing: " << nB_grid_spec << " " << Ye_grid_spec << " "
-       << T_grid_spec << endl;
+  //cout << "Processing: " << nB_grid_spec << " " << Ye_grid_spec << " "
+  //<< T_grid_spec << endl;
   
   calc_utf8<> calc;
   std::map<std::string,double> vars;
@@ -2035,7 +2038,7 @@ int eos::process_grid_spec() {
   split_string_delim(nB_grid_spec,split_res,',');
   n_nB2=stoszt(split_res[0]);
   nB_grid2.resize(0);
-  cout << "n_nB: " << n_nB2 << endl;
+  //cout << "n_nB: " << n_nB2 << endl;
   
   calc.compile(split_res[1].c_str());
   for(size_t i=0;i<n_nB2;i++) {
@@ -2046,7 +2049,7 @@ int eos::process_grid_spec() {
   split_string_delim(Ye_grid_spec,split_res,',');
   n_Ye2=stoszt(split_res[0]);
   Ye_grid2.resize(0);
-  cout << "n_Ye: " << n_Ye2 << endl;
+  //cout << "n_Ye: " << n_Ye2 << endl;
   
   calc.compile(split_res[1].c_str());
   for(size_t i=0;i<n_Ye2;i++) {
@@ -2057,7 +2060,7 @@ int eos::process_grid_spec() {
   split_string_delim(T_grid_spec,split_res,',');
   n_T2=stoszt(split_res[0]);
   T_grid2.resize(0);
-  cout << "n_T: " << n_T2 << endl;
+  //cout << "n_T: " << n_T2 << endl;
   
   calc.compile(split_res[1].c_str());
   for(size_t i=0;i<n_T2;i++) {
@@ -2068,7 +2071,7 @@ int eos::process_grid_spec() {
   split_string_delim(S_grid_spec,split_res,',');
   n_S2=stoszt(split_res[0]);
   S_grid2.resize(0);
-  cout << "n_S: " << n_S2 << endl;
+  //cout << "n_S: " << n_S2 << endl;
   
   calc.compile(split_res[1].c_str());
   for(size_t i=0;i<n_S2;i++) {

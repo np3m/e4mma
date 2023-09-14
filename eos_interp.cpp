@@ -51,6 +51,8 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
   hdf_input(hff,ike.tgp_cs2,"cs2");
   hff.close();
 
+  int ipx_count=0;
+  
   for(size_t i=0;i<nB_grid2.size();i++) {
     for(size_t j=0;j<Ye_grid2.size();j++) {
       for(size_t k=0;k<T_grid2.size();k++) {
@@ -155,11 +157,13 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
           sv3={"stability",o2scl::szttos(i_min),o2scl::szttos(i_max),
             o2scl::szttos(j_min),o2scl::szttos(j_max),
             o2scl::szttos(k_min),o2scl::szttos(k_max)};
+          tg_cs2=ike.tgp_cs2;
           stability(sv3,itive_com);
+          ike.tgp_cs2=tg_cs2;
 
           if (true) {
             hdf_file hf;
-            hf.open_or_create("stx.o2");
+            hf.open_or_create(st_out);
             hdf_output(hf,dmundnB,"dmundnB");
             hdf_output(hf,dmundYe,"dmundYe");
             hdf_output(hf,dmupdYe,"dmupdYe");
@@ -174,10 +178,13 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
             hdf_output(hf,tg_cs2_hom,"cs2_hom");
             hf.close();
 
-            write_results("tabx.o2");
+            write_results(table_out);
           }            
-          cout << "ipxf" << endl;
-          exit(-1);
+
+          ipx_count++;
+          if (ipx_count==2) {
+            exit(-1);
+          }
 
           ike.tgp_cs2=tg_cs2;
 
@@ -360,7 +367,7 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
     double Ye=Ye_grid2[index[1]];
     double T_MeV=T_grid2[index[2]];
     
-    double fact=1.0/(1.0+exp(2.0*(ike.calib_dists[j/3]-2.5)));
+    double fact=1.0/(1.0+exp(2.0*(ike.calib_dists[j/3]-window/2.0)));
 
     // Electron photon contribution in MeV
     double F_eg=tg_F.get(index)-tg_Fint.get(index);
