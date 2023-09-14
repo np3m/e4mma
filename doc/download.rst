@@ -30,7 +30,7 @@ Baryons-only tables without derivatives of F:
 - `Fiducial no leptons
   <https://isospin.roam.utk.edu/public_data/eos_tables/du21/fid_nolep_noderiv_3_4.o2>`_
 - `Large Mmax no leptons
-  <https://isospin.roam.utk.edu/public_data/eos_tables/du21/large_max_nolep_noderiv_1_17_22.o2>`_
+  <https://isospin.roam.utk.edu/public_data/eos_tables/du21/large_mmax_nolep_noderiv_1_17_22.o2>`_
 - `Large SL no leptons
   <https://isospin.roam.utk.edu/public_data/eos_tables/du21/large_sl_nolep_noderiv_2_5_22.o2>`_
 - `Large R no leptons

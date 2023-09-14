@@ -165,7 +165,7 @@ neutrons and protons, one finds
 .. math::
 
    \begin{eqnarray}
-   &\sum_i \sum_k n_i n_k \left(f_{n_i n_k}- f_{n_k T}
+   &{\cal{E}}_1 \equiv \sum_i \sum_k n_i n_k \left(f_{n_i n_k}- f_{n_k T}
    f_{n_i T} f_{TT}^{-1}\right) = & \nonumber \\
    & n_n^2 \left(f_{n_n n_n}- f_{n_n T}^2
    f_{TT}^{-1}\right) + 2 n_n n_p \left(f_{n_n n_p}- f_{n_n T}
@@ -185,7 +185,14 @@ and
 
 .. math::
 
-   \sum_i n_i f_{n_i T} f_{TT}^{-1} =
+   {\cal{E}}_2 \equiv \sum_i n_i f_{n_i T} f_{TT}^{-1} =
    n_B \left(\frac{\partial s}{\partial n_B}\right)_{Y_e,T}
    \left(\frac{\partial s}{\partial T}\right)_{n_B,Y_e}^{-1}
-   
+
+Taking advantage of these two expressions
+
+.. math::
+
+   c_s^2 = \left[ {\cal{E}}_1 - 2 s {\cal{E}}_2 
+   - s^2 f_{TT}^{-1} \right] \left(
+   T s + \sum_i \mu_i n_i \right)^{-1}

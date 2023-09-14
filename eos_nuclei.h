@@ -760,6 +760,14 @@ public:
   int generate_table(std::vector<std::string> &sv, bool itive_com);
   //@}
 
+  /** \brief Save in COMPOSE format
+
+      <output file prefix>
+
+      Desc.
+  */
+  int save_compose(std::vector<std::string> &sv, bool itive_com);
+  
   /// \name EOS post-processing functions
   //@{
   /** \brief Compute derivatives numerically

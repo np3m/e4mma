@@ -9765,11 +9765,134 @@ int eos_nuclei::check_virial(std::vector<std::string> &sv,
   return 0;
 }
 
+int eos_nuclei::save_compose(std::vector<std::string> &sv,
+			     bool itive_com) {
+
+  if (loaded==false) {
+    cerr << "No EOS loaded." << endl;
+    return 2;
+  }
+  
+  if (with_leptons==false || derivs_computed==false) {
+    cerr << "save-compose only works with leptons and derivatives." << endl;
+    return 1;
+  }
+    
+  std::string prefix=sv[1];
+
+  std::ofstream fout;
+
+  fout.open(prefix+".nb");
+  fout.setf(ios::scientific);
+  fout.precision(10);
+  fout << 0 << endl;
+  fout << n_nB2 << endl;
+  for(size_t j=0;j<n_nB2;j++) {
+    fout << nB_grid2[j] << endl;
+  }
+  fout.close();
+  
+  fout.open(prefix+".yq");
+  fout.setf(ios::scientific);
+  fout.precision(10);
+  fout << 0 << endl;
+  fout << n_Ye2 << endl;
+  for(size_t j=0;j<n_Ye2;j++) {
+    fout << Ye_grid2[j] << endl;
+  }
+  fout.close();
+  
+  fout.open(prefix+".t");
+  fout.setf(ios::scientific);
+  fout.precision(10);
+  fout << 0 << endl;
+  fout << n_T2 << endl;
+  for(size_t j=0;j<n_T2;j++) {
+    fout << T_grid2[j] << endl;
+  }
+  fout.close();
+  
+  fout.open(prefix+".thermo");
+  fout.setf(ios::scientific);
+  fout.precision(10);
+  fout << neutron.m*hc_mev_fm << " ";
+  fout << proton.m*hc_mev_fm << " ";
+  fout << with_leptons << endl;
+  
+  for(size_t m=0;m<n_T2;m++) {
+    for(size_t k=0;k<n_Ye2;k++) {
+      for(size_t j=0;j<n_nB2;j++) {
+
+        vector<size_t> ix={j,k,m};
+        
+        fout << m << " " << j << " " << k << " ";
+        
+        fout << tg_P.get(ix)/nB_grid2[j] << " ";
+        fout << tg_S.get(ix) << " ";
+        fout << tg_mun.get(ix)/(neutron.m*hc_mev_fm) << " ";
+        fout << tg_mup.get(ix)/(neutron.m*hc_mev_fm) << " ";
+        fout << tg_mue.get(ix)/(neutron.m*hc_mev_fm) << " ";
+        
+        fout << tg_F.get(ix)/(neutron.m*hc_mev_fm)-1.0 << " ";
+        fout << tg_E.get(ix)/(neutron.m*hc_mev_fm)-1.0 << " ";
+        fout << 0 << endl;
+      }
+    }
+  }
+  fout.close();
+  
+  fout.open(prefix+".compo");
+  fout.setf(ios::scientific);
+  fout.precision(10);
+  for(size_t m=0;m<n_T2;m++) {
+    for(size_t k=0;k<n_Ye2;k++) {
+      for(size_t j=0;j<n_nB2;j++) {
+        
+        vector<size_t> ix={j,k,m};
+        
+        fout << m << " " << j << " " << k << " ";
+        
+        fout << 0 << " ";
+        
+        // pairs (neutrons and protons)
+        fout << 2 << " ";
+        fout << 12 << " " << tg_Xn.get(ix) << " ";
+        fout << 13 << " " << tg_Xp.get(ix) << " ";
+
+        // quartets (alphas and heavy nuclei)
+        fout << 6 << " ";
+        fout << 1004002 << " " << 4 << " " << 2 << " "
+              << tg_Xalpha.get(ix) << " ";
+        fout << 1002001 << " " << 2 << " " << 1 << " "
+              << tg_Xd.get(ix) << " ";
+        fout << 1003001 << " " << 3 << " " << 1 << " "
+              << tg_Xt.get(ix) << " ";
+        fout << 1003002 << " " << 3 << " " << 2 << " "
+              << tg_XHe3.get(ix) << " ";
+        fout << 1004003 << " " << 4 << " " << 3 << " "
+              << tg_XLi4.get(ix) << " ";
+        fout << 1000000+((int)tg_A.get(ix)*1000)+
+          ((int)tg_Z.get(ix))
+              << " " << tg_A.get(ix) << " " << tg_Z.get(ix) << " "
+              << tg_Xnuclei.get(ix) << endl;
+      }
+    }
+  }
+  fout.close();
+  
+  if (verbose>0) {
+    std::cout << "Done in eos_sn_compose::save_compose()."
+              << std::endl;
+  }
+  
+  return 0;
+}
+
 void eos_nuclei::setup_cli_nuclei(o2scl::cli &cl) {
   
   eos::setup_cli(cl,false);
   
-  static const int nopt=27;
+  static const int nopt=28;
 
   o2scl::comm_option_s options[nopt]=
     {{0,"eos-deriv","",0,0,"","",
@@ -9879,7 +10002,11 @@ void eos_nuclei::setup_cli_nuclei(o2scl::cli &cl) {
      {0,"select-high-T","",1,1,"","",
       new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::select_high_T),o2scl::cli::comm_option_both,
-      1,"","eos_nuclei","select_high_T","doc/xml/classeos__nuclei.xml"}
+      1,"","eos_nuclei","select_high_T","doc/xml/classeos__nuclei.xml"},
+     {0,"save-compose","",1,1,"","",
+      new o2scl::comm_option_mfptr<eos_nuclei>
+      (this,&eos_nuclei::save_compose),o2scl::cli::comm_option_both,
+      1,"","eos_nuclei","save_compose","doc/xml/classeos__nuclei.xml"}
     };
 
   cl.doc_o2_file="data/eos_nuclei_docs.o2";
