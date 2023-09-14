@@ -1780,6 +1780,7 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
           (tg_mun.get(ix)/hc_mev_fm+neutron.m)*nn2+
           (tg_mup.get(ix)/hc_mev_fm+proton.m)*np2+
           tg_mue.get(ix)*np2/hc_mev_fm;
+        
         if (cs2_verbose>0) {
           cout << endl;
           cout << "nB,Ye,T[MeV],fr,en: " << nB << " " << Ye << " "
@@ -1838,7 +1839,7 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
           }
         }
         
-        if (cs_sq>1.0 || !std::isfinite(cs_sq)) {
+        if (cs_sq<0.0 || cs_sq>1.0 || !std::isfinite(cs_sq)) {
           //cout << tg_mun.get(ix) << " " << neutron.m << " "
           //<< electron.mu << " " << electron.n << endl;
           cout << "Unphysical cs2: nB,Ye,T[MeV],cs2,cs2_hom:\n  "

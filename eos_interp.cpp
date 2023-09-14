@@ -83,8 +83,8 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
           size_t i_fix=i, j_fix=j, k_fix=k;
           cout << "Found point to fix at (" << i << "," << j << ","
                << k << ") = (" << nB_grid2[i] << ","
-               << Ye_grid2[j] << "," << T_grid2[k] << ") "
-               << ike.tgp_cs2.get(ix) << " " << dPdnB << endl;
+               << Ye_grid2[j] << "," << T_grid2[k] << ")\n  cs2: "
+               << ike.tgp_cs2.get(ix) << " dPdnB: " << dPdnB << endl;
 
           interp_internal(i_fix,j_fix,k_fix,window,ike);
 
@@ -1149,6 +1149,11 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
     double dmun_dnB=f_nnnn*(1.0-Ye)+f_nnnp*Ye;
     double dmupmue_dnB=f_nnnp*(1.0-Ye)+f_npnp*Ye;
     
+    double dmun_dYe=nB*(f_nnnp-f_nnnn);
+    double dmupmue_dYe=nB*(f_npnp-f_nnnp);
+    double ds_dnB=-f_nnT*(1.0-Ye)-f_npT*Ye;
+    double ds_dYe=nB*(f_nnT-f_npT);
+    
     if (addl_verbose>=2 && index[0]>0 && index[0]<nB_grid.size()-1) {
       std::cout << "  dmun_dnB,dmupmue_dnB,dmun_dnB_intp,"
                 << "dmupmue_dnB_intp,dmun_dnB_intp2,dmupmue_dnB_intp2:\n  "
@@ -1177,6 +1182,13 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
       cout.unsetf(ios::showpos);
     }
 
+    if (true) {
+      double expr1=nB*nB*dmun_dnB-nB*nB*ds_dnB*ds_dnB/f_TT+
+        nB*Ye*(1.0-Ye)*dmun_dYe+nB*Ye*Ye*dmupmue_dYe;
+      double expr2=-nB*ds_dnB/f_TT;
+      cs_sq=(expr1-2.0*en*expr2-en*en/f_TT)/den;
+    }
+    
     if (dPdnB<=0.0) {
       if (addl_verbose>=1) {
         cout << "Return failure for dPdnB<=0.0." << endl;
