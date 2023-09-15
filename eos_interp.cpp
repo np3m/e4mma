@@ -86,7 +86,11 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
                << Ye_grid2[j] << "," << T_grid2[k] << ")\n  cs2: "
                << ike.tgp_cs2.get(ix) << " dPdnB: " << dPdnB << endl;
 
-          interp_internal(i_fix,j_fix,k_fix,window,ike);
+          int ii_ret=interp_internal(i_fix,j_fix,k_fix,window,ike);
+          if (ii_ret!=0) {
+            cerr << "Interpolation failed." << endl;
+            O2SCL_ERR("Interpolation failed.",o2scl::exc_efailed);
+          }
 
           std::vector<std::string> sv2;
           eos_deriv(sv2,itive_com);

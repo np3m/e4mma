@@ -712,7 +712,9 @@ public:
    */
   bool old_ns_fit;
 
-  /** \brief Verbose parameter (default 0)
+  /** \brief Generic verbosity parameter (default 0)
+
+      See also \c cs2_verbose and \c function_verbose .
    */
   int verbose;
 

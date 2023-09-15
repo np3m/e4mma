@@ -1184,7 +1184,9 @@ int eos_nuclei::add_eg(std::vector<std::string> &sv,
       }
       
     }
-    cout << "add_eg(): " << i+1 << "/" << n_nB2 << endl;
+    if (verbose>0) {
+      cout << "add_eg(): " << i+1 << "/" << n_nB2 << endl;
+    }
   }
 
   with_leptons=true;
