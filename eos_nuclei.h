@@ -840,6 +840,15 @@ public:
   */
   int eg_table(std::vector<std::string> &sv, bool itive_com);
 
+  /** \brief Construct a table in beta equilibrium
+
+      <filename>
+
+      Experimental.
+   */
+  int beta_table(std::vector<std::string> &sv,
+                 bool itive_com);
+  
   /** \brief Edit an EOS table
 
       <select func.> [tensor to modify] [value func.]

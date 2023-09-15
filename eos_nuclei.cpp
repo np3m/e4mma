@@ -1002,6 +1002,125 @@ int eos_nuclei::new_muons(size_t nv, const ubvector &x, ubvector &y,
 }
 
 
+int eos_nuclei::beta_table(std::vector<std::string> &sv,
+                           bool itive_com) {
+
+  if (loaded==false || n_nB2==0 || n_Ye2==0 || n_T2==0) {
+    cerr << "No EOS loaded." << endl;
+    return 2;
+  }
+  
+  if (derivs_computed==false) {
+    cerr << "add_eg requires derivs_computed==true." << endl;
+    return 3;
+  }
+
+  // Allocate Ye tensor
+  tensor_grid<> tg_Ye;
+  size_t st[3]={n_nB2,1,n_T2};
+  vector<double> packed;
+  for(size_t i=0;i<n_nB2;i++) {
+    packed.push_back(nB_grid2[i]);
+  }
+  for(size_t i=0;i<1;i++) {
+    packed.push_back(0.0);
+  }
+  for(size_t i=0;i<n_T2;i++) {
+    packed.push_back(T_grid2[i]);
+  }
+  tg_Ye.resize(3,st);
+  tg_Ye.set_grid_packed(packed);
+  tg_Ye.set_all(0.0);
+  
+  for (size_t i=0;i<n_nB2;i++) {
+    for (size_t k=0;k<n_T2;k++) {
+
+      // Set up the "x" grid, extending Ye down to 0 and up to 1
+      vector<double> Ye_grid_ext, mu_hat(n_Ye2+2);
+      Ye_grid_ext.push_back(0.0);
+      for (size_t j=0;j<n_Ye2;j++) {
+        Ye_grid_ext.push_back(Ye_grid2[j]);
+      }
+      Ye_grid_ext.push_back(1.0);
+
+      // Set up the "y" grid
+      for (size_t j=0;j<n_Ye2;j++) {
+        vector<size_t> ix={i,j,k};
+        mu_hat[j+1]=tg_mun.get(ix)-tg_mup.get(ix)-tg_mue.get(ix);
+      }
+
+      // The Ye=0 edge
+      mu_hat[0]=mu_hat[1]-(mu_hat[2]-mu_hat[1])/
+        (Ye_grid2[1]-Ye_grid2[0])*Ye_grid2[0];
+      cout << 0.0 << " " << Ye_grid2[0] << " " << Ye_grid2[1] << endl;
+      cout << Ye_grid_ext[0] << " " << Ye_grid_ext[1] << " "
+           << Ye_grid_ext[2] << endl;
+      cout << mu_hat[0] << " " << mu_hat[1] << " " << mu_hat[2] << endl;
+
+      // The Ye=1 edge
+      mu_hat[n_Ye2+1]=mu_hat[n_Ye2]+(mu_hat[n_Ye2]-mu_hat[n_Ye2-1])/
+        (Ye_grid2[n_Ye2-1]-Ye_grid2[n_Ye2-2])*(1.0-Ye_grid2[n_Ye2-1]);
+      cout << Ye_grid2[n_Ye2-2] << " " << Ye_grid2[n_Ye2-1] << " "
+           << 1.0 << endl;
+      cout << Ye_grid_ext[n_Ye2-1] << " " << Ye_grid_ext[n_Ye2] << " "
+           << Ye_grid_ext[n_Ye2+1] << endl;
+      cout << mu_hat[n_Ye2-1] << " " << mu_hat[n_Ye2] << " "
+           << mu_hat[n_Ye2+1] << endl;
+
+      std::vector<double> locs;
+      vector_find_level(0.0,n_Ye2+2,Ye_grid_ext,mu_hat,locs);
+      double Ye_beta;
+      if (locs.size()==0) {
+        cerr << "No locations found." << endl;
+        exit(-1);
+      } else if (locs.size()>1) {
+        cerr << "Two locations found." << endl;
+        exit(-1);
+      } else {
+        vector<size_t> ix={i,0,k};
+        tg_Ye.get(ix)=locs[0];
+      }
+    }
+  }
+
+  for (size_t i=0;i<n_nB2;i++) {
+    for (size_t k=0;k<n_T2;k++) {
+      vector<size_t> ix={i,0,k};
+      vector<double> grid={nB_grid2[i],tg_Ye.get(ix),T_grid2[k]};
+      tg_F.get(ix)=tg_F.interp_linear(grid);
+      tg_E.get(ix)=tg_E.interp_linear(grid);
+      tg_P.get(ix)=tg_P.interp_linear(grid);
+      tg_S.get(ix)=tg_S.interp_linear(grid);
+      tg_Fint.get(ix)=tg_Fint.interp_linear(grid);
+      tg_Eint.get(ix)=tg_Eint.interp_linear(grid);
+      tg_Pint.get(ix)=tg_Pint.interp_linear(grid);
+      tg_Sint.get(ix)=tg_Sint.interp_linear(grid);
+      tg_mun.get(ix)=tg_mun.interp_linear(grid);
+      tg_mup.get(ix)=tg_mup.interp_linear(grid);
+      tg_mue.get(ix)=tg_mue.interp_linear(grid);
+      tg_A.get(ix)=tg_A.interp_linear(grid);
+      tg_Z.get(ix)=tg_Z.interp_linear(grid);
+      tg_Xn.get(ix)=tg_Xn.interp_linear(grid);
+      tg_Xp.get(ix)=tg_Xp.interp_linear(grid);
+      tg_Xalpha.get(ix)=tg_Xalpha.interp_linear(grid);
+      tg_Xnuclei.get(ix)=tg_Xnuclei.interp_linear(grid);
+      tg_Xd.get(ix)=tg_Xd.interp_linear(grid);
+      tg_Xt.get(ix)=tg_Xt.interp_linear(grid);
+      tg_XHe3.get(ix)=tg_XHe3.interp_linear(grid);
+      tg_XLi4.get(ix)=tg_XLi4.interp_linear(grid);
+    }
+  }
+  
+  ix_index i0(0);
+  ix_fixed i1(1,0);
+  ix_index i2(2);
+  std::vector<o2scl::index_spec> vix={i0,i1,i2};
+  
+  tg_F=grid_rearrange_and_copy<tensor_grid<>,double>(tg_F,vix);
+        
+  return 0;
+}
+
 int eos_nuclei::add_eg(std::vector<std::string> &sv,
 		       bool itive_com) {
 
