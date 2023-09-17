@@ -406,8 +406,15 @@ int eos::hrg_load(std::vector<std::string> &sv, bool itive_com) {
 
   std::string fn=sv[1];
 
+  cout << "Command hrg-load loading file: " << fn << endl;
+  
   ifstream fin;
   fin.open(fn.c_str());
+
+  if (!fin) {
+    cerr << "File load failed." << endl;
+    exit(-1);
+  }
   std::string stmp;
 
   for(size_t k=0;k<12;k++) fin >> stmp;
@@ -418,13 +425,13 @@ int eos::hrg_load(std::vector<std::string> &sv, bool itive_com) {
     p.id=dtemp;
     fin >> p.name >> p.mass >> p.mass_errp >> p.spin_deg >>
       p.baryon >> p.strangeness >> stmp >> stmp >> stmp >> p.charge;
-    //cout << "Read " << p.name << " " << p.mass << " " << p.charge << endl;
     getline(fin,stmp);
     p.mass_errm=p.mass_errp;
     p.width=0.0;
     p.width_errp=0.0;
     p.width_errm=0.0;
     part_db.push_back(p);
+    //cout << "name, mass: " << p.name << " " << p.mass << endl;
   }
   
   fin.close();
@@ -434,35 +441,40 @@ int eos::hrg_load(std::vector<std::string> &sv, bool itive_com) {
   int nferm=0;
   int nbos=0;
   for(size_t j=0;j<part_db.size();j++) {
-    // Skip the photon because it's a boson with two degrees of freedom
-    if (part_db[j].spin_deg%2==0 && part_db[j].id!=22) {
-      fermion f;
-      f.m=part_db[j].mass*1.0e3/hc_mev_fm;
-      f.g=part_db[j].spin_deg;
-      f.n=0.0;
-      f.ed=0.0;
-      f.en=0.0;
-      f.pr=0.0;
-      f.mu=0.0;
-      f.nu=0.0;
-      f.ms=0.0;
-      res_f.push_back(f);
-      nferm++;
-      //cout << j << " " << part_db[j].id << " "
-      //<< nferm << " " << f.m*hc_mev_fm << " " << f.g << endl;
-    } else {
-      boson b;
-      b.m=part_db[j].mass*1.0e3/hc_mev_fm;
-      b.g=part_db[j].spin_deg;
-      b.n=0.0;
-      b.ed=0.0;
-      b.en=0.0;
-      b.pr=0.0;
-      b.mu=0.0;
-      b.nu=0.0;
-      b.ms=0.0;
-      res_b.push_back(b);
-      nbos++;
+
+    // Skip the photon, nucleons, and antibaryons
+    
+    if (part_db[j].id!=22 && part_db[j].id!=2212 &&
+        part_db[j].baryon>=0) {
+      if (part_db[j].spin_deg%2==0) {
+        fermion f;
+        // The mass in the table is given in GeV, so we convert to 1/fm
+        f.m=part_db[j].mass*1.0e3/hc_mev_fm;
+        f.g=part_db[j].spin_deg;
+        f.n=0.0;
+        f.ed=0.0;
+        f.en=0.0;
+        f.pr=0.0;
+        f.mu=0.0;
+        f.nu=0.0;
+        f.ms=0.0;
+        res_f.push_back(f);
+        nferm++;
+      } else {
+        boson b;
+        // The mass in the table is given in GeV, so we convert to 1/fm
+        b.m=part_db[j].mass*1.0e3/hc_mev_fm;
+        b.g=part_db[j].spin_deg;
+        b.n=0.0;
+        b.ed=0.0;
+        b.en=0.0;
+        b.pr=0.0;
+        b.mu=0.0;
+        b.nu=0.0;
+        b.ms=0.0;
+        res_b.push_back(b);
+        nbos++;
+      }
     }
   }
 

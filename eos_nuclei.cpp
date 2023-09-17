@@ -65,9 +65,12 @@ eos_nuclei::eos_nuclei() {
   mh.ntrial=10000;
   mh.err_nonconv=false;
   mh.def_jac.err_nonconv=false;
-  // Note these two lines are different!
+  
+  // Note these two lines are different, one is the value in the
+  // solver itself, while the other is the user-specified parameter.
   mh.tol_rel=1.0e-6;
   mh_tol_rel=1.0e-6;
+  
   rbg.err_nonconv=false;
 
   baryons_only=true;
@@ -155,7 +158,8 @@ void eos_nuclei::compute_X(double nB, ubvector &X) {
   X.resize(6);
   
   if (nuclei.size()<6) {
-    O2SCL_ERR("Nuclei array not properly sized.",o2scl::exc_esanity);
+    O2SCL_ERR2("Nuclei array not properly sized in ",
+              "eos_nuclei::compute_X().",o2scl::exc_esanity);
   }
   
   nuc_alpha=&nuclei[0];
@@ -983,7 +987,10 @@ int eos_nuclei::maxwell(std::vector<std::string> &sv,
   
   return 0;
 }
-  
+
+/*
+// this is now replaced by elep.pair_density_eq()
+
 int eos_nuclei::new_muons(size_t nv, const ubvector &x, ubvector &y,
                           double nB, double Ye, double T,
                           map<string,double> &vdet, eos_sn_base &eso) {
@@ -1000,6 +1007,7 @@ int eos_nuclei::new_muons(size_t nv, const ubvector &x, ubvector &y,
   
   return 0;
 }
+*/
 
 
 int eos_nuclei::beta_table(std::vector<std::string> &sv,
@@ -1017,20 +1025,19 @@ int eos_nuclei::beta_table(std::vector<std::string> &sv,
 
   // Allocate Ye tensor
   tensor_grid<> tg_Ye;
-  size_t st[3]={n_nB2,1,n_T2};
+  size_t st[2]={n_nB2,n_T2};
   vector<double> packed;
   for(size_t i=0;i<n_nB2;i++) {
     packed.push_back(nB_grid2[i]);
   }
-  for(size_t i=0;i<1;i++) {
-    packed.push_back(0.0);
-  }
   for(size_t i=0;i<n_T2;i++) {
     packed.push_back(T_grid2[i]);
   }
-  tg_Ye.resize(3,st);
+  tg_Ye.resize(2,st);
   tg_Ye.set_grid_packed(packed);
   tg_Ye.set_all(0.0);
+
+  int fails=0;
   
   for (size_t i=0;i<n_nB2;i++) {
     for (size_t k=0;k<n_T2;k++) {
@@ -1052,78 +1059,158 @@ int eos_nuclei::beta_table(std::vector<std::string> &sv,
       // The Ye=0 edge
       mu_hat[0]=mu_hat[1]-(mu_hat[2]-mu_hat[1])/
         (Ye_grid2[1]-Ye_grid2[0])*Ye_grid2[0];
+      /*
       cout << 0.0 << " " << Ye_grid2[0] << " " << Ye_grid2[1] << endl;
       cout << Ye_grid_ext[0] << " " << Ye_grid_ext[1] << " "
            << Ye_grid_ext[2] << endl;
       cout << mu_hat[0] << " " << mu_hat[1] << " " << mu_hat[2] << endl;
+      */
 
       // The Ye=1 edge
       mu_hat[n_Ye2+1]=mu_hat[n_Ye2]+(mu_hat[n_Ye2]-mu_hat[n_Ye2-1])/
         (Ye_grid2[n_Ye2-1]-Ye_grid2[n_Ye2-2])*(1.0-Ye_grid2[n_Ye2-1]);
+      /*
       cout << Ye_grid2[n_Ye2-2] << " " << Ye_grid2[n_Ye2-1] << " "
            << 1.0 << endl;
       cout << Ye_grid_ext[n_Ye2-1] << " " << Ye_grid_ext[n_Ye2] << " "
            << Ye_grid_ext[n_Ye2+1] << endl;
       cout << mu_hat[n_Ye2-1] << " " << mu_hat[n_Ye2] << " "
            << mu_hat[n_Ye2+1] << endl;
+      */
 
       std::vector<double> locs;
       vector_find_level(0.0,n_Ye2+2,Ye_grid_ext,mu_hat,locs);
-      double Ye_beta;
+      //vector_out(cout,locs,true);
+      //exit(-1);
+      
+      vector<size_t> ix={i,k};
+      
       if (locs.size()==0) {
         cerr << "No locations found." << endl;
         exit(-1);
       } else if (locs.size()>1) {
-        cerr << "Two locations found." << endl;
-        exit(-1);
+        cerr << "More than one location found at "
+             << "nB: " << nB_grid2[i]
+             << " T: " << T_grid2[k] << " ";
+        vector_out(cout,locs,true);
+        tg_Ye.get(ix)=locs[0];
+        fails++;
       } else {
-        vector<size_t> ix={i,0,k};
         tg_Ye.get(ix)=locs[0];
       }
     }
   }
 
+  cout << "Command beta-table found "
+       << fails << " failures over " << n_nB2*n_T2 << " grid points." << endl;
+  
+  size_t n_arr=23;
+  // Construct a list of pointers to all of the tensor objects,
+  // except for tg_Ye, which doesn't need to be rearranged.
+  tensor_grid<> *arr[n_arr]={&tg_A,&tg_E,&tg_Eint,&tg_F,&tg_Fint,
+    &tg_P,&tg_Pint,&tg_S,&tg_Sint,&tg_XHe3,&tg_XLi4,&tg_Xalpha,
+    &tg_Xd,&tg_Xn,&tg_Xnuclei,&tg_Xp,&tg_Xt,&tg_Z,&tg_log_xn,
+    &tg_log_xp,&tg_mue,&tg_mun,&tg_mup};
+  std::string name_arr[n_arr]={"A","E","Eint","F","Fint",
+    "P","Pint","S","Sint","XHe3","XLi4","Xalpha",
+    "Xd","Xn","Xnuclei","Xp","Xt","Z","log_xn",
+    "log_xp","mue","mun","mup"};
+
+  // Fix the Ye grid
+  Ye_grid2.resize(1);
+  Ye_grid2[0]=0.0;
+
+  // Insert the beta-equilibrium value in the first Ye index
   for (size_t i=0;i<n_nB2;i++) {
     for (size_t k=0;k<n_T2;k++) {
       vector<size_t> ix={i,0,k};
       vector<double> grid={nB_grid2[i],tg_Ye.get(ix),T_grid2[k]};
-      tg_F.get(ix)=tg_F.interp_linear(grid);
-      tg_E.get(ix)=tg_E.interp_linear(grid);
-      tg_P.get(ix)=tg_P.interp_linear(grid);
-      tg_S.get(ix)=tg_S.interp_linear(grid);
-      tg_Fint.get(ix)=tg_Fint.interp_linear(grid);
-      tg_Eint.get(ix)=tg_Eint.interp_linear(grid);
-      tg_Pint.get(ix)=tg_Pint.interp_linear(grid);
-      tg_Sint.get(ix)=tg_Sint.interp_linear(grid);
-      tg_mun.get(ix)=tg_mun.interp_linear(grid);
-      tg_mup.get(ix)=tg_mup.interp_linear(grid);
-      tg_mue.get(ix)=tg_mue.interp_linear(grid);
-      tg_A.get(ix)=tg_A.interp_linear(grid);
-      tg_Z.get(ix)=tg_Z.interp_linear(grid);
-      tg_Xn.get(ix)=tg_Xn.interp_linear(grid);
-      tg_Xp.get(ix)=tg_Xp.interp_linear(grid);
-      tg_Xalpha.get(ix)=tg_Xalpha.interp_linear(grid);
-      tg_Xnuclei.get(ix)=tg_Xnuclei.interp_linear(grid);
-      tg_Xd.get(ix)=tg_Xd.interp_linear(grid);
-      tg_Xt.get(ix)=tg_Xt.interp_linear(grid);
-      tg_XHe3.get(ix)=tg_XHe3.interp_linear(grid);
-      tg_XLi4.get(ix)=tg_XLi4.interp_linear(grid);
+      for(size_t i_arr=0;i_arr<n_arr;i_arr++) {
+        arr[i_arr]->get(ix)=arr[i_arr]->interp_linear(grid);
+      }
     }
   }
-  
+
+  // Construct the index specification
   ix_index i0(0);
   ix_fixed i1(1,0);
   ix_index i2(2);
   std::vector<o2scl::index_spec> vix={i0,i1,i2};
   
-  tg_F=grid_rearrange_and_copy<tensor_grid<>,double>(tg_F,vix);
-        
+  for(size_t i_arr=0;i_arr<n_arr;i_arr++) {
+    // Set the first entry in the Ye grid to 0
+    arr[i_arr]->set_grid(1,0,0.0);
+    // Rearrange the tensor to have only 1 Ye index
+    *arr[i_arr]=grid_rearrange_and_copy<tensor_grid<>,double>
+      (*arr[i_arr],vix,1);
+  }
+
+  hdf_file hf;
+
+  std::string fname=sv[1];
+  wordexp_single_file(fname);
+  hf.open_or_create(fname);
+
+  hf.set_szt("n_nB",n_nB2);
+  hf.set_szt("n_T",n_T2);
+  hf.setd_vec("nB_grid",nB_grid2);
+  hf.setd_vec("T_grid",T_grid2);
+
+  hdf_output(hf,tg_log_xn,"log_xn");
+  hdf_output(hf,tg_log_xp,"log_xp");
+  hdf_output(hf,tg_Z,"Z");
+  hdf_output(hf,tg_A,"A");
+
+  hdf_output(hf,tg_Fint,"Fint");
+  hdf_output(hf,tg_Sint,"Sint");
+  hdf_output(hf,tg_Eint,"Eint");
+  hdf_output(hf,tg_Pint,"Pint");
+  
+  hdf_output(hf,tg_Xn,"Xn");
+  hdf_output(hf,tg_Xp,"Xp");
+  hdf_output(hf,tg_Xalpha,"Xalpha");
+  hdf_output(hf,tg_Xnuclei,"Xnuclei");
+  hdf_output(hf,tg_Xd,"Xd");
+  hdf_output(hf,tg_Xt,"Xt");
+  hdf_output(hf,tg_XHe3,"XHe3");
+  hdf_output(hf,tg_XLi4,"XLi4");
+
+  hdf_output(hf,tg_mun,"mun");
+  hdf_output(hf,tg_mup,"mup");
+  hdf_output(hf,tg_mue,"mue");
+
+  hdf_output(hf,tg_F,"F");
+  hdf_output(hf,tg_E,"E");
+  hdf_output(hf,tg_P,"P");
+  hdf_output(hf,tg_S,"S");
+
+  hdf_output(hf,tg_Ye,"Ye");
+
   return 0;
 }
 
 int eos_nuclei::add_eg(std::vector<std::string> &sv,
 		       bool itive_com) {
 
+  bool range_mode=false;
+  if (sv.size()>=7) range_mode=true;
+  
+  size_t ilo=0, ihi=n_nB2;
+  size_t jlo=0, jhi=n_Ye2;
+  size_t klo=0, khi=n_T2;
+  
+  if (range_mode) {
+    ilo=o2scl::stoszt(sv[1]);
+    ihi=o2scl::stoszt(sv[2]);
+    jlo=o2scl::stoszt(sv[3]);
+    jhi=o2scl::stoszt(sv[4]);
+    klo=o2scl::stoszt(sv[5]);
+    khi=o2scl::stoszt(sv[6]);
+    cout << "Function add_eg in range mode, from ("
+         << ilo << "," << jlo << "," << klo << ") to ("
+         << ihi << "," << jhi << "," << khi << ")." << endl;
+  }
+  
   if (loaded==false || n_nB2==0 || n_Ye2==0 || n_T2==0) {
     cerr << "No EOS loaded." << endl;
     return 2;
@@ -1181,10 +1268,10 @@ int eos_nuclei::add_eg(std::vector<std::string> &sv,
 
   map<std::string,double> vdet;
   
-  for (size_t i=0;i<n_nB2;i++) {
-    for (size_t j=0;j<n_Ye2;j++) {
-      double mue_last;
-      for (size_t k=0;k<n_T2;k++) {
+  for (size_t i=ilo;i<ihi;i++) {
+    for (size_t j=jlo;j<jhi;j++) {
+      double mue_last=0.0;
+      for (size_t k=klo;k<khi;k++) {
 	
 	thermo lep;
         double nB=nB_grid2[i];
@@ -1194,7 +1281,7 @@ int eos_nuclei::add_eg(std::vector<std::string> &sv,
         
         // Note that this function accepts the temperature in MeV
         // and the electron chemical potential is returned in 1/fm.
-        if (k==0) {
+        if (k==klo) {
           // For the lowest temperature grid point, give an initial
           // guess for the electron chemical potential
           vdet["mue"]=0.511/197.33;
@@ -1983,6 +2070,8 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
   cout << "dPdnB<0 count (type 2): " << dPdnB_negative_count << endl;
   cout << "P|S<0 count (type 1): " << PS_negative_count << endl;
   cout << "Total count: " << total_count << endl;
+  n_stability_fail=unstable_count+cs2_count+dPdnB_negative_count+
+    PS_negative_count;
   
   recompute=true;
   
@@ -2199,26 +2288,38 @@ void eos_nuclei::store_hrg(double mun, double mup,
   int iferm=0;
   int ibos=0;
   for(size_t j=0;j<part_db.size();j++) {
+    
     if (part_db[j].id==22) {
+
+      // Photon
       photon.massless_calc(T);
       vector<double> line={((double)22),0.0,2,
         photon.mu,photon.n,photon.ed,photon.pr,photon.en,
         ((double)part_db[j].baryon),((double)part_db[j].charge)};
       tab.line_of_data(line.size(),line);
       ibos++;
+      
     } else if (part_db[j].id==2212 && part_db[j].charge==1) {
+
+      // Proton (already computed)
       vector<double> line={((double)2212),neutron.m*hc_mev_fm,2,
         mun*hc_mev_fm,nn,0.0,0.0,0.0,
         ((double)part_db[j].baryon),((double)part_db[j].charge)};
       tab.line_of_data(line.size(),line);
       iferm++;
+      
     } else if (part_db[j].id==2212 && part_db[j].charge==0) {
+
+      // Neutron (already computed?)
       vector<double> line={((double)2212),neutron.m*hc_mev_fm,2,
         mun*hc_mev_fm,nn,0.0,0.0,0.0,
         ((double)part_db[j].baryon),((double)part_db[j].charge)};
       tab.line_of_data(line.size(),line);
       iferm++;
+      
     } else if (part_db[j].spin_deg%2==0) {
+
+      // Generic fermion
       vector<double> line={((double)part_db[j].id),
         res_f[iferm].m*hc_mev_fm,
         res_f[iferm].g,res_f[iferm].mu*hc_mev_fm,res_f[iferm].n,
@@ -2227,7 +2328,10 @@ void eos_nuclei::store_hrg(double mun, double mup,
         ((double)part_db[j].baryon),((double)part_db[j].charge)};
       tab.line_of_data(line.size(),line);
       iferm++;
+      
     } else {
+
+      // Generic boson
       vector<double> line={((double)part_db[j].id),
         res_b[ibos].m*hc_mev_fm,
         res_b[ibos].g,res_b[ibos].mu*hc_mev_fm,res_b[ibos].n,
@@ -2236,6 +2340,7 @@ void eos_nuclei::store_hrg(double mun, double mup,
         ((double)part_db[j].baryon),((double)part_db[j].charge)};
       tab.line_of_data(line.size(),line);
       ibos++;
+      
     }
   }
   
@@ -2478,60 +2583,92 @@ int eos_nuclei::solve_nuclei(size_t nv, const ubvector &x, ubvector &y,
     int iferm=0;
     int ibos=0;
     for(size_t j=0;j<part_db.size();j++) {
+
       if (part_db[j].id==2212 && part_db[j].charge==1) {
+        
+        // The proton
         if (iferm>=((int)res_f.size())) {
-          O2SCL_ERR("Indexing problem with fermions.",o2scl::exc_efailed);
+          O2SCL_ERR("Indexing problem with neutron 1.",o2scl::exc_efailed);
         }
         res_f[iferm]=proton;
         iferm++;
+        
       } else if (part_db[j].id==2212 && part_db[j].charge==0) {
+
+        // The neutron
         if (iferm>=((int)res_f.size())) {
-          O2SCL_ERR("Indexing problem with fermions.",o2scl::exc_efailed);
+          O2SCL_ERR("Indexing problem with proton 1.",o2scl::exc_efailed);
         }
         res_f[iferm]=neutron;
         iferm++;
+        
       } else if (part_db[j].id==22 && part_db[j].charge==0) {
+
+        // The photon
         if (ibos>=((int)res_b.size())) {
-          O2SCL_ERR("Indexing problem with bosons.",o2scl::exc_efailed);
+          O2SCL_ERR("Indexing problem with photon.",o2scl::exc_efailed);
         }
         photon.massless_calc(T);
         res_b[ibos]=photon;
         ibos++;
+        
       } else if (part_db[j].spin_deg%2==0) {
+
+        // Generic fermion
         if (iferm>=((int)res_f.size())) {
-          O2SCL_ERR("Indexing problem with fermions.",o2scl::exc_efailed);
+          O2SCL_ERR("Indexing problem with fermions 1.",o2scl::exc_efailed);
         }
         res_f[iferm].mu=part_db[j].baryon*(neutron.mu+neutron.m)+
           part_db[j].charge*(proton.mu+proton.m-neutron.mu-neutron.m);
-        relf.calc_mu(res_f[iferm],T);
+        relf.pair_mu(res_f[iferm],T);
+        
         if (j>700) {
           cout << j << " " << part_db[j].baryon << " "
                << part_db[j].charge << " "
                << res_f[iferm].mu << " " << res_f[iferm].n << endl;
         }
+        
         nB2+=part_db[j].baryon*res_f[iferm].n;
         Ye2+=part_db[j].charge*res_f[iferm].n;
         iferm++;
+        
+        if (!std::isfinite(nB2) ||
+            !std::isfinite(Ye2)) {
+          cout << j << " " << part_db[j].id << " "
+               << nB2 << " " << Ye2 << endl;
+          O2SCL_ERR("HRG problem fermion.",o2scl::exc_einval);
+        }
+      
       } else {
+
+        // Generic boson
         if (ibos>=((int)res_b.size())) {
-          O2SCL_ERR("Indexing problem with bosons.",o2scl::exc_efailed);
+          O2SCL_ERR("Indexing problem with bosons 1.",o2scl::exc_efailed);
         }
         res_b[ibos].mu=part_db[j].baryon*(neutron.mu+neutron.m)+
           part_db[j].charge*(proton.mu+proton.m-neutron.mu-neutron.m);
-        effb.calc_mu(res_b[ibos],T);
+        //effb.calc_mu(res_b[ibos],T);
+        relb.pair_mu(res_b[ibos],T);
+        
         nB2+=part_db[j].baryon*res_b[ibos].n;
         Ye2+=part_db[j].charge*res_b[ibos].n;
         ibos++;
+        
+        if (!std::isfinite(nB2) ||
+            !std::isfinite(Ye2)) {
+          cout << j << " " << part_db[j].id << " "
+               << nB2 << " " << Ye2 << endl;
+          O2SCL_ERR("HRG problem boson.",o2scl::exc_einval);
+        }
+      
       }
-      if (!std::isfinite(nB2) ||
-          !std::isfinite(Ye2)) {
-        cout << j << " " << part_db[j].id << " "
-             << nB2 << " " << Ye2 << endl;
-        O2SCL_ERR("HRG problem.",o2scl::exc_einval);
-      }
+      
     }
-    Ye2/=nB2;
 
+    // Ye2 stores the proton number, we now divide by the baryon number
+    // to get the proton fraction
+    Ye2/=nB2;
+    
     // I'm not 100% sure this is right
     nn_tilde+=nB2*(1.0-Ye2);
     np_tilde+=nB2*Ye2;
@@ -2541,7 +2678,7 @@ int eos_nuclei::solve_nuclei(size_t nv, const ubvector &x, ubvector &y,
          << nn_tilde << " " << np_tilde << endl;
     if (!std::isfinite(nn_tilde) ||
         !std::isfinite(np_tilde)) {
-      O2SCL_ERR("HRG problem.",o2scl::exc_einval);
+      O2SCL_ERR("HRG problem 2.",o2scl::exc_einval);
     }
     //char ch;
     //cin >> ch;
@@ -2551,10 +2688,11 @@ int eos_nuclei::solve_nuclei(size_t nv, const ubvector &x, ubvector &y,
   double Ymu=0.0;
   
   if (include_muons) {
-    
+
     eos_sn_base eso;
     eso.include_muons=true;
     thermo lep;
+    
     eso.compute_eg_point(nB,Ye,T*hc_mev_fm,lep,vdet["mue"]);
     Ymu=eso.muon.n/nB;
     vdet["Ymu"]=Ymu;
@@ -3007,65 +3145,103 @@ int eos_nuclei::eos_fixed_ZN(double nB, double Ye, double T,
 int eos_nuclei::solve_hrg(size_t nv, const ubvector &x,
                           ubvector &y, double nB, double Ye, double T) {
 
-  double nB2, Ye2;
-
   neutron.n=x[0];
   proton.n=x[1];
 
-  thermo th;
+  thermo thx;
   if (neutron.n<0.0 || proton.n<0.0) {
     return 1;
   }
-  eosp_alt->calc_temp_e(neutron,proton,T,th);
-
-  double nn_total=neutron.n, np_total=proton.n;
+  
+  // Now compute the full EOS
+  map<std::string,double> vdet;
+  free_energy_density_detail(neutron,proton,T,thx,vdet);
+  
+  double nB2=neutron.n+proton.n;
+  double Ye2=proton.n;
     
   int iferm=0;
   int ibos=0;
+  
   for(size_t j=0;j<part_db.size();j++) {
-    if (part_db[j].id==2212 && part_db[j].charge==1) {
-      res_f[iferm]=proton;
-      iferm++;
-    } else if (part_db[j].id==2212 && part_db[j].charge==0) {
-      res_f[iferm]=neutron;
-      iferm++;
-    } else if (part_db[j].spin_deg%2==0) {
+
+    // Skip the photon, nucleons, and antibaryons
+    
+    if (part_db[j].id!=22 && part_db[j].id!=2212 &&
+        part_db[j].baryon>=0) {
+      
+      if (part_db[j].spin_deg%2==0) {
+
+      // Generic fermion
+      if (iferm>=((int)res_f.size())) {
+        cout << "iferm, res_f.size(): " << iferm << " " << res_f.size() << endl;
+        cout << "part name: " << j << " " << part_db[j].name << endl;
+        O2SCL_ERR("Indexing problem with fermions 2.",o2scl::exc_efailed);
+      }
+
+      res_f[iferm].non_interacting=true;
+      res_f[iferm].inc_rest_mass=true;
+      res_f[iferm].m=part_db[j].mass*1.0e3/hc_mev_fm;
+      res_f[iferm].g=part_db[j].spin_deg;
       res_f[iferm].mu=part_db[j].baryon*(neutron.mu+neutron.m)+
         part_db[j].charge*(proton.mu+proton.m-neutron.mu-neutron.m);
-      relf.calc_mu(res_f[iferm],T);
-      //nB2+=
-      //Ye2+=part_db[j].charge*res_f[iferm].n;
+      relf.pair_mu(res_f[iferm],T);
+      
+      nB2+=part_db[j].baryon*res_f[iferm].n;
+      Ye2+=part_db[j].charge*res_f[iferm].n;
+      
       iferm++;
+      
     } else {
+
+      // Generic boson
+      if (ibos>=((int)res_b.size())) {
+        cout << "ibos, res_f.size(): " << ibos << " " << res_b.size() << endl;
+        cout << "part name: " << j << " " << part_db[j].name << endl;
+        O2SCL_ERR("Indexing problem with bosons 2.",o2scl::exc_efailed);
+      }
+      res_b[ibos].non_interacting=true;
+      res_b[ibos].inc_rest_mass=true;
+      res_b[ibos].m=part_db[j].mass*1.0e3/hc_mev_fm;
+      res_b[ibos].g=part_db[j].spin_deg;
       res_b[ibos].mu=part_db[j].baryon*(neutron.mu+neutron.m)+
         part_db[j].charge*(proton.mu+proton.m-neutron.mu-neutron.m);
-      effb.calc_mu(res_b[ibos],T);
-      //nB2+=part_db[j].baryon*res_b[ibos].n;
-      //Ye2+=part_db[j].charge*res_b[ibos].n;
+
+      if (res_b[ibos].mu>=res_b[ibos].m) {
+        cout << "Chemical potential is larger than or equal to mass." << endl;
+        cout << "mu,m: " << res_b[ibos].mu << " " << res_b[ibos].m << endl;
+        cout << "name: " << part_db[j].name << endl;
+        exit(-1);
+      }
+      
+      //effb.calc_mu(res_b[ibos],T);
+      relb.pair_mu(res_b[ibos],T);
+      
+      nB2+=part_db[j].baryon*res_b[ibos].n;
+      Ye2+=part_db[j].charge*res_b[ibos].n;
+      
       ibos++;
+      }
     }
   }
+    
+  // Ye2 stores the proton number, we now divide by the baryon number
+  // to get the proton fraction
   Ye2/=nB2;
   
-  // I'm not 100% sure this is right
-  //nn_tilde+=nB2*(1.0-Ye2);
-  //np_tilde+=nB2*Ye2;
-  
-  nB2=0.0;
-  Ye2=0.0;
-  //nB2=neutron.n+proton.n+delta_pp.n;
-  //Ye2=(proton.n-pi_minus.n+pi_plus.n)/nB2;
-
   y[0]=(nB2-nB)/nB;
   y[1]=(Ye2-Ye)/Ye;
 
   /*
-    cout << "HRG: " << nB2 << " " << Ye2 << " "
-    << nB << " " << Ye << " "
-    << neutron.n << " " << proton.n << " "
-    << pi_minus.n << " " << pi_plus.n << " " << delta_pp.n << endl;
+  cout << "HRG: " << nB2 << " " << Ye2 << " "
+       << nB << " " << Ye << " "
+       << neutron.n << " " << proton.n << " "
+       << pi_minus.n << " " << pi_plus.n << " " << delta_pp.n << endl;
   */
-
+  cout << "HRG: " << x[0] << " " << x[1] << " " << y[0] << " "
+       << y[1] << " " << neutron.n+proton.n << " "
+       << nB2 << " " << nB << endl;
+  
   return 0;
 }
 
@@ -3077,39 +3253,52 @@ int eos_nuclei::nuc_matter(double nB, double Ye, double T,
 			   int &NmZ_min, int &NmZ_max,
 			   map<string,double> &vdet) {
 
-  if (include_muons) {
+  if (inc_hrg) {
+
+    // Whether or not there are muons, we can use solve_hrg() to
+    // determine the charge of strongly-interacting particles.
     
-    mm_funct nm_func=std::bind
-      (std::mem_fn<int(size_t,const ubvector &,ubvector&,double,double,
-                       double,map<string,double> &)>
-       (&eos_nuclei::nuc_matter_muons),this,std::placeholders::_1,
-       std::placeholders::_2,std::placeholders::_3,nB,Ye,T,
-       std::ref(vdet));
+    mm_funct hrg_func=std::bind
+      (std::mem_fn<int(size_t, const ubvector &,
+                       ubvector &, double, double, double)>
+       (&eos_nuclei::solve_hrg),this,std::placeholders::_1,
+       std::placeholders::_2,std::placeholders::_3,nB,Ye,T);
     
     ubvector x(2), y(2);
     
-    x[0]=pow(10.0,log_xn)*nB;
-    x[1]=pow(10.0,log_xp)*nB;
+    x[0]=nB*(1.0-Ye);
+    x[1]=nB*Ye;
 
-    int mret=mh.msolve(2,x,nm_func);
-    if (mret!=0) {
-      O2SCL_ERR("nuc matter muons failed.",o2scl::exc_einval);
+    int ret=mh.msolve(2,x,hrg_func);
+    if (ret!=0) {
+      mh.verbose=1;
+      ret=mh.msolve(2,x,hrg_func);
+      if (ret!=0) {
+        O2SCL_ERR("HRG solver failed in nuc_matter().",
+                  o2scl::exc_einval);
+      }
     }
 
-    // Ensure the last function evaluation stores the correct values
-    // in 'vdet':
-    nm_func(2,x,y);
-    
     neutron.n=x[0];
     proton.n=x[1];
     
   } else {
     
+    // If there's no HRG but there are muons, then the charge
+    // density is just the proton density, so we can use
+    // the eos_leptons object.
+    
     neutron.n=nB*(1.0-Ye);
     proton.n=nB*Ye;
     
-  }    
-  
+    // Now compute the full EOS
+    free_energy_density_detail(neutron,proton,T,thx,vdet);
+    
+    mun_full=neutron.mu;
+    mup_full=proton.mu;
+    
+  }
+    
   log_xn=log10(neutron.n/nB);
   log_xp=log10(proton.n/nB);
   
@@ -3138,54 +3327,34 @@ int eos_nuclei::nuc_matter(double nB, double Ye, double T,
     nuclei[i].n=0.0;
   }
 
-  if (inc_hrg) {
-
-    mm_funct hrg_func=std::bind
-      (std::mem_fn<int(size_t,const ubvector &,ubvector&,double,double,
-                       double)>
-       (&eos_nuclei::solve_hrg),this,std::placeholders::_1,
-       std::placeholders::_2,std::placeholders::_3,nB,Ye,T);
-
-    ubvector x(2), y(2);
-    
-    x[0]=nB*(1.0-Ye);
-    x[1]=nB*Ye;
-
-    mh.verbose=2;
-    mh.msolve(2,x,hrg_func);
-    
-  } else {
-    
-    // Now compute the full EOS
-    double f1, f2, f3, f4;
-    free_energy_density_detail(neutron,proton,T,thx,vdet);
-    
-    mun_full=neutron.mu;
-    mup_full=proton.mu;
-    
-  }
-  
   return 0;
 }
 
-int eos_nuclei::nuc_matter_muons(size_t nv, const ubvector &x, ubvector &y,
-                                 double nB, double Ye, double T,
-                                 map<string,double> &vdet) {
-
-  neutron.n=x[0];
-  proton.n=x[1];
-  
-  eos_sn_base eso;
-  eso.include_muons=true;
-  thermo lep;
-  eso.compute_eg_point(nB,Ye,T*hc_mev_fm,lep,vdet["mue"]);
-
-  y[0]=(neutron.n+proton.n)/nB-1.0;
-  y[1]=(eso.electron.n+eso.muon.n-proton.n)/proton.n;
-  vdet["Ymu"]=eso.muon.n/nB;
-  
-  return 0;
-}
+/* 
+   AWS: 9/16/23: muons currently only supported in the mu_mu=mu_e limit,
+   so this is now handled by eos_leptons
+   
+   int eos_nuclei::nuc_matter_muons(size_t nv, const ubvector &x, ubvector &y,
+   double nB, double Ye, double T,
+   map<string,double> &vdet) {
+   
+   neutron.n=x[0];
+   proton.n=x[1];
+   
+   eos_sn_base eso;
+   eso.include_muons=true;
+   thermo lep;
+   eso.compute_eg_point(nB,Ye,T*hc_mev_fm,lep,vdet["mue"]);
+   
+   // Baryon number conservation
+   y[0]=(neutron.n+proton.n)/nB-1.0;
+   // Charge equilibrium
+   y[1]=(eso.electron.n+eso.muon.n-proton.n)/proton.n;
+   vdet["Ymu"]=eso.muon.n/nB;
+   
+   return 0;
+   }
+*/
 
 int eos_nuclei::eos_vary_dist
 (double nB, double Ye, double T, double &log_xn, double &log_xp,
@@ -3194,6 +3363,11 @@ int eos_nuclei::eos_vary_dist
  map<string,double> &vdet, bool dist_changed, bool no_nuclei) {
   
   int loc_verbose=function_verbose/1000%10;
+
+  if (inc_hrg) {
+    cout << "Setting no_nuclei to true while testing HRG." << endl;
+    no_nuclei=true;
+  }
   
   // We want homogeneous matter if we're above the saturation density
   // or if the 'no_nuclei' flag is true. 
@@ -5558,8 +5732,10 @@ int eos_nuclei::write_results(std::string fname) {
   hf.setd("alpha_em",o2scl_const::fine_structure_f<double>());
 
   if (with_leptons) {
+    hf.setd("m_elec",electron.m*hc_mev_fm);
     hdf_output(hf,tg_mue,"mue");
     if (include_muons) {
+      hf.setd("m_muon",muon.m*hc_mev_fm);
       hdf_output(hf,tg_Ymu,"Ymu");
     }
   }
@@ -5686,7 +5862,8 @@ int eos_nuclei::read_results(std::string fname) {
   hf.gets_vec_copy("oth_names",oth_names);
   hf.gets_vec_copy("oth_units",oth_units);
 
-  //
+  // The units check is commented out until all tables have a correct
+  // unit count
   if (oth_names.size()!=n_oth) {
     //oth_units.size()!=n_oth) {
     cerr << "Value of n_oth is not equal to size of oth_names or "
@@ -5755,6 +5932,10 @@ int eos_nuclei::read_results(std::string fname) {
   hf.get_szt("n_nB",n_nB2);
   if (verbose>2) cout << "Reading n_Ye." << endl;
   hf.get_szt("n_Ye",n_Ye2);
+  if (true) {
+    cout << "Ye: " << hf.find_object_by_name("n_Ye",type) << " "
+         << type << endl;
+  }
   if (verbose>2) cout << "Reading n_T." << endl;
   hf.get_szt("n_T",n_T2);
   if (n_nB2==0 || n_Ye2==0 || n_T2==0) {
@@ -5800,10 +5981,29 @@ int eos_nuclei::read_results(std::string fname) {
   if (itmp==1) with_leptons=true;
   else with_leptons=false;
   
+  if (with_leptons==false &&
+      hf.find_object_by_name("F",type)==0 && type=="tensor_grid" &&
+      hf.find_object_by_name("E",type)==0 && type=="tensor_grid" &&
+      hf.find_object_by_name("S",type)==0 && type=="tensor_grid" &&
+      hf.find_object_by_name("P",type)==0 && type=="tensor_grid") {
+    cout << "Found tensors F, E, P, and S, so automatically "
+         << "setting with_leptons to true." << endl;
+    with_leptons=true;
+  }
+  
   if (verbose>2) cout << "Reading derivs_computed." << endl;
   hf.geti_def("derivs_computed",0,itmp);
   if (itmp==1) derivs_computed=true;
   else derivs_computed=false;
+  
+  if (derivs_computed==false &&
+      hf.find_object_by_name("mun",type)==0 && type=="tensor_grid" &&
+      hf.find_object_by_name("mup",type)==0 && type=="tensor_grid" &&
+      hf.find_object_by_name("Pint",type)==0 && type=="tensor_grid") {
+    cout << "Found tensors mun, mup, and Pint, so automatically "
+         << "setting derivs_computed to true." << endl;
+    derivs_computed=true;
+  }
 
   if (with_leptons && !derivs_computed) {
     O2SCL_ERR("File indicates leptons but no derivatives.",
@@ -5820,6 +6020,13 @@ int eos_nuclei::read_results(std::string fname) {
   if (itmp==1) include_muons=true;
   else include_muons=false;
 
+  if (include_muons==false &&
+      hf.find_object_by_name("Ymu",type)==0 && type=="tensor_grid") {
+    cout << "Found tensor Ymu so automatically "
+         << "setting include_muons to true." << endl;
+    include_muons=true;
+  }
+
   if (verbose>2) cout << "Reading alg_mode." << endl;
   hf.geti_def("alg_mode",4,alg_mode);
 
@@ -5827,6 +6034,15 @@ int eos_nuclei::read_results(std::string fname) {
   hf.geti_def("rmf_fields",0,itmp);
   if (itmp==1) rmf_fields=true;
   else rmf_fields=false;
+
+  if (rmf_fields==false &&
+      hf.find_object_by_name("sigma",type)==0 && type=="tensor_grid" &&
+      hf.find_object_by_name("omega",type)==0 && type=="tensor_grid" &&
+      hf.find_object_by_name("rho",type)==0 && type=="tensor_grid") {
+    cout << "Found tensors, sigma, omega, and rho so automatically "
+         << "setting rmf_fields to true." << endl;
+    include_muons=true;
+  }
   
   // ----------------------------------------------------------------
   // Main data
@@ -5992,6 +6208,57 @@ int eos_nuclei::read_results(std::string fname) {
   // Detail
   
   if (include_detail) {
+    
+    if (hf.find_object_by_name("zn",type)==0 && type=="tensor_grid") {
+      if (verbose>2) cout << "Reading zn." << endl;
+      hdf_input(hf,tg_zn,"zn");
+    }
+    if (hf.find_object_by_name("zp",type)==0 && type=="tensor_grid") {
+      if (verbose>2) cout << "Reading zp." << endl;
+      hdf_input(hf,tg_zp,"zp");
+    }
+    if (hf.find_object_by_name("msn",type)==0 && type=="tensor_grid") {
+      if (verbose>2) cout << "Reading msn." << endl;
+      hdf_input(hf,tg_msn,"msn");
+    }
+    if (hf.find_object_by_name("msp",type)==0 && type=="tensor_grid") {
+      if (verbose>2) cout << "Reading msp." << endl;
+      hdf_input(hf,tg_msp,"msp");
+    }
+    if (hf.find_object_by_name("F1",type)==0 && type=="tensor_grid") {
+      if (verbose>2) cout << "Reading F1." << endl;
+      hdf_input(hf,tg_F1,"F1");
+    }
+    if (hf.find_object_by_name("F2",type)==0 && type=="tensor_grid") {
+      if (verbose>2) cout << "Reading F2." << endl;
+      hdf_input(hf,tg_F2,"F2");
+    }
+    if (hf.find_object_by_name("F3",type)==0 && type=="tensor_grid") {
+      if (verbose>2) cout << "Reading F3." << endl;
+      hdf_input(hf,tg_F3,"F3");
+    }
+    if (hf.find_object_by_name("F4",type)==0 && type=="tensor_grid") {
+      if (verbose>2) cout << "Reading F4." << endl;
+      hdf_input(hf,tg_F4,"F4");
+    }
+    if (hf.find_object_by_name("Un",type)==0 && type=="tensor_grid") {
+      if (verbose>2) cout << "Reading Un." << endl;
+      hdf_input(hf,tg_Un,"Un");
+    }
+    if (hf.find_object_by_name("Up",type)==0 && type=="tensor_grid") {
+      if (verbose>2) cout << "Reading Up." << endl;
+      hdf_input(hf,tg_Up,"Up");
+    }
+    if (hf.find_object_by_name("g",type)==0 && type=="tensor_grid") {
+      if (verbose>2) cout << "Reading g." << endl;
+      hdf_input(hf,tg_g,"g");
+    }
+    if (hf.find_object_by_name("dgdT",type)==0 && type=="tensor_grid") {
+      if (verbose>2) cout << "Reading dgdT." << endl;
+      hdf_input(hf,tg_dgdT,"dgdT");
+    }
+
+    /*
     if (verbose>2) cout << "Reading zn." << endl;
     hdf_input(hf,tg_zn,"zn");
     if (verbose>2) cout << "Reading zp." << endl;
@@ -6016,6 +6283,7 @@ int eos_nuclei::read_results(std::string fname) {
     hdf_input(hf,tg_g,"g");
     if (verbose>2) cout << "Reading dgdT." << endl;
     hdf_input(hf,tg_dgdT,"dgdT");
+    */
   }
   
   hf.close();
@@ -10018,7 +10286,7 @@ void eos_nuclei::setup_cli_nuclei(o2scl::cli &cl) {
   
   eos::setup_cli(cl,false);
   
-  static const int nopt=28;
+  static const int nopt=29;
 
   o2scl::comm_option_s options[nopt]=
     {{0,"eos-deriv","",0,0,"","",
@@ -10101,6 +10369,10 @@ void eos_nuclei::setup_cli_nuclei(o2scl::cli &cl) {
       new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::mcarlo_beta),o2scl::cli::comm_option_both,
       1,"","eos_nuclei","mcarlo_beta","doc/xml/classeos__nuclei.xml"},
+     {0,"beta-table","",1,1,"","",
+      new o2scl::comm_option_mfptr<eos_nuclei>
+      (this,&eos_nuclei::beta_table),o2scl::cli::comm_option_both,
+      1,"","eos_nuclei","beta_table","doc/xml/classeos__nuclei.xml"},
      {0,"mcarlo-neutron","",1,2,"","",
       new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::mcarlo_neutron),o2scl::cli::comm_option_both,

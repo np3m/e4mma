@@ -245,7 +245,12 @@ public:
   
  protected:
 
+  /** \brief Process the grid specification strings and store
+      the values in the arrays
+   */
   int process_grid_spec();
+
+public:
   
   /// \name Grid specification
   //@{
@@ -257,6 +262,8 @@ public:
   std::vector<double> Ye_grid2;
   std::vector<double> T_grid2;
   std::vector<double> S_grid2;
+  
+ protected:
   
   /** \brief The function for default baryon density grid. 
       
@@ -584,11 +591,15 @@ public:
    */
   o2scl::boson photon;
 
+public:
+  
   /// Neutron
   o2scl::fermion neutron;
 
   /// Proton
   o2scl::fermion proton;
+
+protected:
 
   /// Neutron for chiral part
   o2scl::fermion n_chiral;

@@ -139,8 +139,9 @@ public:
   o2scl::tensor_grid<> *tgp_mue;
   o2scl::tensor_grid<> *tgp_Fint;
   o2scl::tensor_grid<> *tgp_Sint;
-  o2scl::tensor_grid<> tgp_cs2;
-  o2scl::tensor_grid<> tgp_dPdnB;
+  o2scl::tensor_grid<> *tgp_cs2;
+  o2scl::tensor_grid<> *tgp_Fint_old;
+  o2scl::tensor_grid<> *tgp_F_old;
   //@}
 
   /// Neutron mass
@@ -154,8 +155,11 @@ public:
   /// If true, interpolate Fint, otherwise, interpolate F
   bool interp_Fint;
 
-  /// Desc
+  /// Additional verbosity for \ref addl_const()
   int addl_verbose;
+
+  /// Pointer to the eos_nuclei class
+  void *enp;
   
   interpm_krige_eos() {
     elep.include_photons=true;
@@ -166,18 +170,7 @@ public:
   /** \brief Set the interpolator given the specified EOS
       objects
    */
-  virtual void set(std::vector<double> &nB_grid2,
-                   std::vector<double> &Ye_grid2,
-                   std::vector<double> &T_grid2,
-                   o2scl::tensor_grid<> &tg_F,
-                   o2scl::tensor_grid<> &tg_P,
-                   o2scl::tensor_grid<> &tg_S,
-                   o2scl::tensor_grid<> &tg_mun,
-                   o2scl::tensor_grid<> &tg_mup,
-                   o2scl::tensor_grid<> &tg_mue,
-                   o2scl::tensor_grid<> &tg_Fint,
-                   o2scl::tensor_grid<> &tg_Sint,
-                   double mn, double mpx);
+  virtual void set();
   
   /** \brief Additional constraints for the interpolation
    */
@@ -236,7 +229,8 @@ public:
   /// \name Stability tensors
   //@{
   o2scl::tensor_grid<> dmundYe, dmundnB, dmupdYe, dsdT, dsdnB, dsdYe;
-  o2scl::tensor_grid<> egv[4], tg_cs2, tg_cs2_hom;
+  o2scl::tensor_grid<> egv[4], tg_cs2, tg_cs2_hom, tg_Fint_old, tg_F_old;
+  size_t n_stability_fail;
   //@}
 
   /// Partition functions for the nuclei
@@ -254,6 +248,8 @@ public:
 
   /** \brief Solve for charge neutrality and fixed baryon fraction
       with a hadron resonance gas
+
+      This is used in \ref nuc_matter() .
    */
   int solve_hrg(size_t nv, const ubvector &x,
                 ubvector &y, double nB, double Ye, double T);
@@ -466,7 +462,9 @@ public:
       store_point().
   */
   int function_verbose;
-  
+
+  /** \brief Desc
+   */
   void store_hrg(double mun, double mup,
                  double nn, double np, double T,
                  o2scl::table_units<> &tab);
@@ -725,18 +723,21 @@ public:
 		 int &NmZ_min, int &NmZ_max,
 		 std::map<std::string,double> &vdet);
 
-  /** \brief Compute muons in nuclear matter
+  /* \brief Compute muons in nuclear matter
    */
-  int nuc_matter_muons(size_t nv, const ubvector &x, ubvector &y,
-                       double nB, double Ye, double T,
-                       std::map<std::string,double> &vdet);
+  //int nuc_matter_muons(size_t nv, const ubvector &x, ubvector &y,
+  //double nB, double Ye, double T,
+  //std::map<std::string,double> &vdet);
   
-  /** \brief Compute muons
+  // this is now replaced by elep.pair_density_eq()
+  /* \brief Compute muons
    */
+  /*
   int new_muons(size_t nv, const ubvector &x, ubvector &y,
                 double nB, double Ye, double T,
                 std::map<std::string,double> &vdet,
                 o2scl::eos_sn_base &eso);
+  */
   
   /** \brief Determine the EOS presuming a distribution of nuclei
       and optimizing the limits in A and \f$ N-Z \f$
@@ -760,11 +761,11 @@ public:
   int generate_table(std::vector<std::string> &sv, bool itive_com);
   //@}
 
-  /** \brief Save in COMPOSE format
+  /** \brief Save in CompOSE format
 
       <output file prefix>
 
-      Desc.
+      Save an EOS table in the CompOSE format
   */
   int save_compose(std::vector<std::string> &sv, bool itive_com);
   
@@ -844,10 +845,16 @@ public:
 
       <filename>
 
-      Experimental.
+      Experimental. From a previously created table (which has both
+      derivatives and leptons), construct a table over baryon density
+      and temperature at beta equilibrium and store in the file named
+      \c filename. Rank 2 tensors A, E, Eint, F, Fint, P, Pint, S,
+      Sint, XHe3, XLi4, Xalpha, Xd, Xn, Xnuclei, Xp, Xt, Z, log_xn,
+      log_xp, mue, mun, and mup are stored, as well as a tensor called
+      Ye which stores the electron fraction at that density and
+      temperature.
    */
-  int beta_table(std::vector<std::string> &sv,
-                 bool itive_com);
+  int beta_table(std::vector<std::string> &sv, bool itive_com);
   
   /** \brief Edit an EOS table
 
@@ -934,8 +941,9 @@ public:
       must be loaded and the full model must be specified (either with
       select-model or from the table).
       
-      If the additional argument "lg" is given, then the random points
-      are all selected at densities between 0.01 and 0.15 1/fm^3.
+      If the additional argument "lg" (for liquid-gas) is given, then
+      the random points are all selected at densities between 0.01 and
+      0.15 1/fm^3.
   */
   int test_random(std::vector<std::string> &sv, bool itive_com);
   //@}
