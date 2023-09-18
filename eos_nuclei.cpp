@@ -3159,7 +3159,7 @@ int eos_nuclei::solve_hrg(size_t nv, const ubvector &x,
   
   double nB2=neutron.n+proton.n;
   double Ye2=proton.n;
-    
+
   int iferm=0;
   int ibos=0;
   
@@ -3171,56 +3171,65 @@ int eos_nuclei::solve_hrg(size_t nv, const ubvector &x,
         part_db[j].baryon>=0) {
       
       if (part_db[j].spin_deg%2==0) {
+        
+        // Generic fermion
+        if (iferm>=((int)res_f.size())) {
+          cout << "iferm, res_f.size(): " << iferm << " " << res_f.size() << endl;
+          cout << "part name: " << j << " " << part_db[j].name << endl;
+          O2SCL_ERR("Indexing problem with fermions 2.",o2scl::exc_efailed);
+        }
+        
+        res_f[iferm].non_interacting=true;
+        res_f[iferm].inc_rest_mass=true;
+        res_f[iferm].m=part_db[j].mass*1.0e3/hc_mev_fm;
+        res_f[iferm].g=part_db[j].spin_deg;
+        res_f[iferm].mu=part_db[j].baryon*(neutron.mu+neutron.m)+
+          part_db[j].charge*(proton.mu+proton.m-neutron.mu-neutron.m);
 
-      // Generic fermion
-      if (iferm>=((int)res_f.size())) {
-        cout << "iferm, res_f.size(): " << iferm << " " << res_f.size() << endl;
-        cout << "part name: " << j << " " << part_db[j].name << endl;
-        O2SCL_ERR("Indexing problem with fermions 2.",o2scl::exc_efailed);
-      }
+        if (res_f[iferm].mu<0.0) {
+          cout << "X: " << endl;
+          cout << part_db[j].name << " " << part_db[j].baryon << " "
+               << neutron.mu+neutron.m << " " << part_db[j].charge << " "
+               << (proton.mu+proton.m-neutron.mu-neutron.m) << " "
+               << res_f[iferm].mu << endl;
+          exit(-1);
+        }
+        
+        relf.pair_mu(res_f[iferm],T);
+        
+        nB2+=part_db[j].baryon*res_f[iferm].n;
+        Ye2+=part_db[j].charge*res_f[iferm].n;
+        
+        iferm++;
+        
+      } else {
+        
+        // Generic boson
+        if (ibos>=((int)res_b.size())) {
+          cout << "ibos, res_f.size(): " << ibos << " " << res_b.size() << endl;
+          cout << "part name: " << j << " " << part_db[j].name << endl;
+          O2SCL_ERR("Indexing problem with bosons 2.",o2scl::exc_efailed);
+        }
+        res_b[ibos].non_interacting=true;
+        res_b[ibos].inc_rest_mass=true;
+        res_b[ibos].m=part_db[j].mass*1.0e3/hc_mev_fm;
+        res_b[ibos].g=part_db[j].spin_deg;
+        res_b[ibos].mu=part_db[j].baryon*(neutron.mu+neutron.m)+
+          part_db[j].charge*(proton.mu+proton.m-neutron.mu-neutron.m);
+        
+        if (res_b[ibos].mu>=res_b[ibos].m) {
+          cout << "Chemical potential of "
+               << part_db[j].name << " is larger than or equal to mass." << endl;
+          return 3;
+        }
+        
+        //effb.calc_mu(res_b[ibos],T);
+        relb.pair_mu(res_b[ibos],T);
+        
+        nB2+=part_db[j].baryon*res_b[ibos].n;
+        Ye2+=part_db[j].charge*res_b[ibos].n;
 
-      res_f[iferm].non_interacting=true;
-      res_f[iferm].inc_rest_mass=true;
-      res_f[iferm].m=part_db[j].mass*1.0e3/hc_mev_fm;
-      res_f[iferm].g=part_db[j].spin_deg;
-      res_f[iferm].mu=part_db[j].baryon*(neutron.mu+neutron.m)+
-        part_db[j].charge*(proton.mu+proton.m-neutron.mu-neutron.m);
-      relf.pair_mu(res_f[iferm],T);
-      
-      nB2+=part_db[j].baryon*res_f[iferm].n;
-      Ye2+=part_db[j].charge*res_f[iferm].n;
-      
-      iferm++;
-      
-    } else {
-
-      // Generic boson
-      if (ibos>=((int)res_b.size())) {
-        cout << "ibos, res_f.size(): " << ibos << " " << res_b.size() << endl;
-        cout << "part name: " << j << " " << part_db[j].name << endl;
-        O2SCL_ERR("Indexing problem with bosons 2.",o2scl::exc_efailed);
-      }
-      res_b[ibos].non_interacting=true;
-      res_b[ibos].inc_rest_mass=true;
-      res_b[ibos].m=part_db[j].mass*1.0e3/hc_mev_fm;
-      res_b[ibos].g=part_db[j].spin_deg;
-      res_b[ibos].mu=part_db[j].baryon*(neutron.mu+neutron.m)+
-        part_db[j].charge*(proton.mu+proton.m-neutron.mu-neutron.m);
-
-      if (res_b[ibos].mu>=res_b[ibos].m) {
-        cout << "Chemical potential is larger than or equal to mass." << endl;
-        cout << "mu,m: " << res_b[ibos].mu << " " << res_b[ibos].m << endl;
-        cout << "name: " << part_db[j].name << endl;
-        exit(-1);
-      }
-      
-      //effb.calc_mu(res_b[ibos],T);
-      relb.pair_mu(res_b[ibos],T);
-      
-      nB2+=part_db[j].baryon*res_b[ibos].n;
-      Ye2+=part_db[j].charge*res_b[ibos].n;
-      
-      ibos++;
+        ibos++;
       }
     }
   }
@@ -3232,6 +3241,10 @@ int eos_nuclei::solve_hrg(size_t nv, const ubvector &x,
   y[0]=(nB2-nB)/nB;
   y[1]=(Ye2-Ye)/Ye;
 
+  if (neutron.n>nB2*(1.0-Ye2) || proton.n>nB2*Ye2) {
+    return 2;
+  }
+    
   /*
   cout << "HRG: " << nB2 << " " << Ye2 << " "
        << nB << " " << Ye << " "
@@ -3266,8 +3279,8 @@ int eos_nuclei::nuc_matter(double nB, double Ye, double T,
     
     ubvector x(2), y(2);
     
-    x[0]=nB*(1.0-Ye);
-    x[1]=nB*Ye;
+    x[0]=nB*(1.0-Ye)/10.0;
+    x[1]=nB*Ye/10.0;
 
     int ret=mh.msolve(2,x,hrg_func);
     if (ret!=0) {
