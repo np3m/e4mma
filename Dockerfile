@@ -50,7 +50,7 @@ ENV HDF5_DIR=/usr/lib/x86_64-linux-gnu/hdf5/serial
 WORKDIR /opt
 RUN git clone https://github.com/awsteiner/o2scl && \
     cd o2scl && \
-    git checkout e7b62ca63047ae183b209755a77e51380ecd8780
+    git checkout dcf7262930a1253d9b654f39a8ae9ad886935ea8
 
 WORKDIR /opt/o2scl
 RUN autoreconf -i
@@ -69,7 +69,7 @@ FROM python:3.10 as o2sclpy
 WORKDIR /opt
 RUN git clone https://github.com/awsteiner/o2sclpy /opt/o2sclpy && \
     cd /opt/o2sclpy && \
-    git checkout 7125dd645f3f0bfd334e8f25a66e325dab571579 \
+    git checkout f3fe1b79af6b8a040e963e24313f5ded87baa2b2 \
     pip install .
 
 
@@ -80,7 +80,8 @@ WORKDIR /opt
 RUN git clone https://github.com/awsteiner/eos
 WORKDIR /opt/eos
 RUN git switch v2 && \
-    git checkout b524e8dd176b92f6ad6b2383b01ba882a9092537
+    git checkout 40d06b65bbc1f73c2bccab7d5e5e98ff686b1ee5
+    
 
 #COPY requirements.txt requirements.txt
 #RUN pip install -r requirements.txt
