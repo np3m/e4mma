@@ -1,13 +1,110 @@
 openapi: 3.0.0
 info:
   version: 1.0.0
-  title: output
+  title: UTK eos module
 paths:
   paths: "/output/output.yaml"
+
+paths:
+  /input/config.yaml:
+    put:
+      summary: Input parameters for utk module
+      description: >
+          possible functions to use for utk module
+      operationId: putInputParams
+      security: []
+      requestBody:
+        description: Input parameters
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Input_UTK'
+      responses:
+        '200':
+          description: Successful operation
+        '400':
+          description: Invalid input provided
+
+  /output/output.yaml:
+    get:
+      summary: Output of the utk EoS
+      description: >
+        fill
+      operationId: getFullOutput
+      security: []
+      requestBody:
+        description: Full output
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Output_UTK'
+      responses:
+        '200':
+          description: Successful operation
+        '500':
+          description: Run time error in calculation
+
+
 components:
   schemas:
+    Input_UTK:
+      title: Input parameters
+      description: Input parameters required to execute utk eos
+      type: array
+      items:
+        type: object
+        properties:
+          test_deriv:
+            $ref:
+          table_Ye:
+            $ref:
+          table_nB:
+            $ref:
+          table_full:
+            $ref:
+          vir_fit:
+            $ref:
+          eos_sn:
+            $ref:
+          mcarlo_data:
+            $ref:
+          point:
+            $ref:
+          random:
+            $ref:
+          pns_eos:
+            $ref:
+          select_model:
+            $ref:
+          test_eg:
+            $ref:
+          vir_comp:
+            $ref:
+          alt_model:
+            $ref:
+          hrg_load:
+            $ref:
+          verbose:
+            $ref:
+          old_ns_fit:
+            $ref:
+          ns_record:
+            $ref:
+          include_muons:
+            $ref:
+          select_cs2_test:
+            $ref:
+          test_ns_cs2:
+            $ref:
+          use_alt_eos:
+            $ref:
+          a_virial:
+            $ref:
+          b_virial:
+            $ref:
 
-    Observables:
+    Output_UTK:
       title: Physical observables
       description: Physical observables associated with a given EoS
       type: array
@@ -296,3 +393,4 @@ components:
       example: 1.0e-8
       minimum: 0
       maximum: .inf
+

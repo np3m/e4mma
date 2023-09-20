@@ -4,6 +4,7 @@ name:
   display_name: UTK-EOS
 authors:
   - Andrew W. Steiner
+  - Satyajit Roy
 command:
   - 'python3'
   - '/src/main.py'
@@ -14,10 +15,10 @@ image:
   source:
     url: "https://github.com/awsteiner/eos"
     git: "https://github.com/awsteiner/eos.git"
-    path: "/eos/Dockerfile"
+    path: "Dockerfile"
     targetRevision: "0.5.2"
 docs:
-  path: "docs/src"
+  path: "doc/"
 ## Labels must be unique across both inputs and outputs
 inputs:
   - label: config

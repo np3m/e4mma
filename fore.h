@@ -62,6 +62,10 @@ public:
 
   bool include_p_wave, const_after_data;
 
+  size_t n_nB, n_Ye, n_T;
+  bool con_exist;
+  o2scl::tensor_grid<> pi_con;
+
   // The integration methods
   // Fixed-order Gaussian quadrature of order 8-16
   o2scl::inte_gauss_cern<> fixed_quad;
@@ -94,7 +98,8 @@ public:
 
   // Sets up the interpolation vector and returns self energy for a given pion 
   // momentum through interpolation
-  funct self_energy_interp(vector<double> params, ubmatrix nuc_mod, double T);
+  void self_energy_interp(vector<double> params, ubmatrix nuc_mod, double T);
+  double se_func(double p);
   //---------------------------------------------------------------------------------------
   //---------------------------------------------------------------------------------------
   // Nucleon distribution function for a non-rel boson.
@@ -137,5 +142,5 @@ public:
 
   void load_pion();
 
-  void con_chk(double T, double n_B);
+  void con_chk();
 };          

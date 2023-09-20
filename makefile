@@ -23,7 +23,7 @@ help:
 LIBS = -L/usr/lib/x86_64-linux-gnu/hdf5/serial \
 	-L/usr/local/lib/python3.10/dist-packages/numpy/core/include \
 	-lo2scl -lhdf5 -lgsl \
-	-lreadline -lpython3.10
+	-lreadline -lpython3.10 
 FLIBS = -lgfortran
 # PLIBS = -L/usr/lib/x86_64-linux-gnu/ 
 LCXX = g++
@@ -126,17 +126,26 @@ neutrino/jacobi_rule.o: neutrino/jacobi_rule.cpp neutrino/jacobi_rule.hpp
 fore.o: fore.cpp fore.h
 	$(LMPI_CXX) $(LMPI_CFLAGS) -o fore.o -c fore.cpp 
 
+fore_nompi.o: fore.cpp fore.h
+	$(LCXX) $(LCFLAGS) -o fore_nompi.o -c fore.cpp 
+
+fore_test.o: fore_test.cpp fore.h
+	$(LMPI_CXX) $(LMPI_CFLAGS) -o fore_test.o -c fore_test.cpp
+
 eos_nuclei: eos.o main.o eos_nuclei.o fore.o eos_had_skyrme_ext.o eos_interp.o \
 		neutrino/Couplings.o neutrino/FluidState.o \
 		neutrino/FunctionIntegrator.o neutrino/Polarization.o \
 		neutrino/PolarizationNonRelv2Apr8.o neutrino/jacobi_rule.o \
 		eos_neutrino.o
-	$(LMPI_CXX) $(LMPI_CFLAGS) -o eos_nuclei eos.o main.o \
+	$(LMPI_CXX) $(LMPI_CFLAGS) -I/usr/local/include/yaml-cpp/ -o eos_nuclei eos.o main.o \
 		eos_nuclei.o fore.o eos_had_skyrme_ext.o eos_interp.o \
 		neutrino/Couplings.o neutrino/FluidState.o eos_neutrino.o \
 		neutrino/FunctionIntegrator.o neutrino/Polarization.o \
 		neutrino/PolarizationNonRelv2Apr8.o neutrino/jacobi_rule.o \
-		$(LIBS) -lreadline
+		$(LIBS) -lyaml-cpp
+
+fore_test: fore_test.o fore.o 
+	$(LMPI_CXX) $(LMPI_CFLAGS)-o fore_test fore_test.o fore.o $(LIBS)
 
 # ----------------------------------------------------------------
 # Version without MPI
@@ -475,20 +484,35 @@ mbnew:
 
 mbpi:
 	./eos_nuclei \
+	-set select_cs2_test 0 \
+		-select-model $(P_FIDUCIAL) \
+		-set a_virial 10 -set b_virial 10 \
+		-set extend_frdm 0 \
+		-set fd_A_max 600 -set max_ratio 7.0 \
+		-set fixed_dist_alg 1999 \
+		-set function_verbose 0 \
+		-set inc_hrg false \
+		-load data/fid_3_5_22.o2 \
+		-hrg-load ./pdg_uh_nonp.dat \
+		-set recompute 1 \
+		-point-nuclei 0.1 0.1 30 
+
+mbnuc:
+	./eos_nuclei \
 		-select-model $(P_FIDUCIAL) \
 		-set inc_hrg false \
 		-set no-nuclei true \
 		-load data/fid_3_5_22.o2 \
 		-hrg-load ./pdg_uh_nonp.dat \
 		-set recompute 1 \
-		-point-nuclei 0.1 0.4 30 
+		-solve-nuclei 0.1 0.4 30 
 
 mbmuses:
 	./eos_nuclei \
 		-select-model $(P_FIDUCIAL) \
 		-load data/fid_3_5_22.o2 \
 		-set recompute 1 \
-		-point-nuclei 0.1 0.4 30 
+		-muses 0.1 0.4 30 
 
 pascal: 
 	g++ -fopenmp pascal.cpp -o pascal 

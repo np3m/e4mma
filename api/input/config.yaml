@@ -1,0 +1,38 @@
+openapi: 3.0.0
+components:
+  schemas:
+    Configuration:
+      title: Configuration
+      description: Module configuration
+      type: object
+      properties:
+        param:
+          type: string
+          default: ""
+
+
+test_deriv:
+table_Ye:
+table_nB:
+table_full:
+vir_fit:
+eos_sn:
+mcarlo_data:
+point:
+random:
+pns_eos:
+select_model:
+test_eg:
+vir_comp:
+alt_model:
+hrg_load:
+
+verbose:
+old_ns_fit:
+ns_record:
+include_muons:
+select_cs2_test:
+test_ns_cs2:
+use_alt_eos:
+a_virial:
+b_virial:
