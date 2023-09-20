@@ -28,6 +28,7 @@ RUN apt-get update && \
         dvipng \
         texlive-latex-extra \
         cm-super \
+        libyaml-cpp-dev \
     && rm -rf /var/lib/apt/lists/*
 
 RUN pip install \
