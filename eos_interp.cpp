@@ -82,7 +82,7 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
         if (tg_cs2.get(ix)>1.0 ||
             tg_cs2.get(ix)<0.0 || 
             !std::isfinite(tg_cs2.get(ix)) || 
-            dPdnB<0.0) {
+            dPdnB<=0.0 || !std::isfinite(dPdnB)) {
           
           size_t i_fix=i, j_fix=j, k_fix=k;
           cout << "Found point to fix at (" << i << "," << j << ","
@@ -220,6 +220,10 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
   // Using the specified window, compute the list of points to fix,
   // and the list of calibration points
 
+  if (tg_cs2.get_rank()<3) {
+    O2SCL_ERR("No cs2 in interp_internal().",o2scl::exc_einval);
+  }
+  
   int iwindow=((int)window);
   for(int dnB=-iwindow;dnB<=iwindow;dnB++) {
     for(int dYe=-iwindow;dYe<=iwindow;dYe++) {
@@ -229,10 +233,31 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
             i_fix+dnB>=0 && i_fix+dnB<n_nB2 &&
             j_fix+dYe>=0 && j_fix+dYe<n_Ye2 &&
             k_fix+dT>=0 && k_fix+dT<n_T2) {
-          if (tg_cs2.get_rank()>=3 &&
-              (tg_cs2.get(index)>1.0 ||
-               !std::isfinite(tg_cs2.get(index)) ||
-               tg_cs2.get(index)<0.0)) {
+          
+          double dPdnB;
+          size_t i=((size_t)(((int)i_fix)+dnB));
+          size_t j=((size_t)(((int)j_fix)+dYe));
+          size_t k=((size_t)(((int)k_fix)+dT));
+          if (i>0 && i<nB_grid2.size()-1) {
+            vector<size_t> ixp1={i+1,j,k};
+            vector<size_t> ixm1={i-1,j,k};
+            dPdnB=(tg_P.get(ixp1)-tg_P.get(ixm1))/
+              (nB_grid2[i+1]-nB_grid2[i-1])/2;
+          } else if (i>0) {
+            vector<size_t> ixm1={i-1,j,k};
+            dPdnB=(tg_P.get(index)-tg_P.get(ixm1))/
+              (nB_grid2[i]-nB_grid2[i-1]);
+          } else {
+            vector<size_t> ixp1={i+1,j,k};
+            dPdnB=(tg_P.get(ixp1)-tg_P.get(index))/
+              (nB_grid2[i+1]-nB_grid2[i]);
+          }
+          
+          if (dPdnB<=0.0 ||
+              !std::isfinite(dPdnB) ||
+              tg_cs2.get(index)>1.0 ||
+              !std::isfinite(tg_cs2.get(index)) ||
+              tg_cs2.get(index)<0.0) {
             ike.fix_list.push_back(index[0]);
             ike.fix_list.push_back(index[1]);
             ike.fix_list.push_back(index[2]);
@@ -729,7 +754,7 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
       }
       
     }
-    
+
     size_t i_min, i_max, j_min, j_max, k_min, k_max;
     i_min=fix_list[0];
     i_max=fix_list[0];
@@ -758,7 +783,6 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
         k_max=fix_list[ifx+2];
       }
     }
-    /*
     for(size_t icx=3;icx<calib_list.size();icx+=3) {
       if (calib_list[icx]<i_min) {
         i_min=calib_list[icx];
@@ -779,7 +803,6 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
         k_max=calib_list[icx+2];
       }
     }
-    */
 
     // Expand by a factor of three if we're not at the boundary
     //for(size_t ii=0;ii<window;ii++) {
@@ -837,6 +860,87 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
       
     }    
     
+    for(size_t j=0;j<fix_list.size();j+=3) {
+      
+      vector<size_t> ix={fix_list[j],fix_list[j+1],
+        fix_list[j+2]};
+      
+      double dPdnB;
+      if (ix[0]>0 && ix[0]<nB_grid.size()-1) {
+        vector<size_t> ixp1={ix[0]+1,ix[1],ix[2]};
+        vector<size_t> ixm1={ix[0]-1,ix[1],ix[2]};
+        dPdnB=(tgp_P->get(ixp1)-tgp_P->get(ixm1))/
+          (nB_grid[ix[0]+1]-nB_grid[ix[0]-1])/2;
+      } else if (ix[0]>0) {
+        vector<size_t> ixm1={ix[0]-1,ix[1],ix[2]};
+        dPdnB=(tgp_P->get(ix)-tgp_P->get(ixm1))/
+          (nB_grid[ix[0]]-nB_grid[ix[0]-1]);
+      } else {
+        vector<size_t> ixp1={ix[0]+1,ix[1],ix[2]};
+        dPdnB=(tgp_P->get(ixp1)-tgp_P->get(ix))/
+          (nB_grid[ix[0]+1]-nB_grid[ix[0]]);
+      }
+      
+      if (tgp_cs2->get(ix)>1.0 ||
+          tgp_cs2->get(ix)<0.0 || 
+          !std::isfinite(tgp_cs2->get(ix)) || 
+          dPdnB<0.0 || !std::isfinite(dPdnB)) {
+        if (addl_verbose>=1) {
+          cout << "Return failure at fix point." << endl;
+        }
+        if (addl_verbose>=2) {
+          cout << endl;
+        }
+        return 1;
+      }
+      
+    }    
+    
+    size_t n_calib_fail=0;
+    
+    for(size_t j=0;j<calib_list.size();j+=3) {
+      
+      vector<size_t> ix={calib_list[j],calib_list[j+1],
+        calib_list[j+2]};
+
+      double dPdnB;
+      if (ix[0]>0 && ix[0]<nB_grid.size()-1) {
+        vector<size_t> ixp1={ix[0]+1,ix[1],ix[2]};
+        vector<size_t> ixm1={ix[0]-1,ix[1],ix[2]};
+        dPdnB=(tgp_P->get(ixp1)-tgp_P->get(ixm1))/
+          (nB_grid[ix[0]+1]-nB_grid[ix[0]-1])/2;
+      } else if (ix[0]>0) {
+        vector<size_t> ixm1={ix[0]-1,ix[1],ix[2]};
+        dPdnB=(tgp_P->get(ix)-tgp_P->get(ixm1))/
+          (nB_grid[ix[0]]-nB_grid[ix[0]-1]);
+      } else {
+        vector<size_t> ixp1={ix[0]+1,ix[1],ix[2]};
+        dPdnB=(tgp_P->get(ixp1)-tgp_P->get(ix))/
+          (nB_grid[ix[0]+1]-nB_grid[ix[0]]);
+      }
+      
+      if (tgp_cs2->get(ix)>1.0 ||
+          tgp_cs2->get(ix)<0.0 || 
+          !std::isfinite(tgp_cs2->get(ix)) || 
+          dPdnB<0.0 || !std::isfinite(dPdnB)) {
+        n_calib_fail++;
+      }
+      
+    }
+    
+    if (n_calib_fail>fix_list.size()/9) {
+      if (addl_verbose>=1) {
+        cout << n_calib_fail << " calibration failures and "
+             << fix_list.size()/3 << " points to fix." << endl;
+        cout << "Return failure." << endl;
+      }
+      if (addl_verbose>=2) {
+        cout << endl;
+      }
+      return 2;
+    }
+
+    /*
     if (enp2->n_stability_fail>0) {
       if (addl_verbose>=1) {
         cout << "Return failure." << endl;
@@ -846,6 +950,7 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
       }
       return 1;
     }
+    */
 
     cout << "Success." << endl;
     
