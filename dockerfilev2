@@ -27,7 +27,7 @@ RUN apt-get -y install libboost-all-dev libeigen3-dev
 RUN apt-get -y install cmake libopenblas-dev liblapack-dev libarpack2-dev
 RUN apt-get -y install libsuperlu-dev libarmadillo-dev libfftw3-dev
 # We need curl to test downloading EOSs for o2sclpy
-RUN apt-get -y install curl
+RUN apt-get -y install curl libyaml-cpp-dev 
 
 # --------------------------------------------------------------------------
 # Since we're enabling python extensions, we need to install python
@@ -48,7 +48,7 @@ RUN pip3 install scikit-learn tensorflow-cpu
 WORKDIR /opt
 RUN git clone https://github.com/awsteiner/o2scl
 WORKDIR /opt/o2scl
-RUN git checkout e7b62ca63047ae183b209755a77e51380ecd8780
+RUN git checkout dcf7262930a1253d9b654f39a8ae9ad886935ea8
 RUN autoreconf -i
 RUN LDFLAGS="-larmadillo -llapack -lblas -lncurses" CXXFLAGS="-O3 -DO2SCL_UBUNTU_HDF5 -DO2SCL_HDF5_PRE_1_12 -DO2SCL_REGEX -DO2SCL_HDF5_COMP -I/usr/include -I/usr/lib/x86_64-linux-gnu/hdf5/serial/include -I/usr/local/lib/python3.10/dist-packages/numpy/core/include" ./configure --enable-eigen --enable-armadillo --enable-openmp --enable-fftw --enable-python
 RUN make blank-doc
@@ -65,7 +65,7 @@ RUN acol -v
 WORKDIR /opt
 RUN git clone https://github.com/awsteiner/o2sclpy
 WORKDIR /opt/o2sclpy
-RUN git checkout 8394a94270873980641162a074b5a219136647d4
+RUN git checkout f3fe1b79af6b8a040e963e24313f5ded87baa2b2
 RUN pip3 install .
 
 # --------------------------------------------------------------------------
@@ -90,7 +90,7 @@ WORKDIR /opt
 RUN git clone https://github.com/awsteiner/eos
 WORKDIR /opt/eos
 RUN git switch v2
-RUN git checkout b524e8dd176b92f6ad6b2383b01ba882a9092537
+RUN git checkout 40d06b65bbc1f73c2bccab7d5e5e98ff686b1ee5
 RUN make -j 4  eos_nuclei
 
 

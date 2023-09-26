@@ -3533,10 +3533,11 @@ double eos_nuclei::solve_pion(double x, boson &b, fermion &n, fermion &p,
                               fermion &e, double T, double nB, thermo &thx, 
                               map<string,double> &vdet){
   p.n=x;
-  fr.verbose=0;
+  n.n=nB-x;
+  fr.verbose=2;
   free_energy_density_detail(n,p,T,thx,vdet);
   fr.calc_mu(b, n, p, T, nB);
-  cout << "solve pion: n_p, n_e, n_pi: " << x  << " " << e.n << " " << b.n << endl;
+  cout << "solve pion: n_p, n_n, n_e, n_pi: " << p.n  << " " << n.n << " " << e.n << " " << b.n << endl;
   return x-e.n-b.n;
 }
 
@@ -6993,7 +6994,7 @@ int eos_nuclei::muses(std::vector<std::string> &sv,
   double Ye=o2scl::function_to_double(sv[2]);
   _baseNode["Output_UTK"]["Y_e"] = Ye;
   double T=o2scl::function_to_double(sv[3])/hc_mev_fm;
-  _baseNode["Output_UTK"]["T"] = T;
+  _baseNode["Output_UTK"]["T"] = T*hc_mev_fm;
 
   double log_xn, log_xp;
   size_t nuc_Z1, nuc_N1;
