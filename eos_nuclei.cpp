@@ -3442,7 +3442,8 @@ int eos_nuclei::nuc_matter(double nB, double Ye, double T,
     eso.compute_eg_point(nB,Ye,T*hc_mev_fm,lep,electron.mu);
     cout << "try: " << elep.e.mu << endl;
     cout << "mue: " << electron.mu << endl;
-    cout << "nuc_matter::mu_e, m_e: " << electron.mu << " " << electron.m << endl;
+    cout << "nuc_matter::mu_e, m_e: " << electron.mu << " " << electron.m
+         << endl;
 
     for(size_t j=0;j<part_db.size();j++) {
       if (part_db[j].id==2212 && part_db[j].charge==1) {
@@ -3491,12 +3492,13 @@ int eos_nuclei::nuc_matter(double nB, double Ye, double T,
         res_b[ibos].mu=elep.e.mu;
         //cout <<"Pion chem pot: " << res_b[ibos].mu*hc_mev_fm << endl;
         funct function=std::bind
-                      (std::mem_fn<double(double, boson &, fermion &, 
-                        fermion &, fermion &, double, double, thermo &,
-                        map<string,double> &)>(&eos_nuclei::solve_pion),
-                      this,std::placeholders::_1,res_b[ibos], neutron, proton, 
-                      elep.e, T, nB, thx, vdet);
-
+          (std::mem_fn<double(double, boson &, fermion &, 
+           fermion &, fermion &, double, double, thermo &,
+           map<string,double> &)>(&eos_nuclei::solve_pion),
+           this,std::placeholders::_1,std::ref(res_b[ibos]),
+           std::ref(neutron),std::ref(proton), 
+           std::ref(elep.e),T,nB,std::ref(thx),std::ref(vdet));
+        
         rbg.verbose=1;
         int ret=rbg.solve(proton.n, function);
         //cout <<"n_e: " << electron.n << ", n_mu: " << muon.n << ", n_pi: " << res_b[ibos].n << endl;

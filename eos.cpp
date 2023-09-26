@@ -667,9 +667,9 @@ eos::eos() {
   
   // Nucleon init
   neutron.init(o2scl_settings.get_convert_units().convert
-	       ("kg","1/fm",o2scl_mks::mass_neutron),2.0);
+	       ("kg","1/fm",o2scl_const::mass_neutron_f<double>()),2.0);
   proton.init(o2scl_settings.get_convert_units().convert
-	      ("kg","1/fm",o2scl_mks::mass_proton),2.0);
+	      ("kg","1/fm",o2scl_const::mass_proton_f<double>()),2.0);
   neutron.non_interacting=false;
   proton.non_interacting=false;
   neutron.inc_rest_mass=false;
@@ -677,9 +677,9 @@ eos::eos() {
 
   // Nucleon init (take 2)
   n_chiral.init(o2scl_settings.get_convert_units().convert
-		("kg","1/fm",o2scl_mks::mass_neutron),2.0);
+		("kg","1/fm",o2scl_const::mass_neutron_f<double>()),2.0);
   p_chiral.init(o2scl_settings.get_convert_units().convert
-		("kg","1/fm",o2scl_mks::mass_proton),2.0);
+		("kg","1/fm",o2scl_const::mass_proton_f<double>()),2.0);
   n_chiral.non_interacting=false;
   p_chiral.non_interacting=false;
   n_chiral.inc_rest_mass=false;
@@ -687,9 +687,9 @@ eos::eos() {
 
   // Lepton and photon inits
   electron.init(o2scl_settings.get_convert_units().convert
-		("kg","1/fm",o2scl_mks::mass_electron),2.0);
+		("kg","1/fm",o2scl_const::mass_electron_f<double>()),2.0);
   muon.init(o2scl_settings.get_convert_units().convert
-	    ("kg","1/fm",o2scl_mks::mass_muon),2.0);
+	    ("kg","1/fm",o2scl_const::mass_muon_f<double>()),2.0);
   neutrino.init(0.0,1.0);
   photon.init(0.0,2.0);
 
@@ -1150,7 +1150,7 @@ double eos::free_energy_density_detail
     f4=0.0;
     g_virial=0.0;
     dgvirialdT=0.0;
-    double fr=th.ed-T*th.en;
+    double frx=th.ed-T*th.en;
     vdet["zn"]=0.0;
     vdet["zp"]=0.0;
     vdet["F1"]=0.0;
@@ -1172,7 +1172,7 @@ double eos::free_energy_density_detail
       vdet["omega"]=omega;
       vdet["rho"]=rho;
     }
-    return fr;
+    return frx;
   }
   
   if (model_selected==false) {
