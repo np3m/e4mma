@@ -1,0 +1,7 @@
+put an x inside [ ] after you are done 
+- [ ] 1. be containerized, meaning that it must have instructions for building a Docker container;
+- [ ] 2. define test scripts that serve as checks that the code works as intended;
+- [ ] 3. define workflows that involve execution of the module container with mock inputs and outputs and test scripts that demonstrate execution of these workflows, where workflows may involve only the module itself or multiple different modules;
+- [ ] 4. provide complete documentation fit for consumption by the target scientific community and that is compatible with the compiled central documentation system we have discussed;
+- [ ] 5. define a CI pipeline that automatically builds the image and runs tests upon committing to the source code repo under certain conditions;
+- [ ] 6. ultimately provide the information to go in the CE config that is required for it to know how to execute workflows (e.g. see [this incomplete development example](https://gitlab.com/nsf-muses/calculation-engine/-/blob/83bc4d6a988a180bca1b76a61737aa5448b27c89/docker/config/config.yaml)).
