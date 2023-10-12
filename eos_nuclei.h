@@ -639,6 +639,16 @@ public:
   o2scl::cli::parameter_int p_file_update_iters;
   //@}
 
+  /// Desc
+  double solve_nuclei_mu
+  (size_t nv, const ubvector &x, ubvector &y, double mun, double mup,
+   double T, double &mun_gas, double &mup_gas, o2scl::thermo &th_gas);
+
+  /// Desc
+  double compute_fr_nuclei(double nB, double Ye, double T,
+                           double log_xn, double log_xp,
+                           o2scl::thermo &th, o2scl::thermo &th_gas);
+  
   /// \name Functions for the main algorithm
   //@{
   /** \brief Use only one of the two equations for a 

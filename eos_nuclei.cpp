@@ -2251,7 +2251,7 @@ double eos_nuclei::solve_nuclei_mu
   
   ubvector xt(2), yt(2);
   int ret;
-  double f0, fnb, fye;
+  double fnb1, fnb2, fye1, fye2;
   
   double nb=x[0];
   double ye=x[1];
@@ -2261,30 +2261,46 @@ double eos_nuclei::solve_nuclei_mu
   double log_xp_1=x[5];
   double log_xn_2=x[6];
   double log_xp_2=x[7];
+  double log_xn_3=x[8];
+  double log_xp_3=x[9];
 
+  map<std::string,double> vdet;
+  thermo th;
+  
   xt[0]=log_xn_0;
   xt[1]=log_xp_0;
-  ret=solve_nuclei(2,xt,yt,nb,ye,T,0,mun_gas,mup_gas,th_gas,vdet);
-  f0=compute_fr_nuclei(xt[0],xt[1]);
+  ret=solve_nuclei(2,xt,yt,nb*(1.0-1.0e-4),ye,T,0,mun_gas,mup_gas,
+                   th_gas,vdet);
+  fnb1=compute_fr_nuclei(nb,ye,T,xt[0],xt[1],th,th_gas);
   y[2]=yt[0];
-  y[3]=y1[1];
-  
+  y[3]=yt[1];
+
   xt[0]=log_xn_1;
   xt[1]=log_xp_1;
-  ret=solve_nuclei(2,xt,yt,nb*(1.0+1.0e-4),ye,T,0,mun_gas,mup_gas,th_gas,vdet);
-  fnb=compute_fr_nuclei(xt[0],xt[1]);
+  ret=solve_nuclei(2,xt,yt,nb*(1.0+1.0e-4),ye,T,0,mun_gas,mup_gas,
+                   th_gas,vdet);
+  fnb2=compute_fr_nuclei(nb,ye,T,xt[0],xt[1],th,th_gas);
   y[4]=yt[0];
-  y[5]=y1[1];
+  y[5]=yt[1];
 
   xt[0]=log_xn_2;
   xt[1]=log_xp_2;
-  ret=solve_nuclei(2,xt,yt,nb,ye*(1.0+1.0e-4),T,0,mun_gas,mup_gas,th_gas,vdet);
-  fye=compute_fr_nuclei(xt[0],xt[1]);
+  ret=solve_nuclei(2,xt,yt,nb,ye*(1.0-1.0e-4),T,0,mun_gas,mup_gas,
+                   th_gas,vdet);
+  fye1=compute_fr_nuclei(nb,ye,T,xt[0],xt[1],th,th_gas);
   y[6]=yt[0];
-  y[7]=y1[1];
+  y[7]=yt[1];
 
-  double dfdnB=(fnb-f0)/(nb*(1.0+1.0e-4));
-  double dfdYe=(fye-f0)/(ye*(1.0+1.0e-4));
+  xt[0]=log_xn_3;
+  xt[1]=log_xp_3;
+  ret=solve_nuclei(2,xt,yt,nb,ye*(1.0+1.0e-4),T,0,mun_gas,mup_gas,
+                   th_gas,vdet);
+  fye2=compute_fr_nuclei(nb,ye,T,xt[0],xt[1],th,th_gas);
+  y[8]=yt[0];
+  y[9]=yt[1];
+  
+  double dfdnB=(fnb2-fnb1)/(nb*(1.0+2.0e-4));
+  double dfdYe=(fye2-fye1)/(ye*(1.0+2.0e-4));
   
   double mun2=dfdnB-dfdYe*ye/nb;
   double mup2=dfdnB-dfdYe*(ye-1.0)/nb;
@@ -2295,7 +2311,14 @@ double eos_nuclei::solve_nuclei_mu
   return 0;
 }
 
-double eos_nuclei::compute_fr_nuclei(double log_xn, double log_xp) {
+double eos_nuclei::compute_fr_nuclei
+(double nB, double Ye,
+ double T, double log_xn, double log_xp, thermo &thx, thermo &th_gas) {
+
+  // quantities left
+  size_t n_nuclei=nuclei.size();
+  
+  static const double n0=0.16;
   
   // -------------------------------------------------------------
   // Compute free energy density and entropy density
