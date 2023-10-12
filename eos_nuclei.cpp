@@ -2245,6 +2245,124 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
   return 0;
 }
 
+double eos_nuclei::solve_nuclei_mu
+(size_t nv, const ubvector &x, ubvector &y, double mun, double mup, double T,
+ double &mun_gas, double &mup_gas, thermo &th_gas) {
+  
+  ubvector xt(2), yt(2);
+  int ret;
+  double f0, fnb, fye;
+  
+  double nb=x[0];
+  double ye=x[1];
+  double log_xn_0=x[2];
+  double log_xp_0=x[3];
+  double log_xn_1=x[4];
+  double log_xp_1=x[5];
+  double log_xn_2=x[6];
+  double log_xp_2=x[7];
+
+  xt[0]=log_xn_0;
+  xt[1]=log_xp_0;
+  ret=solve_nuclei(2,xt,yt,nb,ye,T,0,mun_gas,mup_gas,th_gas,vdet);
+  f0=compute_fr_nuclei(xt[0],xt[1]);
+  y[2]=yt[0];
+  y[3]=y1[1];
+  
+  xt[0]=log_xn_1;
+  xt[1]=log_xp_1;
+  ret=solve_nuclei(2,xt,yt,nb*(1.0+1.0e-4),ye,T,0,mun_gas,mup_gas,th_gas,vdet);
+  fnb=compute_fr_nuclei(xt[0],xt[1]);
+  y[4]=yt[0];
+  y[5]=y1[1];
+
+  xt[0]=log_xn_2;
+  xt[1]=log_xp_2;
+  ret=solve_nuclei(2,xt,yt,nb,ye*(1.0+1.0e-4),T,0,mun_gas,mup_gas,th_gas,vdet);
+  fye=compute_fr_nuclei(xt[0],xt[1]);
+  y[6]=yt[0];
+  y[7]=y1[1];
+
+  double dfdnB=(fnb-f0)/(nb*(1.0+1.0e-4));
+  double dfdYe=(fye-f0)/(ye*(1.0+1.0e-4));
+  
+  double mun2=dfdnB-dfdYe*ye/nb;
+  double mup2=dfdnB-dfdYe*(ye-1.0)/nb;
+
+  y[0]=mun2-mun;
+  y[1]=mup2-mup;
+
+  return 0;
+}
+
+double eos_nuclei::compute_fr_nuclei(double log_xn, double log_xp) {
+  
+  // -------------------------------------------------------------
+  // Compute free energy density and entropy density
+  
+  double xn=pow(10.0,log_xn);
+  double xp=pow(10.0,log_xp);
+
+  double kappa=1.0-nB/n0;
+  double xi=kappa/(1.0-nB*xn/n0-nB*xp/n0);
+
+  // The total of the number density over all nuclei
+  double sum_nuc=0.0;
+
+  // Begin with zero and then add up contributions. Free energy
+  // density in fm^{-4} and entropy density in fm^{-3}
+  double f=0.0;
+
+  thx.en=0.0;
+
+  for (size_t i=0;i<n_nuclei;i++) {
+    
+    double en_nuc, fr_nuc;
+    
+    if (nuclei[i].n>1.0e-300) {
+      double lambda=sqrt(2.0*pi/nuclei[i].m/T);
+      fr_nuc=-T*(log(vomega[i]/nuclei[i].n/pow(lambda,3.0))+1.0)*
+       nuclei[i].n;
+      // Note that everything here, including vomega_prime, is in
+      // units of powers of femtometers
+      en_nuc=nuclei[i].n*(log(vomega[i]/nuclei[i].n/pow(lambda,3.0))+
+                         5.0/2.0+vomega_prime[i]*T/vomega[i]);
+      if (!std::isfinite(fr_nuc)) {
+       if (nuclei[i].n<1.0e-200) {
+         nuclei[i].n=0.0;
+         fr_nuc=0.0;
+         en_nuc=0.0;
+       } else {
+         cout << "Nuclear free energy not finite in eos_fixed_dist()."
+               << endl;
+         cout << nuclei[i].n << " " << nuclei[i].be << " " << lambda
+              << " " << vomega[i] << endl;
+         exit(-1);
+       }
+      }
+    } else {
+      nuclei[i].n=0.0;
+      fr_nuc=0.0;
+      en_nuc=0.0;
+    }
+    fr_nuc+=nuclei[i].n*nuclei[i].be+1.433e-05*
+      pow(nuclei[i].Z,2.39)/hc_mev_fm*nuclei[i].n;
+    sum_nuc+=nuclei[i].n;
+    
+    f+=fr_nuc+nuclei[i].n*Ec[i];
+    thx.en+=en_nuc;
+  }
+
+  // Final calculations of free energy density, entropy
+  // density, and energy density
+  
+  f+=xi*(th_gas.ed-T*th_gas.en)-T*sum_nuc*log(kappa);
+  thx.en+=xi*th_gas.en+sum_nuc*log(kappa);
+  thx.ed=f+T*thx.en;
+
+  return f;
+}
+
 double eos_nuclei::solve_nuclei_ld
 (double x2, size_t nv, const ubvector &x, double nb, double ye, double T,
  int ix, double &mun_gas, double &mup_gas, thermo &th_gas) {
