@@ -640,7 +640,7 @@ public:
   //@}
 
   /// Desc
-  double solve_nuclei_mu
+  int solve_nuclei_mu
   (size_t nv, const ubvector &x, ubvector &y, double mun, double mup,
    double T, double &mun_gas, double &mup_gas, o2scl::thermo &th_gas);
 
@@ -668,6 +668,8 @@ public:
 
   /** \brief Construct equations to solve for a fixed baryon
       density and electron fraction
+
+      The temperature should be in 1/fm.
   */
   int solve_nuclei(size_t nv, const ubvector &x, ubvector &y, double nb,
 		   double ye, double T, 
@@ -940,6 +942,14 @@ public:
       which holds the full nuclear distribution.
   */
   int point_nuclei(std::vector<std::string> &sv, bool itive_com);
+
+  /** \brief Desc
+
+      args
+
+      Desc
+  */
+  int point_nuclei_mu(std::vector<std::string> &sv, bool itive_com);
   
   /** \brief Test an EOS at random points in (nB,Ye,T)
 

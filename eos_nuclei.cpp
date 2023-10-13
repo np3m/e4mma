@@ -2245,7 +2245,7 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
   return 0;
 }
 
-double eos_nuclei::solve_nuclei_mu
+int eos_nuclei::solve_nuclei_mu
 (size_t nv, const ubvector &x, ubvector &y, double mun, double mup, double T,
  double &mun_gas, double &mup_gas, thermo &th_gas) {
   
@@ -2271,6 +2271,7 @@ double eos_nuclei::solve_nuclei_mu
   xt[1]=log_xp_0;
   ret=solve_nuclei(2,xt,yt,nb*(1.0-1.0e-4),ye,T,0,mun_gas,mup_gas,
                    th_gas,vdet);
+  if (ret!=0) return ret;
   fnb1=compute_fr_nuclei(nb,ye,T,xt[0],xt[1],th,th_gas);
   y[2]=yt[0];
   y[3]=yt[1];
@@ -2279,6 +2280,7 @@ double eos_nuclei::solve_nuclei_mu
   xt[1]=log_xp_1;
   ret=solve_nuclei(2,xt,yt,nb*(1.0+1.0e-4),ye,T,0,mun_gas,mup_gas,
                    th_gas,vdet);
+  if (ret!=0) return ret;
   fnb2=compute_fr_nuclei(nb,ye,T,xt[0],xt[1],th,th_gas);
   y[4]=yt[0];
   y[5]=yt[1];
@@ -2287,6 +2289,7 @@ double eos_nuclei::solve_nuclei_mu
   xt[1]=log_xp_2;
   ret=solve_nuclei(2,xt,yt,nb,ye*(1.0-1.0e-4),T,0,mun_gas,mup_gas,
                    th_gas,vdet);
+  if (ret!=0) return ret;
   fye1=compute_fr_nuclei(nb,ye,T,xt[0],xt[1],th,th_gas);
   y[6]=yt[0];
   y[7]=yt[1];
@@ -2295,6 +2298,7 @@ double eos_nuclei::solve_nuclei_mu
   xt[1]=log_xp_3;
   ret=solve_nuclei(2,xt,yt,nb,ye*(1.0+1.0e-4),T,0,mun_gas,mup_gas,
                    th_gas,vdet);
+  if (ret!=0) return ret;
   fye2=compute_fr_nuclei(nb,ye,T,xt[0],xt[1],th,th_gas);
   y[8]=yt[0];
   y[9]=yt[1];
@@ -2307,6 +2311,12 @@ double eos_nuclei::solve_nuclei_mu
 
   y[0]=mun2-mun;
   y[1]=mup2-mup;
+
+  // for debugging
+  std::cout << "x: " << std::flush;
+  vector_out(cout,x,true);
+  std::cout << "y: " << std::flush;
+  vector_out(cout,y,true);
 
   return 0;
 }
@@ -6566,6 +6576,74 @@ int eos_nuclei::test_random(std::vector<std::string> &sv,
   return 0;
 }
 
+int eos_nuclei::point_nuclei_mu(std::vector<std::string> &sv,
+                                bool itive_com) {
+  
+  double mun=o2scl::function_to_double(sv[4])/hc_mev_fm-neutron.m;
+  double mup=o2scl::function_to_double(sv[5])/hc_mev_fm-proton.m;
+  double T=o2scl::function_to_double(sv[3])/hc_mev_fm;
+  
+  double nB=o2scl::function_to_double(sv[1]);
+  double Ye=o2scl::function_to_double(sv[2]);
+
+  double log_xn, log_xp;
+  if (sv.size()>=8) {
+    log_xn=o2scl::function_to_double(sv[6]);
+    log_xp=o2scl::function_to_double(sv[7]);
+  } else {
+    if (nB<0.16) {
+      log_xn=log10(nB*(1.0-Ye)/2.0);
+      log_xp=log10(nB*Ye/2.0);
+    } else {
+      log_xn=log10(nB*(1.0-Ye));
+      log_xp=log10(nB*Ye);
+    }
+  }    
+  
+  thermo thx, th_gas;
+  double mun_full, mup_full;
+  double Zbar, Nbar;
+  map<string,double> vdet;
+  int A_min, A_max, NmZ_min, NmZ_max;
+
+  A_min=5;
+  A_max=fd_A_max;
+  NmZ_min=-200;
+  NmZ_max=200;
+  
+  int ret=eos_vary_dist(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,
+                    thx,mun_full,mup_full,
+                    A_min,A_max,NmZ_min,NmZ_max,vdet,
+                    true,false);
+
+  ubvector x(10), y(10);
+  x[0]=nB;
+  x[1]=Ye;
+  x[2]=log_xn;
+  x[3]=log_xp;
+  x[4]=log_xn;
+  x[5]=log_xp;
+  x[6]=log_xn;
+  x[7]=log_xp;
+  x[8]=log_xn;
+  x[9]=log_xp;
+  
+  mm_funct func=std::bind
+    (std::mem_fn<int(size_t,const ubvector &,ubvector&,
+                     double,double,double,double &,double &,
+                     thermo &)>
+     (&eos_nuclei::solve_nuclei_mu),this,std::placeholders::_1,
+     std::placeholders::_2,std::placeholders::_3,
+     mun,mup,T,std::ref(mun_full),std::ref(mup_full),
+     std::ref(th_gas));
+          
+  mroot_hybrids<> mh2;
+  mh2.verbose=2;
+  mh2.msolve(10,x,func);
+
+  return 0;
+}
+
 int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
 			     bool itive_com) {
 
@@ -10440,7 +10518,7 @@ void eos_nuclei::setup_cli_nuclei(o2scl::cli &cl) {
   
   eos::setup_cli(cl,false);
   
-  static const int nopt=29;
+  static const int nopt=30;
 
   o2scl::comm_option_s options[nopt]=
     {{0,"eos-deriv","",0,0,"","",
@@ -10535,6 +10613,10 @@ void eos_nuclei::setup_cli_nuclei(o2scl::cli &cl) {
       new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::point_nuclei),o2scl::cli::comm_option_both,
       1,"","eos_nuclei","point_nuclei","doc/xml/classeos__nuclei.xml"},
+     {0,"point-nuclei-mu","",-1,-1,"","",
+      new o2scl::comm_option_mfptr<eos_nuclei>
+      (this,&eos_nuclei::point_nuclei_mu),o2scl::cli::comm_option_both,
+      1,"","eos_nuclei","point_nuclei_mu","doc/xml/classeos__nuclei.xml"},
      {0,"increase-density","",7,7,"","",
       new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::increase_density),o2scl::cli::comm_option_both,
