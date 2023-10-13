@@ -2313,6 +2313,8 @@ int eos_nuclei::solve_nuclei_mu
   y[1]=mup2-mup;
 
   // for debugging
+  std::cout << "mu: " << mun2 << " " << mun << " " << mup2 << " " << mup
+            << std::endl;
   std::cout << "x: " << std::flush;
   vector_out(cout,x,true);
   std::cout << "y: " << std::flush;
