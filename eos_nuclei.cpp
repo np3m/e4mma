@@ -155,7 +155,7 @@ eos_nuclei::eos_nuclei() {
   
   inc_hrg=false;
 
-  save_to_csv=true;
+  save_to_csv=false;
   max_nB_inter=0.16;
   csv_location = "superluminal.csv";
   table_path="";
@@ -1792,11 +1792,24 @@ int eos_nuclei::eos_second_deriv(std::vector<std::string> &sv,
 	double mue=0.0;
 	double den=en*T_MeV+(tg_mun.get(ix)+neutron.m)*nn+
 	  (tg_mup.get(ix)+proton.m+mue)*np;
-	
-	double cs_sq=(nn*nn*(f_nnnn-f_nnT*f_nnT/f_TT)+
+
+    //double dmundnB_val=(f_nnnn*(1-Ye))+(f_nnnp*Ye); 
+    //double dmundYe_val=nB*(f_nnnp-f_nnnn);
+    //double dmupmuedYe=nB*(f_npnp-f_nnnp); 
+    double dsdnB_val=-f_nnT*(1.0-Ye)-f_npT*Ye;
+    double dsdYe_val=nB*(f_nnT-f_npT);
+    double dmundnB_val=tg_dmundnB.get(ix);
+    double dmundYe_val=tg_dmundYe.get(ix);
+    double dmupmuedYe_val=tg_dmupdYe.get(ix);
+    //double dsdnB_val=tg_dsdnB.get(ix);
+    //double dsdYe_val=tg_dsdYe.get(ix);
+    double e1=(nB*nB*dmundnB_val)+((nB*nB*dsdnB_val*dsdnB_val)/f_TT)+(nB*Ye*(1-Ye)*dmundYe_val)+(nB*Ye*Ye*dmupmuedYe_val); 
+    double e2=(nB*dsdnB_val)/f_TT; 
+    double cs_sq=e1-(2*en*e2)-((en*en)/f_TT);
+/*	double cs_sq=(nn*nn*(f_nnnn-f_nnT*f_nnT/f_TT)+
 		      2.0*nn*np*(f_nnnp-f_nnT*f_npT/f_TT)+
 		      np*np*(f_npnp-f_npT*f_npT/f_TT)-
-		      2.0*en*(nn*f_nnT/f_TT+np*f_npT/f_TT)-en*en/f_TT)/den;
+		      2.0*en*(nn*f_nnT/f_TT+np*f_npT/f_TT)-en*en/f_TT)/den;*/
 	
       }
     }
@@ -2135,10 +2148,18 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
                << f_nnT << "\n  " << f_npT << " " << f_TT << " "
                << den << endl;
         }
-        double cs_sq=(nn2*nn2*(f_nnnn-f_nnT*f_nnT/f_TT)+
-                      2.0*nn2*np2*(f_nnnp-f_nnT*f_npT/f_TT)+
-                      np2*np2*(f_npnp-f_npT*f_npT/f_TT)-
-                      2.0*en*(nn2*f_nnT/f_TT+np2*f_npT/f_TT)-en*en/f_TT)/den;
+    //double dmundnB_val=(f_nnnn*(1-Ye))+(f_nnnp*Ye); 
+    //double dmundYe=nB*(f_nnnp-f_nnnn);
+    //double dmupmuedYe=nB*(f_npnp-f_nnnp); 
+    //double dsdnB=-f_nnT*(1.0-Ye)-f_npT*Ye;
+    //double dsdYe=nB*(f_nnT-f_npT);
+    double e1=(nB*nB*dmundnBv)+((nB*nB*dsdnBv*dsdnBv)/f_TT)+(nB*Ye*(1-Ye)*dmundYev)+(nB*Ye*Ye*dmupdYev); 
+    double e2=(nB*dsdnBv)/f_TT; 
+    double cs_sq=e1-(2*en*e2)-((en*en)/f_TT);
+/*	double cs_sq=(nn*nn*(f_nnnn-f_nnT*f_nnT/f_TT)+
+		      2.0*nn*np*(f_nnnp-f_nnT*f_npT/f_TT)+
+		      np*np*(f_npnp-f_npT*f_npT/f_TT)-
+		      2.0*en*(nn*f_nnT/f_TT+np*f_npT/f_TT)-en*en/f_TT)/den;*/
         
         cs2.get(ix)=cs_sq;
         

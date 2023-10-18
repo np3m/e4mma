@@ -96,6 +96,8 @@ int eos_nuclei::interp_point(std::vector<std::string> &sv,
 
   int window=o2scl::stoi(sv[4]);
 
+  vecttest();
+
   std::string st_o2=sv[5];
   std::string stfix_o2="";
   hdf_file hff, hff2;
@@ -191,8 +193,8 @@ void eos_nuclei::interpolate(double nB_p,
             ike.fix_list.push_back(index[0]);
             ike.fix_list.push_back(index[1]);
             ike.fix_list.push_back(index[2]);
-            //cout << "fix: " << index[0] << " " << index[1] << " "
-            //<< index[2] << endl;
+            cout << "fix: " << index[0] << " " << index[1] << " "
+            << index[2] << endl;
           } else if (ike.tgp_cs2.get_rank()>=3 &&
               (ike.tgp_cs2.get(index)<=1.0 &&
                std::isfinite(ike.tgp_cs2.get(index)) &&
@@ -200,8 +202,8 @@ void eos_nuclei::interpolate(double nB_p,
             ike.calib_list.push_back(index[0]);
             ike.calib_list.push_back(index[1]);
             ike.calib_list.push_back(index[2]);
-            //cout << "cal: " << index[0] << " " << index[1] << " "
-            //<< index[2] << endl;
+            cout << "cal: " << index[0] << " " << index[1] << " "
+            << index[2] << endl;
           }
         }
       }
@@ -378,14 +380,14 @@ void eos_nuclei::interpolate(double nB_p,
                     std::isfinite(ike.tgp_cs2.get(index)) ||
                     ike.tgp_cs2.get(index)>=0.0))) {
                     if (!external_acausal_points.empty()) {
-                      closest=vector_distance<double>(index, external_acausal_points);
+                      closest=shortest_vector_distance<double>(index, external_acausal_points);
                       nearest_external=closest.first;
                     }
                     else {
                       nearest_external=0.0;
                       isEmpty=true;
                     }
-                    closest=vector_distance<double>(index, results_final);
+                    closest=shortest_vector_distance<double>(index, results_final);
                     nearest_internal=closest.first;
                     if ((nearest_internal<=nearest_external) || (isEmpty==true)) {
                         fix_list[index]=std::make_pair(closest.second,nearest_internal);
@@ -495,26 +497,116 @@ int eos_nuclei::interp_file(std::vector<std::string> &sv,
   return 0;
 }
 
+void eos_nuclei::vecttest () {
+    std::vector<size_t> origin1 = {0};
+    std::vector<size_t> origin2 = {0,0};
+    std::vector<size_t> origin3 = {0,0,0};
+    std::vector<size_t> origin4 = {0,0,0,0};
+
+    std::map<std::vector<size_t>, double> points1={{{1},1.0},
+                                                   {{2},2.0},
+                                                   {{3},3.0}};
+    std::map<std::vector<size_t>, int> points2={{{1,1},1},
+                                                {{1,2},2},
+                                                {{2,2},3}};
+    std::map<std::vector<size_t>, char> points3={{{1,3,1},'a'},
+                                                 {{1,4,2},'b'},
+                                                 {{2,5,3},'c'}};
+    std::map<std::vector<size_t>, size_t> points4={{{1,3,0,1},1},
+                                                   {{1,4,4,2},2},
+                                                   {{2,5,8,3},3}};
+
+    cout << "1D points ";
+    for (int a : origin1) {
+        cout << a << ",";
+    }
+    cout << endl;
+    double dist=0.0;
+    std::map<std::vector<size_t>, double>::iterator i1;
+    for (i1=points1.begin(); i1 != points1.end(); ++i1) {
+        dist=sqrt(pow((i1->first.at(0)-origin1.at(0)),2.0));
+        for (int a : i1->first) {
+            cout << a << ",";
+        }
+        cout << ":" << vector_distance(origin1,i1->first) << " " << dist << endl;
+    }
+    cout << "Shortest Point: " << shortest_vector_distance(origin1,points1).first << " " << shortest_vector_distance(origin1,points1).second << endl;
+    cout << "2D points ";
+    for (int a : origin2) {
+        cout << a << ",";
+    }
+    cout << endl;
+    std::map<std::vector<size_t>, int>::iterator i2;
+    for (i2=points2.begin(); i2 != points2.end(); ++i2) {
+        dist=sqrt(pow((i2->first.at(0)-origin2.at(0)),2.0)+pow((i2->first.at(1)-origin2.at(1)),2.0));
+        for (int a : i2->first) {
+            cout << a << ",";
+        }
+        cout << ":" << vector_distance(origin2,i2->first) << " " << dist << endl;
+    }
+    cout << "Shortest Point: " << shortest_vector_distance(origin2,points2).first << " " << shortest_vector_distance(origin2,points2).second << endl;
+    cout << "3D points ";
+    for (int a : origin3) {
+        cout << a << ",";
+    }
+    cout << endl;
+    std::map<std::vector<size_t>, char>::iterator i3;
+    for (i3=points3.begin(); i3 != points3.end(); ++i3) {
+        dist=sqrt(pow((i3->first.at(0)-origin3.at(0)),2.0)+pow((i3->first.at(1)-origin3.at(1)),2.0)+pow((i3->first.at(2)-origin3.at(2)),2.0));
+        for (int a : i3->first) {
+            cout << a << ",";
+        }
+        cout << ":" << vector_distance(origin3,i3->first) << " " << dist << endl;
+    }
+    cout << "Shortest Point: " << shortest_vector_distance(origin3,points3).first << " " << shortest_vector_distance(origin3,points3).second << endl;
+    cout << "4D points ";
+    for (int a : origin4) {
+        cout << a << ",";
+    }
+    cout << endl;
+    std::map<std::vector<size_t>, size_t>::iterator i4;
+    for (i4=points4.begin(); i4 != points4.end(); ++i4) {
+        dist=sqrt(pow((i4->first.at(0)-origin4.at(0)),2.0)+pow((i4->first.at(1)-origin4.at(1)),2.0)+pow((i4->first.at(2)-origin4.at(2)),2.0)+pow((i4->first.at(3)-origin4.at(3)),2.0));
+        for (int a : i4->first) {
+            cout << a << ",";
+        }
+        cout << ":" << vector_distance(origin4,i4->first) << " " << dist << endl;
+    }
+    cout << "Shortest Point: " << shortest_vector_distance(origin4,points4).first << " " << shortest_vector_distance(origin4,points4).second << endl;
+}
+
+  double eos_nuclei::vector_distance(std::vector<size_t> start, 
+                                     std::vector<size_t> endpoint) {
+    double distance=0.0;
+    if ((start.size() != endpoint.size()) || (start.size()==0)) {
+        return -1.0;
+    }
+    for (size_t x=0; x<start.size(); x++) {
+        if (endpoint.at(x)>start.at(x)) {
+            distance+=std::pow((endpoint.at(x)-start.at(x)), 2.0);
+        }
+        else {
+            distance+=std::pow((start.at(x)-endpoint.at(x)), 2.0);
+        }
+    }
+    distance=std::sqrt(distance);
+    return distance;
+}
+
   template<typename T>
-  std::pair<double, T> eos_nuclei::vector_distance(std::vector<size_t> start, 
+  std::pair<double, T> eos_nuclei::shortest_vector_distance(std::vector<size_t> start, 
                                                   std::map<std::vector<size_t>, T> points) {
     std::pair<double, T> results;
+    results = std::make_pair(0.0,T());
     double distance=0.0;
     typename std::map<std::vector<size_t>, T>::iterator i;
     for (i=points.begin(); i != points.end(); ++i) {
+        distance=0.0;
         if ((start.size() != i->first.size()) || (start.size()==0)) {
             results = std::make_pair(0.0,T());
             return results;
         }
-        for (size_t x=0; x<start.size(); x++) {
-            if (i->first.at(x)>start.at(x)) {
-                distance+=std::pow((i->first.at(x)-start.at(x)), 2.0);
-            }
-            else {
-                distance+=std::pow((start.at(x)-i->first.at(x)), 2.0);
-            }
-        }
-        distance=std::sqrt(distance);
+        distance=vector_distance(start,i->first);
         if ((results.first==0.0) || (distance<results.first)) {
             results.first=distance;
             results.second=i->second;
@@ -849,15 +941,22 @@ std::map<std::vector<size_t>, std::vector<double>> interpm_krige_eos::interpolat
     double nn2=nB*(1.0-Ye);
     double np2=nB*Ye;
 
-    double cs_sq=(nn2*nn2*(f_nnnn-f_nnT*f_nnT/f_TT)+
+    double dmundnB=(f_nnnn*(1-Ye))+(f_nnnp*Ye);
+    double dmundYe=nB*(f_nnnp-f_nnnn);
+    double dmupmuedYe=nB*(f_npnp-f_nnnp);
+    double dsdnB=-f_nnT*(1.0-Ye)-f_npT*Ye;
+    double dsdYe=nB*(f_nnT-f_npT);
+    double e1=(nB*nB*dmundnB)+((nB*nB*dsdnB*dsdnB)/f_TT)+(nB*Ye*(1-Ye)*dmundYe)+(nB*Ye*Ye*dmupmuedYe);
+    double e2=(nB*dsdnB)/f_TT;
+    double cs_sq=e1-(2*en*e2)-((en*en)/f_TT);
+/*    double cs_sq=(nn2*nn2*(f_nnnn-f_nnT*f_nnT/f_TT)+
                   2.0*nn2*np2*(f_nnnp-f_nnT*f_npT/f_TT)+
                   np2*np2*(f_npnp-f_npT*f_npT/f_TT)-
-                  2.0*en*(nn2*f_nnT/f_TT+np2*f_npT/f_TT)-en*en/f_TT)/den;
+                  2.0*en*(nn2*f_nnT/f_TT+np2*f_npT/f_TT)-en*en/f_TT)/den;*/
     results.push_back(cs_sq);
 
     // Attempt at calculating dP/dnB
     // code taken from main/eos_interp.cpp
-    double dmundnB=(f_nnnn*(1-Ye))+(f_nnnp*Ye);
     results.push_back(dmundnB);
     double dmupmuednB=(f_nnnp*(1-Ye))+(f_npnp*Ye);
     results.push_back(dmupmuednB);
@@ -948,11 +1047,13 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
       inB=calib_list[ilist*3];
       iYe=calib_list[ilist*3+1];
       iT=calib_list[ilist*3+2];
+      cout << "point" << calib_list[ilist*3] << " " << calib_list[ilist*3+1] << " " << calib_list[ilist*3+2] << endl;
       cout << "calib" << endl;
     } else {
       inB=fix_list[(ilist-calib_list.size()/3)*3];
       iYe=fix_list[(ilist-calib_list.size()/3)*3+1];
       iT=fix_list[(ilist-calib_list.size()/3)*3+2];
+      cout << "point" << fix_list[ilist*3] << " " << fix_list[ilist*3+1] << " " << fix_list[ilist*3+2] << endl;
       cout << "fix" << endl;
     }
     //inB=8;
@@ -963,10 +1064,14 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
     cout << index[0] << " " << index[1] << " "
                 << index[2] << std::endl;
 
-        
+       
+    cout << "before" << endl;
     double nB=nB_grid[inB];
+    cout << nB << endl;
     double Ye=Ye_grid[iYe];
+    cout << Ye << endl;
     double T_MeV=T_grid[iT];
+    cout << T_MeV << endl;
 
     cout << nB << " " << Ye << " " << T_MeV << " ";
 
@@ -1173,10 +1278,20 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
       (mup+mprot)*nB*Ye+mue*nB*Ye;
     double nn2=nB*(1.0-Ye);
     double np2=nB*Ye;
-    double cs_sq=(nn2*nn2*(f_nnnn-f_nnT*f_nnT/f_TT)+
+
+    double dmundnB=(f_nnnn*(1-Ye))+(f_nnnp*Ye);
+    double dmundYe=nB*(f_nnnp-f_nnnn);
+    double dmupmuedYe=nB*(f_npnp-f_nnnp);
+    double dsdnB=-f_nnT*(1.0-Ye)-f_npT*Ye;
+    double dsdYe=nB*(f_nnT-f_npT);
+    double e1=(nB*nB*dmundnB)+((nB*nB*dsdnB*dsdnB)/f_TT)+(nB*Ye*(1-Ye)*dmundYe)+(nB*Ye*Ye*dmupmuedYe);
+    double e2=(nB*dsdnB)/f_TT;
+    double cs_sq=e1-(2*en*e2)-((en*en)/f_TT);
+/*    double cs_sq=(nn2*nn2*(f_nnnn-f_nnT*f_nnT/f_TT)+
                   2.0*nn2*np2*(f_nnnp-f_nnT*f_npT/f_TT)+
                   np2*np2*(f_npnp-f_npT*f_npT/f_TT)-
-                  2.0*en*(nn2*f_nnT/f_TT+np2*f_npT/f_TT)-en*en/f_TT)/den;
+                  2.0*en*(nn2*f_nnT/f_TT+np2*f_npT/f_TT)-en*en/f_TT)/den;*/
+
 
     cout.setf(ios::showpos);
     std::cout << cs_sq << " ";
@@ -1250,7 +1365,7 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
         
       //double dmup_dnB=2.0*dF_dnB+(Ye-1.0)*F_nBYe+nB*F_nBnB;
 
-      double dmundnB=(f_nnnn*(1.0-Ye))+(f_nnnp*Ye);
+      //double dmundnB=(f_nnnn*(1.0-Ye))+(f_nnnp*Ye);
       double dmupmuednB=(f_nnnp*(1.0-Ye))+(f_npnp*Ye);
       //double dmundnB=F_nBnB-(Ye*(((1/nB)*F_nBYe)-((1/(nB*nB))*dF_dYe)));
       //double dmupmuednB=F_nBnB-((1-Ye)*(((1/nB)*F_nBYe)-((1/(nB*nB))*dF_dYe)));

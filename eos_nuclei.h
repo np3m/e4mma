@@ -818,11 +818,16 @@ public:
    * This function requires that an EOS with leptons be loaded
    */
   int interp_file(std::vector<std::string> &sv, bool itive_com);
-
-  /** \brief finds distance between two size_t vectors of arbitrary length as long as both vectors have the same length.
+  /** Temporary function used to test vector distance functions.
+   */
+  void vecttest();
+  /** \brief finds the distance between two size_t vectors of arbitrary length as long as both vectors have the same length.
+   */
+  double vector_distance(std::vector<size_t> start, std::vector<size_t> endpoint);
+  /** \brief finds the vector from a map of vectors that is closest a starting size_t vector of arbitrary length as long as both vectors have the same length.
    */
   template<typename T>
-  std::pair<double, T> vector_distance(std::vector<size_t> start, std::map<std::vector<size_t>, T> points);
+  std::pair<double, T> shortest_vector_distance(std::vector<size_t> start, std::map<std::vector<size_t>, T> points);
   /** \brief calculate results from table for points in list
    */
   std::map<std::vector<size_t>, std::vector<double>> calculate_table_values(std::vector<size_t> points_list, interpm_krige_eos& ike);
