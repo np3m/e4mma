@@ -16,11 +16,12 @@ ENV CFLAGS -I/usr/lib/x86_64-linux-gnu/openmpi/include/ \
   -I/usr/include/python3.11 \
   -I/usr/local/lib/python3.11/dist-packages/numpy/core/include \
   -I/usr/include/hdf5/serial -std=c++14
+ENV LDFLAGS -L/usr/lib/x86_64-linux-gnu/hdf5/serial
 
 WORKDIR /opt
 RUN git clone https://github.com/awsteiner/eos 
 WORKDIR /opt/eos
-RUN git checkout andrew && make eos_nuclei eos eos_nompi eos_nuclei_nompi
+RUN git checkout andrew && make eos_nuclei eos
 
 # --------------------------------------------------------------------------
 # Try to load an EOS and look up a point
