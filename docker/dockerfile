@@ -15,7 +15,8 @@ ENV MPI_CXX mpicxx
 ENV CFLAGS -I/usr/lib/x86_64-linux-gnu/openmpi/include/ \
   -I/usr/include/python3.11 \
   -I/usr/local/lib/python3.11/dist-packages/numpy/core/include \
-  -I/usr/include/hdf5/serial -std=c++14
+  -I/usr/include/hdf5/serial -std=c++14 \
+  -DO2SCL_NO_BOOST_MULTIPRECISION
 ENV LDFLAGS -L/usr/lib/x86_64-linux-gnu/hdf5/serial -L/usr/lib/x86_64-linux-gnu -lpython3.11
 
 WORKDIR /opt
