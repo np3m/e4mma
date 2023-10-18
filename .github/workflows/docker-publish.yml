@@ -40,8 +40,8 @@ jobs:
           DOCKER_CLI_ACI: 1
 
   test:
-    runs-on: ubuntu-latest
-    container: eosv2
+    runs-on: eosv2
+    container: utk_eos
     steps:
       - name: Run tests
         run: bash test.sh
