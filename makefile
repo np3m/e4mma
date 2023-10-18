@@ -25,9 +25,9 @@ LMPI_CXX = $(MPI_CXX)
 LIBS = -L/usr/local/lib -lo2scl_hdf -lo2scl_eos -lo2scl_part -lo2scl \
         -lhdf5 -lgsl -lreadline
 LMPI_CFLAGS = -O3 -std=c++11 -DTEMP_UPDATES -DO2SCL_MPI \
-	-DO2SCL_OPENMP -fopenmp
+	-DO2SCL_OPENMP -fopenmp $(CFLAGS) $(MPI_CFLAGS)
 LCFLAGS = -O3 -std=c++11 -DNO_MPI -DTEMP_UPDATES \
-	-DO2SCL_OPENMP -fopenmp
+	-DO2SCL_OPENMP -fopenmp $(CFLAGS)
 
 # ----------------------------------------------------------------
 # UTK-specific settings

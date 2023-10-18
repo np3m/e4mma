@@ -48,7 +48,7 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
   ike.enp=this;
   
   /// Load cs2 from a file
-  cout << "load stability." << endl;
+  cout << "load stability " << st_in << endl;
   hdf_file hff;
   hff.open(st_in);
   hdf_input(hff,tg_cs2,"cs2");
@@ -319,10 +319,15 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
   
   double min_qual=1.0e99;
   vector<double> p(4), min_p;
-  for(p[0]=80.0;p[0]>8.0;p[0]/=1.4) {
-    for(p[1]=80.0;p[1]>8.0;p[1]/=1.4) {
-      for(p[2]=80.0;p[2]>8.0;p[2]/=1.4) {
-        for(p[3]=-15.0;p[3]<-2.99;p[3]+=1.0) {
+  
+  //for(p[0]=80.0;p[0]>8.0;p[0]/=1.4) {
+  //for(p[1]=80.0;p[1]>8.0;p[1]/=1.4) {
+  //for(p[2]=80.0;p[2]>8.0;p[2]/=1.4) {
+  //for(p[3]=-15.0;p[3]<-2.99;p[3]+=1.0) {
+  for(p[0]=2.0;p[0]>1.99;p[0]/=1.4) {
+    for(p[1]=2.0;p[1]>1.99;p[1]/=1.4) {
+      for(p[2]=2.0;p[2]>1.99;p[2]/=1.4) {
+        for(p[3]=-15.0;p[3]<-14.99;p[3]+=1.0) {
 
           if (ike.addl_verbose>=1) {
             cout << "Covariance parameters: ";
@@ -337,6 +342,7 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
                  << q << " " << min_qual << " " << success << endl;
             cout << endl;
           }
+	  exit(-1);
           
           if (success==0 && q<min_qual) {
             min_p=p;
