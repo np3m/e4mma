@@ -15,7 +15,7 @@ ENV MPI_CXX g++
 ENV CFLAGS -I/usr/lib/x86_64-linux-gnu/openmpi/include/
 
 WORKDIR /opt
-RUN git clone https://github.com/awsteiner/eos
+RUN git clone https://github.com/awsteiner/eos && git checkout andrew
 WORKDIR /opt/eos
 RUN make eos_nuclei eos eos_nompi eos_nuclei_nompi
 
