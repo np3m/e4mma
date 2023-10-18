@@ -1,89 +1,32 @@
-FROM ubuntu:latest 
+FROM awsteiner/o2scl:v0.929a1_u23.04_py
 MAINTAINER Andrew W. Steiner (awsteiner0@protonmail.com)
 
-# -----------------------------------------------------------------
-# To fix tzdata asking for a timezone during installation
-# can set up later using sudo dpkg-reconfigure tzdata I think.
-
-ARG DEBIAN_FRONTEND=noninteractive
-
-# -----------------------------------------------------------------
-# apt packages
-
-RUN apt-get -y update
-# compiler, make and gsl
-RUN apt-get -y install g++ make libgsl-dev autoconf automake libtool git
-# HDF5, ncurses, and readline
-RUN apt-get -y install libhdf5-dev libncurses-dev libreadline-dev
-# Boost and Eigen
-RUN apt-get -y install libboost-all-dev libeigen3-dev
-# Armadillo and dependencies
-RUN apt-get -y install cmake libopenblas-dev liblapack-dev libarpack2-dev
-RUN apt-get -y install libsuperlu-dev libarmadillo-dev libfftw3-dev
-# We need curl to test downloading EOSs for o2sclpy
-RUN apt-get -y install curl
-
 # --------------------------------------------------------------------------
-# Since we're enabling python extensions, we need to install python
-# before we install o2scl, so we do that now
+# Additional packages
 
-RUN apt-get -y install python3 python3-pip
-# Ubuntu libhdf5 is outdated relative to the version used by pip install
-# h5py, so we have to explicitly use the old Ubuntu one
-RUN HDF5_DIR=/usr/lib/x86_64-linux-gnu/hdf5/serial pip3 install --no-binary=h5py h5py
-RUN apt-get -y install texlive dvipng texlive-latex-extra cm-super
-# We need pillow to compare images for o2sclpy tests
-RUN pip3 install numpy scipy yt matplotlib requests pytest Pillow
-RUN pip3 install scikit-learn tensorflow-cpu
-
-# -----------------------------------------------------------------
-# Install o2scl
-
-WORKDIR /opt
-RUN git clone https://github.com/awsteiner/o2scl
-WORKDIR /opt/o2scl
-RUN autoreconf -i
-RUN LDFLAGS="-larmadillo -llapack -lblas -lncurses" CXXFLAGS="-O3 -DO2SCL_UBUNTU_HDF5 -DO2SCL_HDF5_PRE_1_12 -DO2SCL_REGEX -DO2SCL_HDF5_COMP -I/usr/include -I/usr/local/lib/python3.10/dist-packages/numpy/core/include" ./configure --enable-eigen --enable-armadillo --enable-openmp --enable-fftw --enable-python
-RUN make blank-doc
-RUN make
-RUN make install
-WORKDIR /
-ENV LD_LIBRARY_PATH /usr/local/lib
-RUN acol -h
-RUN acol -v
-
-# --------------------------------------------------------------------------
-# Install o2sclpy via pip
-
-WORKDIR /opt
-RUN git clone https://github.com/awsteiner/o2sclpy
-WORKDIR /opt/o2sclpy
-RUN pip3 install .
-
-# --------------------------------------------------------------------------
-# To ensure o2graph loads OpenMP appropriately
-
-ENV O2SCL_ADDL_LIBS /usr/lib/gcc/x86_64-linux-gnu/11/libgomp.so
-
-# --------------------------------------------------------------------------
-# Test o2graph
-
-RUN o2graph -h
-RUN o2graph -v
+RUN apt install libopenmpi-dev
 
 # --------------------------------------------------------------------------
 # UTK EOS
 
+# Set makefile variables
+ENV CXX g++
+ENV MPI_CXX mpicxx
+ENV CFLAGS -I/usr/lib/x86_64-linux-gnu/openmpi/include/ \
+  -I/usr/include/python3.11 \
+  -I/usr/local/lib/python3.11/dist-packages/numpy/core/include \
+  -I/usr/include/hdf5/serial -std=c++14
+
 WORKDIR /opt
-RUN git clone https://github.com/awsteiner/eos
+RUN git clone https://github.com/awsteiner/eos 
 WORKDIR /opt/eos
-RUN make eos_nuclei eos eos_nompi eos_nuclei_nompi
+RUN git checkout andrew && make eos_nuclei eos eos_nompi eos_nuclei_nompi
 
 # --------------------------------------------------------------------------
 # Try to load an EOS and look up a point
 
 RUN curl https://isospin.roam.utk.edu/public_data/eos_tables/du21/fid_3_5_22.o2
-RUN ./eos_nuclei -load fid_3_5_22.o2 -point-nuclei 0.16 0.4 1.0 
+RUN mpirun -np 1 ./eos_nuclei -load fid_3_5_22.o2 -point-nuclei 0.16 0.4 1.0 
 
 
 
