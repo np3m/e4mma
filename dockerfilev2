@@ -1,4 +1,4 @@
-FROM registry.gitlab.com/nsf-muses/common/muses-common:1.1.0
+FROM awsteiner/o2scl:v0.929a1_u23.04_py
 
 ARG DEBIAN_FRONTEND=noninteractive
 ARG USERNAME=utk
@@ -6,61 +6,12 @@ ARG UID=1000
 
 LABEL Andrew W. Steiner (awsteiner@mykolab.com)
 
-# Update package list and install required packages
-RUN apt-get update -y && \
-    apt-get install -y --no-install-recommends \
-        g++ make libgsl-dev autoconf automake libtool git \
-        libhdf5-dev libreadline-dev libboost-all-dev libeigen3-dev cmake \
-        libopenblas-dev liblapack-dev libarpack2-dev libsuperlu-dev \
-        libarmadillo-dev libfftw3-dev curl texlive dvipng texlive-latex-extra \
-        cm-super libcairo2-dev libyaml-cpp-dev python3 python3-pip && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
-
-# Install necessary Python packages
-RUN pip3 install numpy==1.24.3 && \
-# Ubuntu libhdf5 is outdated relative to the version used by pip install
-# h5py, so we have to explicitly use the old Ubuntu one
-    HDF5_DIR=/usr/lib/x86_64-linux-gnu/hdf5/serial pip3 install \
-   --no-binary=h5py h5py==3.9.0 && \
-    pip3 install --no-cache-dir --upgrade pip 
-#COPY req.txt /tmp
-#WORKDIR /tmp
-#RUN pip3 install --no-cache-dir -r req.txt
-
-# We need pillow to compare images for o2sclpy tests
-RUN pip3 install --break-system-packages pytest Pillow \
-    scipy matplotlib yt scikit-learn tensorflow-cpu keras && \
-    ln -sv /usr/include/python3.8/* /usr/include/
-# RUN pip3 freeze > u23.04_req.txt
-# RUN cat u23.04_req.txt
-
-# Install o2scl
-WORKDIR /opt
-RUN git clone https://github.com/awsteiner/o2scl && \
-    cd o2scl && \
-    git checkout dcf7262930a1253d9b654f39a8ae9ad886935ea8 && \
-    autoreconf -i && \
-    LDFLAGS="-larmadillo -llapack -lblas -lncurses" CXXFLAGS="-O3 -DO2SCL_UBUNTU_HDF5 -DO2SCL_HDF5_PRE_1_12 -DO2SCL_REGEX -DO2SCL_HDF5_COMP -I/usr/include -I/usr/local/lib/python3.8/dist-packages/numpy/core/include" ./configure --enable-eigen --enable-armadillo --enable-openmp --enable-fftw --enable-python && \
-    make blank-doc && \
-    make -j4 && \
-    make install
-
-# Install o2sclpy via pip
-WORKDIR /opt
-RUN git clone https://github.com/awsteiner/o2sclpy && \
-    cd o2sclpy && \
-    git checkout f3fe1b79af6b8a040e963e24313f5ded87baa2b2 && \
-    pip3 install .
-
-# To ensure o2graph loads OpenMP appropriately
-ENV O2SCL_ADDL_LIBS /usr/lib/gcc/x86_64-linux-gnu/11/libgomp.so
-
 # UTK EOS
 WORKDIR /opt
+RUN apt-get install libyaml-cpp-dev -y 
 RUN git clone https://github.com/awsteiner/eos && \
     cd eos && \
     git switch v2 && \
-    git checkout 40d06b65bbc1f73c2bccab7d5e5e98ff686b1ee5 && \
     make -j4 eos_nuclei && \
     curl https://isospin.roam.utk.edu/public_data/eos_tables/du21/fid_3_5_22.o2 --output data/fid_3_5_22.o2
+WORKDIR eos
