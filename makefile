@@ -523,4 +523,7 @@ makeimg5:
 	       -deriv2 nB Fint Fw -function "Fw/10^4" Fs3 -plot nB Fs3\
        	       -save fint5_after.png
 
+testsegfault:
+	./eos_nuclei -load /home/awsteiner/wcs/eos/fid_3_14_23.o2 -interp-file /home/jbaut001/st.o2 ~/eos/fid_10_18_23.o2
+
 -include makefile.aws
