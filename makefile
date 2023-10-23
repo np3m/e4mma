@@ -20,9 +20,9 @@ help:
 # LCFLAGS are the local C++ compiler flags
 
 # Default settings
-LCXX = $(CXX)
+LCXX = $(CXX)>
 LMPI_CXX = $(MPI_CXX)
-LIBS = $(LDFLAGS) -L/usr/local/lib -lo2scl -lhdf5 -lgsl -lreadline 
+LIBS = -L/usr/local/lib -lo2scl -lhdf5 -lgsl -lreadline $(LDFLAGS) 
 LMPI_CFLAGS = -O3 -std=c++11 -DTEMP_UPDATES -DO2SCL_MPI \
 	-DO2SCL_OPENMP -fopenmp $(CFLAGS) $(MPI_CFLAGS)
 LCFLAGS = -O3 -std=c++11 -DNO_MPI -DTEMP_UPDATES \
@@ -115,6 +115,12 @@ eos_nuclei: eos.o main.o eos_nuclei.o eos_had_skyrme_ext.o eos_interp.o \
 		neutrino/FunctionIntegrator.o neutrino/Polarization.o \
 		neutrino/PolarizationNonRelv2Apr8.o neutrino/jacobi_rule.o \
 		$(LIBS) -lreadline
+
+eos: eos.o main_eos.o \
+		eos_had_skyrme_ext.o 
+	$(LCXX) $(LCFLAGS) -o eos_nompi eos.o \
+		main_eos.o eos_had_skyrme_ext.o $(LIBS) \
+		-lreadline
 
 # ----------------------------------------------------------------
 # Version without MPI
