@@ -115,6 +115,9 @@ eos_nuclei: eos.o main.o eos_nuclei.o eos_had_skyrme_ext.o eos_interp.o \
 		neutrino/PolarizationNonRelv2Apr8.o neutrino/jacobi_rule.o \
 		$(LIBS) -lreadline
 
+main_eos.o: main_eos.cpp eos.h 
+	$(LMPI_CXX) $(LMPI_CFLAGS) -o main_eos.o -c main_eos.cpp 
+
 eos: eos.o main_eos.o \
 		eos_had_skyrme_ext.o 
 	$(LMPI_CXX) $(LMPI_CFLAGS) -o eos_nompi eos.o \

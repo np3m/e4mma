@@ -22,7 +22,8 @@ ENV LDFLAGS -L/usr/lib/x86_64-linux-gnu/hdf5/serial \
 WORKDIR /opt
 RUN git clone https://github.com/awsteiner/eos 
 WORKDIR /opt/eos
-RUN git checkout b772f6db && make eos_nuclei eos
+RUN git checkout b772f6db
+RUN make eos_nuclei eos
 
 # --------------------------------------------------------------------------
 # Try to load an EOS and look up a point
