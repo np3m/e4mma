@@ -28,9 +28,9 @@ RUN make eos_nuclei eos
 # --------------------------------------------------------------------------
 # Try to load an EOS and look up a point
 
-RUN mpirun -np 1 ./eos -help
+RUN mpirun --allow-run-as-root -np 1 ./eos -help
 RUN curl https://isospin.roam.utk.edu/public_data/eos_tables/du21/fid_3_5_22.o2
-RUN mpirun -np 1 ./eos_nuclei -load fid_3_5_22.o2 -point-nuclei 0.16 0.4 1.0 
+RUN mpirun --allow-run-as-root -np 1 ./eos_nuclei -load fid_3_5_22.o2 -point-nuclei 0.16 0.4 1.0 
 
 
 

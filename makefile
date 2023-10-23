@@ -120,7 +120,7 @@ main_eos.o: main_eos.cpp eos.h
 
 eos: eos.o main_eos.o \
 		eos_had_skyrme_ext.o 
-	$(LMPI_CXX) $(LMPI_CFLAGS) -o eos_nompi eos.o \
+	$(LMPI_CXX) $(LMPI_CFLAGS) -o eos eos.o \
 		main_eos.o eos_had_skyrme_ext.o $(LIBS) \
 		-lreadline
 
