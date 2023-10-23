@@ -22,7 +22,7 @@ ENV LDFLAGS -L/usr/lib/x86_64-linux-gnu/hdf5/serial \
 WORKDIR /opt
 RUN git clone https://github.com/awsteiner/eos 
 WORKDIR /opt/eos
-RUN git checkout bd40644c
+RUN git checkout 33ab2b33
 RUN make eos_nuclei eos
 
 # --------------------------------------------------------------------------
