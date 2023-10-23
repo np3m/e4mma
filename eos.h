@@ -577,7 +577,11 @@ public:
   /// \name Particle objects [protected]
   //@{
   /// New lepton object
+#ifdef O2SCL_NO_BOOST_MULTIPRECISION
   o2scl::eos_leptons elep;
+#else
+  o2scl::eos_leptons_multip elep;
+#endif
   
   /** \brief Electron/positron
    */

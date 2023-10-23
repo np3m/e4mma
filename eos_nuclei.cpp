@@ -2247,7 +2247,7 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
 
 int eos_nuclei::solve_nuclei_mu
 (size_t nv, const ubvector &x, ubvector &y, double mun, double mup, double T,
- double &mun_gas, double &mup_gas, thermo &th_gas) {
+ double &mun_gas, double &mup_gas, thermo &th_gas, bool no_nuclei) {
   
   ubvector xt(2), yt(2);
   int ret;
@@ -2255,6 +2255,48 @@ int eos_nuclei::solve_nuclei_mu
   
   double nb=x[0];
   double ye=x[1];
+
+  if (nb<1.0e-12 || nb>2.0) {
+    cout << "Density " << nb << " out of range." << endl;
+    return 10;
+  }
+  if (ye<0.0 || ye>0.7) {
+    cout << "Electron fraction " << ye << " out of range." << endl;
+    return 11;
+  }
+
+  map<std::string,double> vdet;
+  thermo th;
+  
+  if (no_nuclei) {
+    
+    double lxn, lxp;
+    
+    int A_min, A_max, NmZ_min, NmZ_max;
+    A_min=5;
+    A_max=fd_A_max;
+    NmZ_min=-200;
+    NmZ_max=200;
+    double Zbar, Nbar;
+
+    mun_gas=0.0;
+    mup_gas=0.0;
+    ret=nuc_matter(nb,ye,T,lxn,lxp,Zbar,Nbar,th,mun_gas,mup_gas,
+                   A_min,A_max,NmZ_min,NmZ_max,vdet);
+    if (ret!=0) {
+      cerr << "nuc matter function failed." << endl;
+      return ret;
+    }
+
+    cout.precision(10);
+    cout << nb << " " << ye << " " << mun_gas << " " << mup_gas << endl;
+    cout.precision(6);
+    y[0]=mun-mun_gas;
+    y[1]=mup-mup_gas;
+    
+    return 0;
+  }
+  
   double log_xn_0=x[2];
   double log_xp_0=x[3];
   double log_xn_1=x[4];
@@ -2264,22 +2306,12 @@ int eos_nuclei::solve_nuclei_mu
   double log_xn_3=x[8];
   double log_xp_3=x[9];
 
-  if (nb<1.0e-12 || nb>2.0) {
-    return 10;
-  }
-  if (ye<0.0 || ye>0.7) {
-    return 11;
-  }
-
-  map<std::string,double> vdet;
-  thermo th;
-  
   xt[0]=log_xn_0;
   xt[1]=log_xp_0;
   ret=solve_nuclei(2,xt,yt,nb*(1.0-1.0e-4),ye,T,0,mun_gas,mup_gas,
                    th_gas,vdet);
   if (ret!=0) {
-    cerr << "First solve_nuclei function failed." << endl;
+    cerr << "First solve_nuclei function failed " << ret << endl;
     return ret;
   }
   fnb1=compute_fr_nuclei(nb,ye,T,xt[0],xt[1],th,th_gas);
@@ -2291,7 +2323,7 @@ int eos_nuclei::solve_nuclei_mu
   ret=solve_nuclei(2,xt,yt,nb*(1.0+1.0e-4),ye,T,0,mun_gas,mup_gas,
                    th_gas,vdet);
   if (ret!=0) {
-    cerr << "Second solve_nuclei function failed." << endl;
+    cerr << "Second solve_nuclei function failed " << ret << endl;
     return ret;
   }
   fnb2=compute_fr_nuclei(nb,ye,T,xt[0],xt[1],th,th_gas);
@@ -2303,7 +2335,7 @@ int eos_nuclei::solve_nuclei_mu
   ret=solve_nuclei(2,xt,yt,nb,ye*(1.0-1.0e-4),T,0,mun_gas,mup_gas,
                    th_gas,vdet);
   if (ret!=0) {
-    cerr << "Third solve_nuclei function failed." << endl;
+    cerr << "Third solve_nuclei function failed " << ret << endl;
     return ret;
   }
   fye1=compute_fr_nuclei(nb,ye,T,xt[0],xt[1],th,th_gas);
@@ -2315,7 +2347,7 @@ int eos_nuclei::solve_nuclei_mu
   ret=solve_nuclei(2,xt,yt,nb,ye*(1.0+1.0e-4),T,0,mun_gas,mup_gas,
                    th_gas,vdet);
   if (ret!=0) {
-    cerr << "Fourth solve_nuclei function failed." << endl;
+    cerr << "Fourth solve_nuclei function failed " << ret << endl;
     return ret;
   }
   fye2=compute_fr_nuclei(nb,ye,T,xt[0],xt[1],th,th_gas);
@@ -6655,6 +6687,37 @@ int eos_nuclei::point_nuclei_mu(std::vector<std::string> &sv,
   ubvector x(10), y(10);
   x[0]=nB;
   x[1]=Ye;
+  
+  mroot_hybrids<> mh2;
+  mh2.verbose=2;
+  
+  mm_funct func_nn=std::bind
+    (std::mem_fn<int(size_t,const ubvector &,ubvector&,
+                     double,double,double,double &,double &,
+                     thermo &,bool)>
+     (&eos_nuclei::solve_nuclei_mu),this,std::placeholders::_1,
+     std::placeholders::_2,std::placeholders::_3,
+     mun,mup,T,std::ref(mun_full),std::ref(mup_full),
+     std::ref(th_gas),true);
+
+  mh2.msolve(2,x,func_nn);
+  nB=x[0];
+  Ye=x[1];
+
+  if (nB>0.16) {
+    cout << "Solving for nuclear matter at final point nB,Ye,T(1/fm): "
+         << nB << " " << Ye << " " << T << endl;
+    ret=eos_vary_dist(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,
+                          thx,mun_full,mup_full,
+                          A_min,A_max,NmZ_min,NmZ_max,vdet,
+                          true,false);
+    if (ret!=0) {
+      cerr << "Final point failed in 'point-nuclei-mu'." << endl;
+      return 1;
+    }
+    return 0;
+  }
+  
   x[2]=log_xn;
   x[3]=log_xp;
   x[4]=log_xn;
@@ -6667,11 +6730,11 @@ int eos_nuclei::point_nuclei_mu(std::vector<std::string> &sv,
   mm_funct func=std::bind
     (std::mem_fn<int(size_t,const ubvector &,ubvector&,
                      double,double,double,double &,double &,
-                     thermo &)>
+                     thermo &,bool)>
      (&eos_nuclei::solve_nuclei_mu),this,std::placeholders::_1,
      std::placeholders::_2,std::placeholders::_3,
      mun,mup,T,std::ref(mun_full),std::ref(mup_full),
-     std::ref(th_gas));
+     std::ref(th_gas),false);
 
   if (func(10,x,y)!=0) {
     cerr << "Initial guess to solver failed in 'point-nuclei-mu'."
@@ -6679,8 +6742,6 @@ int eos_nuclei::point_nuclei_mu(std::vector<std::string> &sv,
     return 2;
   }
           
-  mroot_hybrids<> mh2;
-  mh2.verbose=2;
   mh2.msolve(10,x,func);
 
   cout << "Solving for matter at final point nB,Ye,T(1/fm): "

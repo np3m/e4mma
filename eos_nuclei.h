@@ -642,7 +642,8 @@ public:
   /// Desc
   int solve_nuclei_mu
   (size_t nv, const ubvector &x, ubvector &y, double mun, double mup,
-   double T, double &mun_gas, double &mup_gas, o2scl::thermo &th_gas);
+   double T, double &mun_gas, double &mup_gas, o2scl::thermo &th_gas,
+   bool no_nuclei);
 
   /// Desc
   double compute_fr_nuclei(double nB, double Ye, double T,
