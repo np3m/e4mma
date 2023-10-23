@@ -6239,12 +6239,17 @@ int eos_nuclei::read_results(std::string fname) {
   if (itmp==1) include_muons=true;
   else include_muons=false;
 
-  if (include_muons==false &&
-      hf.find_object_by_name("Ymu",type)==0 && type=="tensor_grid") {
+  /*
+    AWS, 10/23/23: This should be here, but some old files include
+    Ymu when they shouldn't, so removing this for now
+
+    if (include_muons==false &&
+    hf.find_object_by_name("Ymu",type)==0 && type=="tensor_grid") {
     cout << "Found tensor Ymu so automatically "
-         << "setting include_muons to true." << endl;
+    << "setting include_muons to true." << endl;
     include_muons=true;
-  }
+    }
+  */
 
   if (verbose>2) cout << "Reading alg_mode." << endl;
   hf.geti_def("alg_mode",4,alg_mode);
