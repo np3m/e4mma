@@ -117,7 +117,7 @@ eos_nuclei: eos.o main.o eos_nuclei.o eos_had_skyrme_ext.o eos_interp.o \
 
 eos: eos.o main_eos.o \
 		eos_had_skyrme_ext.o 
-	$(LCXX) $(LCFLAGS) -o eos_nompi eos.o \
+	$(LMPI_CXX) $(LMPI_CFLAGS) -o eos_nompi eos.o \
 		main_eos.o eos_had_skyrme_ext.o $(LIBS) \
 		-lreadline
 
