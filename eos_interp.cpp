@@ -231,8 +231,8 @@ void eos_nuclei::interpolate(double nB_p,
   ike.set_covar(mfr,param_lists);
  
   ike.skip_optim=true;
-  ike.set(nB_grid2,Ye_grid2,T_grid2,tg_Fint,tg_P,tg_S,
-          tg_mun,tg_mup,tg_mue,neutron.m,proton.m);
+  ike.set(nB_grid2,Ye_grid2,T_grid2,tg_F,tg_P,tg_S,
+          tg_mun,tg_mup,tg_mue,tg_Fint,tg_Sint,neutron.m,proton.m);
 
   minimize_parameters(ike);
 
@@ -407,8 +407,8 @@ void eos_nuclei::interpolate(double nB_p,
     double eta = 0.2;
     std::map<std::vector<size_t>, std::pair<double, double>>::iterator it4;
     for (it4=fix_list.begin(); it4 != fix_list.end(); ++it4) {
-      fixed=ike.tgp_F->get(it4->first)+((it4->second.first-ike.tgp_F->get(it4->first))*std::exp(-std::pow(it4->second.second, 2.0)/std::pow(eta, 2.0)));
-      cout << tg_file.get(it4->first) << " " << fixed << " Original: " << ike.tgp_F->get(it4->first) << " Closest: " << it4->second.first << " Distance: " << it4->second.second << endl;
+      fixed=ike.tgp_Fint->get(it4->first)+((it4->second.first-ike.tgp_Fint->get(it4->first))*std::exp(-std::pow(it4->second.second, 2.0)/std::pow(eta, 2.0)));
+      cout << tg_file.get(it4->first) << " " << fixed << " Original: " << ike.tgp_Fint->get(it4->first) << " Closest: " << it4->second.first << " Distance: " << it4->second.second << endl;
       tg_file.get(it4->first)=fixed;
       cout << tg_file.get(it4->first) << endl;
     }
@@ -646,6 +646,8 @@ void interpm_krige_eos::set(std::vector<double> &nB_grid2,
                             o2scl::tensor_grid<> &tg_mun,
                             o2scl::tensor_grid<> &tg_mup,
                             o2scl::tensor_grid<> &tg_mue,
+                            o2scl::tensor_grid<> &tg_Fint,
+                            o2scl::tensor_grid<> &tg_Sint,
                             double mn, double mpx) {
 
   ubmatrix ix(calib_list.size()/3,3);
@@ -680,6 +682,8 @@ void interpm_krige_eos::set(std::vector<double> &nB_grid2,
   tgp_mun=&tg_mun;
   tgp_mup=&tg_mup;
   tgp_mue=&tg_mue;
+  tgp_Fint=&tg_Fint;
+  tgp_Sint=&tg_Sint;
     
   size_t n_nB=nB_grid2.size();
   size_t n_Ye=Ye_grid2.size();
@@ -1326,25 +1330,25 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
         (T_grid[index[2]+1]-T_grid[index[2]]) << endl;
       */
       
-      double t1=(tgp_F->get(index)-tgp_F->get(im1))/hc_mev_fm/
+      double t1=(tgp_Fint->get(index)-tgp_Fint->get(im1))/hc_mev_fm/
         (nB_grid[index[0]]-nB_grid[index[0]-1]);
-      double t2=(tgp_F->get(ip1)-tgp_F->get(index))/hc_mev_fm/
+      double t2=(tgp_Fint->get(ip1)-tgp_Fint->get(index))/hc_mev_fm/
         (nB_grid[index[0]+1]-nB_grid[index[0]]);
       double t3=(t2-t1)*2.0/(nB_grid[index[0]+1]-nB_grid[index[0]-1]);
       cout << "F_nB: " << dF_dnB << " " << t1 << " " << t2 << endl;
       double tab_dF_dnB = t1;
       cout << F_nBnB << " " << t3 << " ";
      if (!(index[1]==0) && !(index[1]==69)) { 
-        t1=(tgp_F->get(index)-tgp_F->get(jm1))/hc_mev_fm/
+        t1=(tgp_Fint->get(index)-tgp_Fint->get(jm1))/hc_mev_fm/
           (Ye_grid[index[1]]-Ye_grid[index[1]-1]);
-        t2=(tgp_F->get(jp1)-tgp_F->get(index))/hc_mev_fm/
+        t2=(tgp_Fint->get(jp1)-tgp_Fint->get(index))/hc_mev_fm/
           (Ye_grid[index[1]+1]-Ye_grid[index[1]]);
         t3=(t2-t1)*2.0/(Ye_grid[index[1]+1]-Ye_grid[index[1]-1]);
         cout << "F_Ye: " << dF_dYe << " " << t1 << " " << t2 << endl;
         cout << F_YeYe << " " << t3 << " ";
 
-        double tab_mun=tgp_F->get(index)/hc_mev_fm-Ye*t1+nB*tab_dF_dnB;
-        double tab_mup=tgp_F->get(index)/hc_mev_fm+(1.0-Ye)*t1+nB*tab_dF_dnB;
+        double tab_mun=tgp_Fint->get(index)/hc_mev_fm-Ye*t1+nB*tab_dF_dnB;
+        double tab_mup=tgp_Fint->get(index)/hc_mev_fm+(1.0-Ye)*t1+nB*tab_dF_dnB;
         cout << "tab mun, mup: " << tab_mun << " " << tab_mup << endl;
      }
       
@@ -1413,8 +1417,8 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
       }
 
     cout << "\nF_intp " << Fintp << endl;
-    cout << "F_tab " << tgp_F->get(index) << endl;
-    double diff = std::abs(tgp_F->get(index)-Fintp)/std::abs(tgp_F->get(index));
+    cout << "F_tab " << tgp_Fint->get(index) << endl;
+    double diff = std::abs(tgp_Fint->get(index)-Fintp)/std::abs(tgp_Fint->get(index));
     cout << diff << endl;
     if (diff < 0.001) {
         cout << "success\n";

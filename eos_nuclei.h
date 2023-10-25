@@ -158,6 +158,8 @@ public:
                    o2scl::tensor_grid<> &tg_mun,
                    o2scl::tensor_grid<> &tg_mup,
                    o2scl::tensor_grid<> &tg_mue,
+                   o2scl::tensor_grid<> &tg_Fint,
+                   o2scl::tensor_grid<> &tg_Sint,
                    double mn, double mpx);
   
   /** \brief Additional constraints for the interpolation
