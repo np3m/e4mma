@@ -20,14 +20,13 @@ help:
 # LCFLAGS are the local C++ compiler flags
 
 # Default settings
-LCXX = $(CXX)
+LCXX = $(CXX)>
 LMPI_CXX = $(MPI_CXX)
-LIBS = -L/usr/local/lib -lo2scl_hdf -lo2scl_eos -lo2scl_part -lo2scl \
-        -lhdf5 -lgsl -lreadline
+LIBS = -L/usr/local/lib -lo2scl -lhdf5 -lgsl -lreadline $(LDFLAGS) 
 LMPI_CFLAGS = -O3 -std=c++11 -DTEMP_UPDATES -DO2SCL_MPI \
-	-DO2SCL_OPENMP -fopenmp
+	-DO2SCL_OPENMP -fopenmp $(CFLAGS) $(MPI_CFLAGS)
 LCFLAGS = -O3 -std=c++11 -DNO_MPI -DTEMP_UPDATES \
-	-DO2SCL_OPENMP -fopenmp
+	-DO2SCL_OPENMP -fopenmp $(CFLAGS)
 
 # ----------------------------------------------------------------
 # UTK-specific settings
@@ -44,11 +43,10 @@ LIBS = $(UTKNA_O2SCL_LIBS) $(UTKNA_PYTHON_LDFLAGS)
 LCXX = $(UTKNA_CXX) 
 LMPI_CXX = $(UTKNA_MPI_CXX)
 LCFLAGS = $(UTKNA_O2SCL_INCS) $(UTKNA_CFLAGS) -DNO_MPI \
-        $(UTKNA_OPENMP_FLAGS) -DO2SCL_EIGEN \
-	-DO2SCL_NEW_BOOST_INTEGRATION 
+        $(UTKNA_OPENMP_FLAGS) -DO2SCL_EIGEN $(UTKNA_EOS_FLAGS)
 LMPI_CFLAGS = $(UTKNA_O2SCL_INCS) $(UTKNA_CFLAGS) \
-	$(UTKNA_OPENMP_FLAGS) $(UTKNA_MPI_CFLAGS) \
-	-DO2SCL_NEW_BOOST_INTEGRATION
+	$(UTKNA_OPENMP_FLAGS) $(UTKNA_MPI_CFLAGS) $(UTKNA_EOS_FLAGS)
+
 endif
 
 # ----------------------------------------------------------------
@@ -123,9 +121,15 @@ eos_nuclei: eos.o main.o eos_nuclei.o eos_had_skyrme_ext.o eos_interp.o \
 		neutrino/PolarizationNonRelv2Apr8.o neutrino/jacobi_rule.o \
 		$(LIBS) -lreadline
 
-test_program: test.cpp
-	$(LMPI_CXX) $(LMPI_CFLAGS) \
-		-o test -c test.cpp
+main_eos.o: main_eos.cpp eos.h 
+	$(LMPI_CXX) $(LMPI_CFLAGS) -o main_eos.o -c main_eos.cpp 
+
+eos: eos.o main_eos.o \
+		eos_had_skyrme_ext.o 
+	$(LMPI_CXX) $(LMPI_CFLAGS) -o eos eos.o \
+		main_eos.o eos_had_skyrme_ext.o $(LIBS) \
+		-lreadline
+
 # ----------------------------------------------------------------
 # Version without MPI
 # ----------------------------------------------------------------
@@ -230,6 +234,14 @@ doc: empty
 	cd doc; cp ~/o2scl/doc/o2scl/html/objects.inv \
 		o2scl_objects.inv
 	cd doc; doxygen doxyfile
+	cd doc; make html
+
+doc-auto: enn
+	cd doc; cp ~/o2scl/doc/o2scl/o2scl.tag .
+	cd doc; cp ~/o2scl/doc/o2scl/html/objects.inv \
+		o2scl_objects.inv
+	cd doc; doxygen doxyfile
+	enn -xml-to-o2
 	cd doc; make html
 
 BROWSER = 
