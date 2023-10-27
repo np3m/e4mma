@@ -453,7 +453,7 @@ public:
   */
   int six_neighbors;
 
-  /** \brief A new function verbose parameter
+  /** \brief A parameter which handles verbosity for several functions
 
       Verbose for individual functions
       (default value 11111).\n\t1s digit: fixed_ZN()\n\t10s digit:
