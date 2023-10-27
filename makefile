@@ -21,9 +21,9 @@ help:
 
 # Default settings
 LIBS = -L/usr/lib/x86_64-linux-gnu/hdf5/serial \
-	-L/usr/local/lib/python3.11/dist-packages/numpy/core/include \
+	-L/usr/local/lib/python3.10/dist-packages/numpy/core/include \
 	-lo2scl -lhdf5 -lgsl \
-	-lreadline -lpython3.11 
+	-lreadline -lpython3.10 
 FLIBS = -lgfortran
 # PLIBS = -L/usr/lib/x86_64-linux-gnu/ 
 LCXX = g++
@@ -31,20 +31,20 @@ LFC = gfortran
 LMPI_FC = mpif90
 LMPI_CXX = mpic++
 LCFLAGS = -I/usr/lib/x86_64-linux-gnu/hdf5/serial/include \
-	-I/usr/local/lib/python3.11/dist-packages/numpy/core/include \
-	-DNO_MPI -DNO_OPENMP -DO2SCL_PYTHON \
-	-I/usr/include/python3.11 
+	-I/usr/local/lib/python3.10/dist-packages/numpy/core/include \
+	-DNO_MPI -DNO_OPENMP -DO2SCL_PYTHON -DO2SCL_NO_BOOST_MULTIPRECISION \
+	-I/usr/include/python3.10 
 LCFLAGS_OMP = -I/usr/lib/x86_64-linux-gnu/hdf5/serial/include \
 	-DNO_MPI -DO2SCL_PYTHON \
-	-fopenmp -DTEMP_UPDATES\
+	-fopenmp -DTEMP_UPDATES -DO2SCL_NO_BOOST_MULTIPRECISION \
 	-I/usr/local/lib/python3.10/dist-packages/numpy/core/include \
-	-I/usr/include/python3.11 
+	-I/usr/include/python3.10 
 LFFLAGS = -O3
 LMPI_CFLAGS = -I/usr/lib/x86_64-linux-gnu/hdf5/serial/include \
-	-I/usr/local/lib/python3.11/dist-packages/numpy/core/include \
+	-I/usr/local/lib/python3.10/dist-packages/numpy/core/include \
 	-DO2SCL_MPI -DO2SCL_OPENMP -DO2SCL_PYTHON \
-	-fopenmp -DTEMP_UPDATES \
-	-I/usr/include/python3.11 
+	-fopenmp -DTEMP_UPDATES -DO2SCL_NO_BOOST_MULTIPRECISION \
+	-I/usr/include/python3.10 
 	
 COMMENT = "default"
 # ----------------------------------------------------------------
@@ -495,24 +495,16 @@ mbpi:
 		-load data/fid_3_5_22.o2 \
 		-hrg-load ./pdg_uh_nonp.dat \
 		-set recompute 1 \
-		-point-nuclei 0.1 0.1 30 
+		-point-nuclei 0.1 0.1 0 
 
 mbnuc:
-	./eos_nuclei \
-		-select-model $(P_FIDUCIAL) \
-		-set inc_hrg false \
-		-set no-nuclei true \
-		-load data/fid_3_5_22.o2 \
-		-hrg-load ./pdg_uh_nonp.dat \
-		-set recompute 1 \
-		-solve-nuclei 0.1 0.4 30 
+	./eos_nuclei -muses-table "CMF_output_for_Lepton_formatted.csv"
 
 mbmuses:
 	./eos_nuclei \
 		-select-model $(P_FIDUCIAL) \
-		-load data/fid_3_5_22.o2 \
 		-set recompute 1 \
-		-muses 0.1 0.4 0 
+		-create-new-table whatever
 
 pascal: 
 	g++ -fopenmp pascal.cpp -o pascal 
@@ -548,4 +540,11 @@ plot4:
 	o2graph -read data/fid_3_5_22.o2 E -set colbar 1 \
 	-to-table3d 0 1 slice 0.1 -den-plot slice pcm=True \
 	-xtitle "$$ n_B~(\mathrm{fm}^{-3}) $$" -ytitle "$$ Y_e $$" \
+	-show
+
+plot5:
+	o2graph \
+		-read data/fid_3_5_22.o2 mun -to-table 0 nB mun 0.5 0.1 -plot nB mun \
+		-read data/fid_3_5_22.o2 mup -to-table 0 nB mup 0.5 0.1 -plot nB mup \
+	-xtitle "$$ n_B~(\mathrm{fm}^{-3}) $$" -ytitle "$$ \mu_N~(\mathrm{MeV}) $$" \
 	-show

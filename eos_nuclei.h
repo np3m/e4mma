@@ -737,6 +737,14 @@ public:
 
   /// \name Functions for the main algorithm
   //@{
+  /// Desc
+  double compute_fr_nuclei(double nB, double Ye, double T,
+                           double log_xn, double log_xp,
+                           o2scl::thermo &th, o2scl::thermo &th_gas);
+  /// Desc
+  int solve_nuclei_mu
+  (size_t nv, const ubvector &x, ubvector &y, double mun, double mup,
+   double T, double &mun_gas, double &mup_gas, o2scl::thermo &th_gas);
   /** \brief Use only one of the two equations for a 
       function for a root bracketing algorithm
   */
@@ -970,6 +978,17 @@ public:
       which holds the full nuclear distribution.
    */
   int point_nuclei(std::vector<std::string> &sv, bool itive_com);
+  /** \brief Desc
+
+      args
+
+      Desc
+  */
+  int point_nuclei_mu(std::vector<std::string> &sv, bool itive_com);
+  int muses_table(std::vector<std::string> &sv,
+			     bool itive_com);
+  int create_new_table(std::vector<std::string> &sv,
+				 bool itive_com);
   int muses(std::vector<std::string> &sv, bool itive_com);
   
   /** \brief Test an EOS at random points in (nB,Ye,T)
