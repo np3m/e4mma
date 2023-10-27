@@ -1,4 +1,4 @@
-name: Docker
+name: ci
 
 # This workflow uses actions that are not certified by GitHub.
 # They are provided by a third-party and are governed by
@@ -35,17 +35,14 @@ jobs:
       - name: Build Docker image
         run: |
           docker buildx create --use
-          docker buildx build --tag sroy14/eosv2:latest -f dockerfilev2 .
+          docker buildx build --tag eosv2 - < dockerfilev2
         env:
           DOCKER_CLI_ACI: 1
 
   test:
-    runs-on: ubuntu-latest
-
+    runs-on: eosv2
+    container: utk_eos
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
       - name: Run tests
         run: bash test.sh
 
