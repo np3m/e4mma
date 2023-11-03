@@ -498,7 +498,15 @@ mbpi:
 		-point-nuclei 0.1 0.1 0 
 
 mbnuc:
-	./eos_nuclei -muses-table "CMF_output_for_Lepton_formatted.csv"
+	./eos_nuclei \
+		-select-model $(P_FIDUCIAL) \
+		-set a_virial 10 -set b_virial 10 \
+		-set extend_frdm 0 \
+		-set fd_A_max 600 -set max_ratio 7.0 \
+		-set fixed_dist_alg 1999 \
+		-set function_verbose 0 \
+		-load data/fid_3_5_22.o2 \
+		-muses-table whatever
 
 mbmuses:
 	./eos_nuclei \

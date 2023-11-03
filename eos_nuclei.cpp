@@ -7713,135 +7713,35 @@ int eos_nuclei::muses(std::vector<std::string> &sv,
   std::ofstream fout("api/output/output.yaml"); 
   fout << _baseNode; 
 
+  std::ofstream myfile;
+  myfile.open("example.csv", std::ofstream::out | std::ofstream::app);
+  myfile << T << "," << tg_mun.get(ix)+neutron.m*hc_mev_fm << "," << 0 
+      << "," << tg_mup.get(ix)+proton.m*hc_mev_fm-tg_mun.get(ix)-neutron.m*hc_mev_fm << "," 
+      << nB <<"," << 0 << "," << Ye << "," << tg_E.get(ix) << "," << tg_P.get(ix) << "," << tg_S.get(ix) << std::endl;
+  myfile.close();
   return 0;
 }
 
 int eos_nuclei::muses_table(std::vector<std::string> &sv,
 			     bool itive_com) {
-  fstream fin;
-  cout << "opening: " << sv[1] << endl;
-  fin.open(sv[1], ios::in);
-  double Temp, muB, muS, muQ, vector_density, Y_S, Y_Q, energy, pressure, entropy;
-
-  // Read the Data from the file 
-  // as String Vector 
-  vector<double> row; 
-  string line, word, temp; 
-  cout << "Temp, muB, muS, muQ, vector_density, Y_S, Y_Q, energy, pressure, entropy:" << endl;
-    // read an entire row and 
-    // store it in a string variable 'line' 
-  while(getline(fin, line)){
-    row.clear(); 
-    //cout << line << endl;
-    // used for breaking words 
-    stringstream s(line); 
-    
-    // read every column data of a row and 
-    // store it in a string variable, 'word' 
-    while (getline(s, word, ',')) { 
-  
-    // add all the column data 
-    // of a row to a vector 
-      row.push_back(std::stod(word)); 
-    } 
-    Temp=row[0]; muB=row[1]; muQ=row[3]; vector_density=row[4];Y_Q=row[6];
-    double mun=muB/hc_mev_fm-neutron.m;
-    double mup=muB/hc_mev_fm-proton.m;
-    double T=Temp/hc_mev_fm;
-  
-    double nB=vector_density;
-    double Ye=Y_Q;
-
-    std::cout << "Command 'point-nuclei-mu' computing EOS at (w/o rest mass)\n"
-            << "  mun(1/fm),mup(1/fm),T(1/fm): " << mun << " "
-            << mup << " " << T << endl;
-    std::cout << "Using guess for nB,Ye: " << nB << " " << Ye << std::endl;
-  
-    double log_xn, log_xp;
-    if (sv.size()>=8) {
-      log_xn=o2scl::function_to_double(sv[6]);
-      log_xp=o2scl::function_to_double(sv[7]);
-    } else {
-      if (nB<0.16) {
-        log_xn=log10(nB*(1.0-Ye)/2.0);
-        log_xp=log10(nB*Ye/2.0);
-      } else {
-        log_xn=log10(nB*(1.0-Ye));
-        log_xp=log10(nB*Ye);
-      }
-    }
-    std::cout << "Using guess for log_xn,log_xp: " << log_xn << " "
-            << log_xp << std::endl;
-  
-    thermo thx, th_gas;
-    double mun_full, mup_full;
-    double Zbar, Nbar;
-    map<string,double> vdet;
-    int A_min, A_max, NmZ_min, NmZ_max;
-
-    A_min=5;
-    A_max=fd_A_max;
-    NmZ_min=-200;
-    NmZ_max=200;
-
-    cout << "Solving for matter at initial point nB,Ye,T(1/fm): "
-       << nB << " " << Ye << " " << T << endl;
-    int ret=eos_vary_dist(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,
-                        thx,mun_full,mup_full,
-                        A_min,A_max,NmZ_min,NmZ_max,vdet,
-                        true,false);
-    if (ret!=0) {
-      cerr << "Initial point failed in 'point-nuclei-mu'." << endl;
-      return 1;
-    }
-
-    ubvector x(10), y(10);
-    x[0]=nB;
-    x[1]=Ye;
-    x[2]=log_xn;
-    x[3]=log_xp;
-    x[4]=log_xn;
-    x[5]=log_xp;
-    x[6]=log_xn;
-    x[7]=log_xp;
-    x[8]=log_xn;
-    x[9]=log_xp;
-  
-    mm_funct func=std::bind
-      (std::mem_fn<int(size_t,const ubvector &,ubvector&,
-                     double,double,double,double &,double &,
-                     thermo &)>
-      (&eos_nuclei::solve_nuclei_mu),this,std::placeholders::_1,
-      std::placeholders::_2,std::placeholders::_3,
-      mun,mup,T,std::ref(mun_full),std::ref(mup_full),
-      std::ref(th_gas));
-
-    if (func(10,x,y)!=0) {
-      cerr << "Initial guess to solver failed in 'point-nuclei-mu'."
-          << endl;
-      return 2;
-    }
-          
-    mroot_hybrids<> mh2;
-    mh2.verbose=2;
-    mh2.msolve(10,x,func);
-
-    cout << "Solving for matter at final point nB,Ye,T(1/fm): "
-      << nB << " " << Ye << " " << T << endl;
-    ret=eos_vary_dist(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,
-                        thx,mun_full,mup_full,
-                        A_min,A_max,NmZ_min,NmZ_max,vdet,
-                        true,false);
-    if (ret!=0) {
-      cerr << "Final point failed in 'point-nuclei-mu'." << endl;
-      return 3;
-    }
-    // Print the found data 
-    //cout << row[0] << " " << row[1] << " " << row[2] << " " << row[3] << " " << row[4] << " " << row[5] 
-    //<< " " << row[6] << " " << row[7] << " " << row[8] << " " << row[9] << "\n";  
-    
+  std::vector<double> nB_grid; size_t n_nB;
+  hdf_file hf;
+  hf.open("data/fid_3_5_22.o2");
+  hf.getd_vec("nB_grid",nB_grid);
+  hf.get_szt("n_nB",n_nB);
+  hf.close();
+  double Ye=0.5;
+  double T=0.1;
+  std::ofstream myfile;
+  myfile.open("example.csv");
+  myfile.clear();
+  myfile.close();
+  for (size_t i=0;i<n_nB;i++){
+    double nB=nB_grid[i];
+    vector<string> sv2={"",o2scl::dtos(nB),
+          o2scl::dtos(Ye),o2scl::dtos(T)};
+    muses(sv2,false);
   }
-
 
   return 0;
 }
@@ -7875,7 +7775,7 @@ int eos_nuclei::create_new_table(std::vector<std::string> &sv,
   NmZ_max=200;
 
   std::ofstream myfile;
-  myfile.open ("example.csv");
+  myfile.open("example.csv");
 
   for (size_t i=0;i<n_nB;i++){
     double nB=nB_grid[i];
