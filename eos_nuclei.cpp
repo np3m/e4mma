@@ -7717,7 +7717,7 @@ int eos_nuclei::muses(std::vector<std::string> &sv,
   myfile.open("example.csv", std::ofstream::out | std::ofstream::app);
   myfile << T*hc_mev_fm << "," << tg_mun.get(ix)+neutron.m*hc_mev_fm << "," << 0 
       << "," << tg_mup.get(ix)+proton.m*hc_mev_fm-tg_mun.get(ix)-neutron.m*hc_mev_fm << "," 
-      << nB <<"," << 0 << "," << Ye << "," << tg_E.get(ix) << "," << tg_P.get(ix) << "," << tg_S.get(ix) << std::endl;
+      << nB <<"," << 0 << "," << Ye << "," << (tg_E.get(ix)+Ye*proton.m*hc_mev_fm+(1-Ye)*neutron.m*hc_mev_fm)*nB << "," << tg_P.get(ix) << "," << tg_S.get(ix)*nB << std::endl;
   myfile.close();
   return 0;
 }
