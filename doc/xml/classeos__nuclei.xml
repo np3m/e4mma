@@ -895,10 +895,10 @@
         </briefdescription>
         <detaileddescription>
 <para>Verbose for individual functions (default value 11111).<linebreak/>
-\t1s digit: fixed_ZN()<linebreak/>
-\t10s digit: vary_ZN()<linebreak/>
-\t100s digit: fixed_dist()<linebreak/>
-\t1000s digit: vary_dist()<linebreak/>
+\t1s digit: <ref refid="classeos__nuclei_1a534fa250430a6bee6e10d8d8368387e5" kindref="member">eos_fixed_ZN()</ref><linebreak/>
+\t10s digit: <ref refid="classeos__nuclei_1a9860dc645b8d0378a4d5e19fa0f32808" kindref="member">eos_vary_ZN()</ref><linebreak/>
+\t100s digit: <ref refid="classeos__nuclei_1affdd30692a9b5ab5de04dedc1292c127" kindref="member">eos_fixed_dist()</ref><linebreak/>
+\t1000s digit: <ref refid="classeos__nuclei_1a49ab1d375fad40db59052d1c93c77162" kindref="member">eos_vary_dist()</ref><linebreak/>
 \t10000s digit: <ref refid="classeos__nuclei_1a0a87adc1ff5b65ce4d033a6336cb932e" kindref="member">store_point()</ref>. </para>
         </detaileddescription>
         <inbodydescription>

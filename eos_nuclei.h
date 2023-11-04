@@ -456,9 +456,9 @@ public:
   /** \brief A parameter which handles verbosity for several functions
 
       Verbose for individual functions
-      (default value 11111).\n\t1s digit: fixed_ZN()\n\t10s digit:
-      vary_ZN()\n\t100s digit:
-      fixed_dist()\n\t1000s digit: vary_dist()\n\t10000s digit:
+      (default value 11111).\n\t1s digit: eos_fixed_ZN()\n\t10s digit:
+      eos_vary_ZN()\n\t100s digit:
+      eos_fixed_dist()\n\t1000s digit: eos_vary_dist()\n\t10000s digit:
       store_point().
   */
   int function_verbose;

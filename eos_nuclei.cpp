@@ -6678,8 +6678,8 @@ int eos_nuclei::point_nuclei_mu(std::vector<std::string> &sv,
   NmZ_min=-200;
   NmZ_max=200;
 
-  cout << "Solving for matter at initial point nB,Ye,T(1/fm): "
-       << nB << " " << Ye << " " << T << endl;
+  cout << "Solving for matter at initial point nB,Ye,T[MeV]:\n  "
+       << nB << " " << Ye << " " << T*hc_mev_fm << endl;
   int ret=eos_vary_dist(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,
                         thx,mun_full,mup_full,
                         A_min,A_max,NmZ_min,NmZ_max,vdet,
@@ -6689,12 +6689,16 @@ int eos_nuclei::point_nuclei_mu(std::vector<std::string> &sv,
     return 1;
   }
 
+  ubvector X;
+  compute_X(nB,X);
+  cout << "Initial point succeeded." << endl;
+
   ubvector x(10), y(10);
   x[0]=nB;
   x[1]=Ye;
   
   mroot_hybrids<> mh2;
-  mh2.verbose=2;
+  mh2.verbose=1;
   
   mm_funct func_nn=std::bind
     (std::mem_fn<int(size_t,const ubvector &,ubvector&,
@@ -6710,8 +6714,10 @@ int eos_nuclei::point_nuclei_mu(std::vector<std::string> &sv,
   Ye=x[1];
 
   if (nB>0.16) {
-    cout << "Solving for nuclear matter at final point nB,Ye,T(1/fm): "
-         << nB << " " << Ye << " " << T << endl;
+    cout << "Solving for nuclear matter at final point "
+         << "nB,Ye,T[MeV],log_xn,log_xp:\n  "
+         << nB << " " << Ye << " " << T*hc_mev_fm << " "
+         << log_xn << " " << log_xp << endl;
     ret=eos_vary_dist(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,
                           thx,mun_full,mup_full,
                           A_min,A_max,NmZ_min,NmZ_max,vdet,
