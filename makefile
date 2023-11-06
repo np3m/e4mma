@@ -21,9 +21,9 @@ help:
 
 # Default settings
 LIBS = -L/usr/lib/x86_64-linux-gnu/hdf5/serial \
-	-L/usr/local/lib/python3.10/dist-packages/numpy/core/include \
+	-L/usr/local/lib/python3.11/dist-packages/numpy/core/include \
 	-lo2scl -lhdf5 -lgsl \
-	-lreadline -lpython3.10 
+	-lreadline -lpython3.11 
 FLIBS = -lgfortran
 # PLIBS = -L/usr/lib/x86_64-linux-gnu/ 
 LCXX = g++
@@ -31,20 +31,20 @@ LFC = gfortran
 LMPI_FC = mpif90
 LMPI_CXX = mpic++
 LCFLAGS = -I/usr/lib/x86_64-linux-gnu/hdf5/serial/include \
-	-I/usr/local/lib/python3.10/dist-packages/numpy/core/include \
+	-I/usr/local/lib/python3.11/dist-packages/numpy/core/include \
 	-DNO_MPI -DNO_OPENMP -DO2SCL_PYTHON -DO2SCL_NO_BOOST_MULTIPRECISION \
-	-I/usr/include/python3.10 
+	-I/usr/include/python3.11 
 LCFLAGS_OMP = -I/usr/lib/x86_64-linux-gnu/hdf5/serial/include \
 	-DNO_MPI -DO2SCL_PYTHON \
 	-fopenmp -DTEMP_UPDATES -DO2SCL_NO_BOOST_MULTIPRECISION \
-	-I/usr/local/lib/python3.10/dist-packages/numpy/core/include \
-	-I/usr/include/python3.10 
+	-I/usr/local/lib/python3.11/dist-packages/numpy/core/include \
+	-I/usr/include/python3.11 
 LFFLAGS = -O3
 LMPI_CFLAGS = -I/usr/lib/x86_64-linux-gnu/hdf5/serial/include \
-	-I/usr/local/lib/python3.10/dist-packages/numpy/core/include \
+	-I/usr/local/lib/python3.11/dist-packages/numpy/core/include \
 	-DO2SCL_MPI -DO2SCL_OPENMP -DO2SCL_PYTHON \
 	-fopenmp -DTEMP_UPDATES -DO2SCL_NO_BOOST_MULTIPRECISION \
-	-I/usr/include/python3.10 
+	-I/usr/include/python3.11 
 	
 COMMENT = "default"
 # ----------------------------------------------------------------
@@ -480,7 +480,7 @@ mbnew:
 		-set function_verbose 0 \
 		-load data/fid_3_5_22.o2 \
 		-set recompute 1 \
-		-point-nuclei 0.1 0.4 0.0 
+		-point-nuclei 0.16 0.5 0.1 
 
 mbpi:
 	./eos_nuclei \
@@ -556,3 +556,17 @@ plot5:
 		-read data/fid_3_5_22.o2 mup -to-table 0 nB mup 0.5 0.1 -plot nB mup \
 	-xtitle "$$ n_B~(\mathrm{fm}^{-3}) $$" -ytitle "$$ \mu_N~(\mathrm{MeV}) $$" \
 	-show
+
+plot6:
+	o2graph \
+		-read data/fid_3_5_22.o2 P -to-table 0 nB P 0.5 0.1 -plot nB P \
+		-read data/fid_3_5_22.o2 S -to-table 0 nB S 0.5 0.1 -plot nB S \
+	-xtitle "$$ n_B~(\mathrm{fm}^{-3}) $$" -ytitle "$$ P, S~(\mathrm{MeV/fm^{-3}}) $$" \
+	-save ps.png -show
+
+plot7:
+	o2graph \
+		-read data/fid_3_5_22.o2 P -to-table 2 T P 0.16 0.5 -plot T P \
+		-read data/fid_3_5_22.o2 S -to-table 2 T S 0.16 0.5 -plot T S \
+	-xtitle "$$ T~(\mathrm{MeV}) $$" -ytitle "$$ P, S~(\mathrm{MeV/fm^{-3}}) $$" \
+	-save psvsT.png -show

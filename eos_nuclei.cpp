@@ -7731,17 +7731,101 @@ int eos_nuclei::muses_table(std::vector<std::string> &sv,
   hf.get_szt("n_nB",n_nB);
   hf.close();
   double Ye=0.5;
-  double T=0.1;
+  double T=0.0;
+
+  std::vector<double> tg = {0.1,0.2,0.3,0.4,0.5};
+  size_t n_tg=5;
+  std::vector<double> sv1,sv2,sv3,sv4,sv5;
+
   std::ofstream myfile;
-  myfile.open("example.csv");
+  myfile.open("example1.csv");
   myfile.clear();
   myfile.close();
+  myfile.open("example1.csv", std::ofstream::out | std::ofstream::app);
+
   for (size_t i=0;i<n_nB;i++){
     double nB=nB_grid[i];
-    vector<string> sv2={"",o2scl::dtos(nB),
-          o2scl::dtos(Ye),o2scl::dtos(T)};
-    muses(sv2,false);
+    sv1= {nB,Ye,0.1};
+    sv2= {nB,Ye,0.2};
+    sv3= {nB,Ye,0.3};
+    sv4= {nB,Ye,0.4};
+    sv5= {nB,Ye,0.5};
+    
+    std::vector<double> mun = {tg_mun.interp_linear(sv1),tg_mun.interp_linear(sv2),tg_mun.interp_linear(sv3),tg_mun.interp_linear(sv4),tg_mun.interp_linear(sv5)};
+    std::vector<double> mup = {tg_mup.interp_linear(sv1),tg_mup.interp_linear(sv2),tg_mup.interp_linear(sv3),tg_mun.interp_linear(sv4),tg_mun.interp_linear(sv5)};
+    std::vector<double> E = {tg_E.interp_linear(sv1),tg_E.interp_linear(sv2),tg_E.interp_linear(sv3),tg_mun.interp_linear(sv4),tg_mun.interp_linear(sv5)};
+    std::vector<double> P = {tg_P.interp_linear(sv1),tg_P.interp_linear(sv2),tg_P.interp_linear(sv3),tg_mun.interp_linear(sv4),tg_mun.interp_linear(sv5)};
+    std::vector<double> S = {tg_S.interp_linear(sv1),tg_S.interp_linear(sv2),tg_S.interp_linear(sv3),tg_mun.interp_linear(sv4),tg_mun.interp_linear(sv5)};
+
+    interp_vec<vector<double>,std::vector<double>>
+            itp_mun(n_tg,tg,mun,itp_linear);
+    interp_vec<vector<double>,std::vector<double>>
+            itp_mup(n_tg,tg,mup,itp_linear);
+    interp_vec<vector<double>,std::vector<double>>
+            itp_E(n_tg,tg,E,itp_linear);
+    interp_vec<vector<double>,std::vector<double>>
+            itp_P(n_tg,tg,P,itp_akima);
+    interp_vec<vector<double>,std::vector<double>>
+            itp_S(n_tg,tg,S,itp_akima);
+
+    double muB=itp_mun.eval(T)+neutron.m*hc_mev_fm;
+    double muQ=itp_mup.eval(T)+proton.m*hc_mev_fm-itp_mun.eval(T)-neutron.m*hc_mev_fm;
+    double En=(itp_E.eval(T)+Ye*proton.m*hc_mev_fm+(1-Ye)*neutron.m*hc_mev_fm)*nB;
+    double Pr=itp_P.eval(T);
+    double ent=itp_S.eval(T)*nB;
+
+    double Ye2=0.49;
+    sv1= {nB,Ye2,0.1};
+    sv2= {nB,Ye2,0.2};
+    sv3= {nB,Ye2,0.3};
+    sv4= {nB,Ye2,0.4};
+    sv5= {nB,Ye2,0.5};
+
+    std::vector<double> mun2 = {tg_mun.interp_linear(sv1),tg_mun.interp_linear(sv2),tg_mun.interp_linear(sv3),tg_mun.interp_linear(sv4),tg_mun.interp_linear(sv5)};
+    std::vector<double> mup2 = {tg_mup.interp_linear(sv1),tg_mup.interp_linear(sv2),tg_mup.interp_linear(sv3),tg_mun.interp_linear(sv4),tg_mun.interp_linear(sv5)};
+    std::vector<double> E2 = {tg_E.interp_linear(sv1),tg_E.interp_linear(sv2),tg_E.interp_linear(sv3),tg_mun.interp_linear(sv4),tg_mun.interp_linear(sv5)};
+    std::vector<double> P2 = {tg_P.interp_linear(sv1),tg_P.interp_linear(sv2),tg_P.interp_linear(sv3),tg_mun.interp_linear(sv4),tg_mun.interp_linear(sv5)};
+    std::vector<double> S2 = {tg_S.interp_linear(sv1),tg_S.interp_linear(sv2),tg_S.interp_linear(sv3),tg_mun.interp_linear(sv4),tg_mun.interp_linear(sv5)};
+
+    interp_vec<vector<double>,std::vector<double>>
+            itp_mun2(n_tg,tg,mun2,itp_linear);
+    interp_vec<vector<double>,std::vector<double>>
+            itp_mup2(n_tg,tg,mup2,itp_linear);
+    interp_vec<vector<double>,std::vector<double>>
+            itp_E2(n_tg,tg,E2,itp_linear);
+    interp_vec<vector<double>,std::vector<double>>
+            itp_P2(n_tg,tg,P2,itp_akima);
+    interp_vec<vector<double>,std::vector<double>>
+            itp_S2(n_tg,tg,S2,itp_akima);
+
+    double muB2=itp_mun2.eval(T)+neutron.m*hc_mev_fm;
+    double muQ2=itp_mup2.eval(T)+proton.m*hc_mev_fm-itp_mun2.eval(T)-neutron.m*hc_mev_fm;
+    double En2=(itp_E2.eval(T)+Ye*proton.m*hc_mev_fm+(1-Ye)*neutron.m*hc_mev_fm)*nB;
+    double Pr2=itp_P2.eval(T);
+    double ent2=itp_S2.eval(T)*nB;
+
+    std::vector<double> muB_vec={muB, muB2};
+    std::vector<double> muQ_vec={muQ, muQ2};
+    std::vector<double> E_vec={En, En2};
+    std::vector<double> P_vec={Pr, Pr2};
+    std::vector<double> ent_vec={ent, ent2};
+
+    size_t n_muQ=2;
+
+    interp_vec<vector<double>,std::vector<double>>
+            itp_E3(n_muQ,muQ_vec,E_vec,itp_linear);
+    interp_vec<vector<double>,std::vector<double>>
+            itp_P3(n_muQ,muQ_vec,P_vec,itp_linear);
+    interp_vec<vector<double>,std::vector<double>>
+            itp_S3(n_muQ,muQ_vec,ent_vec,itp_linear);
+
+    myfile << T << "," << muB << "," << 0 
+      << "," << 0 << "," 
+      << nB <<"," << 0 << "," << Ye << "," << itp_E3.eval(0) 
+      << "," << itp_P3.eval(0) << "," << itp_S3.eval(0) << std::endl;
+    
   }
+  myfile.close();
 
   return 0;
 }
