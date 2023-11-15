@@ -41,7 +41,7 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
-    container: utk_eos
+    container: eosv2
     steps:
       - name: Run tests
         run: bash make mbnuc
