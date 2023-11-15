@@ -44,7 +44,7 @@ jobs:
     container: utk_eos
     steps:
       - name: Run tests
-        run: bash test.sh
+        run: bash make mbnuc
 
   push:
     runs-on: ubuntu-latest
