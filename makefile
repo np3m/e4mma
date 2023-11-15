@@ -538,4 +538,10 @@ makeimg5:
 testsegfault:
 	./eos_nuclei -load /home/awsteiner/wcs/eos/fid_3_14_23.o2 -interp-file /home/jbaut001/st.o2 ~/eos/fid_10_18_23.o2 4
 
+testneweq1:
+	./eos_nuclei -load /home/awsteiner/wcs/eos/fid_3_14_23.o2 -interp-point /home/jbaut001/st.o2 ~/eos/fid_10_18_23.o2 4
+testneweq2:
+	./eos_nuclei -load /home/awsteiner/wcs/eos/fid_3_14_23.o2 -interp-point 0.0662262 0.55 2.03527 2 ~/st.o2 fid_ex.o2
+testneweq3:
+	./eos_nuclei -load /home/awsteiner/wcs/eos/fid_3_14_23.o2 -interp-point 0.000381092 0.01 1.70018 2 ~/st.o2 fid_ex2.o2
 -include makefile.aws
