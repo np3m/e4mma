@@ -490,6 +490,11 @@ int eos_nuclei::interp_point(std::vector<std::string> &sv,
   ike.def_mmin.verbose=1;
   ike.enp=this;
   
+  cout << "Making a copy." << endl;
+  tg_Fint_old=tg_Fint;
+  tg_F_old=tg_F;
+  cout << "Done making a copy." << endl;
+  
   /// Load cs2 from a file
   std::string st_o2="";
   st_o2=sv[5];
