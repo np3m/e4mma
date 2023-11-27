@@ -41,7 +41,6 @@ jobs:
       sudo docker ps --all
       sudo docker images --all
 
-<<<<<<< HEAD
  build:
    runs-on: ubuntu-latest
    steps:
@@ -52,35 +51,6 @@ jobs:
       sudo docker run sroy14/eos:v2 sh -c \
       "curl -o fid_3_5_22.o2 https://isospin.roam.utk.edu/public_data/eos_tables/du21/fid_3_5_22.o2 && mpirun --allow-run-as-root -np 1 ./eos_nuclei -load fid_3_5_22.o2 -point-nuclei 0.16 0.4 1.0" \
       > test_alpha2.out 2>&1
-=======
-      - name: Build Docker image
-        run: |
-          docker buildx create --use
-          docker buildx build --tag eosv2 - < dockerfilev2
-        env:
-          DOCKER_CLI_ACI: 1
-
-  test:
-    runs-on: ubuntu-latest
-    container: eosv2
-    steps:
-      - name: Run tests
-        run: bash make mbnuc
-
-  push:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
-
-      - name: Push Docker image
-        run: |
-          docker buildx create --use
-          docker buildx build --push --tag sroy14/eosv2:latest -f dockerfilev2 .
-        env:
-          DOCKER_CLI_ACI: 1
->>>>>>> 1a238afff463c2edf4efe5cd4f93ec5e18c3cb7a
 
  push:
    runs-on: ubuntu-latest
