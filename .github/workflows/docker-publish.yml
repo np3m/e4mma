@@ -42,12 +42,14 @@ jobs:
  build:
    runs-on: ubuntu-latest
    steps:
+   - name: checkout code
+     uses: actions/checkout@v2
    - name: build all
      run: |
       sudo docker build - < dockerfilev2 \
       -t sroy14/eos:v2 > build.out 2>&1
       sudo docker run sroy14/eos:v2 sh -c \
-      "curl -o fid_3_5_22.o2 https://isospin.roam.utk.edu/public_data/eos_tables/du21/fid_3_5_22.o2 && mpirun --allow-run-as-root -np 1 ./eos_nuclei -load fid_3_5_22.o2 -point-nuclei 0.16 0.4 1.0" \
+      "make mbnuuc" \
       > test_alpha2.out 2>&1
 
  push:
