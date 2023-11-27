@@ -22,15 +22,6 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
- docker_clean:
-  runs-on: ubuntu-latest
-
-  steps:
-   - name: clean docker	
-     run: |
-      sudo docker rm `sudo docker ps --all | grep -i -v container | awk '{print $$1}'`
-      sudo docker rmi `sudo docker images --all | grep -i -v container | awk '{print $$3}'`
-
  docker_show:
   runs-on: ubuntu-latest
   steps:
@@ -47,10 +38,9 @@ jobs:
    - name: build all
      run: |
       sudo docker build - < dockerfilev2 \
-      -t sroy14/eos:v2 > build.out 2>&1
+      -t sroy14/eos:v2 
       sudo docker run sroy14/eos:v2 sh -c \
-      "make mbnuuc" \
-      > test_alpha2.out 2>&1
+      "make mbnuuc" 
 
  push:
    runs-on: ubuntu-latest
