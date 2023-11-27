@@ -28,7 +28,7 @@ jobs:
   steps:
    - name: clean docker	
      run: |
-      sudo docker rm 
+      sudo docker rm \
       `sudo docker ps --all | grep -i -v container | awk '{print $$1}'`
       sudo docker rmi \
       `sudo docker images --all | grep -i -v container | awk '{print $$3}'`
