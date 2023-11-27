@@ -21,9 +21,9 @@ help:
 
 # Default settings
 LIBS = -L/usr/lib/x86_64-linux-gnu/hdf5/serial \
-	-L/usr/local/lib/python3.11/dist-packages/numpy/core/include \
+	-L/usr/local/lib/python3.10/dist-packages/numpy/core/include \
 	-lo2scl -lhdf5 -lgsl \
-	-lreadline -lpython3.11 
+	-lreadline -lpython3.10 
 FLIBS = -lgfortran
 # PLIBS = -L/usr/lib/x86_64-linux-gnu/ 
 LCXX = g++
@@ -31,20 +31,20 @@ LFC = gfortran
 LMPI_FC = mpif90
 LMPI_CXX = mpic++
 LCFLAGS = -I/usr/lib/x86_64-linux-gnu/hdf5/serial/include \
-	-I/usr/local/lib/python3.11/dist-packages/numpy/core/include \
+	-I/usr/local/lib/python3.10/dist-packages/numpy/core/include \
 	-DNO_MPI -DNO_OPENMP -DO2SCL_PYTHON -DO2SCL_NO_BOOST_MULTIPRECISION \
-	-I/usr/include/python3.11 
+	-I/usr/include/python3.10 
 LCFLAGS_OMP = -I/usr/lib/x86_64-linux-gnu/hdf5/serial/include \
 	-DNO_MPI -DO2SCL_PYTHON \
 	-fopenmp -DTEMP_UPDATES -DO2SCL_NO_BOOST_MULTIPRECISION \
-	-I/usr/local/lib/python3.11/dist-packages/numpy/core/include \
-	-I/usr/include/python3.11 
+	-I/usr/local/lib/python3.10/dist-packages/numpy/core/include \
+	-I/usr/include/python3.10 
 LFFLAGS = -O3
 LMPI_CFLAGS = -I/usr/lib/x86_64-linux-gnu/hdf5/serial/include \
-	-I/usr/local/lib/python3.11/dist-packages/numpy/core/include \
+	-I/usr/local/lib/python3.10/dist-packages/numpy/core/include \
 	-DO2SCL_MPI -DO2SCL_OPENMP -DO2SCL_PYTHON \
 	-fopenmp -DTEMP_UPDATES -DO2SCL_NO_BOOST_MULTIPRECISION \
-	-I/usr/include/python3.11 
+	-I/usr/include/python3.10 
 	
 COMMENT = "default"
 # ----------------------------------------------------------------
@@ -495,7 +495,7 @@ mbpi:
 		-load data/fid_3_5_22.o2 \
 		-hrg-load ./pdg_uh_nonp.dat \
 		-set recompute 1 \
-		-point-nuclei 0.1 0.1 0 
+		-point-nuclei 0.16 0.5 0.1 
 
 mbnuc:
 	./eos_nuclei \
@@ -570,3 +570,13 @@ plot7:
 		-read data/fid_3_5_22.o2 S -to-table 2 T S 0.16 0.5 -plot T S \
 	-xtitle "$$ T~(\mathrm{MeV}) $$" -ytitle "$$ P, S~(\mathrm{MeV/fm^{-3}}) $$" \
 	-save psvsT.png -show
+
+plot8:
+	o2graph \
+		-read data/fid_3_5_22.o2 mun -to-table 1 Ye mun 0.16 0.1 -plot Ye mun \
+		-read data/fid_3_5_22.o2 mup -to-table 1 Ye mup 0.16 0.1 -plot Ye mup \
+		-read data/fid_3_5_22.o2 mue -to-table 1 Ye mue 0.16 0.1 -plot Ye mue \
+		-create table Ye "grid:1.0e-2,0.7,(0.7-1.0e-2)/70" -function "mun(Ye)-mup(Ye)-mue(Ye)" mutot -internal data/mutot.o2 \
+		-read data/mutot.o2 -plot Ye mutot \
+	-xtitle "$$ Ye $$" -ytitle "$$ \mu_n, \mu_p, \mu_e S~(\mathrm{MeV}) $$" \
+	 -show
