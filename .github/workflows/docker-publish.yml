@@ -36,11 +36,15 @@ jobs:
    - name: checkout code
      uses: actions/checkout@v2
    - name: build all
-     run: |
-      sudo docker build - < dockerfilev2 \
+     run: sudo docker build - < dockerfilev2 \
       -t sroy14/eos:v2 
-      sudo docker run sroy14/eos:v2 sh -c \
-      "make mbnuc" 
+       
+test:
+  runs-on: ubuntu-latest
+   steps: 
+   - name: test code
+     run: sudo docker run sroy14/eos:v2 sh -c \
+      "make mbnuc"
 
  push:
    runs-on: ubuntu-latest
