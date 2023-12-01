@@ -37,9 +37,3 @@ jobs:
       sudo docker run nostrad1/utk-eos:v2 sh -c \
       "mpirun --allow-run-as-root -np 1 ./eos_nuclei -load data/fid_3_5_22.o2 -point-nuclei 0.16 0.4 1.0" 
 
- push:
-   runs-on: ubuntu-latest
-   needs: [build, test]
-   steps:
-   - name: push the image
-     run: sudo docker push nostrad1/utk-eos:v2
