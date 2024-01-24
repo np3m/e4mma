@@ -71,9 +71,12 @@ eos_nuclei::eos_nuclei() {
   mh.ntrial=10000;
   mh.err_nonconv=false;
   mh.def_jac.err_nonconv=false;
-  // Note these two lines are different!
+  
+  // Note these two lines are different, one is the value in the
+  // solver itself, while the other is the user-specified parameter.
   mh.tol_rel=1.0e-6;
   mh_tol_rel=1.0e-6;
+  
   rbg.err_nonconv=false;
 
   baryons_only=true;
@@ -995,6 +998,9 @@ int eos_nuclei::maxwell(std::vector<std::string> &sv,
   return 0;
 }
   
+/*
+// this is now replaced by elep.pair_density_eq()
+
 int eos_nuclei::new_muons(size_t nv, const ubvector &x, ubvector &y,
                           double nB, double Ye, double T,
                           map<string,double> &vdet, eos_sn_base &eso) {
@@ -1011,6 +1017,7 @@ int eos_nuclei::new_muons(size_t nv, const ubvector &x, ubvector &y,
   
   return 0;
 }
+*/
 
 
 int eos_nuclei::add_eg(std::vector<std::string> &sv,
@@ -2434,7 +2441,7 @@ void eos_nuclei::store_hrg(double mun, double mup,
 
 int eos_nuclei::solve_nuclei_mu
 (size_t nv, const ubvector &x, ubvector &y, double mun, double mup, double T,
- double &mun_gas, double &mup_gas, thermo &th_gas) {
+ double &mun_gas, double &mup_gas, thermo &th_gas, bool no_nuclei) {
   
   ubvector xt(2), yt(2);
   int ret;
@@ -2442,6 +2449,48 @@ int eos_nuclei::solve_nuclei_mu
   
   double nb=x[0];
   double ye=x[1];
+
+  if (nb<1.0e-12 || nb>2.0) {
+    cout << "Density " << nb << " out of range." << endl;
+    return 10;
+  }
+  if (ye<0.0 || ye>0.7) {
+    cout << "Electron fraction " << ye << " out of range." << endl;
+    return 11;
+  }
+
+  map<std::string,double> vdet;
+  thermo th;
+  
+  if (no_nuclei) {
+    
+    double lxn, lxp;
+    
+    int A_min, A_max, NmZ_min, NmZ_max;
+    A_min=5;
+    A_max=fd_A_max;
+    NmZ_min=-200;
+    NmZ_max=200;
+    double Zbar, Nbar;
+
+    mun_gas=0.0;
+    mup_gas=0.0;
+    ret=nuc_matter(nb,ye,T,lxn,lxp,Zbar,Nbar,th,mun_gas,mup_gas,
+                   A_min,A_max,NmZ_min,NmZ_max,vdet);
+    if (ret!=0) {
+      cerr << "nuc matter function failed." << endl;
+      return ret;
+    }
+
+    cout.precision(10);
+    cout << nb << " " << ye << " " << mun_gas << " " << mup_gas << endl;
+    cout.precision(6);
+    y[0]=mun-mun_gas;
+    y[1]=mup-mup_gas;
+    
+    return 0;
+  }
+  
   double log_xn_0=x[2];
   double log_xp_0=x[3];
   double log_xn_1=x[4];
@@ -2451,22 +2500,12 @@ int eos_nuclei::solve_nuclei_mu
   double log_xn_3=x[8];
   double log_xp_3=x[9];
 
-  if (nb<1.0e-12 || nb>2.0) {
-    return 10;
-  }
-  if (ye<0.0 || ye>0.7) {
-    return 11;
-  }
-
-  map<std::string,double> vdet;
-  thermo th;
-  
   xt[0]=log_xn_0;
   xt[1]=log_xp_0;
   ret=solve_nuclei(2,xt,yt,nb*(1.0-1.0e-4),ye,T,0,mun_gas,mup_gas,
                    th_gas,vdet);
   if (ret!=0) {
-    cerr << "First solve_nuclei function failed." << endl;
+    cerr << "First solve_nuclei function failed " << ret << endl;
     return ret;
   }
   fnb1=compute_fr_nuclei(nb,ye,T,xt[0],xt[1],th,th_gas);
@@ -2478,7 +2517,7 @@ int eos_nuclei::solve_nuclei_mu
   ret=solve_nuclei(2,xt,yt,nb*(1.0+1.0e-4),ye,T,0,mun_gas,mup_gas,
                    th_gas,vdet);
   if (ret!=0) {
-    cerr << "Second solve_nuclei function failed." << endl;
+    cerr << "Second solve_nuclei function failed " << ret << endl;
     return ret;
   }
   fnb2=compute_fr_nuclei(nb,ye,T,xt[0],xt[1],th,th_gas);
@@ -2490,7 +2529,7 @@ int eos_nuclei::solve_nuclei_mu
   ret=solve_nuclei(2,xt,yt,nb,ye*(1.0-1.0e-4),T,0,mun_gas,mup_gas,
                    th_gas,vdet);
   if (ret!=0) {
-    cerr << "Third solve_nuclei function failed." << endl;
+    cerr << "Third solve_nuclei function failed " << ret << endl;
     return ret;
   }
   fye1=compute_fr_nuclei(nb,ye,T,xt[0],xt[1],th,th_gas);
@@ -2502,7 +2541,7 @@ int eos_nuclei::solve_nuclei_mu
   ret=solve_nuclei(2,xt,yt,nb,ye*(1.0+1.0e-4),T,0,mun_gas,mup_gas,
                    th_gas,vdet);
   if (ret!=0) {
-    cerr << "Fourth solve_nuclei function failed." << endl;
+    cerr << "Fourth solve_nuclei function failed " << ret << endl;
     return ret;
   }
   fye2=compute_fr_nuclei(nb,ye,T,xt[0],xt[1],th,th_gas);
@@ -2696,6 +2735,7 @@ int eos_nuclei::solve_nuclei(size_t nv, const ubvector &x, ubvector &y,
   if (np_small && nn_small) {
 
     // Use shift to compute correct proton chemical potential
+    //Here T=0 causes problems
     proton.mu=T*log(1.0/proton.g*pow(2.0*pi/proton.ms/T,1.5))+
       log_xp*T*log(10.0);
     neutron.mu=T*log(1.0/neutron.g*pow(2.0*pi/neutron.ms/T,1.5))+
@@ -2772,7 +2812,7 @@ int eos_nuclei::solve_nuclei(size_t nv, const ubvector &x, ubvector &y,
 	  nuclei[i].be+1.433e-5*pow(nuclei[i].Z,2.39)/hc_mev_fm << endl;
 	exit(-1);
       }
-      
+      //Here T=0 causes problems
       double arg=(((double)nuclei[i].N)*mun_gas+
 		  ((double)nuclei[i].Z)*mup_gas
 		  -nuclei[i].be-1.433e-05*pow(nuclei[i].Z,2.39)/hc_mev_fm
@@ -3717,24 +3757,29 @@ double eos_nuclei::solve_pion(double x, boson &b, fermion &n, fermion &p,
   return x-e.n-b.n;
 }
 
-int eos_nuclei::nuc_matter_muons(size_t nv, const ubvector &x, ubvector &y,
-                                 double nB, double Ye, double T,
-                                 map<string,double> &vdet) {
 
+   
+int eos_nuclei::nuc_matter_muons(size_t nv, const ubvector &x, ubvector &y,
+  double nB, double Ye, double T,
+  map<string,double> &vdet) {
+   
   neutron.n=x[0];
   proton.n=x[1];
-  
+   
   eos_sn_base eso;
   eso.include_muons=true;
   thermo lep;
   eso.compute_eg_point(nB,Ye,T*hc_mev_fm,lep,vdet["mue"]);
-
+   
+  // Baryon number conservation
   y[0]=(neutron.n+proton.n)/nB-1.0;
+  // Charge equilibrium
   y[1]=(eso.electron.n+eso.muon.n-proton.n)/proton.n;
   vdet["Ymu"]=eso.muon.n/nB;
-  
+   
   return 0;
 }
+
 
 int eos_nuclei::eos_vary_dist
 (double nB, double Ye, double T, double &log_xn, double &log_xp,
@@ -5803,13 +5848,13 @@ int eos_nuclei::write_nuclei(std::vector<std::string> &sv,
     cerr << "No filename specified in write_nuclei()." << endl;
     return 1;
   }
-  write_nuclei(sv[1]);
+  write_nuclei_intl(sv[1]);
   return 0;
 }
 
-void eos_nuclei::write_nuclei(std::string fname) {
+void eos_nuclei::write_nuclei_intl(std::string fname) {
 
-  cout << "Function write_nuclei() file " << fname << endl;
+  cout << "Function write_nuclei_intl() file " << fname << endl;
   
   hdf_file hf;
   
@@ -6732,8 +6777,8 @@ int eos_nuclei::point_nuclei_mu(std::vector<std::string> &sv,
   NmZ_min=-200;
   NmZ_max=200;
 
-  cout << "Solving for matter at initial point nB,Ye,T(1/fm): "
-       << nB << " " << Ye << " " << T << endl;
+  cout << "Solving for matter at initial point nB,Ye,T[MeV]:\n  "
+       << nB << " " << Ye << " " << T*hc_mev_fm << endl;
   int ret=eos_vary_dist(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,
                         thx,mun_full,mup_full,
                         A_min,A_max,NmZ_min,NmZ_max,vdet,
@@ -6743,9 +6788,46 @@ int eos_nuclei::point_nuclei_mu(std::vector<std::string> &sv,
     return 1;
   }
 
+  ubvector X;
+  compute_X(nB,X);
+  cout << "Initial point succeeded." << endl;
+
   ubvector x(10), y(10);
   x[0]=nB;
   x[1]=Ye;
+  
+  mroot_hybrids<> mh2;
+  mh2.verbose=1;
+  
+  mm_funct func_nn=std::bind
+    (std::mem_fn<int(size_t,const ubvector &,ubvector&,
+                     double,double,double,double &,double &,
+                     thermo &,bool)>
+     (&eos_nuclei::solve_nuclei_mu),this,std::placeholders::_1,
+     std::placeholders::_2,std::placeholders::_3,
+     mun,mup,T,std::ref(mun_full),std::ref(mup_full),
+     std::ref(th_gas),true);
+
+  mh2.msolve(2,x,func_nn);
+  nB=x[0];
+  Ye=x[1];
+
+  if (nB>0.16) {
+    cout << "Solving for nuclear matter at final point "
+         << "nB,Ye,T[MeV],log_xn,log_xp:\n  "
+         << nB << " " << Ye << " " << T*hc_mev_fm << " "
+         << log_xn << " " << log_xp << endl;
+    ret=eos_vary_dist(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,
+                          thx,mun_full,mup_full,
+                          A_min,A_max,NmZ_min,NmZ_max,vdet,
+                          true,false);
+    if (ret!=0) {
+      cerr << "Final point failed in 'point-nuclei-mu'." << endl;
+      return 1;
+    }
+    return 0;
+  }
+  
   x[2]=log_xn;
   x[3]=log_xp;
   x[4]=log_xn;
@@ -6758,11 +6840,11 @@ int eos_nuclei::point_nuclei_mu(std::vector<std::string> &sv,
   mm_funct func=std::bind
     (std::mem_fn<int(size_t,const ubvector &,ubvector&,
                      double,double,double,double &,double &,
-                     thermo &)>
+                     thermo &,bool)>
      (&eos_nuclei::solve_nuclei_mu),this,std::placeholders::_1,
      std::placeholders::_2,std::placeholders::_3,
      mun,mup,T,std::ref(mun_full),std::ref(mup_full),
-     std::ref(th_gas));
+     std::ref(th_gas),false);
 
   if (func(10,x,y)!=0) {
     cerr << "Initial guess to solver failed in 'point-nuclei-mu'."
@@ -6770,8 +6852,6 @@ int eos_nuclei::point_nuclei_mu(std::vector<std::string> &sv,
     return 2;
   }
           
-  mroot_hybrids<> mh2;
-  mh2.verbose=2;
   mh2.msolve(10,x,func);
 
   cout << "Solving for matter at final point nB,Ye,T(1/fm): "
@@ -7723,34 +7803,37 @@ int eos_nuclei::muses(std::vector<std::string> &sv,
 }
 
 int eos_nuclei::muses_table(std::vector<std::string> &sv,
-			     bool itive_com) {
-  std::vector<double> nB_grid, Ye_grid; size_t n_nB, n_Ye;
-  hdf_file hf;
-  hf.open("data/fid_3_5_22.o2");
-  hf.getd_vec("nB_grid",nB_grid);
-  hf.get_szt("n_nB",n_nB);
-  hf.getd_vec("Ye_grid",Ye_grid);
-  hf.get_szt("n_Ye",n_Ye);
-  hf.close();
-  double T=0.0;
+			     bool itive_com) { 
 
-  std::vector<double> tg = {0.1,0.2,0.3,0.4,0.5};
+  /*std::vector<double> tg = {0.1,0.2,0.3,0.4,0.5};
   size_t n_tg=5;
-  std::vector<double> sv1,sv2,sv3,sv4,sv5;
+  std::vector<double> sv1,sv2,sv3,sv4,sv5;*/
 
   std::ofstream myfile;
-  myfile.open("example1.csv");
+  myfile.open("utk_eos.csv");
   myfile.clear();
   myfile.close();
-  myfile.open("example1.csv", std::ofstream::out | std::ofstream::app);
+  myfile.open("utk_eos.csv", std::ofstream::out | std::ofstream::app);
 
   // look for beta equilibrium
-  for (size_t j=0;j<n_Ye;j++){
-    double Ye=Ye_grid[j];
-    for (size_t i=0;i<n_nB;i++){
-      double nB=nB_grid[i];
+  for (size_t j=0;j<n_Ye2;j++){
+    double Ye=Ye_grid2[j];
+    for (size_t i=0;i<n_nB2;i++){
+      double nB=nB_grid2[i];
+      std::vector<std::size_t> ix={i,j,0};
 
-      sv1= {nB,Ye,0.1};
+      double muB=tg_mun.get(ix)+neutron.m*hc_mev_fm;
+      double muQ=tg_mup.get(ix)+proton.m*hc_mev_fm-tg_mun.get(ix)-neutron.m*hc_mev_fm;
+      double En=(tg_E.get(ix)+Ye*proton.m*hc_mev_fm+(1-Ye)*neutron.m*hc_mev_fm)*nB;
+      double Pr=tg_P.get(ix);
+      double ent=tg_S.get(ix)*nB;
+
+      myfile << "0.1" << "," << muB << "," << 0 
+        << "," << 0 << "," 
+        << nB <<"," << 0 << "," << Ye*nB << "," << En 
+        << "," << Pr << "," << ent << std::endl;
+
+      /*sv1= {nB,Ye,0.1};
       sv2= {nB,Ye,0.2};
       sv3= {nB,Ye,0.3};
       sv4= {nB,Ye,0.4};
@@ -7776,9 +7859,9 @@ int eos_nuclei::muses_table(std::vector<std::string> &sv,
       interp_vec<vector<double>,std::vector<double>>
             itp_P(n_tg,tg,P,itp_akima);
       interp_vec<vector<double>,std::vector<double>>
-            itp_S(n_tg,tg,S,itp_akima);
+            itp_S(n_tg,tg,S,itp_akima);*/
 
-      double muB=itp_mun.eval(T)+neutron.m*hc_mev_fm;
+      /*double muB=itp_mun.eval(T)+neutron.m*hc_mev_fm;
       double muQ=itp_mup.eval(T)+proton.m*hc_mev_fm-itp_mun.eval(T)-neutron.m*hc_mev_fm;
       double En=(itp_E.eval(T)+Ye*proton.m*hc_mev_fm+(1-Ye)*neutron.m*hc_mev_fm)*nB;
       double Pr=itp_P.eval(T);
@@ -7836,9 +7919,8 @@ int eos_nuclei::muses_table(std::vector<std::string> &sv,
 
       myfile << T << "," << muB << "," << 0 
         << "," << 0 << "," 
-        << nB <<"," << 0 << "," << Ye << "," << itp_E3.eval(0) 
-        << "," << itp_P3.eval(0) << "," << itp_S3.eval(0) << std::endl;
-    
+        << nB <<"," << 0 << "," << Ye*nB << "," << itp_E3.eval(0) 
+        << "," << itp_P3.eval(0) << "," << itp_S3.eval(0) << std::endl;*/
     }
   }
   myfile.close();
@@ -7986,7 +8068,7 @@ int eos_nuclei::create_new_table(std::vector<std::string> &sv,
 	  double S=Sint+lep.en/nB;
       myfile << T << "," << (mun_gas+neutron.m)*hc_mev_fm << "," << 0 
       << "," << (mup_gas+proton.m-mun_gas-neutron.m)*hc_mev_fm << "," 
-      << nB <<"," << 0 << "," << Ye << "," << E << "," << P << "," << S << std::endl;
+      << nB <<"," << 0 << "," << Ye*nB << "," << E << "," << P << "," << S << std::endl;
 
   }
   myfile.close();
@@ -11251,7 +11333,7 @@ int eos_nuclei::check_virial(std::vector<std::string> &sv,
   return 0;
 }
 
-void eos_nuclei::setup_cli(o2scl::cli &cl) {
+void eos_nuclei::setup_cli_nuclei(o2scl::cli &cl) {
   
   eos::setup_cli(cl,false);
   

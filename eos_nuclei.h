@@ -20,10 +20,12 @@
 */
 #include "eos.h"
 #include "eos_had_skyrme_ext.h"
+
 #include <o2scl/nucmass_fit.h>
 #include <o2scl/slack_messenger.h>
 #include <o2scl/part_funcs.h>
 #include <o2scl/interpm_krige.h>
+#include <o2scl/boson_rel.h>
 #include <map>
 
 typedef boost::numeric::ublas::vector<double> ubvector;
@@ -70,7 +72,7 @@ public:
   /** \brief Integrand when \f$ \delta \f$ is greater than \f$ E_d \f$
 
       From eq. (25) and (30) in Shen 10.
-   */
+  */
   double delta_large_iand(double E);
     
   /** \brief Integrand for temperature derivative when \f$ \delta
@@ -82,180 +84,99 @@ public:
     
 };
 
-#ifdef O2SCL_NEVER_DEFINED
-
 /** \brief Specialized Gaussian process interpolation object
  */
 class interpm_krige_eos :
   public o2scl::interpm_krige_optim
-<o2scl::mcovar_funct_rbf,ubvector,ubmatrix,ubmatrix_row,
+<std::vector<o2scl::mcovar_funct_rbf_noise>,ubvector,ubmatrix,ubmatrix_row,
  ubmatrix,ubmatrix_row,Eigen::MatrixXd,
- o2scl_linalg::matrix_invert_det_eigen<Eigen::MatrixXd>,
- std::vector<std::vector<double>> > {
-
+ o2scl_linalg::matrix_invert_det_eigen<Eigen::MatrixXd>> {
+  
 public:
   
+  // Typedefs from the specialized template parameters
+  typedef ubmatrix_row mat_y_row_t;
+  typedef ubmatrix_row mat_x_row_t;
+  typedef Eigen::MatrixXd mat_inv_kxx_t;
+  typedef o2scl_linalg::matrix_invert_det_eigen<Eigen::MatrixXd>
+  mat_inv_t;
+
+  /** \brief Compute the distance between calibration point with index
+      \c i_calib and point to fix with index \c i_fix
+  */
+  double dist_cf(size_t i_calib, size_t i_fix);
+
+  /// Compute \ref calib_dists
+  void compute_dists();
   
-  /** \brief Function to evaluate quality of interpolation
+  /** \brief List of calibration points
    */
-  virtual double qual_fun(size_t iout, int &success) {
+  std::vector<size_t> calib_list;
 
-    // Select the row of the data matrix
-    ubmatrix_row yiout2(this->y,iout);
+  /** \brief List of minium distances between the calibration points
+      and the points to fix
+   */
+  std::vector<double> calib_dists;
 
-    double ret=0.0;
-    
-    success=0;
-    
-    size_t size=this->x.size1();
-    
-    time_t t1=0, t2=0, t3=0, t4=0;
-    
-    if (mode==mode_loo_cv_bf) {
+  /** \brief List of points to fix
+   */
+  std::vector<size_t> fix_list;
 
-      for(size_t k=0;k<size;k++) {
-        // Leave one observation out
+  /// \name Grids
+  //@{
+  std::vector<double> nB_grid;
+  std::vector<double> Ye_grid;
+  std::vector<double> T_grid;
+  //@}
 
-        ubmatrix_row xk(this->x,k);
+  /// \name Tensor grid data
+  //@{
+  o2scl::tensor_grid<> *tgp_F;
+  o2scl::tensor_grid<> *tgp_P;
+  o2scl::tensor_grid<> *tgp_S;
+  o2scl::tensor_grid<> *tgp_mun;
+  o2scl::tensor_grid<> *tgp_mup;
+  o2scl::tensor_grid<> *tgp_mue;
+  o2scl::tensor_grid<> *tgp_Fint;
+  o2scl::tensor_grid<> *tgp_Sint;
+  o2scl::tensor_grid<> *tgp_cs2;
+  o2scl::tensor_grid<> *tgp_Fint_old;
+  o2scl::tensor_grid<> *tgp_F_old;
+  //@}
 
-        ubvector y2(size-1);
-        o2scl::vector_copy_jackknife(size,yiout2,k,y2);
-        
-        // Construct the inverse of the KXX matrix. Note that we
-        // don't use the inv_KXX data member because of the size
-        // mismatch
-        Eigen::MatrixXd inv_KXX2(size-1,size-1);
-        for(size_t irow=0;irow<size-1;irow++) {
-          size_t irow2=irow;
-          if (irow>=k) irow2++;        
-          ubmatrix_row xrow(this->x,irow2);
-          for(size_t icol=0;icol<size-1;icol++) {
-            size_t icol2=icol;
-            if (icol>=k) icol2++;        
-            ubmatrix_row xcol(this->x,icol2);
-            if (irow2>icol2) {
-              inv_KXX2(irow,icol)=inv_KXX2(icol,irow);
-            } else {
-              inv_KXX2(irow,icol)=(*cf)(iout,xrow,xcol);
-            }
-          }
-        }
-        
-        // Construct the inverse of KXX
-        this->mi.invert_inplace(size-1,inv_KXX2);
-        
-        // Inverse covariance matrix times function vector
-        ubvector Kinvf2(size-1);
-        o2scl_cblas::dgemv(o2scl_cblas::o2cblas_RowMajor,
-                           o2scl_cblas::o2cblas_NoTrans,
-                           size-1,size-1,1.0,inv_KXX2,y2,0.0,
-                           Kinvf2);
-        
-        
-        // The actual value
-        double yact=yiout2[k];
-        
-        // Compute the predicted value
-        double ypred=0.0;
-        ubvector kxx0(size-1);
-        for(size_t i=0;i<size-1;i++) {
-          size_t i2=i;
-          if (i>=k) i2++;        
-          ubmatrix_row xi2(this->x,i2);
-          kxx0[i]=(*cf)(iout,xi2,xk);
-          ypred+=kxx0[i]*Kinvf2[i];
-        }
-        
-        // AWS 12/31/22: This uses absolute, rather than relative
-        // differences to evaluate the quality, but this seems
-        // sensible to me because we are presuming the data has zero
-        // mean and unit standard deviation.
-        ret+=pow(yact-ypred,2.0);
-        
-      }
-      
-    } else if (mode==mode_final) {
+  /// Neutron mass
+  double mneut;
+  /// Proton mass
+  double mprot;
 
-      if (verbose>2) {
-        std::cout << "Creating covariance matrix with size "
-                  << size << std::endl;
-      }
-      
-      // Construct the KXX matrix
-      Eigen::MatrixXd KXX(size,size);
-      for(size_t irow=0;irow<size;irow++) {
-        ubmatrix_row xrow(this->x,irow);
-        for(size_t icol=0;icol<size;icol++) {
-          ubmatrix_row xcol(this->x,icol);
-          if (irow>icol) {
-            KXX(irow,icol)=KXX(icol,irow);
-          } else {
-            KXX(irow,icol)=(*cf)(iout,xrow,xcol);
-          }
-        }
-      }
-      
-      if (verbose>2) {
-        std::cout << "Done creating covariance matrix with size "
-                  << size << std::endl;
-      }
-      
-      // Perform the matrix inversion and compute the determinant
-      
-      double lndet;
-      
-      if (timing) {
-        t1=time(0);          
-      }
-      
-      // Construct the inverse of KXX
-      if (verbose>2) {
-        std::cout << "Performing matrix inversion with size "
-                  << size << std::endl;
-      }
-      this->inv_KXX[iout].resize(size,size);
-      int cret=this->mi.invert_det(size,KXX,this->inv_KXX[iout],lndet);
-      if (cret!=0) {
-        success=2;
-        return 1.0e99;
-      }
-      
-      lndet=log(lndet);
-      
-      if (verbose>2) {
-        std::cout << "Done performing matrix inversion with size "
-                  << size << std::endl;
-      }
-      
-      if (timing) {
-        t2=time(0);          
-        std::cout << "Matrix inversion took "
-                  << t2-t1 << " seconds." << std::endl;
-      }
-      
-      // Inverse covariance matrix times function vector
-      this->Kinvf[iout].resize(size);
-      o2scl_cblas::dgemv(o2scl_cblas::o2cblas_RowMajor,
-                         o2scl_cblas::o2cblas_NoTrans,
-                         size,size,1.0,this->inv_KXX[iout],
-                         yiout2,0.0,this->Kinvf[iout]);
-      
-      if (timing) {
-        t3=time(0);          
-        std::cout << "Matrix vector multiply took "
-                  << t3-t2 << " seconds." << std::endl;
-      }
-        
-    }
-    
-    if (!isfinite(ret)) success=3;
-    
-    return ret;
-  }
+  /// Lepton EOS object
+  o2scl::eos_leptons elep;
+
+  /// If true, interpolate Fint, otherwise, interpolate F
+  bool interp_Fint;
+
+  /// Additional verbosity for \ref addl_const()
+  int addl_verbose;
+
+  /// Pointer to the eos_nuclei class
+  void *enp;
+  
+  interpm_krige_eos() {
+    elep.include_photons=true;
+    interp_Fint=false;
+    addl_verbose=0;
+  }    
+  
+  /** \brief Set the interpolator given the specified EOS
+      objects
+   */
+  virtual void set();
+  
+  /** \brief Additional constraints for the interpolation
+   */
+  virtual int addl_const(size_t iout, double &ret);
   
 };
-
-#endif
 
 /** \brief Solve for the EOS including nuclei
 
@@ -305,55 +226,34 @@ public:
   virtual ~eos_nuclei();
   //@}
 
-  /// Desc
+  /// \name Stability tensors
+  //@{
+  o2scl::tensor_grid<> dmundYe, dmundnB, dmupdYe, dsdT, dsdnB, dsdYe;
+  o2scl::tensor_grid<> egv[4], tg_cs2, tg_cs2_hom, tg_Fint_old, tg_F_old;
+  size_t n_stability_fail;
+  //@}
+
+  /// Partition functions for the nuclei
   o2scl::part_funcs pfuncs;
-  
-  /*
-    o2scl::boson pi_minus;
-    o2scl::boson pi_plus;
-    o2scl::fermion delta_pp;
-  */
+
+  /// Particle object for bosons
   o2scl::boson_rel relb;
+  
+  /// Particle object for bosons
   o2scl::boson_eff effb;
 
+  /** \brief If true, include a hadron resonance gas (default false)
+   */
   bool inc_hrg;
-  
+
+  /** \brief Solve for charge neutrality and fixed baryon fraction
+      with a hadron resonance gas
+
+      This is used in \ref nuc_matter() .
+   */
   int solve_hrg(size_t nv, const ubvector &x,
                 ubvector &y, double nB, double Ye, double T);
   
-  /// \name Grid specification
-  //@{
-  size_t n_nB2;
-  size_t n_Ye2;
-  size_t n_T2;
-  size_t n_S2;
-  std::vector<double> nB_grid2;
-  std::vector<double> Ye_grid2;
-  std::vector<double> T_grid2;
-  std::vector<double> S_grid2;
-  /** \brief The function for default baryon density grid. 
-      
-      This parameter is used by the new_table() function, and the
-      \c check-virial and \c eos-deriv commands.
-  */
-  std::string nB_grid_spec;
-  /** \brief The function for default electron fraction grid. 
-      
-      This parameter is used by the new_table() function, and the
-      \c check-virial and eos-deriv \c commands.
-  */
-  std::string Ye_grid_spec;
-  /** \brief The function for default temperature grid. 
-      
-      This parameter is used by the new_table() function, and the
-      \c check-virial and \c eos-deriv commands.
-  */
-  std::string T_grid_spec;
-  /** \brief The function for default strangeness grid
-  */
-  std::string S_grid_spec;
-  //@}
-
   /// \name Nuclear masses and their fits
   //@{
   /** \brief Fit the FRDM mass model
@@ -361,7 +261,7 @@ public:
       <no parameters>
 
       Fit the FRDM mass model.
-   */
+  */
   int fit_frdm(std::vector<std::string> &sv,
 	       bool itive_com);
   
@@ -492,7 +392,7 @@ public:
       
       This applies to the \c point-nuclei command and the eos_vary_ZN()
       function.
-   */
+  */
   bool show_all_nuclei;
 
   /** \brief If true, ensure that the nuclear radius is less than the
@@ -512,11 +412,14 @@ public:
 
   /** \brief If true, verify points only and do not attempt to solve
       (default false)
+
+      This setting is principally used by the \c verify command
+      which automatically flips this from false to true and then back.
   */
   bool verify_only;
 
-  /** \brief If true, recompute points where Z, A, log_xn, 
-      or log_xp reach a maximum or minimum (default false)
+  /** \brief If not empty, then recompute points where Z, A, log_xn, 
+      or log_xp reach a maximum or minimum (default is empty)
   */
   std::string edge_list;
 
@@ -550,16 +453,17 @@ public:
   */
   int six_neighbors;
 
-  /** \brief A new function verbose parameter
+  /** \brief A parameter which handles verbosity for several functions
 
-      Verbose for individual functions
-      (default value 11111).\n\t1s digit: fixed_ZN()\n\t10s digit:
-      vary_ZN()\n\t100s digit:
-      fixed_dist()\n\t1000s digit: vary_dist()\n\t10000s digit:
-      store_point().
+      Verbose for individual functions (default value 11111). 1s
+      digit: eos_fixed_ZN(), 10s digit: eos_vary_ZN(), 100s digit:
+      eos_fixed_dist(), 1000s digit: eos_vary_dist(), and 10000s
+      digit: store_point().
   */
   int function_verbose;
-  
+
+  /** \brief Desc
+   */
   void store_hrg(double mun, double mup,
                  double nn, double np, double T,
                  o2scl::table_units<> &tab);
@@ -571,7 +475,7 @@ public:
 
   /** \brief If true, survey the nB and Ye equations near a failed point
       (default false)
-   */
+  */
   bool survey_eqs;
 
   /** \brief If true, output all of the data necessary for a full EOS
@@ -588,7 +492,7 @@ public:
   /** \brief If true, include electrons and photons
 
       Requires that derivs_computed is also true
-   */
+  */
   bool with_leptons;
   //@}
 
@@ -609,7 +513,7 @@ public:
 
   /** \brief Ranges for randomly selected ranges in 
       \ref eos_fixed_dist()
-   */
+  */
   std::vector<double> fd_rand_ranges;
 
   /** \brief Object for sending slack messages
@@ -621,7 +525,7 @@ public:
 
       Can be several comma-separated ranges e.g. "1-3,5-7,59-60".
       Zero-indexed.
-   */
+  */
   std::string Ye_list;
   //@}
 
@@ -681,9 +585,12 @@ public:
   o2scl::tensor_grid<> tg_NmZ_max;
   //@}
 
+  /** \brief If true, include details in EOS file (default false)
+   */
+  bool include_detail;
+  
   /// \name Detail storage
   //@{
-  bool include_detail;
   o2scl::tensor_grid<> tg_zn;
   o2scl::tensor_grid<> tg_zp;
   o2scl::tensor_grid<> tg_F1;
@@ -723,28 +630,27 @@ public:
   o2scl::cli::parameter_double p_max_time;
   o2scl::cli::parameter_string p_nucleon_func;
   o2scl::cli::parameter_int p_alg_mode;
-  o2scl::cli::parameter_int p_cs2_verbose;
   o2scl::cli::parameter_int p_fixed_dist_alg;
   o2scl::cli::parameter_int p_function_verbose;
   o2scl::cli::parameter_string p_Ye_list;
   o2scl::cli::parameter_double p_max_ratio;
   o2scl::cli::parameter_double p_file_update_time;
   o2scl::cli::parameter_int p_file_update_iters;
-  o2scl::cli::parameter_string p_nB_grid_spec;
-  o2scl::cli::parameter_string p_Ye_grid_spec;
-  o2scl::cli::parameter_string p_T_grid_spec;
   //@}
 
-  /// \name Functions for the main algorithm
-  //@{
+  /// Desc
+  int solve_nuclei_mu
+  (size_t nv, const ubvector &x, ubvector &y, double mun, double mup,
+   double T, double &mun_gas, double &mup_gas, o2scl::thermo &th_gas,
+   bool no_nuclei);
+
   /// Desc
   double compute_fr_nuclei(double nB, double Ye, double T,
                            double log_xn, double log_xp,
                            o2scl::thermo &th, o2scl::thermo &th_gas);
-  /// Desc
-  int solve_nuclei_mu
-  (size_t nv, const ubvector &x, ubvector &y, double mun, double mup,
-   double T, double &mun_gas, double &mup_gas, o2scl::thermo &th_gas);
+  
+  /// \name Functions for the main algorithm
+  //@{
   /** \brief Use only one of the two equations for a 
       function for a root bracketing algorithm
   */
@@ -762,6 +668,8 @@ public:
 
   /** \brief Construct equations to solve for a fixed baryon
       density and electron fraction
+
+      The temperature should be in 1/fm.
   */
   int solve_nuclei(size_t nv, const ubvector &x, ubvector &y, double nb,
 		   double ye, double T, 
@@ -833,18 +741,21 @@ public:
       fermion &n, fermion &p, fermion &e, 
       double T, double nB, thermo &thx, std::map<string,double> &vdet);
 
-  /** \brief Compute muons in nuclear matter
+  /* \brief Compute muons in nuclear matter
    */
   int nuc_matter_muons(size_t nv, const ubvector &x, ubvector &y,
-                       double nB, double Ye, double T,
-                       std::map<std::string,double> &vdet);
+      double nB, double Ye, double T,
+      std::map<std::string,double> &vdet);
   
-  /** \brief Compute muons
+  // this is now replaced by elep.pair_density_eq()
+  /* \brief Compute muons
    */
+  /*
   int new_muons(size_t nv, const ubvector &x, ubvector &y,
                 double nB, double Ye, double T,
                 std::map<std::string,double> &vdet,
                 o2scl::eos_sn_base &eso);
+  */
   
   /** \brief Determine the EOS presuming a distribution of nuclei
       and optimizing the limits in A and \f$ N-Z \f$
@@ -860,24 +771,36 @@ public:
 
       [out file]
 
-      Help.
-   */
+      This command is the full MPI calculation of the EOS table,
+      given a model and using the current grid. If no output
+      file name is specified, the results are placed in a file
+      called \c eos_nuclei.o2 .
+  */
   int generate_table(std::vector<std::string> &sv, bool itive_com);
   //@}
 
+  /** \brief Save in CompOSE format
+
+      <output file prefix>
+
+      Save an EOS table in the CompOSE format
+  */
+  int save_compose(std::vector<std::string> &sv, bool itive_com);
+  
   /// \name EOS post-processing functions
   //@{
   /** \brief Compute derivatives numerically
 
       <no parameters>
 
-      Help.
-   */
+      This command requires that an EOS has been loaded. It 
+      uses Steffen's monotonic interpolation to compute 
+      the neutron and proton chemical potentials, and
+      the interacting part of the internal energy, pressure,
+      and entropy. The value of \ref derivs_computed is set to
+      true.
+  */
   int eos_deriv(std::vector<std::string> &sv, bool itive_com);
-
-  /** \brief Desc
-   */
-  int interp_point(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Desc
    */
@@ -887,22 +810,78 @@ public:
    */
   int eos_second_deriv(std::vector<std::string> &sv, bool itive_com);
 
+  /** \brief Interpolate the EOS to fix the table near a point
+
+      <nB> <Ye> <T MeV> <window> <st.o2>
+
+      This function requires that an EOS with leptons has been
+      loaded. 
+   */
+  int interp_point(std::vector<std::string> &sv, bool itive_com);
+
+  /** \brief The internal interpolation function
+
+      Use interpolation to fix the table in the neighborhood of
+      size \c window around \c (i_fix,j_fix,k_fix) using 
+      interpolation object \c ike. 
+   */
+  int interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
+                      size_t window, interpm_krige_eos &ike);
+
+  /** \brief Use interpolation to fix an entire table
+
+      <input stability file> <window> <output table> 
+      <output stability file>
+
+      Under development.
+   */
+  int interp_fix_table(std::vector<std::string> &sv, bool itive_com);
+  
   /** \brief Add electrons and photons
 
       <no parameters>
       
-      Help.
-   */
+      This command is typically used after derivatives are computed
+      with the "eos-deriv" command. This command requires a table has
+      been loaded with \c derivs_computed equal to true, but
+      does not require that a model has been selected.
+  */
   int add_eg(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Construct an electrons and photon table
 
       <output file>
 
-      Help.
-   */
+      Construct a file consisting only of the electron and photon EOS.
+      The grid is determined by the current grid specification.
+      Muons are included if \ref eos::include_muons is set to true.
+      The output file has five tensor grid objects, \c F, \c E, \c P,
+      \c S, and \c mue. If muons are included, then the file also
+      includes \c Ymu. The electron (and muon) masses are also written
+      to the table.
+
+      This command works independent of whether or not a table
+      was loaded or if a model was selected. However, if a table
+      is loaded when this command is invoked, the current table is
+      cleared. 
+  */
   int eg_table(std::vector<std::string> &sv, bool itive_com);
 
+  /** \brief Construct a table in beta equilibrium
+
+      <filename>
+
+      Experimental. From a previously created table (which has both
+      derivatives and leptons), construct a table over baryon density
+      and temperature at beta equilibrium and store in the file named
+      \c filename. Rank 2 tensors A, E, Eint, F, Fint, P, Pint, S,
+      Sint, XHe3, XLi4, Xalpha, Xd, Xn, Xnuclei, Xp, Xt, Z, log_xn,
+      log_xp, mue, mun, and mup are stored, as well as a tensor called
+      Ye which stores the electron fraction at that density and
+      temperature.
+   */
+  int beta_table(std::vector<std::string> &sv, bool itive_com);
+  
   /** \brief Edit an EOS table
 
       <select func.> [tensor to modify] [value func.]
@@ -912,7 +891,7 @@ public:
       remaining two arguments are given, then the values of [tensor to
       modify] for the selected points are changed to the result of the
       function [value func.].
-   */
+  */
   int edit_data(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Merge two output tables to create a third
@@ -929,7 +908,7 @@ public:
       but the second has a non-zero flag with a smaller Fint, or (iv)
       the second table has a non-zero flag and the first does not.
       After the merge, the number of points modified is reported.
-   */
+  */
   int merge_tables(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Compare two output tables
@@ -946,19 +925,18 @@ public:
       F, E, P, and S, are also available for comparisons. Any current "+
       EOS data stored is cleared before the comparison. If the "+
       nB, Ye, or T grids do not match, then no comparison is performed.
-   */
+  */
   int compare_tables(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Output convergence statistics and simple checks
 
       <no parameters>
 
-      If an EOS is loaded, this function counts
-      the number of points with each flag value, checks that
-      the nuclear fractions add up to 1, checks that the free energy
-      internal energy, and entropy are consistent, and checks the
-      thermodynamic identity.
-   */
+      If an EOS is loaded, this function counts the number of points
+      with each flag value, checks that the nuclear fractions add up
+      to 1, checks that the free energy internal energy, and entropy
+      are consistent, and checks the thermodynamic identity.
+  */
   int stats(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Compute and/or show EOS results at one (n_B,Y_e,T) point
@@ -976,8 +954,9 @@ public:
       successful it is stored in the current tables. If \ref show_all_nuclei
       is true, then a file named \c dist.o2 is created
       which holds the full nuclear distribution.
-   */
+  */
   int point_nuclei(std::vector<std::string> &sv, bool itive_com);
+
   /** \brief Desc
 
       args
@@ -1001,9 +980,10 @@ public:
       must be loaded and the full model must be specified (either with
       select-model or from the table).
       
-      If the additional argument "lg" is given, then the random points
-      are all selected at densities between 0.01 and 0.15 1/fm^3.
-   */
+      If the additional argument "lg" (for liquid-gas) is given, then
+      the random points are all selected at densities between 0.01 and
+      0.15 1/fm^3.
+  */
   int test_random(std::vector<std::string> &sv, bool itive_com);
   //@}
 
@@ -1013,18 +993,18 @@ public:
 
       <filename> 
 
-      Loads an EOS table in to memory. In the case
-      where MPI is used, only one MPI rank reads the table at a time.
-   */
+      Loads an EOS table in \c filename to memory. In the case where
+      MPI is used, only one MPI rank reads the table at a time.
+  */
   int load(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Output an EOS table to a file
 
       <filename>
 
-      Loads an EOS table in to memory. In the case
-      where MPI is used, only one MPI rank writes the table at a time.
-   */
+      Write an EOS table to a file. This command does not 
+      currently support multiple MPI ranks.
+  */
   int output(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Write results to an HDF5 file
@@ -1043,27 +1023,34 @@ public:
 
       <output file>
 
-      Help.
-   */
+      This command creates a \ref o2scl::table object and outputs that
+      table to the specified file. The table contains a list of all
+      nuclei used in the EOS, together with their spin degeneracy,
+      mass, binding energy, neutron and proton separation energies,
+      and flags which indicate where the masses and spins are
+      obtained.
+  */
   int write_nuclei(std::vector<std::string> &sv,
-			       bool itive_com);
+                   bool itive_com);
 
   /** \brief Load nuclear masses
 
       This function is called in <tt>main()</tt>.
-   */
+  */
   void load_nuclei();
   
   /** \brief Write nuclear masses to a file
+
+      This function is called by \ref write_nuclei().
    */
-  void write_nuclei(std::string fname);
+  void write_nuclei_intl(std::string fname);
   //@}
   
   /// \name Miscellaneous functions
   //@{
   /** \brief Setup the command-line interface
    */
-  virtual void setup_cli(o2scl::cli &cli); 
+  virtual void setup_cli_nuclei(o2scl::cli &cli); 
 
   /** \brief Initialize tensors for a new EOS table
    */
@@ -1101,7 +1088,7 @@ public:
       second loop is electron fraction and the inner loop is density.
       This function requires a table has been loaded and the EOS is
       specified. It has no parallelization support.
-   */
+  */
   int increase_density(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Increase nB to optimize the phase transition
@@ -1109,7 +1096,7 @@ public:
       <output file>
 
       Help
-   */
+  */
   int fix_cc(std::vector<std::string> &sv, bool itive_com);
   
   /** \brief Verify the EOS
@@ -1147,7 +1134,7 @@ public:
 
       This function does not appear to require electrons and 
       photons but only works with alg_mode=4. 
-   */
+  */
   int verify(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Monte Carlo results with nuclei
@@ -1155,7 +1142,7 @@ public:
       Params.
       
       Help.
-   */
+  */
   int mcarlo_nuclei(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Monte Carlo results with nuclei (v2)
@@ -1163,7 +1150,7 @@ public:
       <nB> <Ye> <T> <N> <filename>
 
       Help
-   */
+  */
   int mcarlo_nuclei2(std::vector<std::string> &sv, bool itive_com);
   
   /** \brief Monte Carlo neutrino opacity in beta equilibrium
@@ -1171,7 +1158,7 @@ public:
       <filename> [n_point]
 
       Help
-   */
+  */
   int mcarlo_beta(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Monte Carlo neutrino opacity in pure neutron matter
@@ -1179,7 +1166,7 @@ public:
       <filename> [n_point]
 
       Help
-   */
+  */
   int mcarlo_neutron(std::vector<std::string> &sv, bool itive_com);
 
   /// Compute the baryon number fractions and put them in \c X
@@ -1194,7 +1181,8 @@ public:
 
   /** \brief Compute the second derivatives and the stability matrix
       
-      <output file> or <nB> <Ye> <T>
+      <output file> or <nB> <Ye> <T> or 
+      <inB low> <inB high> <iYe low> <iYe high> <iT low> <iT high>
 
       This command computes the second derivatives, speed of sound,
       and stability matrix of the current EOS table. A table with
@@ -1211,6 +1199,10 @@ public:
       specified, the \c stability command compares the heterogeneous
       and homogeneous matter sound speeds at the grid point nearest
       to the specified values.
+
+      This command currently requires that a model has been 
+      selected so it can compute the speed of sound of homogeneous
+      matter at acausal points for comparison. 
   */
   int stability(std::vector<std::string> &sv,
 		bool itive_com);
@@ -1222,7 +1214,7 @@ public:
       Select 0 for the original DSH fit, 1 for NRAPR, 
       2 for Sk chi 414, 3 for Skchi450, 4 for Skchi500, 5 for ?, "+
       and 6 for Sk chi m* (the default).
-   */
+  */
   int select_high_T(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Compute eos with nuclei by searching minimum
@@ -1239,9 +1231,11 @@ public:
       Params.
 
       Help.
-   */
+  */
   int maxwell(std::vector<std::string> &sv, bool itive_com);
-  
+
+  /** \brief Desc
+   */
   int max_fun(size_t nv, const ubvector &x, ubvector &y,
               o2scl::interp_vec<std::vector<double>,ubvector> &itp_P, 
               o2scl::interp_vec<std::vector<double>,ubvector> &itp_mun);

@@ -19,42 +19,20 @@ env:
   # Use docker.io for Docker Hub if empty
   REGISTRY: ghcr.io
   # github.repository as <account>/<repo>
-  IMAGE_NAME: ${{ github.repository }}
+  IMAGE_NAME: nostrad1/utk-eos
 
 jobs:
- docker_clean:
-  runs-on: ubuntu-latest
-
-  steps:
-   - name: clean docker	
-     run: |
-      sudo docker rm `sudo docker ps --all | grep -i -v container | awk '{print $$1}'`
-      sudo docker rmi `sudo docker images --all | grep -i -v container | awk '{print $$3}'`
-
- docker_show:
-  runs-on: ubuntu-latest
-  steps:
-   - name: show all
-     run: |
-      sudo docker ps --all
-      sudo docker images --all
-
  build:
    runs-on: ubuntu-latest
    steps:
-   - name: checkout code
-     uses: actions/checkout@v2
    - name: build all
+     run: sudo docker pull nostrad1/utk-eos:v2
+       
+ test:
+  runs-on: ubuntu-latest
+  needs: build
+  steps: 
+   - name: test code
      run: |
-      sudo docker build - < dockerfilev2 \
-      -t sroy14/eos:v2 > build.out 2>&1
-      sudo docker run sroy14/eos:v2 sh -c \
-      "make mbnuuc" \
-      > test_alpha2.out 2>&1
-
- push:
-   runs-on: ubuntu-latest
-   needs: build
-   steps:
-   - name: push the image
-     run: sudo docker push sroy14/eos:v2
+      sudo docker run nostrad1/utk-eos:v2 sh -c \
+      "mpirun --allow-run-as-root -np 1 ./eos_nuclei -load data/fid_3_5_22.o2 -point-nuclei 0.16 0.4 1.0" 

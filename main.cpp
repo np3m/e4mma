@@ -38,7 +38,7 @@ int main(int argc, char *argv[]) {
   
   cli cl;
   
-  eph.setup_cli(cl);
+  eph.setup_cli_nuclei(cl);
 
   cl.run_auto(argc,argv);
 
