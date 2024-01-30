@@ -7829,7 +7829,7 @@ int eos_nuclei::muses_table(std::vector<std::string> &sv,
       double ent=tg_S.get(ix)*nB;
 
       myfile << "0.1" << "," << muB << "," << 0 
-        << "," << 0 << "," 
+        << "," << muQ << "," 
         << nB <<"," << 0 << "," << Ye*nB << "," << En 
         << "," << Pr << "," << ent << std::endl;
 

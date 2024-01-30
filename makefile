@@ -497,7 +497,7 @@ mbpi:
 		-set recompute 1 \
 		-point-nuclei 0.16 0.5 30 
 
-mbnuc:
+enn_fid_lep:
 	./eos_nuclei \
 		-select-model $(P_FIDUCIAL) \
 		-set a_virial 10 -set b_virial 10 \
@@ -506,6 +506,17 @@ mbnuc:
 		-set fixed_dist_alg 1999 \
 		-set function_verbose 0 \
 		-load data/fid_3_5_22.o2 \
+		-muses-table create
+
+enn_fid_nolep:
+	./eos_nuclei \
+		-select-model $(P_FIDUCIAL) \
+		-set a_virial 10 -set b_virial 10 \
+		-set extend_frdm 0 \
+		-set fd_A_max 600 -set max_ratio 7.0 \
+		-set fixed_dist_alg 1999 \
+		-set function_verbose 3 \
+		-load data/fid_nolep_noderiv_3_4_22.o2 \
 		-muses-table create
 
 mbmuses:
