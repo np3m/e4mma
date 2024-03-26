@@ -1,16 +1,22 @@
 openapi: 3.0.0
+
 info:
   version: 1.0.0
-  title: UTK eos module
-paths:
-  paths: "/output/output.yaml"
+  title: UTK-EOS module
+  contact:
+    email: sroy14@vols.utk.edu
+  description: "Readme.md"
+
+servers:
+    - url: "/"
+      description: "Dummy server"
 
 paths:
   /input/config.yaml:
     put:
       summary: Input parameters for utk module
       description: >
-          possible functions to use for utk module
+          possible arguments to take for utk module
       operationId: putInputParams
       security: []
       requestBody:
@@ -19,378 +25,699 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Input_UTK'
+              $ref: '#/components/schemas/config'
       responses:
         '200':
           description: Successful operation
         '400':
           description: Invalid input provided
 
-  /output/output.yaml:
+  /output/UTK_output_for_Lepton:
     get:
-      summary: Output of the utk EoS
+      summary: Equation of state for Lepton
       description: >
         fill
-      operationId: getFullOutput
+      operationId: getEoSLepton
       security: []
-      requestBody:
-        description: Full output
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Output_UTK'
       responses:
         '200':
           description: Successful operation
+          content:
+            csv:
+              schema:
+                $ref: '#/components/schemas/UTK_output_for_Lepton'
+            hdf5:
+              schema:
+                $ref: '#/components/schemas/UTK_output_for_Lepton'
         '500':
           description: Run time error in calculation
 
-
 components:
   schemas:
-    Input_UTK:
+    config:
       title: Input parameters
-      description: Input parameters required to execute utk eos
+      description: Input parameters for utk eos
+      type: object
+      properties:
+        add_eg:
+          default: 
+          nullable: true
+          description: Add electrons and photons.
+          title: Add electrons and photons.
+          type: string
+
+        alias:
+          default: ''
+          description: This creates an alias for a command or arguments or a combination of both. To
+            list all aliases, use either "-alias list list" or "alias list list" in
+            interactive mode. In general, aliases are applied only after they are defined.
+            However, aliases given anywhere as arguments on the command line will be
+            applied to the rest of the command line, and if multiple definitions for the
+            same alias are given on the command line, then only the last one applies.
+          title: Create a command alias.
+          type: string
+
+        alt_model:
+          default: ''
+          description: For a Skyrme model, the first argument should be the word <computeroutput>
+            Skyrme </computeroutput>, and the second should be the name of the desired
+            Skyrme model. Similarly for an RMF model. (Hyperons are not yet fully
+            supported.)
+          title: Use alternate, rather than the Du et al. EOS.
+          type: string
+
+        check_virial:
+          default:
+          nullable: true
+          description: This function checks the solver by using it to compute the EOS over a wide
+            range of densities and temperatures This function is particularly good for
+            checking to make sure that the virial part of the EOS does not lead to any
+            discontinuities. For example, o2graph -read check_virial.o2 zn -Ye-slice 0.3
+            -set logz 1 -den-plot slice -show.
+
+            This function creates a file 'check_virial.o2' with four tensor_grid objects
+            which store the neutron and proton fugacities. This file can be plotted with,
+            e.g. o2graph -set logz 1 -read check_virial.o2 zn -set logx 1 -set logy 1 -set
+            colbar 1 -to-table3d 0 2 slice 0.01 -den-plot slice -show.
+          title: Check the virial EOS.
+          type: string
+
+        commands:
+          default:
+          nullable: true
+          description: This command lists all the available commands.
+          title: List all available commands.
+          type: string
+        
+        compare_tables:
+          default: "filename1 filename2"
+          description: Compare two EOS tables. If the optional argument ")+
+            is unspecified, then all quantities are compared. If [quantity] "+ is
+            specified, then only that particular quantitiy is compared. "+
+            Only points for which flag=10 in both tables are compared. "+ If
+            derivs_computed is true, then Pint, mun, and "+
+            mup are available for comparisons. If with_leptons is "+ true, then "+
+            F, E, P, and S, are also available for comparisons. Any current "+ EOS data
+            stored is cleared before the comparison. If the "+ nB, Ye, or T grids do not
+            match, then no comparison is performed.
+          title: Compare two output tables.
+          type: string
+
+        create_new_table:
+          default: 
+          nullable: true
+          description: Create new table for Muses at fixed T.
+          title: create new table.
+          type: string
+
+        edit_data:
+          default: "<select func.> [tensor to modify] [value func.]"
+          description: The edit-data command counts the number of (nB,Ye,T) points matching the
+            criteria specified in <select func.>. If the remaining two arguments are
+            given, then the values of [tensor to modify] for the selected points are
+            changed to the result of the function [value func.].
+          title: Edit an EOS table.
+          type: string
+
+        eg_table:
+          default: "filename"
+          description: Construct an electrons and photon table.
+          title: Construct an electrons and photon table.
+          type: string
+
+        eos_deriv:
+          default:
+          nullable: true 
+          description: Compute derivatives numerically.
+          title: Compute derivatives numerically.
+          type: string
+
+        eos_sn:
+          default: "0.0"
+          description: Compare to other EOSs?
+          title: Compare to other EOSs?
+          type: string
+
+        exit:
+          default:
+          nullable: true
+          description: Exit the current program.
+          title: Exit (synonymous with 'quit').
+          type: string
+
+        fit_frdm:
+          default:
+          nullable: true
+          description: Fit the FRDM mass model.
+          title: Fit the FRDM mass model.
+          type: string
+
+        fix_cc:
+          default: "output file"
+          description: Increase nB to optimize the phase transition.
+          title: Increase nB to optimize the phase transition.
+          type: string
+
+        generate_table:
+          default: "output file"
+          description: Generate an EOS table.
+          title: Generate an EOS table.
+          type: string
+
+        get:
+          default: ''
+          description: This command gets the value of a parameter. A list of parameters can be
+            obtained by e.g. -help get on the command-line or "help get" in interactive
+            mode.
+          title: Get the value of a parameter.
+          type: string
+
+        help:
+          default: ''
+          description: Show generic help information, or, if an argument is given give the
+            documentation for the specified command. Note that required arguments are
+            typically given inside angled brackes <> while optional arguments are given
+            inside square brackets []. If an argument is given and it is not a command
+            name but it is a parameter name then output the name, value, and description
+            of that parameter.
+          title: Show help information.
+          type: string
+
+        hrg_load:
+          default: "filename"
+          description: Loads a list of resonances from a text file.
+          title: Load the HRG table.
+          type: string
+
+        increase_density:
+          default: "<nB low> <nB high> <Ye low> <Ye high> <T low> <T high> <output
+                file>"
+          description: This function computes the EOS at higher densities using initial guess from
+            lower densities. It is particularly helpful in getting the phase transition
+            between nuclei and nuclear matter correct. The outermost loop is temperature,
+            the second loop is electron fraction and the inner loop is density. This
+            function requires a table has been loaded and the EOS is specified. It has no
+            parallelization support.
+          title: Use low densities to improve results at high densities.
+          type: string
+
+        interp_point:
+          default:
+          nullable: true
+          description: interpolate a point.
+          title: interpolate a point.
+          type: string
+
+        license:
+          default: "filename"
+          description: This command outputs the GPLv3 license information. If the optional [filename]
+            argument is given, then the license will be written to the specified file.
+          title: Show license information.
+          type: string
+
+        load:
+          default: "data/fid_3_5_22.o2"
+          description: Loads an EOS table in to memory. In the case where MPI is used, only one MPI
+            rank reads the table at a time.
+          title: Load an EOS table.
+          type: string
+
+        maxwell:
+          default: "params"
+          description: Maxwell construction.
+          title: Maxwell construction.
+          type: string
+
+        mcarlo_beta:
+          default: "<filename> [n_point]"
+          description: Monte Carlo neutrino opacity in beta equilibrium.
+          title: Monte Carlo neutrino opacity in beta equilibrium.
+          type: string
+
+        mcarlo_data:
+          default: "Params"
+          description:  Compute the data for the Monte Carlo figures.
+          title:  Compute the data for the Monte Carlo figures.
+          type: string
+
+        mcarlo_neutron:
+          default: "<filename> [n_point]"
+          description:  Monte Carlo neutrino opacity in pure neutron matter.
+          title:  Monte Carlo neutrino opacity in pure neutron matter.
+          type: string
+
+        mcarlo_nuclei:
+          default: "params"
+          description:  Monte Carlo results with nuclei.
+          title:  Monte Carlo results with nuclei.
+          type: string
+
+        mcarlo_nuclei2:
+          default: "<nB> <Ye> <T> <N> <filename>"
+          description:  Monte Carlo results with nuclei (v2).
+          title:  Monte Carlo results with nuclei (v2).
+          type: string
+
+        merge_tables:
+          default: "<input file 1> <input file 2> <output file>"
+          description:  Tables can only be merged if their grids and settings match. If the Fint table
+            is anomalously small or large or not-finite, then this function calls the
+            error handler. Otherwise, for each point in (nB,Ye,T), there are four reasons 
+            for which a point is copied from the second table to the first, (i) they both
+            have flag=10 but the second has a smaller Fint, (ii) the second has flag=10
+            but the first does not, (iii) they both have flags less than 10 but the second
+            has a non-zero flag with a smaller Fint, or (iv) the second table has a
+            non-zero flag and the first does not. After the merge, the number of points
+            modified is reported.
+          title:  Merge two output tables to create a third.
+          type: string
+
+        muses:
+          default: 
+          nullable: true
+          description: Create a new table for Muses (experimental).
+          title: Create a new table for Muses (experimental).
+          type: string
+
+        muses_table:
+          default:
+          nullable: true
+          description: Create a new table for Muses (experimental).
+          title: Create a new table for Muses (experimental).
+          type: string
+
+        no_intro:
+          default:
+          nullable: true
+          description: If this command is used, then no introductory text (including the program name
+            and the "no warranty" statement) is output in interactive mode.
+          title: Do not print introductory text.
+          type: string
+
+        output:
+          default: "filename"
+          description: Loads an EOS table in to memory. In the case where MPI is used, only one MPI
+            rank writes the table at a time.
+          title: Output an EOS table to a file.
+          type: string
+
+        pns_eos:
+          default: "<entropy per baryon> <lepton fraction> <output filename>"
+          description: Use YL=0 for beta equilibrium. Currently always uses a cold crust.
+          title: Construct the PNS EOS and the M-R curve.
+          type: string
+
+        point:
+          default: "params"
+          description: Evaluate the EOS at one (nB,Ye,T) point.
+          title: Evaluate the EOS at one (nB,Ye,T) point.
+          type: string
+
+        point_nuclei:
+          default: "<n_B> <Y_e> <T (MeV)>"
+          description: If an EOS is loaded, then the n_B, Y_e, and T values are modified to ensure
+            that they lie on a grid point. If an initial guess is specified on the command
+            line, it is used even if there is a good guess already in the table. If the
+            flag is not 10 or if recompute is true, then the EOS is recomputed. If an EOS
+            is loaded or the recompute was successful, then the results are output to the
+            screen. If the point was successful it is stored in the current tables. If
+            show_all_nuclei is true, then a file named dist.o2 is created which holds the
+            full nuclear distribution.
+          title: Compute and/or show EOS results at one (n_B,Y_e,T) point.
+          type: string
+
+        quit:
+          default:
+          nullable: true
+          description: Quit (synonymous with 'exit').
+          title: Quit (synonymous with 'exit').
+          type: string
+
+        random:
+          default:
+          nullable: true
+          description: Select a random EOS, checking several physical constraints and re-selecting a
+            new random EOS until all the constraints are met.
+          title: Select a random EOS model.
+          type: string
+
+        run:
+          default: "filename"
+          description: This command executes a series of commands specified in a file, line by line.
+            Quotes can be used to specify parameters which have single spaces. All
+            whitespace is compressed into a single space. Quotes inside a word with no
+            whitespace are ignored.
+          title: Run a file containing a list of commands.
+          type: string
+
+        select_high_T:
+          default: 0
+          description: Select 0 for the original DSH fit, 1 for NRAPR, 2 for Sk chi 414, 3 for
+            Skchi450, 4 for Skchi500, 5 for ?, "+ and 6 for Sk chi m* (the default).
+          title: Select the high-temperature Skyrme EOS.
+          type: number
+
+        select_model:
+          default: "skyrme model vector of numbers"
+          description: Select an EOS model.
+          title: Select an EOS model.
+          type: string
+
+        set:
+          type: object
+          description: This command sets the value of a parameter. A list of parameters can be
+            obtained by e.g. -help set on the command-line or "help set " in interactive
+            mode.For floating point or integer parameters, constant expressions can be
+            used, e.g. acos(-1). For string-like parameters, quotes can be used to specify
+            parameters which have single spaces. All whitespace is compressed into a
+            single space. Quotes inside a word with no whitespace are ignored.
+          title: Set the value of a parameter.
+          properties:               
+                S_grid_spec:
+                  type: string
+                  description: The function for S grid specification.
+                  default: '5,0.1*i'
+                T_grid_spec:
+                  type: string
+                  description: The function for default temperature grid.
+                  default: '160,0.1*1.046^i'
+                Ye_grid_spec:
+                  type: string
+                  description: The function for default electron fraction grid.
+                  default: '70,0.01*(i+1)'
+                Ye_list:
+                  type: string
+                  description: The list of electron fractions for generate-table command.
+                  default: ''
+                a_virial:
+                  type: number
+                  description: Coefficient for modulation of virial EOS.
+                  default: 10.0
+                alg_mode:
+                  type: integer
+                  description: Algorithm mode.
+                  default: 4
+                b_virial:
+                  type: number
+                  description: Coefficient for modulation of virial EOS.
+                  default: 10.0
+                cs2_verbose:
+                  type: integer
+                  description: Verbose parameter for cs2.
+                  default: 0
+                edge_list:
+                  type: boolean
+                  description: If true, recompute points where Z, A, log_xn, or log_xp reach a maximum or minimum.
+                  default: false
+                ext_guess:
+                  type: string
+                  description: Filename containing a separate table to use as a guess for the generate-table command.
+                  default: ''
+                extend_frdm:
+                  type: boolean
+                  description: If true, attempt to extend FRDM beyond the drip lines.
+                  default: false
+                fd_A_max:
+                  type: integer
+                  description: The maximum value of A for a fixed distribution when alg_mode is 4.
+                  default: 600
+                file_update_iters:
+                  type: integer
+                  description: The number of iterations between file updates.
+                  default: 100000
+                file_update_time:
+                  type: integer
+                  description: The time (in seconds) between output file updates for generate_table().
+                  default: 1800
+                fixed_dist_alg:
+                  type: integer
+                  description: Algorithm for eos_fixed_dist().
+                  default: 1111
+                function_verbose:
+                  type: integer
+                  description: A new function verbose parameter.
+                  default: 11111
+                inc_hrg:
+                  type: boolean
+                  description: Include HRG parameter.
+                  default: false
+                include_detail:
+                  type: boolean
+                  description: Include detail parameter.
+                  default: false
+                include_muons:
+                  type: boolean
+                  description: If true, include muons.
+                  default: false
+                max_ratio:
+                  type: number
+                  description: The maximum value of N/Z or Z/N.
+                  default: 7.0
+                max_time:
+                  type: number
+                  description: Maximum time, in seconds, for the generate-table command.
+                  default: 0.0
+                mh_tol_rel:
+                  type: number
+                  description: Relative tolerance for the solver in the eos_fixed_dist() function.
+                  default: 1.0e-06
+                nB_grid_spec:
+                  type: string
+                  description: The function for default baryon density grid.
+                  default: '301,10^(i*0.04-12)*2.0'
+                ns_record:
+                  type: boolean
+                  description: If true, save the results of the neutron star fit to a file, and immediately exit.
+                  default: false
+                nucleon_func:
+                  type: string
+                  description: Function for delta Z and delta N in the single nucleus approximation.
+                  default: '(i<100)*10+(i>=100)*sqrt(i)'
+                old_ns_fit:
+                  type: boolean
+                  description: If true, use the old neutron star fit.
+                  default: true
+                propagate_points:
+                  type: boolean
+                  description: If true, use previously computed points (or guesses) as an initial guess to compute adjacent points.
+                  default: true
+                recompute:
+                  type: boolean
+                  description: If true, recompute all points, irrespective of the value of the convergence flag.
+                  default: false
+                rnuc_less_rws:
+                  type: boolean
+                  description: If true, ensure that the nuclear radius is less than the Wigner-Seitz radius.
+                  default: true
+                select_cs2_test:
+                  type: boolean
+                  description: If true, test cs2 in the select_internal() function.
+                  default: true
+                show_all_nuclei:
+                  type: boolean
+                  description: If true, show all nuclei considered at every point.
+                  default: false
+                six_neighbors:
+                  type: boolean
+                  description: If true, when computing a point, perform the calculation using some of the neighboring points as an initial guess.
+                  default: false
+                strange_axis:
+                  type: boolean
+                  description: If true, strangeness is included as an additional tensor rank.
+                  default: false
+                survey_eqs:
+                  type: boolean
+                  description: If true, survey the nB and Ye equations near a failed point.
+                  default: false
+                test_ns_cs2:
+                  type: boolean
+                  description: If true, test the neutron star speed of sound.
+                  default: false
+                use_alt_eos:
+                  type: boolean
+                  description: Use an alternate EOS rather than the Du et al. combined EOS.
+                  default: false
+                verbose:
+                  type: integer
+                  description: Verbose parameter.
+                  default: 0
+                verify_only:
+                  type: boolean
+                  description: If true, verify points only and do not attempt to solve.
+                  default: false
+
+        shell:
+          default: "command"
+          description: This command excutes the specified shell command. If verbose>0 (the default),
+            then the shell output is preceeded by "Executing system command, <command>"
+            and followed by "Done with system command (returned <return value>).". In
+            interactive mode, shell commands can also be run using ! instead of "shell ",
+            i.e. "!ls".
+          title: Run a shell command.
+          type: string
+
+        stability:
+          default: "filename"
+          description: The stability command creates an output file with several additional data
+            objects for the second derivatives of the free energy, the eigenvalues of the
+            curvature matrix, and the squared speed of sound.
+          title: Compute the second derivatives and the stability matrix.
+          type: string
+
+        stats:
+          default:
+          nullable: true
+          description: If an EOS is loaded, this function counts the number of points with each flag
+            value, checks that the nuclear fractions add up to 1, checks that the free
+            energy internal energy, and entropy are consistent, and checks the
+            thermodynamic identity.
+          title: Output convergence statistics and simple checks.
+          type: string
+
+        table_Ye:
+          default: "<filename> <Ye>"
+          description: Constructs the EOS as a table3d object and outputs to <filename>. Currently
+            stores Fint, Pint, Sint, g, msn, and msp.
+          title: Construct a table at fixed electron fraction.
+          type: string
+
+        table_full:
+          default: "filename"
+          description: Stores grid information, Fint, Eint, Pint, Sint, mun, mup, cs2, mue, F, E, P,
+            and S.
+          title: Construct a full 3D EOS table.
+          type: string
+
+        table_nB:
+          default: "filename 0.16"
+          description: Constructs the EOS as a table3d object and outputs to <filename>. Currently
+            stores Fint, Pint, Sint, g, msn, and msp.
+          title: Construct a table at fixed baryon density.
+          type: string
+
+        test_deriv:
+          default: "params"
+          description: Test the first derivatives of the free energy.
+          title: Test the first derivatives of the free energy.
+          type: string
+              
+        test_eg:
+          default: "filename"
+          description: This function tests the electron and photon EOS to ensure that it does not
+            call the error handler (it does not test accuracy). It uses a larger grid than
+            the default EOS grid and stores the results in tensor_grid objects. If a file
+            is specified, these tensor_grid objects are output to the specified file.
+          title: Test the electron and photon EOS.
+          type: string
+
+        test_random:
+          default: 5
+          description: >
+            This function tests the EOS at randomly chosen points in (nB,Ye,T) space. If
+            the new calculation and the stored result disagree, then the new result is
+            stored in the table.
+          title: Test an EOS at random points in (nB,Ye,T)
+          type: number
+
+        verify:
+          default: 'random <n_tests> <output file>'
+          description: >
+            Verify the EOS, recompute if a point fails and then write final results to the
+            specified output file. This function only verifies that the baryon density and
+            electron fraction equations are solved to within the current tolerance and
+            does not attempt to solve them again. The test-random function is different;
+            it actually re-solves the equations to show the answer is correct. Thus, this
+            function requires a bit less running time at each point. The first argument is
+            a mode parameter which determines which points will be verified.
+          title: Verify the EOS.
+          type: string
+
+        vir_comp:
+          default: "params"
+          description: Compare the virial and full EOS.
+          title: Compare the virial and full EOS.
+          type: string
+
+        vir_fit:
+          default:
+          nullable: true
+          description: Fit the virial EOS table to the functional form specified in Du et al. (2019)
+            using eos_crust_virial_v2::fit().
+          title: Fit the virial EOS.
+          type: string
+
+        warranty:
+          default:
+          nullable: true
+          description: This command shows the GPLv3 no warranty statement.
+          title: Show warranty information.
+          type: string
+
+        write_nuclei:
+          default: "filename"
+          description:  Write the nuclear masses to an HDF5 file.
+          title:  Write the nuclear masses to an HDF5 file.
+          type: string
+
+        xml_to_02:
+          default:
+          nullable: true
+          description: "Read doxygen XML files to create run-time documentation. This command does not take any arguments."
+          title: "Read doxygen XML files to create run-time documentation."
+          type: string
+
+        output_format:
+          default: "CSV"
+          description: "Format of the output files for Lepton module"
+          type: string
+          title: output_lepton
+
+    UTK_output_for_Lepton:
+      title: UTK output for Lepton
+      description: Output of UTK for Lepton module
       type: array
       items:
         type: object
         properties:
-          test_deriv:
-            $ref:
-          table_Ye:
-            $ref:
-          table_nB:
-            $ref:
-          table_full:
-            $ref:
-          vir_fit:
-            $ref:
-          eos_sn:
-            $ref:
-          mcarlo_data:
-            $ref:
-          point:
-            $ref:
-          random:
-            $ref:
-          pns_eos:
-            $ref:
-          select_model:
-            $ref:
-          test_eg:
-            $ref:
-          vir_comp:
-            $ref:
-          alt_model:
-            $ref:
-          hrg_load:
-            $ref:
-          verbose:
-            $ref:
-          old_ns_fit:
-            $ref:
-          ns_record:
-            $ref:
-          include_muons:
-            $ref:
-          select_cs2_test:
-            $ref:
-          test_ns_cs2:
-            $ref:
-          use_alt_eos:
-            $ref:
-          a_virial:
-            $ref:
-          b_virial:
-            $ref:
+          temperature:
+            description: Temperature
+            type: number
+            x-unit: MeV
+          mu_B:
+            description: Baryon chemical potential
+            type: number
+            x-unit: MeV
+          mu_S:
+            description: Strange chemical potential
+            type: number
+            x-unit: MeV
+          mu_Q:
+            description: Charge chemical potential
+            type: number
+            x-unit: MeV
+          baryon_density:
+            description: Baryon density
+            type: number
+            x-unit: 1/fm3
+          total_strangeness_density:
+            description: Total strangeness density
+            type: number
+            x-unit: 1/fm3
+          total_charge_density:
+            description: Total charge density
+            type: number
+            x-unit: 1/fm3 
+          energy_density:
+            description: Energy density
+            type: number
+            x-unit: MeV/fm3
+          pressure:
+            description: Pressure
+            type: number
+            x-unit: MeV/fm3
+          entropy_density:
+            description: Entropy density
+            type: number
+            x-unit: 1/fm3
 
-    Output_UTK:
-      title: Physical observables
-      description: Physical observables associated with a given EoS
-      type: array
-      items:
-        type: object
-        properties:
-          n_B:
-            $ref: '#/components/schemas/Baryon_Density'
-          T:
-            $ref: '#/components/schemas/Temperature'
-          Y_e:
-            $ref: '#/components/schemas/Electron_Fraction'
-          A:
-            $ref: '#/components/schemas/A'
-          Z:
-            $ref: '#/components/schemas/Z'
-          fint:
-            $ref: '#/components/schemas/fint'
-          Fint:
-            $ref: '#/components/schemas/Fint'
-          Sint:
-            $ref: '#/components/schemas/Sint'
-          Eint:
-            $ref: '#/components/schemas/Eint'
-          Xn:
-            $ref: '#/components/schemas/Xn'
-          Xp:
-            $ref: '#/components/schemas/Xp'
-          Xd:
-            $ref: '#/components/schemas/Xd'
-          Xt:
-            $ref: '#/components/schemas/Xt'
-          XHe3:
-            $ref: '#/components/schemas/XHe3'
-          XLi4:
-            $ref: '#/components/schemas/XLi4'
-          Xalpha:
-            $ref: '#/components/schemas/Xalpha'
-          Xnuclei:
-            $ref: '#/components/schemas/Xnuclei'
-          Pint:
-            $ref: '#/components/schemas/Pint'
-          mun:
-            $ref: '#/components/schemas/mun'
-          mup:
-            $ref: '#/components/schemas/mup'
-          F:
-            $ref: '#/components/schemas/F'
-          E:
-            $ref: '#/components/schemas/E'
-          S:
-            $ref: '#/components/schemas/S'
-          P:
-            $ref: '#/components/schemas/P'
-          
-          
-
-    Baryon_Density:
-      title: Baryon Density
-      description: "density of baryons in MeV^3"
-      type: number
-      format: float
-      default: 1200000.0
-      example: 1.0e6
-      minimum: 0
-      maximum: .inf
-
-    Temperature:
-      title: Temperature
-      description: "temperature in MeV"
-      type: number
-      format: float
-      default: 0
-      example: 1.0
-      minimum: 0
-      maximum: .inf
-
-    Electron_Fraction:
-      title: Electron Fraction
-      description: "ratio of electric charge density carried by baryons to baryon density"
-      type: number
-      format: float
-      default: 0
-      example: 0.4
-      minimum: -1
-      maximum: 1
-
-    A:
-      title: The average nuclear mass number
-      description: "The average nuclear mass number"
-      type: number
-      format: float
-      default: 0
-      example: 1.0e-8
-      minimum: A_min
-      maximum: A_max
-
-    Z:
-      title: The average nuclear charge number
-      description: "The average nuclear charge number"
-      type: number
-      format: float
-      default: 0
-      example: 1.0e-8
-      minimum: 0
-      maximum: A_max
-
-    Fint:
-      title: the baryon part of the free energy per baryon (in MeV)
-      description: "the baryon part of the free energy per baryon (in MeV)"
-      type: number
-      format: float
-      default: 0
-      example: 1.0e-8
-      minimum: -.inf
-      maximum: .inf
-    
-    Sint:
-      title: the baryon part of the entropy per baryon
-      description: "the baryon part of the entropy per baryon"
-      type: number
-      format: float
-      default: 0
-      example: 1.0e-8
-      minimum: -.inf
-      maximum: .inf
-
-    Eint:
-      title: the baryon part of the internal energy per baryon (in MeV)
-      description: "the baryon part of the internal energy per baryon (in MeV)"
-      type: number
-      format: float
-      default: 0
-      example: 1.0e-8
-      minimum: -.inf
-      maximum: .inf
-
-    Xn:
-      title: the baryon number fraction of neutrons
-      description: "the baryon number fraction of neutrons (this includes only 
-      the neutrons in the low-density phase, i.e. the neutrons not inside nuclei)"
-      type: number
-      format: float
-      default: 0
-      example: 1.0e-8
-      minimum: 0
-      maximum: 1
-
-    Xp:
-      title: the baryon number fraction of protons
-      description: "the baryon number fraction of protons (this includes only 
-      the protons in the low-density phase, i.e. the protons not inside nuclei)"
-      type: number
-      format: float
-      default: 0
-      example: 1.0e-8
-      minimum: 0
-      maximum: 1
-
-    Xd:
-      title: the baryon number fraction of deuterons
-      description: "the baryon number fraction of deuterons"
-      type: number
-      format: float
-      default: 0
-      example: 1.0e-8
-      minimum: 0
-      maximum: 1
-
-    Xt:
-      title: the baryon number fraction of tritons
-      description: "the baryon number fraction of tritons"
-      type: number
-      format: float
-      default: 0
-      example: 1.0e-8
-      minimum: 0
-      maximum: 1
-
-    XHe3:
-      title: the baryon number fraction of 3He
-      description: "the baryon number fraction of 3He"
-      type: number
-      format: float
-      default: 0
-      example: 1.0e-8
-      minimum: 0
-      maximum: 1
-
-    XLi4:
-      title: the baryon number fraction of 4Li
-      description: "the baryon number fraction of 4Li"
-      type: number
-      format: float
-      default: 0
-      example: 1.0e-8
-      minimum: 0
-      maximum: 1
-
-    Xalpha:
-      title: the baryon number fraction of alpha particles
-      description: "the baryon number fraction of alpha particles"
-      type: number
-      format: float
-      default: 0
-      example: 1.0e-8
-      minimum: 0
-      maximum: 1
-
-    Xnuclei:
-      title: the baryon number fraction of nuclei
-      description: "the baryon number fraction of nuclei"
-      type: number
-      format: float
-      default: 0
-      example: 1.0e-8
-      minimum: 0
-      maximum: 1
-
-    Pint:
-      title: the baryon part of the pressure
-      description: "the baryon part of the pressure (in MeV/fm^3)"
-      type: number
-      format: float
-      default: 0
-      example: 1.0e-8
-      minimum: 0
-      maximum: .inf
-
-    mun:
-      title: the neutron chemical potential
-      description: "the neutron chemical potential (in Mev)"
-      type: number
-      format: float
-      default: 0
-      example: 1.0e-8
-      minimum: -.inf
-      maximum: .inf
-    
-    mup:
-      title: the proton chemical potential
-      description: "the proton chemical potential (in Mev)"
-      type: number
-      format: float
-      default: 0
-      example: 1.0e-8
-      minimum: -.inf
-      maximum: .inf
-
-    F:
-      title: the total free energy per baryon
-      description: "the total free energy per baryon (in Mev)"
-      type: number
-      format: float
-      default: 0
-      example: 1.0e-8
-      minimum: 0
-      maximum: .inf
-
-    S:
-      title: the total entropy per baryon
-      description: "the total entropy per baryon"
-      type: number
-      format: float
-      default: 0
-      example: 1.0e-8
-      minimum: 0
-      maximum: .inf
-
-    E:
-      title: the total internal energy per baryon
-      description: "the total internal energy per baryon (in Mev)"
-      type: number
-      format: float
-      default: 0
-      example: 1.0e-8
-      minimum: 0
-      maximum: .inf
-
-    P:
-      title: the total pressure
-      description: "the total pressure (in Mev/fm^3)"
-      type: number
-      format: float
-      default: 0
-      example: 1.0e-8
-      minimum: 0
-      maximum: .inf
 

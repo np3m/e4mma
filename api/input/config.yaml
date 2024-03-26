@@ -1,38 +1,96 @@
-openapi: 3.0.0
-components:
-  schemas:
-    Configuration:
-      title: Configuration
-      description: Module configuration
-      type: object
-      properties:
-        param:
-          type: string
-          default: ""
-
-
-test_deriv:
-table_Ye:
-table_nB:
-table_full:
-vir_fit:
-eos_sn:
-mcarlo_data:
-point:
-random:
-pns_eos:
-select_model:
-test_eg:
-vir_comp:
-alt_model:
-hrg_load:
-
-verbose:
-old_ns_fit:
-ns_record:
-include_muons:
-select_cs2_test:
-test_ns_cs2:
-use_alt_eos:
-a_virial:
-b_virial:
+add_eg: null
+alias: ''
+alt_model: ''
+check_virial: null
+commands: null
+compare_tables: filename1 filename2
+create_new_table: null
+edit_data: <select func.> [tensor to modify] [value func.]
+eg_table: filename
+eos_deriv: null
+eos_sn: '0.0'
+exit: null
+fit_frdm: null
+fix_cc: output file
+generate_table: output file
+get: ''
+help: ''
+hrg_load: filename
+increase_density: <nB low> <nB high> <Ye low> <Ye high> <T low> <T high> <output file>
+interp_point: null
+license: filename
+load: data/fid_3_5_22.o2
+maxwell: nB Ye T
+mcarlo_beta: filename npoint
+mcarlo_data: params
+mcarlo_neutron: <filename> [n_point]
+mcarlo_nuclei: params
+mcarlo_nuclei2: <nB> <Ye> <T> <N> <filename>
+merge_tables: <input file 1> <input file 2> <output file>
+muses: null
+muses_table: null
+no_intro: null
+output: filename
+output_format: HDF5
+pns_eos: <entropy per baryon> <lepton fraction> <output filename>
+point: params
+point_nuclei: 0.16 0.5 30
+quit: null
+random: null
+run: filename
+select_high_T: 0
+select_model: P_FIDUCIAL
+set:
+  S_grid_spec: 5,0.1*i
+  T_grid_spec: 160,0.1*1.046^i
+  Ye_grid_spec: 70,0.01*(i+1)
+  Ye_list: 1-3,5-7,59-60
+  a_virial: 10.0
+  alg_mode: 4
+  b_virial: 10.0
+  cs2_verbose: 0
+  edge_list: false
+  ext_guess: ''
+  extend_frdm: false
+  fd_A_max: 600
+  file_update_iters: 100000
+  file_update_time: 1800.0
+  fixed_dist_alg: 1999
+  function_verbose: 0
+  inc_hrg: false
+  include_detail: false
+  include_muons: false
+  max_ratio: 7.0
+  max_time: 0.0
+  mh_tol_rel: 1.0e-06
+  nB_grid_spec: 301,10^(i*0.04-12)*2.0
+  ns_record: false
+  nucleon_func: (i<100)*10+(i>=100)*sqrt(i)
+  old_ns_fit: true
+  propagate_points: true
+  recompute: false
+  rnuc_less_rws: true
+  select_cs2_test: true
+  show_all_nuclei: false
+  six_neighbors: false
+  strange_axis: false
+  survey_eqs: false
+  test_ns_cs2: false
+  use_alt_eos: false
+  verbose: 0
+  verify_only: false
+shell: command
+stability: filename
+stats: null
+table_Ye: <filename> <Ye>
+table_full: filename
+table_nB: filename 0.16
+test_deriv: params
+test_eg: filename
+test_random: 5
+verify: random <n_tests> <output file>
+vir_comp: params
+vir_fit: null
+warranty: null
+write_nuclei: filename
+xml_to_o2: null

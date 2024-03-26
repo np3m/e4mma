@@ -526,6 +526,52 @@ mbmuses:
 		
 -include makefile.aws
 
+yml_gen:
+	python3 yaml_generator.py \
+	--select_model P_FIDUCIAL \
+	--a_virial 10.0 --b_virial 10.0 \
+	--extend_frdm 0 \
+	--fd_A_max 600 --max_ratio 7.0 \
+	--fixed_dist_alg 1999 \
+	--function_verbose 0 \
+	--load data/fid_3_5_22.o2 \
+	--output_format HDF5
+
+
+# Read YAML parameter using yq	
+# Define YAML file
+CONFIG_FILE := api/input/config.yaml
+
+# Extract keys from the YAML file excluding 'set' (assuming 'set' is an object)
+ALL_KEYS := $(shell yq eval 'keys | .[]' $(CONFIG_FILE) | grep -v '^set$$')
+
+# Generate variables for each parameter
+$(foreach key,$(ALL_KEYS),$(eval $(key) := $(shell yq eval '.$(key)' $(CONFIG_FILE))))
+
+# Extract keys from the 'set' section
+SET_KEYS := $(shell yq eval '.set | keys | .[]' $(CONFIG_FILE))
+
+# Generate variables for each 'set' parameter
+$(foreach key,$(SET_KEYS),$(eval set_$(key) := $(shell yq eval '.set.$(key)' $(CONFIG_FILE))))
+
+# Default target
+
+# enn_fid_lep target
+enn_fid_lep_yaml:
+	./eos_nuclei \
+		-select-model $($(select_model)) \
+		$(if $(set_a_virial),-set a_virial $(set_a_virial)) \
+		$(if $(set_b_virial),-set b_virial $(set_b_virial)) \
+		$(if $(set_extend_frdm),-set extend_frdm $(set_extend_frdm)) \
+		$(if $(set_fd_A_max),-set fd_A_max $(set_fd_A_max)) \
+		$(if $(set_max_ratio),-set max_ratio $(set_max_ratio)) \
+		$(if $(set_fixed_dist_alg),-set fixed_dist_alg $(set_fixed_dist_alg)) \
+		$(if $(set_function_verbose),-set function_verbose $(set_function_verbose)) \
+		-load $(load) \
+		-muses-table create \
+
+	cp utk_eos.csv api/output/utk_eos.csv
+
 # muses plots
 
 # nB vs T den-plot for A at Ye=0.4

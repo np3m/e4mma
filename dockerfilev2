@@ -9,6 +9,8 @@ LABEL Andrew W. Steiner (awsteiner@mykolab.com)
 # UTK EOS
 WORKDIR /opt
 RUN apt-get install libyaml-cpp-dev -y 
+RUN pip --no-cache-dir install -r pandas pyyaml openapi-core \
+    muses_porter @ git+https://gitlab.com/nsf-muses/common.git@porter-v0.1.0#subdirectory=Porter --no-compile
 RUN git clone https://github.com/awsteiner/eos && \
     cd eos && \
     git switch v2 && \

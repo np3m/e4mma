@@ -6,8 +6,7 @@ authors:
   - Andrew W. Steiner
   - Satyajit Roy
 command:
-  - 'python3'
-  - '/src/main.py'
+  - '/bin/sh'
 image:
   registry: "registry.gitlab.com"
   repo: "https://github.com/awsteiner/eos"
@@ -15,7 +14,7 @@ image:
   source:
     url: "https://github.com/awsteiner/eos"
     git: "https://github.com/awsteiner/eos.git"
-    path: "Dockerfile"
+    path: "dockerfilev2"
     targetRevision: "0.5.2"
 docs:
   path: "doc/"
@@ -31,19 +30,19 @@ inputs:
       targetRevision: ""
       path: api/input/config.yaml#/components/schemas/Configuration
 outputs:
-  - label: status
+  - label: test
     ## The name "status" is a reserved word used by the Calculation Engine to
     ## identify where to read the exit code
-    description: "Module execution status"
-    path: "/output/status.yaml"
+    description: "test utk-eos at certain point"
+    path: "/output/test.csv"
     api:
       url: ""
       targetRevision: ""
-      path: api/output/status.yaml#/components/schemas/Status
-  - label: equation_of_state
-    description: "Calculated equation of state data"
-    path: "/output/eos.yaml"
+      path: api/output/status.yaml#/components/schemas/test
+  - label: utk_eos for leption
+    description: "Calculated equation of state data for leption module"
+    path: "/output/utk_eos.csv"
     api:
       url: ""
       targetRevision: ""
-      path: api/output/Equation_Of_State.yaml#/components/schemas/Equation_Of_State
+      path: api/output/Equation_Of_State.yaml#/components/schemas/utk_for_leption
