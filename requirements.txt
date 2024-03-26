@@ -1,0 +1,3 @@
+pyyaml
+openapi-core
+muses_porter @ git+https://gitlab.com/nsf-muses/common.git@porter-v0.1.0#subdirectory=Porter
