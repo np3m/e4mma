@@ -4,9 +4,7 @@
 import argparse
 import os
 import sys
-import shutil
 import yaml
-import pandas as pd
 
 from muses_porter import Porter
 
