@@ -21,30 +21,17 @@ help:
 
 # Default settings
 LIBS = -L/usr/lib/x86_64-linux-gnu/hdf5/serial \
-	-L/usr/local/lib/python3.11/dist-packages/numpy/core/include \
 	-lo2scl -lhdf5 -lgsl \
-	-lreadline -lpython3.11 
-FLIBS = -lgfortran
+	-lreadline
 # PLIBS = -L/usr/lib/x86_64-linux-gnu/ 
 LCXX = g++
-LFC = gfortran
-LMPI_FC = mpif90
 LMPI_CXX = mpic++
 LCFLAGS = -I/usr/lib/x86_64-linux-gnu/hdf5/serial/include \
-	-I/usr/local/lib/python3.11/dist-packages/numpy/core/include \
-	-DNO_MPI -DNO_OPENMP -DO2SCL_PYTHON -DO2SCL_NO_BOOST_MULTIPRECISION \
-	-I/usr/include/python3.11 
-LCFLAGS_OMP = -I/usr/lib/x86_64-linux-gnu/hdf5/serial/include \
-	-DNO_MPI -DO2SCL_PYTHON \
-	-fopenmp -DTEMP_UPDATES -DO2SCL_NO_BOOST_MULTIPRECISION \
-	-I/usr/local/lib/python3.11/dist-packages/numpy/core/include \
-	-I/usr/include/python3.11 
+	-DNO_MPI -DNO_OPENMP -DO2SCL_NO_BOOST_MULTIPRECISION 
 LFFLAGS = -O3
 LMPI_CFLAGS = -I/usr/lib/x86_64-linux-gnu/hdf5/serial/include \
-	-I/usr/local/lib/python3.11/dist-packages/numpy/core/include \
-	-DO2SCL_MPI -DO2SCL_OPENMP -DO2SCL_PYTHON \
-	-fopenmp -DTEMP_UPDATES -DO2SCL_NO_BOOST_MULTIPRECISION \
-	-I/usr/include/python3.11 
+	-DO2SCL_MPI -DO2SCL_OPENMP \
+	-fopenmp -DTEMP_UPDATES -DO2SCL_NO_BOOST_MULTIPRECISION
 	
 COMMENT = "default"
 # ----------------------------------------------------------------
@@ -540,25 +527,25 @@ yml_gen:
 
 # Read YAML parameter using yq	
 # Define YAML file
-CONFIG_FILE := api/input/config.yaml
+#CONFIG_FILE := api/input/config.yaml
 
 # Extract keys from the YAML file excluding 'set' (assuming 'set' is an object)
-ALL_KEYS := $(shell yq eval 'keys | .[]' $(CONFIG_FILE) | grep -v '^set$$')
+#ALL_KEYS := $(shell yq eval 'keys | .[]' $(CONFIG_FILE) | grep -v '^set$$')
 
 # Generate variables for each parameter
-$(foreach key,$(ALL_KEYS),$(eval $(key) := $(shell yq eval '.$(key)' $(CONFIG_FILE))))
+#$(foreach key,$(ALL_KEYS),$(eval $(key) := $(shell yq eval '.$(key)' $(CONFIG_FILE))))
 
 # Extract keys from the 'set' section
-SET_KEYS := $(shell yq eval '.set | keys | .[]' $(CONFIG_FILE))
+#SET_KEYS := $(shell yq eval '.set | keys | .[]' $(CONFIG_FILE))
 
 # Generate variables for each 'set' parameter
-$(foreach key,$(SET_KEYS),$(eval set_$(key) := $(shell yq eval '.set.$(key)' $(CONFIG_FILE))))
+#$(foreach key,$(SET_KEYS),$(eval set_$(key) := $(shell yq eval '.set.$(key)' $(CONFIG_FILE))))
 
 # Default target
 
 # enn_fid_lep target
-enn_fid_lep_yaml:
-	./eos_nuclei \
+#enn_fid_lep_yaml:
+#	./eos_nuclei \
 		-select-model $($(select_model)) \
 		$(if $(set_a_virial),-set a_virial $(set_a_virial)) \
 		$(if $(set_b_virial),-set b_virial $(set_b_virial)) \
@@ -570,7 +557,7 @@ enn_fid_lep_yaml:
 		-load $(load) \
 		-muses-table create \
 
-	cp utk_eos.csv api/output/utk_eos.csv
+#	cp utk_eos.csv api/output/utk_eos.csv
 
 # muses plots
 
