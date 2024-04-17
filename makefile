@@ -22,16 +22,22 @@ help:
 # Default settings
 LIBS = -L/usr/lib/x86_64-linux-gnu/hdf5/serial \
 	-lo2scl -lhdf5 -lgsl \
-	-lreadline
+	-lreadline 
+FLIBS = -lgfortran
 # PLIBS = -L/usr/lib/x86_64-linux-gnu/ 
 LCXX = g++
+LFC = gfortran
+LMPI_FC = mpif90
 LMPI_CXX = mpic++
 LCFLAGS = -I/usr/lib/x86_64-linux-gnu/hdf5/serial/include \
 	-DNO_MPI -DNO_OPENMP -DO2SCL_NO_BOOST_MULTIPRECISION 
+LCFLAGS_OMP = -I/usr/lib/x86_64-linux-gnu/hdf5/serial/include \
+	-DNO_MPI \
+	-fopenmp -DTEMP_UPDATES -DO2SCL_NO_BOOST_MULTIPRECISION 
 LFFLAGS = -O3
 LMPI_CFLAGS = -I/usr/lib/x86_64-linux-gnu/hdf5/serial/include \
 	-DO2SCL_MPI -DO2SCL_OPENMP \
-	-fopenmp -DTEMP_UPDATES -DO2SCL_NO_BOOST_MULTIPRECISION
+	-fopenmp -DTEMP_UPDATES -DO2SCL_NO_BOOST_MULTIPRECISION 
 	
 COMMENT = "default"
 # ----------------------------------------------------------------
@@ -124,12 +130,12 @@ eos_nuclei: eos.o main.o eos_nuclei.o fore.o eos_had_skyrme_ext.o eos_interp.o \
 		neutrino/FunctionIntegrator.o neutrino/Polarization.o \
 		neutrino/PolarizationNonRelv2Apr8.o neutrino/jacobi_rule.o \
 		eos_neutrino.o
-	$(LMPI_CXX) $(LMPI_CFLAGS) -I/usr/local/include/yaml-cpp/ -o eos_nuclei eos.o main.o \
+	$(LMPI_CXX) $(LMPI_CFLAGS) -o eos_nuclei eos.o main.o \
 		eos_nuclei.o fore.o eos_had_skyrme_ext.o eos_interp.o \
 		neutrino/Couplings.o neutrino/FluidState.o eos_neutrino.o \
 		neutrino/FunctionIntegrator.o neutrino/Polarization.o \
 		neutrino/PolarizationNonRelv2Apr8.o neutrino/jacobi_rule.o \
-		$(LIBS) -lyaml-cpp
+		$(LIBS)
 
 fore_test: fore_test.o fore.o 
 	$(LMPI_CXX) $(LMPI_CFLAGS)-o fore_test fore_test.o fore.o $(LIBS)
@@ -226,9 +232,6 @@ eos_nompi: eos_nompi.o main_eos_nompi.o \
 	$(LCXX) $(LCFLAGS) -o eos_nompi eos_nompi.o \
 		main_eos_nompi.o eos_had_skyrme_ext_nompi.o $(LIBS) \
 		-lreadline
-
-ymltest: 
-	$(LCXX) -I/usr/local/include -L/usr/local/lib -lyaml-cpp -o ymltest ymltest.cpp 
 
 test: 
 	$(LMPI_CXX) $(LMPI_CFLAGS) fore.o -o test test.cpp $(LIBS)
@@ -465,6 +468,7 @@ mbnew:
 		-set fd_A_max 600 -set max_ratio 7.0 \
 		-set fixed_dist_alg 1999 \
 		-set function_verbose 0 \
+		-load data/fid_3_5_22.o2 \
 		-set recompute 1 \
 		-point-nuclei 0.16 0.465 0.1 
 
@@ -515,7 +519,7 @@ mbmuses:
 
 yml_gen:
 	python3 yaml_generator.py \
-	--select_model P_FIDUCIAL \
+	--select_model "$(P_FIDUCIAL)" \
 	--a_virial 10.0 --b_virial 10.0 \
 	--extend_frdm 0 \
 	--fd_A_max 600 --max_ratio 7.0 \
@@ -523,41 +527,6 @@ yml_gen:
 	--function_verbose 0 \
 	--load data/fid_3_5_22.o2 \
 	--output_format HDF5
-
-
-# Read YAML parameter using yq	
-# Define YAML file
-#CONFIG_FILE := api/input/config.yaml
-
-# Extract keys from the YAML file excluding 'set' (assuming 'set' is an object)
-#ALL_KEYS := $(shell yq eval 'keys | .[]' $(CONFIG_FILE) | grep -v '^set$$')
-
-# Generate variables for each parameter
-#$(foreach key,$(ALL_KEYS),$(eval $(key) := $(shell yq eval '.$(key)' $(CONFIG_FILE))))
-
-# Extract keys from the 'set' section
-#SET_KEYS := $(shell yq eval '.set | keys | .[]' $(CONFIG_FILE))
-
-# Generate variables for each 'set' parameter
-#$(foreach key,$(SET_KEYS),$(eval set_$(key) := $(shell yq eval '.set.$(key)' $(CONFIG_FILE))))
-
-# Default target
-
-# enn_fid_lep target
-#enn_fid_lep_yaml:
-#	./eos_nuclei \
-		-select-model $($(select_model)) \
-		$(if $(set_a_virial),-set a_virial $(set_a_virial)) \
-		$(if $(set_b_virial),-set b_virial $(set_b_virial)) \
-		$(if $(set_extend_frdm),-set extend_frdm $(set_extend_frdm)) \
-		$(if $(set_fd_A_max),-set fd_A_max $(set_fd_A_max)) \
-		$(if $(set_max_ratio),-set max_ratio $(set_max_ratio)) \
-		$(if $(set_fixed_dist_alg),-set fixed_dist_alg $(set_fixed_dist_alg)) \
-		$(if $(set_function_verbose),-set function_verbose $(set_function_verbose)) \
-		-load $(load) \
-		-muses-table create \
-
-#	cp utk_eos.csv api/output/utk_eos.csv
 
 # muses plots
 
