@@ -968,7 +968,6 @@ public:
 			     bool itive_com);
   int create_new_table(std::vector<std::string> &sv,
 				 bool itive_com);
-  int muses(std::vector<std::string> &sv, bool itive_com);
   
   /** \brief Test an EOS at random points in (nB,Ye,T)
 

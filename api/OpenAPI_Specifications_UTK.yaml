@@ -58,6 +58,7 @@ components:
       title: Input parameters
       description: Input parameters for utk eos
       type: object
+      required: [select_model, load]
       properties:
         add_eg:
           default: 
@@ -111,7 +112,7 @@ components:
         
         compare_tables:
           default: "filename1 filename2"
-          description: Compare two EOS tables. If the optional argument ")+
+          description: Compare two EOS tables. If the optional argument 
             is unspecified, then all quantities are compared. If [quantity] "+ is
             specified, then only that particular quantitiy is compared. "+
             Only points for which flag=10 in both tables are compared. "+ If
@@ -184,8 +185,8 @@ components:
           title: Generate an EOS table.
           type: string
 
-        get:
-          default: ''
+        get: 
+          default: 'nB' 
           description: This command gets the value of a parameter. A list of parameters can be
             obtained by e.g. -help get on the command-line or "help get" in interactive
             mode.
@@ -193,7 +194,8 @@ components:
           type: string
 
         help:
-          default: ''
+          default:
+          nullable: true
           description: Show generic help information, or, if an argument is given give the
             documentation for the specified command. Note that required arguments are
             typically given inside angled brackes <> while optional arguments are given
@@ -292,13 +294,6 @@ components:
           title:  Merge two output tables to create a third.
           type: string
 
-        muses:
-          default: 
-          nullable: true
-          description: Create a new table for Muses (experimental).
-          title: Create a new table for Muses (experimental).
-          type: string
-
         muses_table:
           default:
           nullable: true
@@ -392,6 +387,7 @@ components:
             parameters which have single spaces. All whitespace is compressed into a
             single space. Quotes inside a word with no whitespace are ignored.
           title: Set the value of a parameter.
+          required: [a_virial, b_virial, extend_frdm, fd_A_max, max_ratio, fixed_dist_alg, function_verbose]
           properties:               
                 S_grid_spec:
                   type: string

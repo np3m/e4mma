@@ -66,24 +66,22 @@ P_LARGE_SL="470 738 0.5 13.0 100.0 36.0 0.9"
 
 # Run Chiral EFT module
 ./eos_nuclei \
-		-set select_cs2_test 0 \
 		-select-model $P_FIDUCIAL \
 		-set a_virial 10 -set b_virial 10 \
 		-set extend_frdm 0 \
 		-set fd_A_max 600 -set max_ratio 7.0 \
 		-set fixed_dist_alg 1999 \
 		-set function_verbose 0 \
-        -load data/fid_3_5_22.o2 \
-		-set recompute 1 \
-		-point-nuclei 0.16 0.465 0.1 
+		-load data/fid_3_5_22.o2 \
+		-muses-table create
 
 # Check exit status
 if [ $? -eq 0 ]; then
-  echo -e "\n\tUtk local run: OK\n"
+  echo -e "\n\tUtk running for Lepton: OK\n"
 else
-  echo -e "\n\tUtk local run: Failed\n"
+  echo -e "\n\tUtk running for Lepton: Failed\n"
   exit 1
 fi
 
-echo -e "\nUtk local run completed\n"
+echo -e "\nUtk running for Lepton completed\n"
 exit 0
