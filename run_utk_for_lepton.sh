@@ -66,14 +66,14 @@ P_LARGE_SL="470 738 0.5 13.0 100.0 36.0 0.9"
 
 # Run UTK module for Lepton
 ./eos_nuclei \
-		-select-model $(P_FIDUCIAL) \
+		-select-model $P_FIDUCIAL \
 		-set a_virial 10 -set b_virial 10 \
 		-set extend_frdm 0 \
 		-set fd_A_max 600 -set max_ratio 7.0 \
 		-set fixed_dist_alg 1999 \
 		-set function_verbose 0 \
 		-load data/fid_3_5_22.o2 \
-		-utk-for-lepton
+		-utk-for-lepton create
 
 cp utk_for_lepton.csv api/output/
 

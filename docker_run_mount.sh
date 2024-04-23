@@ -84,7 +84,7 @@ docker run -it --rm --name utk \
 		-set fixed_dist_alg 1999 \
 		-set function_verbose 0 \
 		-load data/fid_3_5_22.o2 \
-		-utk-for-lepton 
+		-utk-for-lepton create
 
         cp utk_for_lepton.csv api/output/
 
