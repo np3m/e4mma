@@ -7333,19 +7333,19 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
   return 0;
 }
 
-int eos_nuclei::muses_table(std::vector<std::string> &sv,
+int eos_nuclei::utk_for_lepton(std::vector<std::string> &sv,
 			     bool itive_com) { 
 
-  /*std::vector<double> tg = {0.1,0.2,0.3,0.4,0.5};
-  size_t n_tg=5;
-  std::vector<double> sv1,sv2,sv3,sv4,sv5;*/
-
+  std::cout << "Function UTK-for-lepton starting: " << std::endl;
+  
+  // Create an output csv file
   std::ofstream myfile;
-  myfile.open("utk_eos.csv");
+  myfile.open("utk_for_lepton.csv");
   myfile.clear();
   myfile.close();
-  myfile.open("utk_eos.csv", std::ofstream::out | std::ofstream::app);
+  myfile.open("utk_for_lepton.csv", std::ofstream::out | std::ofstream::app);
 
+  // Create a denser Ye grid for more resolution
   std::vector<double> Ye_grid3;
   Ye_grid3.resize(2*n_Ye2);
   for (size_t j=0;j<n_Ye2;j++){
@@ -7353,6 +7353,7 @@ int eos_nuclei::muses_table(std::vector<std::string> &sv,
     Ye_grid3[2*j+1]=(Ye_grid2[j]+Ye_grid2[j+1])/2;
   }
 
+  // Set up interpolation objects to interpolate from using the denser Ye grid
   tensor_grid<> tg_mun_interp=grid_rearrange_and_copy<tensor_grid<>,double>
     (tg_mun,{ix_index(0),ix_grid(1,0.0,0.7,140),ix_index(2)});
   tensor_grid<> tg_mup_interp=grid_rearrange_and_copy<tensor_grid<>,double>
@@ -7364,7 +7365,7 @@ int eos_nuclei::muses_table(std::vector<std::string> &sv,
   tensor_grid<> tg_S_interp=grid_rearrange_and_copy<tensor_grid<>,double>
     (tg_S,{ix_index(0),ix_grid(1,0.0,0.7,140),ix_index(2)});
 
-  // look for beta equilibrium
+  // Fill up the output csv file with data
   for (size_t j=0;j<Ye_grid3.size()-1;j++){
     double Ye=Ye_grid3[j];
     for (size_t i=0;i<n_nB2;i++){
@@ -7381,111 +7382,78 @@ int eos_nuclei::muses_table(std::vector<std::string> &sv,
         << "," << muQ << "," 
         << nB <<"," << 0 << "," << Ye*nB << "," << En 
         << "," << Pr << "," << ent << std::endl;
-
-      /*sv1= {nB,Ye,0.1};
-      sv2= {nB,Ye,0.2};
-      sv3= {nB,Ye,0.3};
-      sv4= {nB,Ye,0.4};
-      sv5= {nB,Ye,0.5};
-    
-      std::vector<double> mun = {tg_mun.interp_linear(sv1),tg_mun.interp_linear(sv2),
-        tg_mun.interp_linear(sv3),tg_mun.interp_linear(sv4),tg_mun.interp_linear(sv5)};
-      std::vector<double> mup = {tg_mup.interp_linear(sv1),tg_mup.interp_linear(sv2),
-        tg_mup.interp_linear(sv3),tg_mun.interp_linear(sv4),tg_mun.interp_linear(sv5)};
-      std::vector<double> E = {tg_E.interp_linear(sv1),tg_E.interp_linear(sv2),
-        tg_E.interp_linear(sv3),tg_mun.interp_linear(sv4),tg_mun.interp_linear(sv5)};
-      std::vector<double> P = {tg_P.interp_linear(sv1),tg_P.interp_linear(sv2),
-        tg_P.interp_linear(sv3),tg_mun.interp_linear(sv4),tg_mun.interp_linear(sv5)};
-      std::vector<double> S = {tg_S.interp_linear(sv1),tg_S.interp_linear(sv2),
-        tg_S.interp_linear(sv3),tg_mun.interp_linear(sv4),tg_mun.interp_linear(sv5)};
-
-      interp_vec<vector<double>,std::vector<double>>
-            itp_mun(n_tg,tg,mun,itp_linear);
-      interp_vec<vector<double>,std::vector<double>>
-            itp_mup(n_tg,tg,mup,itp_linear);
-      interp_vec<vector<double>,std::vector<double>>
-            itp_E(n_tg,tg,E,itp_linear);
-      interp_vec<vector<double>,std::vector<double>>
-            itp_P(n_tg,tg,P,itp_akima);
-      interp_vec<vector<double>,std::vector<double>>
-            itp_S(n_tg,tg,S,itp_akima);*/
-
-      /*double muB=itp_mun.eval(T)+neutron.m*hc_mev_fm;
-      double muQ=itp_mup.eval(T)+proton.m*hc_mev_fm-itp_mun.eval(T)-neutron.m*hc_mev_fm;
-      double En=(itp_E.eval(T)+Ye*proton.m*hc_mev_fm+(1-Ye)*neutron.m*hc_mev_fm)*nB;
-      double Pr=itp_P.eval(T);
-      double ent=itp_S.eval(T)*nB;
-
-      double Ye2=Ye-0.01;
-      sv1= {nB,Ye2,0.1};
-      sv2= {nB,Ye2,0.2};
-      sv3= {nB,Ye2,0.3};
-      sv4= {nB,Ye2,0.4};
-      sv5= {nB,Ye2,0.5};
-
-      std::vector<double> mun2 = {tg_mun.interp_linear(sv1),tg_mun.interp_linear(sv2),
-        tg_mun.interp_linear(sv3),tg_mun.interp_linear(sv4),tg_mun.interp_linear(sv5)};
-      std::vector<double> mup2 = {tg_mup.interp_linear(sv1),tg_mup.interp_linear(sv2),
-        tg_mup.interp_linear(sv3),tg_mun.interp_linear(sv4),tg_mun.interp_linear(sv5)};
-      std::vector<double> E2 = {tg_E.interp_linear(sv1),tg_E.interp_linear(sv2),
-        tg_E.interp_linear(sv3),tg_mun.interp_linear(sv4),tg_mun.interp_linear(sv5)};
-      std::vector<double> P2 = {tg_P.interp_linear(sv1),tg_P.interp_linear(sv2),
-        tg_P.interp_linear(sv3),tg_mun.interp_linear(sv4),tg_mun.interp_linear(sv5)};
-      std::vector<double> S2 = {tg_S.interp_linear(sv1),tg_S.interp_linear(sv2),
-        tg_S.interp_linear(sv3),tg_mun.interp_linear(sv4),tg_mun.interp_linear(sv5)};
-
-      interp_vec<vector<double>,std::vector<double>>
-            itp_mun2(n_tg,tg,mun2,itp_linear);
-      interp_vec<vector<double>,std::vector<double>>
-            itp_mup2(n_tg,tg,mup2,itp_linear);
-      interp_vec<vector<double>,std::vector<double>>
-            itp_E2(n_tg,tg,E2,itp_linear);
-      interp_vec<vector<double>,std::vector<double>>
-            itp_P2(n_tg,tg,P2,itp_akima);
-      interp_vec<vector<double>,std::vector<double>>
-            itp_S2(n_tg,tg,S2,itp_akima);
-
-      double muB2=itp_mun2.eval(T)+neutron.m*hc_mev_fm;
-      double muQ2=itp_mup2.eval(T)+proton.m*hc_mev_fm-itp_mun2.eval(T)-neutron.m*hc_mev_fm;
-      double En2=(itp_E2.eval(T)+Ye*proton.m*hc_mev_fm+(1-Ye)*neutron.m*hc_mev_fm)*nB;
-      double Pr2=itp_P2.eval(T);
-      double ent2=itp_S2.eval(T)*nB;
-
-      std::vector<double> muB_vec={muB, muB2};
-      std::vector<double> muQ_vec={muQ, muQ2};
-      std::vector<double> E_vec={En, En2};
-      std::vector<double> P_vec={Pr, Pr2};
-      std::vector<double> ent_vec={ent, ent2};
-
-      size_t n_muQ=2;
-
-      interp_vec<vector<double>,std::vector<double>>
-            itp_E3(n_muQ,muQ_vec,E_vec,itp_linear);
-      interp_vec<vector<double>,std::vector<double>>
-            itp_P3(n_muQ,muQ_vec,P_vec,itp_linear);
-      interp_vec<vector<double>,std::vector<double>>
-            itp_S3(n_muQ,muQ_vec,ent_vec,itp_linear);
-
-      myfile << T << "," << muB << "," << 0 
-        << "," << 0 << "," 
-        << nB <<"," << 0 << "," << Ye*nB << "," << itp_E3.eval(0) 
-        << "," << itp_P3.eval(0) << "," << itp_S3.eval(0) << std::endl;*/
     }
   }
   myfile.close();
+
+  std::cout << "Function UTK-for-lepton completed succesfully." << std::endl;
+
+  return 0;
+}
+
+int eos_nuclei::utk_for_flav_eq(std::vector<std::string> &sv,
+			     bool itive_com) { 
+
+/*  
+  ["temperature", "muB", "muS", "muQ", "vector_density", "total_S_density", 
+  "total_Q_density", "energy", "pressure", "entropy", "proton_effective_mass", 
+  "neutron_effective_mass", "proton_chemical_potential", "neutron_chemical_potential",  
+  "proton_vector_density", "neutron_vector_density", "proton_potential", 
+  "neutron_potential", "electron_chemical_potential", "electron_density", 
+  "total_energy", "total_pressure", "total_entropy"]
+
+  with units:
+
+  ["MeV", "MeV", "MeV", "MeV", "fm-3", "fm-3", "fm-3", "MeV/fm3", "MeV/fm3", 
+  "fm^-3", "MeV", "MeV", "MeV", "MeV",  "fm-3", "fm-3", "MeV", "MeV","MeV", 
+  "MeV" "MeV", "MeV", "MeV/fm3", "MeV/fm3", "fm^-3"]
+*/  
+  std::cout << "Function UTK-for-flav-eq starting: " << std::endl;
+
+  std::ofstream myfile;
+  myfile.open("utk_for_flav_eq.csv");
+  myfile.clear();
+  myfile.close();
+  myfile.open("utk_for_flav_eq.csv", std::ofstream::out | std::ofstream::app);
+
+  // Fill up the output csv file with data
+  for (size_t j=0;j<Ye_grid2.size()-1;j++){
+    double Ye=Ye_grid2[j];
+    for (size_t i=0;i<n_nB2;i++){
+      double nB=nB_grid2[i];
+      std::vector<std::size_t> ix={i,j,0};
+
+      double muB=tg_mun.get(ix)+neutron.m*hc_mev_fm;
+      double muQ=tg_mup.get(ix)+proton.m*hc_mev_fm-tg_mun.get(ix)-neutron.m*hc_mev_fm;
+
+      double En=(tg_E.get(ix)+Ye*proton.m*hc_mev_fm+(1-Ye)*neutron.m*hc_mev_fm)*nB;
+      double Pr=tg_P.get(ix);
+      double ent=tg_S.get(ix)*nB;
+      
+      double En2=(tg_Eint.get(ix)+Ye*proton.m*hc_mev_fm+(1-Ye)*neutron.m*hc_mev_fm)*nB;
+      double Pr2=tg_Pint.get(ix);
+      double ent2=tg_Sint.get(ix)*nB;
+      
+      myfile << "0.1" << "," << muB << "," << 0 
+        << "," << muQ << "," << nB << "," << 0 
+        << "," << Ye*nB << "," << En 
+        << "," << Pr << "," << ent 
+        << "," << proton.ms*hc_mev_fm << "," << neutron.ms*hc_mev_fm
+        << "," << tg_mup.get(ix)+proton.m*hc_mev_fm << "," << tg_mun.get(ix)-neutron.m*hc_mev_fm
+        << "," << Ye*nB << "," << (1-Ye)*nB << "," << proton.nu*hc_mev_fm << "," << neutron.nu*hc_mev_fm << "," << tg_mue.get(ix)+electron.m*hc_mev_fm
+        << "," << En2 << "," << Pr2 << "," << ent2 << std::endl;
+    }
+  }
+  myfile.close();
+
+  std::cout << "Function UTK-for-flav-eq completed succesfully." << std::endl;
 
   return 0;
 }
 
 int eos_nuclei::create_new_table(std::vector<std::string> &sv,
 				 bool itive_com){
-  std::vector<double> nB_grid; size_t n_nB;
-  hdf_file hf;
-  hf.open("data/fid_3_5_22.o2");
-  hf.getd_vec("nB_grid",nB_grid);
-  hf.get_szt("n_nB",n_nB);
-  hf.close();
-  double Ye=0.5;
+
   double T=0.1/hc_mev_fm;
   double log_xn=-4.661752e+01;
   double log_xp=-1.509323e+01;
@@ -7508,8 +7476,10 @@ int eos_nuclei::create_new_table(std::vector<std::string> &sv,
   std::ofstream myfile;
   myfile.open("example.csv");
 
-  for (size_t i=0;i<n_nB;i++){
-    double nB=nB_grid[i];
+  for (size_t j=0;j<Ye_grid2.size()-1;j++){
+    double Ye=Ye_grid2[j];
+    for (size_t i=0;i<n_nB2;i++){
+      double nB=nB_grid2[i];
     std::cout << "Command 'create-new-table' computing EOS at (w/o rest mass)\n"
             << "  nB(1/fm),Ye(1/fm),T(1/fm): " << nB << " "
             << Ye << " " << T << endl;
@@ -7615,10 +7585,11 @@ int eos_nuclei::create_new_table(std::vector<std::string> &sv,
 	  double E=Eint+lep.ed/nB*hc_mev_fm;
 	  double P=Pint+lep.pr*hc_mev_fm;
 	  double S=Sint+lep.en/nB;
-      myfile << T << "," << (mun_gas+neutron.m)*hc_mev_fm << "," << 0 
+      myfile << "0.1" << "," << (mun_gas+neutron.m)*hc_mev_fm << "," << 0 
       << "," << (mup_gas+proton.m-mun_gas-neutron.m)*hc_mev_fm << "," 
-      << nB <<"," << 0 << "," << Ye*nB << "," << E << "," << P << "," << S << std::endl;
+      << nB <<"," << 0 << "," << Ye*nB << "," << (E+Ye*proton.m*hc_mev_fm+(1-Ye)*neutron.m*hc_mev_fm)*nB << "," << P << "," << S*nB << std::endl;
 
+  }
   }
   myfile.close();
   return 0;
@@ -10886,7 +10857,7 @@ void eos_nuclei::setup_cli_nuclei(o2scl::cli &cl) {
   
   eos::setup_cli(cl,false);
   
-  static const int nopt=29;
+  static const int nopt=30;
 
   o2scl::comm_option_s options[nopt]=
     {{0,"eos-deriv","",0,0,"","",
@@ -10973,10 +10944,14 @@ void eos_nuclei::setup_cli_nuclei(o2scl::cli &cl) {
       new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::point_nuclei_mu),o2scl::cli::comm_option_both,
       1,"","eos_nuclei","point_nuclei_mu","doc/xml/classeos__nuclei.xml"},
-      {0,"muses-table","",1,1,"","",
+      {0,"utk-for-lepton","",1,1,"","",
       new o2scl::comm_option_mfptr<eos_nuclei>
-      (this,&eos_nuclei::muses_table),o2scl::cli::comm_option_both,
-      1,"","eos_nuclei","muses_table","doc/xml/classeos__nuclei.xml"},
+      (this,&eos_nuclei::utk_for_lepton),o2scl::cli::comm_option_both,
+      1,"","eos_nuclei","utk_for_lepton","doc/xml/classeos__nuclei.xml"},
+      {0,"utk-for-flav-eq","",1,1,"","",
+      new o2scl::comm_option_mfptr<eos_nuclei>
+      (this,&eos_nuclei::utk_for_flav_eq),o2scl::cli::comm_option_both,
+      1,"","eos_nuclei","utk_for_flav_eq","doc/xml/classeos__nuclei.xml"},
       {0,"create-new-table","",-1,-1,"","",
       new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::create_new_table),o2scl::cli::comm_option_both,

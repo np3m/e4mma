@@ -964,7 +964,9 @@ public:
       Desc
   */
   int point_nuclei_mu(std::vector<std::string> &sv, bool itive_com);
-  int muses_table(std::vector<std::string> &sv,
+  int utk_for_lepton(std::vector<std::string> &sv,
+			     bool itive_com);
+  int utk_for_flav_eq(std::vector<std::string> &sv,
 			     bool itive_com);
   int create_new_table(std::vector<std::string> &sv,
 				 bool itive_com);

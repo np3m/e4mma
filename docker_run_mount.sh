@@ -1,13 +1,14 @@
 #!/bin/bash
 
-# Runs the UTK project locally
+# Runs the UTK project in a Docker container
 # Requires all necessary shared object dynamic libraries to be installed on the local machine, see docs for more information
 
 set -euo pipefail
-echo -e "\nRunning UTK module locally...\n"
+echo -e "\nRunning UTK module in Docker...\n"
 
-# Determine the path to the Python executable (preferably python3)
-PYTHON="$(command -v python3 2>/dev/null || echo python)"
+# Default values for Docker image and tag
+DOCKER_IMAGE_NAME="nostrad1/utk-eos"
+DOCKER_IMAGE_TAG="v2"
 
 # Default file paths
 USER_CONFIG_YAML_PATH="api/input/config.yaml"
@@ -15,10 +16,16 @@ POTENTIAL_DATA_HDF5_PATH="data/fid_3_5_22.o2"
 
 # Check if command-line arguments are given to overwrite defaults
 if [ $# -ge 1 ]; then
-    USER_CONFIG_YAML_PATH="$1"
+    DOCKER_IMAGE_NAME="$1"
 fi
 if [ $# -ge 2 ]; then
-    POTENTIAL_DATA_HDF5_PATH="$2"
+    DOCKER_IMAGE_TAG="$2"
+fi
+if [ $# -ge 3 ]; then
+    USER_CONFIG_YAML_PATH="$3"
+fi
+if [ $# -ge 4 ]; then
+    POTENTIAL_DATA_HDF5_PATH="$4"
 fi
 
 # Convert the file paths to absolute paths
@@ -42,13 +49,13 @@ fi
 
 # Check if the EOS file exists
 if [ ! -f "$POTENTIAL_DATA_HDF5_PATH" ]; then
-    echo "Chiral potential data file does not exist: $POTENTIAL_DATA_HDF5_PATH"
+    echo "EOS data file does not exist: $POTENTIAL_DATA_HDF5_PATH"
     exit 1
 fi
 
 # Check if the EOS file is in the expected location
 if [ "$POTENTIAL_DATA_HDF5_PATH" != "$(realpath "data/$(basename "$POTENTIAL_DATA_HDF5_PATH")")" ]; then
-    echo "Error: Chiral potential data file is not in data/ directory: $POTENTIAL_DATA_HDF5_PATH"
+    echo "Error: EOS data file is not in data/ directory: $POTENTIAL_DATA_HDF5_PATH"
     exit 1
 fi
 
@@ -64,26 +71,30 @@ P_LARGE_R="0 738 0.5 13.0 62.4 32.8 0.9"
 P_SMALL_SL="470 738 0.5 13.0 23.7 29.5 0.9"
 P_LARGE_SL="470 738 0.5 13.0 100.0 36.0 0.9"
 
-# Run UTK module
-./eos_nuclei \
-		-set select_cs2_test 0 \
+# Run the UTK Docker container, mapping input and output directories,
+# mounting eos table as a volume, and executing utk-for-lepton in src directory.
+docker run -it --rm --name utk \
+  -v "${PWD}/api:/opt/eos/api" \
+  -v "${PWD}/data:/opt/eos/data" \
+  $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG ./eos_nuclei \
 		-select-model $P_FIDUCIAL \
 		-set a_virial 10 -set b_virial 10 \
 		-set extend_frdm 0 \
 		-set fd_A_max 600 -set max_ratio 7.0 \
 		-set fixed_dist_alg 1999 \
 		-set function_verbose 0 \
-        -load data/fid_3_5_22.o2 \
-		-set recompute 1 \
-		-point-nuclei 0.16 0.465 0.1 
+		-load data/fid_3_5_22.o2 \
+		-utk-for-lepton 
+
+        cp utk_for_lepton.csv api/output/
 
 # Check exit status
 if [ $? -eq 0 ]; then
-  echo -e "\n\tUtk local run: OK\n"
+  echo -e "\n\tUTK Docker run: OK\n"
 else
-  echo -e "\n\tUtk local run: Failed\n"
+  echo -e "\n\tUTK Docker run: Failed\n"
   exit 1
 fi
 
-echo -e "\nUtk local run completed\n"
+echo -e "\nUTK Docker run completed\n"
 exit 0

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Runs the Chiral EFT project locally
+# Runs the UTK project locally
 # Requires all necessary shared object dynamic libraries to be installed on the local machine, see docs for more information
 
 set -euo pipefail
@@ -40,15 +40,15 @@ if [ "$USER_CONFIG_YAML_PATH" != "$(realpath "api/input/config.yaml")" ]; then
     cp "$USER_CONFIG_YAML_PATH" api/input/config.yaml
 fi
 
-# Check if the Chiral potential file exists
+# Check if the EOS file exists
 if [ ! -f "$POTENTIAL_DATA_HDF5_PATH" ]; then
-    echo "Chiral potential data file does not exist: $POTENTIAL_DATA_HDF5_PATH"
+    echo "EOS data file does not exist: $POTENTIAL_DATA_HDF5_PATH"
     exit 1
 fi
 
-# Check if the potential data file is in the expected location
+# Check if the EOS file is in the expected location
 if [ "$POTENTIAL_DATA_HDF5_PATH" != "$(realpath "data/$(basename "$POTENTIAL_DATA_HDF5_PATH")")" ]; then
-    echo "Error: Chiral potential data file is not in data/ directory: $POTENTIAL_DATA_HDF5_PATH"
+    echo "Error: EOS data file is not in data/ directory: $POTENTIAL_DATA_HDF5_PATH"
     exit 1
 fi
 
@@ -64,16 +64,18 @@ P_LARGE_R="0 738 0.5 13.0 62.4 32.8 0.9"
 P_SMALL_SL="470 738 0.5 13.0 23.7 29.5 0.9"
 P_LARGE_SL="470 738 0.5 13.0 100.0 36.0 0.9"
 
-# Run Chiral EFT module
+# Run UTK module for Lepton
 ./eos_nuclei \
-		-select-model $P_FIDUCIAL \
+		-select-model $(P_FIDUCIAL) \
 		-set a_virial 10 -set b_virial 10 \
 		-set extend_frdm 0 \
 		-set fd_A_max 600 -set max_ratio 7.0 \
 		-set fixed_dist_alg 1999 \
 		-set function_verbose 0 \
 		-load data/fid_3_5_22.o2 \
-		-muses-table create
+		-utk-for-lepton
+
+cp utk_for_lepton.csv api/output/
 
 # Check exit status
 if [ $? -eq 0 ]; then
