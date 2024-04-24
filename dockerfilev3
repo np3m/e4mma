@@ -130,7 +130,7 @@ COPY --from=builder --chown=$UID:$UID /usr/local/share/o2scl /usr/local/share/o2
 
 # Copy utk-eos files from the builder stage to the runtime stage
 COPY --from=builder --chown=$UID:$UID /opt/eos/eos_nuclei \
-    #/opt/eos/makefile \
+    /opt/eos/makefile \
     #/opt/eos/OpenAPI_Specifications_validator.py \
     /opt/eos/yaml_validator.py \
     /opt/eos/yaml_generator.py \
@@ -139,10 +139,10 @@ COPY --from=builder --chown=$UID:$UID /opt/eos/eos_nuclei \
     /opt/eos/*.sh \
     /opt/eos/
 #COPY --from=builder --chown=$UID:$UID /opt/eos/data /opt/eos/data
-#COPY --from=builder --chown=$UID:$UID /opt/eos/api/OpenAPI_Specifications_UTK.yaml \
-#    /opt/eos/api/OpenAPI_Specifications_UTK.yaml
-#COPY --from=builder --chown=$UID:$UID /opt/eos/api/input/config.yaml \
-#    /opt/eos/api/input/config.yaml
+COPY --from=builder --chown=$UID:$UID /opt/eos/api/OpenAPI_Specifications_UTK.yaml \
+    /opt/eos/api/OpenAPI_Specifications_UTK.yaml
+COPY --from=builder --chown=$UID:$UID /opt/eos/api/input/config.yaml \
+    /opt/eos/api/input/config.yaml
 
 # Set environment variables
 ENV O2SCL_ADDL_LIBS="/usr/lib/gcc/x86_64-linux-gnu/12/libgomp.so"

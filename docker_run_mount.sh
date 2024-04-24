@@ -74,7 +74,8 @@ P_LARGE_SL="470 738 0.5 13.0 100.0 36.0 0.9"
 # Run the UTK Docker container, mapping input and output directories,
 # mounting eos table as a volume, and executing utk-for-lepton in src directory.
 docker run -it --rm --name utk \
-  -v "${PWD}/api/input:/opt/eos/api/api/input" \
+  -v "${PWD}/api/input:/opt/eos/api/input" \
+  -v "${PWD}/api/output:/opt/eos/api/output" \
   -v "${PWD}/data:/opt/eos/data" \
   $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG ./eos_nuclei \
 		-select-model $P_FIDUCIAL \
