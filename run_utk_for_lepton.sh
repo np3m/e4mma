@@ -75,8 +75,6 @@ P_LARGE_SL="470 738 0.5 13.0 100.0 36.0 0.9"
 		-load data/fid_3_5_22.o2 \
 		-utk-for-lepton create
 
-cp utk_for_lepton.csv api/output/
-
 # Check exit status
 if [ $? -eq 0 ]; then
   echo -e "\n\tUtk running for Lepton: OK\n"
