@@ -1,7 +1,6 @@
 # Stage 1: Build dependencies
 FROM ubuntu:23.04 AS builder
 
-
 # Set up build dependencies
 RUN apt-get -y update && apt-get \
   -y install g++ make libgsl-dev autoconf automake libtool git \
@@ -24,8 +23,8 @@ RUN git clone https://github.com/awsteiner/o2scl \
 RUN git clone https://github.com/awsteiner/eos && \
     cd eos && \
     git switch v2 && \
+    git checkout d736e7a && \
     make -j 4 eos_nuclei 
-    #curl https://isospin.roam.utk.edu/public_data/eos_tables/du21/fid_3_5_22.o2 --output data/fid_3_5_22.o2
 
 FROM python:3.11-slim as deps
 # Install git for pip install
@@ -88,7 +87,6 @@ COPY --from=builder --chown=$UID:$UID /usr/lib/x86_64-linux-gnu/libfftw.so.* \
     /usr/lib/x86_64-linux-gnu/libpsm_infinipath.so.1 \
     /usr/lib/x86_64-linux-gnu/libgomp.so.1 \
     /usr/lib/x86_64-linux-gnu/libfftw3.so.3 \
-    #/usr/lib/x86_64-linux-gnu/libyaml-cpp.so.0.7 \
     /usr/lib/x86_64-linux-gnu/libmpi_cxx.so.40 \
     /usr/lib/x86_64-linux-gnu/libmpi.so.40 \
     /usr/lib/x86_64-linux-gnu/libopen-pal.so.40 \
@@ -128,21 +126,17 @@ COPY --from=builder --chown=$UID:$UID /usr/local/lib/libo2scl.so.* /usr/local/li
 
 COPY --from=builder --chown=$UID:$UID /usr/local/share/o2scl /usr/local/share/o2scl
 
-# Copy utk-eos files from the builder stage to the runtime stage
-COPY --from=builder --chown=$UID:$UID /opt/eos/eos_nuclei \
-    /opt/eos/makefile \
-    #/opt/eos/OpenAPI_Specifications_validator.py \
-    /opt/eos/yaml_validator.py \
-    /opt/eos/yaml_generator.py \
-    /opt/eos/manifest.yaml \
-    /opt/eos/postprocess.py \
-    /opt/eos/*.sh \
+# Copy utk-eos files to the runtime stage
+COPY --from=builder --chown=$UID:$UID /opt/eos/eos_nuclei /opt/eos/ 
+COPY --chown=$UID:$UID makefile \
+    yaml_validator.py \
+    yaml_generator.py \
+    manifest.yaml \
+    postprocess.py \
+    *.sh \
     /opt/eos/
-#COPY --from=builder --chown=$UID:$UID /opt/eos/data /opt/eos/data
-COPY --from=builder --chown=$UID:$UID /opt/eos/api/OpenAPI_Specifications_UTK.yaml \
-    /opt/eos/api/OpenAPI_Specifications_UTK.yaml
-COPY --from=builder --chown=$UID:$UID /opt/eos/api/input/config.yaml \
-    /opt/eos/api/input/config.yaml
+
+COPY --chown=$UID:$UID api /opt/eos/api
 
 # Set environment variables
 ENV O2SCL_ADDL_LIBS="/usr/lib/gcc/x86_64-linux-gnu/12/libgomp.so"

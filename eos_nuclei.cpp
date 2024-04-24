@@ -7340,10 +7340,10 @@ int eos_nuclei::utk_for_lepton(std::vector<std::string> &sv,
   
   // Create an output csv file
   std::ofstream myfile;
-  myfile.open("api/output/utk_for_lepton.csv");
+  myfile.open("utk_for_lepton.csv");
   myfile.clear();
   myfile.close();
-  myfile.open("api/output/utk_for_lepton.csv", std::ofstream::out | std::ofstream::app);
+  myfile.open("utk_for_lepton.csv", std::ofstream::out | std::ofstream::app);
 
   // Create a denser Ye grid for more resolution
   std::vector<double> Ye_grid3;
@@ -7411,10 +7411,10 @@ int eos_nuclei::utk_for_flav_eq(std::vector<std::string> &sv,
   std::cout << "Function UTK-for-flav-eq starting: " << std::endl;
 
   std::ofstream myfile;
-  myfile.open("api/output/utk_for_flav_eq.csv");
+  myfile.open("utk_for_flav_eq.csv");
   myfile.clear();
   myfile.close();
-  myfile.open("api/output/utk_for_flav_eq.csv", std::ofstream::out | std::ofstream::app);
+  myfile.open("utk_for_flav_eq.csv", std::ofstream::out | std::ofstream::app);
 
   // Fill up the output csv file with data
   for (size_t j=0;j<Ye_grid2.size()-1;j++){
