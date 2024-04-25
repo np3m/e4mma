@@ -7,8 +7,8 @@ set -euo pipefail
 echo -e "\nRunning UTK module in Docker...\n"
 
 # Default values for Docker image and tag
-DOCKER_IMAGE_NAME="utk"
-DOCKER_IMAGE_TAG="latest"
+DOCKER_IMAGE_NAME="nostrad1/utk-eos"
+DOCKER_IMAGE_TAG="v2"
 
 # Get UID and GID of the current user
 #UID=$(id -u)
@@ -66,10 +66,10 @@ fi
 # Run the UTK Docker container, mapping input and output directories,
 # mounting eos table as a volume, and executing utk-for-lepton in eos directory.
 docker run -it --rm --name utk -u $UID:$GID \
-  -v "${PWD}/api/input:/opt/eos/api/input" \
-  -v "${PWD}/api/output:/opt/eos/api/output" \
+  -v "${PWD}/api/input:/opt/eos/api/input:rw" \
+  -v "${PWD}/api/output:/opt/eos/api/output:rw" \
   -v "${PWD}/data:/opt/eos/data" \
-  $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG /bin/bash ./run_utk_for_lepton.sh
+  $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG /bin/bash ./test_conf.sh
 
 # Check exit status
 if [ $? -eq 0 ]; then

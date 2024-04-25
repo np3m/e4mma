@@ -47,7 +47,7 @@ RUN chown -R $UID:$UID /opt
 USER $USERNAME
 
 ## Install Python dependencies
-COPY --from=deps --chown=$UID:$UID /usr/local/lib/python3.11/site-packages/ /opt/.local/lib/python3.11/site-packages/
+COPY --from=deps --chown=$UID:$UID /usr/local/lib/python3.11/site-packages/ /usr/local/lib/python3.11/site-packages/
 
 # Copy built files from the previous stage
 COPY --from=builder --chown=$UID:$UID /usr/bin/make \

@@ -65,18 +65,9 @@ P_SMALL_SL="470 738 0.5 13.0 23.7 29.5 0.9"
 P_LARGE_SL="470 738 0.5 13.0 100.0 36.0 0.9"
 
 # ----------------------------------------------------------------
-# Create a config.yaml file
-$PYTHON yaml_generator.py --select_model "$P_FIDUCIAL" \
-	--a_virial 10.0 --b_virial 10.0 \
-	--extend_frdm 0 \
-	--fd_A_max 600 --max_ratio 7.0 \
-	--fixed_dist_alg 1999 \
-	--function_verbose 0 \
-	--load data/fid_3_5_22.o2 \
-	--output_format HDF5
-# ----------------------------------------------------------------
 # validate the config.yaml file
 $PYTHON yaml_validator.py
+
 # ----------------------------------------------------------------
 # Read config.yaml values to use to run utk code
 read_parameters() {
@@ -108,21 +99,10 @@ read_parameters() {
 
 read_parameters "api/input/validated_config.yaml"
 
-echo "load=$load"
-echo "output_format=$output_format"
-echo "select_model=$select_model"
-echo "set_a_virial=$a_virial"
-echo "set_b_virial=$b_virial"
-echo "set_extend_frdm=$extend_frdm"
-echo "set_fd_A_max=$fd_A_max"
-echo "set_fixed_dist_alg=$fixed_dist_alg"
-echo "set_function_verbose=$function_verbose"
-echo "set_max_ratio=$max_ratio"
-
 # ----------------------------------------------------------------
 # Run UTK module for Lepton
 ./eos_nuclei \
-		-select-model $P_FIDUCIAL \
+		-select-model $select_model \
 		-set a_virial $a_virial -set b_virial $b_virial \
 		-set extend_frdm $extend_frdm \
 		-set fd_A_max $fd_A_max -set max_ratio $max_ratio \
@@ -133,8 +113,7 @@ echo "set_max_ratio=$max_ratio"
         
 mv utk_for_lepton.csv api/output/
 # ----------------------------------------------------------------
-# Run Postprocess.py and move the output file to the output directory
-
+# Run Postprocess.py
 $PYTHON postprocess.py
 
 # Check exit status
