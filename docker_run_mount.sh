@@ -7,8 +7,12 @@ set -euo pipefail
 echo -e "\nRunning UTK module in Docker...\n"
 
 # Default values for Docker image and tag
-DOCKER_IMAGE_NAME="nostrad1/utk-eos"
-DOCKER_IMAGE_TAG="v2"
+DOCKER_IMAGE_NAME="utk"
+DOCKER_IMAGE_TAG="latest"
+
+# Get UID and GID of the current user
+#UID=$(id -u)
+GID=$(id -g)
 
 # Default file paths
 USER_CONFIG_YAML_PATH="api/input/config.yaml"
@@ -59,33 +63,13 @@ if [ "$POTENTIAL_DATA_HDF5_PATH" != "$(realpath "data/$(basename "$POTENTIAL_DAT
     exit 1
 fi
 
-# ----------------------------------------------------------------
-# New EOS parameter sets
-# ----------------------------------------------------------------
-
-P_FIDUCIAL="470 738 0.5 13.0 62.4 32.8 0.9"
-P_LARGE_MMAX="783 738 0.5 13.0 62.4 32.8 0.9"
-P_SMALL_R="214 738 0.5 13.0 62.4 32.8 0.9"
-P_SMALLER_R="256 738 0.5 13.0 62.4 32.8 0.9"
-P_LARGE_R="0 738 0.5 13.0 62.4 32.8 0.9"
-P_SMALL_SL="470 738 0.5 13.0 23.7 29.5 0.9"
-P_LARGE_SL="470 738 0.5 13.0 100.0 36.0 0.9"
-
 # Run the UTK Docker container, mapping input and output directories,
-# mounting eos table as a volume, and executing utk-for-lepton in src directory.
-docker run -it --rm --name utk \
+# mounting eos table as a volume, and executing utk-for-lepton in eos directory.
+docker run -it --rm --name utk -u $UID:$GID \
   -v "${PWD}/api/input:/opt/eos/api/input" \
   -v "${PWD}/api/output:/opt/eos/api/output" \
   -v "${PWD}/data:/opt/eos/data" \
-  $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG ./eos_nuclei \
-		-select-model $P_FIDUCIAL \
-		-set a_virial 10 -set b_virial 10 \
-		-set extend_frdm 0 \
-		-set fd_A_max 600 -set max_ratio 7.0 \
-		-set fixed_dist_alg 1999 \
-		-set function_verbose 0 \
-		-load data/fid_3_5_22.o2 \
-		-utk-for-lepton create
+  $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG /bin/bash ./run_utk_for_lepton.sh
 
 # Check exit status
 if [ $? -eq 0 ]; then

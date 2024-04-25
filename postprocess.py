@@ -90,7 +90,7 @@ def main():
         os.makedirs(output_directory_run)
 
     # Copy CMF output files
-    utk_output_files = ["utk_eos.csv"]
+    utk_output_files = ["utk_for_lepton.csv"]
     #for file_name in utk_output_files:
     #    shutil.copy(
     #        os.path.join(output_directory_run, file_name),
@@ -104,7 +104,7 @@ def main():
     print(f"Processing UTK output for Lepton: ...")
 
     porter.import_table(
-        os.path.join(output_directory_run, f"utk_eos.csv"),
+        os.path.join(output_directory_run, f"utk_for_lepton.csv"),
         extension="CSV",
         filename_schema="api/OpenAPI_Specifications_UTK.yaml",
         schema="UTK_output_for_Lepton",
@@ -117,7 +117,7 @@ def main():
         # Export data to an HDF5 file
         porter.export_table(
             os.path.join(
-                output_directory, f"utk_eos.h5"
+                output_directory, f"utk_for_lepton.h5"
             ),
             filename_schema="api/OpenAPI_Specifications_UTK.yaml",
             schema="UTK_output_for_Lepton",
@@ -129,7 +129,7 @@ def main():
         # Export data to an CSV file following the OpenAPI specifications CMF_output_for_Lepton
         porter.export_table(
             os.path.join(
-                output_directory, f"utk_eos.csv"
+                output_directory, f"utk_for_lepton.csv"
             ),
             extension="CSV",
             filename_schema="api/OpenAPI_Specifications_UTK.yaml",

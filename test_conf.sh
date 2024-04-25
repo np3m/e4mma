@@ -64,18 +64,78 @@ P_LARGE_R="0 738 0.5 13.0 62.4 32.8 0.9"
 P_SMALL_SL="470 738 0.5 13.0 23.7 29.5 0.9"
 P_LARGE_SL="470 738 0.5 13.0 100.0 36.0 0.9"
 
+# ----------------------------------------------------------------
+# Create a config.yaml file
+$PYTHON yaml_generator.py --select_model "$P_FIDUCIAL" \
+	--a_virial 10.0 --b_virial 10.0 \
+	--extend_frdm 0 \
+	--fd_A_max 600 --max_ratio 7.0 \
+	--fixed_dist_alg 1999 \
+	--function_verbose 0 \
+	--load data/fid_3_5_22.o2 \
+	--output_format HDF5
+# ----------------------------------------------------------------
+# validate the config.yaml file
+$PYTHON yaml_validator.py
+# ----------------------------------------------------------------
+# Read config.yaml values to use to run utk code
+read_parameters() {
+    while IFS="=" read -r name value; do
+        # Remove leading/trailing whitespaces
+        name=$(echo "$name" | sed 's/^[ \t]*//;s/[ \t]*$//')
+        value=$(echo "$value" | sed 's/^[ \t]*//;s/[ \t]*$//')
+
+        # Replace invalid characters in the name with underscores
+        name=$(echo "$name" | tr -cd '[:alnum:]_')
+
+        # Set Bash parameters
+        case $name in
+            "load" | "output_format" | "select_model" | "a_virial" | "b_virial" | "extend_frdm" | "fd_A_max" | "fixed_dist_alg" | "function_verbose" | "max_ratio")
+                eval "${name}=\$value"
+                ;;
+        esac
+    done < <(awk -F':' '
+        {
+            # Remove leading/trailing whitespaces
+            gsub(/^[ \t]+|[ \t]+$/, "", $1);
+            gsub(/^[ \t]+|[ \t]+$/, "", $2);
+
+            # Print parameter name and value
+            printf("%s=%s\n", $1, $2);
+        }
+    ' "$1")
+}
+
+read_parameters "api/input/validated_config.yaml"
+
+echo "load=$load"
+echo "output_format=$output_format"
+echo "select_model=$select_model"
+echo "set_a_virial=$a_virial"
+echo "set_b_virial=$b_virial"
+echo "set_extend_frdm=$extend_frdm"
+echo "set_fd_A_max=$fd_A_max"
+echo "set_fixed_dist_alg=$fixed_dist_alg"
+echo "set_function_verbose=$function_verbose"
+echo "set_max_ratio=$max_ratio"
+
+# ----------------------------------------------------------------
 # Run UTK module for Lepton
 ./eos_nuclei \
 		-select-model $P_FIDUCIAL \
-		-set a_virial 10 -set b_virial 10 \
-		-set extend_frdm 0 \
-		-set fd_A_max 600 -set max_ratio 7.0 \
-		-set fixed_dist_alg 1999 \
-		-set function_verbose 0 \
-		-load data/fid_3_5_22.o2 \
+		-set a_virial $a_virial -set b_virial $b_virial \
+		-set extend_frdm $extend_frdm \
+		-set fd_A_max $fd_A_max -set max_ratio $max_ratio \
+		-set fixed_dist_alg $fixed_dist_alg \
+		-set function_verbose $function_verbose \
+		-load $load \
 		-utk-for-lepton create 
         
 mv utk_for_lepton.csv api/output/
+# ----------------------------------------------------------------
+# Run Postprocess.py and move the output file to the output directory
+
+$PYTHON postprocess.py
 
 # Check exit status
 if [ $? -eq 0 ]; then
