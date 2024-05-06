@@ -22,7 +22,7 @@ help:
 # Default settings
 LIBS = -L/usr/lib/x86_64-linux-gnu/hdf5/serial \
 	-lo2scl -lhdf5 -lgsl \
-	-lreadline -lpython3.10
+	-lreadline 
 FLIBS = -lgfortran
 # PLIBS = -L/usr/lib/x86_64-linux-gnu/ 
 LCXX = g++
@@ -30,21 +30,17 @@ LFC = gfortran
 LMPI_FC = mpif90
 LMPI_CXX = mpic++
 LCFLAGS = -I/usr/lib/x86_64-linux-gnu/hdf5/serial/include \
-	-I/usr/local/lib/python3.10/dist-packages/numpy/core/include \
-	-DNO_MPI -DNO_OPENMP -DO2SCL_PYTHON \
-	-I/usr/include/python3.10 \
+	-DNO_MPI -DNO_OPENMP \
 	-DO2SCL_NO_BOOST_MULTIPRECISION
 LCFLAGS_OMP = -I/usr/lib/x86_64-linux-gnu/hdf5/serial/include \
-	-DNO_MPI -DO2SCL_PYTHON \
+	-DNO_MPI \
 	-fopenmp \
-	-I/usr/include/python3.10 \
 	-DO2SCL_NO_BOOST_MULTIPRECISION
 LFFLAGS = -O3
 LMPI_CFLAGS = -I/usr/lib/x86_64-linux-gnu/hdf5/serial/include \
 	-I/usr/local/lib/python3.10/dist-packages/numpy/core/include \
-	-DO2SCL_MPI -DO2SCL_OPENMP -DO2SCL_PYTHON \
+	-DO2SCL_MPI -DO2SCL_OPENMP \
 	-fopenmp \
-	-I/usr/include/python3.10 \
 	-DO2SCL_NO_BOOST_MULTIPRECISION
 
 COMMENT = "default"
@@ -468,6 +464,7 @@ mn-test:
 		-load ~/data/eos/final/fid_6_30_21.o2 \
 		-mcarlo-neutron mn_test.o2
 
+# MUSES ----------------------------------------------------------------
 enn_test:
 	./eos_nuclei \
 		-set select_cs2_test 0 \
@@ -477,7 +474,7 @@ enn_test:
 		-set fd_A_max 600 -set max_ratio 7.0 \
 		-set fixed_dist_alg 1999 \
 		-set function_verbose 0 \
-		-load data/fid_3_5_22.o2 \
+		-load ../data/fid_3_5_22.o2 \
 		-set include_detail 1 \
 		-set recompute 1 \
 		-point-nuclei 0.16 0.465 0.1 
@@ -492,7 +489,7 @@ enn_pi:
 		-set fixed_dist_alg 1999 \
 		-set function_verbose 0 \
 		-set inc_hrg false \
-		-load data/fid_3_5_22.o2 \
+		-load ../data/fid_3_5_22.o2 \
 		-hrg-load ./pdg_uh_nonp.dat \
 		-set recompute 1 \
 		-point-nuclei 0.16 0.5 30 
@@ -505,7 +502,7 @@ enn_fid_lep:
 		-set fd_A_max 600 -set max_ratio 7.0 \
 		-set fixed_dist_alg 1999 \
 		-set function_verbose 0 \
-		-load data/fid_3_5_22.o2 \
+		-load ../data/fid_3_5_22.o2 \
 		-utk-for-lepton create
 
 enn_create_table:
@@ -516,9 +513,20 @@ enn_create_table:
 		-set fd_A_max 600 -set max_ratio 7.0 \
 		-set fixed_dist_alg 1999 \
 		-set function_verbose 0 \
-		-load data/fid_3_5_22.o2 \
+		-load ../data/fid_3_5_22.o2 \
 		-create-new-table
 
+yml_gen:
+	python3 yaml_generator.py \
+	--select_model "$(P_FIDUCIAL)" \
+	--a_virial 10.0 --b_virial 10.0 \
+	--extend_frdm 0 \
+	--fd_A_max 600 --max_ratio 7.0 \
+	--fixed_dist_alg 1999 \
+	--function_verbose 0 \
+	--load ../data/fid_3_5_22.o2 \
+	--output_format HDF5
+	
 # testing
 enn_fid_flav_eq:
 	./eos_nuclei \
@@ -532,19 +540,12 @@ enn_fid_flav_eq:
 		-load data/fid_3_5_22.o2 \
 		-set recompute 1 \
 		-utk-for-flav-eq 
-		
+
+# ------------------------------------------------------------
+
 -include makefile.aws
 
-yml_gen:
-	python3 yaml_generator.py \
-	--select_model "$(P_FIDUCIAL)" \
-	--a_virial 10.0 --b_virial 10.0 \
-	--extend_frdm 0 \
-	--fd_A_max 600 --max_ratio 7.0 \
-	--fixed_dist_alg 1999 \
-	--function_verbose 0 \
-	--load data/fid_3_5_22.o2 \
-	--output_format HDF5
+
 
 # muses plots
 
