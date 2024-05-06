@@ -10,8 +10,8 @@ echo -e "\nRunning UTK module locally...\n"
 PYTHON="$(command -v python3 2>/dev/null || echo python)"
 
 # Default file paths
-USER_CONFIG_YAML_PATH="api/input/config.yaml"
-POTENTIAL_DATA_HDF5_PATH="data/fid_3_5_22.o2"
+USER_CONFIG_YAML_PATH="../input/config.yaml"
+POTENTIAL_DATA_HDF5_PATH="../data/fid_3_5_22.o2"
 
 # Check if command-line arguments are given to overwrite defaults
 if [ $# -ge 1 ]; then
@@ -26,8 +26,8 @@ USER_CONFIG_YAML_PATH=$(realpath "$USER_CONFIG_YAML_PATH")
 POTENTIAL_DATA_HDF5_PATH=$(realpath "$POTENTIAL_DATA_HDF5_PATH")
 
 # Create the 'input' and 'output' directories if they do not already exist
-mkdir -p api/input
-mkdir -p api/output
+mkdir -p ../input
+mkdir -p ../output
 
 # Check if user config file exists
 if [ ! -f "$USER_CONFIG_YAML_PATH" ]; then
@@ -36,8 +36,8 @@ if [ ! -f "$USER_CONFIG_YAML_PATH" ]; then
 fi
 
 # Check if the user config file is not in the expected location; copy it if needed.
-if [ "$USER_CONFIG_YAML_PATH" != "$(realpath "api/input/config.yaml")" ]; then
-    cp "$USER_CONFIG_YAML_PATH" api/input/config.yaml
+if [ "$USER_CONFIG_YAML_PATH" != "$(realpath "../input/config.yaml")" ]; then
+    cp "$USER_CONFIG_YAML_PATH" ../input/config.yaml
 fi
 
 # Check if the EOS file exists
@@ -47,7 +47,7 @@ if [ ! -f "$POTENTIAL_DATA_HDF5_PATH" ]; then
 fi
 
 # Check if the EOS file is in the expected location
-if [ "$POTENTIAL_DATA_HDF5_PATH" != "$(realpath "data/$(basename "$POTENTIAL_DATA_HDF5_PATH")")" ]; then
+if [ "$POTENTIAL_DATA_HDF5_PATH" != "$(realpath "../data/$(basename "$POTENTIAL_DATA_HDF5_PATH")")" ]; then
     echo "Error: EOS data file is not in data/ directory: $POTENTIAL_DATA_HDF5_PATH"
     exit 1
 fi
@@ -66,8 +66,7 @@ P_LARGE_SL="470 738 0.5 13.0 100.0 36.0 0.9"
 
 # ----------------------------------------------------------------
 # validate the config.yaml file
-$PYTHON yaml_validator.py
-
+$PYTHON ../src/yaml_validator.py
 # ----------------------------------------------------------------
 # Read config.yaml values to use to run utk code
 read_parameters() {
@@ -81,7 +80,7 @@ read_parameters() {
 
         # Set Bash parameters
         case $name in
-            "load" | "output_format" | "select_model" | "a_virial" | "b_virial" | "extend_frdm" | "fd_A_max" | "fixed_dist_alg" | "function_verbose" | "max_ratio")
+            "load" | "output_format" | "select_model" | "a_virial" | "b_virial")
                 eval "${name}=\$value"
                 ;;
         esac
@@ -97,24 +96,17 @@ read_parameters() {
     ' "$1")
 }
 
-read_parameters "api/input/validated_config.yaml"
-
-# ----------------------------------------------------------------
+read_parameters "../input/validated_config.yaml"
+# ---------------------------------------------------------------
 # Run UTK module for Lepton
-./eos_nuclei \
+../src/eos_nuclei \
 		-select-model $select_model \
 		-set a_virial $a_virial -set b_virial $b_virial \
-		-set extend_frdm $extend_frdm \
-		-set fd_A_max $fd_A_max -set max_ratio $max_ratio \
-		-set fixed_dist_alg $fixed_dist_alg \
-		-set function_verbose $function_verbose \
-		-load $load \
+		-load '../'$load \
 		-utk-for-lepton create 
-        
-mv utk_for_lepton.csv api/output/
-# ----------------------------------------------------------------
+
 # Run Postprocess.py
-$PYTHON postprocess.py
+$PYTHON ../src/postprocess.py
 
 # Check exit status
 if [ $? -eq 0 ]; then

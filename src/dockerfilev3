@@ -126,16 +126,19 @@ COPY --from=builder --chown=$UID:$UID /usr/local/lib/libo2scl.so.* /usr/local/li
 COPY --from=builder --chown=$UID:$UID /usr/local/share/o2scl /usr/local/share/o2scl
 
 # Copy utk-eos files to the runtime stage
-COPY --from=builder --chown=$UID:$UID /opt/eos/eos_nuclei /opt/eos/ 
-COPY --chown=$UID:$UID makefile \
-    yaml_validator.py \
-    yaml_generator.py \
-    manifest.yaml \
-    postprocess.py \
-    *.sh \
-    /opt/eos/
+COPY --from=builder --chown=$UID:$UID /opt/eos/src/eos_nuclei /opt/eos/src/ 
+COPY --chown=$UID:$UID src/makefile \
+    src/yaml_validator.py \
+    src/yaml_generator.py \
+    src/manifest.yaml \
+    src/postprocess.py \
+    /opt/eos/src/
 
+COPY --chown=$UID:$UID data /opt/eos/data
+COPY --chown=$UID:$UID test /opt/eos/test
 COPY --chown=$UID:$UID api /opt/eos/api
+COPY --chown=$UID:$UID input /opt/eos/input
+COPY --chown=$UID:$UID output /opt/eos/output
 
 # Set environment variables
 ENV O2SCL_ADDL_LIBS="/usr/lib/gcc/x86_64-linux-gnu/12/libgomp.so"

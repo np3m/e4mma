@@ -9,8 +9,8 @@ import yaml
 from openapi_core import Spec
 
 # Default paths
-DEFAULT_API_FILE_PATH = 'api/OpenAPI_Specifications_UTK.yaml'
-DEFAULT_CONFIG_FILE_PATH = 'api/input/config.yaml'
+DEFAULT_API_FILE_PATH = '../api/OpenAPI_Specifications_UTK.yaml'
+DEFAULT_CONFIG_FILE_PATH = '../input/config.yaml'
 
 def main():
     

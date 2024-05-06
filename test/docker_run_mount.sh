@@ -15,8 +15,8 @@ DOCKER_IMAGE_TAG="v2"
 GID=$(id -g)
 
 # Default file paths
-USER_CONFIG_YAML_PATH="api/input/config.yaml"
-POTENTIAL_DATA_HDF5_PATH="data/fid_3_5_22.o2"
+USER_CONFIG_YAML_PATH="../input/config.yaml"
+POTENTIAL_DATA_HDF5_PATH="../data/fid_3_5_22.o2"
 
 # Check if command-line arguments are given to overwrite defaults
 if [ $# -ge 1 ]; then
@@ -37,8 +37,8 @@ USER_CONFIG_YAML_PATH=$(realpath "$USER_CONFIG_YAML_PATH")
 POTENTIAL_DATA_HDF5_PATH=$(realpath "$POTENTIAL_DATA_HDF5_PATH")
 
 # Create the 'input' and 'output' directories if they do not already exist
-mkdir -p api/input
-mkdir -p api/output
+mkdir -p ../input
+mkdir -p ../output
 
 # Check if user config file exists
 if [ ! -f "$USER_CONFIG_YAML_PATH" ]; then
@@ -47,8 +47,8 @@ if [ ! -f "$USER_CONFIG_YAML_PATH" ]; then
 fi
 
 # Check if the user config file is not in the expected location; copy it if needed.
-if [ "$USER_CONFIG_YAML_PATH" != "$(realpath "api/input/config.yaml")" ]; then
-    cp "$USER_CONFIG_YAML_PATH" api/input/config.yaml
+if [ "$USER_CONFIG_YAML_PATH" != "$(realpath "../input/config.yaml")" ]; then
+    cp "$USER_CONFIG_YAML_PATH" ../input/config.yaml
 fi
 
 # Check if the EOS file exists
@@ -58,7 +58,7 @@ if [ ! -f "$POTENTIAL_DATA_HDF5_PATH" ]; then
 fi
 
 # Check if the EOS file is in the expected location
-if [ "$POTENTIAL_DATA_HDF5_PATH" != "$(realpath "data/$(basename "$POTENTIAL_DATA_HDF5_PATH")")" ]; then
+if [ "$POTENTIAL_DATA_HDF5_PATH" != "$(realpath "../data/$(basename "$POTENTIAL_DATA_HDF5_PATH")")" ]; then
     echo "Error: EOS data file is not in data/ directory: $POTENTIAL_DATA_HDF5_PATH"
     exit 1
 fi
@@ -66,10 +66,10 @@ fi
 # Run the UTK Docker container, mapping input and output directories,
 # mounting eos table as a volume, and executing utk-for-lepton in eos directory.
 docker run -it --rm --name utk -u $UID:$GID \
-  -v "${PWD}/api/input:/opt/eos/api/input:rw" \
-  -v "${PWD}/api/output:/opt/eos/api/output:rw" \
+  -v "${PWD}/input:/opt/eos/input:rw" \
+  -v "${PWD}/output:/opt/eos/output:rw" \
   -v "${PWD}/data:/opt/eos/data" \
-  $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG /bin/bash ./test_conf.sh
+  $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG /bin/bash test/test_conf.sh
 
 # Check exit status
 if [ $? -eq 0 ]; then

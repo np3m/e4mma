@@ -1,0 +1,33 @@
+alt_model: ''
+create_new_table: null
+eos_deriv: null
+exit: null
+generate_table: output file
+get: nB
+help: null
+load: data/fid_3_5_22.o2
+muses_table: null
+output: filename
+output_format: HDF5
+point: params
+point_nuclei: <n_B> <Y_e> <T (MeV)>
+quit: null
+random: null
+select_high_T: 0
+select_model: 470 738 0.5 13.0 62.4 32.8 0.9
+set:
+  S_grid_spec: 5,0.1*i
+  T_grid_spec: 160,0.1*1.046^i
+  Ye_grid_spec: 70,0.01*(i+1)
+  Ye_list: ''
+  a_virial: 10.0
+  b_virial: 10.0
+  include_muons: false
+  max_ratio: 7.0
+  max_time: 0.0
+  mh_tol_rel: 1.0e-06
+  nB_grid_spec: 301,10^(i*0.04-12)*2.0
+  recompute: false
+  strange_axis: false
+  use_alt_eos: false
+  verbose: 0

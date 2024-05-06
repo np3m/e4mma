@@ -39,7 +39,7 @@ def load_configuration():
     Returns:
         dict: A dictionary containing configuration data.
     """
-    config_file = "api/input/config.yaml"
+    config_file = "../input/config.yaml"
     with open(config_file, "r") as file:
         yaml_data = yaml.load(file, Loader=yaml.FullLoader)
     return yaml_data
@@ -82,7 +82,7 @@ def main():
             "Too many arguments provided. Maximum one argument is allowed."
         )
 
-    output_directory = "api/output/"
+    output_directory = "../output/"
     output_directory_run = output_directory
 
     # Create the output directory if it does not exist
@@ -106,7 +106,7 @@ def main():
     porter.import_table(
         os.path.join(output_directory_run, f"utk_for_lepton.csv"),
         extension="CSV",
-        filename_schema="api/OpenAPI_Specifications_UTK.yaml",
+        filename_schema="../api/OpenAPI_Specifications_UTK.yaml",
         schema="UTK_output_for_Lepton",
         dropna=True,
         delimiter=",",
@@ -119,7 +119,7 @@ def main():
             os.path.join(
                 output_directory, f"utk_for_lepton.h5"
             ),
-            filename_schema="api/OpenAPI_Specifications_UTK.yaml",
+            filename_schema="../api/OpenAPI_Specifications_UTK.yaml",
             schema="UTK_output_for_Lepton",
             extension="HDF5",
             dropna=True,
@@ -132,7 +132,7 @@ def main():
                 output_directory, f"utk_for_lepton.csv"
             ),
             extension="CSV",
-            filename_schema="api/OpenAPI_Specifications_UTK.yaml",
+            filename_schema="../api/OpenAPI_Specifications_UTK.yaml",
             schema="UTK_output_for_Lepton",
             dropna=True,
             delimiter=",",

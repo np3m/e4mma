@@ -13,9 +13,9 @@ from openapi_core import unmarshal_request
 from openapi_core.testing import MockRequest
 
 # Constants
-DEFAULT_API_FILE_PATH = os.path.join(os.path.dirname(__file__), 'api/OpenAPI_Specifications_UTK.yaml')
-DEFAULT_CONFIG_FILE_PATH = os.path.join(os.path.dirname(__file__), 'api/input/config.yaml')
-DEFAULT_VALID_CONFIG_FILE_PATH = os.path.join(os.path.dirname(__file__), 'api/input/validated_config.yaml')
+DEFAULT_API_FILE_PATH = os.path.join(os.path.dirname(__file__), '../api/OpenAPI_Specifications_UTK.yaml')
+DEFAULT_CONFIG_FILE_PATH = os.path.join(os.path.dirname(__file__), '../input/config.yaml')
+DEFAULT_VALID_CONFIG_FILE_PATH = os.path.join(os.path.dirname(__file__), '../input/validated_config.yaml')
 
 
 def main():

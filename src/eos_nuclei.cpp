@@ -7340,44 +7340,56 @@ int eos_nuclei::utk_for_lepton(std::vector<std::string> &sv,
   
   // Create an output csv file
   std::ofstream myfile;
-  myfile.open("utk_for_lepton.csv");
+  myfile.open("../output/utk_for_lepton.csv");
   myfile.clear();
   myfile.close();
-  myfile.open("utk_for_lepton.csv", std::ofstream::out | std::ofstream::app);
+  myfile.open("../output/utk_for_lepton.csv", std::ofstream::out | std::ofstream::app);
 
-  // Create a denser Ye grid for more resolution
-  std::vector<double> Ye_grid3;
-  Ye_grid3.resize(2*n_Ye2);
-  for (size_t j=0;j<n_Ye2;j++){
-    Ye_grid3[2*j]=Ye_grid2[j];
-    Ye_grid3[2*j+1]=(Ye_grid2[j]+Ye_grid2[j+1])/2;
-  }
+  //// Create a denser Ye grid for more resolution
+  //std::vector<double> Ye_grid3;
+  //Ye_grid3.resize(2*n_Ye2);
+  //for (size_t j=0;j<n_Ye2;j++){
+  //  Ye_grid3[2*j]=Ye_grid2[j];
+  //  Ye_grid3[2*j+1]=(Ye_grid2[j]+Ye_grid2[j+1])/2;
+  //}
+//
+  //// Set up interpolation objects to interpolate from using the denser Ye grid
+  //tensor_grid<> tg_mun_interp=grid_rearrange_and_copy<tensor_grid<>,double>
+  //  (tg_mun,{ix_index(0),ix_grid(1,0.0,0.7,140),ix_index(2)});
+  //tensor_grid<> tg_mup_interp=grid_rearrange_and_copy<tensor_grid<>,double>
+  //  (tg_mup,{ix_index(0),ix_grid(1,0.0,0.7,140),ix_index(2)});
+  //tensor_grid<> tg_E_interp=grid_rearrange_and_copy<tensor_grid<>,double>
+  //  (tg_E,{ix_index(0),ix_grid(1,0.0,0.7,140),ix_index(2)});
+  //tensor_grid<> tg_P_interp=grid_rearrange_and_copy<tensor_grid<>,double>
+  //  (tg_P,{ix_index(0),ix_grid(1,0.0,0.7,140),ix_index(2)});
+  //tensor_grid<> tg_S_interp=grid_rearrange_and_copy<tensor_grid<>,double>
+  //  (tg_S,{ix_index(0),ix_grid(1,0.0,0.7,140),ix_index(2)});
+//
+  //// Fill up the output csv file with data
+  //for (size_t j=0;j<Ye_grid3.size()-1;j++){
+  //  double Ye=Ye_grid3[j];
+  //  for (size_t i=0;i<n_nB2;i++){
+  //    double nB=nB_grid2[i];
+  //    std::vector<std::size_t> ix={i,j,0};
+//
+  //    double muB=tg_mun_interp.get(ix)+neutron.m*hc_mev_fm;
+  //    double muQ=tg_mup_interp.get(ix)+proton.m*hc_mev_fm-tg_mun_interp.get(ix)-neutron.m*hc_mev_fm;
+  //    double En=(tg_E_interp.get(ix)+Ye*proton.m*hc_mev_fm+(1-Ye)*neutron.m*hc_mev_fm)*nB;
+  //    double Pr=tg_P_interp.get(ix);
+  //    double ent=tg_S_interp.get(ix)*nB;
 
-  // Set up interpolation objects to interpolate from using the denser Ye grid
-  tensor_grid<> tg_mun_interp=grid_rearrange_and_copy<tensor_grid<>,double>
-    (tg_mun,{ix_index(0),ix_grid(1,0.0,0.7,140),ix_index(2)});
-  tensor_grid<> tg_mup_interp=grid_rearrange_and_copy<tensor_grid<>,double>
-    (tg_mup,{ix_index(0),ix_grid(1,0.0,0.7,140),ix_index(2)});
-  tensor_grid<> tg_E_interp=grid_rearrange_and_copy<tensor_grid<>,double>
-    (tg_E,{ix_index(0),ix_grid(1,0.0,0.7,140),ix_index(2)});
-  tensor_grid<> tg_P_interp=grid_rearrange_and_copy<tensor_grid<>,double>
-    (tg_P,{ix_index(0),ix_grid(1,0.0,0.7,140),ix_index(2)});
-  tensor_grid<> tg_S_interp=grid_rearrange_and_copy<tensor_grid<>,double>
-    (tg_S,{ix_index(0),ix_grid(1,0.0,0.7,140),ix_index(2)});
-
-  // Fill up the output csv file with data
-  for (size_t j=0;j<Ye_grid3.size()-1;j++){
-    double Ye=Ye_grid3[j];
+  for (size_t j=0;j<Ye_grid2.size()-1;j++){
+    double Ye=Ye_grid2[j];
     for (size_t i=0;i<n_nB2;i++){
       double nB=nB_grid2[i];
       std::vector<std::size_t> ix={i,j,0};
 
-      double muB=tg_mun_interp.get(ix)+neutron.m*hc_mev_fm;
-      double muQ=tg_mup_interp.get(ix)+proton.m*hc_mev_fm-tg_mun_interp.get(ix)-neutron.m*hc_mev_fm;
-      double En=(tg_E_interp.get(ix)+Ye*proton.m*hc_mev_fm+(1-Ye)*neutron.m*hc_mev_fm)*nB;
-      double Pr=tg_P_interp.get(ix);
-      double ent=tg_S_interp.get(ix)*nB;
+      double muB=tg_mun.get(ix)+neutron.m*hc_mev_fm;
+      double muQ=tg_mup.get(ix)+proton.m*hc_mev_fm-tg_mun.get(ix)-neutron.m*hc_mev_fm;
 
+      double En=(tg_E.get(ix)+Ye*proton.m*hc_mev_fm+(1-Ye)*neutron.m*hc_mev_fm)*nB;
+      double Pr=tg_P.get(ix);
+      double ent=tg_S.get(ix)*nB;
       myfile << "0.1" << "," << muB << "," << 0 
         << "," << muQ << "," 
         << nB <<"," << 0 << "," << Ye*nB << "," << En 

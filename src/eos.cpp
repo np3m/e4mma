@@ -756,14 +756,14 @@ eos::eos() {
 #endif
 
   // Open the neutron star data file
-  std::string ns_file="data/qmc_twop_10_0_out";
+  std::string ns_file="../data/qmc_twop_10_0_out";
   o2scl_hdf::hdf_file hf;
   hf.open(ns_file);
   o2scl_hdf::hdf_input(hf,nstar_tab,name);
   hf.close();
 
   // Open the Skyrme data file
-  std::string UNEDF_file="data/thetaANL-1002x12.o2";
+  std::string UNEDF_file="../data/thetaANL-1002x12.o2";
   hf.open(UNEDF_file);
   o2scl_hdf::hdf_input(hf,UNEDF_tab,name);
   hf.close();

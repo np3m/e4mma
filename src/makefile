@@ -22,7 +22,7 @@ help:
 # Default settings
 LIBS = -L/usr/lib/x86_64-linux-gnu/hdf5/serial \
 	-lo2scl -lhdf5 -lgsl \
-	-lreadline 
+	-lreadline -lpython3.10
 FLIBS = -lgfortran
 # PLIBS = -L/usr/lib/x86_64-linux-gnu/ 
 LCXX = g++
@@ -30,16 +30,25 @@ LFC = gfortran
 LMPI_FC = mpif90
 LMPI_CXX = mpic++
 LCFLAGS = -I/usr/lib/x86_64-linux-gnu/hdf5/serial/include \
-	-DNO_MPI -DNO_OPENMP -DO2SCL_NO_BOOST_MULTIPRECISION 
+	-I/usr/local/lib/python3.10/dist-packages/numpy/core/include \
+	-DNO_MPI -DNO_OPENMP -DO2SCL_PYTHON \
+	-I/usr/include/python3.10 \
+	-DO2SCL_NO_BOOST_MULTIPRECISION
 LCFLAGS_OMP = -I/usr/lib/x86_64-linux-gnu/hdf5/serial/include \
-	-DNO_MPI \
-	-fopenmp -DTEMP_UPDATES -DO2SCL_NO_BOOST_MULTIPRECISION 
+	-DNO_MPI -DO2SCL_PYTHON \
+	-fopenmp \
+	-I/usr/include/python3.10 \
+	-DO2SCL_NO_BOOST_MULTIPRECISION
 LFFLAGS = -O3
 LMPI_CFLAGS = -I/usr/lib/x86_64-linux-gnu/hdf5/serial/include \
-	-DO2SCL_MPI -DO2SCL_OPENMP \
-	-fopenmp -DTEMP_UPDATES -DO2SCL_NO_BOOST_MULTIPRECISION 
-	
+	-I/usr/local/lib/python3.10/dist-packages/numpy/core/include \
+	-DO2SCL_MPI -DO2SCL_OPENMP -DO2SCL_PYTHON \
+	-fopenmp \
+	-I/usr/include/python3.10 \
+	-DO2SCL_NO_BOOST_MULTIPRECISION
+
 COMMENT = "default"
+PYTHON_LDFLAGS = 
 # ----------------------------------------------------------------
 # UTK-specific settings
 # ----------------------------------------------------------------
@@ -459,7 +468,7 @@ mn-test:
 		-load ~/data/eos/final/fid_6_30_21.o2 \
 		-mcarlo-neutron mn_test.o2
 
-mbnew:
+enn_test:
 	./eos_nuclei \
 		-set select_cs2_test 0 \
 		-select-model $(P_FIDUCIAL) \
@@ -469,10 +478,11 @@ mbnew:
 		-set fixed_dist_alg 1999 \
 		-set function_verbose 0 \
 		-load data/fid_3_5_22.o2 \
+		-set include_detail 1 \
 		-set recompute 1 \
 		-point-nuclei 0.16 0.465 0.1 
 
-mbpi:
+enn_pi:
 	./eos_nuclei \
 	-set select_cs2_test 0 \
 		-select-model $(P_FIDUCIAL) \
@@ -496,24 +506,32 @@ enn_fid_lep:
 		-set fixed_dist_alg 1999 \
 		-set function_verbose 0 \
 		-load data/fid_3_5_22.o2 \
-		-muses-table create
+		-utk-for-lepton create
 
-enn_fid_nolep:
+enn_create_table:
 	./eos_nuclei \
 		-select-model $(P_FIDUCIAL) \
 		-set a_virial 10 -set b_virial 10 \
 		-set extend_frdm 0 \
 		-set fd_A_max 600 -set max_ratio 7.0 \
 		-set fixed_dist_alg 1999 \
-		-set function_verbose 3 \
-		-load data/fid_nolep_noderiv_3_4_22.o2 \
-		-muses-table create
+		-set function_verbose 0 \
+		-load data/fid_3_5_22.o2 \
+		-create-new-table
 
-mbmuses:
+# testing
+enn_fid_flav_eq:
 	./eos_nuclei \
 		-select-model $(P_FIDUCIAL) \
+		-set a_virial 10 -set b_virial 10 \
+		-set extend_frdm 0 \
+		-set fd_A_max 600 -set max_ratio 7.0 \
+		-set fixed_dist_alg 1999 \
+		-set function_verbose 9999 \
+		-set verbose 3 \
+		-load data/fid_3_5_22.o2 \
 		-set recompute 1 \
-		-create-new-table create
+		-utk-for-flav-eq 
 		
 -include makefile.aws
 

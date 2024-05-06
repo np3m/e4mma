@@ -10,8 +10,8 @@ echo -e "\nRunning UTK module locally...\n"
 PYTHON="$(command -v python3 2>/dev/null || echo python)"
 
 # Default file paths
-USER_CONFIG_YAML_PATH="api/input/config.yaml"
-POTENTIAL_DATA_HDF5_PATH="data/fid_3_5_22.o2"
+USER_CONFIG_YAML_PATH="../input/config.yaml"
+POTENTIAL_DATA_HDF5_PATH="../data/fid_3_5_22.o2"
 
 # Check if command-line arguments are given to overwrite defaults
 if [ $# -ge 1 ]; then
@@ -26,8 +26,8 @@ USER_CONFIG_YAML_PATH=$(realpath "$USER_CONFIG_YAML_PATH")
 POTENTIAL_DATA_HDF5_PATH=$(realpath "$POTENTIAL_DATA_HDF5_PATH")
 
 # Create the 'input' and 'output' directories if they do not already exist
-mkdir -p api/input
-mkdir -p api/output
+mkdir -p ../input
+mkdir -p ../output
 
 # Check if user config file exists
 if [ ! -f "$USER_CONFIG_YAML_PATH" ]; then
@@ -36,19 +36,19 @@ if [ ! -f "$USER_CONFIG_YAML_PATH" ]; then
 fi
 
 # Check if the user config file is not in the expected location; copy it if needed.
-if [ "$USER_CONFIG_YAML_PATH" != "$(realpath "api/input/config.yaml")" ]; then
-    cp "$USER_CONFIG_YAML_PATH" api/input/config.yaml
+if [ "$USER_CONFIG_YAML_PATH" != "$(realpath "../input/config.yaml")" ]; then
+    cp "$USER_CONFIG_YAML_PATH" ../input/config.yaml
 fi
 
 # Check if the EOS file exists
 if [ ! -f "$POTENTIAL_DATA_HDF5_PATH" ]; then
-    echo "Chiral potential data file does not exist: $POTENTIAL_DATA_HDF5_PATH"
+    echo "EoS file does not exist: $POTENTIAL_DATA_HDF5_PATH"
     exit 1
 fi
 
 # Check if the EOS file is in the expected location
-if [ "$POTENTIAL_DATA_HDF5_PATH" != "$(realpath "data/$(basename "$POTENTIAL_DATA_HDF5_PATH")")" ]; then
-    echo "Error: Chiral potential data file is not in data/ directory: $POTENTIAL_DATA_HDF5_PATH"
+if [ "$POTENTIAL_DATA_HDF5_PATH" != "$(realpath "../data/$(basename "$POTENTIAL_DATA_HDF5_PATH")")" ]; then
+    echo "Error: EoS file is not in data/ directory: $POTENTIAL_DATA_HDF5_PATH"
     exit 1
 fi
 
@@ -65,7 +65,7 @@ P_SMALL_SL="470 738 0.5 13.0 23.7 29.5 0.9"
 P_LARGE_SL="470 738 0.5 13.0 100.0 36.0 0.9"
 
 # Run UTK module
-./eos_nuclei \
+../src/eos_nuclei \
 		-set select_cs2_test 0 \
 		-select-model $P_FIDUCIAL \
 		-set a_virial 10 -set b_virial 10 \
@@ -73,7 +73,7 @@ P_LARGE_SL="470 738 0.5 13.0 100.0 36.0 0.9"
 		-set fd_A_max 600 -set max_ratio 7.0 \
 		-set fixed_dist_alg 1999 \
 		-set function_verbose 0 \
-        -load data/fid_3_5_22.o2 \
+        -load ../data/fid_3_5_22.o2 \
 		-set recompute 1 \
 		-point-nuclei 0.16 0.465 0.1 
 

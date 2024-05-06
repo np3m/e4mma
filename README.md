@@ -39,15 +39,12 @@ This grabs the default config.yaml file, validates it, runs the eos code with th
 
 Now if they want to use another configuration, they need to run the ```yaml_generator.py``` to create a user specific ```config.yaml``` like:
 ```
-python3 yaml_generator.py --select_model "$P_FIDUCIAL" \
+python3 yaml_generator.py --select_model "470 738 0.5 13.0 62.4 32.8 0.9" \
 	--a_virial 10.0 --b_virial 10.0 \
-	--extend_frdm 0 \
-	--fd_A_max 600 --max_ratio 7.0 \
-	--fixed_dist_alg 1999 \
-	--function_verbose 0 \
 	--load data/fid_3_5_22.o2 \
 	--output_format HDF5
 ```
+before running the previous command.
 
 5. If the user wants to get into the container and run the code from inside, use
 ```
