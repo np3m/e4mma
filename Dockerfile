@@ -17,13 +17,13 @@ RUN git clone https://github.com/awsteiner/o2scl \
     && git checkout eee9fd83 && autoreconf -i \
 # We disable static and make blank-doc to keep the image small
     && LDFLAGS="-larmadillo -llapack -lblas" CXXFLAGS="-O3 -DO2SCL_UBUNTU_HDF5 -DO2SCL_HDF5_PRE_1_12 -DO2SCL_REGEX -DO2SCL_HDF5_COMP -I/usr/include" ./configure --enable-eigen --enable-armadillo --enable-openmp --enable-fftw --disable-static \
-    && make blank-doc && make -j 4 && make install \ 
+    && make blank-doc && make -j 3 && make install \ 
     && cd ../
 
 RUN git clone https://github.com/awsteiner/eos && \
     cd eos && \
-    git switch v2 && git checkout 03f5c97 && cd src && \
-    make -j 4 eos_nuclei 
+    git checkout v2 && git checkout 93ca543 && cd src && \
+    make -j 3 eos_nuclei 
 
 FROM python:3.11-slim as deps
 # Install git for pip install
@@ -129,16 +129,18 @@ COPY --from=builder --chown=$UID:$UID /usr/local/share/o2scl /usr/local/share/o2
 COPY --from=builder --chown=$UID:$UID /opt/eos/src/eos_nuclei /opt/eos/src/ 
 COPY --chown=$UID:$UID src/makefile \
     src/yaml_validator.py \
+    src/point_validator.py \
     src/yaml_generator.py \
+    src/point_generator.py \
     src/postprocess.py \
     /opt/eos/src/
 
 COPY --chown=$UID:$UID manifest.yaml /opt/eos/
-COPY --chown=$UID:$UID data /opt/eos/data
+#COPY --chown=$UID:$UID data /opt/eos/data
 COPY --chown=$UID:$UID test /opt/eos/test
 COPY --chown=$UID:$UID api /opt/eos/api
-COPY --chown=$UID:$UID input /opt/eos/input
-COPY --chown=$UID:$UID output /opt/eos/output
+#COPY --chown=$UID:$UID input /opt/eos/input
+#COPY --chown=$UID:$UID output /opt/eos/output
 
 # Set environment variables
 ENV O2SCL_ADDL_LIBS="/usr/lib/gcc/x86_64-linux-gnu/12/libgomp.so"

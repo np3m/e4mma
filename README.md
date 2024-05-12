@@ -51,32 +51,32 @@ temperature contribution which combines the QMC EOS
  near saturation density, the neutron star fit at higher den
 sities, and the Skyrme interaction for isospin-symmetric
  matter
-$\begin{equation}
+$$\begin{equation}
 \epsilon_{sym}(n_B) = h(n_B)\epsilon_{QMC}(nB) + [1-h(n_B)]\epsilon_{NS}(n_B) - f_{Skyrme}(nB,x_p = 1/2, T=0)
-\end{equation}$
+\end{equation}$$
 Defining the isospin asymmetry $ \delta = 1-2x_p$, we can
  combine this with the model described in [Du et al](https://arxiv.org/pdf/1802.09710) to obtain
  the free energy density of degenerate matter
 
-$\begin{equation}
+$$\begin{equation}
 f_{deg}(n_B,x_p,T) = f_{Skyrme}(nB,x_p = 1/2, T=0) + \delta^2\epsilon_{sym}(n_B) + \delta^2\Delta f_{hot}(nB,x_p = 0, T) + (1-\delta^2)\Delta f_{hot}(nB,x_p = 1/2, T)
-\end{equation}$
+\end{equation}$$
 
 Finally,we ensure that the total nucleonic free energy
  gives the result from the virial expansion at high tem
 peratures using 
 
-$\begin{equation}
+$$\begin{equation}
 f_{np}(n_B,x_p,T) = f_{virial}(n_n,x_p,T)g+f_{deg}(n_B,x_p,T)(1-g)
-\end{equation}$
+\end{equation}$$
 
 When we need to include the
  electrons, positrons, and photons, we define the free en
 ergy density
 
-$\begin{equation}
+$$\begin{equation}
 f_{npe\gamma} \equiv f_{np} + f_{e^-}+f_{e^+}+f_\gamma
-\end{equation}$
+\end{equation}$$
 
 Using this formalism, the chemical potentials and entropy can be computed directly (eq. 28-32 in [Du et al](https://arxiv.org/pdf/1802.09710)).
 
@@ -93,8 +93,7 @@ clone the Github repository. Particularly the `V2` branch.
 ```
 git clone https://github.com/awsteiner/eos && \
     cd eos && \
-    git checkout v2 && \
-    git checkout commit
+    git checkout v2 && git checkout 93ca543
 ``` 
 
 Download the EOS table and copy it to that `eos/data/` folder. This is done so the calculations are much faster. Since the code reads the table and creates an output with the MUSES standard.
@@ -154,12 +153,12 @@ More functions will be added later.
 If the user wants to get into the container and run the code from inside, use
 ```
 docker run -it --rm --name utk -u 0:0 \
-  -v "${PWD}/input:/opt/eos/api/input" \
-  -v "${PWD}/output:/opt/eos/api/output" \
+  -v "${PWD}/input:/opt/eos/input" \
+  -v "${PWD}/output:/opt/eos/output" \
   -v "${PWD}/data:/opt/eos/data" \
   nostrad1/utk-eos:v2 /bin/bash
 ```
-to get into the container. 
+ in the `eos` folder to get into the container. 
 Creating a user specific config.yaml is similar inside the container as well. Finally run `run_utk_for_lepton.sh` script inside the `test` folder using
 ```
 bash run_utk_for_lepton.sh
@@ -167,13 +166,13 @@ bash run_utk_for_lepton.sh
 to validate the `config.yaml` generate the eos output file from the user-specified configuration and post-process the file in the specified format in the output directory.
 
 ### Experimental
-To compute EoS at a certain $\mathrm{nB}$, $\mathrm{Ye}$ and $\mathrm{T}$, Generate a configuration, using `point_generator.py` in the `src` folder to create a user specific `point.yaml` like:
+To compute EoS at a certain $\mathrm{nB~(fm^{-3})}$ , $\mathrm{Ye}$ and $\mathrm{T~(MeV)}$, Generate a configuration, using `point_generator.py` in the `src` folder to create a user specific `point.yaml` like:
 ```
 python3 point_generator.py \
 	--select_model "470 738 0.5 13.0 62.4 32.8 0.9" \
 	--a_virial 10 --b_virial 10 \
 	--load ../data/fid_3_5_22.o2 \
-	---point-nuclei 0.16 0.465 0.1 
+	--point_nuclei "0.16 0.4 30" 
 ```
 
 #### Possible inputs

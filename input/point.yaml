@@ -1,5 +1,5 @@
 commands:
-  point: 0.16 0.5 30
+  point_nuclei: 0.16 0.4 30
 options:
   load: ../data/fid_3_5_22.o2
   select_model: 470 738 0.5 13.0 62.4 32.8 0.9

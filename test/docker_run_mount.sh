@@ -7,8 +7,8 @@ set -euo pipefail
 echo -e "\nRunning UTK module in Docker...\n"
 
 # Default values for Docker image and tag
-DOCKER_IMAGE_NAME="utk"
-DOCKER_IMAGE_TAG="latest"
+DOCKER_IMAGE_NAME="nostrad1/utk-eos"
+DOCKER_IMAGE_TAG="v2"
 
 # Get UID and GID of the current user
 #UID=$(id -u)
