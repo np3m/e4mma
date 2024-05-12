@@ -7,8 +7,8 @@ set -euo pipefail
 echo -e "\nRunning UTK module in Docker...\n"
 
 # Default values for Docker image and tag
-DOCKER_IMAGE_NAME="nostrad1/utk-eos"
-DOCKER_IMAGE_TAG="v2"
+DOCKER_IMAGE_NAME="utk"
+DOCKER_IMAGE_TAG="latest"
 
 # Get UID and GID of the current user
 #UID=$(id -u)
@@ -16,7 +16,7 @@ GID=$(id -g)
 
 # Default file paths
 USER_CONFIG_YAML_PATH="../input/config.yaml"
-POTENTIAL_DATA_HDF5_PATH="../data/fid_3_5_22.o2"
+EOS_DATA_HDF5_PATH="../data/fid_3_5_22.o2"
 
 # Check if command-line arguments are given to overwrite defaults
 if [ $# -ge 1 ]; then
@@ -29,12 +29,12 @@ if [ $# -ge 3 ]; then
     USER_CONFIG_YAML_PATH="$3"
 fi
 if [ $# -ge 4 ]; then
-    POTENTIAL_DATA_HDF5_PATH="$4"
+    EOS_DATA_HDF5_PATH="$4"
 fi
 
 # Convert the file paths to absolute paths
 USER_CONFIG_YAML_PATH=$(realpath "$USER_CONFIG_YAML_PATH")
-POTENTIAL_DATA_HDF5_PATH=$(realpath "$POTENTIAL_DATA_HDF5_PATH")
+EOS_DATA_HDF5_PATH=$(realpath "$EOS_DATA_HDF5_PATH")
 
 # Create the 'input' and 'output' directories if they do not already exist
 mkdir -p ../input
@@ -52,24 +52,24 @@ if [ "$USER_CONFIG_YAML_PATH" != "$(realpath "../input/config.yaml")" ]; then
 fi
 
 # Check if the EOS file exists
-if [ ! -f "$POTENTIAL_DATA_HDF5_PATH" ]; then
-    echo "EOS data file does not exist: $POTENTIAL_DATA_HDF5_PATH"
+if [ ! -f "$EOS_DATA_HDF5_PATH" ]; then
+    echo "EOS data file does not exist: $EOS_DATA_HDF5_PATH"
     exit 1
 fi
 
 # Check if the EOS file is in the expected location
-if [ "$POTENTIAL_DATA_HDF5_PATH" != "$(realpath "../data/$(basename "$POTENTIAL_DATA_HDF5_PATH")")" ]; then
-    echo "Error: EOS data file is not in data/ directory: $POTENTIAL_DATA_HDF5_PATH"
+if [ "$EOS_DATA_HDF5_PATH" != "$(realpath "../data/$(basename "$EOS_DATA_HDF5_PATH")")" ]; then
+    echo "Error: EOS data file is not in data/ directory: $EOS_DATA_HDF5_PATH"
     exit 1
 fi
 
 # Run the UTK Docker container, mapping input and output directories,
 # mounting eos table as a volume, and executing utk-for-lepton in eos directory.
 docker run -it --rm --name utk -u $UID:$GID \
-  -v "${PWD}/input:/opt/eos/input:rw" \
-  -v "${PWD}/output:/opt/eos/output:rw" \
-  -v "${PWD}/data:/opt/eos/data" \
-  $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG /bin/bash test/test_conf.sh
+  -v "${PWD}/../input:/opt/eos/input:rw" \
+  -v "${PWD}/../output:/opt/eos/output:rw" \
+  -v "${PWD}/../data:/opt/eos/data" \
+  $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG /bin/bash run_utk_for_lepton.sh
 
 # Check exit status
 if [ $? -eq 0 ]; then

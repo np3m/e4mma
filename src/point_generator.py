@@ -11,7 +11,7 @@ from openapi_core import Spec
 
 # Default paths
 DEFAULT_API_FILE_PATH = os.path.join(os.path.dirname(__file__), '..', 'api/OpenAPI_Specifications_UTK.yaml')
-DEFAULT_CONFIG_FILE_PATH = os.path.join(os.path.dirname(__file__), '..', 'input/config.yaml')
+DEFAULT_CONFIG_FILE_PATH = os.path.join(os.path.dirname(__file__), '..', 'input/point.yaml')
 
 def main():
     
@@ -51,7 +51,7 @@ def parse_args_from_spec(argparser, spec_file_path):
         openapi_specs = Spec.from_file(fp)
     
     # Get schema for config.yaml file
-    config_path = openapi_specs / "components" / "schemas" / "config" / "properties"
+    config_path = openapi_specs / "components" / "schemas" / "point_nuclei" / "properties"
 
     # Recursively iterate through nested schema and create a command line argument for each property
     def add_arguments(node, required=[]):
@@ -80,7 +80,7 @@ def write_args_to_config(args, spec_file_path, config_file_path):
         openapi_specs = Spec.from_file(fp)
     
     # Get schema for config.yaml file
-    config_path = openapi_specs / "components" / "schemas" / "config" / "properties"
+    config_path = openapi_specs / "components" / "schemas" / "point_nuclei" / "properties"
 
     # Recursively append arguments to dictionary based on OpenAPI schema and cast argument types as they are placed
     def append_arguments(node, data):
@@ -95,6 +95,12 @@ def write_args_to_config(args, spec_file_path, config_file_path):
     data = {}
     with config_path.open() as config:
         append_arguments(config, data)
+
+    if not any(key in data['commands'] for key in ['get', 'point', 'point_nuclei', 'random']):
+        raise ValueError("One of the commands must be provided.")
+    
+    if len(data['commands']) > 1:
+        raise ValueError("Only one of the commands can be provided.")
     
     # Write configuration data to config.yaml file
     with open(config_file_path, 'w') as fp:

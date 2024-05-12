@@ -7,6 +7,9 @@ authors:
   - Satyajit Roy
 command:
   - '/bin/sh'
+  - '-c'
+  - 'bash run_utk_for_lepton.sh'
+
 image:
   registry: "registry.gitlab.com"
   repo: "https://github.com/awsteiner/eos"
@@ -28,21 +31,12 @@ inputs:
     api:
       url: ""
       targetRevision: ""
-      path: api/input/config.yaml#/components/schemas/Configuration
+      path: api/OpenAPI_Specifications_UTK.yaml#/components/schemas/config
 outputs:
-  - label: test
-    ## The name "status" is a reserved word used by the Calculation Engine to
-    ## identify where to read the exit code
-    description: "test utk-eos at certain point"
-    path: "/output/test.csv"
+  - label: utk_eos for lepton
+    description: "Calculated equation of state data for lepton module"
+    path: "/output/utk_for_lepton.csv"
     api:
       url: ""
       targetRevision: ""
-      path: api/output/status.yaml#/components/schemas/test
-  - label: utk_eos for leption
-    description: "Calculated equation of state data for leption module"
-    path: "/output/utk_eos.csv"
-    api:
-      url: ""
-      targetRevision: ""
-      path: api/output/Equation_Of_State.yaml#/components/schemas/utk_for_leption
+      path: api/OpenAPI_Specifications_UTK.yaml#/components/schemas/utk_output_for_lepton

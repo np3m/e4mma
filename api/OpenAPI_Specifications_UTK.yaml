@@ -32,7 +32,27 @@ paths:
         '400':
           description: Invalid input provided
 
-  /output/UTK_output_for_Lepton:
+  /input/point.yaml:
+    put:
+      summary: Input parameters for point
+      description: >
+          possible arguments to take for eos_nuclei
+      operationId: putPointParams
+      security: []
+      requestBody:
+        description: Input parameters
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/point_nuclei'
+      responses:
+        '200':
+          description: Successful operation
+        '400':
+          description: Invalid input provided
+
+  /output/utk_for_Lepton.csv:
     get:
       summary: Equation of state for Lepton
       description: >
@@ -58,132 +78,19 @@ components:
       title: Input parameters
       description: Input parameters for utk eos
       type: object
-      required: [select_model, load]
+      required: [load]
       properties:
-        alt_model:
-          default: ''
-          description: For a Skyrme model, the first argument should be the word <computeroutput>
-            Skyrme </computeroutput>, and the second should be the name of the desired
-            Skyrme model. Similarly for an RMF model. (Hyperons are not yet fully
-            supported.)
-          title: Use alternate, rather than the Du et al. EOS.
-          type: string
-
-        create_new_table:
-          default: 
-          nullable: true
-          description: Create new table for Muses at fixed T.
-          title: create new table.
-          type: string
-
-        eos_deriv:
-          default:
-          nullable: true 
-          description: Compute derivatives numerically.
-          title: Compute derivatives numerically.
-          type: string
-
-        exit:
-          default:
-          nullable: true
-          description: Exit the current program.
-          title: Exit (synonymous with 'quit').
-          type: string
-
-        generate_table:
-          default: "output file"
-          description: Generate an EOS table.
-          title: Generate an EOS table.
-          type: string
-
-        get: 
-          default: 'nB' 
-          description: This command gets the value of a parameter. A list of parameters can be
-            obtained by e.g. -help get on the command-line or "help get" in interactive
-            mode.
-          title: Get the value of a parameter.
-          type: string
-
-        help:
-          default:
-          nullable: true
-          description: Show generic help information, or, if an argument is given give the
-            documentation for the specified command. Note that required arguments are
-            typically given inside angled brackes <> while optional arguments are given
-            inside square brackets []. If an argument is given and it is not a command
-            name but it is a parameter name then output the name, value, and description
-            of that parameter.
-          title: Show help information.
-          type: string
-
         load:
-          default: "data/fid_3_5_22.o2"
+          default: "../data/fid_3_5_22.o2"
           description: Loads an EOS table in to memory. In the case where MPI is used, only one MPI
             rank reads the table at a time.
           title: Load an EOS table.
           type: string
-
-        muses_table:
-          default:
-          nullable: true
-          description: Create a new table for Muses (experimental).
-          title: Create a new table for Muses (experimental).
+        output_format:
+          default: "CSV"
+          description: "Format of the output files for Lepton module"
           type: string
-
-        output:
-          default: "filename"
-          description: Loads an EOS table in to memory. In the case where MPI is used, only one MPI
-            rank writes the table at a time.
-          title: Output an EOS table to a file.
-          type: string
-
-        point:
-          default: "params"
-          description: Evaluate the EOS at one (nB,Ye,T) point.
-          title: Evaluate the EOS at one (nB,Ye,T) point.
-          type: string
-
-        point_nuclei:
-          default: "<n_B> <Y_e> <T (MeV)>"
-          description: If an EOS is loaded, then the n_B, Y_e, and T values are modified to ensure
-            that they lie on a grid point. If an initial guess is specified on the command
-            line, it is used even if there is a good guess already in the table. If the
-            flag is not 10 or if recompute is true, then the EOS is recomputed. If an EOS
-            is loaded or the recompute was successful, then the results are output to the
-            screen. If the point was successful it is stored in the current tables. If
-            show_all_nuclei is true, then a file named dist.o2 is created which holds the
-            full nuclear distribution.
-          title: Compute and/or show EOS results at one (n_B,Y_e,T) point.
-          type: string
-
-        quit:
-          default:
-          nullable: true
-          description: Quit (synonymous with 'exit').
-          title: Quit (synonymous with 'exit').
-          type: string
-
-        random:
-          default:
-          nullable: true
-          description: Select a random EOS, checking several physical constraints and re-selecting a
-            new random EOS until all the constraints are met.
-          title: Select a random EOS model.
-          type: string
-
-        select_high_T:
-          default: 0
-          description: Select 0 for the original DSH fit, 1 for NRAPR, 2 for Sk chi 414, 3 for
-            Skchi450, 4 for Skchi500, 5 for ?, "+ and 6 for Sk chi m* (the default).
-          title: Select the high-temperature Skyrme EOS.
-          type: number
-
-        select_model:
-          default: "skyrme model vector of numbers"
-          description: Select an EOS model.
-          title: Select an EOS model.
-          type: string
-
+          title: output format
         set:
           type: object
           description: This command sets the value of a parameter. A list of parameters can be
@@ -193,24 +100,75 @@ components:
             parameters which have single spaces. All whitespace is compressed into a
             single space. Quotes inside a word with no whitespace are ignored.
           title: Set the value of a parameter.
-          required: [a_virial, b_virial]
-          properties:               
-                S_grid_spec:
+          properties:  
+                nB_grid_spec:
                   type: string
-                  description: The function for S grid specification.
-                  default: '5,0.1*i'
-                T_grid_spec:
-                  type: string
-                  description: The function for default temperature grid.
-                  default: '160,0.1*1.046^i'
+                  description: The function for default baryon density grid. 'N,func(i)', 
+                    i takes values from 0-N 
+                    and func(i) fills up the grid . The user can change the grid length N and the 
+                    desired function.
+                  default: '301,10^(i*0.04-12)*2.0'   
                 Ye_grid_spec:
                   type: string
-                  description: The function for default electron fraction grid.
+                  description: The function for default electron fraction grid. 'N,func(i)', 
+                    i takes values from 0-N 
+                    and func(i) fills up the grid. The user can change the grid length N and the 
+                    desired function.
                   default: '70,0.01*(i+1)'
-                Ye_list:
-                  type: string
-                  description: The list of electron fractions for generate-table command.
-                  default: ''
+                verbose:
+                  type: integer
+                  description: Verbose parameter.
+                  default: 0
+
+    point_nuclei:
+      title: Point-nuclei function 
+      description: Compute EoS at a particular nB, Ye, T(MeV)
+      type: object
+      properties:
+        options:
+          type: object
+          required: [select_model]
+          properties:
+            select_model:
+              default: "470 738 0.5 13.0 62.4 32.8 0.9"
+              description: Select an EOS model. The possible inputs are 
+                P_FIDUCIAL="470 738 0.5 13.0 62.4 32.8 0.9"
+                P_LARGE_MMAX="783 738 0.5 13.0 62.4 32.8 0.9"
+                P_SMALL_R="214 738 0.5 13.0 62.4 32.8 0.9"
+                P_SMALLER_R="256 738 0.5 13.0 62.4 32.8 0.9"
+                P_LARGE_R="0 738 0.5 13.0 62.4 32.8 0.9"
+                P_SMALL_SL="470 738 0.5 13.0 23.7 29.5 0.9"
+                P_LARGE_SL="470 738 0.5 13.0 100.0 36.0 0.9"
+              title: Select an EOS model.
+              type: string
+            load:
+              default: "../data/fid_3_5_22.o2"
+              description: Loads an EOS table in to memory. In the case where MPI is used, only one MPI
+                rank reads the table at a time.
+              title: Load an EOS table.
+              type: string
+            select_high_T:
+              default: 6
+              description: Select 0 for the original DSH fit, 1 for NRAPR, 2 for Sk chi 414, 3 for
+                Skchi450, 4 for Skchi500, 5 for ?, "+ and 6 for Sk chi m* (the default).
+              title: Select the high-temperature Skyrme EOS.
+              type: number
+            eos_deriv:
+              default:
+              nullable: true 
+              description: Compute derivatives numerically.
+              title: Compute derivatives numerically.
+              type: string
+            set:
+              type: object
+              description: This command sets the value of a parameter. A list of parameters can be
+                obtained by e.g. -help set on the command-line or "help set " in interactive
+                mode.For floating point or integer parameters, constant expressions can be
+                used, e.g. acos(-1). For string-like parameters, quotes can be used to specify
+                parameters which have single spaces. All whitespace is compressed into a
+                single space. Quotes inside a word with no whitespace are ignored.
+              title: Set the value of a parameter.
+              properties:
                 a_virial:
                   type: number
                   description: Coefficient for modulation of virial EOS.
@@ -227,18 +185,10 @@ components:
                   type: number
                   description: The maximum value of N/Z or Z/N.
                   default: 7.0
-                max_time:
-                  type: number
-                  description: Maximum time, in seconds, for the generate-table command.
-                  default: 0.0
                 mh_tol_rel:
                   type: number
                   description: Relative tolerance for the solver in the eos_fixed_dist() function.
                   default: 1.0e-06
-                nB_grid_spec:
-                  type: string
-                  description: The function for default baryon density grid.
-                  default: '301,10^(i*0.04-12)*2.0'
                 recompute:
                   type: boolean
                   description: If true, recompute all points, irrespective of the value of the convergence flag.
@@ -251,16 +201,42 @@ components:
                   type: boolean
                   description: Use an alternate EOS rather than the Du et al. combined EOS.
                   default: false
-                verbose:
-                  type: integer
-                  description: Verbose parameter.
-                  default: 0
 
-        output_format:
-          default: "CSV"
-          description: "Format of the output files for Lepton module"
-          type: string
-          title: output_lepton
+        commands:
+          type: object
+          properties:
+            get: 
+              default: 'a_virial' 
+              description: This command gets the value of a parameter. A list of parameters can be
+                obtained by e.g. -help get on the command-line or "help get" in interactive
+                mode.
+              title: Get the value of a parameter.
+              type: string
+            point:
+              default: "0.16 0.4 0.1"
+              description: Evaluate the EOS at one (nB,Ye,T) point. Use -set verbose 1 for terminal output
+              title: Evaluate the EOS at one (nB,Ye,T) point.
+              type: string
+            point_nuclei:
+              default: "0.16 0.4 0.1"
+              description: If an EOS is loaded, then the n_B, Y_e, and T values are modified to ensure
+                that they lie on a grid point. If an initial guess is specified on the command
+                line, it is used even if there is a good guess already in the table. If the
+                flag is not 10 or if recompute is true, then the EOS is recomputed. If an EOS
+                is loaded or the recompute was successful, then the results are output to the
+                screen. If the point was successful it is stored in the current tables. If
+                show_all_nuclei is true, then a file named dist.o2 is created which holds the
+                full nuclear distribution.
+              title: Compute and/or show EOS results at one (n_B,Y_e,T) point.
+              type: string
+            random:
+              default: '0'
+              nullable: true
+              description: Select a random EOS, checking several physical constraints and re-selecting a
+                new random EOS until all the constraints are met.
+              title: Select a random EOS model.
+              type: string
+        
 
     UTK_output_for_Lepton:
       title: UTK output for Lepton

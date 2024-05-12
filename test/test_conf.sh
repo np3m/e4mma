@@ -4,26 +4,26 @@
 # Requires all necessary shared object dynamic libraries to be installed on the local machine, see docs for more information
 
 set -euo pipefail
-echo -e "\nRunning UTK module locally...\n"
+echo -e "\nRunning UTK EoS locally...\n"
 
 # Determine the path to the Python executable (preferably python3)
 PYTHON="$(command -v python3 2>/dev/null || echo python)"
 
 # Default file paths
-USER_CONFIG_YAML_PATH="../input/config.yaml"
-POTENTIAL_DATA_HDF5_PATH="../data/fid_3_5_22.o2"
+USER_CONFIG_YAML_PATH="../input/point.yaml"
+EOS_DATA_HDF5_PATH="../data/fid_3_5_22.o2"
 
 # Check if command-line arguments are given to overwrite defaults
 if [ $# -ge 1 ]; then
     USER_CONFIG_YAML_PATH="$1"
 fi
 if [ $# -ge 2 ]; then
-    POTENTIAL_DATA_HDF5_PATH="$2"
+    EOS_DATA_HDF5_PATH="$2"
 fi
 
 # Convert the file paths to absolute paths
 USER_CONFIG_YAML_PATH=$(realpath "$USER_CONFIG_YAML_PATH")
-POTENTIAL_DATA_HDF5_PATH=$(realpath "$POTENTIAL_DATA_HDF5_PATH")
+EOS_DATA_HDF5_PATH=$(realpath "$EOS_DATA_HDF5_PATH")
 
 # Create the 'input' and 'output' directories if they do not already exist
 mkdir -p ../input
@@ -36,19 +36,19 @@ if [ ! -f "$USER_CONFIG_YAML_PATH" ]; then
 fi
 
 # Check if the user config file is not in the expected location; copy it if needed.
-if [ "$USER_CONFIG_YAML_PATH" != "$(realpath "../input/config.yaml")" ]; then
-    cp "$USER_CONFIG_YAML_PATH" ../input/config.yaml
+if [ "$USER_CONFIG_YAML_PATH" != "$(realpath "../input/point.yaml")" ]; then
+    cp "$USER_CONFIG_YAML_PATH" ../input/point.yaml
 fi
 
 # Check if the EOS file exists
-if [ ! -f "$POTENTIAL_DATA_HDF5_PATH" ]; then
-    echo "EOS data file does not exist: $POTENTIAL_DATA_HDF5_PATH"
+if [ ! -f "$EOS_DATA_HDF5_PATH" ]; then
+    echo "EOS data file does not exist: $EOS_DATA_HDF5_PATH"
     exit 1
 fi
 
 # Check if the EOS file is in the expected location
-if [ "$POTENTIAL_DATA_HDF5_PATH" != "$(realpath "../data/$(basename "$POTENTIAL_DATA_HDF5_PATH")")" ]; then
-    echo "Error: EOS data file is not in data/ directory: $POTENTIAL_DATA_HDF5_PATH"
+if [ "$EOS_DATA_HDF5_PATH" != "$(realpath "../data/$(basename "$EOS_DATA_HDF5_PATH")")" ]; then
+    echo "Error: EOS data file is not in data/ directory: $EOS_DATA_HDF5_PATH"
     exit 1
 fi
 
@@ -66,8 +66,9 @@ P_LARGE_SL="470 738 0.5 13.0 100.0 36.0 0.9"
 
 # ----------------------------------------------------------------
 # validate the config.yaml file
-$PYTHON ../src/yaml_validator.py
-
+$PYTHON ../src/point_validator.py
+# Define the validated YAML file
+yaml_file="../input/validated_point.yaml"
 # ----------------------------------------------------------------
 # Read config.yaml values to use to run utk code
 read_parameters() {
@@ -81,7 +82,7 @@ read_parameters() {
 
         # Set Bash parameters
         case $name in
-            "load" | "output_format" | "select_model" | "a_virial" | "b_virial")
+            "load" | "select_high_T" | "alt_model" | "select_model" | "a_virial" | "b_virial" | "include_muons" | "max_ratio" | "mh_tol_rel" | "recompute" | "strange_axis" | "use_alt_eos" | "eos_deriv")
                 eval "${name}=\$value"
                 ;;
         esac
@@ -95,29 +96,41 @@ read_parameters() {
             printf("%s=%s\n", $1, $2);
         }
     ' "$1")
+
 }
 
-read_parameters "../input/validated_config.yaml"
+read_parameters $yaml_file
+
+# Define the command names you want to extract
+command_names=("point_nuclei" "point" "get" "random")
+
+# Parse the YAML file and extract the command and its value
+command=$(awk '/^ *commands:/{flag=1; next} flag && /^ *[^ ]/{sub(/:$/, "", $1); print $1; exit}' "$yaml_file")
+value=$(awk '/^ *commands:/{flag=1; next} flag && /^ *[^ ]/{print substr($0, index($0,$2)); exit}' "$yaml_file")
 
 # ----------------------------------------------------------------
-# Run UTK module for Lepton
+# Run UTK module point
 ../src/eos_nuclei \
-		-select-model $select_model \
+		-select-model $select_model -load $load \
+        -select-high-T $select_high_T \
 		-set a_virial $a_virial -set b_virial $b_virial \
-		-load '../'$load \
-		-utk-for-lepton create 
+        -set include_muons $include_muons -set max_ratio $max_ratio \
+        -set mh_tol_rel $mh_tol_rel -set recompute $recompute \
+        -set strange_axis $strange_axis -set use_alt_eos $use_alt_eos \
+        -set verbose 1 \
+		-$command $value
         
 # ----------------------------------------------------------------
 # Run Postprocess.py
-$PYTHON ../src/postprocess.py
+#$PYTHON ../src/postprocess.py
 
 # Check exit status
 if [ $? -eq 0 ]; then
-  echo -e "\n\tUtk running for Lepton: OK\n"
+  echo -e "\n\tUtk running point: OK\n"
 else
-  echo -e "\n\tUtk running for Lepton: Failed\n"
+  echo -e "\n\tUtk running point: Failed\n"
   exit 1
 fi
 
-echo -e "\nUtk running for Lepton completed\n"
+echo -e "\nUtk running point completed\n"
 exit 0

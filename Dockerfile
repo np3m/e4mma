@@ -22,7 +22,7 @@ RUN git clone https://github.com/awsteiner/o2scl \
 
 RUN git clone https://github.com/awsteiner/eos && \
     cd eos && \
-    git switch v2 && \
+    git switch v2 && git checkout 03f5c97 && cd src && \
     make -j 4 eos_nuclei 
 
 FROM python:3.11-slim as deps
@@ -130,10 +130,10 @@ COPY --from=builder --chown=$UID:$UID /opt/eos/src/eos_nuclei /opt/eos/src/
 COPY --chown=$UID:$UID src/makefile \
     src/yaml_validator.py \
     src/yaml_generator.py \
-    src/manifest.yaml \
     src/postprocess.py \
     /opt/eos/src/
 
+COPY --chown=$UID:$UID manifest.yaml /opt/eos/
 COPY --chown=$UID:$UID data /opt/eos/data
 COPY --chown=$UID:$UID test /opt/eos/test
 COPY --chown=$UID:$UID api /opt/eos/api
@@ -145,4 +145,4 @@ ENV O2SCL_ADDL_LIBS="/usr/lib/gcc/x86_64-linux-gnu/12/libgomp.so"
 ENV LD_LIBRARY_PATH="/usr/local/lib" 
 
 # Set working directory
-WORKDIR /opt/eos
+WORKDIR /opt/eos/test/

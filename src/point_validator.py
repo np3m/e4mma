@@ -14,8 +14,8 @@ from openapi_core.testing import MockRequest
 
 # Constants
 DEFAULT_API_FILE_PATH = os.path.join(os.path.dirname(__file__), '..', 'api/OpenAPI_Specifications_UTK.yaml')
-DEFAULT_CONFIG_FILE_PATH = os.path.join(os.path.dirname(__file__), '..', 'input/config.yaml')
-DEFAULT_VALID_CONFIG_FILE_PATH = os.path.join(os.path.dirname(__file__), '..', 'input/validated_config.yaml')
+DEFAULT_CONFIG_FILE_PATH = os.path.join(os.path.dirname(__file__), '..', 'input/point.yaml')
+DEFAULT_VALID_CONFIG_FILE_PATH = os.path.join(os.path.dirname(__file__), '..', 'input/validated_point.yaml')
 
 
 def main():
@@ -64,7 +64,7 @@ def validate_unmarshal_file(spec_file_path, input_file_path, valid_file_path, ve
     request = MockRequest(
         host_url='/',
         method="PUT",
-        path='/input/config.yaml',
+        path='/input/point.yaml',
         data=json.dumps(data)
     )
 
@@ -87,6 +87,11 @@ def validate_unmarshal_file(spec_file_path, input_file_path, valid_file_path, ve
             print(f'''{errors}''')
         return False
     
+    #print(valid_result.body['commands'])
+    for key in list(valid_result.body['commands']):
+        if key not in data['commands']:
+            del valid_result.body['commands'][key]
+            
     # Write unmarshaled request to output file
     with open(valid_file_path, 'w') as fp:
         yaml.safe_dump(valid_result.body, fp)

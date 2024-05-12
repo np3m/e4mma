@@ -1,0 +1,16 @@
+commands:
+  point: 0.16 0.5 30
+options:
+  eos_deriv: null
+  load: ../data/fid_3_5_22.o2
+  select_high_T: 6
+  select_model: 470 738 0.5 13.0 62.4 32.8 0.9
+  set:
+    a_virial: 10.0
+    b_virial: 10.0
+    include_muons: false
+    max_ratio: 7.0
+    mh_tol_rel: 1.0e-06
+    recompute: false
+    strange_axis: false
+    use_alt_eos: false

@@ -4,26 +4,26 @@
 # Requires all necessary shared object dynamic libraries to be installed on the local machine, see docs for more information
 
 set -euo pipefail
-echo -e "\nRunning UTK module locally...\n"
+echo -e "\nRunning UTK module...\n"
 
 # Determine the path to the Python executable (preferably python3)
 PYTHON="$(command -v python3 2>/dev/null || echo python)"
 
 # Default file paths
 USER_CONFIG_YAML_PATH="../input/config.yaml"
-POTENTIAL_DATA_HDF5_PATH="../data/fid_3_5_22.o2"
+EOS_DATA_HDF5_PATH="../data/fid_3_5_22.o2"
 
 # Check if command-line arguments are given to overwrite defaults
 if [ $# -ge 1 ]; then
     USER_CONFIG_YAML_PATH="$1"
 fi
 if [ $# -ge 2 ]; then
-    POTENTIAL_DATA_HDF5_PATH="$2"
+    EOS_DATA_HDF5_PATH="$2"
 fi
 
 # Convert the file paths to absolute paths
 USER_CONFIG_YAML_PATH=$(realpath "$USER_CONFIG_YAML_PATH")
-POTENTIAL_DATA_HDF5_PATH=$(realpath "$POTENTIAL_DATA_HDF5_PATH")
+EOS_DATA_HDF5_PATH=$(realpath "$EOS_DATA_HDF5_PATH")
 
 # Create the 'input' and 'output' directories if they do not already exist
 mkdir -p ../input
@@ -41,14 +41,14 @@ if [ "$USER_CONFIG_YAML_PATH" != "$(realpath "../input/config.yaml")" ]; then
 fi
 
 # Check if the EOS file exists
-if [ ! -f "$POTENTIAL_DATA_HDF5_PATH" ]; then
-    echo "EOS data file does not exist: $POTENTIAL_DATA_HDF5_PATH"
+if [ ! -f "$EOS_DATA_HDF5_PATH" ]; then
+    echo "EOS data file does not exist: $EOS_DATA_HDF5_PATH"
     exit 1
 fi
 
 # Check if the EOS file is in the expected location
-if [ "$POTENTIAL_DATA_HDF5_PATH" != "$(realpath "../data/$(basename "$POTENTIAL_DATA_HDF5_PATH")")" ]; then
-    echo "Error: EOS data file is not in data/ directory: $POTENTIAL_DATA_HDF5_PATH"
+if [ "$EOS_DATA_HDF5_PATH" != "$(realpath "../data/$(basename "$EOS_DATA_HDF5_PATH")")" ]; then
+    echo "Error: EOS data file is not in data/ directory: $EOS_DATA_HDF5_PATH"
     exit 1
 fi
 
@@ -80,7 +80,7 @@ read_parameters() {
 
         # Set Bash parameters
         case $name in
-            "load" | "output_format" | "select_model" | "a_virial" | "b_virial")
+            "load" | "output_format" | "nB_grid_spec" | "Ye_grid_spec")
                 eval "${name}=\$value"
                 ;;
         esac
@@ -100,9 +100,9 @@ read_parameters "../input/validated_config.yaml"
 # ---------------------------------------------------------------
 # Run UTK module for Lepton
 ../src/eos_nuclei \
-		-select-model $select_model \
-		-set a_virial $a_virial -set b_virial $b_virial \
-		-load '../'$load \
+		-load $load \
+        -set nB_grid_spec $nB_grid_spec \
+        -set Ye_grid_spec $Ye_grid_spec \
 		-utk-for-lepton create 
 
 # Run Postprocess.py

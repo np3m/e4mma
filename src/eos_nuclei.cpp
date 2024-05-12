@@ -7337,6 +7337,16 @@ int eos_nuclei::utk_for_lepton(std::vector<std::string> &sv,
 			     bool itive_com) { 
 
   std::cout << "Function UTK-for-lepton starting: " << std::endl;
+
+  /*  
+  ["temperature", "muB", "muS", "muQ", "vector_density", "total_S_density", 
+  "total_Q_density", "energy", "pressure", "entropy"]
+
+  with units:
+
+  ["MeV", "MeV", "MeV", "MeV", "fm-3", "fm-3", "fm-3", "MeV/fm3", "MeV/fm3", 
+  "fm^-3"]
+  */ 
   
   // Create an output csv file
   std::ofstream myfile;
@@ -7345,57 +7355,63 @@ int eos_nuclei::utk_for_lepton(std::vector<std::string> &sv,
   myfile.close();
   myfile.open("../output/utk_for_lepton.csv", std::ofstream::out | std::ofstream::app);
 
-  //// Create a denser Ye grid for more resolution
-  //std::vector<double> Ye_grid3;
-  //Ye_grid3.resize(2*n_Ye2);
-  //for (size_t j=0;j<n_Ye2;j++){
-  //  Ye_grid3[2*j]=Ye_grid2[j];
-  //  Ye_grid3[2*j+1]=(Ye_grid2[j]+Ye_grid2[j+1])/2;
-  //}
-//
-  //// Set up interpolation objects to interpolate from using the denser Ye grid
-  //tensor_grid<> tg_mun_interp=grid_rearrange_and_copy<tensor_grid<>,double>
-  //  (tg_mun,{ix_index(0),ix_grid(1,0.0,0.7,140),ix_index(2)});
-  //tensor_grid<> tg_mup_interp=grid_rearrange_and_copy<tensor_grid<>,double>
-  //  (tg_mup,{ix_index(0),ix_grid(1,0.0,0.7,140),ix_index(2)});
-  //tensor_grid<> tg_E_interp=grid_rearrange_and_copy<tensor_grid<>,double>
-  //  (tg_E,{ix_index(0),ix_grid(1,0.0,0.7,140),ix_index(2)});
-  //tensor_grid<> tg_P_interp=grid_rearrange_and_copy<tensor_grid<>,double>
-  //  (tg_P,{ix_index(0),ix_grid(1,0.0,0.7,140),ix_index(2)});
-  //tensor_grid<> tg_S_interp=grid_rearrange_and_copy<tensor_grid<>,double>
-  //  (tg_S,{ix_index(0),ix_grid(1,0.0,0.7,140),ix_index(2)});
-//
-  //// Fill up the output csv file with data
-  //for (size_t j=0;j<Ye_grid3.size()-1;j++){
-  //  double Ye=Ye_grid3[j];
-  //  for (size_t i=0;i<n_nB2;i++){
-  //    double nB=nB_grid2[i];
-  //    std::vector<std::size_t> ix={i,j,0};
-//
-  //    double muB=tg_mun_interp.get(ix)+neutron.m*hc_mev_fm;
-  //    double muQ=tg_mup_interp.get(ix)+proton.m*hc_mev_fm-tg_mun_interp.get(ix)-neutron.m*hc_mev_fm;
-  //    double En=(tg_E_interp.get(ix)+Ye*proton.m*hc_mev_fm+(1-Ye)*neutron.m*hc_mev_fm)*nB;
-  //    double Pr=tg_P_interp.get(ix);
-  //    double ent=tg_S_interp.get(ix)*nB;
-
-  for (size_t j=0;j<Ye_grid2.size()-1;j++){
-    double Ye=Ye_grid2[j];
-    for (size_t i=0;i<n_nB2;i++){
-      double nB=nB_grid2[i];
-      std::vector<std::size_t> ix={i,j,0};
-
-      double muB=tg_mun.get(ix)+neutron.m*hc_mev_fm;
-      double muQ=tg_mup.get(ix)+proton.m*hc_mev_fm-tg_mun.get(ix)-neutron.m*hc_mev_fm;
-
-      double En=(tg_E.get(ix)+Ye*proton.m*hc_mev_fm+(1-Ye)*neutron.m*hc_mev_fm)*nB;
-      double Pr=tg_P.get(ix);
-      double ent=tg_S.get(ix)*nB;
-      myfile << "0.1" << "," << muB << "," << 0 
-        << "," << muQ << "," 
-        << nB <<"," << 0 << "," << Ye*nB << "," << En 
-        << "," << Pr << "," << ent << std::endl;
-    }
+  if (!loaded) {
+    cerr << "EoS table not loaded. Exiting" << endl;
+    exit(-1);
   }
+  std::cout << "Processing: " << nB_grid_spec << " " << Ye_grid_spec << std::endl;
+  calc_utf8<> calc;
+  std::map<std::string,double> vars;
+  vector<double> packed;
+  vector<std::string> split_res;
+
+  split_string_delim(nB_grid_spec,split_res,',');
+  size_t n_nB3=stoszt(split_res[0]);
+  std::vector<double> nB_grid3;
+
+  calc.compile(split_res[1].c_str());
+  for(size_t i=0;i<n_nB3;i++) {
+    vars["i"]=((double)i);
+    nB_grid3.push_back(calc.eval(&vars));
+    packed.push_back(calc.eval(&vars));
+  }
+
+  split_string_delim(Ye_grid_spec,split_res,',');
+  size_t n_Ye3=stoszt(split_res[0]);
+  std::vector<double> Ye_grid3;
+
+  calc.compile(split_res[1].c_str());
+  for(size_t i=0;i<n_Ye3;i++) {
+    vars["i"]=((double)i);
+    Ye_grid3.push_back(calc.eval(&vars));
+    packed.push_back(calc.eval(&vars));
+  }
+
+  for (size_t j=0;j<Ye_grid3.size()-1;j++){
+    if (Ye_grid3[j]>=Ye_grid2[0] && Ye_grid3[j]<=Ye_grid2[n_Ye2-1]){
+      size_t iYe=vector_lookup(n_Ye2,Ye_grid2,Ye_grid3[j]);
+      double Ye=Ye_grid2[iYe];
+      for (size_t i=0;i<n_nB3;i++){
+        if (nB_grid3[i]>=nB_grid2[0] && nB_grid3[i]<=nB_grid2[n_nB2-1]){
+          size_t inB=vector_lookup(n_nB2,nB_grid2,nB_grid3[i]);
+          double nB=nB_grid2[inB];
+          std::vector<std::size_t> ix={inB,iYe,0};
+
+          double muB=tg_mun.get(ix)+neutron.m*hc_mev_fm;
+          double muQ=tg_mup.get(ix)+proton.m*hc_mev_fm-tg_mun.get(ix)-neutron.m*hc_mev_fm;
+
+          double En=(tg_E.get(ix)+Ye*proton.m*hc_mev_fm+(1-Ye)*neutron.m*hc_mev_fm)*nB;
+          double Pr=tg_P.get(ix);
+          double ent=tg_S.get(ix)*nB;
+          myfile << "0.1" << "," << muB << "," << 0 
+            << "," << muQ << "," 
+            << nB <<"," << 0 << "," << Ye*nB << "," << En 
+            << "," << Pr << "," << ent << std::endl;
+        } else continue; 
+      }
+    } else continue;
+  }
+
   myfile.close();
 
   std::cout << "Function UTK-for-lepton completed succesfully." << std::endl;
@@ -7490,6 +7506,7 @@ int eos_nuclei::create_new_table(std::vector<std::string> &sv,
 
   for (size_t j=0;j<Ye_grid2.size()-1;j++){
     double Ye=Ye_grid2[j];
+    std::cout << Ye <<" ";
     for (size_t i=0;i<n_nB2;i++){
       double nB=nB_grid2[i];
     std::cout << "Command 'create-new-table' computing EOS at (w/o rest mass)\n"
@@ -10994,7 +11011,7 @@ void eos_nuclei::setup_cli_nuclei(o2scl::cli &cl) {
       1,"","eos_nuclei","select_high_T","doc/xml/classeos__nuclei.xml"}
     };
 
-  cl.doc_o2_file="data/eos_nuclei_docs.o2";
+  cl.doc_o2_file="../data/eos_nuclei_docs.o2";
 
   p_nB_grid_spec.str=&nB_grid_spec;
   p_nB_grid_spec.help="";
