@@ -51,9 +51,11 @@ temperature contribution which combines the QMC EOS
  near saturation density, the neutron star fit at higher den
 sities, and the Skyrme interaction for isospin-symmetric
  matter
+
 $$\begin{equation}
 \epsilon_{sym}(n_B) = h(n_B)\epsilon_{QMC}(nB) + [1-h(n_B)]\epsilon_{NS}(n_B) - f_{Skyrme}(nB,x_p = 1/2, T=0)
 \end{equation}$$
+
 Defining the isospin asymmetry $ \delta = 1-2x_p$, we can
  combine this with the model described in [Du et al](https://arxiv.org/pdf/1802.09710) to obtain
  the free energy density of degenerate matter
