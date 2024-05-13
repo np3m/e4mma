@@ -22,7 +22,7 @@ RUN git clone https://github.com/awsteiner/o2scl \
 
 RUN git clone https://github.com/awsteiner/eos && \
     cd eos && \
-    git checkout v2 && git checkout 93ca543 && cd src && \
+    git checkout v2 && git checkout 5955e74 && cd src && \
     make -j 3 eos_nuclei 
 
 FROM python:3.11-slim as deps

@@ -57,7 +57,7 @@ $$\begin{equation}
 \end{equation}$$
 
 Defining the isospin asymmetry $ \delta = 1-2x_p$, we can
- combine this with the model described in [Du et al](https://arxiv.org/pdf/1802.09710) to obtain
+ combine this with the model described in [Du et al. 2019](https://arxiv.org/pdf/1802.09710) to obtain
  the free energy density of degenerate matter
 
 $$\begin{equation}
@@ -80,12 +80,12 @@ $$\begin{equation}
 f_{npe\gamma} \equiv f_{np} + f_{e^-}+f_{e^+}+f_\gamma
 \end{equation}$$
 
-Using this formalism, the chemical potentials and entropy can be computed directly (eq. 28-32 in [Du et al](https://arxiv.org/pdf/1802.09710)).
+Using this formalism, the chemical potentials and entropy can be computed directly (eq. 28-32 in [Du et al. 2019](https://arxiv.org/pdf/1802.09710)).
 
 We enforce causality at high densities.
 
 ## Docker
-This code was originally described in [Du et al](https://arxiv.org/pdf/1802.09710). The source code is available on github. The installation of Boost, GSL (versions 1.16 and later), HDF5 (versions 1.8.14 and later), and a more current version of O2scl (version 0.928 or later) is required in order to compile the code to generate and analyze EOS tables. You do not need to compile the code to use the EOS tables - they can be read by any application which reads HDF5 files. The EoS tables are availlable to download at our [website](https://neutronstars.utk.edu/code/eos/download.html)
+This code was originally described in [Du et al. 2019](https://arxiv.org/pdf/1802.09710) and improved upon [Du et al. 2022](https://arxiv.org/pdf/2107.06697) with nuclei. The source code is available on github. The installation of Boost, GSL (versions 1.16 and later), HDF5 (versions 1.8.14 and later), and a more current version of O2scl (version 0.928 or later) is required in order to compile the code to generate and analyze EOS tables. You do not need to compile the code to use the EOS tables - they can be read by any application which reads HDF5 files. The EoS tables are availlable to download at our [website](https://neutronstars.utk.edu/code/eos/download.html)
 
 ### Build the docker image
 To build the EOS code inside a docker container:
@@ -95,7 +95,7 @@ clone the Github repository. Particularly the `V2` branch.
 ```
 git clone https://github.com/awsteiner/eos && \
     cd eos && \
-    git checkout v2 && git checkout 93ca543
+    git checkout v2 && git checkout 5955e74
 ``` 
 
 Download the EOS table and copy it to that `eos/data/` folder. This is done so the calculations are much faster. Since the code reads the table and creates an output with the MUSES standard.
