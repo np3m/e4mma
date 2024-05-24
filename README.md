@@ -7,43 +7,57 @@ Full documentation at https://neutronstars.utk.edu/code/eos .
 
 ## Introduction
 
-Our EoS describes the relationship between energy density and pressure in a large three-dimensional ($\mathrm{nB}$, $\mathrm{Ye}$, $\mathrm{T}$) space,
+Our EoS describes the relationship between energy density and pressure
+in a large three-dimensional ($\mathrm{nB}$, $\mathrm{Ye}$,
+$\mathrm{T}$) space,
 
-There are several different physical regimes each constrained by different observables and theoretical approaches. 
+There are several different physical regimes each constrained by
+different observables and theoretical approaches.
 
-First the zero temperature nuclear
-matter at nuclear saturation density is closely connected
-to nuclear masses, charge radii, giant resonances, and
-other laboratory observables. Global fits to experimental data have been performed with Skyrme and covariant mean-field models. 
+First the zero temperature nuclear matter at nuclear saturation
+density is closely connected to nuclear masses, charge radii, giant
+resonances, and other laboratory observables. Global fits to
+experimental data have been performed with Skyrme and covariant
+mean-field models.
 
-Secondly, cold neutron matter below nuclear saturation density, is difficult to probe experimentally but is well-constrained by theoretical calculations based on
-semi-phenomenological nuclear forces or microscopic chiral effective field theory-based interactions. 
+Secondly, cold neutron matter below nuclear saturation density, is
+difficult to probe experimentally but is well-constrained by
+theoretical calculations based on semi-phenomenological nuclear forces
+or microscopic chiral effective field theory-based interactions.
 
-The third regime, strongly-interacting high-temperature matter, is best described by interactions and many-body approaches similar to those applied to cold neutron matter near saturation density. 
+The third regime, strongly-interacting high-temperature matter, is
+best described by interactions and many-body approaches similar to
+those applied to cold neutron matter near saturation density.
 
-The fourth regime, low-density and high-temperature matter that is nearly
-non-degenerate, is best described by the virial expansion.
-The equation of state in this regime is determined from
-nucleon-nucleon scattering phase shifts. 
+The fourth regime, low-density and high-temperature matter that is
+nearly non-degenerate, is best described by the virial expansion. The
+equation of state in this regime is determined from nucleon-nucleon
+scattering phase shifts.
 
 Finally, neutron-rich matter at densities above twice saturation
-density is most strongly constrained by observations of
-neutron star masses and radii, particularly the observation of neutron stars with $M \simeq 2M_\odot$.
+density is most strongly constrained by observations of neutron star
+masses and radii, particularly the observation of neutron stars with
+$M \simeq 2M_\odot$.
 
-In this work, we construct a phenomenological free energy density that is consistent with observational and
-theoretical constraints in the five aforementioned physical regimes. This is in contrast to works which attempt to
-describe matter over the entire density and temperature
-range with a single detailed model of the nucleon-nucleon
+In this work, we construct a phenomenological free energy density that
+is consistent with observational and theoretical constraints in the
+five aforementioned physical regimes. This is in contrast to works
+which attempt to describe matter over the entire density and
+temperature range with a single detailed model of the nucleon-nucleon
 interaction.
 
-Our second advance is in the treatment of uncertainties. The most relevant parameters which describe
-the uncertainties in different density and temperature
-regimes are not clearly related. In this work, through the
-construction of a phenomenological model one can vary
-uncertainties in different regimes independently, without
-spoiling agreement elsewhere.
+Our second advance is in the treatment of uncertainties. The most
+relevant parameters which describe the uncertainties in different
+density and temperature regimes are not clearly related. In this work,
+through the construction of a phenomenological model one can vary
+uncertainties in different regimes independently, without spoiling
+agreement elsewhere.
 
-The module produces an EoS table in a 3 dimensional grid of $\mathrm{nB}$, $\mathrm{Ye}$ and $\mathrm{T}$ and stores various physical and thermodynamics properties in the data files (detailed documentation [here](https://neutronstars.utk.edu/code/eos/table_format.html#thermodynamic-quantities)).
+The module produces an EoS table in a 3 dimensional grid of
+$\mathrm{nB}$, $\mathrm{Ye}$ and $\mathrm{T}$ and stores various
+physical and thermodynamics properties in the data files (detailed
+documentation
+[here](https://neutronstars.utk.edu/code/eos/table_format.html#thermodynamic-quantities)).
 
 ## Physics
 First, we define the symmetry energy to include a zero
@@ -56,17 +70,17 @@ $$\begin{equation}
 \epsilon_{sym}(n_B) = h(n_B)\epsilon_{QMC}(nB) + [1-h(n_B)]\epsilon_{NS}(n_B) - f_{Skyrme}(nB,x_p = 1/2, T=0)
 \end{equation}$$
 
-Defining the isospin asymmetry $ \delta = 1-2x_p$, we can
- combine this with the model described in [Du et al. 2019](https://arxiv.org/pdf/1802.09710) to obtain
- the free energy density of degenerate matter
+Defining the isospin asymmetry $ \delta = 1-2x_p$, we can combine this
+ with the model described in [Du et al.
+ 2019](https://arxiv.org/pdf/1802.09710) to obtain the free energy
+ density of degenerate matter
 
 $$\begin{equation}
 f_{deg}(n_B,x_p,T) = f_{Skyrme}(nB,x_p = 1/2, T=0) + \delta^2\epsilon_{sym}(n_B) + \delta^2\Delta f_{hot}(nB,x_p = 0, T) + (1-\delta^2)\Delta f_{hot}(nB,x_p = 1/2, T)
 \end{equation}$$
 
-Finally,we ensure that the total nucleonic free energy
- gives the result from the virial expansion at high tem
-peratures using 
+Finally, we ensure that the total nucleonic free energy gives the
+ result from the virial expansion at high tem peratures using
 
 $$\begin{equation}
 f_{np}(n_B,x_p,T) = f_{virial}(n_n,x_p,T)g+f_{deg}(n_B,x_p,T)(1-g)
@@ -85,7 +99,17 @@ Using this formalism, the chemical potentials and entropy can be computed direct
 We enforce causality at high densities.
 
 ## Docker
-This code was originally described in [Du et al. 2019](https://arxiv.org/pdf/1802.09710) and improved upon [Du et al. 2022](https://arxiv.org/pdf/2107.06697) with nuclei. The source code is available on github. The installation of Boost, GSL (versions 1.16 and later), HDF5 (versions 1.8.14 and later), and a more current version of O2scl (version 0.928 or later) is required in order to compile the code to generate and analyze EOS tables. You do not need to compile the code to use the EOS tables - they can be read by any application which reads HDF5 files. The EoS tables are availlable to download at our [website](https://neutronstars.utk.edu/code/eos/download.html)
+This code was originally described in [Du et al.
+2019](https://arxiv.org/pdf/1802.09710) and improved upon [Du et al.
+2022](https://arxiv.org/pdf/2107.06697) with nuclei. The source code
+is available on github. The installation of Boost, GSL (versions 1.16
+and later), HDF5 (versions 1.8.14 and later), and a more current
+version of O2scl (version 0.928 or later) is required in order to
+compile the code to generate and analyze EOS tables. You do not need
+to compile the code to use the EOS tables - they can be read by any
+application which reads HDF5 files. The EoS tables are availlable to
+download at our
+[website](https://neutronstars.utk.edu/code/eos/download.html)
 
 ### Build the docker image
 To build the EOS code inside a docker container:
@@ -98,16 +122,20 @@ git clone https://github.com/awsteiner/eos && \
     git checkout v2 && git checkout 5955e74
 ``` 
 
-Download the EOS table and copy it to that `eos/data/` folder. This is done so the calculations are much faster. Since the code reads the table and creates an output with the MUSES standard.
+Download the EOS table and copy it to that `eos/data/` folder. This is
+done so the calculations are much faster. Since the code reads the
+table and creates an output with the MUSES standard.
 ```
 curl https://isospin.roam.utk.edu/public_data/eos_tables/du21/fid_3_5_22.o2 --output data/fid_3_5_22.o2
 ```
-The dockerfile `Dockerfile` uses a multistage docker build to build a minimal image with the executable `eos_nuclei` in it.
-The user can build the docker image inside the eos folder themselves using
+The dockerfile `Dockerfile` uses a multistage docker build to build a
+minimal image with the executable `eos_nuclei` in it. The user can
+build the docker image inside the eos folder themselves using
 `
 docker build . -t utk
 `
-However the process is lengthy and it is advised to just download the already built image from dockerhub.
+However the process is lengthy and it is advised to just download the
+already built image from dockerhub.
 
 ### Download the docker image
 To download the built image from dockerhub the user can use
@@ -115,16 +143,23 @@ To download the built image from dockerhub the user can use
 docker pull nostrad1/utk-eos:v2
 `
 ### Running the module
-After either building or downloding the image the user can just run `docker_run_mount.sh` script locally inside the `test` folder to mount the local input, output and data
-folders inside the eos folder to the container and execute the function `utk_for_lepton` inside the container with default configuration that creates the eos output 
-for lepton module in the `output` folder in `csv` format.
+After either building or downloding the image the user can just run
+`docker_run_mount.sh` script locally inside the `test` folder to mount
+the local input, output and data folders inside the eos folder to the
+container and execute the function `utk_for_lepton` inside the
+container with default configuration that creates the eos output for
+lepton module in the `output` folder in `csv` format.
 
 ```
 bash docker_run_mount.sh
 ```
-This grabs the default `config.yaml` file, validates it, runs the eos code with the validated configuration and afterwards postprocesses the output using `muses-porter`.
+This grabs the default `config.yaml` file, validates it, runs the eos
+code with the validated configuration and afterwards postprocesses the
+output using `muses-porter`.
 
-Now if they want to use another configuration, they need to run the `yaml_generator.py` in the `src` folder to create a user specific `config.yaml` like:
+Now if they want to use another configuration, they need to run the
+`yaml_generator.py` in the `src` folder to create a user specific
+`config.yaml` like:
 ```
 cd ../src
 python3 yaml_generator.py --load data/fid_3_5_22.o2 \
