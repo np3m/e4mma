@@ -1,5 +1,5 @@
-EOS
-===
+EOS for Multi-Messenger Astrophysics
+====================================
 
 Equation of State from Du, Steiner, and Holt, Phys. Rev. C (2019).
 

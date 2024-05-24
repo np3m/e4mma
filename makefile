@@ -20,7 +20,7 @@ help:
 # LCFLAGS are the local C++ compiler flags
 
 # Default settings
-LCXX = $(CXX)>
+LCXX = $(CXX)
 LMPI_CXX = $(MPI_CXX)
 LIBS = -L/usr/local/lib -lo2scl -lhdf5 -lgsl -lreadline $(LDFLAGS) 
 LMPI_CFLAGS = -O3 -std=c++11 -DTEMP_UPDATES -DO2SCL_MPI \
@@ -254,7 +254,7 @@ open-doc:
 	$(BROWSER) doc/build/html/index.html
 
 sync-doc:
-	rsync -Cavzu doc/build/html/* $(STATIC_DOC_DIR)/eos
+	rsync -Cavzu doc/build/html/* ~/wcs/np3m/np3m.github.io/code/e4mma
 
 test-sync:
 	rsync -Cavzun doc/build/html/* $(STATIC_DOC_DIR)/eos
