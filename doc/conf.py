@@ -43,9 +43,9 @@ breathe_projects = { "eos": os.path.abspath('xml') }
 breathe_default_project = "eos"
 #
 
-intersphinx_mapping = {'o2scl':
-                       ('https://neutronstars.utk.edu/code/o2scl/html/',
-                        'o2scl_objects.inv')}
+#intersphinx_mapping = {'o2scl':
+#                       ('https://awsteiner.org/code/o2scl/html/',
+#                        'o2scl_objects.inv')}
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['templates']
@@ -61,8 +61,8 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'eos'
-copyright = '2017-2023, Xingfu Du and Andrew W. Steiner'
-author = 'Xingfu Du and Andrew W. Steiner'
+copyright = '2017-2024, Xingfu Du, Zidu Lin, Satyajit Roy, Josue Bautista, and Andrew W. Steiner'
+author = 'Xingfu Du, Zidu Lin, Satyajit Roy, Josue Bautista, and Andrew W. Steiner'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

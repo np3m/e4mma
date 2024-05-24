@@ -248,7 +248,7 @@ UNAME_S := $(shell uname -s)
     endif
 
 web-doc:
-	$(BROWSER) https://neutronstars.utk.edu/code/eos/
+	$(BROWSER) https://np3m.org/code/e4mma
 
 open-doc:
 	$(BROWSER) doc/build/html/index.html
