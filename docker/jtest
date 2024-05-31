@@ -1,0 +1,73 @@
+FROM awsteiner/o2scl:v0.929_u24.04_py
+MAINTAINER Andrew W. Steiner (awsteiner0@protonmail.com)
+
+# --------------------------------------------------------------------------
+# Additional packages
+
+RUN apt install libopenmpi-dev
+
+# --------------------------------------------------------------------------
+# UTK EOS
+
+# Set makefile variables
+ENV CXX g++
+ENV MPI_CXX mpicxx
+ENV CFLAGS -I/usr/lib/x86_64-linux-gnu/openmpi/include/ \
+  -I/usr/include/python3.11 \
+  -I/usr/local/lib/python3.11/dist-packages/numpy/core/include \
+  -I/usr/include/hdf5/serial -std=c++14 
+ENV LDFLAGS -L/usr/lib/x86_64-linux-gnu/hdf5/serial \
+  -L/usr/lib/x86_64-linux-gnu -lpython3.11
+
+WORKDIR /opt
+RUN git clone https://github.com/np3m/e4mma
+WORKDIR /opt/eos
+RUN git checkout 00058579
+RUN make eos_nuclei eos
+
+# --------------------------------------------------------------------------
+# Make sure it runs
+
+RUN mpirun --allow-run-as-root -np 1 ./eos -help
+RUN mpirun --allow-run-as-root -np 1 ./eos_nuclei -help
+
+# --------------------------------------------------------------------------
+# Install a few additional packages
+
+RUN apt-get update -y && apt-get install -y xclip sudo && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# --------------------------------------------------------------------------
+# Create a user called "np3m" and give them root privileges
+
+RUN useradd --create-home --shell /bin/bash --uid "1001" --no-user-group \
+    "np3m" && \
+    echo np3m ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/np3m && \
+    chmod 0440 /etc/sudoers.d/np3m 
+
+# --------------------------------------------------------------------------
+# Install the jupyter notebook python packages with pip
+
+RUN pip3 install --break-system-packages jupyterlab \
+notebook jupytext jupyter jupyter_server_ydoc \
+jupyter_server_fileid nbclassic
+
+# --------------------------------------------------------------------------
+# We copy the start_server command first as root so it's easier
+# to chown it
+
+COPY start_server /home/np3m/start_server
+RUN chown np3m /home/np3m/start_server
+RUN chmod 755 /home/np3m/start_server
+
+# --------------------------------------------------------------------------
+# Now we switch to the np3m user
+
+USER np3m
+WORKDIR /home/np3m
+
+# --------------------------------------------------------------------------
+# The port on which the Jupyter server is accessible
+
+EXPOSE 8888
+
