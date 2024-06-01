@@ -16,8 +16,8 @@ build:
 		> test_alpha2.out 2>&1
 
 build2:
-	sudo docker build . --rm -f jtest \
-		-t awsteiner/e4mma:alpha3_o929_u24.04 > build.out 2>&1
+	sudo docker build . --rm -f alpha3_ju_o929_u24.04 \
+		-t awsteiner/e4mma:alpha3_ju_o929_u24.04 > build.out 2>&1
 
 push:
 	sudo docker push awsteiner/eos:alpha2

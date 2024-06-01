@@ -8,7 +8,5 @@ dist.o2
 eos
 *~
 enn
-makefile.aws
-
-
+makefile.user
 st.out
