@@ -780,7 +780,7 @@ protected:
 
       <"Skyrme"> <name> or <"RMF"> <name>, etc.
 
-      For a Skyrme model, the first argument should be the word \c
+      For a Skyrme model, the first argument should be the word 
       Skyrme, and the second should be the name of the desired Skyrme
       model. Similarly for an RMF model. (Hyperons are not yet
       fully supported.)
