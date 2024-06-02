@@ -620,7 +620,7 @@ protected:
   /// The virial equation solver (now part of O2scl)
   o2scl::eos_had_virial vsd;
 
-  /** \brief Object for computing electron/positron thermodynamic integrals
+  /** \brief Object for computing thermodynamic integrals for leptons
    */
   o2scl::fermion_rel relf;
 
@@ -849,10 +849,11 @@ protected:
 
   /** \brief Evaluate the EOS at one (nB,Ye,T) point
 
-      Params.
+      <nB> <Ye> <TMeV>
 
-      Help.
-   */
+      Compute the EOS (without nuclei) at one point and
+      output the results to the screen.
+  */
   int point(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Select a random EOS model

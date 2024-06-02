@@ -1,0 +1,27 @@
+# ----------------------------------------------------------------
+# Evaluate the EOS (without nuclei) at a particular point.
+# Note that the code needs to be run in the top directory with
+# the eos executable in order to find the input data tables,
+# so we begin by changing directory.
+# ----------------------------------------------------------------
+
+cd ..
+
+# This is the "fiducial" model from Du et al. (2022)
+
+eos -select-model 470 738 0.5 13.0 62.4 32.8 0.9 \
+-point 0.08 0.5 5.0
+
+# Pure Skyrme model
+
+eos -alt-model Skyrme NRAPR \
+-point 0.08 0.5 5.0
+
+# RMF support is still experimental
+
+eos -alt-model RMF SFHo \
+-point 0.08 0.5 5.0
+
+# Return to the examples directory
+
+cd examples

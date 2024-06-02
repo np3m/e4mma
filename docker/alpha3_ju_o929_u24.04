@@ -62,6 +62,11 @@ RUN mpirun --allow-run-as-root -np 1 ./eos -help
 RUN mpirun --allow-run-as-root -np 1 ./eos_nuclei -help
 
 # --------------------------------------------------------------------------
+# Create a "tables" directory for output tables
+
+RUN mkdir -p tables
+
+# --------------------------------------------------------------------------
 # The port on which the Jupyter server is accessible
 
 EXPOSE 8888

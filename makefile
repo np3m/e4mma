@@ -263,7 +263,7 @@ clean:
 	rm -f *.o eos_nuclei eos_nuclei_nompi eos eos_nompi neutrino/*.o
 
 # ----------------------------------------------------------------
-# New EOS parameter sets
+# EOS parameter sets from Du et al. (2022)
 # ----------------------------------------------------------------
 
 P_FIDUCIAL = 470 738 0.5 13.0 62.4 32.8 0.9
@@ -274,180 +274,25 @@ P_LARGE_R = 0 738 0.5 13.0 62.4 32.8 0.9
 P_SMALL_SL = 470 738 0.5 13.0 23.7 29.5 0.9
 P_LARGE_SL = 470 738 0.5 13.0 100.0 36.0 0.9
 
-# ----------------------------------------------------------------
+fid_point1: empty
+	eos_nuclei -select-model $(P_FIDUCIAL) \
+		-point-nuclei 0.08 0.5 5.0
 
-mbtest:
-	enn \
-		-set select_cs2_test 0 \
-		-select-model $(P_FIDUCIAL) \
-		-set a_virial 10 -set b_virial 10 \
-		-set extend_frdm 0 \
-		-set fd_A_max 600 -set max_ratio 7.0 \
-		-set fixed_dist_alg 1999 \
-		-set function_verbose 0 \
-		-load ~/data/eos/final/fid_6_30_21.o2 \
-		-mcarlo-beta mb_temp1.o2
+nrapr_point1: empty
+	eos_nuclei -alt-model Skyrme NRAPR \
+		-point-nuclei 0.08 0.5 5.0
 
-mbtestd:
-	enn \
-		-set select_cs2_test 0 \
-		-select-model $(P_FIDUCIAL) \
-		-set a_virial 10 -set b_virial 10 \
-		-set extend_frdm 0 \
-		-set fd_A_max 600 -set max_ratio 7.0 \
-		-set fixed_dist_alg 1999 \
-		-set function_verbose 0 \
-		-load ~/data/eos/final/fid_6_30_21.o2 \
-		-mcarlo-beta mb_temp1.o2 100
+sfho_point1: empty
+	eos_nuclei -alt-model RMF SFHo \
+		-point-nuclei 0.08 0.5 5.0
 
-mb1:
-	eos_nuclei \
-		-set select_cs2_test 0 \
-		-select-model $(P_FIDUCIAL) \
-		-set a_virial 10 -set b_virial 10 \
-		-set extend_frdm 0 \
-		-set fd_A_max 600 -set max_ratio 7.0 \
-		-set fixed_dist_alg 1999 \
-		-set function_verbose 0 \
-		-load ~/data/eos/final/fid_6_30_21.o2 \
-		-mcarlo-beta mb1.o2 > mb1.out 2>&1 &
+fid_point2: empty
+	eos -select-model $(P_FIDUCIAL) \
+		-point 0.15 0.5 0.0
 
-mb2:
-	eos_nuclei \
-		-set select_cs2_test 0 \
-		-select-model $(P_FIDUCIAL) \
-		-set a_virial 10 -set b_virial 10 \
-		-set extend_frdm 0 \
-		-set fd_A_max 600 -set max_ratio 7.0 \
-		-set fixed_dist_alg 1999 \
-		-set function_verbose 0 \
-		-load ~/data/eos/final/fid_6_30_21.o2 \
-		-mcarlo-beta mb2.o2 > mb2.out 2>&1 &
-
-mb3:
-	eos_nuclei \
-		-set select_cs2_test 0 \
-		-select-model $(P_FIDUCIAL) \
-		-set a_virial 10 -set b_virial 10 \
-		-set extend_frdm 0 \
-		-set fd_A_max 600 -set max_ratio 7.0 \
-		-set fixed_dist_alg 1999 \
-		-set function_verbose 0 \
-		-load ~/data/eos/final/fid_6_30_21.o2 \
-		-mcarlo-beta mb3.o2 > mb3.out 2>&1 &
-
-mb4:
-	eos_nuclei \
-		-set select_cs2_test 0 \
-		-select-model $(P_FIDUCIAL) \
-		-set a_virial 10 -set b_virial 10 \
-		-set extend_frdm 0 \
-		-set fd_A_max 600 -set max_ratio 7.0 \
-		-set fixed_dist_alg 1999 \
-		-set function_verbose 0 \
-		-load ~/data/eos/final/fid_6_30_21.o2 \
-		-mcarlo-beta mb4.o2 > mb4.out 2>&1 &
-
-mb1d:
-	enn \
-		-set select_cs2_test 0 \
-		-select-model $(P_FIDUCIAL) \
-		-set a_virial 10 -set b_virial 10 \
-		-set extend_frdm 0 \
-		-set fd_A_max 600 -set max_ratio 7.0 \
-		-set fixed_dist_alg 1999 \
-		-set function_verbose 0 \
-		-load ~/data/eos/final/fid_6_30_21.o2 \
-		-mcarlo-beta mb1d.o2 100 > mb1d.out 2>&1 &
-
-mb2d:
-	enn \
-		-set select_cs2_test 0 \
-		-select-model $(P_FIDUCIAL) \
-		-set a_virial 10 -set b_virial 10 \
-		-set extend_frdm 0 \
-		-set fd_A_max 600 -set max_ratio 7.0 \
-		-set fixed_dist_alg 1999 \
-		-set function_verbose 0 \
-		-load ~/data/eos/final/fid_6_30_21.o2 \
-		-mcarlo-beta mb2d.o2 100 > mb2d.out 2>&1 &
-
-mbt2:
-	eos_nuclei \
-		-set select_cs2_test 0 \
-		-select-model $(P_FIDUCIAL) \
-		-set a_virial 10 -set b_virial 10 \
-		-set extend_frdm 0 \
-		-set fd_A_max 600 -set max_ratio 7.0 \
-		-set fixed_dist_alg 1999 \
-		-set function_verbose 0 \
-		-load ~/data/eos/final/fid_6_30_21.o2 \
-		-mcarlo-beta mb_temp2.o2 > mbt2.out 2>&1 &
-
-mbt3:
-	eos_nuclei \
-		-set select_cs2_test 0 \
-		-select-model $(P_FIDUCIAL) \
-		-set a_virial 10 -set b_virial 10 \
-		-set extend_frdm 0 \
-		-set fd_A_max 600 -set max_ratio 7.0 \
-		-set fixed_dist_alg 1999 \
-		-set function_verbose 0 \
-		-load ~/data/eos/final/fid_6_30_21.o2 \
-		-mcarlo-beta mb_temp3.o2 > mbt3.out 2>&1 &
-
-nt:
-	./enn -test-neutrino
-
-nt2:
-	./enn -test-neutrino > tn_new.out
-	 head -n 170 tn.out | tail -n 10
-	 head -n 40 tn_new.out | tail -n 12
-
-yetest:
-	o2graph -set logx 1 \
-		-plotv "grid:1.0e-4,0.15,(0.15/1.0e-4)^(1/99),log" \
-		"hdf5:~awsteiner/data/21/09/23/mb1d.o2:mb:0:Ye_best_*" \
-		-create table x \
-		"grid:1.0e-4,0.15,(0.15/1.0e-4)^(1/99),log" \
-		-function "log10(x)*31.485+126" i \
-		-function "0.05+0.28*exp(-i/24)" ye2 \
-		-plot x ye2 \
-		-show
-
-imfps:
-	o2graph -subplots 2 2 -set logx 1 -set logy 1 \
-		-selax 0 \
-		-plotv "grid:1.0e-4,0.15,(0.15/1.0e-4)^(1/99),log" \
-		"hdf5:mb1d.o2:mb:0-4:cc_vec_imfp" \
-		-ttext 0.3 0.8 "CC,vec" \
-		-selax 1 \
-		-plotv "grid:1.0e-4,0.15,(0.15/1.0e-4)^(1/99),log" \
-		"hdf5:mb1d.o2:mb:0-4:cc_axvec_imfp" \
-		-ttext 0.2 0.8 "CC,ax" \
-		-selax 2 \
-		-plotv "grid:1.0e-4,0.15,(0.15/1.0e-4)^(1/99),log" \
-		"hdf5:mb1d.o2:mb:0-4:nc_vec_imfp" \
-		-ttext 0.65 0.8 "NC,vec" \
-		-selax 3 \
-		-plotv "grid:1.0e-4,0.15,(0.15/1.0e-4)^(1/99),log" \
-		"hdf5:mb1d.o2:mb:0-4:nc_axvec_imfp" \
-		-ttext 0.3 0.8 "NC,ax" \
-		-subadj "left=0.12,right=0.99,top=0.99,bottom=0.09,wspace=0.27,hspace=0.17" \
-		-save imfps.pdf -show
-
-mn-test:
-	enn \
-		-set select_cs2_test 0 \
-		-select-model $(P_FIDUCIAL) \
-		-set a_virial 10 -set b_virial 10 \
-		-set extend_frdm 0 \
-		-set fd_A_max 600 -set max_ratio 7.0 \
-		-set fixed_dist_alg 1999 \
-		-set function_verbose 9999 \
-		-set verbose 3 \
-		-load ~/data/eos/final/fid_6_30_21.o2 \
-		-mcarlo-neutron mn_test.o2
+nrapr_point2: empty
+	eos -alt-model Skyrme NRAPR \
+		-point 0.15 0.5 0.0
 
 # This optional file, makefile.user, is a place to store the user's
 # makefile targets

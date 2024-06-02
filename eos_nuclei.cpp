@@ -10948,6 +10948,8 @@ void eos_nuclei::setup_cli_nuclei(o2scl::cli &cl) {
   cl.xml_subs.push_back("Z/N");
   cl.xml_subs.push_back("<computeroutput> dist.o2 </computeroutput>");
   cl.xml_subs.push_back("dist.o2");
+  cl.xml_subs.push_back("<computeroutput> Skyrme </computeroutput>");
+  cl.xml_subs.push_back("Skyrme");
   // Just ignore the function references
   cl.xml_subs.push_back("<ref>");
   cl.xml_subs.push_back("");

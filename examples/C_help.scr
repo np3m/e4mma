@@ -1,0 +1,13 @@
+# ----------------------------------------------------------------
+# Show how to use the command-line help
+# ----------------------------------------------------------------
+
+cd ..
+
+eos -help
+
+eos -help select-model
+
+eos_nuclei -help point-nuclei
+
+cd examples

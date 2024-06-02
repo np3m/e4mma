@@ -610,7 +610,7 @@ void eos::ns_fit(int row) {
   ubmatrix covar(nparms,nparms);
 
   // The fit chi-squared
-  if (verbose>0) {
+  if (verbose>1) {
     cout << "ns_fit_parms[0]=" << ns_fit_parms[0] << ";" << endl;
     cout << "ns_fit_parms[1]=" << ns_fit_parms[1] << ";" << endl;
     cout << "ns_fit_parms[2]=" << ns_fit_parms[2] << ";" << endl;
@@ -659,7 +659,7 @@ void eos::ns_fit(int row) {
   if (nb_new>0.01) ns_nb_max=nb_new;
   
   // Output the fit results to the screen
-  if (verbose>0) {
+  if (verbose>1) {
     cout << "Parameters: " << endl;
     cout << "ns_fit_parms[0]=" << ns_fit_parms[0] << ";" << endl;
     cout << "ns_fit_parms[1]=" << ns_fit_parms[1] << ";" << endl;
@@ -717,7 +717,7 @@ eos::eos() {
   photon.init(0.0,2.0);
 
   // Default settings
-  verbose=0;
+  verbose=1;
   test_ns_cs2=false;
   include_muons=false;
   output_files=true; 
@@ -1578,7 +1578,7 @@ double eos::free_energy_density_detail
   // Ensure the entropy is exactly zero at T=0 
   if (T==0.0) th.en=0.0;
   
-  if (verbose>=1) {
+  if (verbose>=2) {
     cout << endl;
     cout << "i_ns,i_skyrme= " << i_ns << " " << i_skyrme << endl;
     cout << endl;
@@ -3710,22 +3710,23 @@ int eos::point(std::vector<std::string> &sv, bool itive_com) {
   neutron.n=nB*(1.0-Ye);
   proton.n=nB*Ye;
   free_energy_density(neutron,proton,T,th2);
-  if (verbose>=1) {
+  
+  if (true) {
     
     cout.setf(ios::showpos);
     double f_total=th2.ed-T*th2.en;
     
-    cout << "f_total,F_total         = " << f_total << " 1/fm^4 "
-         << f_total/nB*hc_mev_fm << " MeV" << endl;
-    cout << endl;
+    cout << "f_total: " << f_total << " 1/fm^4 " << endl;
+    cout << "F_total: " << f_total/nB*hc_mev_fm << " MeV" << endl;
     
-    cout << "ed (w/rm), pr= "
+    cout << "energy density (with rest mass): "
          << th2.ed+neutron.n*neutron.m+proton.n*proton.m
-         << " 1/fm^4 " << th2.pr << " 1/fm^4" << endl;
-    cout << "entropy, s per baryon= " << th2.en << " 1/fm^3 "
-         << th2.en/nB << endl;
-    cout << "mu_n, mu_p = " << neutron.mu*hc_mev_fm << " MeV "
-         << proton.mu*hc_mev_fm << " MeV" << endl;
+         << " 1/fm^4 " << endl;
+    cout << "pressure: " << th2.pr << " 1/fm^4" << endl;
+    cout << "entropy density: " << th2.en << " 1/fm^3 " << endl;
+    cout << "entropy per baryon: " << th2.en/nB << endl;
+    cout << "mu_n: " << neutron.mu*hc_mev_fm << " MeV" << endl;
+    cout << "mu_p: " << proton.mu*hc_mev_fm << " MeV" << endl;
     cout << endl;
     cout.unsetf(ios::showpos);
     
