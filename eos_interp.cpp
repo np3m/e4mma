@@ -40,7 +40,6 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
   st_out=sv[4];
   
   // Create interpolation object
-  cout << "ike constructor." << endl;
   interpm_krige_eos ike;
   ike.mode=ike.mode_loo_cv_bf;
   ike.full_min=true;
@@ -48,7 +47,8 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
   ike.enp=this;
   
   /// Load cs2 from a file
-  cout << "load stability " << st_in << endl;
+  cout << "eos_nuclei::interp_fix_table() reading stability file: "
+       << st_in << endl;
   hdf_file hff;
   hff.open(st_in);
   hdf_input(hff,tg_cs2,"cs2");
@@ -56,7 +56,7 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
 
   int ipx_count=0;
 
-  cout << "Starting loop." << endl;
+  cout << "Starting loop over entire grid:." << endl;
   for(size_t i=0;i<nB_grid2.size();i++) {
     for(size_t j=0;j<Ye_grid2.size();j++) {
       for(size_t k=0;k<T_grid2.size();k++) {
@@ -91,10 +91,8 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
                << tg_cs2.get(ix) << " dPdnB: " << dPdnB << endl;
           
           // Create a copy of the free energy for temporary storage
-          cout << "Making a copy." << endl;
           tg_Fint_old=tg_Fint;
           tg_F_old=tg_F;
-          cout << "Done making a copy." << endl;
 
           int ii_ret=interp_internal(i_fix,j_fix,k_fix,window,ike);
           cout << "Herexx." << endl;
@@ -233,7 +231,6 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
             i_fix+dnB>=0 && i_fix+dnB<n_nB2 &&
             j_fix+dYe>=0 && j_fix+dYe<n_Ye2 &&
             k_fix+dT>=0 && k_fix+dT<n_T2) {
-          
           double dPdnB;
           size_t i=((size_t)(((int)i_fix)+dnB));
           size_t j=((size_t)(((int)j_fix)+dYe));
@@ -271,7 +268,8 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
     }
   }
   
-  cout << "Using " << ike.calib_list.size()/3 << " points to calibrate"
+  cout << "In eos_nuclei:interp_internal(), using "
+       << ike.calib_list.size()/3 << " points to calibrate"
        << endl;
   cout << "  and attempting to fix " << ike.fix_list.size()/3 << " points."
        << endl;
@@ -324,9 +322,11 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
   //for(p[1]=80.0;p[1]>8.0;p[1]/=1.4) {
   //for(p[2]=80.0;p[2]>8.0;p[2]/=1.4) {
   //for(p[3]=-15.0;p[3]<-2.99;p[3]+=1.0) {
-  for(p[0]=2.0;p[0]>1.99;p[0]/=1.4) {
-    for(p[1]=2.0;p[1]>1.99;p[1]/=1.4) {
-      for(p[2]=2.0;p[2]>1.99;p[2]/=1.4) {
+  std::cout << "In eos_nuclei::interp_internal(), loop over "
+            << "hyperparameters." << std::endl;
+  for(p[0]=10.0;p[0]>1.99;p[0]/=1.4) {
+    for(p[1]=10.0;p[1]>1.99;p[1]/=1.4) {
+      for(p[2]=10.0;p[2]>1.99;p[2]/=1.4) {
         for(p[3]=-15.0;p[3]<-14.99;p[3]+=1.0) {
 
           if (ike.addl_verbose>=1) {
@@ -388,14 +388,14 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
     
     ike.eval(index,out);
     if (ike.interp_Fint==false) {
-      cout << "Correcting (5) from " << tg_F.get(index) << " to "
+      cout << "Change (5) from " << tg_F.get(index) << " to "
            << out[0] << endl;
-      cout << "Correcting (5b) from " << tg_Fint.get(index) << " to "
+      cout << "Change (5b) from " << tg_Fint.get(index) << " to "
            << out[0]-F_eg << endl;
       tg_F.get(index)=out[0];
       tg_Fint.get(index)=out[0]-F_eg;
     } else {
-      cout << "Correcting (6) from " << tg_Fint.get(index) << " to "
+      cout << "Change (6) from " << tg_Fint.get(index) << " to "
            << out[0] << endl;
       tg_Fint.get(index)=out[0];
       tg_F.get(index)=out[0]+F_eg;
@@ -422,17 +422,17 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
     ike.eval(index,out);
     if (ike.interp_Fint==false) {
       double corr=out[0]-tg_F.get(index);
-      cout << "Correcting (7) from " << tg_F.get(index) << " to "
+      cout << "Change (7) from " << tg_F.get(index) << " to "
            << tg_F.get(index)+fact*corr << " at dist: "
            << ike.calib_dists[j/3] << endl;
-      cout << "Correcting (7b) from " << tg_Fint.get(index) << " to "
+      cout << "Change (7b) from " << tg_Fint.get(index) << " to "
            << tg_F.get(index)-F_eg << " at dist: "
            << ike.calib_dists[j/3] << endl;
       tg_F.get(index)+=fact*corr;
       tg_Fint.get(index)=tg_F.get(index)-F_eg;
     } else {
       double corr=out[0]-tg_Fint.get(index);
-      cout << "Correcting (8) from " << tg_Fint.get(index) << " to "
+      cout << "Change (8) from " << tg_Fint.get(index) << " to "
            << tg_Fint.get(index)+fact*corr << " at dist: "
            << ike.calib_dists[j/3] << endl;
       tg_Fint.get(index)+=fact*corr;
@@ -577,10 +577,38 @@ void interpm_krige_eos::set() {
   ubmatrix ix(calib_list.size()/3,3);
   ubmatrix iy(1,calib_list.size()/3);
 
+  cout << "In interpm_krige_eos::set(): Fix list: " << endl;
   if (interp_Fint) {
     cout << "ix[0] ix[1] ix[2] Fint" << endl;
   } else {
     cout << "ix[0] ix[1] ix[2] F" << endl;
+  }
+  for(size_t j=0;j<fix_list.size();j+=3) {
+    ix(j/3,0)=fix_list[j];
+    ix(j/3,1)=fix_list[j+1];
+    ix(j/3,2)=fix_list[j+2];
+    vector<size_t> index={fix_list[j],fix_list[j+1],
+      fix_list[j+2]};
+    if (interp_Fint) {
+      iy(0,j/3)=tgp_Fint->get(index);
+    } else {
+      iy(0,j/3)=tgp_F->get(index);
+    }
+    if (true) {
+      cout << ((int)ix(j/3,0)) << " " << ((int)ix(j/3,1)) << " "
+           << ((int)ix(j/3,2)) << " "
+           << nB_grid[fix_list[j]] << " "
+           << Ye_grid[fix_list[j+1]] << " "
+           << T_grid[fix_list[j+2]] << " "
+           << iy(0,j/3) << " ";
+      cout << endl;
+    }
+  }
+  cout << "In interpm_krige_eos::set(): Calibration list: " << endl;
+  if (interp_Fint) {
+    cout << "ix[0] ix[1] ix[2] Fint dist" << endl;
+  } else {
+    cout << "ix[0] ix[1] ix[2] F dist" << endl;
   }
   for(size_t j=0;j<calib_list.size();j+=3) {
     ix(j/3,0)=calib_list[j];
@@ -594,15 +622,19 @@ void interpm_krige_eos::set() {
       iy(0,j/3)=tgp_F->get(index);
     }
     if (true) {
-      cout << ix(j/3,0) << " " << ix(j/3,1) << " "
-           << ix(j/3,2) << " " << iy(0,j/3) << " ";
+      cout << ((int)ix(j/3,0)) << " " << ((int)ix(j/3,1)) << " "
+           << ((int)ix(j/3,2)) << " "
+           << nB_grid[calib_list[j]] << " "
+           << Ye_grid[calib_list[j+1]] << " "
+           << T_grid[calib_list[j+2]] << " "
+           << iy(0,j/3) << " ";
       if (fix_list.size()>3) {
         cout << calib_dists[j/3];
       }
       cout << endl;
     }
   }
-
+  
   // Make a copy because interpm_krige_eos will keep it
   ubmatrix ix2=ix;
 
@@ -612,7 +644,7 @@ void interpm_krige_eos::set() {
 
   // Call the Gaussian process set_data() function
   
-  std::cout << "Going to set_data()." << std::endl;
+  std::cout << "Going to interp_krige_eos::set_data()." << std::endl;
   verbose=2;
   set_data(3,1,calib_list.size()/3,ix,iy);
 
@@ -621,6 +653,8 @@ void interpm_krige_eos::set() {
   
 int interpm_krige_eos::addl_const(size_t iout, double &ret) {
 
+  std::cout << "In interpm_krige_eos::addl_const()." << std::endl;
+  
   // First, we need to ensure the interpolator has been
   // setup to be able to use the eval() and deriv()
   // functions
@@ -707,21 +741,30 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
 
       if (true) {
         if (interp_Fint==false) {
-          cout << "Correcting (1) from " << tgp_F_old->get(index) << " "
-               << tgp_F->get(index) << " to "
-               << out[0] << endl;
-          cout << "Correcting (1b) from " << tgp_Fint_old->get(index) << " "
-               << tgp_Fint->get(index) << " to "
-               << out[0]-F_eg << endl;
+          if (false) {
+            cout << "Change F (fix) from " << tgp_F_old->get(index) << " "
+                 << tgp_F->get(index) << " to "
+                 << out[0] << endl;
+            cout << "Change Fint (fix) from "
+                 << tgp_Fint_old->get(index) << " "
+                 << tgp_Fint->get(index) << " to "
+                 << out[0]-F_eg << endl;
+          } else {
+            cout << index[0] << " " << index[1] << " "
+                 << index[2] << " " << nB <<  " " << Ye << " "
+                 << T_MeV << " " << tgp_F_old->get(index)
+                 << " " << out[0] << endl;
+          }
           tgp_F->get(index)=out[0];
           tgp_Fint->get(index)=out[0]-F_eg;
         } else {
-          cout << "Correcting (2) from " << tgp_Fint->get(index) << " to "
-               << out[0] << endl;
+          cout << "Change Fint (fix) from " << tgp_Fint->get(index)
+               << " to " << out[0] << endl;
           tgp_Fint->get(index)=out[0];
           tgp_F->get(index)=out[0]+F_eg;
         }
       }
+      
       
     }
 
@@ -735,28 +778,40 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
       double nB=nB_grid[index[0]];
       double Ye=Ye_grid[index[1]];
       double T_MeV=T_grid[index[2]];
-      
+
       double fact=1.0/(1.0+exp(2.0*(calib_dists[j/3]-window/2.0)));
       
-      // Electron photon contribution in MeV
+      // Lepton photon contribution in MeV
       double F_eg=tgp_F->get(index)-tgp_Fint->get(index);
       
       eval(index,out);
+      //cout << "dist,fact,F,out: " << calib_dists[j/3] << " " << fact << " "
+      //<< tgp_F->get(index) << " " << out[0] << endl;
 
       if (true) {
         if (interp_Fint==false) {
           double corr=out[0]-tgp_F->get(index);
-          cout << "Correcting (3) from " << tgp_F->get(index) << " to "
-               << tgp_F->get(index)+fact*corr << " at dist: "
-               << calib_dists[j/3] << endl;
-          cout << "Correcting (3b) from " << tgp_Fint->get(index) << " to "
-               << tgp_F->get(index)-F_eg << " at dist: "
-               << calib_dists[j/3] << endl;
+          if (false) {
+            cout << "Change F (calib) from " << tgp_F->get(index) << " to "
+                 << tgp_F->get(index)+fact*corr << " at dist: "
+                 << calib_dists[j/3] << endl;
+            cout << "Change Fint (calib) from "
+                 << tgp_Fint->get(index) << " to "
+                 << tgp_F->get(index)-F_eg << " at dist: "
+                 << calib_dists[j/3] << endl;
+          } else {
+            cout << index[0] << " " << index[1] << " "
+                 << index[2] << " " << nB <<  " " << Ye << " "
+                 << T_MeV << " " << tgp_F_old->get(index) << " "
+                 << tgp_F_old->get(index)+fact*corr << " "
+                 << fact*corr << endl;
+          }
           tgp_F->get(index)+=fact*corr;
           tgp_Fint->get(index)=tgp_F->get(index)-F_eg;
         } else {
           double corr=out[0]-tgp_Fint->get(index);
-          cout << "Correcting (4) from " << tgp_Fint->get(index) << " to "
+          cout << "Change Fint (calib) from " << tgp_Fint->get(index)
+               << " to "
                << tgp_Fint->get(index)+fact*corr << " at dist: "
                << calib_dists[j/3] << endl;
           tgp_Fint->get(index)+=fact*corr;
@@ -794,7 +849,7 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
         k_max=fix_list[ifx+2];
       }
     }
-    for(size_t icx=3;icx<calib_list.size();icx+=3) {
+    for(size_t icx=0;icx<calib_list.size();icx+=3) {
       if (calib_list[icx]<i_min) {
         i_min=calib_list[icx];
       }
@@ -817,7 +872,7 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
 
     // Expand by a factor of three if we're not at the boundary
     //for(size_t ii=0;ii<window;ii++) {
-    
+
     // Expand by one unit to make sure to catch any interface problems
     if (true) {
       if (i_min>0) i_min--;
@@ -832,6 +887,71 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
     cout << "Computed j_min, j_max: " << j_min << " " << j_max << endl;
     cout << "Computed k_min, k_max: " << k_min << " " << k_max << endl;
 
+    if (false) {
+      tensor_grid3 tg3x;
+
+      // Create a mapping between index and baryon density
+      vector<double> gi, gnb;
+      for(size_t i=i_min;i<=i_max;i++) {
+        gi.push_back(i);
+        gnb.push_back(nB_grid[i]);
+      }
+      interp_vec<vector<double>> iv(gi.size(),gi,gnb,itp_steffen);
+      
+      vector<vector<double>> g(3);
+      for(double id=i_min;id<i_max+1.0e-6;id+=0.1) {
+        g[0].push_back(iv.eval(id));
+      }
+      for(size_t j=j_min;j<=j_max;j++) {
+        g[1].push_back(Ye_grid[j]);
+      }
+      for(size_t k=k_min;k<=k_max;k++) {
+        g[2].push_back(T_grid[k]);
+      }
+      vector<size_t> sz={g[0].size(),g[1].size(),g[2].size()};
+      tg3x.resize(3,sz);
+      
+      tg3x.set_grid(g);
+      for(size_t j=j_min;j<=j_max;j++) {
+        for(size_t k=k_min;k<=k_max;k++) {
+          size_t i=0;
+          for(double id=i_min;id<i_max+1.0e-6;id+=0.1) {
+            vector<size_t> ix={i,j,k};
+            vector<double> iix={id,((double)j),((double)k)};
+            //cout << i << " " << id << " " << j << " " << k << endl;
+            eval(iix,out);
+            tg3x.set(i,j-j_min,k-k_min,out[0]);
+            i++;
+          }
+        }
+      }
+
+      table_units<> tux;
+      tux.line_of_names("i j k nB Ye T F out");
+      for(size_t i=i_min;i<=i_max;i++) {
+        for(size_t j=j_min;j<=j_max;j++) {
+          for(size_t k=k_min;k<=k_max;k++) {
+            vector<size_t> ix={i,j,k};
+            vector<double> iix={((double)i),((double)j),((double)k)};
+            eval(iix,out);
+            vector<double> line={((double)i),((double)j),((double)k),
+                                 nB_grid[i],Ye_grid[j],T_grid[k],
+                                 tgp_F_old->get(ix),out[0]};
+            tux.line_of_data(line.size(),line);
+          }
+        }
+      }
+      
+      hdf_file hf;
+      hf.open_or_create("itest.o2");
+      hdf_output(hf,tg3x,"tg");
+      hdf_output(hf,tux,"tu");
+      hf.close();
+
+      cout << "Done." << endl;
+      exit(-1);
+    }
+    
     std::vector<std::string> sv2;
 
     eos_nuclei *enp2=(eos_nuclei *)enp;
@@ -848,7 +968,7 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
 
     // Update the stability and second derivatives
     enp2->stability(sv2,false);
-
+    
     // Change free energies back to original
 
     for(size_t j=0;j<fix_list.size();j+=3) {

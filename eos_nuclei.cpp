@@ -1019,7 +1019,7 @@ int eos_nuclei::beta_table(std::vector<std::string> &sv,
   }
   
   if (derivs_computed==false) {
-    cerr << "add_eg requires derivs_computed==true." << endl;
+    cerr << "beta_table requires derivs_computed==true." << endl;
     return 3;
   }
 
@@ -1263,6 +1263,47 @@ int eos_nuclei::add_eg(std::vector<std::string> &sv,
     tg_Ymu.set_grid_packed(packed);
     tg_Ymu.set_all(0.0);
   }
+
+  if (sv.size()==2) {
+    hdf_file hf;
+    tensor_grid<> uE, uP, uS, uF, umue;
+    cout << "Function eos_nuclei::add_eg() adding leptons and photons\n"
+         << "  from file " << sv[1] << "." << endl;
+    
+    hf.open(sv[1]);
+    hdf_input(hf,uE,"E");
+    hdf_input(hf,uF,"F");
+    hdf_input(hf,uP,"P");
+    hdf_input(hf,uS,"S");
+    hdf_input(hf,umue,"mue");
+    
+    for (size_t i=ilo;i<ihi;i++) {
+      for (size_t j=jlo;j<jhi;j++) {
+        for (size_t k=klo;k<khi;k++) {
+          vector<size_t> ix={i,j,k};
+          vector<double> vals={nB_grid2[i],Ye_grid2[j],T_grid2[k]};
+          tg_F.set(ix,tg_Fint.get(ix)+uF.interp_linear(vals));
+          tg_E.set(ix,tg_Eint.get(ix)+uE.interp_linear(vals));
+          tg_P.set(ix,tg_Pint.get(ix)+uP.interp_linear(vals));
+          tg_S.set(ix,tg_Sint.get(ix)+uS.interp_linear(vals));
+          tg_mue.set(ix,umue.interp_linear(vals));
+          /*
+            cout << i << " " << j << " " << k << " "
+            << vals[0] << " " << vals[1] << " " << vals[2]
+            << " " << tg_Fint.get(ix) << " "
+            << tg_F.get(ix) << endl;
+            exit(-1);
+          */
+        }
+      }
+    }
+
+    with_leptons=true;
+    cout << "Function eos_nuclei::add_eg() Done adding leptons and photons."
+         << endl;
+    
+    return 0;
+  }    
   
   elep.include_muons=include_muons;
 
@@ -1322,7 +1363,7 @@ int eos_nuclei::add_eg(std::vector<std::string> &sv,
 	tg_P.set(ix,tg_Pint.get(ix)+hc_mev_fm*elep.th.pr);
 	tg_S.set(ix,tg_Sint.get(ix)+elep.th.en/nB);
 	tg_mue.set(ix,hc_mev_fm*vdet["mue"]);
-        
+
         double np=nB*Ye;
         double nn=nB*(1.0-Ye);
         
@@ -1460,7 +1501,8 @@ int eos_nuclei::eg_table(std::vector<std::string> &sv,
 	E.set(ix,elep.th.ed/nB*hc_mev_fm);
 	P.set(ix,elep.th.pr*hc_mev_fm);
 	S.set(ix,elep.th.en/nB);
-	F.set(ix,(elep.th.ed-T_MeV*elep.th.en)/nB*hc_mev_fm);
+	F.set(ix,(elep.th.ed*hc_mev_fm-T_MeV*elep.th.en)/nB);
+        
 	if (include_muons) {
 	  Ymu.set(ix,elep.mu.n*hc_mev_fm/nB);
 	}
@@ -1475,6 +1517,12 @@ int eos_nuclei::eg_table(std::vector<std::string> &sv,
   if (include_muons) {
     hdf_output(hf,Ymu,"Ymu");
   }
+  hf.set_szt("n_nB",n_nB2);
+  hf.setd_vec("nB_grid",nB_grid2);
+  hf.set_szt("n_Ye",n_Ye2);
+  hf.setd_vec("Ye_grid",Ye_grid2);
+  hf.set_szt("n_T",n_T2);
+  hf.setd_vec("T_grid",T_grid2);
   hdf_output(hf,F,"F");
   hdf_output(hf,E,"E");
   hdf_output(hf,P,"P");
@@ -1671,7 +1719,7 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
          << "leptons and photons." << endl;
     return 2;
   }
-  
+
   bool range_mode=false;
   if (sv.size()>=7) range_mode=true;
 
@@ -1698,7 +1746,7 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
     for(size_t i=0;i<4;i++) {
       egv[i].resize(3,st);
     }
-    if (!range_mode) {
+    if (!range_mode || tg_cs2.get_rank()==0) {
       tg_cs2.resize(3,st);
     }
     tg_cs2_hom.resize(3,st);
@@ -2021,7 +2069,7 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
           2.0*en*(nn2*f_nnT/f_TT+np2*f_npT/f_TT)-en*en/f_TT)/den;
         */
         double cs_sq=(expr1-2.0*en*expr2-en*en/f_TT)/den;
-        
+
         tg_cs2.get(ix)=cs_sq;
         if (cs2_verbose>0) {
           cout << "en,f_TT,den: " << en << " " << f_TT << " " << den << endl;
@@ -2053,6 +2101,8 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
           cout << "Unphysical cs2: nB,Ye,T[MeV],cs2,cs2_hom:\n  "
                << nB << " " << Ye << " " << T_MeV << " "
                << cs_sq << " " << tg_cs2_hom.get(ix) << endl;
+          cout << "  A,Z,Fint: " << tg_A.get(ix) << " "
+               << tg_Z.get(ix) << " " << tg_Fint.get(ix) << endl;
           cs2_count++;
           i_nB_fix.push_back(i);
           i_Ye_fix.push_back(j);
@@ -5958,7 +6008,7 @@ int eos_nuclei::write_results(std::string fname) {
       hdf_output(hf,tg_Ymu,"Ymu");
     }
   }
-  
+
   if (derivs_computed) {
     hdf_output(hf,tg_Pint,"Pint");
     hdf_output(hf,tg_mun,"mun");
@@ -10650,7 +10700,7 @@ void eos_nuclei::setup_cli_nuclei(o2scl::cli &cl) {
        new o2scl::comm_option_mfptr<eos_nuclei>
        (this,&eos_nuclei::eos_deriv),o2scl::cli::comm_option_both,
        1,"","eos_nuclei","eos_deriv","doc/xml/classeos__nuclei.xml"},
-     {0,"add-eg","",0,0,"","",
+     {0,"add-eg","",0,1,"","",
       new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::add_eg),o2scl::cli::comm_option_both,
       1,"","eos_nuclei","add_eg","doc/xml/classeos__nuclei.xml"},
@@ -10750,7 +10800,7 @@ void eos_nuclei::setup_cli_nuclei(o2scl::cli &cl) {
       new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::fix_cc),o2scl::cli::comm_option_both,
       1,"","eos_nuclei","fix_cc","doc/xml/classeos__nuclei.xml"},
-     {0,"stability","",1,3,"","",
+     {0,"stability","",1,6,"","",
       new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::stability),o2scl::cli::comm_option_both,
       1,"","eos_nuclei","stability","doc/xml/classeos__nuclei.xml"},

@@ -3715,9 +3715,11 @@ int eos::point(std::vector<std::string> &sv, bool itive_com) {
     
     cout.setf(ios::showpos);
     double f_total=th2.ed-T*th2.en;
-    
-    cout << "f_total: " << f_total << " 1/fm^4 " << endl;
-    cout << "F_total: " << f_total/nB*hc_mev_fm << " MeV" << endl;
+
+    cout << "(All of these results are without electrons and photons)."
+         << endl;
+    cout << "fint_total: " << f_total << " 1/fm^4 " << endl;
+    cout << "Fint_total: " << f_total/nB*hc_mev_fm << " MeV" << endl;
     
     cout << "energy density (with rest mass): "
          << th2.ed+neutron.n*neutron.m+proton.n*proton.m

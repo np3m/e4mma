@@ -844,7 +844,7 @@ public:
       The output file has five tensor grid objects, \c F, \c E, \c P,
       \c S, and \c mue. If muons are included, then the file also
       includes \c Ymu. The electron (and muon) masses are also written
-      to the table.
+      to the table. The output file also has the nB, Ye, and T grid.
 
       This command works independent of whether or not a table
       was loaded or if a model was selected. However, if a table
@@ -943,11 +943,11 @@ public:
   */
   int point_nuclei(std::vector<std::string> &sv, bool itive_com);
 
-  /** \brief Desc
+  /** \brief Experimental results at fixed mu
 
-      args
+      Arguments here.
 
-      Desc
+      Full description here.
   */
   int point_nuclei_mu(std::vector<std::string> &sv, bool itive_com);
   

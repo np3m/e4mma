@@ -851,8 +851,8 @@ protected:
 
       <nB> <Ye> <TMeV>
 
-      Compute the EOS (without nuclei) at one point and
-      output the results to the screen.
+      Compute the EOS (without nuclei, leptons, or photons) at one
+      point and output the results to the screen.
   */
   int point(std::vector<std::string> &sv, bool itive_com);
 

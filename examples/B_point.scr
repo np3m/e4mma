@@ -22,6 +22,13 @@ eos -alt-model Skyrme NRAPR \
 eos -alt-model RMF SFHo \
 -point 0.08 0.5 5.0
 
+# For non-RMF models, the code without nuclei also works at T=0
+  
+eos -select-model 470 738 0.5 13.0 62.4 32.8 0.9 \
+-point 0.08 0.5 0.0
+eos -alt-model Skyrme NRAPR \
+-point 0.08 0.5 0.0
+
 # Return to the examples directory
 
 cd examples
