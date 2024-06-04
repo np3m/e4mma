@@ -8787,6 +8787,9 @@ int eos_nuclei::edit_data(std::vector<std::string> &sv,
     calc2.compile(value_func.c_str());
   }
 
+  table_units<> tu;
+  tu.line_of_names("inB iYe iT nB Ye T");
+
   for(int inB=0;inB<((int)n_nB2);inB++) {
     for(int iYe=0;iYe<((int)n_Ye2);iYe++) {
       for(int iT=0;iT<((int)n_T2);iT++) {
@@ -8885,65 +8888,78 @@ int eos_nuclei::edit_data(std::vector<std::string> &sv,
           }
           
 	  if (sv.size()>3) {
-	    double val2=calc2.eval(&vars);
-	    if (tensor_to_change=="flag") {
-	      tg_flag.get(ix)=val2;
-	    } else if (tensor_to_change=="Fint") {
-	      tg_Fint.get(ix)=val2;
-	    } else if (tensor_to_change=="Z") {
-	      tg_Z.get(ix)=val2;
-	    } else if (tensor_to_change=="A") {
-	      tg_A.get(ix)=val2;
-	    } else if (tensor_to_change=="log_xn") {
-	      tg_log_xn.get(ix)=val2;
-	    } else if (tensor_to_change=="log_xp") {
-	      tg_log_xp.get(ix)=val2;
-	    } else if (tensor_to_change=="Xn") {
-	      tg_Xn.get(ix)=val2;
-	    } else if (tensor_to_change=="Xp") {
-	      tg_Xp.get(ix)=val2;
-	    } else if (tensor_to_change=="Xalpha") {
-	      tg_Xalpha.get(ix)=val2;
-	    } else if (tensor_to_change=="Xnuclei") {
-	      tg_Xnuclei.get(ix)=val2;
-	    } else if (tensor_to_change=="Xd") {
-	      tg_Xd.get(ix)=val2;
-	    } else if (tensor_to_change=="Xt") {
-	      tg_Xt.get(ix)=val2;
-	    } else if (tensor_to_change=="XHe3") {
-	      tg_XHe3.get(ix)=val2;
-	    } else if (tensor_to_change=="XLi4") {
-	      tg_XLi4.get(ix)=val2;
-	    } else if (tensor_to_change=="A_min") {
-	      tg_A_min.get(ix)=val2;
-	    } else if (tensor_to_change=="A_max") {
-	      tg_A_max.get(ix)=val2;
-	    } else if (tensor_to_change=="NmZ_min") {
-	      tg_NmZ_min.get(ix)=val2;
-	    } else if (tensor_to_change=="NmZ_max") {
-	      tg_NmZ_max.get(ix)=val2;
-	    } else if (tensor_to_change=="Ymu") {
-	      tg_Ymu.get(ix)=val2;
-	    } else if (tensor_to_change=="Eint") {
-	      tg_Eint.get(ix)=val2;
-	    } else if (tensor_to_change=="Pint") {
-	      tg_Pint.get(ix)=val2;
-	    } else if (tensor_to_change=="Sint") {
-	      tg_Sint.get(ix)=val2;
-	    } else if (tensor_to_change=="F") {
-	      tg_F.get(ix)=val2;
-	    } else if (tensor_to_change=="E") {
-	      tg_E.get(ix)=val2;
-	    } else if (tensor_to_change=="P") {
-	      tg_P.get(ix)=val2;
-	    } else if (tensor_to_change=="S") {
-	      tg_S.get(ix)=val2;
-	    } else if (tensor_to_change=="mue") {
-	      tg_mue.get(ix)=val2;
-	    } else {
-	      cerr << "Invalid value for tensor to change." << endl;
-	      return 3;
-	    }
+
+            if (tensor_to_change=="list") {
+
+              if (count<1e6) {
+                vector<double> line={((double)inB),((double)iYe),
+                                     ((double)iT),nB_grid2[inB],
+                                     Ye_grid2[iYe],T_grid2[iT]};
+                tu.line_of_data(line.size(),line);
+              }
+              
+            } else {
+              
+              double val2=calc2.eval(&vars);
+              if (tensor_to_change=="flag") {
+                tg_flag.get(ix)=val2;
+              } else if (tensor_to_change=="Fint") {
+                tg_Fint.get(ix)=val2;
+              } else if (tensor_to_change=="Z") {
+                tg_Z.get(ix)=val2;
+              } else if (tensor_to_change=="A") {
+                tg_A.get(ix)=val2;
+              } else if (tensor_to_change=="log_xn") {
+                tg_log_xn.get(ix)=val2;
+              } else if (tensor_to_change=="log_xp") {
+                tg_log_xp.get(ix)=val2;
+              } else if (tensor_to_change=="Xn") {
+                tg_Xn.get(ix)=val2;
+              } else if (tensor_to_change=="Xp") {
+                tg_Xp.get(ix)=val2;
+              } else if (tensor_to_change=="Xalpha") {
+                tg_Xalpha.get(ix)=val2;
+              } else if (tensor_to_change=="Xnuclei") {
+                tg_Xnuclei.get(ix)=val2;
+              } else if (tensor_to_change=="Xd") {
+                tg_Xd.get(ix)=val2;
+              } else if (tensor_to_change=="Xt") {
+                tg_Xt.get(ix)=val2;
+              } else if (tensor_to_change=="XHe3") {
+                tg_XHe3.get(ix)=val2;
+              } else if (tensor_to_change=="XLi4") {
+                tg_XLi4.get(ix)=val2;
+              } else if (tensor_to_change=="A_min") {
+                tg_A_min.get(ix)=val2;
+              } else if (tensor_to_change=="A_max") {
+                tg_A_max.get(ix)=val2;
+              } else if (tensor_to_change=="NmZ_min") {
+                tg_NmZ_min.get(ix)=val2;
+              } else if (tensor_to_change=="NmZ_max") {
+                tg_NmZ_max.get(ix)=val2;
+              } else if (tensor_to_change=="Ymu") {
+                tg_Ymu.get(ix)=val2;
+              } else if (tensor_to_change=="Eint") {
+                tg_Eint.get(ix)=val2;
+              } else if (tensor_to_change=="Pint") {
+                tg_Pint.get(ix)=val2;
+              } else if (tensor_to_change=="Sint") {
+                tg_Sint.get(ix)=val2;
+              } else if (tensor_to_change=="F") {
+                tg_F.get(ix)=val2;
+              } else if (tensor_to_change=="E") {
+                tg_E.get(ix)=val2;
+              } else if (tensor_to_change=="P") {
+                tg_P.get(ix)=val2;
+              } else if (tensor_to_change=="S") {
+                tg_S.get(ix)=val2;
+              } else if (tensor_to_change=="mue") {
+                tg_mue.get(ix)=val2;
+              } else {
+                cerr << "Invalid value for tensor to change." << endl;
+                return 3;
+              }
+            }
 	  }
 	}
       }
@@ -8952,6 +8968,14 @@ int eos_nuclei::edit_data(std::vector<std::string> &sv,
   
   cout << "Matched " << count << "/" << n_nB2*n_Ye2*n_T2
        << " entries." << endl;
+
+  if (sv.size()>=4 && sv[2]=="list") {
+    std::string outfile=sv[3];
+    hdf_file hf;
+    hf.open_or_create(outfile);
+    hdf_output(hf,tu,"edit-data");
+    hf.close();
+  }
   
   return 0;
 }
@@ -11002,10 +11026,14 @@ void eos_nuclei::setup_cli_nuclei(o2scl::cli &cl) {
   cl.xml_subs.push_back(" ");
   cl.xml_subs.push_back("<computeroutput> ");
   cl.xml_subs.push_back(" ");
+  cl.xml_subs.push_back("<computeroutput>");
+  cl.xml_subs.push_back("");
   cl.xml_subs.push_back(" </computeroutput>");
   cl.xml_subs.push_back(" ");
   cl.xml_subs.push_back("</computeroutput> ");
   cl.xml_subs.push_back(" ");
+  cl.xml_subs.push_back("</computeroutput>");
+  cl.xml_subs.push_back("");
   // Just ignore the function references
   cl.xml_subs.push_back("<ref>");
   cl.xml_subs.push_back("");
