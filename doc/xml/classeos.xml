@@ -1193,7 +1193,7 @@
         <location file="/home/awsteiner/wcs/e4mma/eos.h" line="621" column="25" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="621" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1afead2a3442d9ad320bcce5043a6a801e" prot="protected" static="no" mutable="no">
-        <type><ref refid="namespaceo2scl_1abe7ceb41876bd41c87b259f6defe3e4a" kindref="member" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag">o2scl::fermion_rel</ref></type>
+        <type><ref refid="namespaceo2scl_1add569cb4b93401520c76945543de101d" kindref="member" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag">o2scl::fermion_rel</ref></type>
         <definition>o2scl::fermion_rel eos::relf</definition>
         <argsstring></argsstring>
         <name>relf</name>
@@ -2378,7 +2378,7 @@
         </briefdescription>
         <detaileddescription>
 <para>&lt;nB&gt; &lt;Ye&gt; &lt;TMeV&gt;</para>
-<para>Compute the EOS (without nuclei) at one point and output the results to the screen. </para>
+<para>Compute the EOS (without nuclei, leptons, or photons) at one point and output the results to the screen. </para>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
@@ -3218,14 +3218,10 @@
         <link refid="classo2scl_1_1fermion__rel__cdf25" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
         <childnode refid="48" relation="public-inheritance">
         </childnode>
-        <childnode refid="48" relation="public-inheritance">
-        </childnode>
       </node>
       <node id="45">
         <label>o2scl::fermion_rel_ld</label>
         <link refid="classo2scl_1_1fermion__rel__ld" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
-        <childnode refid="46" relation="public-inheritance">
-        </childnode>
         <childnode refid="46" relation="public-inheritance">
         </childnode>
       </node>

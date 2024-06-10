@@ -3280,7 +3280,7 @@
         </briefdescription>
         <detaileddescription>
 <para>&lt;output file&gt;</para>
-<para>Construct a file consisting only of the electron and photon EOS. The grid is determined by the current grid specification. Muons are included if <ref refid="classeos_1adcd6aa9ad3fbe21200c70c877374aba9" kindref="member">eos::include_muons</ref> is set to true. The output file has five tensor grid objects, <computeroutput>F</computeroutput>, <computeroutput>E</computeroutput>, <computeroutput>P</computeroutput>, <computeroutput>S</computeroutput>, and <computeroutput>mue</computeroutput>. If muons are included, then the file also includes <computeroutput>Ymu</computeroutput>. The electron (and muon) masses are also written to the table.</para>
+<para>Construct a file consisting only of the electron and photon EOS. The grid is determined by the current grid specification. Muons are included if <ref refid="classeos_1adcd6aa9ad3fbe21200c70c877374aba9" kindref="member">eos::include_muons</ref> is set to true. The output file has five tensor grid objects, <computeroutput>F</computeroutput>, <computeroutput>E</computeroutput>, <computeroutput>P</computeroutput>, <computeroutput>S</computeroutput>, and <computeroutput>mue</computeroutput>. If muons are included, then the file also includes <computeroutput>Ymu</computeroutput>. The electron (and muon) masses are also written to the table. The output file also has the nB, Ye, and T grid.</para>
 <para>This command works independent of whether or not a table was loaded or if a model was selected. However, if a table is loaded when this command is invoked, the current table is cleared. </para>
         </detaileddescription>
         <inbodydescription>
@@ -3456,11 +3456,11 @@ F, E, P, and S, are also available for comparisons. Any current &quot;+ EOS data
           <declname>itive_com</declname>
         </param>
         <briefdescription>
-<para>Desc. </para>
+<para>Experimental results at fixed mu. </para>
         </briefdescription>
         <detaileddescription>
-<para>args</para>
-<para>Desc </para>
+<para>Arguments here.</para>
+<para>Full description here. </para>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
@@ -4690,14 +4690,10 @@ file&gt;, or &quot;point&quot; &lt;output file&gt; &lt;nB&gt; &lt;Ye&gt; &lt;T&g
         <link refid="classo2scl_1_1fermion__rel__cdf25" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
         <childnode refid="49" relation="public-inheritance">
         </childnode>
-        <childnode refid="49" relation="public-inheritance">
-        </childnode>
       </node>
       <node id="46">
         <label>o2scl::fermion_rel_ld</label>
         <link refid="classo2scl_1_1fermion__rel__ld" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
-        <childnode refid="47" relation="public-inheritance">
-        </childnode>
         <childnode refid="47" relation="public-inheritance">
         </childnode>
       </node>
