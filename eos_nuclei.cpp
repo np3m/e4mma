@@ -2471,7 +2471,7 @@ double eos_nuclei::compute_fr_nuclei
          fr_nuc=0.0;
          en_nuc=0.0;
        } else {
-         cout << "Nuclear free energy not finite in eos_fixed_dist()."
+         cout << "Nuclear free energy not finite in compute_fr_nuclei()."
                << endl;
          cout << nuclei[i].n << " " << nuclei[i].be << " " << lambda
               << " " << vomega[i] << endl;
