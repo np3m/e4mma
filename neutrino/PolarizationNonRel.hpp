@@ -60,6 +60,8 @@ namespace nuopac {
 
     /// These should all be in units of 1/MeV^2
     double xfnn, xfnp, xfpp, xgnn, xgnp, xgpp, xvf, xvgt, xn_proton;
+    // w1xxx_part1 functions should be in units of 1/MeV^2, w1xxx_part2 and w2 functions should be in units of 1/MeV^4, since they will be multiplied by q^2
+    double xw1cc_vec_part1,xw1cc_vec_part2,xw1cc_ax_part1,xw1cc_ax_part2,xw2cc_vec,xw2cc_ax;
 
   public:
 
@@ -70,6 +72,12 @@ namespace nuopac {
    
     std::array<double, 4> CalculateBasePolarizations(double q0,
                                                      double q) const;
+
+    double CalculateBaseBeta1(double q0, double q) const;
+    double CalculateBaseBeta2(double q0, double q) const;
+    double CalculateBaseBeta3(double q0, double q) const;
+    double CalculateBaseBeta4(double q0, double q) const;
+    double CalculateBaseBeta5(double q0, double q) const;
     
     std::array<double, 4> CalculateBasePolarizationsNeutron
     (double q0, double q) const;
@@ -79,6 +87,11 @@ namespace nuopac {
     
     double GetImPI( double q0, double q) const;
     double GetRePI(  double q0, double q) const;
+    double GetRebeta1(  double q0, double q) const;
+    double GetRebeta2(  double q0, double q) const;
+    double GetRebeta3(  double q0, double q) const;
+    double GetRebeta4(  double q0, double q) const;
+    double GetRebeta5(  double q0, double q) const;
     double GetRePIn( double q0, double q) const;
     double GetRePIp(  double q0, double q) const;
     void PrintGetImPI2(  double q0, double q) const;
@@ -118,6 +131,17 @@ namespace nuopac {
       xn_proton=n_proton;
       return;
     }
+
+    void set_BSresidual(double w1cc_vec_part1,double w1cc_vec_part2,double w1cc_ax_part1,double w1cc_ax_part2,double w2cc_vec,double w2cc_ax) {
+      xw1cc_vec_part1=w1cc_vec_part1;
+      xw1cc_vec_part2=w1cc_vec_part2;
+      xw1cc_ax_part1=w1cc_ax_part1;
+      xw1cc_ax_part2=w1cc_ax_part2;
+      xw2cc_vec=w2cc_vec;
+      xw2cc_ax=w2cc_ax;     
+      return;
+    }
+
   
   protected:
   
@@ -139,7 +163,7 @@ namespace nuopac {
     (double q0, double q,
      Tensor<double>* piVV, Tensor<double>* piAA, Tensor<double>* piTT, 
      Tensor<double>* piVA, Tensor<double>* piVT, Tensor<double>* piAT,
-     double &piLRe, double &piRPAvec, double &piRPAax, double &piL) const;
+     double &piLIm, double &piLRe, double &piRPAvec, double &piRPAax, double &piRPAvecBS, double &piRPAaxBS, double &piL, double &betaIm1, double &betaIm2, double &betaIm3, double &betaIm4, double &betaIm5, double &betaRe1, double &betaRe2, double &betaRe3, double &betaRe4, double &betaRe5) const;
 
     
     void SetLeptonTensor(double E1, double q0, double q,

@@ -1,0 +1,231 @@
+Going to beta-eq test: 
+Loading: fid_6_30_21.o2
+Function read_results(): rank 0 reading file fid_6_30_21.o2
+Reading n_nB.
+Reading n_Ye.
+Reading n_T.
+Reading nB_grid.
+Reading Ye_grid.
+Reading T_grid.
+Reading strange_axis.
+Reading baryons_only.
+Reading with_leptons.
+Reading derivs_computed.
+Reading include_detail.
+Reading include_muons.
+Reading alg_mode.
+Reading rmf_fields.
+Reading log_xn.
+Reading log_xp.
+Reading Z.
+Reading A.
+Reading flag.
+Reading Fint.
+Reading Eint.
+Reading Sint.
+Reading Xn.
+Reading Xp.
+Reading Xalpha.
+Reading Xnuclei.
+Reading Xd.
+Reading Xt.
+Reading XHe3.
+Reading XLi4.
+Reading A_min.
+Reading A_max.
+Reading NmZ_min.
+Reading NmZ_max.
+Reading mue.
+Reading Pint.
+Reading mun.
+Reading mup.
+Reading F.
+Reading E.
+Reading P.
+Reading S.
+Function read_results(): rank 0 done reading file.
+j: 0
+t0,t1: -2.719723e+03 4.176430e+02
+t2,t3: -6.668689e+01 1.504193e+04
+x0,x1: 1.615410e-01 -4.798642e-02
+x2,x3: 2.717047e-02 1.361093e-01
+alpha: 1.441648e-01
+iYe: 4 
+tg_log_xn, tg_log_xp: -3.931358e-02 -1.647321e+00
+A_min_best,  A_max_best, NmZ_min_best, NmZ_max_best: 5 600 -200 200
+***************k= 0****************************
+ret2,log_xn,log_xp,Z,N,A,Z/A:
+  0 -3.641720e-02 -1.575975e+00 1.039726e+00 1.646450e+00 2.686176e+00 3.870655e-01
+serial proton/neutron density: 5.268955e-04 1.825082e-02
+serial proton/neutron mu: -1.142972e-02 -2.862120e-01
+Ye, mue if beta equilibrium (with rest mass) [MeV], mue (with rest mass): 5.000000e-02 5.551529e+01 5.567463e+01
+*****************serial Env Setting**************
+Using nB = 2.000000e-02 1/fm^3 and T = 1.000000e+01 MeV and E1= 5.000000e+00 MeV for
+  ipoint = 0 out of total 1
+nn,np,ne, abundance of heavy nuclei: 1.825082e-02 5.268955e-04 1.000000e-03 6.720016e-04 ipoint = 0 out of total 1
+mun: -2.255392e+00 ipoint = 0 out of total 
+mup: -5.647735e+01 ipoint = 0 out of total 
+mue (without rest mass), mue (at beta, with rest mass): 5.567463e+01 5.551529e+01 ipoint = 0 out of total 
+U2 [MeV]: -8.987440e+00 ipoint = 0 out of total 
+U4 [MeV]: -2.421378e+01 ipoint = 0 out of total 
+msn: 9.140291e+02 MeV ipoint = 0 out of total 
+msp: 8.719289e+02 MeV ipoint = 0 out of total 
+Round two.
+MC ret,val,err: 0 1.627886e-18 4.428683e-22 2.720512e-04
+Round two.
+MC ret,val,err: 0 9.944072e-19 3.134285e-22 3.151913e-04
+MC ret,val,err: 0 1.216657e-18 1.193740e-21 9.811643e-04
+Round two.
+MC ret,val,err: 0 6.050747e-19 1.029157e-22 1.700875e-04
+Round two.
+MC ret,val,err: 0 8.442115e-18 1.760579e-21 2.085471e-04
+Round two.
+MC ret,val,err: 0 4.236998e-18 8.612395e-22 2.032664e-04
+MC ret,val,err: 0 1.020693e-17 7.884691e-21 7.724843e-04
+MC ret,val,err: 0 4.419897e-18 2.941522e-21 6.655183e-04
+Round two.
+MC ret,val,err: 0 1.765830e-18 4.861734e-22 2.753229e-04
+Round two.
+MC ret,val,err: 0 1.065229e-18 3.352940e-22 3.147624e-04
+MC ret,val,err: 0 1.328535e-18 1.141998e-21 8.595914e-04
+Round two.
+MC ret,val,err: 0 6.464083e-19 1.364297e-22 2.110580e-04
+MC ret,val,err: 0 9.102736e-18 8.935118e-21 9.815859e-04
+Round two.
+MC ret,val,err: 0 4.658513e-18 1.006527e-21 2.160619e-04
+MC ret,val,err: 0 1.092830e-17 7.294576e-21 6.674944e-04
+MC ret,val,err: 0 4.851770e-18 3.177068e-21 6.548266e-04
+Round two.
+Round three.
+Still inaccurate.
+MC ret,val,err: 0 4.193425e-33 4.965041e-36 1.184006e-03
+Round two.
+Round three.
+MC ret,val,err: 0 8.006067e-18 7.126279e-21 8.901099e-04
+Round two.
+MC ret,val,err: 0 1.272407e-31 7.024723e-35 5.520815e-04
+Round two.
+MC ret,val,err: 0 7.464540e-17 7.232182e-20 9.688718e-04
+Round two.
+Round three.
+Still inaccurate.
+MC ret,val,err: 0 6.809634e-33 7.883442e-36 1.157690e-03
+Round two.
+MC ret,val,err: 0 2.335149e-16 3.113674e-20 1.333394e-04
+Round two.
+MC ret,val,err: 0 1.859935e-31 9.939647e-35 5.344084e-04
+MC ret,val,err: 0 1.065759e-15 7.468438e-19 7.007623e-04
+MC ret,val,err: 0 0.000000e+00 0.000000e+00 -nan
+MC ret,val,err: 0 0.000000e+00 0.000000e+00 -nan
+MC ret,val,err: 0 0.000000e+00 0.000000e+00 -nan
+MC ret,val,err: 0 0.000000e+00 0.000000e+00 -nan
+MC ret,val,err: 0 0.000000e+00 0.000000e+00 -nan
+MC ret,val,err: 0 0.000000e+00 0.000000e+00 -nan
+MC ret,val,err: 0 0.000000e+00 0.000000e+00 -nan
+MC ret,val,err: 0 0.000000e+00 0.000000e+00 -nan
+Environment setting: 0 out of total 1
+Using nB = 2.000000e-02 1/fm^3 and T = 1.000000e+01 MeV and E1= 5.000000e+00 MeV and Ye= 5.000000e-02for
+  ipoint = 0 out of total 1
+nn,np,ne: 1.825082e-02 5.268955e-04 1.000000e-03 ipoint = 0 out of total 1
+mun: -2.255392e+00 ipoint = 0 out of total 
+mup: -5.647735e+01 ipoint = 0 out of total 
+mue: 5.567463e+01 ipoint = 0 out of total 
+U2 [MeV]: -8.987440e+00 ipoint = 0 out of total 
+U4 [MeV]: -2.421378e+01 ipoint = 0 out of total 
+msn: 9.140291e+02 MeV ipoint = 0 out of total 
+msp: 8.719289e+02 MeV ipoint = 0 out of total 
+nn: 1.825082e-02 ipoint = 0 out of total 
+np: 5.268955e-04 ipoint = 0 out of total 
+g,dgdnn [fm^3],dgdnp [fm^3]: 0.000000e+00 0.000000e+00 0.000000e+00 ipoint = 0 out of total 
+Landau-Migdal parameters: ipoint = 0 out of total 
+fnn [1/MeV^2], fnn_dg0 [1/MeV^2], fnp [1/MeV^2], fnp_dg0 [1/MeV^2], fpp [1/MeV^2], fpp_dg0 [1/MeV^2]: -4.536197e-05 -4.536197e-05 -7.763823e-05 -7.763823e-05 2.696426e-05 2.696426e-05 ipoint = 0 out of total 
+gnn [1/MeV^2], gnp [1/MeV^2], gpp [1/MeV^2]: 5.800877e-05 -1.844793e-05 -3.024112e-05 ipoint = 0 out of total 
+vf_old [1/MeV^2], vf [1/MeV^2], vf_dg0 [1/MeV^2], vgt_old [1/MeV^2], vgt [1/MeV^2]: 4.819913e-05 1.074812e-04 1.074812e-04 7.645670e-05 7.455173e-05 ipoint = 0 out of total 
+NC calculation setting: ipoint = 0 out of total 
+mu2 [MeV], mu4 [MeV], mu3 [MeV] (without rest mass): -2.255392e+00 -5.647735e+01 0.000000e+00 ipoint = 0 out of total 
+NC neutrino IMFP: ipoint = 0 out of total 
+neutral current, vector part, no dgdn terms: 1.328907e-06 ratio of crx/crx_free (nc vec): 6.911127e-01 ipoint = 0 out of total 
+neutral current, TRANSPORT vector part, no dgdn terms: 9.232044e-07 ratio of crx/crx_free (nc vec Tran): 7.201837e-01 ipoint = 0 out of total 
+neutral current, axial part: 6.425433e-06 ratio of crx/crx_free (nc ax): 7.155908e-01 ipoint = 0 out of total 
+neutral current, TRANSPORT axial part: 7.412481e-06 ratio of crx/crx_free (nc ax Tran): 7.429651e-01 ipoint = 0 out of total 
+neutral current, vector part, no RPA: 1.434704e-06 ratio of crx/crx_free (nc vec norpa): 7.461336e-01 ipoint = 0 out of total 
+neutral current, TRANSPORT vector part, no RPA: 1.000848e-06 ratio of crx/crx_free (nc vec norpa Tran): 7.807530e-01 ipoint = 0 out of total 
+neutral current, axial part, no RPA: 6.973830e-06 ratio of crx/crx_free (nc ax norpa): 7.766649e-01 ipoint = 0 out of total 
+neutral current, TRANSPORT axial part, no RPA: 7.996913e-06 ratio of crx/crx_free (nc ax norpa Tran): 8.015436e-01 ipoint = 0 out of total 
+CC calculation setting (just change mu3): ipoint = 0 out of total 
+Mu3: 5.516363e+01 ipoint = 0 out of total 
+CC neutrino IMFP: ipoint = 0 out of total 
+charged current, vector part, no dgdn terms: 4.057259e-06 ratio of crx/crx_free (cc vec): 3.333233e-01 ipoint = 0 out of total 
+charged current, axial part: 3.782828e-05 ratio of crx/crx_free (cc ax): 6.847278e-01 ipoint = 0 out of total 
+charged current, vector part, no RPA: 1.183391e-04 ratio of crx/crx_free (cc vec norpa): 9.722120e+00 ipoint = 0 out of total 
+charged current, axial part, no RPA: 5.400980e-04 ratio of crx/crx_free (cc ax norpa): 9.776288e+00 ipoint = 0 out of total 
+CC antinu calculation setting: ipoint = 0 out of total 
+U2 (antinu) [MeV]: -2.421378e+01 ipoint = 0 out of total 
+U4 (antinu) [MeV]: -8.987440e+00 ipoint = 0 out of total 
+mu2 [MeV], mu4 [MeV], mu3 [MeV] (without rest mass): -5.647735e+01 -2.255392e+00 -5.516363e+01 ipoint = 0 out of total 
+ vf_antinu_dg0 [1/MeV^2], vgt_antinu [1/MeV^2]:  2.939758e-05 -9.888209e-06 ipoint = 0 out of total 
+CC antinu IMFP: ipoint = 0 out of total 
+charged current, vector part, no dgdn terms: 0.000000e+00 ratio of crx/crx_free (cc vec antinu): 0.000000e+00 ipoint = 0 out of total 
+charged current, axial part: 0.000000e+00 ratio of crx/crx_free (cc ax antinu): 0.000000e+00 ipoint = 0 out of total 
+charged current, vector part, no RPA: 0.000000e+00 ratio of crx/crx_free (cc vec antinu norpa): 0.000000e+00 ipoint = 0 out of total 
+charged current, axial part, no RPA: 0.000000e+00 ratio of crx/crx_free (cc ax antinu norpa): 0.000000e+00 ipoint = 0 out of total 
+i_ns 4.700000e+02
+i_skyrme 7.380000e+02
+qmc_alpha 5.000000e-01
+qmc_a 1.300000e+01
+phi 9.000000e-01
+t0 -2.719723e+03
+t1 4.176430e+02
+t2 -6.668689e+01
+t3 1.504193e+04
+x0 1.615410e-01
+x1 -4.798642e-02
+x2 2.717047e-02
+x3 1.361093e-01
+epsilon 1.441648e-01
+nB_0 <not present>
+nn_0 <not present>
+np_0 <not present>
+g_0 <not present>
+dgdnn_0 <not present>
+dgdnp_0 <not present>
+msn_0 <not present>
+msp_0 <not present>
+mun_0 <not present>
+mup_0 <not present>
+mu_n_nonint_0 <not present>
+mu_p_nonint_0 <not present>
+U2_0 <not present>
+U4_0 <not present>
+fnn_sk_0 <not present>
+fpp_sk_0 <not present>
+fnp_sk_0 <not present>
+gnn_sk_0 <not present>
+gpp_sk_0 <not present>
+gnp_sk_0 <not present>
+fnn_virial_0 <not present>
+fpp_virial_0 <not present>
+fnp_virial_0 <not present>
+gnn_virial_0 <not present>
+gpp_virial_0 <not present>
+gnp_virial_0 <not present>
+fnn_0 <not present>
+fpp_0 <not present>
+fnp_0 <not present>
+fnn_dg0_0 <not present>
+fpp_dg0_0 <not present>
+fnp_dg0_0 <not present>
+gnn_0 <not present>
+gpp_0 <not present>
+gnp_0 <not present>
+vf_0 <not present>
+vf_dg0_0 <not present>
+vgt_0 <not present>
+nc_vec_imfp_0 <not present>
+nc_vec_imfp_dg0_0 <not present>
+nc_axvec_imfp_0 <not present>
+cc_vec_imfp_dg0_0 <not present>
+cc_axvec_imfp_0 <not present>
+terminate called after throwing an instance of 'o2scl::exc_invalid_argument'
+  what():  Error einval in file eos_nuclei.cpp at line 13042.
+  Mismatch of columns.

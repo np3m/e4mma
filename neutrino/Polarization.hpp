@@ -127,13 +127,13 @@ namespace nuopac {
     /// electron/neutrino scattering angle mu13 integrated over) with
     /// the medium as a function of neutrino energy E1
     void CalculateDGamDq0l(double E1, double q0, double* S0,
-                           double* S1) const;
+                           double* S1, bool pnm=false);
 
     /// Calculate the transport inverse mean free path (opacity) for a
     /// neutrino of energy E1 assuming the neutrino distribution
     /// function is given by the equilibrium distribution function of
     /// particle 3
-    double CalculateTransportInverseMFP(double E1) const;
+    double CalculateTransportInverseMFP(double E1, bool pnm=false);
   
     /// Calculate the inverse mean free path for a neutrino of energy E1  
     double CalculateInverseMFP(double E1, bool pnm=false);
@@ -156,8 +156,12 @@ namespace nuopac {
      */
     double GetResponse_mu(double E1, double q0, double x, double delta,
                           double avg, bool pnm=false);
-
+    
     /** \brief Desc 
+     */
+    double GetResponse_mu1(double E1, double q0, double x, double delta,
+                          double avg, bool pnm=false);
+    /** \brief Desc
      */
     double dgamdq0_intl(double E1, double x, double estar,
                         int sign, bool pnm=false);
@@ -189,22 +193,22 @@ namespace nuopac {
       // necessary to suppress noise at larger q_0
       
       //orig one
-      if (qa2t > pow(st.M2 - st.M4, 2)*0.0) return {0.0, 0.0, 0.0, 0.0};
+     // if (qa2t > pow(st.M2 - st.M4, 2)*0.0) return {0.0, 0.0, 0.0, 0.0};
       
-      if (qa2t < 1.e-1 && qa2t >= 0.0) return {0.0, 0.0, 0.0, 0.0}; 
-      fp_t beta = 1.0 + (st.M2*st.M2 - st.M4*st.M4)/qa2t;//orig
+     // if (qa2t < 1.e-1 && qa2t >= 0.0) return {0.0, 0.0, 0.0, 0.0}; 
+     // fp_t beta = 1.0 + (st.M2*st.M2 - st.M4*st.M4)/qa2t;//orig
       
-     fp_t arg = beta*beta - 4.0*st.M2*st.M2/qa2t;
-      if (arg<0.0) return {0.0, 0.0, 0.0, 0.0};
-      fp_t em;
-      if (-0.5*beta*q0t + 0.5*q*sqrt(arg)>st.M2) {
-        em=-0.5*beta*q0t + 0.5*q*sqrt(arg);
-      } else {
-        em=st.M2;
-      }
+    // fp_t arg = beta*beta - 4.0*st.M2*st.M2/qa2t;
+     // if (arg<0.0) return {0.0, 0.0, 0.0, 0.0};
+     // fp_t em;
+    //  if (-0.5*beta*q0t + 0.5*q*sqrt(arg)>st.M2) {
+    //    em=-0.5*beta*q0t + 0.5*q*sqrt(arg);
+    //  } else {
+    //    em=st.M2;
+    //  }
       //fp_t em = std::max(-0.5*beta*q0t + 0.5*q*sqrt(arg), st.M2);
-      fp_t delta2 = (st.Mu2 - st.U2 - em)/st.T;
-      fp_t delta4 = (st.Mu4 - st.U4 - em - q0t)/st.T;//orig one
+     // fp_t delta2 = (st.Mu2 - st.U2 - em)/st.T;
+     // fp_t delta4 = (st.Mu4 - st.U4 - em - q0t)/st.T;//orig one
       
       // following is the new em completely consistent with Redddy's
       // thesis, for non-rel+interacting gas
@@ -213,8 +217,8 @@ namespace nuopac {
       fp_t c=q0+st.U2-st.U4-q*q/(2*st.M4);
       //the minimum E2 for NC reaction
       //fp_t emNC=std::max((-c*st.M2/q)*(-c*st.M2/q)/(2*st.M2),0.0); 
-      fp_t emNC=(-c*st.M2/q)*(-c*st.M2/q)/(2*st.M2);
-      if (emNC>0.0) emNC=0.0;
+     // fp_t emNC=(-c*st.M2/q)*(-c*st.M2/q)/(2*st.M2);
+     // if (emNC>0.0) emNC=0.0;
           
       fp_t argCC=1+2*chi*st.M4*c/(q*q);
       if (argCC<0.0) return {0.0, 0.0, 0.0, 0.0};
@@ -225,8 +229,8 @@ namespace nuopac {
       fp_t emaxCC=2*q*q/(chi*chi)*(1+chi*st.M4*c/
                                           (q*q)+sqrt(argCC))/(2*st.M2); 
       
-      fp_t delta2NC=(st.Mu2-st.U2-emNC)/st.T;
-      fp_t delta4NC=(st.Mu4-st.U4-emNC-q0t)/st.T;
+     // fp_t delta2NC=(st.Mu2-st.U2-emNC)/st.T;
+     // fp_t delta4NC=(st.Mu4-st.U4-emNC-q0t)/st.T;
       
       fp_t delta2minCC=(st.Mu2-st.U2-eminCC)/st.T;
       fp_t delta4minCC=(st.Mu4-st.U4-eminCC-q0t)/st.T;
@@ -240,10 +244,10 @@ namespace nuopac {
       // Under non-degenerate conditions (i.e. delta2, delta4 << 0), 
       // Gamma0 = Gamma1 = 0.5*Gamma2 
       // This is exact 
-      fp_t Gamma0 = Fermi0(delta2) - Fermi0(delta4);
+     // fp_t Gamma0 = Fermi0(delta2) - Fermi0(delta4);
       
       // reddy nc current
-      fp_t xiNC=Fermi0(-delta2NC) - Fermi0(-delta4NC);
+     // fp_t xiNC=Fermi0(-delta2NC) - Fermi0(-delta4NC);
       //Reddy cc current
       fp_t ximinCC=Fermi0(-delta2minCC) - Fermi0(-delta4minCC);
       //Reddy cc current
@@ -267,7 +271,7 @@ namespace nuopac {
       if (integral_debug) {
         std::cout << "XX: " << q << " " << q0 << " " << st.M2 << " " << st.M4
                   << " "
-                  << em << " "
+                  << " "
                   << delta2minCC << " " << ximinCC-ximaxCC << " "
                   << tempy << std::endl;
       }
@@ -287,9 +291,15 @@ namespace nuopac {
         pow(2.0*o2scl_const::pi,3)/16.0;
       fp_t a;
       if (current==1) {
+	if (abs(st.Mu4-st.Mu2-q0)<1.0e-15){a=E1*1.0e-15/st.T; std::cout<<"Be Carefule! q0 meets mu4-mu2. it is close to sinqularity!"<<std::endl;}
+	else {
         a=E1*(1.0-exp((st.Mu4-st.Mu2-q0)/st.T));
+	}
       } else {
+	if (abs(q0)<1.0e-15){a=E1*1.0e-15/st.T; std::cout<<"Be Carefule! q0 meets 0.0. it is close to sinqularity!"<<std::endl;}
+        else {
         a=E1*(1.0-exp((-q0)/st.T));
+	}
       }
       if (doBlock) p3 *= 1.0 - 1.0/(exp((E1-q0-st.Mu3)/st.T) + 1.0);
       return fac*p3/a;
@@ -350,8 +360,8 @@ namespace nuopac {
     /// Adaptive integrator with singularities
     o2scl::inte_qags_gsl<> qags;
     
-    /// Desc
-    o2scl::inte_adapt_cern<> iac;
+    // Desc
+   // o2scl::inte_adapt_cern<> iac;
 
     /// Adaptive integrator
     o2scl::inte_qag_gsl<> qag;
@@ -422,6 +432,11 @@ namespace nuopac {
     double integrand_mc(size_t ndim,
                         const boost::numeric::ublas::vector<double> &xi,
                         void *fdata);
+
+    double integrand_mc1(size_t ndim,
+                        const boost::numeric::ublas::vector<double> &xi,
+                        void *fdata);
+
     
   };
 

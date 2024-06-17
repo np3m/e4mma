@@ -18,6 +18,7 @@
 
   -------------------------------------------------------------------
 */
+#include <o2scl/invert.h>
 #include "eos.h"
 
 #include <o2scl/xml.h>
@@ -45,7 +46,8 @@ double eos_crust_virial_v2::bpn1_free() {
 
 /// The temperature must be specified in MeV
 double eos_crust_virial_v2::bna(double T) {
-  if (T<1.0 || T>20.0) {
+//  if (T<1.0 || T>20.0) {//orig one
+    if (T<1.0 || T>200.0) {//temporily turn off the high T limit to run pure NRAPR EoS, which is not relating to virial
     cout << "Problem 1: " << T << endl;
     O2SCL_ERR("Cannot extrapolate spin virial.",o2scl::exc_efailed);
   }
@@ -54,7 +56,8 @@ double eos_crust_virial_v2::bna(double T) {
 
 /// The temperature must be specified in MeV
 double eos_crust_virial_v2::bpna(double T) {
-  if (T<1.0 || T>20.0) {
+//  if (T<1.0 || T>20.0) { //orig
+    if (T<1.0 || T>200.0) {//temporily turn off the high T limit to run pure NRAPR EoS, which is not relating to virial
     cout << "Problem 2: " << T << endl;
     O2SCL_ERR("Cannot extrapolate spin virial.",o2scl::exc_efailed);
   }
@@ -662,9 +665,9 @@ eos::eos() {
 
   // Nucleon init
   neutron.init(o2scl_settings.get_convert_units().convert
-	       ("kg","1/fm",o2scl_mks::mass_neutron),2.0);
+	       ("kg","1/fm",o2scl_const::mass_neutron_f<double>()),2.0);
   proton.init(o2scl_settings.get_convert_units().convert
-	      ("kg","1/fm",o2scl_mks::mass_proton),2.0);
+	      ("kg","1/fm",o2scl_const::mass_proton_f<double>()),2.0);
   neutron.non_interacting=false;
   proton.non_interacting=false;
   neutron.inc_rest_mass=false;
@@ -672,9 +675,9 @@ eos::eos() {
 
   // Nucleon init (take 2)
   n_chiral.init(o2scl_settings.get_convert_units().convert
-		("kg","1/fm",o2scl_mks::mass_neutron),2.0);
+		("kg","1/fm",o2scl_const::mass_neutron_f<double>()),2.0);
   p_chiral.init(o2scl_settings.get_convert_units().convert
-		("kg","1/fm",o2scl_mks::mass_proton),2.0);
+		("kg","1/fm",o2scl_const::mass_proton_f<double>()),2.0);
   n_chiral.non_interacting=false;
   p_chiral.non_interacting=false;
   n_chiral.inc_rest_mass=false;
@@ -682,9 +685,9 @@ eos::eos() {
 
   // Lepton and photon inits
   electron.init(o2scl_settings.get_convert_units().convert
-		("kg","1/fm",o2scl_mks::mass_electron),2.0);
+		("kg","1/fm",o2scl_const::mass_electron_f<double>()),2.0);
   muon.init(o2scl_settings.get_convert_units().convert
-	    ("kg","1/fm",o2scl_mks::mass_muon),2.0);
+	    ("kg","1/fm",o2scl_const::mass_muon_f<double>()),2.0);
   neutrino.init(0.0,1.0);
   photon.init(0.0,2.0);
 
@@ -1861,7 +1864,7 @@ int eos::table_Ye(std::vector<std::string> &sv, bool itive_com) {
 
   vector<double> nB_grid, T_grid;
   
-  calculator calc;
+  calc_utf8<> calc;
   std::map<std::string,double> vars;
   
   calc.compile(nB_grid_spec.c_str());
@@ -1957,7 +1960,7 @@ int eos::table_nB(std::vector<std::string> &sv, bool itive_com) {
 
   vector<double> Ye_grid, T_grid;
   
-  calculator calc;
+  calc_utf8<> calc;
   std::map<std::string,double> vars;
   
   calc.compile(Ye_grid_spec.c_str());
@@ -2018,7 +2021,7 @@ int eos::table_full(std::vector<std::string> &sv, bool itive_com) {
 
   vector<double> nB_grid, T_grid, Ye_grid;
   
-  calculator calc;
+  calc_utf8<> calc;
   std::map<std::string,double> vars;
   
   calc.compile(nB_grid_spec.c_str());
@@ -3676,7 +3679,7 @@ int eos::test_eg(std::vector<std::string> &sv,
 
   vector<double> nB_grid, T_grid, Ye_grid;
   
-  calculator calc;
+  calc_utf8<> calc;
   std::map<std::string,double> vars;
   
   calc.compile(nB_grid_spec.c_str());

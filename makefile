@@ -23,7 +23,7 @@ help:
 LCXX = $(CXX)
 LMPI_CXX = $(MPI_CXX)
 LIBS = -L/usr/local/lib -lo2scl_hdf -lo2scl_eos -lo2scl_part -lo2scl \
-        -lhdf5 -lgsl -lreadline
+        -lhdf5 -lgsl
 LMPI_CFLAGS = -O3 -std=c++11 -DTEMP_UPDATES -DO2SCL_MPI \
 	-DO2SCL_OPENMP -fopenmp
 LCFLAGS = -O3 -std=c++11 -DNO_MPI -DTEMP_UPDATES \
@@ -38,15 +38,15 @@ ifdef UTKNA_MAKEFILE
 include $(UTKNA_MAKEFILE)
 
 # UTK configuration
-LIBS = $(UTKNA_O2SCL_LIBS) -L$(UTKNA_CUBATURE) -lcubature
+LIBS = $(UTKNA_O2SCL_LIBS) -lo2scl -lhdf5_hl -lhdf5 -lgsl -lgslcblas -lm  
 LCXX = $(UTKNA_CXX) 
 LMPI_CXX = $(UTKNA_MPI_CXX)
 LCFLAGS = $(UTKNA_O2SCL_INCS) $(UTKNA_CFLAGS) -DNO_MPI \
-        $(UTKNA_OPENMP_FLAGS) -DO2SCL_EIGEN \
-	-DO2SCL_NEW_BOOST_INTEGRATION -I$(UTKNA_CUBATURE)
+        $(UTKNA_OPENMP_FLAGS) \
+	-DO2SCL_NEW_BOOST_INTEGRATION -I/opt/utkna/lib/python3.12/site-packages/numpy/core/include 
 LMPI_CFLAGS = $(UTKNA_O2SCL_INCS) $(UTKNA_CFLAGS) \
 	$(UTKNA_OPENMP_FLAGS) $(UTKNA_MPI_CFLAGS) \
-	-DO2SCL_NEW_BOOST_INTEGRATION -I$(UTKNA_CUBATURE)
+	-DO2SCL_NEW_BOOST_INTEGRATION 
 
 endif
 
@@ -87,10 +87,19 @@ neutrino/Polarization.o: neutrino/Polarization.cpp neutrino/Polarization.hpp
 	$(LCXX) $(LCFLAGS) -DNUOPAC_HAS_GSL -o neutrino/Polarization.o \
 		-c neutrino/Polarization.cpp
 
+neutrino/Polarization_miser.o: neutrino/Polarization_miser.cpp neutrino/Polarization.hpp
+	$(LCXX) $(LCFLAGS) -DNUOPAC_HAS_GSL -o neutrino/Polarization_miser.o \
+                -c neutrino/Polarization_miser.cpp
+
 neutrino/PolarizationNonRelv2Apr8.o: neutrino/PolarizationNonRelv2Apr8.cpp 
 	$(LCXX) $(LCFLAGS) -DNUOPAC_HAS_GSL \
 		-o neutrino/PolarizationNonRelv2Apr8.o \
 		-c neutrino/PolarizationNonRelv2Apr8.cpp
+
+neutrino/PolarizationNonRelv2May28_newCC.o: neutrino/PolarizationNonRelv2May28_newCC.cpp
+	$(LCXX) $(LCFLAGS) -DNUOPAC_HAS_GSL \
+                -o neutrino/PolarizationNonRelv2May28_newCC.o \
+                -c neutrino/PolarizationNonRelv2May28_newCC.cpp
 
 neutrino/jacobi_rule.o: neutrino/jacobi_rule.cpp neutrino/jacobi_rule.hpp
 	$(LCXX) $(LCFLAGS) -DNUOPAC_HAS_GSL -o neutrino/jacobi_rule.o \
@@ -105,7 +114,7 @@ eos_nuclei: eos.o main.o eos_nuclei.o eos_had_skyrme_ext.o \
 		neutrino/Couplings.o neutrino/FluidState.o \
 		neutrino/FunctionIntegrator.o neutrino/Polarization.o \
 		neutrino/PolarizationNonRelv2Apr8.o neutrino/jacobi_rule.o \
-		$(LIBS) -lreadline
+		$(LIBS) 
 
 # ----------------------------------------------------------------
 # Version without MPI
@@ -136,6 +145,12 @@ neutrino/PolarizationNonRelv2Apr8_nompi.o: \
 		-o neutrino/PolarizationNonRelv2Apr8_nompi.o \
 		-c neutrino/PolarizationNonRelv2Apr8.cpp
 
+neutrino/PolarizationNonRelv2May28_newCC_nompi.o: \
+                neutrino/PolarizationNonRelv2May28_newCC.cpp
+	$(LCXX) $(LCFLAGS) -DNUOPAC_HAS_GSL \
+                -o neutrino/PolarizationNonRelv2May28_newCC_nompi.o \
+                -c neutrino/PolarizationNonRelv2May28_newCC.cpp
+
 neutrino/jacobi_rule_nompi.o: neutrino/jacobi_rule.cpp neutrino/jacobi_rule.hpp
 	$(LCXX) $(LCFLAGS) -DNUOPAC_HAS_GSL -o neutrino/jacobi_rule_nompi.o \
 		-c neutrino/jacobi_rule.cpp
@@ -147,6 +162,10 @@ eos_nompi.o: eos.cpp eos.h
 eos_nuclei_nompi.o: eos_nuclei.cpp eos_nuclei.h
 	$(LCXX) $(LCFLAGS) \
 		-o eos_nuclei_nompi.o -c eos_nuclei.cpp
+
+eos_nuclei_newCC_nompi.o: eos_nuclei_newCC.cpp eos_nuclei.h
+	$(LCXX) $(LCFLAGS) \
+                -o eos_nuclei_newCC_nompi.o -c eos_nuclei_newCC.cpp
 
 eos_had_skyrme_ext_nompi.o: eos_had_skyrme_ext.cpp \
 		eos_had_skyrme_ext.h
@@ -169,25 +188,81 @@ eos_nuclei_nompi: eos_nompi.o main_nompi.o eos_nuclei_nompi.o \
 		neutrino/FunctionIntegrator.o neutrino/Polarization.o \
 		neutrino/PolarizationNonRelv2Apr8.o neutrino/jacobi_rule.o \
 		 eos_nuclei_nompi.o eos_had_skyrme_ext_nompi.o $(LIBS) \
-		-lreadline
+
+eos_nuclei_newCC_nompi: eos_nompi.o main_nompi.o eos_nuclei_newCC_nompi.o \
+                eos_had_skyrme_ext_nompi.o \
+                neutrino/Couplings.o neutrino/FluidState.o \
+                neutrino/FunctionIntegrator.o neutrino/Polarization.o \
+                neutrino/PolarizationNonRelv2May28_newCC.o neutrino/jacobi_rule.o
+	$(LCXX) $(LCFLAGS) -o eos_nuclei_newCC_nompi eos_nompi.o main_nompi.o \
+                neutrino/Couplings.o neutrino/FluidState.o \
+                neutrino/FunctionIntegrator.o neutrino/Polarization.o \
+                neutrino/PolarizationNonRelv2May28_newCC.o neutrino/jacobi_rule.o \
+                 eos_nuclei_newCC_nompi.o eos_had_skyrme_ext_nompi.o $(LIBS) \
+		
 
 # A shorthand alias for eos_nuclei_nompi
-enn: eos_nompi.o main_nompi.o eos_nuclei_nompi.o \
+# enn: eos_nompi.o main_nompi.o eos_nuclei_nompi.o \
 		eos_had_skyrme_ext_nompi.o eos_nompi.o \
 		neutrino/Couplings.o neutrino/FluidState.o \
 		neutrino/FunctionIntegrator.o neutrino/Polarization.o \
 		neutrino/PolarizationNonRelv2Apr8.o neutrino/jacobi_rule.o 
-	$(LCXX) $(LCFLAGS) -o enn eos_nompi.o main_nompi.o \
+#	$(LCXX) $(LCFLAGS) -o enn eos_nompi.o main_nompi.o \
 		neutrino/Couplings.o neutrino/FluidState.o \
 		neutrino/FunctionIntegrator.o neutrino/Polarization.o \
 		neutrino/PolarizationNonRelv2Apr8.o neutrino/jacobi_rule.o \
-		eos_nuclei_nompi.o eos_had_skyrme_ext_nompi.o $(LIBS)
+		eos_nuclei_nompi.o eos_had_skyrme_ext_nompi.o $(LIBS) -liomp5 -fopenmp
+
+enn: eos_nompi.o main_nompi.o eos_nuclei_nompi.o \
+                eos_had_skyrme_ext_nompi.o eos_nompi.o \
+                neutrino/Couplings.o neutrino/FluidState.o \
+                neutrino/FunctionIntegrator.o neutrino/Polarization.o \
+                neutrino/PolarizationNonRelv2Apr8.o neutrino/jacobi_rule.o
+	$(LCXX) $(LCFLAGS) -o enn eos_nompi.o main_nompi.o \
+                neutrino/Couplings.o neutrino/FluidState.o \
+                neutrino/FunctionIntegrator.o neutrino/Polarization.o \
+                neutrino/PolarizationNonRelv2Apr8.o neutrino/jacobi_rule.o \
+                eos_nuclei_nompi.o eos_had_skyrme_ext_nompi.o -L/usr/lib/x86_64-linux-gnu/hdf5/serial -fopenmp -L/home/awsteiner/pkgs/cubature -lo2scl -lhdf5 -lgsl -lreadline -lpython3.12 -lmpfr -lo2scl -lhdf5_hl -lhdf5 -lgsl -lgslcblas -lm -lquadmath -fopenmp
+
+enn_miser: eos_nompi.o main_nompi.o eos_nuclei_nompi.o \
+                eos_had_skyrme_ext_nompi.o eos_nompi.o \
+                neutrino/Couplings.o neutrino/FluidState.o \
+                neutrino/FunctionIntegrator.o neutrino/Polarization_miser.o \
+                neutrino/PolarizationNonRelv2Apr8.o neutrino/jacobi_rule.o
+	$(LCXX) $(LCFLAGS) -o enn_miser eos_nompi.o main_nompi.o \
+                neutrino/Couplings.o neutrino/FluidState.o \
+                neutrino/FunctionIntegrator.o neutrino/Polarization_miser.o \
+                neutrino/PolarizationNonRelv2Apr8.o neutrino/jacobi_rule.o \
+                eos_nuclei_nompi.o eos_had_skyrme_ext_nompi.o -L/usr/lib/x86_64-linux-gnu/hdf5/serial -fopenmp -L/home/awsteiner/pkgs/cubature -lo2scl -lhdf5 -lgsl -lreadline -lpython3.12 -lmpfr -lo2scl -lhdf5_hl -lhdf5 -lgsl -lgslcblas -lm -lquadmath -fopenmp
+
+# enn_vegas differs from the enn just in the Polarization.cpp file (one use mcarlo_miser another uses mcarlo_vegas)
+enn_vegas: eos_nompi.o main_nompi.o eos_nuclei_nompi.o \
+                eos_had_skyrme_ext_nompi.o eos_nompi.o \
+                neutrino/Couplings.o neutrino/FluidState.o \
+                neutrino/FunctionIntegrator.o neutrino/Polarization.o \
+                neutrino/PolarizationNonRelv2Apr8.o neutrino/jacobi_rule.o
+	$(LCXX) $(LCFLAGS) -o enn_vegas eos_nompi.o main_nompi.o \
+                neutrino/Couplings.o neutrino/FluidState.o \
+                neutrino/FunctionIntegrator.o neutrino/Polarization.o \
+                neutrino/PolarizationNonRelv2Apr8.o neutrino/jacobi_rule.o \
+                eos_nuclei_nompi.o eos_had_skyrme_ext_nompi.o -L/usr/lib/x86_64-linux-gnu/hdf5/serial -fopenmp -L/home/awsteiner/pkgs/cubature -lo2scl -lhdf5 -lgsl -lreadline -lpython3.12 -lmpfr -lo2scl -lhdf5_hl -lhdf5 -lgsl -lgslcblas -lm -lquadmath -fopenmp 
+
+enn_newCC: eos_nompi.o main_nompi.o eos_nuclei_newCC_nompi.o \
+                eos_had_skyrme_ext_nompi.o eos_nompi.o \
+                neutrino/Couplings.o neutrino/FluidState.o \
+                neutrino/FunctionIntegrator.o neutrino/Polarization.o \
+                neutrino/PolarizationNonRelv2May28_newCC.o neutrino/jacobi_rule.o
+	$(LCXX) $(LCFLAGS) -o enn_newCC eos_nompi.o main_nompi.o \
+                neutrino/Couplings.o neutrino/FluidState.o \
+                neutrino/FunctionIntegrator.o neutrino/Polarization.o \
+                neutrino/PolarizationNonRelv2May28_newCC.o neutrino/jacobi_rule.o \
+                eos_nuclei_newCC_nompi.o eos_had_skyrme_ext_nompi.o -L/usr/lib/x86_64-linux-gnu/hdf5/serial -fopenmp -L/home/awsteiner/pkgs/cubature -lo2scl -lhdf5 -lgsl -lreadline -lpython3.11 -lmpfr -lo2scl -lhdf5_hl -lhdf5 -lgsl -lgslcblas -lm -fopenmp
 
 eos_nompi: eos_nompi.o main_eos_nompi.o \
 		eos_had_skyrme_ext_nompi.o 
 	$(LCXX) $(LCFLAGS) -o eos_nompi eos_nompi.o \
 		main_eos_nompi.o eos_had_skyrme_ext_nompi.o $(LIBS) \
-		-lreadline
+		
 
 # ----------------------------------------------------------------
 # Other targets
@@ -401,16 +476,55 @@ imfps:
 		-save imfps.pdf -show
 
 mn-test:
-	enn \
+	./enn \
 		-set select_cs2_test 0 \
-		-select-model $(P_FIDUCIAL) \
+		-select-model 470 738 0.5 13.0 62.4 32.8 0.9 \
 		-set a_virial 10 -set b_virial 10 \
 		-set extend_frdm 0 \
 		-set fd_A_max 600 -set max_ratio 7.0 \
 		-set fixed_dist_alg 1999 \
-		-set function_verbose 9999 \
+		-set function_verbose 0 \
 		-set verbose 3 \
-		-load ~/data/eos/final/fid_6_30_21.o2 \
-		-mcarlo-neutron mn_test.o2
+		-load fid_6_30_21.o2 \
+		-mcarlo-neutron mn_test.o2> mn_test28_withBS_integraltoRound1vigas.out 2>&1 &
+
+mn-test_miser:
+	./enn_miser \
+                -set select_cs2_test 0 \
+                -select-model 470 738 0.5 13.0 62.4 32.8 0.9 \
+                -set a_virial 10 -set b_virial 10 \
+                -set extend_frdm 0 \
+                -set fd_A_max 600 -set max_ratio 7.0 \
+                -set fixed_dist_alg 1999 \
+                -set function_verbose 0 \
+                -set verbose 3 \
+                -load fid_6_30_21.o2 \
+                -mcarlo-neutron mn_test_miser.o2> mn_test28_withBS_integraltoRound2miser.out 2>&1 &
+
+mn-test_vegas:
+	./enn_vegas \
+                -set select_cs2_test 0 \
+                -select-model 470 738 0.5 13.0 62.4 32.8 0.9 \
+                -set a_virial 10 -set b_virial 10 \
+                -set extend_frdm 0 \
+                -set fd_A_max 600 -set max_ratio 7.0 \
+                -set fixed_dist_alg 1999 \
+                -set function_verbose 0 \
+                -set verbose 3 \
+                -load fid_6_30_21.o2 \
+                -mcarlo-neutron mn_test.o2> mn_test24_withBS_vegas.out 2>&1 &
+
+mn-test-newCC:
+	./enn_newCC \
+                -set select_cs2_test 0 \
+                -select-model 470 738 0.5 13.0 62.4 32.8 0.9 \
+                -set a_virial 10 -set b_virial 10 \
+                -set extend_frdm 0 \
+                -set fd_A_max 600 -set max_ratio 7.0 \
+                -set fixed_dist_alg 1999 \
+                -set function_verbose 0 \
+                -set verbose 3 \
+                -load fid_6_30_21.o2 \
+                -mcarlo-neutron mn_test.o2> mn_test_newCCana2.out 2>&1 &
 
 -include makefile.aws

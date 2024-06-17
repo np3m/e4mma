@@ -1,0 +1,105 @@
+#!/bin/bash
+
+# Charge ID to be used for this job (default: phy230018p)
+#SBATCH --account=phy230018p
+
+# Partition in Bridges-2 to be used (default: RM)
+#SBATCH --partition=RM-shared
+
+#SBATCH --job-name=gtSky_test
+
+# Total walltime requested (default: 30 mins, max: 48 hrs)
+#SBATCH --time=00:30:00
+
+# Node/socket/core/thread specifications
+# Given: 2 sockets, 64 cores/socket, 2 threads/core
+# Count: 128 cores (physical), 256 threads (logical)
+
+# Initial goals and expectations (for now)
+# Goal-1: Ensure BAMR receives necessary resources for OpenMP as expected
+# Goal-2: Maximize usage of allocated resources for efficient credit expenditures
+# Goal-3: Evenly distribute computation load without over-specifications
+
+# Total number of nodes (default: 1)
+#SBATCH --nodes=1
+
+# Total number of cores used per node when using RM-shared
+#SBATCH --ntasks-per-node=1
+
+# Number of MPI tasks/node (default: 1)
+# If 'ntasks' is set, 'ntasks' takes precedence and treated as max tasks/node
+# Meant to be used with 'nodes' option
+# Related to 'cpus-per-task' but does not require knowledge of actual cpus/node
+# SBATCH --ntasks-per-node=1
+
+# Number of tasks/socket (unused)
+# Meant to be used with 'ntasks' option
+# Related to 'ntasks-per-node', except at socket level instead of node level
+# SBATCH --ntasks-per-socket=2
+
+# Following options may be over-specifications and not required (unused)
+# If 'ntasks' is unspecified, may implicitly set ntasks = 1 tasks/thread
+# Restricts node selection to nodes with at least this many
+# sockets/node, cores/socket, threads/core, respectively.
+# SBATCH --sockets-per-node=2
+# SBATCH --cores-per-socket=64
+# SBATCH --threads-per-core=2
+
+# Total memory requested
+# SBATCH --mem=16gb
+
+# Write standard output and error to file (default: slurm-<jobID>.out)
+#SBATCH --output=nuOpa_test.out
+
+# Set directory of batch script before it is executed
+# SBATCH --chdir=$SLURM_SUBMIT_DIR
+
+# Set up email notifications
+#SBATCH --mail-user=zlin23@utk.edu
+#SBATCH --mail-type=BEGIN,FAIL,END
+
+# Clear environment from any previously loaded modules
+# module purge > /dev/null 2>&1
+
+# Load the required modules
+module load gcc
+module load boost
+module load hdf5
+module load python
+module load numpy
+
+
+# Enable hyper-threading: set number of OpenMP threads
+# AWS: I'm commenting this out because I don't think bamr uses this environment
+# variable
+# export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
+
+# Set up environment for o2scl and GSL
+export LD_LIBRARY_PATH=/ocean/projects/phy230011p/shared/gsl/lib:/ocean/projects/phy230011p/shared/o2scl/lib:$LD_LIBRARY_PATH
+export PATH=/ocean/projects/phy230011p/shared/o2scl/bin:"$HOME/.local/bin:$HOME/bin:$PATH"
+
+# move to working directory
+# this job assumes:
+# - all input data is stored in this directory
+# - all output should be stored in this directory
+# - please note that groupname should be replaced by your groupname
+# - username should be replaced by your username
+# - path-to-directory should be replaced by the path to your directory where the executable is
+
+cd /jet/home/zlin4/eos_update/
+
+
+# Test run of model with 
+
+ ./enn \
+                -set select_cs2_test 0 \
+		-select-model 470 738 0.5 13.0 62.4 32.8 0.9 \
+                -set a_virial 10 -set b_virial 10 \
+                -set extend_frdm 0 \
+                -set fd_A_max 600 -set max_ratio 7.0 \
+                -set fixed_dist_alg 1999 \
+                -set function_verbose 9999 \
+                -set verbose 3 \
+		-load fid_6_30_21.o2 \
+                -mcarlo-neutron mn_test.o2
+

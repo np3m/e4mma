@@ -24,6 +24,7 @@
 #include "neutrino/Polarization.hpp"
 #include "neutrino/PolarizationNonRel.hpp"
 #include "neutrino/constants.h"
+#include"omp.h"
 
 #ifdef O2SCL_EIGEN
 #include <eigen3/Eigen/Dense>
@@ -4455,6 +4456,7 @@ int eos_nuclei::eos_fixed_dist
 	 << y1[1] << endl;
     cout << "nB,Ye,T[MeV]: " << nB << " " << Ye << " "
          << T*hc_mev_fm << endl;
+    cout<<"mun_gas, mup_gas [MeV]: "<<mun_gas*hc_mev_fm<<" "<<mup_gas*hc_mev_fm<<" "<<endl;
   }
 
   // 8/27: log_xn and log_xp are used below, so it's important that
@@ -10711,9 +10713,12 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         double fnn_dg0=fnn_virial*g_virial+fnn_sk*(1.0-g_virial);
         
         // [1/MeV^2]
-        double w1nn_vec_general=2.0*fnn_virial*g_virial+
-          (1.0-g_virial)*w1nn_vec_sk/pow(hc_mev_fm,2.0)+
+	 double w1nn_vec_general=2.0*fnn_virial*g_virial+
+          (1.0-g_virial)*w1nn_vec_sk+
           2.0*(2.0*vdet["dgdnn"]*dUdnn_vir-2.0*vdet["dgdnn"]*dUdnn_sk);
+     // double w1nn_vec_general=2.0*fnn_virial*g_virial+
+     //     (1.0-g_virial)*w1nn_vec_sk/pow(hc_mev_fm,2.0)+
+     //     2.0*(2.0*vdet["dgdnn"]*dUdnn_vir-2.0*vdet["dgdnn"]*dUdnn_sk);//on 6/9/2024, I removed /pow(hc_mev_fm,2.0) after w1nn_vec_sk since this is redundant (w1 has already been devided by pow(hc_mev_fm,2.0) before. this does not matter since this function is not used. In all the versions we use w1np_vec_general_tilde) 
         
         // [fm^2/MeV^2]
         double w2nn_vec_general=(1.0-g_virial)*
@@ -10734,10 +10739,16 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         double fnp_dg0=fnp_virial*g_virial+fnp_sk*(1.0-g_virial);
         
         // [1/MeV^2]
-        double w1np_vec_general=2.0*fnp_virial*g_virial+
-          (1.0-g_virial)*w1np_vec_sk/pow(hc_mev_fm,2.0)+
+      //  double w1np_vec_general=2.0*fnp_virial*g_virial+
+      //    (1.0-g_virial)*w1np_vec_sk/pow(hc_mev_fm,2.0)+
+      //    2.0*(vdet["dgdnn"]*(dUdnp_vir-dUdnp_sk)+
+      //         vdet["dgdnp"]*(dUdnn_vir-dUdnn_sk));
+	double w1np_vec_general=2.0*fnp_virial*g_virial+
+          (1.0-g_virial)*w1np_vec_sk+
           2.0*(vdet["dgdnn"]*(dUdnp_vir-dUdnp_sk)+
                vdet["dgdnp"]*(dUdnn_vir-dUdnn_sk));
+	//on 6/9/2024, I removed /pow(hc_mev_fm,2.0) after w1nn_vec_sk since this is redundant (w1 has already been devided by pow(hc_mev_fm,2.0) before. this does not matter since this function is not used. In all the versions we use w1np_vec_general_tilde)
+
         
         // [fm^2/MeV^2]
         double w2np_vec_general=(1.0-g_virial)*w2np_vec_sk/pow(hc_mev_fm,2.0)+
@@ -11124,11 +11135,11 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
             w_cc.push_back(w);
             
             Tensor<double> piVV, piAA, piTT, piVA, piVT, piAT;
-            double piL, piLRe, piRPAax, piRPAvec;
+            double piLIm, piLRe, piRPAax, piRPAvec,piRPAaxBS, piRPAvecBS, piL, betaIm1, betaIm2, betaIm3, betaIm4, betaIm5, betaRe1, betaRe2, betaRe3, betaRe4, betaRe5;
             
             pol_cc.SetPolarizations_charged(w,3*T_MeV,&piVV,&piAA,&piTT,
-                                            &piVA,&piVT,&piAT,
-                                            piLRe,piRPAvec,piRPAax,piL);
+                                            &piVA,&piVT,&piAT,piLIm,
+                                            piLRe,piRPAvec,piRPAax,piRPAvecBS,piRPAaxBS,piL, betaIm1, betaIm2, betaIm3, betaIm4, betaIm5, betaRe1, betaRe2, betaRe3, betaRe4, betaRe5);
             
             double zz=(w+betaEoS.Mu2-betaEoS.Mu4)/T_MeV;
             double FermiF=1/(1-exp(-zz));
@@ -11187,7 +11198,9 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
     return 2;
   }
 
-  size_t n_point=15;
+ // size_t n_point=5;
+ // size_t n_point=7*7;
+  size_t n_point=1;
   if (sv.size()>=3) {
     n_point=stoszt(sv[2]);
   }
@@ -11200,7 +11213,7 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
   tab.line_of_units(((string)". . MeV MeV . 1/fm^2 1/fm^4 1/fm^4 ")+
                     "1/fm^(3*a+2) . . . . .");
   
-  vector<string> col_list={"nB","nn","np",
+ /* vector<string> col_list={"nB","nn","np",
     "g","dgdnn","dgdnp","msn","msp","mun","mup","mu_n_nonint",
     "mu_p_nonint",
     "U2","U4","log_xn","log_xp",
@@ -11212,12 +11225,26 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
     "gnn","gpp","gnp",
     "vf","vf_dg0","vgt",
     "nc_vec_imfp","nc_vec_imfp_dg0","nc_axvec_imfp",
-    "nc_vec_imfp_norpa","nc_axvec_imfp_norpa"};
+    "nc_vec_imfp_norpa","nc_axvec_imfp_norpa"};*/ //orig one
+
+   vector<string> col_list={"nB","nn","np",
+    "g","dgdnn","dgdnp","msn","msp","mun","mup","mu_n_nonint",
+    "mu_p_nonint",
+    "U2","U4",
+    "fnn_sk","fpp_sk","fnp_sk",
+    "gnn_sk","gpp_sk","gnp_sk",
+    "fnn_virial","fpp_virial","fnp_virial",
+    "gnn_virial","gpp_virial","gnp_virial",
+    "fnn","fpp","fnp","fnn_dg0","fpp_dg0","fnp_dg0",
+    "gnn","gpp","gnp",
+    "vf","vf_dg0","vgt",
+    "nc_vec_imfp","nc_vec_imfp_dg0","nc_axvec_imfp",
+    "cc_vec_imfp_dg0","cc_axvec_imfp"};
   
   vector<string> unit_list={"1/fm^3","1/fm^3","1/fm^3",
     "","1/MeV^3","1/MeV^3","MeV","MeV","MeV","MeV","MeV",
     "MeV",
-    "MeV","MeV","","",
+    "MeV","MeV",
     "1/MeV^2","1/MeV^2","1/MeV^2",
     "1/MeV^2","1/MeV^2","1/MeV^2",
     "1/MeV^2","1/MeV^2","1/MeV^2",
@@ -11226,6 +11253,8 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
     "1/MeV^2","1/MeV^2","1/MeV^2",
     "1/MeV^2","1/MeV^2","1/MeV^2",
     "1/cm","1/cm","1/cm","1/cm","1/cm"};
+
+
 
   if (unit_list.size()!=col_list.size()) {
     cout << col_list.size() << " " << unit_list.size() << endl;
@@ -11239,8 +11268,8 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
       tab.new_column(temp);
       tab.set_unit(temp,unit_list[ik]);
     }
-    if (n_point<20) {
-      for(size_t ik=0;ik<100;ik++) {
+    if (false) {
+     /* for(size_t ik=0;ik<100;ik++) {
         tab.new_column(((string)"nc_piRPAvec_")+o2scl::szttos(ik)+"_"+
                        o2scl::szttos(ipoint));
         tab.new_column(((string)"nc_piRPAax_")+o2scl::szttos(ik)+"_"+
@@ -11253,33 +11282,152 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
                        o2scl::szttos(ipoint));
         tab.new_column(((string)"nc_resp_RPAax_")+o2scl::szttos(ik)+"_"+
                        o2scl::szttos(ipoint));
-      }
-      tab.new_column(((string)"sum_vec_")+o2scl::szttos(ipoint));
-      tab.new_column(((string)"sum_ax_")+o2scl::szttos(ipoint));
+      }*/
+      tab.new_column(((string)"crx/crx0_nc_vec_rpa_")+o2scl::szttos(ipoint));
+      tab.new_column(((string)"crx/crx0_nc_vec_rpa_Tran_")+o2scl::szttos(ipoint));
+      tab.new_column(((string)"crx/crx0_nc_ax_rpa_")+o2scl::szttos(ipoint));
+      tab.new_column(((string)"crx/crx0_nc_ax_rpa_Tran_")+o2scl::szttos(ipoint));
+      tab.new_column(((string)"crx/crx0_nc_vec_mf_")+o2scl::szttos(ipoint));
+      tab.new_column(((string)"crx/crx0_nc_vec_mf_Tran_")+o2scl::szttos(ipoint));
+      tab.new_column(((string)"crx/crx0_nc_ax_mf_")+o2scl::szttos(ipoint));
+      tab.new_column(((string)"crx/crx0_nc_ax_mf_Tran_")+o2scl::szttos(ipoint));
+      tab.new_column(((string)"crx/crx0_cc_vec_rpa_")+o2scl::szttos(ipoint));
+      tab.new_column(((string)"crx/crx0_cc_vec_mf_")+o2scl::szttos(ipoint));
+      tab.new_column(((string)"crx/crx0_cc_ax_rpa_")+o2scl::szttos(ipoint));
+      tab.new_column(((string)"crx/crx0_cc_ax_mf_")+o2scl::szttos(ipoint));
+      if (ipoint<8){ 
+	              {
+                 for (size_t iq=0;iq<15;iq++) {
+                 //iq stands for different transfer momentum q, ik stands for different transfer energy q0, ipoint stards for different density/temperature/Ye/  
+                 for(size_t ik=0;ik<600;ik++)  {
+	//-------------------NC dynamic-----------------------------
+        tab.new_column(((string)"nc_piRPAvec_")+o2scl::szttos(iq)+"_"+o2scl::szttos(ik)+"_"+
+                       o2scl::szttos(ipoint));
+        tab.new_column(((string)"nc_piRPAax_")+o2scl::szttos(iq)+"_"+o2scl::szttos(ik)+"_"+
+                       o2scl::szttos(ipoint));
+        tab.new_column(((string)"nc_piLn_")+o2scl::szttos(iq)+"_"+o2scl::szttos(ik)+"_"+
+                       o2scl::szttos(ipoint));
+        tab.new_column(((string)"nc_piLnRe_")+o2scl::szttos(iq)+"_"+o2scl::szttos(ik)+"_"+
+                       o2scl::szttos(ipoint));
+        tab.new_column(((string)"nc_resp_RPAvec_")+o2scl::szttos(iq)+"_"+o2scl::szttos(ik)+"_"+
+                       o2scl::szttos(ipoint));
+        tab.new_column(((string)"nc_resp_RPAax_")+o2scl::szttos(iq)+"_"+o2scl::szttos(ik)+"_"+
+                       o2scl::szttos(ipoint));
+        //--------------------CC dynamic----------------------------
+	tab.new_column(((string)"cc_piRPAvec_")+o2scl::szttos(iq)+"_"+o2scl::szttos(ik)+"_"+
+                       o2scl::szttos(ipoint));
+        tab.new_column(((string)"cc_piRPAax_")+o2scl::szttos(iq)+"_"+o2scl::szttos(ik)+"_"+
+                       o2scl::szttos(ipoint));
+        tab.new_column(((string)"cc_piL_")+o2scl::szttos(iq)+"_"+o2scl::szttos(ik)+"_"+
+                       o2scl::szttos(ipoint));
+        tab.new_column(((string)"cc_piLRe_")+o2scl::szttos(iq)+"_"+o2scl::szttos(ik)+"_"+
+                       o2scl::szttos(ipoint));
+        tab.new_column(((string)"cc_resp_RPAvec_")+o2scl::szttos(iq)+"_"+o2scl::szttos(ik)+"_"+
+                       o2scl::szttos(ipoint));
+        tab.new_column(((string)"cc_resp_RPAax_")+o2scl::szttos(iq)+"_"+o2scl::szttos(ik)+"_"+
+                       o2scl::szttos(ipoint));
+
+                                     }
+      
+      tab.new_column(((string)"sum_nc_vec_")+o2scl::szttos(iq)+"_"+o2scl::szttos(ipoint));
+      tab.new_column(((string)"sum_nc_ax_")+o2scl::szttos(iq)+"_"+o2scl::szttos(ipoint));
+      tab.new_column(((string)"sum_cc_vec_")+o2scl::szttos(iq)+"_"+o2scl::szttos(ipoint));
+      tab.new_column(((string)"sum_cc_ax_")+o2scl::szttos(iq)+"_"+o2scl::szttos(ipoint));
+                             }
+                       }
+                   }
     }
   }
   
   // 1.0e-4 is well into the virial region, 5.0e-3 gives g \approx 0.6,
   // and 0.15 is near saturation density and far from the virial region
   
-  vector<double> nB_list={1.0e-4,5.0e-3,0.016,0.16,
+ /* vector<double> nB_list={1.0e-4,5.0e-3,0.016,0.16,
     0.01364,0.01608,0.01860,0.02160,0.02549,0.02947,0.03347,0.03754,
     0.04151,0.04549,0.04952};
   vector<double> TMeV_list={10,10,10,10,
     20,20,20,20,20,20,20,20,
-    20,20,20};
-  include_detail=true;
+    20,20,20};*/
 
-  if (n_point>20) {
+ //**************small table**************************************
+  /******************
+  vector<double> nB_listMenu={1.0e-7,1.0e-6,1.0e-5,0.0001,0.001,0.01,0.05,
+    0.10,0.15,0.30,0.45,0.60,0.75,1.5};
+  vector<double> TMeV_listMenu={5,10,20,30,40,50,60};
+  include_detail=true;
+  **********/
+//*****************************************************************
+  //******************big table**********************************
+ 
+  vector<double> nB_listMenu={1.0e-6,1.0e-5,0.0001,0.001,0.002,0.003,0.004,0.005,0.006,0.007,0.008,0.009,0.010,0.02,0.03,0.04,0.05,0.06,0.07,0.08,0.09,
+    0.10,0.11,0.12,0.13,0.14,0.15,0.30,0.45,0.60,0.75,1.5};
+  vector<double> TMeV_listMenu={5,10,20,30,40,50,60};
+  vector<double> Ye_listMenu={0.05,0.1,0.2,0.3,0.4,0.5,0.6};
+ // vector<double> Ye_listMenu={0.3,0.40,0.45};
+  include_detail=true;
+   
+  // * ************************************************************
+
+ // vector<double> E1_listMenu={5.0,10.0,30.0,60.0,120.0,240.0,450.0};
+
+  vector<double> nB_list={0.0};
+  vector<double> TMeV_list={0.0};
+  vector<double> Ye_list={0.0};
+  vector<double> E1_list={0.0};
+// loop for small table
+  if (false) {
+    nB_list.clear();
+    TMeV_list.clear();
+    E1_list.clear();
+    for (size_t ee=0; ee<9;ee++) {
+        for (size_t tt=0; tt<1; tt++) {
+	   for (size_t nn=13; nn<14;nn++) {
+	      nB_list.push_back(nB_listMenu[nn]);
+              TMeV_list.push_back(TMeV_listMenu[tt]);
+	      if (ee<6) {
+	      E1_list.push_back(3.0*TMeV_listMenu[tt]/6.0*(ee+1.0));
+	      } else {E1_list.push_back(3.0*TMeV_listMenu[tt]+TMeV_listMenu[tt]*(ee-5.0));}
+	   }
+	}
+    }
+  
+  }
+// loop for big table
+
+    if (true) {
+    nB_list.clear();
+    TMeV_list.clear();
+    E1_list.clear();
+    Ye_list.clear();
+    for (size_t ee=0; ee<1;ee++) {
+        for (size_t tt=1; tt<2; tt++) {
+           for (size_t nn=13; nn<14;nn++) {
+             for (size_t yee=0; yee<1; yee++) {
+              nB_list.push_back(nB_listMenu[nn]);
+              TMeV_list.push_back(TMeV_listMenu[tt]);
+	      Ye_list.push_back(Ye_listMenu[yee]);
+              if (ee<6) {
+              E1_list.push_back(3.0*TMeV_listMenu[tt]/6.0*(ee+1.0));
+              } else {E1_list.push_back(3.0*TMeV_listMenu[tt]+TMeV_listMenu[tt]*(ee-5.0));}
+	     }
+           }
+        }
+    }
+
+  }
+
+// in total there are 32(nB)*7(T)*7(ye)*9(E1)=14112 points***********************
+
+ /* if (n_point>20) {
     nB_list.clear();
     TMeV_list.clear();
     for(size_t j=0;j<100;j++) {
       nB_list.push_back(1.0e-4*pow(0.15/1.0e-4,((double)j)/99.0));
       TMeV_list.push_back(10.0);
     }
-  }
+  }*/
   
-  static const int N=10000;
+  static const int N=1;
   for(int j=0;j<N;j++) {
 
     std::cout << "j: " << j << endl;
@@ -11341,21 +11489,272 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
       hf.setd_vec("nB_list",nB_list);
       hf.close();
     }
+
+     vector<fermion> neutron_thread(n_point);
+     vector<fermion> proton_thread(n_point);
+     vector<fermion> electron_thread(n_point);
+     double msn_thread[n_point];
+     double msp_thread[n_point];
+     double U2_thread[n_point];
+     double U4_thread[n_point];
+
+     for(size_t ipoint=0;ipoint<n_point;ipoint++) {
+      double nB=nB_list[ipoint];
+      double T=TMeV_list[ipoint]/hc_mev_fm;
+      double T_MeV=TMeV_list[ipoint];
+       // Incoming neutrino energy
+      double E1=E1_list[ipoint];
+      double Ye=Ye_list[ipoint];
+
+     // for (int k=0; k<6; k++) {
+//	      cout<<"Yelist, Ye_menu: "<<Ye_list[k]<<" "<<Ye_listMenu[yee]<<endl;
+  //    }
+     
+     /***********pure neutron setting**************
+      double Ye=0.00001;
+      // neutron_thread[ipoint] = neutron;
+      // proton_thread[ipoint] = proton;
+
+       electron_thread[ipoint]=electron;
+       eos_sn_base eso;
+       eso.include_muons=false;
+       thermo lep;
+ // Add the electrons
+       double mue=electron.m;
+ // Copy the electron results to the local electron object
+        eso.compute_eg_point(nB,Ye,T,lep,mue);
+        electron_thread[ipoint].n=nB*Ye;
+        electron_thread[ipoint].mu=mue;
+
+      
+
+      thermo th_gas;
+      neutron.n=nB;
+      proton.n=nB/1.0e5;
+     // electron_thread[ipoint].n=proton_thread[ipoint].n;
+      double fr=free_energy_density_detail(neutron,proton,T,th_gas,vdet);
+      msn_thread[ipoint]=vdet["msn"];
+      msp_thread[ipoint]=vdet["msp"];
+
+      electron_thread[ipoint].mu=(neutron.mu-neutron.m)-(proton.mu-proton.m);
+
+      neutron_thread[ipoint] = neutron;
+      proton_thread[ipoint] = proton;
+ *********************************************************/
+      // with nuclei setting*********************************
+         // Now compute the EOS at the optimal Ye
+      
+    //  double Ye=0.40;
+      bool dist_changed=true;
+      bool no_nuclei=false;
+      double log_xn_best=0.0, log_xp_best=0.0;
+      double fr_best=1.0e10;
+     // size_t iYe_best=0;
+
+      size_t inB=vector_lookup(n_nB2,nB_grid2,nB);
+      size_t iT=vector_lookup(n_T2,T_grid2,T*hc_mev_fm);
+
+      double log_xn, log_xp;
+      double Zbar, Nbar;
+      thermo thx;
+      double mun_full, mup_full;
+
+     // double Ye_best;
+
+     // double ii=log10(nB)*31.485+126;
+       // Ye_best=0.05+0.28*exp(-ii/24.0);
+       // Ye_best=Ye;
+       // iYe_best=((size_t)(Ye_best*100.0-1.0));
+      size_t iYe=vector_lookup(n_Ye2,Ye_grid2,Ye);
+     // cout << "iYe_best,Ye_best: " << iYe_best << " " << Ye_best << endl;
+      cout << "iYe: " << iYe << " " << endl;
+
+
+
+      vector<size_t> ix_best={inB,iYe,iT};
+      int A_min_best=((int)(tg_A_min.get(ix_best)));
+      int A_max_best=((int)(tg_A_max.get(ix_best)));
+      int NmZ_min_best=((int)(tg_NmZ_min.get(ix_best)));
+      int NmZ_max_best=((int)(tg_NmZ_max.get(ix_best)));
+
+      int ret2=10;
+
+      cout<<"tg_log_xn, tg_log_xp: "<<tg_log_xn.get(ix_best)<<" "<<tg_log_xp.get(ix_best)<<endl;
+      cout<<"A_min_best,  A_max_best, NmZ_min_best, NmZ_max_best: "<<A_min_best<<" "<<A_max_best<<" "<<NmZ_min_best<<" "<< NmZ_max_best<<endl;
+
+     double mun_gas;
+     double mup_gas;
+      // temporarily change nB<0.16 to 0.01, by zidu on May 28
+      if (nB<0.16) {
+      for(size_t k=0;k<100 && ret2!=0;k++) {
+	cout<<"***************k= "<<k<<"****************************"<<endl;
+        log_xn=tg_log_xn.get(ix_best)+(rng.random()*0.5-0.25);
+        log_xp=tg_log_xp.get(ix_best)+(rng.random()*0.5-0.25);
+       // log_xn=tg_log_xn.get(ix_best);
+       // log_xp=tg_log_xp.get(ix_best);
+        ret2=eos_vary_dist(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,
+                           thx,mun_full,mup_full,
+                           A_min_best,A_max_best,NmZ_min_best,
+                           NmZ_max_best,vdet,
+                           dist_changed,no_nuclei);
+	 cout << "ret2,log_xn,log_xp,Z,N,A,Z/A:\n  "
+           << ret2 << " " << log_xn << " " << log_xp << " "
+           << Zbar << " " << Nbar << " " << Zbar+Nbar << " "
+           << Zbar/(Zbar+Nbar) << endl;
+      }
+      if (ret2!=0) {
+        cout << "Point failed." << endl;
+        exit(-1);
+      }
     
+      // Compute the number density of free neutrons and protons
+     // double n_fraction, p_fraction;
+      if (nB<0.16) {
+        double xn=0.0;
+        if (log_xn>-300.0) {
+          xn=pow(10.0,log_xn);
+        }
+        double xp=0.0;
+        if (log_xp>-300.0) {
+          xp=pow(10.0,log_xp);
+        }
+        double n0=0.16;
+        neutron.n=xn*(1.0-nB/n0)/(1.0-nB*xn/n0-nB*xp/n0)*nB;
+        proton.n=xp*(1.0-nB/n0)/(1.0-nB*xn/n0-nB*xp/n0)*nB;
+      } else {
+        neutron.n=(1.0-Ye)*nB;
+        proton.n=Ye*nB;
+      }
+       
+       mun_gas=vdet["mun_gas"];
+       mup_gas=vdet["mup_gas"];
+      
+      cout<<"serial proton/neutron density: "<<proton.n<<" "<<neutron.n<<endl;
+      cout<<"serial proton/neutron mu: "<<mun_gas<<" "<<mup_gas<<endl;
+
+      neutron_thread[ipoint] = neutron;
+      proton_thread[ipoint] = proton;
+      neutron_thread[ipoint].mu=mun_gas;
+      proton_thread[ipoint].mu=mup_gas;
+      msn_thread[ipoint]=vdet["msn"];
+      msp_thread[ipoint]=vdet["msp"];
+      } else {// end of the if nB<0.16
+	      // when nB>0.16 assume no nuclei
+      thermo th_gas;
+      neutron.n=nB*(1-Ye);
+      proton.n=nB*Ye;
+     // electron_thread[ipoint].n=proton_thread[ipoint].n;
+      double fr=free_energy_density_detail(neutron,proton,T,th_gas,vdet);
+      msn_thread[ipoint]=vdet["msn"];
+      msp_thread[ipoint]=vdet["msp"];
+
+      neutron_thread[ipoint] = neutron;
+      proton_thread[ipoint] = proton;
+
+      }
+      double mu_n_nonint, mu_p_nonint;
+      if (true) {
+        // Noninteracting fermions, but with the same mass as the
+        // effective mass of the original neutron and proton
+        fermion n2(msn_thread[ipoint]/hc_mev_fm,2.0);
+        fermion p2(msp_thread[ipoint]/hc_mev_fm,2.0);
+        n2.n=neutron_thread[ipoint].n;
+        p2.n=proton_thread[ipoint].n;
+        n2.mu=mun_gas;
+        p2.mu=mup_gas;
+       // n2.mu=neutron_thread[ipoint].mu;
+	//p2.mu=proton_thread[ipoint].mu;
+        n2.inc_rest_mass=false;
+        p2.inc_rest_mass=false;
+        fermion_nonrel fnr;
+        fnr.calc_density(n2,T);
+        fnr.calc_density(p2,T);
+        mu_n_nonint=n2.mu;
+        mu_p_nonint=p2.mu;
+      }
+      
+      U2_thread[ipoint]=neutron_thread[ipoint].mu*hc_mev_fm-mu_n_nonint*hc_mev_fm;
+    //    cout << "U2 [MeV]: " << u2eos << endl;
+      U4_thread[ipoint]=proton_thread[ipoint].mu*hc_mev_fm-mu_p_nonint*hc_mev_fm;
+
+      
+        // Set the electron chemical potential (with the electron rest mass)
+          double mue_beta=mun_gas+neutron.m-mup_gas-proton.m;
+       // double mue_beta=neutron_thread[ipoint].mu+neutron.m-proton_thread[ipoint].mu-proton.m;
+      // Copy the electron results to the local electron object
+      electron.n=nB*Ye;
+
+     // eos_sn_base eso;
+     // eso.include_muons=true;
+     // thermo lep;
+     // eso.compute_eg_point(nB,Ye,T*hc_mev_fm,lep,vdet["mue"]);
+     // electron.mu=vdet["mue"];
+     //
+      fermion_rel fre;
+     // electron.inc_rest_mass=false;
+     // fre.calc_density(electron, T);
+      fre.pair_density(electron, T);
+
+     // electron.mu=mue;
+      cout << "Ye, mue if beta equilibrium (with rest mass) [MeV], mue (with rest mass): " << Ye << " "
+           << mue_beta*hc_mev_fm <<" "<<electron.mu*hc_mev_fm<< endl;
+
+      ubvector X;
+      compute_X(nB,X);
+      /*************************************************
+      cout << "(ret2,Ye_best): " << ret2 << " "
+           << Ye_best << " " << "\n  log_xn,log_xp: "
+           << log_xn << " " << log_xp
+           << "\n  Zbar,Nbar: " << Zbar << " " << Nbar
+           << "\n  Abar,Yebar,Xnuclei:"
+           << Zbar+Nbar << " " << Zbar/(Zbar+Nbar) << " " << X[5] << endl;
+      ****************************************************/
+
+
+      electron_thread[ipoint]=electron;
+
+
+      //*****************************************************************
+
+
+     cout <<"*****************serial Env Setting**************"<<endl;
+     cout << "Using nB = " << nB << " 1/fm^3 and T = " << T*hc_mev_fm << " MeV and E1= "<<E1<<" MeV for\n  ipoint = " << ipoint << " out of total "<< n_point << endl;
+     cout << "nn,np,ne, abundance of heavy nuclei: " << neutron_thread[ipoint].n << " " << proton_thread[ipoint].n <<" "<<electron_thread[ipoint].n <<" "<<X[5]<<" ipoint = "<<ipoint << " out of total "<< n_point<<endl;
+     cout << "mun: " << neutron_thread[ipoint].mu*hc_mev_fm <<" ipoint = "<<ipoint << " out of total "<< endl;
+     cout << "mup: " << proton_thread[ipoint].mu*hc_mev_fm << " ipoint = "<<ipoint << " out of total "<<endl;
+     cout << "mue (without rest mass), mue (at beta, with rest mass): " << electron.mu*hc_mev_fm <<" "<< mue_beta*hc_mev_fm<< " ipoint = "<<ipoint << " out of total "<<endl;
+     cout << "U2 [MeV]: " << U2_thread[ipoint] <<" ipoint = "<<ipoint << " out of total "<< endl;
+     cout << "U4 [MeV]: " << U4_thread[ipoint] << " ipoint = "<<ipoint << " out of total "<<endl;
+     cout << "msn: " << msn_thread[ipoint] << " "<< vdet_units.find("msn")->second <<" ipoint = "<<ipoint << " out of total "<< endl;
+     cout << "msp: " << msp_thread[ipoint] << " "<< vdet_units.find("msp")->second << " ipoint = "<<ipoint << " out of total "<<endl;
+    // cout << "msn[vdet]: " << vdet["msn"] << " "<< vdet_units.find("msn")->second <<" ipoint = "<<ipoint << " out of total "<< endl;
+    // cout << "msp[vdet]: " << vdet["msp"] << " "<< vdet_units.find("msp")->second << " ipoint = "<<ipoint << " out of total "<<endl;
+
+
+
+     }
+   
+# pragma omp parallel for default(shared)
     for(size_t ipoint=0;ipoint<n_point;ipoint++) {      
 
       double nB=nB_list[ipoint];
       double T=TMeV_list[ipoint]/hc_mev_fm;
       double T_MeV=TMeV_list[ipoint];
+       // Incoming neutrino energy
+      double E1=E1_list[ipoint];
+      double Ye=Ye_list[ipoint];
 
-      size_t inB=vector_lookup(n_nB2,nB_grid2,nB);
+       
+
+
+     /* size_t inB=vector_lookup(n_nB2,nB_grid2,nB);
       //nB=nB_grid2[inB];
       size_t iT=vector_lookup(n_T2,T_grid2,T*hc_mev_fm);
       //T=T_grid2[iT]/hc_mev_fm;
       
-      cout << "Using nB = " << nB << " 1/fm^3 and T = " << T*hc_mev_fm
-           << " MeV for\n  ipoint = " << ipoint << " out of total "
-           << n_point << endl;
+    //  cout << "Using nB = " << nB << " 1/fm^3 and T = " << T*hc_mev_fm
+    //       << " MeV and E1= "<<E1<<" MeV for\n  ipoint = " << ipoint << " out of total "
+    //       << n_point << endl;
       
       double log_xn_best=0.0, log_xp_best=0.0;
       double fr_best=1.0e10;
@@ -11378,7 +11777,7 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
       thermo th_gas;
       neutron.n=nB;
       proton.n=nB/1.0e5;
-      double fr=free_energy_density_detail(neutron,proton,T,th_gas,vdet);
+      double fr=free_energy_density_detail(neutron,proton,T,th_gas,vdet);*/
       //vdet["g"]=1.0;
       //vdet["dgdnn"]=0.0;
       //vdet["dgdnp"]=0.0;
@@ -11390,14 +11789,14 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
                            dist_changed,no_nuclei);
         */
       
-      double mun_gas=neutron.mu;
-      double mup_gas=proton.mu;
-      cout << "mun_gas [MeV], mup_gas [MeV]: " << mun_gas*hc_mev_fm << " "
-           << mup_gas*hc_mev_fm << endl;
+      double mun_gas=neutron_thread[ipoint].mu;
+      double mup_gas=proton_thread[ipoint].mu;
+     // cout << "mun_gas [MeV], mup_gas [MeV]: " << mun_gas*hc_mev_fm << " "
+     //      << mup_gas*hc_mev_fm << endl;
       
       // Make sure to compute kf, which is not always computed at
       // finite temperature
-      sk.def_fet.kf_from_density(neutron);
+      sk.def_fet.kf_from_density(neutron_thread[ipoint]);
 
       /*
       cout << "Beta-eq point (ret2,Ye_best): " << ret2 << " "
@@ -11412,10 +11811,10 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
       if (true) {
         // Noninteracting fermions, but with the same mass as the
         // effective mass of the original neutron and proton
-        fermion n2(vdet["msn"]/hc_mev_fm,2.0);
-        fermion p2(vdet["msp"]/hc_mev_fm,2.0);
-        n2.n=neutron.n;
-        p2.n=proton.n;
+        fermion n2(msn_thread[ipoint]/hc_mev_fm,2.0);
+        fermion p2(msp_thread[ipoint]/hc_mev_fm,2.0);
+        n2.n=neutron_thread[ipoint].n;
+        p2.n=proton_thread[ipoint].n;
         n2.mu=mun_gas;
         p2.mu=mup_gas;
         n2.inc_rest_mass=false;
@@ -11429,23 +11828,23 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
       
       if (true) {
 
-        cout << "nn,np: " << neutron.n << " " << proton.n << endl;
-        cout << "mun: " << neutron.mu*hc_mev_fm << endl;
-        cout << "mup: " << proton.mu*hc_mev_fm << endl;
-        cout << "msn: " << vdet["msn"] << " "
-             << vdet_units.find("msn")->second << endl;
-        cout << "msp: " << vdet["msp"] << " "
-             << vdet_units.find("msp")->second << endl;
-        cout << "nn: " << neutron.n << endl;
-        cout << "np: " << proton.n << endl;
-        cout << "g,dgdnn [fm^3],dgdnp [fm^3]: " << vdet["g"] << " "
-             << vdet["dgdnn"] << " " << vdet["dgdnp"] << endl;
+     //   cout << "nn,np: " << neutron.n << " " << proton.n << endl;
+     //   cout << "mun: " << neutron.mu*hc_mev_fm << endl;
+     //   cout << "mup: " << proton.mu*hc_mev_fm << endl;
+     //   cout << "msn: " << vdet["msn"] << " "
+     //        << vdet_units.find("msn")->second << endl;
+     //   cout << "msp: " << vdet["msp"] << " "
+     //        << vdet_units.find("msp")->second << endl;
+     //   cout << "nn: " << neutron.n << endl;
+     //   cout << "np: " << proton.n << endl;
+    //    cout << "g,dgdnn [fm^3],dgdnp [fm^3]: " << vdet["g"] << " "
+    //         << vdet["dgdnn"] << " " << vdet["dgdnp"] << endl;
 
-        double u2eos=neutron.mu*hc_mev_fm-mu_n_nonint*hc_mev_fm;
-        cout << "U2 [MeV]: " << u2eos << endl;
-        double u4eos=proton.mu*hc_mev_fm-mu_p_nonint*hc_mev_fm;
-        cout << "U4 [MeV]: " << u4eos << endl;
-        cout << "T [MeV]: " << T*hc_mev_fm << endl;
+        double u2eos=neutron_thread[ipoint].mu*hc_mev_fm-mu_n_nonint*hc_mev_fm;
+    //    cout << "U2 [MeV]: " << u2eos << endl;
+        double u4eos=proton_thread[ipoint].mu*hc_mev_fm-mu_p_nonint*hc_mev_fm;
+   //     cout << "U4 [MeV]: " << u4eos << endl;
+   //     cout << "T [MeV]: " << T*hc_mev_fm << endl;
         
         if (false) {
           vdet["msn"]=neutron.m*hc_mev_fm;
@@ -11464,9 +11863,9 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
         
         FluidState betaEoS;
         betaEoS=FluidState::StateFromDensities
-          (T*hc_mev_fm,vdet["msn"],vdet["msp"],
-           neutron.n*pow(hc_mev_fm,3.0),proton.n*pow(hc_mev_fm,3.0),
-           u2eos,u4eos,electron.m*hc_mev_fm,electron.n*pow(hc_mev_fm,3.0));
+          (T*hc_mev_fm,msn_thread[ipoint],msp_thread[ipoint],
+           neutron_thread[ipoint].n*pow(hc_mev_fm,3.0),proton_thread[ipoint].n*pow(hc_mev_fm,3.0),
+           u2eos,u4eos,electron_thread[ipoint].m*hc_mev_fm,electron_thread[ipoint].n*pow(hc_mev_fm,3.0));
       
         WeakCouplings nscat=WeakCouplings::NeutronScattering();
         nscat.F2=0.0;
@@ -11475,15 +11874,15 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
         ncap.F2=0.0;
       
         // Incoming neutrino energy
-        double E1=30.0;
+       // double E1=10.0;//E1 was set at upper lines with nB and T
       
-        betaEoS.Mu2=neutron.mu*hc_mev_fm;
-        betaEoS.Mu4=proton.mu*hc_mev_fm;
+        betaEoS.Mu2=neutron_thread[ipoint].mu*hc_mev_fm;
+        betaEoS.Mu4=proton_thread[ipoint].mu*hc_mev_fm;
         betaEoS.Mu3=0.0;
-        cout << "mu2 [MeV], mu4 [MeV], mu3 [MeV] (without rest mass): "
-             << betaEoS.Mu2 << " "
-             << betaEoS.Mu4 << " "
-             << betaEoS.Mu3 << endl;
+     //   cout << "mu2 [MeV], mu4 [MeV], mu3 [MeV] (without rest mass): "
+     //        << betaEoS.Mu2 << " "
+     //        << betaEoS.Mu4 << " "
+     //        << betaEoS.Mu3 << endl;
 
         PolarizationNonRel pol_nc(betaEoS,nscat,false,false,false);
         pol_nc.current=Polarization::current_neutral;
@@ -11496,58 +11895,58 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
           
         // [fm^2]
         double fnn_sk=0.5*(sk.t0*(1.0-sk.x0)+
-                           1.0/6.0*sk.t3*pow((neutron.n+proton.n),sk.alpha)*
+                           1.0/6.0*sk.t3*pow((neutron_thread[ipoint].n+proton_thread[ipoint].n),sk.alpha)*
                            (1.0-sk.x3)+2.0/3.0*sk.alpha*sk.t3*
-                           pow((neutron.n+proton.n),sk.alpha-1)*
-                           ((1+sk.x3/2.0)*(neutron.n+proton.n)-
-                            (1.0/2.0+sk.x3)*neutron.n)+1.0/6.0*
+                           pow((neutron_thread[ipoint].n+proton_thread[ipoint].n),sk.alpha-1)*
+                           ((1+sk.x3/2.0)*(neutron_thread[ipoint].n+proton_thread[ipoint].n)-
+                            (1.0/2.0+sk.x3)*neutron_thread[ipoint].n)+1.0/6.0*
                            sk.alpha*(sk.alpha-1.0)*sk.t3*
-                           pow((neutron.n+proton.n),sk.alpha-2.0)*
-                           ((1+sk.x3/2.0)*pow((neutron.n+proton.n),2.0)-
+                           pow((neutron_thread[ipoint].n+proton_thread[ipoint].n),sk.alpha-2.0)*
+                           ((1+sk.x3/2.0)*pow((neutron_thread[ipoint].n+proton_thread[ipoint].n),2.0)-
                             (0.5+sk.x3)*
-                            (neutron.n*neutron.n+proton.n*proton.n)))+
-          0.25*(sk.t1*(1-sk.x1)+3*sk.t2*(1+sk.x2))*neutron.kf*neutron.kf;
+                            (neutron_thread[ipoint].n*neutron_thread[ipoint].n+proton_thread[ipoint].n*proton_thread[ipoint].n)))+
+          0.25*(sk.t1*(1-sk.x1)+3*sk.t2*(1+sk.x2))*neutron_thread[ipoint].kf*neutron_thread[ipoint].kf;
         
         // [fm^2]
         double w1nn_vec_sk=(sk.t0*(1.0-sk.x0)+
-                            1.0/6.0*sk.t3*pow((neutron.n+proton.n),
+                            1.0/6.0*sk.t3*pow((neutron_thread[ipoint].n+proton_thread[ipoint].n),
                                               sk.alpha)*    
                             (1.0-sk.x3)+2.0/3.0*sk.alpha*sk.t3*
-                            pow((neutron.n+proton.n),sk.alpha-1)* 
-                            ((1+sk.x3/2.0)*(neutron.n+proton.n)-           
-                             (1.0/2.0+sk.x3)*neutron.n)+1.0/6.0*            
+                            pow((neutron_thread[ipoint].n+proton_thread[ipoint].n),sk.alpha-1)* 
+                            ((1+sk.x3/2.0)*(neutron_thread[ipoint].n+proton_thread[ipoint].n)-           
+                             (1.0/2.0+sk.x3)*neutron_thread[ipoint].n)+1.0/6.0*            
                             sk.alpha*(sk.alpha-1.0)*sk.t3*                   
-                            pow((neutron.n+proton.n),sk.alpha-2.0)*          
-                            ((1+sk.x3/2.0)*pow((neutron.n+proton.n),2.0)-    
+                            pow((neutron_thread[ipoint].n+proton_thread[ipoint].n),sk.alpha-2.0)*          
+                            ((1+sk.x3/2.0)*pow((neutron_thread[ipoint].n+proton_thread[ipoint].n),2.0)-    
                              (0.5+sk.x3)*                                     
-                             (neutron.n*neutron.n+proton.n*proton.n)));
+                             (neutron_thread[ipoint].n*neutron_thread[ipoint].n+proton_thread[ipoint].n*proton_thread[ipoint].n)));
         
         // [fm^4]
         double w2nn_vec_sk=0.25*(sk.t1*(1-sk.x1)+3*sk.t2*(1+sk.x2));
         
         // [fm^2]
         double fpp_sk=0.5*(sk.t0*(1.0-sk.x0)+
-                           1.0/6.0*sk.t3*pow((neutron.n+proton.n),sk.alpha)*
+                           1.0/6.0*sk.t3*pow((neutron_thread[ipoint].n+proton_thread[ipoint].n),sk.alpha)*
                            (1.0-sk.x3)+2.0/3.0*sk.alpha*sk.t3*
-                           pow((neutron.n+proton.n),sk.alpha-1)*
-                           ((1+sk.x3/2.0)*(neutron.n+proton.n)-
-                            (1.0/2.0+sk.x3)*proton.n)+1.0/6.0*sk.alpha*
+                           pow((neutron_thread[ipoint].n+proton_thread[ipoint].n),sk.alpha-1)*
+                           ((1+sk.x3/2.0)*(neutron_thread[ipoint].n+proton_thread[ipoint].n)-
+                            (1.0/2.0+sk.x3)*proton_thread[ipoint].n)+1.0/6.0*sk.alpha*
                            (sk.alpha-1.0)*sk.t3*
-                           pow((neutron.n+proton.n),sk.alpha-2.0)*
-                           ((1+sk.x3/2.0)*pow((neutron.n+proton.n),2.0)-
+                           pow((neutron_thread[ipoint].n+proton_thread[ipoint].n),sk.alpha-2.0)*
+                           ((1+sk.x3/2.0)*pow((neutron_thread[ipoint].n+proton_thread[ipoint].n),2.0)-
                             (0.5+sk.x3)*
-                            (neutron.n*neutron.n+proton.n*proton.n)))+
-          0.25*(sk.t1*(1-sk.x1)+3*sk.t2*(1+sk.x2))*proton.kf*proton.kf;
+                            (neutron_thread[ipoint].n*neutron_thread[ipoint].n+proton_thread[ipoint].n*proton_thread[ipoint].n)))+
+          0.25*(sk.t1*(1-sk.x1)+3*sk.t2*(1+sk.x2))*proton_thread[ipoint].kf*proton_thread[ipoint].kf;
         
         // [fm^2]
         double gnn_sk=0.5*(sk.t0*(sk.x0-1)+
-                           1.0/6.0*sk.t3*pow((neutron.n+proton.n),sk.alpha)*
+                           1.0/6.0*sk.t3*pow((neutron_thread[ipoint].n+proton_thread[ipoint].n),sk.alpha)*
                            (sk.x3-1.0))+
-          0.25*(sk.t1*(sk.x1-1)+sk.t2*(1+sk.x2))*neutron.kf*neutron.kf;
+          0.25*(sk.t1*(sk.x1-1)+sk.t2*(1+sk.x2))*neutron_thread[ipoint].kf*neutron_thread[ipoint].kf;
 
         // [fm^2]
         double w1nn_ax_sk=(sk.t0*(sk.x0-1)+
-                           1.0/6.0*sk.t3*pow((neutron.n+proton.n),sk.alpha)*
+                           1.0/6.0*sk.t3*pow((neutron_thread[ipoint].n+proton_thread[ipoint].n),sk.alpha)*
                            (sk.x3-1.0));
         
         // [fm^4]
@@ -11555,46 +11954,46 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
         
         // [fm^2]
         double gpp_sk=0.5*(sk.t0*(sk.x0-1)+
-                           1.0/6.0*sk.t3*pow((neutron.n+proton.n),sk.alpha)*
+                           1.0/6.0*sk.t3*pow((neutron_thread[ipoint].n+proton_thread[ipoint].n),sk.alpha)*
                            (sk.x3-1.0))+
-          0.25*(sk.t1*(sk.x1-1)+sk.t2*(1+sk.x2))*proton.kf*proton.kf;
+          0.25*(sk.t1*(sk.x1-1)+sk.t2*(1+sk.x2))*proton_thread[ipoint].kf*proton_thread[ipoint].kf;
         
         // [fm^2]
         double fnp_sk=0.5*(sk.t0*(2.0+sk.x0)+1.0/6.0*sk.t3*
-                           pow((neutron.n+proton.n),sk.alpha)*(2.0+sk.x3)+
+                           pow((neutron_thread[ipoint].n+proton_thread[ipoint].n),sk.alpha)*(2.0+sk.x3)+
                            1.0/2.0*sk.alpha*sk.t3*
-                           pow((neutron.n+proton.n),sk.alpha)+
+                           pow((neutron_thread[ipoint].n+proton_thread[ipoint].n),sk.alpha)+
                            1.0/6.0*sk.alpha*(sk.alpha-1.0)*sk.t3*
-                           pow((neutron.n+proton.n),sk.alpha-2.0)*
-                           ((1+sk.x3/2.0)*pow((neutron.n+proton.n),2.0)-
+                           pow((neutron_thread[ipoint].n+proton_thread[ipoint].n),sk.alpha-2.0)*
+                           ((1+sk.x3/2.0)*pow((neutron_thread[ipoint].n+proton_thread[ipoint].n),2.0)-
                             (0.5+sk.x3)*
-                            (neutron.n*neutron.n+proton.n*proton.n)))+
+                            (neutron_thread[ipoint].n*neutron_thread[ipoint].n+proton_thread[ipoint].n*proton_thread[ipoint].n)))+
           0.5*0.25*(sk.t1*(2.0+sk.x1)+sk.t2*(2.0+sk.x2))*
-          (neutron.kf*neutron.kf+proton.kf*proton.kf);
+          (neutron_thread[ipoint].kf*neutron_thread[ipoint].kf+proton_thread[ipoint].kf*proton_thread[ipoint].kf);
 
         // [fm^2]
         double w1np_vec_sk=(sk.t0*(2.0+sk.x0)+1.0/6.0*sk.t3*
-                            pow((neutron.n+proton.n),sk.alpha)*(2.0+sk.x3)+
+                            pow((neutron_thread[ipoint].n+proton_thread[ipoint].n),sk.alpha)*(2.0+sk.x3)+
                             1.0/2.0*sk.alpha*sk.t3*
-                            pow((neutron.n+proton.n),sk.alpha)+
+                            pow((neutron_thread[ipoint].n+proton_thread[ipoint].n),sk.alpha)+
                             1.0/6.0*sk.alpha*(sk.alpha-1.0)*sk.t3*
-                            pow((neutron.n+proton.n),sk.alpha-2.0)*
-                            ((1+sk.x3/2.0)*pow((neutron.n+proton.n),2.0)-
+                            pow((neutron_thread[ipoint].n+proton_thread[ipoint].n),sk.alpha-2.0)*
+                            ((1+sk.x3/2.0)*pow((neutron_thread[ipoint].n+proton_thread[ipoint].n),2.0)-
                              (0.5+sk.x3)*
-                             (neutron.n*neutron.n+proton.n*proton.n)));
+                             (neutron_thread[ipoint].n*neutron_thread[ipoint].n+proton_thread[ipoint].n*proton_thread[ipoint].n)));
         
         // [fm^4]
         double w2np_vec_sk=0.25*(sk.t1*(2.0+sk.x1)+sk.t2*(2.0+sk.x2));
         
         // [fm^2]
         double gnp_sk=0.5*(sk.t0*sk.x0+1.0/6.0*sk.t3*
-                           pow((neutron.n+proton.n),sk.alpha)*sk.x3)+
+                           pow((neutron_thread[ipoint].n+proton_thread[ipoint].n),sk.alpha)*sk.x3)+
           0.5*0.25*(sk.t1*sk.x1+sk.t2*sk.x2)*
-          (neutron.kf*neutron.kf+proton.kf*proton.kf);
+          (neutron_thread[ipoint].kf*neutron_thread[ipoint].kf+proton_thread[ipoint].kf*proton_thread[ipoint].kf);
         
         // [fm^2]
         double w1np_ax_sk=(sk.t0*sk.x0+1.0/6.0*sk.t3*
-                           pow((neutron.n+proton.n),sk.alpha)*sk.x3);
+                           pow((neutron_thread[ipoint].n+proton_thread[ipoint].n),sk.alpha)*sk.x3);
         
         // [fm^4]
         double w2np_ax_sk=0.25*(sk.t1*sk.x1+sk.t2*sk.x2);
@@ -11616,7 +12015,7 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
         double b_pn=ecv.bpn_f(T*hc_mev_fm);
       
         // [1/MeV]
-        double lambda=sqrt(4.0*o2scl_const::pi/(neutron.m+proton.m)/T/
+        double lambda=sqrt(4.0*o2scl_const::pi/(neutron_thread[ipoint].m+proton_thread[ipoint].m)/T/
                            hc_mev_fm/hc_mev_fm);
         
         // [1/MeV^3]
@@ -11628,15 +12027,15 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
         double g0=ecv.g0(lambda,T*hc_mev_fm);
         double g0p=ecv.g0p(lambda,T*hc_mev_fm);
       
-        cout << "lambda: " << lambda << endl;
-        cout << "bn0,bn0free,bn1,bn1free: "
-             << ecv.bn0(T*hc_mev_fm) << " " << ecv.bn0_free() << " "
-             << ecv.bn1(T*hc_mev_fm) << " " << ecv.bn1_free() << endl;
-        cout << "bpn0,bpnfree,bpn1,bpn1free: "
-             << ecv.bpn0(T*hc_mev_fm) << " " << ecv.bpn0_free() << " "
-             << ecv.bpn1(T*hc_mev_fm) << " " << ecv.bpn1_free() << endl;
-        cout << "f0,f0p,g0,g0p: " << f0 << " " << f0p << " " << g0 << " "
-             << g0p << endl;
+       // cout << "lambda: " << lambda << endl;
+       // cout << "bn0,bn0free,bn1,bn1free: "
+       //      << ecv.bn0(T*hc_mev_fm) << " " << ecv.bn0_free() << " "
+       //      << ecv.bn1(T*hc_mev_fm) << " " << ecv.bn1_free() << endl;
+       // cout << "bpn0,bpnfree,bpn1,bpn1free: "
+       //      << ecv.bpn0(T*hc_mev_fm) << " " << ecv.bpn0_free() << " "
+       //      << ecv.bpn1(T*hc_mev_fm) << " " << ecv.bpn1_free() << endl;
+       // cout << "f0,f0p,g0,g0p: " << f0 << " " << f0p << " " << g0 << " "
+      //       << g0p << endl;
         ecv.include_deuteron=false;
 
         // [1/MeV^2]
@@ -11655,54 +12054,54 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
         double bpn1_hat=ecv.bpn1(T_MeV)-ecv.bpn1_free();
 
         // Both in [MeV]
-        double dUdnn_vir=(-bpn0_hat*T_MeV*lambda3*proton.n-
-                          bpn1_hat*T_MeV*lambda3*proton.n-
-                          bn0_hat*T_MeV*lambda3*neutron.n-
-                          bn1_hat*T_MeV*lambda3*neutron.n)*pow(hc_mev_fm,3.0);
-        double dUdnp_vir=(-bpn0_hat*T_MeV*lambda3*neutron.n-
-                          bpn1_hat*T_MeV*lambda3*neutron.n-
-                          bn0_hat*T_MeV*lambda3*proton.n-
-                          bn1_hat*T_MeV*lambda3*proton.n)*pow(hc_mev_fm,3.0);
+        double dUdnn_vir=(-bpn0_hat*T_MeV*lambda3*proton_thread[ipoint].n-
+                          bpn1_hat*T_MeV*lambda3*proton_thread[ipoint].n-
+                          bn0_hat*T_MeV*lambda3*neutron_thread[ipoint].n-
+                          bn1_hat*T_MeV*lambda3*neutron_thread[ipoint].n)*pow(hc_mev_fm,3.0);
+        double dUdnp_vir=(-bpn0_hat*T_MeV*lambda3*neutron_thread[ipoint].n-
+                          bpn1_hat*T_MeV*lambda3*neutron_thread[ipoint].n-
+                          bn0_hat*T_MeV*lambda3*proton_thread[ipoint].n-
+                          bn1_hat*T_MeV*lambda3*proton_thread[ipoint].n)*pow(hc_mev_fm,3.0);
         
         // Both in [1/MeV]
-        double dtau_dtaun_vir=1.0/neutron.m/hc_mev_fm;
-        double dtau_dtaup_vir=1.0/proton.m/hc_mev_fm;
+        double dtau_dtaun_vir=1.0/neutron_thread[ipoint].m/hc_mev_fm;
+        double dtau_dtaup_vir=1.0/proton_thread[ipoint].m/hc_mev_fm;
         
         // Both in [MeV]
-        double dUdnn_sk=((neutron.n+proton.n)*sk.t0*(1.0+sk.t0/2.0)-
-                         neutron.n*sk.t0*(0.5+sk.t0)-
-                         neutron.n*pow(neutron.n+proton.n,sk.alpha)/6.0*
+        double dUdnn_sk=((neutron_thread[ipoint].n+proton_thread[ipoint].n)*sk.t0*(1.0+sk.t0/2.0)-
+                         neutron_thread[ipoint].n*sk.t0*(0.5+sk.t0)-
+                         neutron_thread[ipoint].n*pow(neutron_thread[ipoint].n+proton_thread[ipoint].n,sk.alpha)/6.0*
                          sk.t3*(0.5+sk.x3)-
-                         pow(neutron.n+proton.n,-1.0+sk.alpha)/12.0*
+                         pow(neutron_thread[ipoint].n+proton_thread[ipoint].n,-1.0+sk.alpha)/12.0*
                          sk.t3*(0.5+sk.x3)*
-                         sk.alpha*(neutron.n*neutron.n+proton.n*proton.n)+
-                         pow(neutron.n+proton.n,1.0+sk.alpha)/12.0*
+                         sk.alpha*(neutron_thread[ipoint].n*neutron_thread[ipoint].n+proton_thread[ipoint].n*proton_thread[ipoint].n)+
+                         pow(neutron_thread[ipoint].n+proton_thread[ipoint].n,1.0+sk.alpha)/12.0*
                          sk.t3*(0.5+sk.x3)*
                          (2.0+sk.alpha))*hc_mev_fm;
-        double dUdnp_sk=((neutron.n+proton.n)*sk.t0*(1.0+sk.t0/2.0)-
-                         proton.n*sk.t0*(0.5+sk.t0)-
-                         proton.n*pow(neutron.n+proton.n,sk.alpha)/
+        double dUdnp_sk=((neutron_thread[ipoint].n+proton_thread[ipoint].n)*sk.t0*(1.0+sk.t0/2.0)-
+                         proton_thread[ipoint].n*sk.t0*(0.5+sk.t0)-
+                         proton_thread[ipoint].n*pow(neutron_thread[ipoint].n+proton_thread[ipoint].n,sk.alpha)/
                          6.0*sk.t3*(0.5+sk.x3)-
-                         pow(neutron.n+proton.n,-1.0+sk.alpha)/
+                         pow(neutron_thread[ipoint].n+proton_thread[ipoint].n,-1.0+sk.alpha)/
                          12.0*sk.t3*(0.5+sk.x3)*
-                         sk.alpha*(neutron.n*neutron.n+proton.n*proton.n)+
-                         pow(neutron.n+proton.n,1.0+sk.alpha)/
+                         sk.alpha*(neutron_thread[ipoint].n*neutron_thread[ipoint].n+proton_thread[ipoint].n*proton_thread[ipoint].n)+
+                         pow(neutron_thread[ipoint].n+proton_thread[ipoint].n,1.0+sk.alpha)/
                          12.0*sk.t3*(0.5+sk.x3)*
                          (2.0+sk.alpha))*hc_mev_fm;
         
         // Both in [1/MeV]
-        double dtau_dtaun_sk=(1.0/neutron.m+
-                              2.0*(0.25*(neutron.n+proton.n)*
+        double dtau_dtaun_sk=(1.0/neutron_thread[ipoint].m+
+                              2.0*(0.25*(neutron_thread[ipoint].n+proton_thread[ipoint].n)*
                                    (sk.t1*(1.0+sk.x1/2.0)+
                                     sk.t2*(1.0+sk.x2/2.0))+
-                                   0.25*neutron.n*
+                                   0.25*neutron_thread[ipoint].n*
                                    (-sk.t1*(0.5+sk.x1)+
                                     sk.t2*(0.5+sk.x2))))/hc_mev_fm;
-        double dtau_dtaup_sk=(1.0/proton.m+
-                              2.0*(0.25*(neutron.n+proton.n)*
+        double dtau_dtaup_sk=(1.0/proton_thread[ipoint].m+
+                              2.0*(0.25*(neutron_thread[ipoint].n+proton_thread[ipoint].n)*
                                    (sk.t1*(1.0+sk.x1/2.0)+
                                     sk.t2*(1.0+sk.x2/2.0))+
-                                   0.25*proton.n*
+                                   0.25*proton_thread[ipoint].n*
                                    (-sk.t1*(0.5+sk.x1)+
                                     sk.t2*(0.5+sk.x2))))/hc_mev_fm;
         
@@ -11711,7 +12110,7 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
         
         // qtf2 has units of MeV^2
         double qtf2=4.0*e2*cbrt(o2scl_const::pi)*
-          pow(3.0*proton.n*pow(hc_mev_fm,3),2.0/3.0);
+          pow(3.0*proton_thread[ipoint].n*pow(hc_mev_fm,3),2.0/3.0);
         double q=3.0*T_MeV;
         
         // Variable coulombf has units of 1/MeV^2
@@ -11725,7 +12124,7 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
         double fnn=fnn_virial*g_virial+fnn_sk*(1.0-g_virial)+
           2.0*vdet["dgdnn"]*dUdnn_vir-2.0*vdet["dgdnn"]*dUdnn_sk+
           (-vdet["dgdnn"]*dtau_dtaun_sk+vdet["dgdnn"]*dtau_dtaun_vir)*
-          neutron.kf*neutron.kf*pow(hc_mev_fm,2.0);
+          neutron_thread[ipoint].kf*neutron_thread[ipoint].kf*pow(hc_mev_fm,2.0);
 
         // "dg0" means, terms without dgdnn and dgdnp terms
         
@@ -11748,9 +12147,9 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
           vdet["dgdnn"]*(dUdnp_vir-dUdnp_sk)+
           vdet["dgdnp"]*(dUdnn_vir-dUdnn_sk)+
           0.5*(vdet["dgdnn"]*(dtau_dtaup_vir-dtau_dtaup_sk)*
-               proton.kf*proton.kf+
+               proton_thread[ipoint].kf*proton_thread[ipoint].kf+
                vdet["dgdnp"]*(dtau_dtaun_vir-dtau_dtaun_sk)*
-               neutron.kf*neutron.kf)*pow(hc_mev_fm,2.0);
+               neutron_thread[ipoint].kf*neutron_thread[ipoint].kf)*pow(hc_mev_fm,2.0);
 
         // [1/MeV^2]
         double fnp_dg0=fnp_virial*g_virial+fnp_sk*(1.0-g_virial);
@@ -11764,15 +12163,15 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
         // [fm^2/MeV^2]
         double w2np_vec_general=(1.0-g_virial)*w2np_vec_sk/pow(hc_mev_fm,2.0)+
           vdet["dgdnn"]*(dtau_dtaup_vir-dtau_dtaup_sk)*pow(hc_mev_fm,2.0)*
-          proton.kf*proton.kf/(proton.kf*proton.kf+neutron.kf*neutron.kf)+
+          proton_thread[ipoint].kf*proton_thread[ipoint].kf/(proton_thread[ipoint].kf*proton_thread[ipoint].kf+neutron_thread[ipoint].kf*neutron_thread[ipoint].kf)+
           vdet["dgdnp"]*(dtau_dtaun_vir-dtau_dtaun_sk)*pow(hc_mev_fm,2.0)*
-          neutron.kf*neutron.kf/(proton.kf*proton.kf+neutron.kf*neutron.kf);
+          neutron_thread[ipoint].kf*neutron_thread[ipoint].kf/(proton_thread[ipoint].kf*proton_thread[ipoint].kf+neutron_thread[ipoint].kf*neutron_thread[ipoint].kf);
  
         // [1/MeV^2]
         double fpp=fpp_virial*g_virial+fpp_sk*(1.0-g_virial)+
           2.0*vdet["dgdnp"]*dUdnp_vir-2.0*vdet["dgdnp"]*dUdnp_sk+
           (-vdet["dgdnp"]*dtau_dtaun_sk+vdet["dgdnp"]*dtau_dtaun_vir)*
-          proton.kf*proton.kf*pow(hc_mev_fm,2.0);
+          proton_thread[ipoint].kf*proton_thread[ipoint].kf*pow(hc_mev_fm,2.0);
         
         // [1/MeV^2]
         double fpp_dg0=fpp_virial*g_virial+fpp_sk*(1.0-g_virial);
@@ -11799,14 +12198,16 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
         
         // [1/MeV^2]
         double gpp=gpp_virial*g_virial+gpp_sk*(1.0-g_virial);
+        
+      //  cout<<"fnn_sk, fnn_virial:"<<fnn_sk<<" "<<fnn_virial<<endl;
 
-        cout << "fnn [1/MeV^2], fnn_dg0 [1/MeV^2], fnp [1/MeV^2], "
-             << "fnp_dg0 [1/MeV^2], fpp [1/MeV^2], fpp_dg0 [1/MeV^2]: "
-             << fnn << " " << fnn_dg0 << " " << fnp << " "
-             << fnp_dg0 << " " << fpp << " " << fpp_dg0 << endl;
+      //  cout << "fnn [1/MeV^2], fnn_dg0 [1/MeV^2], fnp [1/MeV^2], "
+      //       << "fnp_dg0 [1/MeV^2], fpp [1/MeV^2], fpp_dg0 [1/MeV^2]: "
+      //       << fnn << " " << fnn_dg0 << " " << fnp << " "
+      //       << fnp_dg0 << " " << fpp << " " << fpp_dg0 << endl;
 
-        cout << "gnn [1/MeV^2], gnp [1/MeV^2], gpp [1/MeV^2]: "
-             << gnn << " " << gnp << " " << gpp << endl;
+      //  cout << "gnn [1/MeV^2], gnp [1/MeV^2], gpp [1/MeV^2]: "
+      //       << gnn << " " << gnp << " " << gpp << endl;
       
         // kf should be the hole momenta at fermi see surface, here the
         // transition is (pn^-1,pn^-1), the hole is neutron hole
@@ -11814,18 +12215,18 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
         // Rearrangement terms
 
         // Units of 1/MeV^2
-        double rea=(sk.t3*sk.alpha/3.0*pow(neutron.n+proton.n,sk.alpha-1.0)*
-                    ((neutron.n+proton.n)*(1.0+sk.x3/2.0)-
-                     neutron.n*(sk.x3+0.5)))/pow(hc_mev_fm,2.0);
+        double rea=(sk.t3*sk.alpha/3.0*pow(neutron_thread[ipoint].n+proton_thread[ipoint].n,sk.alpha-1.0)*
+                    ((neutron_thread[ipoint].n+proton_thread[ipoint].n)*(1.0+sk.x3/2.0)-
+                     neutron_thread[ipoint].n*(sk.x3+0.5)))/pow(hc_mev_fm,2.0);
         
         // Units of MeV
-        double reb=(sk.t3*sk.alpha/12.0*pow(neutron.n+proton.n,sk.alpha-1.0)*
-                    (pow(neutron.n+proton.n,2.0)*(1.0+sk.x3/2.0)-
-                     (neutron.n*neutron.n+proton.n*proton.n)*(sk.x3+0.5)))*
+        double reb=(sk.t3*sk.alpha/12.0*pow(neutron_thread[ipoint].n+proton_thread[ipoint].n,sk.alpha-1.0)*
+                    (pow(neutron_thread[ipoint].n+proton_thread[ipoint].n,2.0)*(1.0+sk.x3/2.0)-
+                     (neutron_thread[ipoint].n*neutron_thread[ipoint].n+proton_thread[ipoint].n*proton_thread[ipoint].n)*(sk.x3+0.5)))*
           hc_mev_fm;
         
         // Units of 1/MeV^2
-        double rec=(0.25*sk.alpha*sk.t3*pow(neutron.n+proton.n,sk.alpha))/
+        double rec=(0.25*sk.alpha*sk.t3*pow(neutron_thread[ipoint].n+proton_thread[ipoint].n,sk.alpha))/
           pow(hc_mev_fm,2.0);
         
         // Units of 1/MeV^2
@@ -11858,7 +12259,7 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
         // Units of 1/MeV^2
         double vf=0.5*(w1nn_vec_general_tilde-w1np_vec_general_tilde)+
           (vdet["dgdnn"]*reb*2.0-(vdet["dgdnn"]+vdet["dgdnp"])*reb)+
-          (w2nn_vec_general-w2np_vec_general)*neutron.kf*neutron.kf;
+          (w2nn_vec_general-w2np_vec_general)*neutron_thread[ipoint].kf*neutron_thread[ipoint].kf;
         
         // Units of 1/MeV^2
         double w1nn_vec_general_tilde_dg0=2.0*fnn_virial*g_virial+
@@ -11879,87 +12280,476 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
         // Units of 1/MeV^2
         double vf_dg0=0.5*(w1nn_vec_general_tilde_dg0-
                            w1np_vec_general_tilde_dg0)+
-          (w2nn_vec_general_dg0-w2np_vec_general_dg0)*neutron.kf*neutron.kf;
+          (w2nn_vec_general_dg0-w2np_vec_general_dg0)*neutron_thread[ipoint].kf*neutron_thread[ipoint].kf;
         
         // Units of 1/MeV^2
         double vgt_old=gnn-gnp;
         
         // Units of 1/MeV^2
         double vgt=0.5*(w1nn_ax_general-w1np_ax_general)+
-          (w2nn_ax_general-w2np_ax_general)*neutron.kf*neutron.kf;
+          (w2nn_ax_general-w2np_ax_general)*neutron_thread[ipoint].kf*neutron_thread[ipoint].kf;
 
-        cout << "vf_old [1/MeV^2], vf [1/MeV^2], "
-             << "vf_dg0 [1/MeV^2], vgt_old [1/MeV^2], "
-             << "vgt [1/MeV^2]: " << vf_old << " " << vf << " "
-             << vf_dg0 << " " << vgt_old << " " << vgt << endl;
+	//in this new section below, calculate the W1 and W2 functions needed for CC Bethe-salpether RPA polarization functions. We only calculate the momentum independent parts of the W1 function here, and the momentum dependent part will be added in the PolarizationNonrel cpp code (when the piL is calculated). Also, W1 and W2 function calculated here have units all composed by MeV^-1, since the PolarizationNonrel code use unit of MeV for both piL q, and q0. In eos_nuclei.cpp code, the W2 functions has a unit of MeV^-2*fm^2, and that is because the n.kf in o2scl always gives quantity in unit of fm or fm^-1
+	double w1cc_vec_part1,w1cc_vec_part2,w1cc_ax_part1,w1cc_ax_part2,w2cc_vec,w2cc_ax;
+	w1cc_vec_part1=-sk.t0*(1.0+2.0*sk.x0)-1.0/6.0*sk.t3*pow((neutron_thread[ipoint].n+proton_thread[ipoint].n),sk.alpha)*(1.0+2.0*sk.x3);
+	w1cc_vec_part2=-0.25*(sk.t1*(1.0+2.0*sk.x1)+sk.t2*(1.0+2.0*sk.x2));//part 2 will be multiplied by q^2 in the PolarizationNonrel code
+	w1cc_ax_part1=-sk.t0-1.0/6.0*sk.t3*pow((neutron_thread[ipoint].n+proton_thread[ipoint].n),sk.alpha);
+	w1cc_ax_part2=-0.25*(sk.t1+sk.t2);
+	w2cc_vec=-0.25*(sk.t1*(1.0+2.0*sk.x1)-sk.t2*(1.0+2.0*sk.x2));
+	w2cc_ax=-0.25*(sk.t1-sk.t2);
+
+	w1cc_vec_part1=w1cc_vec_part1/pow(hc_mev_fm,2);
+	w1cc_vec_part2=w1cc_vec_part2/pow(hc_mev_fm,4);
+	w1cc_ax_part1=w1cc_ax_part1/pow(hc_mev_fm,2);
+        w1cc_ax_part2=w1cc_ax_part2/pow(hc_mev_fm,4);
+	w2cc_vec=w2cc_vec/pow(hc_mev_fm,4);
+        w2cc_ax=w2cc_ax/pow(hc_mev_fm,4);
+
+//	pol_cc.set_BSresidual(w1cc_vec_part1,w1cc_vec_part2,w1cc_ax_part1,w1cc_ax_part2,w2cc_vec,w2cc_ax);
+
+
+
+        	
+
+       // cout << "vf_old [1/MeV^2], vf [1/MeV^2], "
+       //      << "vf_dg0 [1/MeV^2], vgt_old [1/MeV^2], "
+       //      << "vgt [1/MeV^2]: " << vf_old << " " << vf << " "
+       //      << vf_dg0 << " " << vgt_old << " " << vgt << endl;
+        //----------------------------------------------------------------
+	//Neutral current (TRANSPARANT)mean free path in free space
+	
+	double nc_vec_free=0.0;
+	double nc_ax_free=0.0;
+	double nc_vec_free_tran=0.0;
+	double nc_ax_free_tran=0.0;
+
+	double FermiConst=1.1663787*1.e-11;//unit is MeV-2
+	double ga=1.23;//this is the ga consistent with the weak coupling.cpp in nuopac
+	double pi=3.1415926;
+
+	nc_ax_free=FermiConst*FermiConst*E1*E1/pi*3.0/4.0*ga*ga*(neutron_thread[ipoint].n+proton_thread[ipoint].n)*197.3*197.3*197.3*1.e13/197.3;//unit is cm-2,proton and neutron axial coupling constant absolute value is the same
+	nc_vec_free=FermiConst*FermiConst*E1*E1/pi*1.0/4.0*1.0*1.0*neutron_thread[ipoint].n*197.3*197.3*197.3*1.e13/197.3;//unit is cm-2,  proton vector coupling constant is almost 0
+	
+	nc_ax_free_tran=FermiConst*FermiConst*E1*E1/pi*(3.0+1.0/3.0)/4.0*ga*ga*(neutron_thread[ipoint].n+proton_thread[ipoint].n)*197.3*197.3*197.3*1.e13/197.3;//unit is cm-2,proton and neutron axial coupling constant absolute value is the same
+        nc_vec_free_tran=FermiConst*FermiConst*E1*E1/pi*(1.0-1.0/3.0)/4.0*1.0*1.0*neutron_thread[ipoint].n*197.3*197.3*197.3*1.e13/197.3;//unit is cm-2,  proton vector coupling constant is almost 0
+
+        //----------------------------------------------------------------
+	//Charged current mean free path in free space
+	double dm=939.56-938.27;//neutro-proton mass difference(MeV)
+	double cc_vec_free=0.0;
+	double cc_ax_free=0.0;
+	//double cc_vec_free_tran=0.0;
+	//double cc_ax_free_tran=0.0;
+
+	cc_ax_free=FermiConst*FermiConst*(E1+dm)*(E1+dm)/pi*3*ga*ga*neutron_thread[ipoint].n*197.3*197.3*197.3*1.e13/197.3;//unit is cm-2
+        cc_vec_free=FermiConst*FermiConst*(E1+dm)*(E1+dm)/pi*1.0*1.0*1.0*neutron_thread[ipoint].n*197.3*197.3*197.3*1.e13/197.3;
  
+	//cc_ax_free_tran=FermiConst*FermiConst*(E1+dm)*(E1+dm)/pi*(3+1.0/3.0)*ga*ga*neutron_thread[ipoint].n*197.3*197.3*197.3*1.e13/197.3;//unit is cm-2
+       // cc_vec_free_tran=FermiConst*FermiConst*(E1+dm)*(E1+dm)/pi*(1.0-1.0/3.0)*1.0*1.0*neutron_thread[ipoint].n*197.3*197.3*197.3*1.e13/197.3;
+        
+	 //----------------------------------------------------------------
+        //Charged current mean free path in free space
+        double dmantinu=-939.56+938.27;//neutro-proton mass difference(MeV)
+        double cc_vec_antinu_free=0.0;
+        double cc_ax_antinu_free=0.0;
+        //double cc_vec_free_tran=0.0;
+        //double cc_ax_free_tran=0.0;
+
+        cc_ax_antinu_free=FermiConst*FermiConst*(E1+dm)*(E1+dm)/pi*3*ga*ga*proton_thread[ipoint].n*197.3*197.3*197.3*1.e13/197.3;//unit is cm-2
+        cc_vec_antinu_free=FermiConst*FermiConst*(E1+dm)*(E1+dm)/pi*1.0*1.0*1.0*proton_thread[ipoint].n*197.3*197.3*197.3*1.e13/197.3;
+
+        //cc_ax_free_tran=FermiConst*FermiConst*(E1+dm)*(E1+dm)/pi*(3+1.0/3.0)*ga*ga*neutron_thread[ipoint].n*197.3*197.3*197.3*1.e13/197.3;//unit is cm-2
+       // cc_vec_free_tran=FermiConst*FermiConst*(E1+dm)*(E1+dm)/pi*(1.0-1.0/3.0)*1.0*1.0*neutron_thread[ipoint].n*197.3*197.3*197.3*1.e13/197.3;
+
+
+
         // -----------------------------------------------------------------
         // Neutral current mean free path
-      
+        //--------------vec part------------------------------------------------------
         pol_nc.integ_method_mu=Polarization::integ_mc;
         pol_nc.integ_method_q0=Polarization::integ_mc;
+       //   pol_nc.integ_method_mu=Polarization::integ_o2scl;
+       //   pol_nc.integ_method_q0=Polarization::integ_o2scl;
         
         pol_nc.set_residual(fnn_dg0,fnp_dg0,fpp_dg0,gnn,gnp,gpp,
-                            vf,vgt,proton.n);
+                            vf,vgt,proton_thread[ipoint].n);
       
         pol_nc.flag=Polarization::flag_vector;
-        double nc_vec_mfp_dg0=pol_nc.CalculateInverseMFP(E1,true)/
-          hc_mev_fm*1.e13;
+        double nc_vec_mfp_dg0=0.0;
+      //	nc_vec_mfp_dg0=pol_nc.CalculateInverseMFP(E1,true)/
+      //    hc_mev_fm*1.e13;//pure neutron matter
+//	nc_vec_mfp_dg0=pol_nc.CalculateInverseMFP(E1)/
+  //       hc_mev_fm*1.e13;// finite Ye matter
         cout << "neutral current, vector part, no dgdn terms: "
-             << nc_vec_mfp_dg0 << endl;
+             << nc_vec_mfp_dg0 <<" ratio of crx/crx_free (nc vec): "<<nc_vec_mfp_dg0/nc_vec_free<< endl;
+	double nc_vec_mfp_dg0_Transport=0.0;
+       // nc_vec_mfp_dg0_Transport=pol_nc.CalculateTransportInverseMFP(E1,true)/
+       //   hc_mev_fm*1.e13;// pure neutron matter
+	//nc_vec_mfp_dg0_Transport=pol_nc.CalculateTransportInverseMFP(E1)/
+        //  hc_mev_fm*1.e13; // finite ye matter
+        cout << "neutral current, TRANSPORT vector part, no dgdn terms: "
+             << nc_vec_mfp_dg0_Transport <<" ratio of crx/crx_free (nc vec Tran): "<<nc_vec_mfp_dg0_Transport/nc_vec_free_tran<<endl;
+       //cout << "neutral current, TRANSPORT vector part, no dgdn terms: "
+       //      << nc_vec_mfp_dg0_Transport <<" ratio of crx/crx_free (nc vec Tran): "<<nc_vec_mfp_dg0_Transport/nc_vec_free<<endl;//this is just for test!!
+
       
-        pol_nc.set_residual(fnn,fnp,fpp,gnn,gnp,gpp,vf,vgt,proton.n);
+        pol_nc.set_residual(fnn,fnp,fpp,gnn,gnp,gpp,vf,vgt,proton_thread[ipoint].n);
         
         pol_nc.flag=Polarization::flag_vector;
-        double nc_vec_mfp=pol_nc.CalculateInverseMFP(E1,true)/
-          hc_mev_fm*1.e13;
-        cout << "neutral current, vector part: " << nc_vec_mfp << endl;
+        double nc_vec_mfp=0.0;
+      //  nc_vec_mfp=pol_nc.CalculateInverseMFP(E1,true)/
+      //    hc_mev_fm*1.e13;
+      //  cout << "neutral current, vector part: " << nc_vec_mfp << endl;
+       //
+       //---------------------------------------------------------------------
+      //wirte GetResponse functions at various cos\theta at a specific q0 for vec part
+     /* double q0=-4.0; //MeV
+      double mu=-1.0; //cos\theta, unitless
+      double qq=0.0;
+      double response=0.0;
+      for (int ii=0; ii<20; ++ii){
+      mu=-0.999+0.1*ii;
+      qq=pol_nc.GetqFromMu13(E1, q0, mu);
+      response=pol_nc.GetResponse(E1, q0, qq, true);
+      cout<<"q0: "<<q0<<" q: "<<qq<<" GetResponse (vec): "<<response<<" GetResponse*mu (vec)"<<response*mu<<endl;
+      }*/
+     //-----ax part-------------------------------------------------------------------
       
         pol_nc.flag=Polarization::flag_axial;
-        double nc_axvec_mfp=pol_nc.CalculateInverseMFP(E1,true)/
-          hc_mev_fm*1.e13;
-        cout << "neutral current, axial part: " << nc_axvec_mfp << endl;
-
+	double nc_axvec_mfp=0.0;
+       // nc_axvec_mfp=pol_nc.CalculateInverseMFP(E1,true)/
+       //   hc_mev_fm*1.e13; //pure neutron matter
+       //   nc_axvec_mfp=pol_nc.CalculateInverseMFP(E1)/
+       //   hc_mev_fm*1.e13;//finite ye matter
+        cout << "neutral current, axial part: " << nc_axvec_mfp <<" ratio of crx/crx_free (nc ax): "<<nc_axvec_mfp/nc_ax_free<<endl;
+	double nc_axvec_mfp_Transport=0.0;
+      //  nc_axvec_mfp_Transport=pol_nc.CalculateTransportInverseMFP(E1,true)/
+      //    hc_mev_fm*1.e13; //pure neutron matter
+    //      nc_axvec_mfp_Transport=pol_nc.CalculateTransportInverseMFP(E1)/
+      //    hc_mev_fm*1.e13; //finite ye matter
+        cout << "neutral current, TRANSPORT axial part: " << nc_axvec_mfp_Transport <<" ratio of crx/crx_free (nc ax Tran): "<<nc_axvec_mfp_Transport/nc_ax_free_tran<< endl;
+      // cout << "neutral current, TRANSPORT axial part: " << nc_axvec_mfp_Transport <<" ratio of crx/crx_free (nc ax Tran): "<<nc_axvec_mfp_Transport/nc_ax_free<< endl;//this is for test!!
+      //
+      //---------------------------------------------------------------------
+      //wirte GetResponse functions at various cos\theta at a specific q0 for ax part
+     /* q0=-4.0; //MeV
+      mu=-1.0; //cos\theta, unitless
+      qq=0.0;
+      response=0.0;
+      for (int ii=0; ii<20; ++ii){
+      mu=-0.999+0.1*ii;
+      qq=pol_nc.GetqFromMu13(E1, q0, mu);
+      response=pol_nc.GetResponse(E1, q0, qq, true);
+      cout<<"q0: "<<q0<<"q: "<<qq<<" GetResponse: "<<response<<" GetResponse*mu (ax)"<<response*mu<<endl;
+      }*/   
         // -----------------------------------------------------------------
         // Neutral current mean free path no RPA
       
         pol_nc.integ_method_mu=Polarization::integ_mc;
         pol_nc.integ_method_q0=Polarization::integ_mc;
+       // pol_nc.integ_method_mu=Polarization::integ_o2scl;
+       // pol_nc.integ_method_q0=Polarization::integ_o2scl;
         
-        pol_nc.set_residual(0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,proton.n);
+        pol_nc.set_residual(0.0,0.0,-coulombf,0.0,0.0,0.0,0.0,0.0,proton_thread[ipoint].n);//here is tricky, set fpp=-coulombf, so that fppcoulomb=fpp+coulombbf=0
       
         pol_nc.flag=Polarization::flag_vector;
-        double nc_vec_mfp_norpa=pol_nc.CalculateInverseMFP(E1,true)/
-          hc_mev_fm*1.e13;
-        cout << "neutral current, vector part, no RPA: " << nc_vec_mfp << endl;
+        double nc_vec_mfp_norpa=0.0;
+      //nc_vec_mfp_norpa=pol_nc.CalculateInverseMFP(E1,true)/
+      //    hc_mev_fm*1.e13;//pure neutron matter 
+//	 nc_vec_mfp_norpa=pol_nc.CalculateInverseMFP(E1)/
+  //        hc_mev_fm*1.e13;// finite ye matter
+        cout << "neutral current, vector part, no RPA: " << nc_vec_mfp_norpa <<" ratio of crx/crx_free (nc vec norpa): "<<nc_vec_mfp_norpa/nc_vec_free<< endl;
+	double nc_vec_mfp_norpa_Transport=0.0;
+      //nc_vec_mfp_norpa_Transport=pol_nc.CalculateTransportInverseMFP(E1,true)/
+      //    hc_mev_fm*1.e13;//pure neutron matter
+//	nc_vec_mfp_norpa_Transport=pol_nc.CalculateTransportInverseMFP(E1)/
+  //        hc_mev_fm*1.e13;//finite ye matter
+        cout << "neutral current, TRANSPORT vector part, no RPA: "
+             << nc_vec_mfp_norpa_Transport << " ratio of crx/crx_free (nc vec norpa Tran): "<<nc_vec_mfp_norpa_Transport/nc_vec_free_tran<<endl;
+
       
         pol_nc.flag=Polarization::flag_axial;
-        double nc_axvec_mfp_norpa=pol_nc.CalculateInverseMFP(E1,true)/
-          hc_mev_fm*1.e13;
-        cout << "neutral current, axial part, no RPA: " << nc_axvec_mfp << endl;
+        double nc_axvec_mfp_norpa=0.0;
+	//nc_axvec_mfp_norpa=pol_nc.CalculateInverseMFP(E1,true)/
+        //  hc_mev_fm*1.e13; //pure neutron matter
+//	 nc_axvec_mfp_norpa=pol_nc.CalculateInverseMFP(E1)/hc_mev_fm*1.e13; // finite ye matter
+        cout << "neutral current, axial part, no RPA: " << nc_axvec_mfp_norpa <<" ratio of crx/crx_free (nc ax norpa): "<<nc_axvec_mfp_norpa/nc_ax_free<< endl;
+	double nc_axvec_mfp_norpa_Transport=0.0;
+//	nc_axvec_mfp_norpa_Transport=pol_nc.CalculateTransportInverseMFP(E1,true)/
+  //        hc_mev_fm*1.e13;//pure neutron matter
+//	nc_axvec_mfp_norpa_Transport=pol_nc.CalculateTransportInverseMFP(E1)/
+  //        hc_mev_fm*1.e13;// finite ye matter
+        cout << "neutral current, TRANSPORT axial part: " << nc_axvec_mfp_norpa_Transport <<" ratio of crx/crx_free (nc ax norpa Tran): "<<nc_axvec_mfp_norpa_Transport/nc_ax_free_tran<< endl;
+
 
         // Go back to the "with RPA" calculations to compute the
         // response below
         pol_nc.set_residual(fnn_dg0,fnp_dg0,fpp_dg0,gnn,gnp,gpp,
-                            vf,vgt,proton.n);
+                            vf,vgt,proton_thread[ipoint].n);
+       //-----------------------------------------------------------------
+       // Charged current mean free path
+       betaEoS.Mu3=(electron_thread[ipoint].mu-electron_thread[ipoint].m)*hc_mev_fm;//this is the chemical potential of outcoming electron in CC reactions, in NC, usually Mu3=0 if neutrino if not trapped
+       PolarizationNonRel pol_cc(betaEoS, ncap, false, false, false);//note that here the doBlock(last bool value is false), this is because I want to compare it with CC interaction in free space
+       pol_cc.current=Polarization::current_charged;
+ 
+
+        pol_cc.integ_method_mu=Polarization::integ_mc;
+        pol_cc.integ_method_q0=Polarization::integ_mc;
+        //pol_cc.integ_method_mu=Polarization::integ_cubature;
+        //pol_cc.integ_method_q0=Polarization::integ_cubature;
+       // pol_cc.integ_method_mu=Polarization::integ_o2scl;
+       // pol_cc.integ_method_q0=Polarization::integ_o2scl;
+        //pol_cc.integ_method_mu=Polarization::integ_base;
+        //pol_cc.integ_method_q0=Polarization::integ_base;
+
+        pol_cc.set_residual(fnn,fnp,fpp,gnn,gnp,gpp,
+                            vf_dg0,vgt,proton_thread[ipoint].n);
+        pol_cc.set_BSresidual(w1cc_vec_part1,w1cc_vec_part2,w1cc_ax_part1,w1cc_ax_part2,w2cc_vec,w2cc_ax);//set these residual when CC Bethe salpeter EQs are solved exactly 
+        pol_cc.flag=Polarization::flag_vector;
+	double cc_vec_mfp_dg0=0.0;
+        cc_vec_mfp_dg0=pol_cc.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
+        cout << "charged current, vector part, no dgdn terms: "
+             << cc_vec_mfp_dg0 <<" ratio of crx/crx_free (cc vec): "<<cc_vec_mfp_dg0/cc_vec_free<<endl;
+
+       // pol_cc.set_residual(fnn,fnp,fpp,gnn,gnp,gpp,vf,vgt,proton.n);
+
+       // pol_cc.flag=Polarization::flag_vector;
+       // double cc_vec_mfp=pol_cc.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
+       // cout << "charged current, vector part: " << cc_vec_mfp << endl;
+
+        pol_cc.flag=Polarization::flag_axial;
+        double cc_axvec_mfp=0.0;
+       	//cc_axvec_mfp=pol_cc.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
+        cout << "charged current, axial part: " << cc_axvec_mfp <<" ratio of crx/crx_free (cc ax): "<<cc_axvec_mfp/cc_ax_free<<endl;
+
+        // -----------------------------------------------------------------
+        // Charged current mean free path without RPA
+
+        pol_cc.integ_method_mu=Polarization::integ_mc;
+        pol_cc.integ_method_q0=Polarization::integ_mc;
+        //pol_cc.integ_method_mu=Polarization::integ_cubature;
+        //pol_cc.integ_method_q0=Polarization::integ_cubature;
+        // pol_cc.integ_method_mu=Polarization::integ_o2scl;
+        // pol_cc.integ_method_q0=Polarization::integ_o2scl;
+        //pol_cc.integ_method_mu=Polarization::integ_base;
+        //pol_cc.integ_method_q0=Polarization::integ_base;
+
+        pol_cc.set_residual(0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,proton_thread[ipoint].n);// here CC interaction is not relavant to fpp, so no need to worry about -coulombf
+        pol_cc.set_BSresidual(0.0,0.0,0.0,0.0,0.0,0.0);//set these residual when CC Bethe salpeter EQs are solved exactly
+        pol_cc.flag=Polarization::flag_vector;
+        double cc_vec_mfp_norpa=0.0;
+      //  cc_vec_mfp_norpa=pol_cc.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
+        cout << "charged current, vector part, no RPA: " << cc_vec_mfp_norpa <<" ratio of crx/crx_free (cc vec norpa): "<<cc_vec_mfp_norpa/cc_vec_free<< endl;
+
+        pol_cc.flag=Polarization::flag_axial;
+        double cc_axvec_mfp_norpa=0.0;
+      //  cc_axvec_mfp_norpa=pol_cc.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
+        cout << "charged current, axial part, no RPA: " << cc_axvec_mfp_norpa <<" ratio of crx/crx_free (cc ax norpa): "<<cc_axvec_mfp_norpa/cc_ax_free<< endl;
         
-        if (true) {
+	// Go back to the "with RPA" calculations to compute the
+        // response below
+        pol_cc.set_residual(fnn,fnp,fpp,gnn,gnp,gpp,
+                            vf_dg0,vgt,proton_thread[ipoint].n);
+        pol_cc.set_BSresidual(w1cc_vec_part1,w1cc_vec_part2,w1cc_ax_part1,w1cc_ax_part2,w2cc_vec,w2cc_ax);//set these residual when CC Bethe salpeter EQs are solved exactly
+ //-----------------------------------------------------------------
+       // anti neutrino Charged current mean free path
+        double u2eosantinu=proton_thread[ipoint].mu*hc_mev_fm-mu_p_nonint*hc_mev_fm;
+      //  cout << "U2 (antinu) [MeV]: " << u2eosantinu << endl;
+        double u4eosantinu=neutron_thread[ipoint].mu*hc_mev_fm-mu_n_nonint*hc_mev_fm;
+      //  cout << "U4 (antinu) [MeV]: " << u4eosantinu << endl;
+
+
+       FluidState betaEoSantinu;
+        betaEoSantinu=FluidState::StateFromDensities
+          (T*hc_mev_fm,msp_thread[ipoint],msn_thread[ipoint],
+           proton_thread[ipoint].n*pow(hc_mev_fm,3.0),neutron_thread[ipoint].n*pow(hc_mev_fm,3.0),
+           u2eosantinu,u4eosantinu,electron_thread[ipoint].m*hc_mev_fm,electron_thread[ipoint].n*pow(hc_mev_fm,3.0));//anti electron mass equal to electron mass,  anti electron density is what? 
+
+       // WeakCouplings nscat=WeakCouplings::NeutronScattering();
+       // nscat.F2=0.0;
+
+       // WeakCouplings ncap=WeakCouplings::NuCapture();
+       // ncap.F2=0.0;
+
+        // Incoming neutrino energy
+       // double E1=10.0;//E1 was set at upper lines with nB and T
+
+        betaEoSantinu.Mu2=proton_thread[ipoint].mu*hc_mev_fm;
+        betaEoSantinu.Mu4=neutron_thread[ipoint].mu*hc_mev_fm;
+	betaEoSantinu.Mu3=(electron_thread[ipoint].mu-electron_thread[ipoint].m)*hc_mev_fm;//this is the chemical potential of outcoming electron in CC reactions, in NC, usually Mu3=0 if neutrino if not trapped
+        betaEoSantinu.Mu3=-betaEoSantinu.Mu3;// since anti elctron chemical potential is opposite to electron chemical potential 
+      //  cout << "mu2 [MeV], mu4 [MeV], mu3 [MeV] (without rest mass): "
+      //       << betaEoSantinu.Mu2 << " "
+      //       << betaEoSantinu.Mu4 << " "
+      //       << betaEoSantinu.Mu3 << endl;
+
+      // betaEoSantinu.Mu3=(electron.mu-electron.m)*hc_mev_fm;//this is the chemical potential of outcoming electron in CC reactions, in NC, usually Mu3=0 if neutrino if not trapped
+       PolarizationNonRel pol_cc_antinu(betaEoSantinu, ncap, false, false, false);//note that here the doBlock(last bool value is false), this is because I want to compare it with CC interaction in free space
+       pol_cc_antinu.current=Polarization::current_charged;
+
+
+        pol_cc_antinu.integ_method_mu=Polarization::integ_mc;
+        pol_cc_antinu.integ_method_q0=Polarization::integ_mc;
+        //pol_cc.integ_method_mu=Polarization::integ_cubature;
+        //pol_cc.integ_method_q0=Polarization::integ_cubature;
+       // pol_cc.integ_method_mu=Polarization::integ_o2scl;
+       // pol_cc.integ_method_q0=Polarization::integ_o2scl;
+        //pol_cc.integ_method_mu=Polarization::integ_base;
+        //pol_cc.integ_method_q0=Polarization::integ_base;
+	//
+	
+	 // Units of 1/MeV^2
+        double vf_antinu_dg0=0.5*(w1nn_vec_general_tilde_dg0-
+                           w1np_vec_general_tilde_dg0)+
+          (w2nn_vec_general_dg0-w2np_vec_general_dg0)*proton_thread[ipoint].kf*proton_thread[ipoint].kf;
+
+
+        // Units of 1/MeV^2
+        double vgt_antinu=0.5*(w1nn_ax_general-w1np_ax_general)+
+          (w2nn_ax_general-w2np_ax_general)*proton_thread[ipoint].kf*proton_thread[ipoint].kf;
+
+      //  cout << " vf_antinu_dg0 [1/MeV^2], " << "vgt_antinu [1/MeV^2]: " << " " << vf_antinu_dg0 << " "<< vgt_antinu << endl;
+
+
+        pol_cc_antinu.set_residual(fnn,fnp,fpp,gnn,gnp,gpp,
+                            vf_antinu_dg0,vgt_antinu,proton_thread[ipoint].n);
+	pol_cc_antinu.set_BSresidual(w1cc_vec_part1,w1cc_vec_part2,w1cc_ax_part1,w1cc_ax_part2,w2cc_vec,w2cc_ax);//set these residual when CC Bethe salpeter EQs are solved exactly, the Wcc functions in Bethe salpeter is independent of n to p or p to n reations. 
+
+
+        pol_cc_antinu.flag=Polarization::flag_vector;
+        double cc_vec_mfp_antinu_dg0=0.0;
+	//cc_vec_mfp_antinu_dg0=pol_cc_antinu.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
+        cout << "charged current, vector part, no dgdn terms: "
+             << cc_vec_mfp_antinu_dg0 <<" ratio of crx/crx_free (cc vec antinu): "<<cc_vec_mfp_antinu_dg0/cc_vec_antinu_free<<endl;
+
+       // pol_cc.set_residual(fnn,fnp,fpp,gnn,gnp,gpp,vf,vgt,proton_thread[ipoint].n);
+
+       // pol_cc.flag=Polarization::flag_vector;
+       // double cc_vec_mfp=pol_cc.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
+       // cout << "charged current, vector part: " << cc_vec_mfp << endl;
+
+        pol_cc_antinu.flag=Polarization::flag_axial;
+        double cc_axvec_mfp_antinu=0.0;
+       // cc_axvec_mfp_antinu=pol_cc_antinu.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
+        cout << "charged current, axial part: " << cc_axvec_mfp_antinu <<" ratio of crx/crx_free (cc ax antinu): "<<cc_axvec_mfp_antinu/cc_ax_antinu_free<<endl;
+    // -----------------------------------------------------------------
+        // Charged current mean free path without RPA anti neutrino
+
+        pol_cc_antinu.integ_method_mu=Polarization::integ_mc;
+        pol_cc_antinu.integ_method_q0=Polarization::integ_mc;
+        //pol_cc.integ_method_mu=Polarization::integ_cubature;
+        //pol_cc.integ_method_q0=Polarization::integ_cubature;
+       // pol_cc.integ_method_mu=Polarization::integ_o2scl;
+       // pol_cc.integ_method_q0=Polarization::integ_o2scl;
+        //pol_cc.integ_method_mu=Polarization::integ_base;
+        //pol_cc.integ_method_q0=Polarization::integ_base;
+
+        pol_cc_antinu.set_residual(0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,proton_thread[ipoint].n);
+        pol_cc_antinu.set_BSresidual(0.0,0.0,0.0,0.0,0.0,0.0);//set these residual when CC Bethe salpeter EQs are solved exactly
+        pol_cc_antinu.flag=Polarization::flag_vector;
+        double cc_vec_mfp_antinu_norpa=0.0;
+       // cc_vec_mfp_antinu_norpa=pol_cc_antinu.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
+        cout << "charged current, vector part, no RPA: " << cc_vec_mfp_antinu_norpa <<" ratio of crx/crx_free (cc vec antinu norpa): "<<cc_vec_mfp_antinu_norpa/cc_vec_antinu_free<< endl;
+
+        pol_cc_antinu.flag=Polarization::flag_axial;
+        double cc_axvec_mfp_antinu_norpa=0.0;
+   //     cc_axvec_mfp_antinu_norpa=pol_cc_antinu.CalculateInverseMFP(E1)/
+     //     hc_mev_fm*1.e13;
+        cout << "charged current, axial part, no RPA: " << cc_axvec_mfp_antinu_norpa <<" ratio of crx/crx_free (cc ax antinu norpa): "<<cc_axvec_mfp_antinu_norpa/cc_ax_antinu_free<< endl;
+
+        // Go back to the "with RPA" calculations to compute the
+        // response below
+        pol_cc_antinu.set_residual(fnn,fnp,fpp,gnn,gnp,gpp,
+                            vf_antinu_dg0,vgt_antinu,proton_thread[ipoint].n);
+	pol_cc_antinu.set_BSresidual(w1cc_vec_part1,w1cc_vec_part2,w1cc_ax_part1,w1cc_ax_part2,w2cc_vec,w2cc_ax);//set these residual when CC Bethe salpeter EQs are solved exactly
+       //------------------------------------------------------------------------------
+       // write data in one thread
+       #pragma omp critical
+	{
+		cout<<"Environment setting: "<< ipoint << " out of total "<< n_point<<endl;
+		cout << "Using nB = " << nB << " 1/fm^3 and T = " << T*hc_mev_fm << " MeV and E1= "<<E1<<" MeV and Ye= "<<Ye<<"for\n  ipoint = " << ipoint << " out of total "<< n_point << endl;
+		cout << "nn,np,ne: " << neutron_thread[ipoint].n << " " << proton_thread[ipoint].n <<" "<<electron_thread[ipoint].n <<" ipoint = "<<ipoint << " out of total "<< n_point<<endl;
+                cout << "mun: " << neutron_thread[ipoint].mu*hc_mev_fm <<" ipoint = "<<ipoint << " out of total "<< endl;
+                cout << "mup: " << proton_thread[ipoint].mu*hc_mev_fm << " ipoint = "<<ipoint << " out of total "<<endl;
+		cout << "mue: " << electron_thread[ipoint].mu*hc_mev_fm << " ipoint = "<<ipoint << " out of total "<<endl;
+		cout << "U2 [MeV]: " << u2eos <<" ipoint = "<<ipoint << " out of total "<< endl;
+                cout << "U4 [MeV]: " << u4eos << " ipoint = "<<ipoint << " out of total "<<endl;
+                cout << "msn: " << msn_thread[ipoint] << " "<< vdet_units.find("msn")->second <<" ipoint = "<<ipoint << " out of total "<< endl;
+                cout << "msp: " << msp_thread[ipoint] << " "<< vdet_units.find("msp")->second << " ipoint = "<<ipoint << " out of total "<<endl;
+                cout << "nn: " << neutron_thread[ipoint].n << " ipoint = "<<ipoint << " out of total "<<endl;
+                cout << "np: " << proton_thread[ipoint].n << " ipoint = "<<ipoint << " out of total "<<endl;
+                cout << "g,dgdnn [fm^3],dgdnp [fm^3]: " << vdet["g"] << " "<< vdet["dgdnn"] << " " << vdet["dgdnp"] << " ipoint = "<<ipoint << " out of total "<<endl;
+
+		cout<<"Landau-Migdal parameters:"<<" ipoint = "<<ipoint << " out of total "<<endl;
+		cout << "fnn [1/MeV^2], fnn_dg0 [1/MeV^2], fnp [1/MeV^2], "<< "fnp_dg0 [1/MeV^2], fpp [1/MeV^2], fpp_dg0 [1/MeV^2]: " << fnn << " " << fnn_dg0 << " " << fnp << " "<< fnp_dg0 << " " << fpp << " " << fpp_dg0 <<" ipoint = "<<ipoint << " out of total "<< endl;
+                cout << "gnn [1/MeV^2], gnp [1/MeV^2], gpp [1/MeV^2]: " << gnn << " " << gnp << " " << gpp << " ipoint = "<<ipoint << " out of total "<<endl;
+		cout << "vf_old [1/MeV^2], vf [1/MeV^2], "
+             << "vf_dg0 [1/MeV^2], vgt_old [1/MeV^2], "
+             << "vgt [1/MeV^2]: " << vf_old << " " << vf << " "
+             << vf_dg0 << " " << vgt_old << " " << vgt << " ipoint = "<<ipoint << " out of total "<<endl;
+
+		cout<<"NC calculation setting:"<<" ipoint = "<<ipoint << " out of total "<<endl;
+	        cout << "mu2 [MeV], mu4 [MeV], mu3 [MeV] (without rest mass): "<< betaEoS.Mu2 << " "<< betaEoS.Mu4 << " "<< 0.0 << " ipoint = "<<ipoint << " out of total "<<endl;
+
+		cout<<"NC neutrino IMFP:"<<" ipoint = "<<ipoint << " out of total "<<endl;
+                cout << "neutral current, vector part, no dgdn terms: "
+             << nc_vec_mfp_dg0 <<" ratio of crx/crx_free (nc vec): "<<nc_vec_mfp_dg0/nc_vec_free<< " ipoint = "<<ipoint << " out of total "<<endl;
+		cout << "neutral current, TRANSPORT vector part, no dgdn terms: "
+             << nc_vec_mfp_dg0_Transport <<" ratio of crx/crx_free (nc vec Tran): "<<nc_vec_mfp_dg0_Transport/nc_vec_free_tran<<" ipoint = "<<ipoint << " out of total "<<endl;
+		cout << "neutral current, axial part: " << nc_axvec_mfp <<" ratio of crx/crx_free (nc ax): "<<nc_axvec_mfp/nc_ax_free<<" ipoint = "<<ipoint << " out of total "<<endl;
+		cout << "neutral current, TRANSPORT axial part: " << nc_axvec_mfp_Transport <<" ratio of crx/crx_free (nc ax Tran): "<<nc_axvec_mfp_Transport/nc_ax_free_tran<<" ipoint = "<<ipoint << " out of total "<< endl;
+                cout << "neutral current, vector part, no RPA: " << nc_vec_mfp_norpa <<" ratio of crx/crx_free (nc vec norpa): "<<nc_vec_mfp_norpa/nc_vec_free<< " ipoint = "<<ipoint << " out of total "<<endl;
+                cout << "neutral current, TRANSPORT vector part, no RPA: "
+             << nc_vec_mfp_norpa_Transport << " ratio of crx/crx_free (nc vec norpa Tran): "<<nc_vec_mfp_norpa_Transport/nc_vec_free_tran<<" ipoint = "<<ipoint << " out of total "<<endl;
+		cout << "neutral current, axial part, no RPA: " << nc_axvec_mfp_norpa <<" ratio of crx/crx_free (nc ax norpa): "<<nc_axvec_mfp_norpa/nc_ax_free<< " ipoint = "<<ipoint << " out of total "<<endl;
+		cout << "neutral current, TRANSPORT axial part, no RPA: " << nc_axvec_mfp_norpa_Transport <<" ratio of crx/crx_free (nc ax norpa Tran): "<<nc_axvec_mfp_norpa_Transport/nc_ax_free_tran<<" ipoint = "<<ipoint << " out of total "<< endl;
+              
+              cout<<"CC calculation setting (just change mu3):"<<" ipoint = "<<ipoint << " out of total "<<endl;
+	      cout<<"Mu3: "<<betaEoS.Mu3<<" ipoint = "<<ipoint << " out of total "<<endl;
+
+	      cout<<"CC neutrino IMFP:"<<" ipoint = "<<ipoint << " out of total "<<endl;
+	      cout << "charged current, vector part, no dgdn terms: "
+             << cc_vec_mfp_dg0 <<" ratio of crx/crx_free (cc vec): "<<cc_vec_mfp_dg0/cc_vec_free<<" ipoint = "<<ipoint << " out of total "<<endl;
+	      cout << "charged current, axial part: " << cc_axvec_mfp <<" ratio of crx/crx_free (cc ax): "<<cc_axvec_mfp/cc_ax_free<<" ipoint = "<<ipoint << " out of total "<<endl;
+	      cout << "charged current, vector part, no RPA: " << cc_vec_mfp_norpa <<" ratio of crx/crx_free (cc vec norpa): "<<cc_vec_mfp_norpa/cc_vec_free<<" ipoint = "<<ipoint << " out of total "<< endl;
+	      cout << "charged current, axial part, no RPA: " << cc_axvec_mfp_norpa <<" ratio of crx/crx_free (cc ax norpa): "<<cc_axvec_mfp_norpa/cc_ax_free<<" ipoint = "<<ipoint << " out of total "<< endl;
+
+	      cout<<"CC antinu calculation setting:"<<" ipoint = "<<ipoint << " out of total "<<endl;
+	      cout << "U2 (antinu) [MeV]: " << u2eosantinu << " ipoint = "<<ipoint << " out of total "<<endl;
+              cout << "U4 (antinu) [MeV]: " << u4eosantinu <<" ipoint = "<<ipoint << " out of total "<< endl;
+              cout << "mu2 [MeV], mu4 [MeV], mu3 [MeV] (without rest mass): "
+             << betaEoSantinu.Mu2 << " "
+             << betaEoSantinu.Mu4 << " "
+             << betaEoSantinu.Mu3 << " ipoint = "<<ipoint << " out of total "<<endl;
+              cout << " vf_antinu_dg0 [1/MeV^2], " << "vgt_antinu [1/MeV^2]: " << " " << vf_antinu_dg0 << " "<< vgt_antinu << " ipoint = "<<ipoint << " out of total "<<endl;
+
+	      cout<<"CC antinu IMFP:"<<" ipoint = "<<ipoint << " out of total "<<endl;
+	      cout << "charged current, vector part, no dgdn terms: "
+             << cc_vec_mfp_antinu_dg0 <<" ratio of crx/crx_free (cc vec antinu): "<<cc_vec_mfp_antinu_dg0/cc_vec_antinu_free<<" ipoint = "<<ipoint << " out of total "<<endl;
+              cout << "charged current, axial part: " << cc_axvec_mfp_antinu <<" ratio of crx/crx_free (cc ax antinu): "<<cc_axvec_mfp_antinu/cc_ax_antinu_free<<" ipoint = "<<ipoint << " out of total "<<endl;
+              cout << "charged current, vector part, no RPA: " << cc_vec_mfp_antinu_norpa <<" ratio of crx/crx_free (cc vec antinu norpa): "<<cc_vec_mfp_antinu_norpa/cc_vec_antinu_free<< " ipoint = "<<ipoint << " out of total "<<endl;
+              cout << "charged current, axial part, no RPA: " << cc_axvec_mfp_antinu_norpa <<" ratio of crx/crx_free (cc ax antinu norpa): "<<cc_axvec_mfp_antinu_norpa/cc_ax_antinu_free<<" ipoint = "<<ipoint << " out of total "<< endl;
+
+
+//write to HDF% file
+
+        if (false) {
           line.push_back(nB);
-          line.push_back(neutron.n);
+          line.push_back(neutron_thread[ipoint].n);
           line.push_back(proton.n);
           line.push_back(vdet["g"]);
           line.push_back(vdet["dgdnn"]);
           line.push_back(vdet["dgdnp"]);
-          line.push_back(neutron.ms*hc_mev_fm);
+          line.push_back(neutron_thread[ipoint].ms*hc_mev_fm);
           line.push_back(proton.ms*hc_mev_fm);
-          line.push_back(neutron.mu*hc_mev_fm);
+          line.push_back(neutron_thread[ipoint].mu*hc_mev_fm);
           line.push_back(proton.mu*hc_mev_fm);
           line.push_back(mu_n_nonint*hc_mev_fm);
           line.push_back(mu_p_nonint*hc_mev_fm);
           line.push_back(u2eos);
           line.push_back(u4eos);
-          line.push_back(log_xn);
-          line.push_back(log_xp);
+         // line.push_back(log_xn);
+         // line.push_back(log_xp);
           
           //line.push_back(X[5]);
           //line.push_back(Ye_best);
@@ -11995,9 +12785,27 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
           line.push_back(nc_vec_mfp);
           line.push_back(nc_vec_mfp_dg0);
           line.push_back(nc_axvec_mfp);
-          line.push_back(nc_vec_mfp_norpa);
-          line.push_back(nc_axvec_mfp_norpa);
+         // line.push_back(nc_vec_mfp_norpa);
+         // line.push_back(nc_axvec_mfp_norpa);
+	  line.push_back(cc_vec_mfp_dg0);
+	  line.push_back(cc_axvec_mfp);
+
+	  line.push_back(nc_vec_mfp_dg0/nc_vec_free);
+          line.push_back(nc_vec_mfp_dg0_Transport/nc_vec_free_tran);
+          line.push_back(nc_axvec_mfp/nc_ax_free);
+          line.push_back(nc_axvec_mfp_Transport/nc_ax_free_tran);
+          line.push_back(nc_vec_mfp_norpa/nc_vec_free);
+	  line.push_back(nc_vec_mfp_norpa_Transport/nc_vec_free_tran);
+	  line.push_back(nc_axvec_mfp_norpa/nc_ax_free);
+	  line.push_back(nc_axvec_mfp_norpa_Transport/nc_ax_free_tran);
+	  line.push_back(cc_vec_mfp_dg0/cc_vec_free);
+	  line.push_back(cc_vec_mfp_norpa/cc_vec_free);
+	  line.push_back(cc_axvec_mfp/cc_ax_free);
+	  line.push_back(cc_axvec_mfp_norpa/cc_ax_free);
+
         }
+
+	}
         
         // This counting is wrong
         //if (line.size()!=col_list.size()) {
@@ -12008,41 +12816,266 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
         // -----------------------------------------------------------------
         // Neutral current dynamic response at q0=w, q=3*T
         
-        if (n_point<20) {
-          
+        if (ipoint<0) {
+          double q0lowThresh;
+ // q0lowThresh=ip.estar-300;
+ // q0lowThresh=ip.estar-60;
+
+          double kfn=pow(3.0*o2scl_const::pi*o2scl_const::pi*betaEoS.n2,1.0/3.0);
+          q0lowThresh=betaEoS.U4-betaEoS.U2-kfn*kfn/2.0/betaEoS.M2;
+	 // cout<<"at neutron density= "<<neutron_thread[ipoint].n<<" the lowest q0 is about: "<<q0lowThresh<<endl;
+   
           //double T_MeV=T*hc_mev_fm;
-          
+          for (int i=0;i<5;i++) {
+          double dq=1.0*T_MeV/1.0;
+	  double qtran;
+	  qtran=(i+1)*dq;
+
           double vel=sqrt((3.0*T_MeV)/betaEoS.M2);
           double wmin;
           double wmax;
-          wmin=-3.0*vel*3*T_MeV-0.00000789;
-          // wmin=-50.0+1.0e-3;
-          wmax=3.0*(vel*3*T_MeV+3*T_MeV*3*T_MeV/(2.0*betaEoS.M2));
-          // wmax=50.0+1.0e-3;
-          double dw=(wmax-wmin)/99;
+         // wmin=-3.0*vel*3*T_MeV-0.00000789;
+         //  wmin=-300.0+1.0e-3;
+	    wmin=-qtran;
+         // wmax=3.0*(vel*3*T_MeV+3*T_MeV*3*T_MeV/(2.0*betaEoS.M2));
+          // wmax=300.0+1.0e-3;
+	   wmax=qtran;
+          double dw=(wmax-wmin)/599;
+
+	 // double wminCC=-400.0+1.0e-3;
+	    double wminCC=-qtran+betaEoS.U4-betaEoS.U2;
+	 // double wmaxCC=400.0+1.0e-3;
+	    double wmaxCC=qtran-betaEoS.U4+betaEoS.U2;
+	  double dwCC=(wmaxCC-wminCC)/599;
           
           vector<double> w_nc;
+	  vector<double> w_cc;
 
           double sum_vec=0.0;
           double sum_ax=0.0;
+
+	  double sum_vec_cc=0.0;
+	  double sum_ax_cc=0.0;
+
+	  double sum_vec_anticc=0.0;
+          double sum_ax_anticc=0.0;
           
-          for (int k=0;k<100;k++) {
+          for (int k=0;k<600;k++) {
             
             double w=wmin+dw*k;
-            w_nc.push_back(w);
-            
+           // w_nc.push_back(w);
+
+	    double wCC=wminCC+dwCC*k;
+           // w_cc.push_back(wCC);
+
             Tensor<double> piVV, piAA, piTT, piVA, piVT, piAT;
             double piL, piLn, piLp, piLnRe, piLpRe, piRPAax, piRPAvec;
             
-            pol_nc.SetPolarizations_neutral(w,3*T_MeV,&piVV,&piAA,
+           // pol_nc.SetPolarizations_neutral(w,3*T_MeV,&piVV,&piAA,
+           //                                 &piTT,&piVA,&piVT,&piAT,
+           //                                 piLn,piLp,piLnRe,piLpRe,
+           //                                 piRPAvec,piRPAax,piL,true);
+	   pol_nc.SetPolarizations_neutral(w,qtran,&piVV,&piAA,
                                             &piTT,&piVA,&piVT,&piAT,
                                             piLn,piLp,piLnRe,piLpRe,
-                                            piRPAvec,piRPAax,piL,true);
+                                            piRPAvec,piRPAax,piL,false);
+
             
             //neutral current
             double zz=(w+0.0)/T_MeV;
             double FermiF=1/(1-exp(-zz));
             
+            double resp_RPAvec=2.0*piRPAvec*FermiF;
+            double resp_RPAax=2.0*piRPAax*FermiF;
+
+          /*  line.push_back(piRPAvec);
+            line.push_back(piRPAax);
+            line.push_back(piLn);
+            line.push_back(piLnRe);
+            line.push_back(resp_RPAvec);
+            line.push_back(resp_RPAax);*/
+            if (resp_RPAvec<0) {
+		   // cout<<"at w= "<<zz<<" resp_RPAvec<0 "<<endl; 
+		    resp_RPAvec=0.0;}
+	    if (resp_RPAax<0) {
+		   // cout<<"at w= "<<zz<<" resp_RPAax<0 "<<endl; 
+		    resp_RPAax=0.0;}
+
+
+            sum_vec+=resp_RPAvec*dw;
+            sum_ax+=resp_RPAax*dw;
+
+	    // below calculate CC dynamic response
+
+	    // Tensor<double> piVVcc, piAAcc, piTTcc, piVAcc, piVTcc, piATcc;
+           // double piLcc, piLncc, piLpcc, piLnRecc, piLpRecc, piRPAaxcc, piRPAveccc;
+
+	    Tensor<double> piVVcc, piAAcc, piTTcc, piVAcc, piVTcc, piATcc;
+            double piLImcc, piLRecc, piRPAaxcc, piRPAveccc,piRPAaxBScc, piRPAvecBScc, piLcc, betaIm1, betaIm2, betaIm3, betaIm4, betaIm5, betaRe1, betaRe2, betaRe3, betaRe4, betaRe5;
+
+            pol_cc.SetPolarizations_charged(wCC,qtran,&piVVcc,&piAAcc,&piTTcc,
+                                            &piVAcc,&piVTcc,&piATcc,piLImcc,
+                                            piLRecc,piRPAveccc,piRPAaxcc,piRPAvecBScc,piRPAaxBScc,piLcc, betaIm1, betaIm2, betaIm3, betaIm4, betaIm5, betaRe1, betaRe2, betaRe3, betaRe4, betaRe5);
+
+
+           // pol_nc.SetPolarizations_neutral(w,3*T_MeV,&piVV,&piAA,
+           //                                 &piTT,&piVA,&piVT,&piAT,
+           //                                 piLn,piLp,piLnRe,piLpRe,
+           //                                 piRPAvec,piRPAax,piL,true);
+          // pol_nc.SetPolarizations_charged(wCC,qtran,&piVVcc,&piAAcc,
+          //                                  &piTTcc,&piVAcc,&piVTcc,&piATcc,
+          //                                  piLncc,piLpcc,piLnRecc,piLpRecc,
+          //                                  piRPAveccc,piRPAaxcc,piLcc,true);
+
+
+            //neutral current
+            double zzcc=(wCC+betaEoS.Mu2-betaEoS.Mu4)/T_MeV;
+            double FermiFcc=1/(1-exp(-zzcc));
+
+	    double resp_MFcc=piLImcc*FermiFcc;//ImpiL is 2*Impi
+
+            double resp_RPAveccc=2.0*piRPAveccc*FermiFcc;
+            double resp_RPAaxcc=2.0*piRPAaxcc*FermiFcc;
+
+	    double resp_RPAvecBScc=2.0*piRPAvecBScc*FermiFcc;
+            double resp_RPAaxBScc=2.0*piRPAaxBScc*FermiFcc;
+            /*
+            line.push_back(piRPAveccc);
+            line.push_back(piRPAaxcc);
+            line.push_back(piLcc);
+            line.push_back(piLRecc);
+            line.push_back(resp_RPAveccc);
+            line.push_back(resp_RPAaxcc);*/
+
+            if (resp_RPAveccc<0) {//cout<<"at w= "<<zz<<" resp_RPAveccc<0 "<<endl; 
+				  resp_RPAveccc=0.0;}
+            if (resp_RPAaxcc<0) {//cout<<"at w= "<<zz<<" resp_RPAaxcc<0 "<<endl; 
+				  resp_RPAaxcc=0.0;}
+	   
+	    //below calculate anti neutrino CC dynamics
+	     Tensor<double> piVVanticc, piAAanticc, piTTanticc, piVAanticc, piVTanticc, piATanticc;
+            double piLImanticc, piLReanticc, piRPAaxanticc, piRPAvecanticc,piRPAaxBSanticc, piRPAvecBSanticc, piLanticc, betaIm1ant, betaIm2ant, betaIm3ant, betaIm4ant, betaIm5ant, betaRe1ant, betaRe2ant, betaRe3ant, betaRe4ant, betaRe5ant;
+
+            pol_cc_antinu.SetPolarizations_charged(wCC,qtran,&piVVanticc,&piAAanticc,&piTTanticc,
+                                            &piVAanticc,&piVTanticc,&piATanticc,piLImanticc,
+                                            piLReanticc,piRPAvecanticc,piRPAaxanticc,piRPAvecBSanticc,piRPAaxBSanticc,piLanticc, betaIm1ant, betaIm2ant, betaIm3ant, betaIm4ant, betaIm5ant, betaRe1ant, betaRe2ant, betaRe3ant, betaRe4ant, betaRe5ant);
+
+
+           // pol_nc.SetPolarizations_neutral(w,3*T_MeV,&piVV,&piAA,
+           //                                 &piTT,&piVA,&piVT,&piAT,
+           //                                 piLn,piLp,piLnRe,piLpRe,
+           //                                 piRPAvec,piRPAax,piL,true);
+          // pol_nc.SetPolarizations_charged(wCC,qtran,&piVVcc,&piAAcc,
+          //                                  &piTTcc,&piVAcc,&piVTcc,&piATcc,
+          //                                  piLncc,piLpcc,piLnRecc,piLpRecc,
+          //                                  piRPAveccc,piRPAaxcc,piLcc,true);
+
+
+            //neutral current
+            double zzccant=(wCC+betaEoSantinu.Mu2-betaEoSantinu.Mu4)/T_MeV;
+            double FermiFccant=1/(1-exp(-zzccant));
+            
+	    double resp_MFanticc=piLImanticc*FermiFccant;//ImpiL is 2*Impi
+
+            double resp_RPAvecanticc=2.0*piRPAvecanticc*FermiFccant;
+            double resp_RPAaxanticc=2.0*piRPAaxanticc*FermiFccant;
+
+            double resp_RPAvecBSanticc=2.0*piRPAvecBSanticc*FermiFccant;
+            double resp_RPAaxBSanticc=2.0*piRPAaxBSanticc*FermiFccant;
+            /*
+            line.push_back(piRPAveccc);
+            line.push_back(piRPAaxcc);
+            line.push_back(piLcc);
+            line.push_back(piLRecc);
+            line.push_back(resp_RPAveccc);
+            line.push_back(resp_RPAaxcc);*/
+
+            if (resp_RPAvecanticc<0) {//cout<<"at w= "<<zz<<" resp_RPAveccc<0 "<<endl;
+                                  resp_RPAvecanticc=0.0;}
+            if (resp_RPAaxanticc<0) {//cout<<"at w= "<<zz<<" resp_RPAaxcc<0 "<<endl;
+                                  resp_RPAaxanticc=0.0;}
+
+
+            sum_vec_anticc+=resp_RPAvecanticc*dwCC;
+            sum_ax_anticc+=resp_RPAaxanticc*dwCC;
+            cout <<" at q= "<<qtran<<" w= "<<wCC<<" respMF, respvec, respax: "<<resp_MFcc<<" "<<resp_RPAveccc<<" "<<resp_RPAaxcc<<" respvecBS, respaxBS: "<<resp_RPAvecBScc<<" "<<resp_RPAaxBScc<<" ImPiL,RePiL: "<<piLImcc<<" "<<piLRecc<<" betaIm1-5, betaRe1-5: "<<betaIm1<<" "<<betaIm2<<" "<<betaIm3<<" "<<betaIm4<<" "<<betaIm5<<" "<<betaRe1<<" "<<betaRe2<<" "<<betaRe3<<" "<<betaRe4<<" "<<betaRe5<<endl;
+            cout <<" at q= "<<qtran<<" w= "<<wCC<<" respMF, respvec(anti), respax(anti): "<<resp_MFanticc<<" "<<resp_RPAvecanticc<<" "<<resp_RPAaxanticc<<" respvecBS(anti), respaxBS(anti): "<<resp_RPAvecBSanticc<<" "<<resp_RPAaxBSanticc<<" ImPiL(anti),RePiL(anti): "<<piLImanticc<<" "<<piLReanticc<<" betaIm1-5 (anti), betaRe1-5 (anti): "<<betaIm1ant<<" "<<betaIm2ant<<" "<<betaIm3ant<<" "<<betaIm4ant<<" "<<betaIm5ant<<" "<<betaRe1ant<<" "<<betaRe2ant<<" "<<betaRe3ant<<" "<<betaRe4ant<<" "<<betaRe5ant<<endl;
+	  }
+
+          sum_vec/=2*pi*nB*pow(hc_mev_fm,3.0);
+          sum_ax/=2*pi*nB*pow(hc_mev_fm,3.0);
+
+	  sum_vec_cc/=2*pi*nB*pow(hc_mev_fm,3.0);
+          sum_ax_cc/=2*pi*nB*pow(hc_mev_fm,3.0);
+
+          
+         // line.push_back(sum_vec);
+         // line.push_back(sum_ax);
+
+	 // line.push_back(sum_vec_cc);
+         // line.push_back(sum_ax_cc);
+
+          
+         // cout << "sum_vec,sum_ax: " << sum_vec << " " << sum_ax << endl;
+	 //   cout << "at q= "<<qtran<<" sum_vec,sum_ax: " << sum_vec << " " << sum_ax << endl;
+         //   cout << "at q= "<<qtran<<" sum_vec_cc,sum_ax_cc: " << sum_vec_cc << " " << sum_ax_cc << endl;         
+
+          if (j==0) {
+            hdf_file hf;
+            hf.open_or_create(sv[1]);
+            hf.setd_vec("w_nc",w_nc);
+	    hf.open_or_create(sv[1]);
+            hf.setd_vec("w_cc",w_cc);
+            hf.close();
+          }
+          }
+        }
+      /*   // -----------------------------------------------------------------
+        // charged current dynamic response at q0=w, q=3*T
+
+        if (true) {
+
+          //double T_MeV=T*hc_mev_fm;
+          for (int i=0;i<10;i++) {
+          double dq=3.0*T_MeV/10.0;
+          double qtran;
+          double qtran=(i+1)*dq;
+
+         // double vel=sqrt((3.0*T_MeV)/betaEoS.M2);
+          double wmin;
+          double wmax;
+          double wmin=-100.0;
+          // wmin=-50.0+1.0e-3;
+          double wmax=20.0;
+          // wmax=50.0+1.0e-3;
+          double dw=(wmax-wmin)/99;
+
+          vector<double> w_nc;
+
+          double sum_vec_cc=0.0;
+          double sum_ax_cc=0.0;
+
+          for (int k=0;k<100;k++) {
+
+            double w=wmin+dw*k;
+           // w_nc.push_back(w);
+
+            Tensor<double> piVV, piAA, piTT, piVA, piVT, piAT;
+            double piL, piLn, piLp, piLnRe, piLpRe, piRPAax, piRPAvec;
+
+           // pol_nc.SetPolarizations_neutral(w,3*T_MeV,&piVV,&piAA,
+           //                                 &piTT,&piVA,&piVT,&piAT,
+           //                                 piLn,piLp,piLnRe,piLpRe,
+           //                                 piRPAvec,piRPAax,piL,true);
+           pol_cc.SetPolarizations_charged(w,qtran,&piVV,&piAA,
+                                            &piTT,&piVA,&piVT,&piAT,
+                                            piLn,piLp,piLnRe,piLpRe,
+                                            piRPAvec,piRPAax,piL,true);
+
+    //charged current
+            double zz=(w+betaEoS.U2-betaEoS.U4)/T_MeV;
+            double FermiF=1/(1-exp(-zz));
+
             double resp_RPAvec=2.0*piRPAvec*FermiF;
             double resp_RPAax=2.0*piRPAax*FermiF;
 
@@ -12053,28 +13086,32 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
             line.push_back(resp_RPAvec);
             line.push_back(resp_RPAax);
 
-            sum_vec+=resp_RPAvec*dw;
-            sum_ax+=resp_RPAax*dw;
+            sum_vec_cc+=resp_RPAvec*dw;
+            sum_ax_cc+=resp_RPAax*dw;
           }
 
-          sum_vec/=2*pi*nB*pow(hc_mev_fm,3.0);
-          sum_ax/=2*pi*nB*pow(hc_mev_fm,3.0);
-          
-          line.push_back(sum_vec);
-          line.push_back(sum_ax);
-          
-          cout << "sum_vec,sum_ax: " << sum_vec << " " << sum_ax << endl;
+          sum_vec_cc/=2*pi*nB*pow(hc_mev_fm,3.0);
+          sum_ax_cc/=2*pi*nB*pow(hc_mev_fm,3.0);
 
-          if (j==0) {
+         // line.push_back(sum_vec);
+         // line.push_back(sum_ax);
+
+         // cout << "sum_vec,sum_ax: " << sum_vec << " " << sum_ax << endl;
+            cout << "at q= "<<qtran<<" sum_vec_cc,sum_ax_cc: " << sum_vec_cc << " " << sum_ax_cc << endl;
+
+          if (false) {
             hdf_file hf;
             hf.open_or_create(sv[1]);
             hf.setd_vec("w_nc",w_nc);
             hf.close();
-          }
+          }*/
 
-        }
+
       }
     }
+
+
+
 
     if (true) {
       for(size_t jj=0;jj<line.size() || jj<tab.get_ncolumns();jj++) {

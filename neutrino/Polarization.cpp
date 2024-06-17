@@ -57,7 +57,7 @@
 #include "tensor.h" 
 #include "constants.h"
 
-#include <cubature.h>
+//#include <cubature.h>
 
 #include <o2scl/constants.h>
 #include <o2scl/funct.h>
@@ -141,9 +141,9 @@ Polarization::Polarization(FluidState stPol, WeakCouplings wc,
   qags.tol_rel=1.0e-6;
   qags.tol_abs=1.0e-6;
   qags.err_nonconv=false;
-  iac.tol_rel=1.0e-6;
-  iac.tol_abs=1.0e-6;
-  iac.err_nonconv=false;
+ // iac.tol_rel=1.0e-6;
+ // iac.tol_abs=1.0e-6;
+ // iac.err_nonconv=false;
   qag.tol_rel=1.0e-6;
   qag.tol_abs=1.0e-6;
   qag.err_nonconv=false;
@@ -371,12 +371,14 @@ double Polarization::CalculateDGamDq0(double E1, double q0, bool pnm) {
       qags.tol_abs=0.0;
       cout << "3";
       //iret=qags.integ_err(f,-1.0,1.0,integral,err);
+      /*
       if (false && iret!=0) {
         iac.tol_rel=1.0e-6;
         iac.tol_abs=0.0;
         cout << "2";
         iret=iac.integ_err(f,-1.0,1.0,integral,err);
       }
+      */
       //}
       
       if (iret!=0) {
@@ -474,7 +476,7 @@ double Polarization::CalculateDGamDq0(double E1, double q0, bool pnm) {
 }
 
 void Polarization::CalculateDGamDq0l(double E1, double q0, double* S0, 
-                                     double* S1) const { 
+                                     double* S1, bool pnm) { 
   
   // Only integrate over angles for which |q0| < q
   double p3 = sqrt((E1-q0)*(E1-q0) - st.M3*st.M3);
@@ -484,16 +486,100 @@ void Polarization::CalculateDGamDq0l(double E1, double q0, double* S0,
   
   double integral0 = 0.0; 
   double integral1 = 0.0;
+
+  double integral0_base=0.0;
+  double integral1_base=0.0;
+
+  double integral0_o2scl=0.0;
+  double integral1_o2scl=0.0;
   
+  if (integ_method_mu==integ_base || integ_method_mu==integ_compare) {
+	  integral0=integral1=0.0;
   for (int i=0; i<NPGJ; ++i) { 
     double mu = xx[i]*delta + avg;
     double r = GetResponse(E1,q0,GetqFromMu13(E1,q0,mu),false);
     integral0 += ww[i] * r;
     integral1 += ww[i] * mu * r;
   }
+  integral0_base=integral0;
+  integral1_base=integral1;
+  if (integ_method_mu==integ_compare) {
+      cout.setf(ios::showpos);
+      cout << "mu integral, q0: " << q0 << " base0: " << integral0 << " base1: "<<integral1<<" ";
+      cout.unsetf(ios::showpos);
+    }
+  }
+ // integral0 *= delta;
+ // integral1 *= delta;
+ /*  if (integ_method_mu==integ_o2scl || integ_method_mu==integ_compare) {
+
+    funct f0=std::bind(std::mem_fn<double(double,double,double,double,
+                                         double,bool)>
+                      (&Polarization::GetResponse_mu),
+                      this,E1,q0,std::placeholders::_1,delta,avg,pnm);
+
+    funct f1=std::bind(std::mem_fn<double(double,double,double,double,
+                                         double,bool)>
+                      (&Polarization::GetResponse_mu1),
+                      this,E1,q0,std::placeholders::_1,delta,avg,pnm);
+
+
+    double err;
+    double err1;
+    integral_debug=false;
+    int iret;
+    int iret1;
+
+    iret=ic.integ_err(f0,-1.0,1.0,integral0,err);
+    iret1=ic.integ_err(f1,-1.0,1.0,integral1,err1);
+    
+    if (iret!=0) {
+        qags.tol_rel=1.0e-4;
+        qags.tol_abs=0.0;
+        cout << "4";
+        iret=qags.integ_err(f0,-1.0,1.0,integral0,err);
+	iret1=qags.integ_err(f1,-1.0,1.0,integral1,err);
+      }
+          if (iret!=0) {
+        qng.tol_rel=1.0e-6;
+        qng.tol_abs=0.0;
+       cout << "5";
+        iret=qng.integ_err(f0,-1.0,1.0,integral0,err);
+	iret1=qags.integ_err(f1,-1.0,1.0,integral1,err);
+      }
+
+      if (iret!=0) {
+        qng.tol_rel=1.0e-2;
+        qng.tol_abs=0.0;
+        cout << "6";
+        iret=qng.integ_err(f0,-1.0,1.0,integral0,err);
+	iret1=qng.integ_err(f1,-1.0,1.0,integral1,err);
+      }
+
+      if (iret!=0) {
+        cout << "7";
+        integral0=0.0;
+	integral1=0.0;
+        err=0.0;
+      }
+      integral0_o2scl=integral0;
+      integral1_o2scl=integral1;
+    if (integ_method_mu==integ_compare) {
+      cout.setf(ios::showpos);
+      cout << " O2scl: " << integral0 << " ";
+      if (integral0_base!=0.0) {
+        cout << fabs(integral0_base-integral0_o2scl)/fabs(integral0_base)<<" "<<fabs(integral1_base-integral1_o2scl)/fabs(integral1_base);
+      } else {
+        cout << 0.0;
+      }
+      cout.unsetf(ios::showpos);
+      cout << endl;
+      integral0=integral0_base;
+      integral1=integral1_base;
+    }
+    }*/
   integral0 *= delta;
   integral1 *= delta;
-
   double fac = GetCsecPrefactor(E1, q0);
   *S0 = 2.0*o2scl_const::pi*fac*integral0/2.0;
   *S1 = 2.0*o2scl_const::pi*fac*integral1*3.0/2.0;
@@ -501,11 +587,23 @@ void Polarization::CalculateDGamDq0l(double E1, double q0, double* S0,
   return;
 }
 
-double Polarization::CalculateTransportInverseMFP(double E1) const {
+double Polarization::CalculateTransportInverseMFP(double E1, bool pnm) {
   
-  double estar = st.M4 + st.U4 - st.M2 - st.U2; 
+ // double estar = st.M4 + st.U4 - st.M2 - st.U2; 
+ // estar = std::min(estar, E1 - st.M3);
+  double estar;
+  if (current==current_charged) {
+   // estar=st.M4 + st.U4 - st.M2 - st.U2;//original one
+      estar=st.U4 - st.U2;
+  } else {
+    estar=0.0;
+  }
   estar = std::min(estar, E1 - st.M3);
-  double integral = 0.0;  
+
+  double integral = 0.0;
+  double integral_base=0.0;
+  double integral_mc=0.0;
+  if (integ_method_q0==integ_base || integ_method_q0==integ_compare) {  
   for (int sign = -1; sign<2; sign += 2) { // Integrate on both sides of estar
     for (int i=0; i<NNPGL; ++i) {
       double q0 = estar + double(sign)*xgl[i]*st.T;
@@ -531,10 +629,115 @@ double Polarization::CalculateTransportInverseMFP(double E1) const {
       // inelastic transport opacity.
       double fac1 = 1.0/fac0;
       
-      integral += wgl[i] * (fac0*exp(e0) - fac1*sgnG1*exp(e1)/3.0); 
+      integral_base += wgl[i] * (fac0*exp(e0) - fac1*sgnG1*exp(e1)/3.0);
+      integral=integral_base; 
     }
   }
-  return 2.0*st.T*integral; 
+  }
+  
+  if (true &&
+      (integ_method_q0==integ_mc || integ_method_q0==integ_compare)) {
+
+    ubvector xmin(2), xmax(2);
+    xmin[0]=0.0;
+    xmin[1]=-1.0;
+    xmax[0]=1.0;
+    xmax[1]=1.0;
+
+    double val, err;
+    integration_params ip;
+    ip.p=this;
+    ip.estar=estar;
+    ip.sign=-1;
+    ip.E1=E1;
+    ip.pnm=pnm;
+   // mcarlo_miser<> mm;
+      mcarlo_vegas<> mm;//on 6/10/2024, zidu test vegas mcarlo
+    //mm.verbose=2;
+    mm.tol_rel=1.0e-6;
+    mm.n_points*=100;
+    /*
+      mcarlo_miser<> mv;
+      mv.tol_rel=1.0e-6;
+      mv.n_points*=100;
+    */
+    multi_funct mf=std::bind(std::mem_fn<double(size_t,const ubvector &,
+                                                void *)>
+                             (&Polarization::integrand_mc1),
+                             this,std::placeholders::_1,
+                             std::placeholders::_2,&ip);
+
+    int ret=mm.minteg_err(mf,2,xmin,xmax,val,err);
+   /* if (fabs(err)/fabs(val)>1.0e-3) {
+      mm.n_points*=10;
+      cout << "Round two." << endl;
+      ret=mm.minteg_err(mf,2,xmin,xmax,val,err);
+      if (fabs(err)/fabs(val)>1.0e-3) {
+        cout << "Round three." << endl;
+        mm.n_points*=3;
+        ret=mm.minteg_err(mf,2,xmin,xmax,val,err);
+        if (fabs(err)/fabs(val)>1.0e-3) {
+          cout << "Still inaccurate." << endl;
+        }
+        mm.n_points/=3;
+      }
+      mm.n_points/=10;
+    }*/
+    if (fabs(err)/fabs(val)>1.0e-2) {
+      mm.n_points*=10;
+      cout << "Round two." << endl;
+      ret=mm.minteg_err(mf,2,xmin,xmax,val,err);
+      if (fabs(err)/fabs(val)>1.0e-2) {
+        cout << "Still inaccurate." << endl;
+      }
+      mm.n_points/=10;
+    }  //6/12/2024 zidu decrease the requirement for accuracy because of the expensive Bethe salpeter calculations
+    cout << "MC ret,val,err: " << ret << " " << val << " " << err << " "
+         << fabs(err)/fabs(val) << endl;
+    integral=val;
+
+    ip.sign=1;
+    ret=mm.minteg_err(mf,2,xmin,xmax,val,err);
+    /*if (fabs(err)/fabs(val)>1.0e-3) {
+      mm.n_points*=10;
+      cout << "Round two." << endl;
+      ret=mm.minteg_err(mf,2,xmin,xmax,val,err);
+      if (fabs(err)/fabs(val)>1.0e-3) {
+        cout << "Round three." << endl;
+        mm.n_points*=3;
+        ret=mm.minteg_err(mf,2,xmin,xmax,val,err);
+        if (fabs(err)/fabs(val)>1.0e-3) {
+          cout << "Still inaccurate." << endl;
+        }
+        mm.n_points/=3;
+      }
+      mm.n_points/=10;
+    }*/
+    if (fabs(err)/fabs(val)>1.0e-2) {
+      mm.n_points*=10;
+      cout << "Round two." << endl;
+      ret=mm.minteg_err(mf,2,xmin,xmax,val,err);
+      if (fabs(err)/fabs(val)>1.0e-2) {
+        cout << "Still inaccurate." << endl;
+      }
+      mm.n_points/=10;
+    } //6/12/2024 zidu decrease the requirement for accuracy because of the expensive Bethe salpeter calculations
+    cout << "MC ret,val,err: " << ret << " " << val << " " << err << " "
+         << fabs(err)/fabs(val) << endl;
+    integral+=val;
+
+    integral_mc=integral;
+    if (integ_method_q0==integ_compare) {
+      cout << "q0 integral, MC: " << integral << " "
+           << fabs(integral_base-integral_mc)/fabs(integral_base)
+           << endl;
+      char ch;
+      cin >> ch;
+    }
+
+  }
+
+  return 1.0*st.T*integral; 
   
 }
 
@@ -625,7 +828,21 @@ double Polarization::integrand_mc(size_t ndim, const ubvector &xi,
   
   double q0=ip.estar+ip.sign*x*p.st.T;
 
-  if (ip.sign<-0.5 && abs(q0) > 30.0*p.st.T) return 0.0;
+  //from the kinematics of nucleons, the lowest q0=-(\delta U+\delta m)-q*(2*P_1-q)/(2*M)
+  //where P_1 is the momentum of the initial nucleon. Approximately P_1=K_F^1 where K_F^1 is 
+  //the fermi momentum of the initial nucleon. given k_F, the maximum q*(2*P_1-q)/(2*M), corresponding
+  //to the minimum q0, happens when q=k_F. Assuming in simulations, the highest k_F correspond to 10n0, 
+  //then k_F=713 MeV approximately. Then, the minimum q0=-(\delta U+\delta m)-713(2*713-713)/(2*939), 
+  //which is q0=-(\delta U+\delta m)-270MeV approximately. Conservatively, we set
+  // q0lowThresh=-(\delta U+\delta m)-300MeV
+  double q0lowThresh;
+  q0lowThresh=ip.estar-300;
+ // q0lowThresh=ip.estar-60;
+  
+ // double kfn=pow(3.0*o2scl_const::pi*o2scl_const::pi*p.st.n2,1.0/3.0);
+ // q0lowThresh=ip.estar-kfn*kfn/2.0/p.st.M2;
+ // if (ip.sign<-0.5 && abs(q0) > 30.0*p.st.T) return 0.0;
+  if (ip.sign<-0.5 && q0 <q0lowThresh) return 0.0;
   if (ip.sign>0.5 && q0>ip.E1-p.st.M3) return 0.0;
   
   //cout << "t,x,E1,estar,sign,q0: " << t << " " << x << " " << ip.E1
@@ -661,9 +878,9 @@ double Polarization::integrand_mc(size_t ndim, const ubvector &xi,
   if (crx<0.0) crx=0.0;
 
   if (!std::isfinite(crx)) {
-    cout << "Pere: " << q0 << " " << ip.E1 << " " << p.st.M3 << " "
+    cout << "Pere (q0 E1 M3 p3 mu13): " <<q0 << " " << ip.E1 << " " << p.st.M3 << " "
          << p3 << " " << mu13cross << endl;
-    cout << "Here: " << integral << " " << fac << " " << delta << " "
+    cout << "Here (integral fac Mu4-Mu2-q0 delta avg E1 q0 x x2 crx): " << integral << " " << fac <<" "<<p.st.Mu4-p.st.Mu2-q0<<" "<< delta << " "
          << avg << " " << ip.E1 << " " << q0 << " " << x << " " << x2 << " "
          << crx << endl;
     exit(-1);
@@ -676,11 +893,92 @@ double Polarization::integrand_mc(size_t ndim, const ubvector &xi,
   return crx; 
 }
 
+double Polarization::integrand_mc1(size_t ndim, const ubvector &xi,
+                                  void *fdata) {
+
+  integration_params &ip=*((integration_params *)fdata);
+  Polarization &p=*(ip.p);
+  bool pnm=ip.pnm;
+
+  double t=xi[0];
+  double x=t/(1.0-t);
+  double dxdt=1.0/(1.0-t)/(1.0-t);
+  double x2=xi[1];
+
+  double q0=ip.estar+ip.sign*x*p.st.T;
+
+  //from the kinematics of nucleons, the lowest q0=-(\delta U+\delta m)-q*(2*P_1-q)/(2*M)
+  //where P_1 is the momentum of the initial nucleon. Approximately P_1=K_F^1 where K_F^1 is
+  //the fermi momentum of the initial nucleon. given k_F, the maximum q*(2*P_1-q)/(2*M), corresponding
+  //to the minimum q0, happens when q=k_F. Assuming in simulations, the highest k_F correspond to 10n0,
+  //then k_F=713 MeV approximately. Then, the minimum q0=-(\delta U+\delta m)-713(2*713-713)/(2*939),
+  //which is q0=-(\delta U+\delta m)-270MeV approximately. Conservatively, we set
+  // q0lowThresh=-(\delta U+\delta m)-300MeV
+  double q0lowThresh;
+  q0lowThresh=ip.estar-300;
+ // q0lowThresh=ip.estar-60;
+ // double kfn=pow(3.0*o2scl_const::pi*o2scl_const::pi*p.st.n2,1.0/3.0);
+ // q0lowThresh=ip.estar-kfn*kfn/2.0/p.st.M2;
+
+ // if (ip.sign<-0.5 && abs(q0) > 30.0*p.st.T) return 0.0;
+  if (ip.sign<-0.5 && q0 <q0lowThresh) return 0.0;
+  if (ip.sign>0.5 && q0>ip.E1-p.st.M3) return 0.0;
+
+  //cout << "t,x,E1,estar,sign,q0: " << t << " " << x << " " << ip.E1
+  //<< " " << ip.estar << " "
+  //<< ip.sign << " " << q0 << endl;
+
+  // Only integrate over angles for which |q0| < q
+  double p3=sqrt((ip.E1-q0)*(ip.E1-q0)-p.st.M3*p.st.M3);
+  double mu13cross=std::max((ip.E1*ip.E1+
+                             p3*p3-q0*q0)/(2.0*ip.E1*p3),-1.0);
+
+  double delta=(mu13cross+1.0)/2.0;
+  double avg=(mu13cross-1.0)/2.0;
+
+  //cout << "p3,mu13cross,delta,avg: " << p3 << " " << mu13cross << " "
+  //<< delta << " " << avg << endl;
+
+  double integral=p.GetResponse_mu1(ip.E1,q0,x2,delta,avg,pnm);
+
+  integral*=delta;
+  double fac=p.GetCsecPrefactor(ip.E1,q0);
+
+  // Added by Zidu
+  double crx=2.0*o2scl_const::pi*fac*integral*dxdt;
+
+  //char ch;
+  //cin >> ch;
+
+  // Added by zidu, at high q0, the crx can be small and
+  // negative, which might result from calculation
+  // accuracy. a negative crx will result in a "nan" of the
+  // code output.
+if (crx<0.0) crx=0.0;
+
+  if (!std::isfinite(crx)) {
+    cout << "Pere: " << q0 << " " << ip.E1 << " " << p.st.M3 << " "
+         << p3 << " " << mu13cross << endl;
+    cout << "Here: " << integral << " " << fac << " " << delta << " "
+         << avg << " " << ip.E1 << " " << q0 << " " << x << " " << x2 << " "
+         << crx << endl;
+    exit(-1);
+  }
+
+  //cout.setf(ios::showpos);
+  //cout << t << " " << x << " " << x2 << " " << dxdt << " " << crx << endl;
+  //cout.unsetf(ios::showpos);
+
+  return crx;
+}
+
+
 double Polarization::CalculateInverseMFP(double E1, bool pnm) {
 
   double estar;
   if (current==current_charged) {
-    estar=st.M4 + st.U4 - st.M2 - st.U2;
+   // estar=st.M4 + st.U4 - st.M2 - st.U2;
+      estar= st.U4 - st.U2;//on 6/12/2024, zidu changed the estar here, a better approximation of estar might make the integral faster, but will not change the final result. 
   } else {
     estar=0.0;
   }
@@ -785,7 +1083,7 @@ double Polarization::CalculateInverseMFP(double E1, bool pnm) {
     
   }
   
-  if (true &&
+ /* if (false &&
       (integ_method_q0==integ_cubature || integ_method_q0==integ_compare)) {
     
     double xmin[2]={0.0,-1.0};
@@ -820,7 +1118,7 @@ double Polarization::CalculateInverseMFP(double E1, bool pnm) {
       cin >> ch;
     }
     
-  }
+  }*/
   
   if (true &&
       (integ_method_q0==integ_mc || integ_method_q0==integ_compare)) {
@@ -838,7 +1136,8 @@ double Polarization::CalculateInverseMFP(double E1, bool pnm) {
     ip.sign=-1;
     ip.E1=E1;
     ip.pnm=pnm;
-    mcarlo_miser<> mm;
+   // mcarlo_miser<> mm;
+     mcarlo_vegas<> mm;//6/12/2024, zidu test vegas mcarlo
     //mm.verbose=2;
     mm.tol_rel=1.0e-6;
     mm.n_points*=100;
@@ -855,7 +1154,7 @@ double Polarization::CalculateInverseMFP(double E1, bool pnm) {
                              std::placeholders::_2,&ip);
     
     int ret=mm.minteg_err(mf,2,xmin,xmax,val,err);
-    if (fabs(err)/fabs(val)>1.0e-3) {
+    /*if (fabs(err)/fabs(val)>1.0e-3) {
       mm.n_points*=10;
       cout << "Round two." << endl;
       ret=mm.minteg_err(mf,2,xmin,xmax,val,err);
@@ -869,14 +1168,24 @@ double Polarization::CalculateInverseMFP(double E1, bool pnm) {
         mm.n_points/=3;
       }
       mm.n_points/=10;
-    }
+    }*/
+   /* if (fabs(err)/fabs(val)>1.0e-2) {
+      mm.n_points*=10;
+      cout << "Round two." << endl;
+      ret=mm.minteg_err(mf,2,xmin,xmax,val,err);
+        if (fabs(err)/fabs(val)>1.0e-2) {
+          cout << "Still inaccurate." << endl;
+        }
+      mm.n_points/=10;
+    }*///6/12/2024 zidu reduce the accuracy of integration because of the expense of bethe salpeter intergals
+    //on 6/16/2024 test accuracy of just running round 1
     cout << "MC ret,val,err: " << ret << " " << val << " " << err << " "
          << fabs(err)/fabs(val) << endl;
     integral=val;
 
     ip.sign=1;
     ret=mm.minteg_err(mf,2,xmin,xmax,val,err);
-    if (fabs(err)/fabs(val)>1.0e-3) {
+   /* if (fabs(err)/fabs(val)>1.0e-3) {
       mm.n_points*=10;
       cout << "Round two." << endl;
       ret=mm.minteg_err(mf,2,xmin,xmax,val,err);
@@ -890,7 +1199,17 @@ double Polarization::CalculateInverseMFP(double E1, bool pnm) {
         mm.n_points/=3;
       }
       mm.n_points/=10;
-    }
+    }*/
+   /* if (fabs(err)/fabs(val)>1.0e-2) {
+      mm.n_points*=10;
+      cout << "Round two." << endl;
+      ret=mm.minteg_err(mf,2,xmin,xmax,val,err);
+        if (fabs(err)/fabs(val)>1.0e-2) {
+          cout << "Still inaccurate." << endl;
+        }
+      mm.n_points/=10;
+    }*///6/12/2024 zidu reduce the accuracy of integration because of the expense of bethe salpeter intergals
+    //6/16/2024, test accuracy of just running round 1
     cout << "MC ret,val,err: " << ret << " " << val << " " << err << " "
          << fabs(err)/fabs(val) << endl;
     integral+=val;
@@ -966,6 +1285,48 @@ double Polarization::GetResponse_mu(double E1, double q0, double x,
   
   return ret;
 }
+
+double Polarization::GetResponse_mu1(double E1, double q0, double x,
+                                    double delta, double avg, bool pnm) {
+
+  double mu=x*delta+avg;
+  double q=GetqFromMu13(E1,q0,mu);
+  /*
+  cout.precision(10);
+  cout << "x,mu,q,E1,q0: " << x << " " << mu << " " << q << " "
+       << E1 << " " << q0 << endl;
+  */
+  //cout << "H: " << x << " " << flush;
+  double emq0 = exp(-q0/st.T);
+  double a1 = exp((E1 - st.Mu3)/st.T);
+  double a3 = exp((E1 - q0 - st.Mu3)/st.T);
+
+      // fac0 = 1 - f^0_3(1-e^(-q_0/T))
+      // fac1 = f_3^1/f_1^1 e^(-q_0/T)(1 - f^0_1(1-e^(q_0/T)))
+      // See Pons et al. (1999) eq. 25 or hera++ notes eq. 62 (Feb 12, 2020)
+  double fac0 = (1.0+1.0/a1)/(1.0 + 1.0/(a1*emq0));
+
+      // This assumes ratio of f_1^1/f_3^1 = e^(-q_0/T) where f_i^l is
+      // the lth Legendre moment of the distribution function at E_i.
+      // At q0 = 0, fac0 = fac1 = 1, and this clearly returns the
+      // inelastic transport opacity.
+  double fac1 = 1.0/fac0;
+ // double G0=GetResponse(E1,q0,q,pnm);
+ // double G1=G0*mu;
+ // double sgnG1 = (G0 > 0) - (G1 < 0);
+
+     // integral_base += wgl[i] * (fac0*exp(e0) - fac1*sgnG1*exp(e1)/3.0);
+
+
+
+  double ret=GetResponse(E1,q0,q,pnm)*(fac0-fac1*mu);//this is the one should be used!!
+ // double ret=GetResponse(E1,q0,q,pnm)*(fac0-0.0);//this is just for test!!
+  //cout << "val2: " << ret << endl;
+  //exit(-1);
+
+  return ret;
+}
+
 
 
 double Polarization::CalculateDifGam(double E1, double q0, double q) const {

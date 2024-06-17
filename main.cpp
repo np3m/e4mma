@@ -19,7 +19,7 @@
   -------------------------------------------------------------------
 */
 #include "eos_nuclei.h"
-#include <cubature.h>
+//#include <cubature.h>
 
 using namespace std;
 using namespace o2scl;
