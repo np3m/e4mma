@@ -578,7 +578,7 @@ public:
   //@{
   /// New lepton object
 #ifdef O2SCL_NO_BOOST_MULTIPRECISION
-  o2scl::eos_leptons elep;
+  o2scl::eos_leptons2 elep;
 #else
   o2scl::eos_leptons_multip elep;
 #endif
