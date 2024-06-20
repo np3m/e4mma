@@ -651,8 +651,10 @@ double Polarization::CalculateTransportInverseMFP(double E1, bool pnm) {
     ip.sign=-1;
     ip.E1=E1;
     ip.pnm=pnm;
-   // mcarlo_miser<> mm;
-      mcarlo_vegas<> mm;//on 6/10/2024, zidu test vegas mcarlo
+
+    mcarlo_miser<> mm;
+   //   mcarlo_vegas<> mm;//on 6/10/2024, zidu test vegas mcarlo
+
     //mm.verbose=2;
     mm.tol_rel=1.0e-6;
     mm.n_points*=100;
@@ -668,6 +670,7 @@ double Polarization::CalculateTransportInverseMFP(double E1, bool pnm) {
                              std::placeholders::_2,&ip);
 
     int ret=mm.minteg_err(mf,2,xmin,xmax,val,err);
+
    /* if (fabs(err)/fabs(val)>1.0e-3) {
       mm.n_points*=10;
       cout << "Round two." << endl;
@@ -692,12 +695,14 @@ double Polarization::CalculateTransportInverseMFP(double E1, bool pnm) {
       }
       mm.n_points/=10;
     }  //6/12/2024 zidu decrease the requirement for accuracy because of the expensive Bethe salpeter calculations
+
     cout << "MC ret,val,err: " << ret << " " << val << " " << err << " "
          << fabs(err)/fabs(val) << endl;
     integral=val;
 
     ip.sign=1;
     ret=mm.minteg_err(mf,2,xmin,xmax,val,err);
+
     /*if (fabs(err)/fabs(val)>1.0e-3) {
       mm.n_points*=10;
       cout << "Round two." << endl;
@@ -722,6 +727,7 @@ double Polarization::CalculateTransportInverseMFP(double E1, bool pnm) {
       }
       mm.n_points/=10;
     } //6/12/2024 zidu decrease the requirement for accuracy because of the expensive Bethe salpeter calculations
+
     cout << "MC ret,val,err: " << ret << " " << val << " " << err << " "
          << fabs(err)/fabs(val) << endl;
     integral+=val;

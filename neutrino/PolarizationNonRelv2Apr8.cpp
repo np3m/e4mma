@@ -1397,12 +1397,14 @@ double PolarizationNonRel::GetRePI( double q0, double q) const {
   // q0lowThresh=-(\delta U+\delta m)-300MeV, to get RePi at q0=q0lowThresh, the integration range need
   // to be increased. Here I increase it by another 300 MeV
 
+
  // q0boundaryCCLow=st.U2-st.U4+st.M2-st.M4+300*2;
     q0boundaryCCLow=1.5*q+abs(st.U2-st.U4);
   //the upper bound of q0 can not be larger than E1, the largest E1 considered in simulations can be 480 mev, conservatively, 
   //we set the upper bound of q0 to be 500 mev
  // q0boundaryCCHigh=500;
     q0boundaryCCHigh=1.5*q+abs(st.U2-st.U4);
+
  /* if (10*st.T>100.0) {
           q0boundaryCC=30*st.T;
   } else {
@@ -1675,12 +1677,14 @@ double PolarizationNonRel::GetRePIn( double q0, double q) const {
   // q0lowThresh=-(\delta U+\delta m)-300MeV, to get RePi at q0=q0lowThresh, the integration range need
   // to be increased. Here I increase it by another 300 MeV
 
+
  // q0boundaryNCLow=st.U2-st.U2+st.M2-st.M2+300*2;
     q0boundaryNCLow=1.5*q;
   //the upper bound of q0 can not be larger than E1, the largest E1 considered in simulations can be 480 mev, conservatively,
   //we set the upper bound of q0 to be 500 mev
  // q0boundaryNCHigh=500;
     q0boundaryNCHigh=1.5*q;
+
 
 
   // gsl_integration_qawc (&F, -90, 90, q0, 0, 1e-7, 1000,
@@ -1734,12 +1738,14 @@ double PolarizationNonRel::GetRePIp( double q0, double q) const {
   // q0lowThresh=-(\delta U+\delta m)-300MeV, to get RePi at q0=q0lowThresh, the integration range need
   // to be increased. Here I increase it by another 300 MeV
 
+
  // q0boundaryNCLow=st.U4-st.U4+st.M4-st.M4+300*2;
     q0boundaryNCLow=1.5*q;
   //the upper bound of q0 can not be larger than E1, the largest E1 considered in simulations can be 480 mev, conservatively,
   //we set the upper bound of q0 to be 500 mev
  // q0boundaryNCHigh=500;
     q0boundaryNCHigh=1.5*q;
+
 
 
 
