@@ -125,6 +125,8 @@ public:
   o2scl::tensor_grid<> *tgp_mue;
   o2scl::tensor_grid<> *tgp_Fint;
   o2scl::tensor_grid<> *tgp_Sint;
+  o2scl::tensor_grid<> *tgp_Fall;
+  o2scl::tensor_grid<> *tgp_Sall;
   o2scl::tensor_grid<> tgp_cs2;
   //@}
 
@@ -158,8 +160,8 @@ public:
                    o2scl::tensor_grid<> &tg_mun,
                    o2scl::tensor_grid<> &tg_mup,
                    o2scl::tensor_grid<> &tg_mue,
-                   o2scl::tensor_grid<> &tg_Fint,
-                   o2scl::tensor_grid<> &tg_Sint,
+                   o2scl::tensor_grid<> &tg_Fall,
+                   o2scl::tensor_grid<> &tg_Sall,
                    double mn, double mpx);
   
   /** \brief Additional constraints for the interpolation
@@ -257,7 +259,15 @@ public:
    */
   int solve_hrg(size_t nv, const ubvector &x,
                 ubvector &y, double nB, double Ye, double T);
-  
+
+  /** \brief Used to change values in hdf5 i/o test function
+   */
+  void change_tgp(o2scl::tensor_grid<>& tg_file, double value);
+
+  /** \brief Test input and output to o2 files.
+   */
+  int test_hdf5io ();
+
   /// \name Grid specification
   //@{
   size_t n_nB2;
@@ -820,23 +830,14 @@ public:
    * This function requires that an EOS with leptons be loaded
    */
   int interp_file(std::vector<std::string> &sv, bool itive_com);
-  /** Temporary function used to test vector distance functions.
-   */
-  void vecttest();
-  /** \brief finds the distance between two size_t vectors of arbitrary length as long as both vectors have the same length.
-   */
-  double vector_distance(std::vector<size_t> start, std::vector<size_t> endpoint);
-  /** \brief finds the vector from a map of vectors that is closest a starting size_t vector of arbitrary length as long as both vectors have the same length.
+
+  /** \brief finds distance between two size_t vectors of arbitrary length as long as both vectors have the same length.
    */
   template<typename T>
-  std::pair<double, T> shortest_vector_distance(std::vector<size_t> start, std::map<std::vector<size_t>, T> points);
+  std::pair<double, T> vector_distance(std::vector<size_t> start, std::map<std::vector<size_t>, T> points);
   /** \brief calculate results from table for points in list
    */
   std::map<std::vector<size_t>, std::vector<double>> calculate_table_values(std::vector<size_t> points_list, interpm_krige_eos& ike);
-
-  /** \brief calculate results from table for points in list
-   */
-  void remove_eg(std::map<std::vector<size_t>, std::vector<double>>& points, interpm_krige_eos& with_eg, interpm_krige_eos& without_eg);
 
   /** \brief minimize parameters for interpolation object
    */
