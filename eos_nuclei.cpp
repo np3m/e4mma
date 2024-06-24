@@ -2129,7 +2129,6 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
           tg_mue.get(ix)*np2/hc_mev_fm;
         if (cs2_verbose>0) {
           cout << endl;
-          cout << i << " " << j << " " << k << endl;
           cout << "fr: " << tg_F.get(ix)/hc_mev_fm*nB << endl;
           cout << "en: " << tg_S.get(ix)*nB << endl;
           cout << "mun[1/fm],mup[1/fm],mue[1/fm]: "
@@ -2181,7 +2180,7 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
           //<< electron.mu << " " << electron.n << endl;
           cout << "Superluminal: nB,Ye,T[MeV],cs2,cs2_hom:\n  "
                << nB << " " << Ye << " " << T_MeV << " "
-               << cs_sq << " " << cs2_hom.get(ix) << " " << tg_Fint.get(ix) << " " << tg_F.get(ix) << " " << tg_mun.get(ix) << " " << dmundnB.get(ix) << endl;
+               << cs_sq << " " << cs2_hom.get(ix) << endl;
           superlum_count++;
           if ((nB<max_nB_inter) && (save_to_csv==true)) {
              csvfile.open(csv_location, ios:: app);

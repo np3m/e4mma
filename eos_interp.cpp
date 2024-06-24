@@ -83,6 +83,46 @@ double eos_nuclei::interp_min
 
 #endif
 
+int eos_nuclei::test_hdf5io () {
+    std::string cs2in = "/home/jbaut001/st.o2";
+    std::string Fintin = "/home/awsteiner/wcs/eos/fid_3_14_23.o2";
+    std::string cs2o2 = "/home/jbaut001/test/sttest.o2";
+    std::string Finto2 = "/home/jbaut001/test/fidtest.o2";
+    std::filesystem::copy_file(cs2in, cs2o2, std::filesystem::copy_options::overwrite_existing);
+    std::filesystem::copy_file(Fintin, Finto2, std::filesystem::copy_options::overwrite_existing);
+
+    hdf_file hff, hff2;
+    o2scl::tensor_grid<> tgp_cs2, tgp_Fint;
+    hff.open_or_create(cs2o2);
+    hff2.open_or_create(Finto2);
+    hdf_input(hff, tgp_cs2, "cs2");
+    hdf_input(hff2, tgp_Fint, "Fint");
+    eos_nuclei::change_tgp(tgp_cs2, 3.0);
+    eos_nuclei::change_tgp(tgp_Fint, 50.0);
+    hdf_output(hff, tgp_cs2, "cs2");
+    hdf_output(hff2, tgp_Fint, "Fint");
+    hff.seti("derivs_computed", 0);
+    hff.seti("with_leptons", 0);
+    hff2.seti("derivs_computed", 0);
+    hff.seti("with_leptons", 0);
+    hff.close();
+    hff2.close();
+    return 0;
+}
+
+void eos_nuclei::change_tgp(o2scl::tensor_grid<>& tg_file, double value) {
+    for (size_t inB=210;inB<=213;inB++) {
+        for (size_t iYe=2;iYe<=5;iYe++) {
+            for (size_t iT=64;iT<=65;iT++) {
+                vector<size_t> index={inB, iYe, iT};
+                cout << tg_file.get(index) << endl;
+                tg_file.get(index)=value;
+                cout << tg_file.get(index) << endl;
+            }
+        }
+    }
+}
+
 int eos_nuclei::interp_point(std::vector<std::string> &sv,
                              bool itive_com) {
   if (sv.size()<6) {
@@ -95,8 +135,6 @@ int eos_nuclei::interp_point(std::vector<std::string> &sv,
   double T_cent=o2scl::function_to_double(sv[3]);
 
   int window=o2scl::stoi(sv[4]);
-
-  vecttest();
 
   std::string st_o2=sv[5];
   std::string stfix_o2="";
@@ -193,8 +231,8 @@ void eos_nuclei::interpolate(double nB_p,
             ike.fix_list.push_back(index[0]);
             ike.fix_list.push_back(index[1]);
             ike.fix_list.push_back(index[2]);
-            cout << "fix: " << index[0] << " " << index[1] << " "
-            << index[2] << endl;
+            //cout << "fix: " << index[0] << " " << index[1] << " "
+            //<< index[2] << endl;
           } else if (ike.tgp_cs2.get_rank()>=3 &&
               (ike.tgp_cs2.get(index)<=1.0 &&
                std::isfinite(ike.tgp_cs2.get(index)) &&
@@ -202,8 +240,8 @@ void eos_nuclei::interpolate(double nB_p,
             ike.calib_list.push_back(index[0]);
             ike.calib_list.push_back(index[1]);
             ike.calib_list.push_back(index[2]);
-            cout << "cal: " << index[0] << " " << index[1] << " "
-            << index[2] << endl;
+            //cout << "cal: " << index[0] << " " << index[1] << " "
+            //<< index[2] << endl;
           }
         }
       }
@@ -231,8 +269,8 @@ void eos_nuclei::interpolate(double nB_p,
   ike.set_covar(mfr,param_lists);
  
   ike.skip_optim=true;
-  ike.set(nB_grid2,Ye_grid2,T_grid2,tg_F,tg_P,tg_S,
-          tg_mun,tg_mup,tg_mue,tg_Fint,tg_Sint,neutron.m,proton.m);
+  ike.set(nB_grid2,Ye_grid2,T_grid2,tg_Fint,tg_P,tg_Sint,
+          tg_mun,tg_mup,tg_mue,tg_F,tg_S,neutron.m,proton.m);
 
   minimize_parameters(ike);
 
@@ -380,14 +418,14 @@ void eos_nuclei::interpolate(double nB_p,
                     std::isfinite(ike.tgp_cs2.get(index)) ||
                     ike.tgp_cs2.get(index)>=0.0))) {
                     if (!external_acausal_points.empty()) {
-                      closest=shortest_vector_distance<double>(index, external_acausal_points);
+                      closest=vector_distance<double>(index, external_acausal_points);
                       nearest_external=closest.first;
                     }
                     else {
                       nearest_external=0.0;
                       isEmpty=true;
                     }
-                    closest=shortest_vector_distance<double>(index, results_final);
+                    closest=vector_distance<double>(index, results_final);
                     nearest_internal=closest.first;
                     if ((nearest_internal<=nearest_external) || (isEmpty==true)) {
                         fix_list[index]=std::make_pair(closest.second,nearest_internal);
@@ -407,8 +445,8 @@ void eos_nuclei::interpolate(double nB_p,
     double eta = 0.2;
     std::map<std::vector<size_t>, std::pair<double, double>>::iterator it4;
     for (it4=fix_list.begin(); it4 != fix_list.end(); ++it4) {
-      fixed=ike.tgp_Fint->get(it4->first)+((it4->second.first-ike.tgp_Fint->get(it4->first))*std::exp(-std::pow(it4->second.second, 2.0)/std::pow(eta, 2.0)));
-      cout << tg_file.get(it4->first) << " " << fixed << " Original: " << ike.tgp_Fint->get(it4->first) << " Closest: " << it4->second.first << " Distance: " << it4->second.second << endl;
+      fixed=ike.tgp_F->get(it4->first)+((it4->second.first-ike.tgp_F->get(it4->first))*std::exp(-std::pow(it4->second.second, 2.0)/std::pow(eta, 2.0)));
+      cout << tg_file.get(it4->first) << " " << fixed << " Original: " << ike.tgp_F->get(it4->first) << " Closest: " << it4->second.first << " Distance: " << it4->second.second << endl;
       tg_file.get(it4->first)=fixed;
       cout << tg_file.get(it4->first) << endl;
     }
@@ -497,116 +535,26 @@ int eos_nuclei::interp_file(std::vector<std::string> &sv,
   return 0;
 }
 
-void eos_nuclei::vecttest () {
-    std::vector<size_t> origin1 = {0};
-    std::vector<size_t> origin2 = {0,0};
-    std::vector<size_t> origin3 = {0,0,0};
-    std::vector<size_t> origin4 = {0,0,0,0};
-
-    std::map<std::vector<size_t>, double> points1={{{1},1.0},
-                                                   {{2},2.0},
-                                                   {{3},3.0}};
-    std::map<std::vector<size_t>, int> points2={{{1,1},1},
-                                                {{1,2},2},
-                                                {{2,2},3}};
-    std::map<std::vector<size_t>, char> points3={{{1,3,1},'a'},
-                                                 {{1,4,2},'b'},
-                                                 {{2,5,3},'c'}};
-    std::map<std::vector<size_t>, size_t> points4={{{1,3,0,1},1},
-                                                   {{1,4,4,2},2},
-                                                   {{2,5,8,3},3}};
-
-    cout << "1D points ";
-    for (int a : origin1) {
-        cout << a << ",";
-    }
-    cout << endl;
-    double dist=0.0;
-    std::map<std::vector<size_t>, double>::iterator i1;
-    for (i1=points1.begin(); i1 != points1.end(); ++i1) {
-        dist=sqrt(pow((i1->first.at(0)-origin1.at(0)),2.0));
-        for (int a : i1->first) {
-            cout << a << ",";
-        }
-        cout << ":" << vector_distance(origin1,i1->first) << " " << dist << endl;
-    }
-    cout << "Shortest Point: " << shortest_vector_distance(origin1,points1).first << " " << shortest_vector_distance(origin1,points1).second << endl;
-    cout << "2D points ";
-    for (int a : origin2) {
-        cout << a << ",";
-    }
-    cout << endl;
-    std::map<std::vector<size_t>, int>::iterator i2;
-    for (i2=points2.begin(); i2 != points2.end(); ++i2) {
-        dist=sqrt(pow((i2->first.at(0)-origin2.at(0)),2.0)+pow((i2->first.at(1)-origin2.at(1)),2.0));
-        for (int a : i2->first) {
-            cout << a << ",";
-        }
-        cout << ":" << vector_distance(origin2,i2->first) << " " << dist << endl;
-    }
-    cout << "Shortest Point: " << shortest_vector_distance(origin2,points2).first << " " << shortest_vector_distance(origin2,points2).second << endl;
-    cout << "3D points ";
-    for (int a : origin3) {
-        cout << a << ",";
-    }
-    cout << endl;
-    std::map<std::vector<size_t>, char>::iterator i3;
-    for (i3=points3.begin(); i3 != points3.end(); ++i3) {
-        dist=sqrt(pow((i3->first.at(0)-origin3.at(0)),2.0)+pow((i3->first.at(1)-origin3.at(1)),2.0)+pow((i3->first.at(2)-origin3.at(2)),2.0));
-        for (int a : i3->first) {
-            cout << a << ",";
-        }
-        cout << ":" << vector_distance(origin3,i3->first) << " " << dist << endl;
-    }
-    cout << "Shortest Point: " << shortest_vector_distance(origin3,points3).first << " " << shortest_vector_distance(origin3,points3).second << endl;
-    cout << "4D points ";
-    for (int a : origin4) {
-        cout << a << ",";
-    }
-    cout << endl;
-    std::map<std::vector<size_t>, size_t>::iterator i4;
-    for (i4=points4.begin(); i4 != points4.end(); ++i4) {
-        dist=sqrt(pow((i4->first.at(0)-origin4.at(0)),2.0)+pow((i4->first.at(1)-origin4.at(1)),2.0)+pow((i4->first.at(2)-origin4.at(2)),2.0)+pow((i4->first.at(3)-origin4.at(3)),2.0));
-        for (int a : i4->first) {
-            cout << a << ",";
-        }
-        cout << ":" << vector_distance(origin4,i4->first) << " " << dist << endl;
-    }
-    cout << "Shortest Point: " << shortest_vector_distance(origin4,points4).first << " " << shortest_vector_distance(origin4,points4).second << endl;
-}
-
-  double eos_nuclei::vector_distance(std::vector<size_t> start, 
-                                     std::vector<size_t> endpoint) {
-    double distance=0.0;
-    if ((start.size() != endpoint.size()) || (start.size()==0)) {
-        return -1.0;
-    }
-    for (size_t x=0; x<start.size(); x++) {
-        if (endpoint.at(x)>start.at(x)) {
-            distance+=std::pow((endpoint.at(x)-start.at(x)), 2.0);
-        }
-        else {
-            distance+=std::pow((start.at(x)-endpoint.at(x)), 2.0);
-        }
-    }
-    distance=std::sqrt(distance);
-    return distance;
-}
-
   template<typename T>
-  std::pair<double, T> eos_nuclei::shortest_vector_distance(std::vector<size_t> start, 
+  std::pair<double, T> eos_nuclei::vector_distance(std::vector<size_t> start, 
                                                   std::map<std::vector<size_t>, T> points) {
     std::pair<double, T> results;
-    results = std::make_pair(0.0,T());
     double distance=0.0;
     typename std::map<std::vector<size_t>, T>::iterator i;
     for (i=points.begin(); i != points.end(); ++i) {
-        distance=0.0;
         if ((start.size() != i->first.size()) || (start.size()==0)) {
             results = std::make_pair(0.0,T());
             return results;
         }
-        distance=vector_distance(start,i->first);
+        for (size_t x=0; x<start.size(); x++) {
+            if (i->first.at(x)>start.at(x)) {
+                distance+=std::pow((i->first.at(x)-start.at(x)), 2.0);
+            }
+            else {
+                distance+=std::pow((start.at(x)-i->first.at(x)), 2.0);
+            }
+        }
+        distance=std::sqrt(distance);
         if ((results.first==0.0) || (distance<results.first)) {
             results.first=distance;
             results.second=i->second;
@@ -646,8 +594,8 @@ void interpm_krige_eos::set(std::vector<double> &nB_grid2,
                             o2scl::tensor_grid<> &tg_mun,
                             o2scl::tensor_grid<> &tg_mup,
                             o2scl::tensor_grid<> &tg_mue,
-                            o2scl::tensor_grid<> &tg_Fint,
-                            o2scl::tensor_grid<> &tg_Sint,
+                            o2scl::tensor_grid<> &tg_Fall,
+                            o2scl::tensor_grid<> &tg_Sall,
                             double mn, double mpx) {
 
   ubmatrix ix(calib_list.size()/3,3);
@@ -682,9 +630,9 @@ void interpm_krige_eos::set(std::vector<double> &nB_grid2,
   tgp_mun=&tg_mun;
   tgp_mup=&tg_mup;
   tgp_mue=&tg_mue;
-  tgp_Fint=&tg_Fint;
-  tgp_Sint=&tg_Sint;
-    
+  tgp_Fall=&tg_Fall;
+  tgp_Sall=&tg_Sall;
+
   size_t n_nB=nB_grid2.size();
   size_t n_Ye=Ye_grid2.size();
   size_t n_T=T_grid2.size();
@@ -748,13 +696,14 @@ std::map<std::vector<size_t>, std::vector<double>> interpm_krige_eos::interpolat
     size_t pT=points_list[j+2];
 
     vector<size_t> index={(size_t) pnB,(size_t) pYe,(size_t) pT};
+
     double mue=tgp_mue->get(index)/hc_mev_fm;
     double mue_keep=mue;
     if (includeMue==false) {
         mue=0.0;
     }
-    double Feg=tgp_F->get(index)-tgp_Fint->get(index);
-    double Seg=tgp_S->get(index)-tgp_Sint->get(index);
+    double Feg=tgp_Fall->get(index)-tgp_F->get(index);
+    double Seg=tgp_Sall->get(index)-tgp_S->get(index);
 
     double nB=nB_grid[pnB];
     double Ye=Ye_grid[pYe];
@@ -818,7 +767,7 @@ std::map<std::vector<size_t>, std::vector<double>> interpm_krige_eos::interpolat
     didnB=1.0/dnBdi;
     djdYe=1.0/dYedj;
     dkdT=1.0/dTdk;
-    
+
     // Evaluate the free energy and its derivatives analytically
     // using the interpolator
     eval(index,out);
@@ -869,49 +818,45 @@ std::map<std::vector<size_t>, std::vector<double>> interpm_krige_eos::interpolat
     deriv2(index,out,0,0);
     double d2Fdi2=out[0]/hc_mev_fm;
     double F_nBnB=d2Fdi2*didnB*didnB+dFdi*d2idnB2;
-    if (!interp_Fint) {
+    //added !interp_Fint originally for some reason?
+    if (interp_Fint) {
         F_nBnB=F_nBnB+(((Ye*Ye)/nB)*(1/elep.ed.dndmu))-((2*Ye*mue)/(nB*nB))+((2*Feg)/(nB*nB));
-    }
-
+    } 
     deriv2(index,out,0,1);
     double d2Fdidj=out[0]/hc_mev_fm;
     double F_nBYe=d2Fdidj*didnB*djdYe;
     if (interp_Fint) {
         F_nBYe=F_nBYe+(Ye*(1/elep.ed.dndmu));
-    }
-
+    } 
     deriv2(index,out,1,1);
     double d2Fdj2=out[0]/hc_mev_fm;
     double F_YeYe=d2Fdj2*djdYe*djdYe+dFdj*d2jdYe2;
     if (interp_Fint) {
         F_YeYe=F_YeYe+(nB*(1/elep.ed.dndmu));
     }
-
     deriv2(index,out,0,2);
     double d2Fdidk=out[0]/hc_mev_fm;
-    double F_nBT=d2Fdidk*didnB*dkdT*hc_mev_fm; 
+    double F_nBT=d2Fdidk*didnB*dkdT*hc_mev_fm;
     if (interp_Fint) {
         F_nBT=F_YeYe+((Ye/nB)*(elep.ed.dndT/elep.ed.dndmu))+(Seg/nB);
     }
-
     deriv2(index,out,1,2);
     double d2Fdjdk=out[0]/hc_mev_fm;
     double F_YeT=d2Fdjdk*djdYe*dkdT*hc_mev_fm;
     if (interp_Fint) {
         F_YeT=F_YeT+(elep.ed.dndT/elep.ed.dndmu);
     }
-
     deriv2(index,out,2,2);
     double d2Fdk2=out[0]/hc_mev_fm;
     double F_TT=(d2Fdk2*dkdT*dkdT+dFdk*d2kdT2)*hc_mev_fm*hc_mev_fm;
     if (interp_Fint) {
         F_TT=F_TT-((1/nB)*(elep.ed.dsdT));
     }
-    
-    results.push_back(mue_keep);
+    //changed order of results added to vector in original for some reason? 
     double mun=Fintp/hc_mev_fm+(nB*(dF_dnB+((Ye*mue)/nB)-(Feg/nB)))-(Ye*(dF_dYe+mue));
     results.push_back(mun);
-    double mup=Fintp/hc_mev_fm+(nB*(dF_dnB+((Ye*mue)/nB)-(Feg/nB)))+((1-Ye)*(dF_dYe+mue));
+    results.push_back(mue_keep);
+    double mup=Fintp/hc_mev_fm+(1.0-Ye)*dF_dYe+nB*dF_dnB-mue;
     results.push_back(mup);
     double en=-nB*dF_dT;
     results.push_back(en);
@@ -945,6 +890,7 @@ std::map<std::vector<size_t>, std::vector<double>> interpm_krige_eos::interpolat
     double nn2=nB*(1.0-Ye);
     double np2=nB*Ye;
 
+    //maybe change back?
     double dmundnB=(f_nnnn*(1-Ye))+(f_nnnp*Ye);
     double dmundYe=nB*(f_nnnp-f_nnnn);
     double dmupmuedYe=nB*(f_npnp-f_nnnp);
@@ -961,6 +907,7 @@ std::map<std::vector<size_t>, std::vector<double>> interpm_krige_eos::interpolat
 
     // Attempt at calculating dP/dnB
     // code taken from main/eos_interp.cpp
+    //double dmundnB=(f_nnnn*(1-Ye))+(f_nnnp*Ye);
     results.push_back(dmundnB);
     double dmupmuednB=(f_nnnp*(1-Ye))+(f_npnp*Ye);
     results.push_back(dmupmuednB);
@@ -1051,13 +998,11 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
       inB=calib_list[ilist*3];
       iYe=calib_list[ilist*3+1];
       iT=calib_list[ilist*3+2];
-      cout << "point" << calib_list[ilist*3] << " " << calib_list[ilist*3+1] << " " << calib_list[ilist*3+2] << endl;
       cout << "calib" << endl;
     } else {
       inB=fix_list[(ilist-calib_list.size()/3)*3];
       iYe=fix_list[(ilist-calib_list.size()/3)*3+1];
       iT=fix_list[(ilist-calib_list.size()/3)*3+2];
-      cout << "point" << fix_list[ilist*3] << " " << fix_list[ilist*3+1] << " " << fix_list[ilist*3+2] << endl;
       cout << "fix" << endl;
     }
     //inB=8;
@@ -1068,20 +1013,20 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
     cout << index[0] << " " << index[1] << " "
                 << index[2] << std::endl;
 
-       
-    cout << "before" << endl;
+        
     double nB=nB_grid[inB];
-    cout << nB << endl;
     double Ye=Ye_grid[iYe];
-    cout << Ye << endl;
     double T_MeV=T_grid[iT];
-    cout << T_MeV << endl;
 
     cout << nB << " " << Ye << " " << T_MeV << " ";
 
     double mue=tgp_mue->get(index)/hc_mev_fm;
-    double Feg=tgp_F->get(index)-tgp_Fint->get(index);
-    double Seg=tgp_S->get(index)-tgp_Sint->get(index);
+    //not in originally
+    if (includeMue==false) {
+        mue=0.0;
+    }
+    double Feg=tgp_Fall->get(index)-tgp_F->get(index);
+    double Seg=tgp_Sall->get(index)-tgp_S->get(index);
     
     // Derivatives of the physical coordinates with respect to the indices
     // new derivation of these variables taken from Dr. Steiner's branch.
@@ -1141,9 +1086,10 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
     didnB=1.0/dnBdi;
     djdYe=1.0/dYedj;
     dkdT=1.0/dTdk;
-    
+
     // Evaluate the free energy and its derivatives analytically
     // using the interpolator
+
     std::vector<double> out(1);
     eval(index,out);
     double Fintp=out[0];
@@ -1195,35 +1141,31 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
     if (interp_Fint) {
         F_nBnB=F_nBnB+(((Ye*Ye)/nB)*(1/elep.ed.dndmu))-((2*Ye*mue)/(nB*nB))+((2*Feg)/(nB*nB));
     }
-
     deriv2(index,out,0,1);
     double d2Fdidj=out[0]/hc_mev_fm;
     double F_nBYe=d2Fdidj*didnB*djdYe;
     if (interp_Fint) {
         F_nBYe=F_nBYe+(Ye*(1/elep.ed.dndmu));
     }
-
     deriv2(index,out,1,1);
     double d2Fdj2=out[0]/hc_mev_fm;
     double F_YeYe=d2Fdj2*djdYe*djdYe+dFdj*d2jdYe2;
     if (interp_Fint) {
         F_YeYe=F_YeYe+(nB*(1/elep.ed.dndmu));
     }
-
     deriv2(index,out,0,2);
     double d2Fdidk=out[0]/hc_mev_fm;
-    double F_nBT=d2Fdidk*didnB*dkdT*hc_mev_fm; 
+    double F_nBT=d2Fdidk*didnB*dkdT*hc_mev_fm;
     if (interp_Fint) {
-        F_nBT=F_YeYe+((Ye/nB)*(elep.ed.dndT/elep.ed.dndmu))+(Seg/nB);
+        F_nBT=F_nBT+((Ye/nB)*(elep.ed.dndT/elep.ed.dndmu))+(Seg/nB);
+        //F_nBT=F_YeYe+((Ye/nB)*(elep.ed.dndT/elep.ed.dndmu))+(Seg/nB);
     }
-
     deriv2(index,out,1,2);
     double d2Fdjdk=out[0]/hc_mev_fm;
     double F_YeT=d2Fdjdk*djdYe*dkdT*hc_mev_fm;
     if (interp_Fint) {
         F_YeT=F_YeT+(elep.ed.dndT/elep.ed.dndmu);
-    }
-
+    } 
     deriv2(index,out,2,2);
     double d2Fdk2=out[0]/hc_mev_fm;
     double F_TT=(d2Fdk2*dkdT*dkdT+dFdk*d2kdT2)*hc_mev_fm*hc_mev_fm;
@@ -1235,7 +1177,7 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
     // the entropy density
 
     double mun=Fintp/hc_mev_fm+(nB*(dF_dnB+((Ye*mue)/nB)-(Feg/nB)))-(Ye*(dF_dYe+mue));
-    double mup=Fintp/hc_mev_fm+(nB*(dF_dnB+((Ye*mue)/nB)-(Feg/nB)))+((1-Ye)*(dF_dYe+mue));
+    double mup=Fintp/hc_mev_fm+(1.0-Ye)*dF_dYe+nB*dF_dnB-mue;
     double en=-nB*dF_dT;
         
     // Compare theose derivatives with the stored values
@@ -1282,7 +1224,7 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
       (mup+mprot)*nB*Ye+mue*nB*Ye;
     double nn2=nB*(1.0-Ye);
     double np2=nB*Ye;
-
+    //maybe change back?
     double dmundnB=(f_nnnn*(1-Ye))+(f_nnnp*Ye);
     double dmundYe=nB*(f_nnnp-f_nnnn);
     double dmupmuedYe=nB*(f_npnp-f_nnnp);
@@ -1295,7 +1237,6 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
                   2.0*nn2*np2*(f_nnnp-f_nnT*f_npT/f_TT)+
                   np2*np2*(f_npnp-f_npT*f_npT/f_TT)-
                   2.0*en*(nn2*f_nnT/f_TT+np2*f_npT/f_TT)-en*en/f_TT)/den;*/
-
 
     cout.setf(ios::showpos);
     std::cout << cs_sq << " ";
@@ -1330,25 +1271,25 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
         (T_grid[index[2]+1]-T_grid[index[2]]) << endl;
       */
       
-      double t1=(tgp_Fint->get(index)-tgp_Fint->get(im1))/hc_mev_fm/
+      double t1=(tgp_F->get(index)-tgp_F->get(im1))/hc_mev_fm/
         (nB_grid[index[0]]-nB_grid[index[0]-1]);
-      double t2=(tgp_Fint->get(ip1)-tgp_Fint->get(index))/hc_mev_fm/
+      double t2=(tgp_F->get(ip1)-tgp_F->get(index))/hc_mev_fm/
         (nB_grid[index[0]+1]-nB_grid[index[0]]);
       double t3=(t2-t1)*2.0/(nB_grid[index[0]+1]-nB_grid[index[0]-1]);
       cout << "F_nB: " << dF_dnB << " " << t1 << " " << t2 << endl;
       double tab_dF_dnB = t1;
       cout << F_nBnB << " " << t3 << " ";
      if (!(index[1]==0) && !(index[1]==69)) { 
-        t1=(tgp_Fint->get(index)-tgp_Fint->get(jm1))/hc_mev_fm/
+        t1=(tgp_F->get(index)-tgp_F->get(jm1))/hc_mev_fm/
           (Ye_grid[index[1]]-Ye_grid[index[1]-1]);
-        t2=(tgp_Fint->get(jp1)-tgp_Fint->get(index))/hc_mev_fm/
+        t2=(tgp_F->get(jp1)-tgp_F->get(index))/hc_mev_fm/
           (Ye_grid[index[1]+1]-Ye_grid[index[1]]);
         t3=(t2-t1)*2.0/(Ye_grid[index[1]+1]-Ye_grid[index[1]-1]);
         cout << "F_Ye: " << dF_dYe << " " << t1 << " " << t2 << endl;
         cout << F_YeYe << " " << t3 << " ";
 
-        double tab_mun=tgp_Fint->get(index)/hc_mev_fm-Ye*t1+nB*tab_dF_dnB;
-        double tab_mup=tgp_Fint->get(index)/hc_mev_fm+(1.0-Ye)*t1+nB*tab_dF_dnB;
+        double tab_mun=tgp_F->get(index)/hc_mev_fm-Ye*t1+nB*tab_dF_dnB;
+        double tab_mup=tgp_F->get(index)/hc_mev_fm+(1.0-Ye)*t1+nB*tab_dF_dnB;
         cout << "tab mun, mup: " << tab_mun << " " << tab_mup << endl;
      }
       
@@ -1369,7 +1310,7 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
         
       //double dmup_dnB=2.0*dF_dnB+(Ye-1.0)*F_nBYe+nB*F_nBnB;
 
-      //double dmundnB=(f_nnnn*(1.0-Ye))+(f_nnnp*Ye);
+      double dmundnB=(f_nnnn*(1.0-Ye))+(f_nnnp*Ye);
       double dmupmuednB=(f_nnnp*(1.0-Ye))+(f_npnp*Ye);
       //double dmundnB=F_nBnB-(Ye*(((1/nB)*F_nBYe)-((1/(nB*nB))*dF_dYe)));
       //double dmupmuednB=F_nBnB-((1-Ye)*(((1/nB)*F_nBYe)-((1/(nB*nB))*dF_dYe)));
@@ -1417,8 +1358,8 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
       }
 
     cout << "\nF_intp " << Fintp << endl;
-    cout << "F_tab " << tgp_Fint->get(index) << endl;
-    double diff = std::abs(tgp_Fint->get(index)-Fintp)/std::abs(tgp_Fint->get(index));
+    cout << "F_tab " << tgp_F->get(index) << endl;
+    double diff = std::abs(tgp_F->get(index)-Fintp)/std::abs(tgp_F->get(index));
     cout << diff << endl;
     if (diff < 0.001) {
         cout << "success\n";
