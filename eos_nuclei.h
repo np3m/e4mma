@@ -84,19 +84,20 @@ public:
     
 };
 
+typedef const o2scl::const_matrix_row_gen<ubmatrix> mat_x_row_t;
+
 /** \brief Specialized Gaussian process interpolation object
  */
 class interpm_krige_eos :
   public o2scl::interpm_krige_optim
-<std::vector<o2scl::mcovar_funct_rbf_noise>,ubvector,ubmatrix,ubmatrix_row,
- ubmatrix,ubmatrix_row,Eigen::MatrixXd,
+<ubvector,ubmatrix,mat_x_row_t,
+ ubmatrix,ubmatrix_col,Eigen::MatrixXd,
  o2scl_linalg::matrix_invert_det_eigen<Eigen::MatrixXd>> {
   
 public:
   
   // Typedefs from the specialized template parameters
-  typedef ubmatrix_row mat_y_row_t;
-  typedef ubmatrix_row mat_x_row_t;
+  typedef ubmatrix_col mat_y_col_t;
   typedef Eigen::MatrixXd mat_inv_kxx_t;
   typedef o2scl_linalg::matrix_invert_det_eigen<Eigen::MatrixXd>
   mat_inv_t;
@@ -150,7 +151,7 @@ public:
   double mprot;
 
   /// Lepton EOS object
-  o2scl::eos_leptons2 elep;
+  o2scl::eos_leptons elep;
 
   /// If true, interpolate Fint, otherwise, interpolate F
   bool interp_Fint;
@@ -812,14 +813,19 @@ public:
       interpolation object \c ike. 
    */
   int interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
-                      size_t window, interpm_krige_eos &ike);
+                      size_t window, interpm_krige_eos &ike,
+                      std::string kernel="rbf_noise");
 
   /** \brief Use interpolation to fix an entire table
 
       <input stability file> <window> <output table> 
-      <output stability file>
+      <output stability file> [kwargs]
 
-      Under development.
+      This requires the model to be selected and an EOS to be
+      loaded.
+
+      Keyword arguments: one_point = false, full_min = true, and
+      output = true.
    */
   int interp_fix_table(std::vector<std::string> &sv, bool itive_com);
   

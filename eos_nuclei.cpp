@@ -2021,8 +2021,6 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
           i_Ye_fix.push_back(j);
           i_T_fix.push_back(k);
           type_fix.push_back(3);
-          //char ch;
-          //cin >> ch;
         }
         
         // Compute squared speed of sound
@@ -2062,12 +2060,6 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
         double expr1=dmundnBv*nB*nB+dsdnBv*dsdnBv*nB*nB/dsdTv+
           dmundYev*nB*Ye-dmundYev*nB*Ye*Ye+dmupdYev*nB*Ye*Ye;
         double expr2=dsdnBv*nB/dsdTv;
-        /*
-          double cs_sq=(nn2*nn2*(f_nnnn-f_nnT*f_nnT/f_TT)+
-          2.0*nn2*np2*(f_nnnp-f_nnT*f_npT/f_TT)+
-          np2*np2*(f_npnp-f_npT*f_npT/f_TT)-
-          2.0*en*(nn2*f_nnT/f_TT+np2*f_npT/f_TT)-en*en/f_TT)/den;
-        */
         double cs_sq=(expr1-2.0*en*expr2-en*en/f_TT)/den;
 
         tg_cs2.get(ix)=cs_sq;
@@ -2096,8 +2088,6 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
         }
         
         if (cs_sq<0.0 || cs_sq>1.0 || !std::isfinite(cs_sq)) {
-          //cout << tg_mun.get(ix) << " " << neutron.m << " "
-          //<< electron.mu << " " << electron.n << endl;
           cout << "Unphysical cs2: nB,Ye,T[MeV],cs2,cs2_hom:\n  "
                << nB << " " << Ye << " " << T_MeV << " "
                << cs_sq << " " << tg_cs2_hom.get(ix) << endl;
@@ -2108,7 +2098,6 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
           i_Ye_fix.push_back(j);
           i_T_fix.push_back(k);
           type_fix.push_back(4);
-          //exit(-1);
         }
         
       }

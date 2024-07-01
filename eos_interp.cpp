@@ -38,11 +38,16 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
   size_t window=o2scl::stoszt(sv[2]);
   table_out=sv[3];
   st_out=sv[4];
-  
+
+  kwargs kw;
+  if (sv.size()>=6) kw.set(sv[5]);
+
+  bool one_point=kw.get_bool("one_point",false);
+
   // Create interpolation object
   interpm_krige_eos ike;
   ike.mode=ike.mode_loo_cv_bf;
-  ike.full_min=true;
+  ike.full_min=kw.get_bool("full_min",true);
   ike.def_mmin.verbose=1;
   ike.enp=this;
   
@@ -54,9 +59,13 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
   hdf_input(hff,tg_cs2,"cs2");
   hff.close();
 
+  std::string kernel=kw.get_string("kernel","rbf_noise");
+  
   int ipx_count=0;
 
-  cout << "Starting loop over entire grid:." << endl;
+  cout << "eos_nuclei::interp_fix_table(): "
+       << "Starting loop over entire grid." << endl;
+  
   for(size_t i=0;i<nB_grid2.size();i++) {
     for(size_t j=0;j<Ye_grid2.size();j++) {
       for(size_t k=0;k<T_grid2.size();k++) {
@@ -90,7 +99,10 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
                << Ye_grid2[j] << "," << T_grid2[k] << ")\n  cs2: "
                << tg_cs2.get(ix) << " dPdnB: " << dPdnB << endl;
 
-          if (nB_grid2[i]<1.0e-3) {
+          if (false && nB_grid2[i]<1.0e-3) {
+            // This is a very naive adjustment of the free energy
+            // at individual points. It hasn't yet been very
+            // successful. 
           
             bool done=false;
             double delta_F=tg_Fint.get(ix)/1.0e5;
@@ -148,7 +160,7 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
               
             }
             
-          } else if (false) {
+          } else if (true) {
             
             // Create a copy of the free energy for temporary storage
             tg_Fint_old=tg_Fint;
@@ -223,9 +235,12 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
               if (k_max<T_grid2.size()-1) k_max++;
             }
             
-            cout << "Computed i_min, i_max: " << i_min << " " << i_max << endl;
-            cout << "Computed j_min, j_max: " << j_min << " " << j_max << endl;
-            cout << "Computed k_min, k_max: " << k_min << " " << k_max << endl;
+            cout << "Computed i_min, i_max: " << i_min << " "
+                 << i_max << endl;
+            cout << "Computed j_min, j_max: " << j_min << " "
+                 << j_max << endl;
+            cout << "Computed k_min, k_max: " << k_min << " "
+                 << k_max << endl;
             
             std::vector<std::string> sv3;
             sv3={"stability",o2scl::szttos(i_min),o2scl::szttos(i_max),
@@ -270,14 +285,23 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
             j=Ye_grid2.size();
             k=T_grid2.size();
           }
+
+          if (one_point && ipx_count==1) {
+            i=nB_grid2.size();
+            j=Ye_grid2.size();
+            k=T_grid2.size();
+          }
           
         }
       }
       
     }
   }
+
+  bool output=kw.get_bool("output",true);
   
-  if (true) {
+  if (output) {
+    
     hdf_file hf;
     hf.open_or_create(st_out);
     hdf_output(hf,dmundnB,"dmundnB");
@@ -295,13 +319,15 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
     hf.close();
     
     write_results(table_out);
+    
   }            
           
   return 0;
 }
 
 int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
-                                size_t window, interpm_krige_eos &ike) {
+                                size_t window, interpm_krige_eos &ike,
+                                std::string kernel) {
   
   // Using the specified window, compute the list of points to fix,
   // and the list of calibration points
@@ -362,6 +388,7 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
   cout << "  and attempting to fix " << ike.fix_list.size()/3 << " points."
        << endl;
   size_t count=ike.calib_list.size()/3;
+  exit(-1);
 
   if (ike.fix_list.size()==0) {
     cerr << "No points to fix." << endl;
@@ -378,19 +405,55 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
 
   // Initialize the covariance object 
   
-  std::vector<double> len_list={2.0,3.0};
-  std::vector<double> l10_list={-15,-13,-11,-9};  
-  std::vector<std::vector<double>> ptemp;
-  ptemp.push_back(len_list);
-  ptemp.push_back(len_list);
-  ptemp.push_back(len_list);
-  ptemp.push_back(l10_list);
-  std::vector<std::vector<std::vector<double>>> param_lists;
-  param_lists.push_back(ptemp);
-  std::cout << "Going to set_covar()." << std::endl;
-  vector<mcovar_funct_rbf_noise> mfr(1);
-  mfr[0].len.resize(3);
-  ike.set_covar(mfr,param_lists);
+  if (kernel=="rbf_noise") {
+    std::vector<double> len_list={2.0,3.0};
+    std::vector<double> l10_list={-15,-13,-11,-9};  
+    std::vector<std::vector<double>> ptemp;
+    ptemp.push_back(len_list);
+    ptemp.push_back(len_list);
+    ptemp.push_back(len_list);
+    ptemp.push_back(l10_list);
+    std::vector<std::vector<std::vector<double>>> param_lists;
+    param_lists.push_back(ptemp);
+    std::cout << "Going to set_covar()." << std::endl;
+    std::vector<std::shared_ptr<mcovar_funct_rbf_noise<ubvector,mat_x_row_t>>>
+      mfr(1);
+    mfr[0]=std::shared_ptr<mcovar_funct_rbf_noise<ubvector,mat_x_row_t>>
+      (new mcovar_funct_rbf_noise<ubvector,mat_x_row_t>);
+    mfr[0]->len.resize(3);
+    vector<std::shared_ptr<mcovar_base<ubvector,mat_x_row_t>>> mfr2(1);
+    mfr2[0]=mfr[0];
+    ike.set_covar(mfr2,param_lists);
+  } else {
+    std::vector<double> len_list={2.0,3.0};
+    std::vector<double> slope_list={0.01,0.1};
+    std::vector<double> pos_list={80.0,90.0};
+    std::vector<double> l10_list={-15,-13,-11,-9};  
+    std::vector<std::vector<double>> ptemp;
+    ptemp.push_back(len_list);
+    ptemp.push_back(slope_list);
+    ptemp.push_back(pos_list);
+    ptemp.push_back(len_list);
+    ptemp.push_back(slope_list);
+    ptemp.push_back(pos_list);
+    ptemp.push_back(len_list);
+    ptemp.push_back(slope_list);
+    ptemp.push_back(pos_list);
+    ptemp.push_back(l10_list);
+    std::vector<std::vector<std::vector<double>>> param_lists;
+    param_lists.push_back(ptemp);
+    std::cout << "Going to set_covar()." << std::endl;
+    vector<std::shared_ptr<mcovar_funct_quad_correl<ubvector,mat_x_row_t>>>
+      mfr(1);
+    mfr[0]=std::shared_ptr<mcovar_funct_quad_correl<ubvector,mat_x_row_t>>
+      (new mcovar_funct_quad_correl<ubvector,mat_x_row_t>);
+    mfr[0]->len.resize(3);
+    mfr[0]->slope.resize(3);
+    mfr[0]->pos.resize(3);
+    vector<std::shared_ptr<mcovar_base<ubvector,mat_x_row_t>>> mfr2(1);
+    mfr2[0]=mfr[0];
+    ike.set_covar(mfr2,param_lists);
+  }
 
   // Use the covariance object to set the data, skipping the
   // optimization for now and performing it manually
@@ -404,7 +467,7 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
   // exhaustively searching
   
   double min_qual=1.0e99;
-  vector<double> p(4), min_p;
+  ubvector p(4), min_p;
   
   //for(p[0]=80.0;p[0]>8.0;p[0]/=1.4) {
   //for(p[1]=80.0;p[1]>8.0;p[1]/=1.4) {
@@ -417,12 +480,23 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
       for(p[2]=10.0;p[2]>1.99;p[2]/=1.4) {
         for(p[3]=-15.0;p[3]<-14.99;p[3]+=1.0) {
 
+          p[0]=2.0;
+          p[1]=0.01;
+          p[2]=80.0;
+          p[3]=2.0;
+          p[4]=0.01;
+          p[5]=80.0;
+          p[6]=2.0;
+          p[7]=0.01;
+          p[8]=80.0;
+          p[9]=-15.0;
+          
           if (ike.addl_verbose>=1) {
             cout << "Covariance parameters: ";
             vector_out(cout,p,true);
           }
           
-          (*ike.cf)[0].set_params(p);
+          ike.cf[0]->set_params(p);
           int success;
           double q=ike.qual_fun(0,success);
           if (ike.addl_verbose>=1) {
@@ -447,7 +521,7 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
     cerr << "All points failed in Gaussian process interpolation." << endl;
     return 2;
   } else {
-    (*ike.cf)[0].set_params(min_p);
+    ike.cf[0]->set_params(min_p);
     int st;
     cout << "Last run:\n" << endl;
     vector_out(cout,min_p,true);
@@ -460,7 +534,7 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
 
   // Use the interpolation results to modify the points to be fixed
   
-  std::vector<double> out(1);
+  ubvector out(1);
   
   for(size_t j=0;j<ike.fix_list.size();j+=3) {
 
@@ -473,8 +547,13 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
 
     // Electron photon contribution in MeV
     double F_eg=tg_F.get(index)-tg_Fint.get(index);
+
+    ubvector index2(3);
+    index2[0]=index[0];
+    index2[1]=index[1];
+    index2[2]=index[2];
     
-    ike.eval(index,out);
+    ike.eval(index2,out);
     if (ike.interp_Fint==false) {
       cout << "Change (5) from " << tg_F.get(index) << " to "
            << out[0] << endl;
@@ -507,7 +586,13 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
     // Electron photon contribution in MeV
     double F_eg=tg_F.get(index)-tg_Fint.get(index);
     
-    ike.eval(index,out);
+    ubvector index2(3);
+    index2[0]=index[0];
+    index2[1]=index[1];
+    index2[2]=index[2];
+    
+    ike.eval(index2,out);
+    
     if (ike.interp_Fint==false) {
       double corr=out[0]-tg_F.get(index);
       cout << "Change (7) from " << tg_F.get(index) << " to "
@@ -663,7 +748,7 @@ void interpm_krige_eos::set() {
   // uses
   
   ubmatrix ix(calib_list.size()/3,3);
-  ubmatrix iy(1,calib_list.size()/3);
+  ubmatrix iy(calib_list.size()/3,1);
 
   cout << "In interpm_krige_eos::set(): Fix list: " << endl;
   if (interp_Fint) {
@@ -678,9 +763,9 @@ void interpm_krige_eos::set() {
     vector<size_t> index={fix_list[j],fix_list[j+1],
       fix_list[j+2]};
     if (interp_Fint) {
-      iy(0,j/3)=tgp_Fint->get(index);
+      iy(j/3,0)=tgp_Fint->get(index);
     } else {
-      iy(0,j/3)=tgp_F->get(index);
+      iy(j/3,0)=tgp_F->get(index);
     }
     if (true) {
       cout << ((int)ix(j/3,0)) << " " << ((int)ix(j/3,1)) << " "
@@ -688,7 +773,7 @@ void interpm_krige_eos::set() {
            << nB_grid[fix_list[j]] << " "
            << Ye_grid[fix_list[j+1]] << " "
            << T_grid[fix_list[j+2]] << " "
-           << iy(0,j/3) << " ";
+           << iy(j/3,0) << " ";
       cout << endl;
     }
   }
@@ -705,9 +790,9 @@ void interpm_krige_eos::set() {
     vector<size_t> index={calib_list[j],calib_list[j+1],
       calib_list[j+2]};
     if (interp_Fint) {
-      iy(0,j/3)=tgp_Fint->get(index);
+      iy(j/3,0)=tgp_Fint->get(index);
     } else {
-      iy(0,j/3)=tgp_F->get(index);
+      iy(j/3,0)=tgp_F->get(index);
     }
     if (true) {
       cout << ((int)ix(j/3,0)) << " " << ((int)ix(j/3,1)) << " "
@@ -715,7 +800,7 @@ void interpm_krige_eos::set() {
            << nB_grid[calib_list[j]] << " "
            << Ye_grid[calib_list[j+1]] << " "
            << T_grid[calib_list[j+2]] << " "
-           << iy(0,j/3) << " ";
+           << iy(j/3,0) << " ";
       if (fix_list.size()>3) {
         cout << calib_dists[j/3];
       }
@@ -748,7 +833,7 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
   // functions
   
   // Select the row of the data matrix
-  mat_y_row_t yiout2(this->y,iout);
+  mat_y_col_t yiout2(this->y,iout);
   
   // Construct the KXX matrix
   size_t size=this->x.size1();
@@ -761,7 +846,7 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
       if (irow>icol) {
         KXX(irow,icol)=KXX(icol,irow);
       } else {
-        KXX(irow,icol)=(*cf)[iout](xrow,xcol);
+        KXX(irow,icol)=cf[iout]->covar2(xrow,xcol);
       }
     }
   }
@@ -811,7 +896,7 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
     
     // Use the interpolation results to modify the points to be fixed
     
-    std::vector<double> out(1);
+    ubvector out(1);
     
     for(size_t j=0;j<fix_list.size();j+=3) {
       
@@ -825,7 +910,12 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
       // Electron photon contribution in MeV
       double F_eg=tgp_F->get(index)-tgp_Fint->get(index);
       
-      eval(index,out);
+      ubvector index2(3);
+      index2[0]=index[0];
+      index2[1]=index[1];
+      index2[2]=index[2];
+      
+      eval(index2,out);
 
       if (true) {
         if (interp_Fint==false) {
@@ -872,7 +962,13 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
       // Lepton photon contribution in MeV
       double F_eg=tgp_F->get(index)-tgp_Fint->get(index);
       
-      eval(index,out);
+      ubvector index2(3);
+      index2[0]=index[0];
+      index2[1]=index[1];
+      index2[2]=index[2];
+      
+      eval(index2,out);
+      
       //cout << "dist,fact,F,out: " << calib_dists[j/3] << " " << fact << " "
       //<< tgp_F->get(index) << " " << out[0] << endl;
 
@@ -1007,7 +1103,13 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
             vector<size_t> ix={i,j,k};
             vector<double> iix={id,((double)j),((double)k)};
             //cout << i << " " << id << " " << j << " " << k << endl;
-            eval(iix,out);
+            
+            ubvector index2(3);
+            index2[0]=iix[0];
+            index2[1]=iix[1];
+            index2[2]=iix[2];
+            
+            eval(index2,out);
             tg3x.set(i,j-j_min,k-k_min,out[0]);
             i++;
           }
@@ -1021,7 +1123,13 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
           for(size_t k=k_min;k<=k_max;k++) {
             vector<size_t> ix={i,j,k};
             vector<double> iix={((double)i),((double)j),((double)k)};
-            eval(iix,out);
+            
+            ubvector index2(3);
+            index2[0]=iix[0];
+            index2[1]=iix[1];
+            index2[2]=iix[2];
+            
+            eval(index2,out);
             vector<double> line={((double)i),((double)j),((double)k),
                                  nB_grid[i],Ye_grid[j],T_grid[k],
                                  tgp_F_old->get(ix),out[0]};
@@ -1268,8 +1376,13 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
     // Evaluate the free energy and its derivatives analytically
     // using the interpolator, and then remove a factor of hbar c
 
-    std::vector<double> out(1);
-    eval(index,out);
+    ubvector out(1);
+    ubvector index2(3);
+    index2[0]=index[0];
+    index2[1]=index[1];
+    index2[2]=index[2];
+    
+    eval(index2,out);
 
     double Seg=tgp_S->get(index)-tgp_Sint->get(index);
     double Feg=(tgp_F->get(index)-tgp_Fint->get(index))/hc_mev_fm;
@@ -1315,15 +1428,15 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
     if (interp_Fint) {
       
       // First derivatives of the free energy
-      deriv(index,out,0);
+      deriv(index2,out,0);
       double dFdi=out[0]/hc_mev_fm;
       dFint_dnB=dFdi*didnB;
       
-      deriv(index,out,1);
+      deriv(index2,out,1);
       double dFdj=out[0]/hc_mev_fm;
       dFint_dYe=dFdj*djdYe;
       
-      deriv(index,out,2);
+      deriv(index2,out,2);
       double dFdk=out[0]/hc_mev_fm;
       dFint_dT=dFdk*dkdT*hc_mev_fm;
       
@@ -1332,30 +1445,30 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
       dF_dYe=dFint_dYe+mue;
       dF_dT=dFint_dT-Seg;
       
-      deriv2(index,out,0,0);
+      deriv2(index2,out,0,0);
       double d2Fdi2=out[0]/hc_mev_fm;
       // d2FdnB2 in fm^5
       Fint_nBnB=d2Fdi2*didnB*didnB+dFdi*d2idnB2;
       
-      deriv2(index,out,0,1);
+      deriv2(index2,out,0,1);
       double d2Fdidj=out[0]/hc_mev_fm;
       // d2FdnBdYe in fm^2
       Fint_nBYe=d2Fdidj*didnB*djdYe;
       
-      deriv2(index,out,1,1);
+      deriv2(index2,out,1,1);
       double d2Fdj2=out[0]/hc_mev_fm;
       // d2FdYe2 in fm^{-1}
       Fint_YeYe=d2Fdj2*djdYe*djdYe+dFdj*d2jdYe2;
       
-      deriv2(index,out,0,2);
+      deriv2(index2,out,0,2);
       double d2Fdidk=out[0]/hc_mev_fm;
       Fint_nBT=d2Fdidk*didnB*dkdT*hc_mev_fm;
       
-      deriv2(index,out,1,2);
+      deriv2(index2,out,1,2);
       double d2Fdjdk=out[0]/hc_mev_fm;
       Fint_YeT=d2Fdjdk*djdYe*dkdT*hc_mev_fm;
       
-      deriv2(index,out,2,2);
+      deriv2(index2,out,2,2);
       double d2Fdk2=out[0]/hc_mev_fm;
       Fint_TT=(d2Fdk2*dkdT*dkdT+dFdk*d2kdT2)*hc_mev_fm*hc_mev_fm;
       
@@ -1371,15 +1484,15 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
     } else {
 
       // First derivatives of the free energy
-      deriv(index,out,0);
+      deriv(index2,out,0);
       double dFdi=out[0]/hc_mev_fm;
       dF_dnB=dFdi*didnB;
       
-      deriv(index,out,1);
+      deriv(index2,out,1);
       double dFdj=out[0]/hc_mev_fm;
       dF_dYe=dFdj*djdYe;
       
-      deriv(index,out,2);
+      deriv(index2,out,2);
       double dFdk=out[0]/hc_mev_fm;
       dF_dT=dFdk*dkdT*hc_mev_fm;
       
@@ -1388,30 +1501,30 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
       dFint_dYe=dF_dYe-mue;
       dFint_dT=dF_dT+Seg;
       
-      deriv2(index,out,0,0);
+      deriv2(index2,out,0,0);
       double d2Fdi2=out[0]/hc_mev_fm;
       // d2FdnB2 in fm^5
       F_nBnB=d2Fdi2*didnB*didnB+dFdi*d2idnB2;
       
-      deriv2(index,out,0,1);
+      deriv2(index2,out,0,1);
       double d2Fdidj=out[0]/hc_mev_fm;
       // d2FdnBdYe in fm^2
       F_nBYe=d2Fdidj*didnB*djdYe;
       
-      deriv2(index,out,1,1);
+      deriv2(index2,out,1,1);
       double d2Fdj2=out[0]/hc_mev_fm;
       // d2FdYe2 in fm^{-1}
       F_YeYe=d2Fdj2*djdYe*djdYe+dFdj*d2jdYe2;
       
-      deriv2(index,out,0,2);
+      deriv2(index2,out,0,2);
       double d2Fdidk=out[0]/hc_mev_fm;
       F_nBT=d2Fdidk*didnB*dkdT*hc_mev_fm;
       
-      deriv2(index,out,1,2);
+      deriv2(index2,out,1,2);
       double d2Fdjdk=out[0]/hc_mev_fm;
       F_YeT=d2Fdjdk*djdYe*dkdT*hc_mev_fm;
       
-      deriv2(index,out,2,2);
+      deriv2(index2,out,2,2);
       double d2Fdk2=out[0]/hc_mev_fm;
       F_TT=(d2Fdk2*dkdT*dkdT+dFdk*d2kdT2)*hc_mev_fm*hc_mev_fm;
       
