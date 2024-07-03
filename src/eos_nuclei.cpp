@@ -19,6 +19,7 @@
   -------------------------------------------------------------------
 */
 #include "eos_nuclei.h"
+#include <iostream>
 
 #ifdef O2SCL_EIGEN
 #include <eigen3/Eigen/Dense>
@@ -157,6 +158,7 @@ eos_nuclei::eos_nuclei() {
   vdet_units.insert(make_pair("mup_gas","1/fm"));
   
   inc_hrg=false;
+  inc_lepton=false;
 
   pfuncs.spin_deg_mode=1;
 }
@@ -7333,10 +7335,10 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
   return 0;
 }
 
-int eos_nuclei::utk_for_lepton(std::vector<std::string> &sv,
+int eos_nuclei::muses(std::vector<std::string> &sv,
 			     bool itive_com) { 
 
-  std::cout << "Function UTK-for-lepton starting: " << std::endl;
+  std::cout << "Function e4mma-muses starting: " << std::endl;
 
   /*  
   ["temperature", "muB", "muS", "muQ", "vector_density", "total_S_density", 
@@ -7349,16 +7351,13 @@ int eos_nuclei::utk_for_lepton(std::vector<std::string> &sv,
   */ 
   
   // Create an output csv file
-  std::ofstream myfile;
-  myfile.open("../output/utk_for_lepton.csv");
-  myfile.clear();
-  myfile.close();
-  myfile.open("../output/utk_for_lepton.csv", std::ofstream::out | std::ofstream::app);
+  std::ofstream fout;
 
   if (!loaded) {
     cerr << "EoS table not loaded. Exiting" << endl;
     exit(-1);
   }
+
   std::cout << "Processing: " << nB_grid_spec << " " << Ye_grid_spec << std::endl;
   calc_utf8<> calc;
   std::map<std::string,double> vars;
@@ -7387,6 +7386,14 @@ int eos_nuclei::utk_for_lepton(std::vector<std::string> &sv,
     packed.push_back(calc.eval(&vars));
   }
 
+  if(inc_lepton){
+    std::cout << "including leptons" << endl;
+    fout.open("../output/e4mma_w_lepton.csv");
+  } else {
+    std::cout << "not including leptons" << endl;
+    fout.open("../output/e4mma_wo_lepton.csv");
+  }
+
   for (size_t j=0;j<Ye_grid3.size()-1;j++){
     if (Ye_grid3[j]>=Ye_grid2[0] && Ye_grid3[j]<=Ye_grid2[n_Ye2-1]){
       size_t iYe=vector_lookup(n_Ye2,Ye_grid2,Ye_grid3[j]);
@@ -7397,13 +7404,27 @@ int eos_nuclei::utk_for_lepton(std::vector<std::string> &sv,
           double nB=nB_grid2[inB];
           std::vector<std::size_t> ix={inB,iYe,0};
 
+          // beta-equilibrium 
+          if(tg_mun.get(ix)-(tg_mup.get(ix)+tg_mue.get(ix))<1.0e-6){
+            std::cout << "beta-equl " << inB << " "<< iYe << std::endl;
+          }  
+ 
           double muB=tg_mun.get(ix)+neutron.m*hc_mev_fm;
           double muQ=tg_mup.get(ix)+proton.m*hc_mev_fm-tg_mun.get(ix)-neutron.m*hc_mev_fm;
 
-          double En=(tg_E.get(ix)+Ye*proton.m*hc_mev_fm+(1-Ye)*neutron.m*hc_mev_fm)*nB;
-          double Pr=tg_P.get(ix);
-          double ent=tg_S.get(ix)*nB;
-          myfile << "0.1" << "," << muB << "," << 0 
+          double En, Pr, ent;
+
+          if(inc_lepton){
+            En=(tg_E.get(ix)+Ye*proton.m*hc_mev_fm+(1-Ye)*neutron.m*hc_mev_fm)*nB;
+            Pr=tg_P.get(ix);
+            ent=tg_S.get(ix)*nB;
+          } else {
+            En=(tg_Eint.get(ix)+Ye*proton.m*hc_mev_fm+(1-Ye)*neutron.m*hc_mev_fm)*nB;
+            Pr=tg_Pint.get(ix);
+            ent=tg_Sint.get(ix)*nB;
+          }
+
+          fout << "0.1" << "," << muB << "," << 0 
             << "," << muQ << "," 
             << nB <<"," << 0 << "," << Ye*nB << "," << En 
             << "," << Pr << "," << ent << std::endl;
@@ -7412,69 +7433,9 @@ int eos_nuclei::utk_for_lepton(std::vector<std::string> &sv,
     } else continue;
   }
 
-  myfile.close();
+  fout.close();
 
-  std::cout << "Function UTK-for-lepton completed succesfully." << std::endl;
-
-  return 0;
-}
-
-int eos_nuclei::utk_for_flav_eq(std::vector<std::string> &sv,
-			     bool itive_com) { 
-
-/*  
-  ["temperature", "muB", "muS", "muQ", "vector_density", "total_S_density", 
-  "total_Q_density", "energy", "pressure", "entropy", "proton_effective_mass", 
-  "neutron_effective_mass", "proton_chemical_potential", "neutron_chemical_potential",  
-  "proton_vector_density", "neutron_vector_density", "proton_potential", 
-  "neutron_potential", "electron_chemical_potential", "electron_density", 
-  "total_energy", "total_pressure", "total_entropy"]
-
-  with units:
-
-  ["MeV", "MeV", "MeV", "MeV", "fm-3", "fm-3", "fm-3", "MeV/fm3", "MeV/fm3", 
-  "fm^-3", "MeV", "MeV", "MeV", "MeV",  "fm-3", "fm-3", "MeV", "MeV","MeV", 
-  "MeV" "MeV", "MeV", "MeV/fm3", "MeV/fm3", "fm^-3"]
-*/  
-  std::cout << "Function UTK-for-flav-eq starting: " << std::endl;
-
-  std::ofstream myfile;
-  myfile.open("utk_for_flav_eq.csv");
-  myfile.clear();
-  myfile.close();
-  myfile.open("utk_for_flav_eq.csv", std::ofstream::out | std::ofstream::app);
-
-  // Fill up the output csv file with data
-  for (size_t j=0;j<Ye_grid2.size()-1;j++){
-    double Ye=Ye_grid2[j];
-    for (size_t i=0;i<n_nB2;i++){
-      double nB=nB_grid2[i];
-      std::vector<std::size_t> ix={i,j,0};
-
-      double muB=tg_mun.get(ix)+neutron.m*hc_mev_fm;
-      double muQ=tg_mup.get(ix)+proton.m*hc_mev_fm-tg_mun.get(ix)-neutron.m*hc_mev_fm;
-
-      double En=(tg_E.get(ix)+Ye*proton.m*hc_mev_fm+(1-Ye)*neutron.m*hc_mev_fm)*nB;
-      double Pr=tg_P.get(ix);
-      double ent=tg_S.get(ix)*nB;
-      
-      double En2=(tg_Eint.get(ix)+Ye*proton.m*hc_mev_fm+(1-Ye)*neutron.m*hc_mev_fm)*nB;
-      double Pr2=tg_Pint.get(ix);
-      double ent2=tg_Sint.get(ix)*nB;
-      
-      myfile << "0.1" << "," << muB << "," << 0 
-        << "," << muQ << "," << nB << "," << 0 
-        << "," << Ye*nB << "," << En 
-        << "," << Pr << "," << ent 
-        << "," << proton.ms*hc_mev_fm << "," << neutron.ms*hc_mev_fm
-        << "," << tg_mup.get(ix)+proton.m*hc_mev_fm << "," << tg_mun.get(ix)-neutron.m*hc_mev_fm
-        << "," << Ye*nB << "," << (1-Ye)*nB << "," << proton.nu*hc_mev_fm << "," << neutron.nu*hc_mev_fm << "," << tg_mue.get(ix)+electron.m*hc_mev_fm
-        << "," << En2 << "," << Pr2 << "," << ent2 << std::endl;
-    }
-  }
-  myfile.close();
-
-  std::cout << "Function UTK-for-flav-eq completed succesfully." << std::endl;
+  std::cout << "Function e4mma-muses completed succesfully." << std::endl;
 
   return 0;
 }
@@ -7501,8 +7462,8 @@ int eos_nuclei::create_new_table(std::vector<std::string> &sv,
   NmZ_min=-200;
   NmZ_max=200;
 
-  std::ofstream myfile;
-  myfile.open("example.csv");
+  std::ofstream fout;
+  fout.open("example.csv");
 
   for (size_t j=0;j<Ye_grid2.size()-1;j++){
     double Ye=Ye_grid2[j];
@@ -7614,13 +7575,13 @@ int eos_nuclei::create_new_table(std::vector<std::string> &sv,
 	  double E=Eint+lep.ed/nB*hc_mev_fm;
 	  double P=Pint+lep.pr*hc_mev_fm;
 	  double S=Sint+lep.en/nB;
-      myfile << "0.1" << "," << (mun_gas+neutron.m)*hc_mev_fm << "," << 0 
+      fout << "0.1" << "," << (mun_gas+neutron.m)*hc_mev_fm << "," << 0 
       << "," << (mup_gas+proton.m-mun_gas-neutron.m)*hc_mev_fm << "," 
       << nB <<"," << 0 << "," << Ye*nB << "," << (E+Ye*proton.m*hc_mev_fm+(1-Ye)*neutron.m*hc_mev_fm)*nB << "," << P << "," << S*nB << std::endl;
 
   }
   }
-  myfile.close();
+  fout.close();
   return 0;
 }
 
@@ -10886,7 +10847,7 @@ void eos_nuclei::setup_cli_nuclei(o2scl::cli &cl) {
   
   eos::setup_cli(cl,false);
   
-  static const int nopt=30;
+  static const int nopt=29;
 
   o2scl::comm_option_s options[nopt]=
     {{0,"eos-deriv","",0,0,"","",
@@ -10973,14 +10934,10 @@ void eos_nuclei::setup_cli_nuclei(o2scl::cli &cl) {
       new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::point_nuclei_mu),o2scl::cli::comm_option_both,
       1,"","eos_nuclei","point_nuclei_mu","doc/xml/classeos__nuclei.xml"},
-      {0,"utk-for-lepton","",1,1,"","",
+      {0,"muses","",1,1,"","",
       new o2scl::comm_option_mfptr<eos_nuclei>
-      (this,&eos_nuclei::utk_for_lepton),o2scl::cli::comm_option_both,
-      1,"","eos_nuclei","utk_for_lepton","doc/xml/classeos__nuclei.xml"},
-      {0,"utk-for-flav-eq","",1,1,"","",
-      new o2scl::comm_option_mfptr<eos_nuclei>
-      (this,&eos_nuclei::utk_for_flav_eq),o2scl::cli::comm_option_both,
-      1,"","eos_nuclei","utk_for_flav_eq","doc/xml/classeos__nuclei.xml"},
+      (this,&eos_nuclei::muses),o2scl::cli::comm_option_both,
+      1,"","eos_nuclei","muses","doc/xml/classeos__nuclei.xml"},
       {0,"create-new-table","",-1,-1,"","",
       new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::create_new_table),o2scl::cli::comm_option_both,
@@ -11208,6 +11165,13 @@ void eos_nuclei::setup_cli_nuclei(o2scl::cli &cl) {
   p_inc_hrg.doc_name="inc_hrg";
   p_inc_hrg.doc_xml_file="doc/xml/classeos__nuclei.xml";
   cl.par_list.insert(make_pair("inc_hrg",&p_inc_hrg));
+
+  p_inc_lepton.b=&inc_lepton;
+  p_inc_lepton.help="If true, include the leptons (default false)";
+  p_inc_lepton.doc_class="eos_nuclei";
+  p_inc_lepton.doc_name="inc_lepton";
+  p_inc_lepton.doc_xml_file="doc/xml/classeos__nuclei.xml";
+  cl.par_list.insert(make_pair("inc_lepton",&p_inc_lepton));
   
   cl.set_comm_option_vec(nopt,options);
   

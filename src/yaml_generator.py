@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-## Create a YAML configuration file for UTK based on user input
+## Create a YAML configuration file for E4MMA based on user input
 ## Determines the necessary fields in config.yaml based on the OpenAPI specification
 
 import argparse
@@ -17,7 +17,7 @@ def main():
     
     # Create command line argument parser
     parser = argparse.ArgumentParser(
-        description="Create a YAML configuration file for UTK module based on user input conforming to the OpenAPI specification"
+        description="Create a YAML configuration file for E4MMA module based on user input conforming to the OpenAPI specification"
     )
 
     # Paths
@@ -116,6 +116,6 @@ def type_cast(value, type_name):
 
 
 if __name__ == "__main__":
-    print("\nStarting execution of yaml_generator.py...")
+    print("\nStarting execution of config_generator.py...")
     main()
-    print("\nFinished yaml_generator.py...")
+    print("\nFinished config_generator.py...")

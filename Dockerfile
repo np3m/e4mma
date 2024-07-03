@@ -20,10 +20,13 @@ RUN git clone https://github.com/awsteiner/o2scl \
     && make blank-doc && make -j 3 && make install \ 
     && cd ../
 
-RUN git clone https://github.com/awsteiner/eos && \
-    cd eos && \
-    git checkout v2 && git checkout 5955e74 && cd src && \
-    make -j 3 eos_nuclei 
+RUN git clone https://github.com/np3m/e4mma && \
+    cd e4mma && \
+    git checkout muses 
+
+COPY src/eos_nuclei.h /opt/e4mma/src/
+COPY src/eos_nuclei.cpp /opt/e4mma/src/
+RUN  cd e4mma/src/ && make -j 4 eos_nuclei
 
 FROM python:3.11-slim as deps
 # Install git for pip install
@@ -37,8 +40,13 @@ RUN pip --no-cache-dir install -r requirements.txt --no-compile
 
 # Stage 2: Runtime environment
 FROM python:3.11-slim
+# Install curl to download eos tables
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -yq \
+        curl \
+    && rm -rf /var/lib/apt/lists/*
 
-ARG USERNAME=utk
+ARG USERNAME=e4mma
 ARG UID=1000
 
 ## Create user with desired UID and set "home" to /opt
@@ -120,31 +128,28 @@ COPY --from=builder --chown=$UID:$UID /usr/lib/x86_64-linux-gnu/libfftw.so.* \
 
 COPY --from=builder --chown=$UID:$UID /usr/lib/x86_64-linux-gnu/openmpi /usr/lib/x86_64-linux-gnu/openmpi
 COPY --from=builder --chown=$UID:$UID /usr/lib/x86_64-linux-gnu/pmix2 /usr/lib/x86_64-linux-gnu/pmix2
-#COPY --from=builder --chown=$UID:$UID /usr/share/openmpi /usr/share/openmpi
+COPY --from=builder --chown=$UID:$UID /usr/share/openmpi /usr/share/openmpi
 COPY --from=builder --chown=$UID:$UID /usr/local/lib/libo2scl.so.* /usr/local/lib/
 
 COPY --from=builder --chown=$UID:$UID /usr/local/share/o2scl /usr/local/share/o2scl
 
 # Copy utk-eos files to the runtime stage
-COPY --from=builder --chown=$UID:$UID /opt/eos/src/eos_nuclei /opt/eos/src/ 
+COPY --from=builder --chown=$UID:$UID /opt/e4mma/src/eos_nuclei /opt/e4mma/src/ 
 COPY --chown=$UID:$UID src/makefile \
     src/yaml_validator.py \
     src/point_validator.py \
     src/yaml_generator.py \
     src/point_generator.py \
     src/postprocess.py \
-    /opt/eos/src/
+    /opt/e4mma/src/
 
-COPY --chown=$UID:$UID manifest.yaml /opt/eos/
-#COPY --chown=$UID:$UID data /opt/eos/data
-COPY --chown=$UID:$UID test /opt/eos/test
-COPY --chown=$UID:$UID api /opt/eos/api
-#COPY --chown=$UID:$UID input /opt/eos/input
-#COPY --chown=$UID:$UID output /opt/eos/output
+COPY --chown=$UID:$UID manifest.yaml /opt/e4mma/
+COPY --chown=$UID:$UID test /opt/e4mma/test
+COPY --chown=$UID:$UID api /opt/e4mma/api
 
 # Set environment variables
 ENV O2SCL_ADDL_LIBS="/usr/lib/gcc/x86_64-linux-gnu/12/libgomp.so"
 ENV LD_LIBRARY_PATH="/usr/local/lib" 
 
 # Set working directory
-WORKDIR /opt/eos/test/
+WORKDIR /opt/e4mma/test/

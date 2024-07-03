@@ -18,7 +18,7 @@ It includes operations such as slicing, copying, and processing specific output 
 based on the defined variables and configurations.
 """
 
-LWPTON_VARIABLES = [
+LEPTON_VARIABLES = [
     "temperature",
     "mu_B",
     "mu_S",
@@ -90,7 +90,7 @@ def main():
         os.makedirs(output_directory_run)
 
     # Copy UTK output files
-    utk_output_files = ["utk_for_lepton.csv"]
+    utk_output_files = ["e4mma_wo_lepton.csv"]
     #for file_name in utk_output_files:
     #    shutil.copy(
     #        os.path.join(output_directory_run, file_name),
@@ -101,13 +101,13 @@ def main():
     porter = Porter()
 
     # Process UTK output for Lepton
-    print(f"Processing UTK output for Lepton: ...")
+    print(f"Processing E4MMA output w/o Lepton: ...")
 
     porter.import_table(
-        os.path.join(output_directory_run, f"utk_for_lepton.csv"),
+        os.path.join(output_directory_run, f"e4mma_wo_lepton.csv"),
         extension="CSV",
         filename_schema="../api/OpenAPI_Specifications_UTK.yaml",
-        schema="UTK_output_for_Lepton",
+        schema="e4mma_wo_lepton",
         dropna=True,
         delimiter=",",
         verbose=False,
@@ -117,10 +117,10 @@ def main():
         # Export data to an HDF5 file
         porter.export_table(
             os.path.join(
-                output_directory, f"utk_for_lepton.h5"
+                output_directory, f"e4mma_wo_lepton.h5"
             ),
             filename_schema="../api/OpenAPI_Specifications_UTK.yaml",
-            schema="UTK_output_for_Lepton",
+            schema="e4mma_wo_lepton",
             extension="HDF5",
             dropna=True,
             verbose=False,
@@ -129,11 +129,11 @@ def main():
         # Export data to an CSV file following the OpenAPI specifications UTK_output_for_Lepton
         porter.export_table(
             os.path.join(
-                output_directory, f"utk_for_lepton.csv"
+                output_directory, f"e4mma_wo_lepton.csv"
             ),
             extension="CSV",
             filename_schema="../api/OpenAPI_Specifications_UTK.yaml",
-            schema="UTK_output_for_Lepton",
+            schema="e4mma_wo_lepton",
             dropna=True,
             delimiter=",",
             verbose=False,

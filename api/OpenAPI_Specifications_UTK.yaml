@@ -2,7 +2,7 @@ openapi: 3.0.0
 
 info:
   version: 1.0.0
-  title: UTK-EOS module
+  title: E4MMA-EOS module
   contact:
     email: sroy14@vols.utk.edu
   description: "Readme.md"
@@ -14,9 +14,9 @@ servers:
 paths:
   /input/config.yaml:
     put:
-      summary: Input parameters for utk module
+      summary: Input parameters for e4mma module
       description: >
-          possible arguments to take for utk module
+          possible arguments to take for e4mma module
       operationId: putInputParams
       security: []
       requestBody:
@@ -52,12 +52,12 @@ paths:
         '400':
           description: Invalid input provided
 
-  /output/utk_for_Lepton.csv:
+  /output/e4mma_w_Lepton.csv:
     get:
-      summary: Equation of state for Lepton
+      summary: Equation of state with Lepton
       description: >
         fill
-      operationId: getEoSLepton
+      operationId: getEoSwLepton
       security: []
       responses:
         '200':
@@ -65,10 +65,30 @@ paths:
           content:
             csv:
               schema:
-                $ref: '#/components/schemas/UTK_output_for_Lepton'
+                $ref: '#/components/schemas/e4mma_w_lepton'
             hdf5:
               schema:
-                $ref: '#/components/schemas/UTK_output_for_Lepton'
+                $ref: '#/components/schemas/e4mma_w_lepton'
+        '500':
+          description: Run time error in calculation
+
+  /output/e4mma_wo_Lepton.csv:
+    get:
+      summary: Equation of state without Lepton
+      description: >
+        fill
+      operationId: getEoSwoLepton
+      security: []
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            csv:
+              schema:
+                $ref: '#/components/schemas/e4mma_wo_lepton'
+            hdf5:
+              schema:
+                $ref: '#/components/schemas/e4mma_wo_lepton'
         '500':
           description: Run time error in calculation
 
@@ -76,12 +96,12 @@ components:
   schemas:
     config:
       title: Input parameters
-      description: Input parameters for utk eos
+      description: Input parameters for e4mma eos
       type: object
       required: [load]
       properties:
         load:
-          default: "../data/fid_3_5_22.o2"
+          default: "fid_3_5_22.o2"
           description: Loads an EOS table in to memory. In the case where MPI is used, only one MPI
             rank reads the table at a time.
           title: Load an EOS table.
@@ -119,6 +139,10 @@ components:
                   type: integer
                   description: Verbose parameter.
                   default: 0
+                inc_lepton:
+                  type: boolean
+                  description: If true, include leptons.
+                  default: false
 
     point_nuclei:
       title: Point-nuclei function 
@@ -142,7 +166,7 @@ components:
               title: Select an EOS model.
               type: string
             load:
-              default: "../data/fid_3_5_22.o2"
+              default: "fid_3_5_22.o2"
               description: Loads an EOS table in to memory. In the case where MPI is used, only one MPI
                 rank reads the table at a time.
               title: Load an EOS table.
@@ -237,10 +261,57 @@ components:
               title: Select a random EOS model.
               type: string
         
-
-    UTK_output_for_Lepton:
-      title: UTK output for Lepton
-      description: Output of UTK for Lepton module
+    e4mma_w_lepton:
+      title: e4mma output for Lepton
+      description: Output of e4mma for Lepton module
+      type: array
+      items:
+        type: object
+        properties:
+          temperature:
+            description: Temperature
+            type: number
+            x-unit: MeV
+          mu_B:
+            description: Baryon chemical potential
+            type: number
+            x-unit: MeV
+          mu_S:
+            description: Strange chemical potential
+            type: number
+            x-unit: MeV
+          mu_Q:
+            description: Charge chemical potential
+            type: number
+            x-unit: MeV
+          baryon_density:
+            description: Baryon density
+            type: number
+            x-unit: 1/fm3
+          total_strangeness_density:
+            description: Total strangeness density
+            type: number
+            x-unit: 1/fm3
+          total_charge_density:
+            description: Total charge density
+            type: number
+            x-unit: 1/fm3 
+          energy_density:
+            description: Energy density
+            type: number
+            x-unit: MeV/fm3
+          pressure:
+            description: Pressure
+            type: number
+            x-unit: MeV/fm3
+          entropy_density:
+            description: Entropy density
+            type: number
+            x-unit: 1/fm3
+    
+    e4mma_wo_lepton:
+      title: e4mma output for Lepton
+      description: Output of e4mma for Lepton module
       type: array
       items:
         type: object

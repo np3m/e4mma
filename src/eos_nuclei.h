@@ -246,6 +246,10 @@ public:
    */
   bool inc_hrg;
 
+  /** \brief If true, include leptons (default false)
+   */
+  bool inc_lepton;
+
   /** \brief Solve for charge neutrality and fixed baryon fraction
       with a hadron resonance gas
 
@@ -611,6 +615,7 @@ public:
   /// \name Other parameter objects
   //@{
   o2scl::cli::parameter_bool p_inc_hrg;
+  o2scl::cli::parameter_bool p_inc_lepton;
   o2scl::cli::parameter_bool p_survey_eqs;
   o2scl::cli::parameter_bool p_extend_frdm;
   o2scl::cli::parameter_bool p_show_all_nuclei;
@@ -964,9 +969,7 @@ public:
       Desc
   */
   int point_nuclei_mu(std::vector<std::string> &sv, bool itive_com);
-  int utk_for_lepton(std::vector<std::string> &sv,
-			     bool itive_com);
-  int utk_for_flav_eq(std::vector<std::string> &sv,
+  int muses(std::vector<std::string> &sv,
 			     bool itive_com);
   int create_new_table(std::vector<std::string> &sv,
 				 bool itive_com);
