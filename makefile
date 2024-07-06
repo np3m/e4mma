@@ -544,4 +544,6 @@ testneweq2:
 	./eos_nuclei -load /home/awsteiner/wcs/eos/fid_3_14_23.o2 -interp-point 0.0662262 0.55 2.03527 2 ~/st.o2 fid_ex.o2
 testneweq3:
 	./eos_nuclei -load /home/awsteiner/wcs/eos/fid_3_14_23.o2 -interp-point 0.000381092 0.01 1.70018 2 ~/st.o2 fid_ex2.o2
+newkernelLHS:
+	nohup ./eos_nuclei -load /home/awsteiner/wcs/eos/fid_3_14_23.o2 -interp-file /home/jbaut001/st.o2 ~/eos/fid_7_5_24_multi.o2 4 /home/jbaut001/eos/pointslist2.csv > ~/eos/st_t22.out 2>&1 &
 -include makefile.aws

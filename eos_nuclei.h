@@ -26,6 +26,7 @@
 #include <o2scl/interpm_krige.h>
 #include <map>
 #include <filesystem>
+#include <random>
 
 typedef boost::numeric::ublas::vector<double> ubvector;
 typedef boost::numeric::ublas::matrix<double> ubmatrix;
@@ -83,11 +84,263 @@ public:
     
 };
 
+/** New kernel for GPI object
+ */
+class mcovar_funct_rbf_new {
+    public:
+        //length parameters
+        std::vector<double> len;
+        std::vector<double> slope;
+        std::vector<double> pos;
+
+        //noise
+        double noise;
+
+        mcovar_funct_rbf_new() {
+            noise=0.0;
+        }
+
+        //get number of parameters
+        size_t get_n_params() {
+            return len.size();
+        }
+
+        //Set the parameters
+        template<class vec_t> void set_params(vec_t &p) {
+            for(size_t j=0;j<(len.size()/3);j++) {
+                len[j]=p[j];
+                slope[j]=p[j+3];
+                pos[j]=p[j+6];
+            }
+            return;
+        } 
+
+        //Covarience function
+        template<class vec_t, class vec2_t>
+        double operator()(const vec_t &x1, const vec2_t &x2) {
+            double sum=0.0;
+            bool equal=true;
+            for (size_t j=0;j<len.size();j++) {
+                for (size_t k=0;k<slope.size();k++) {
+                    for (size_t l=0;l<pos.size();l++) {
+                        if (x1[j]!=x2[j]) {
+                            equal=false;
+                        }
+                        sum+=-(((x1[j]-x2[j])*(x1[j]-x2[j]))/((len[j]*len[j])+((slope[k]*slope[k])*(((x1[j]+x2[j])-pos[l])*((x1[j]+x2[j])-pos[l])))*2.0));
+                    }
+                }
+            }
+            if (equal) {
+                return exp(sum)+noise;
+            }
+            return exp(sum);
+        }
+
+        /** first derivative of the covariance function wrt first argument
+         */
+        template<class vec_t, class vec2_t>
+        double deriv(const vec_t &x1, const vec2_t &x2, size_t ix) {
+            double sum=0.0;
+            for (size_t j=0;j<len.size();j++) {
+                sum+=-(((x1[j]-x2[j])*(x1[j]-x2[j]))/((len[j]*len[j])+((slope[j]*slope[j])*(((x1[j]+x2[j])-pos[j])*((x1[j]+x2[j])-pos[j])))*2.0));
+            }
+            return exp(sum)*((-(len[ix]*len[ix]+slope[ix]*slope[ix]*((x1[ix]+x2[ix])-pos[ix])*((x1[ix]-x2[ix])-pos[ix]))*(x1[ix]-x2[ix])
+                    +pow((x1[ix]-x2[ix]),2.0)*slope[ix]*slope[ix]*((x1[ix]-x2[ix])-pos[ix]))
+                    /pow((len[ix]*len[ix]+slope[ix]*slope[ix]*pow(((x1[ix]+x2[ix])-pos[ix]),2.0)),2.0));
+        }
+
+        /** The second derivative of the covariance function.
+         */
+        template<class vec_t, class vec2_t>
+        double deriv2(vec_t &x1, vec2_t &x2, size_t ix, size_t iy) {
+            double sum=0.0;
+            for (size_t j=0;j<len.size();j++) {
+                sum+=-(((x1[j]-x2[j])*(x1[j]-x2[j]))/((len[j]*len[j])+((slope[j]*slope[j])*(((x1[j]+x2[j])-pos[j])*((x1[j]+x2[j])-pos[j])))*2.0));
+            }
+            double diffx2=(x1[ix]-x2[ix])*(x1[ix]-x2[ix]);
+            double len2=len[ix]*len[ix];
+            double m2=slope[ix]*slope[ix];
+            double diffxn2=((x1[ix]+x2[ix])-pos[ix])*((x1[ix]+x2[ix])-pos[ix]);
+            double denom2=pow((len2+m2*diffxn2),2.0);
+            if (ix==iy) {
+            return exp(sum)*(((-(len2+m2*diffxn2)*(x1[ix]-x2[ix])
+                    +diffx2*m2*((x1[ix]-x2[ix])-pos[ix]))
+                    /denom2)
+                    *((-(len2+m2*diffxn2)*(x1[ix]-x2[ix])
+                    +diffx2*m2*((x1[ix]-x2[ix])-pos[ix]))
+                    /denom2)
+                    +((-2.0*slope[ix]*((x1[ix]-x2[ix])-pos[ix])*(x1[ix]-x2[ix])-(len2+m2*diffxn2))
+                    +2.0*(x1[ix]-x2[ix])*m2*((x1[ix]-x2[ix])-pos[ix])
+                    +diffx2*m2)*(1/denom2)
+                    +((-(len2+m2*diffxn2)*(x1[ix]-x2[ix])
+                    +diffx2*m2*((x1[ix]-x2[ix])-pos[ix]))
+//                    /denom2)
+                    *-2.0*pow((len2+m2*diffxn2),-3.0)*m2*2.0*((x1[ix]-x2[ix]-pos[ix]))));
+            }
+            return exp(sum)*(((-(len2+m2*diffxn2)*(x1[ix]-x2[ix])
+                    +diffx2*m2*((x1[ix]-x2[ix])-pos[ix]))
+                    /denom2)
+                    *((-(len[iy]*len[iy]+slope[iy]*slope[iy]*((x1[iy]+x2[iy])-pos[iy])*((x1[iy]-x2[iy])-pos[iy]))*(x1[iy]-x2[iy])
+                    +pow((x1[iy]-x2[iy]),2.0)*slope[iy]*slope[iy]*((x1[iy]-x2[iy])-pos[iy]))
+                    /pow((len[iy]*len[iy]+slope[iy]*slope[iy]*pow(((x1[iy]+x2[iy])-pos[iy]),2.0)),2.0)));
+        }
+};
+
+
+/** New kernel for GPI object with noise
+ */
+class mcovar_funct_quad_correl {
+    public:
+        //length parameters
+        std::vector<double> len;
+//        std::vector<double> length;
+//        std::vector<double> slope;
+//        std::vector<double> pos;
+
+        //noise
+        double log10_noise;
+
+        //get number of parameters
+        size_t get_n_params() {
+            return len.size()+1;
+        }
+/*        //constructor
+        mcovar_funct_quad_correl() {
+            length.push_back(3);
+            slope.push_back(3);
+            pos.push_back(3);
+        }*/
+
+        //Set the parameters
+        template<class vec_t> void set_params(vec_t &p) {
+            for(size_t j=0;j<(len.size()/3);j++) {
+//                length[j]=p[j];
+//                slope[j]=p[j+3];
+//                pos[j]=p[j+6];
+                len[j]=p[j];
+                len[j+3]=p[j+3];
+                len[j+6]=p[j+6];
+            }
+            log10_noise=p[len.size()];
+            return;
+        } 
+
+        //Covarience function
+        template<class vec_t, class vec2_t>
+        double operator()(const vec_t &x1, const vec2_t &x2) {
+            double sum=0.0;
+            bool equal=true;
+            for (size_t j=0;j<3;j++) {
+                for (size_t k=0;k<3;k++) {
+                    for (size_t l=0;l<3;l++) {
+                        if (x1[j]!=x2[j]) {
+                            equal=false;
+                        }
+//                        sum+=-(((x1[j]-x2[j])*(x1[j]-x2[j]))/((length[j]*length[j])+((slope[k]*slope[k])*(((x1[j]+x2[j])-pos[l])*((x1[j]+x2[j])-pos[l])))*2.0));
+//                        sum+=-(((x1[j]-x2[j])*(x1[j]-x2[j]))/((length[j]*length[j])+((slope[j]*slope[j])*(((x1[j]+x2[j])-pos[j])*((x1[j]+x2[j])-pos[j])))*2.0));
+                        sum+=-(((x1[j]-x2[j])*(x1[j]-x2[j]))/((len[j]*len[j])+((len[k+3]*len[k+3])*(((x1[j]+x2[j])-len[l+6])*((x1[j]+x2[j])-len[l+6])))*2.0));
+                    }
+                }
+            }
+            if (equal) {
+                return exp(sum)+pow(10.0,log10_noise);
+            }
+            return exp(sum);
+        }
+
+        /** first derivative of the covariance function wrt first argument
+         */
+        template<class vec_t, class vec2_t>
+        double deriv(const vec_t &x1, const vec2_t &x2, size_t ix) {
+            double sum=0.0;
+            for (size_t j=0;j<3;j++) {
+//                sum+=-(((x1[j]-x2[j])*(x1[j]-x2[j]))/((length[j]*length[j])+((slope[j]*slope[j])*(((x1[j]+x2[j])-pos[j])*((x1[j]+x2[j])-pos[j])))*2.0));
+                sum+=-(((x1[j]-x2[j])*(x1[j]-x2[j]))/((len[j]*len[j])+((len[j+3]*len[j+3])*(((x1[j]+x2[j])-len[j+6])*((x1[j]+x2[j])-len[j+6])))*2.0));
+            }
+/*            return exp(sum)*((-(length[ix]*length[ix]+slope[ix]*slope[ix]*((x1[ix]+x2[ix])-pos[ix])*((x1[ix]-x2[ix])-pos[ix]))*(x1[ix]-x2[ix])
+                    +pow((x1[ix]-x2[ix]),2.0)*slope[ix]*slope[ix]*((x1[ix]-x2[ix])-pos[ix]))
+                    /pow((length[ix]*length[ix]+slope[ix]*slope[ix]*pow(((x1[ix]+x2[ix])-pos[ix]),2.0)),2.0));*/
+            return exp(sum)*((-(len[ix]*len[ix]+len[ix+3]*len[ix+3]*((x1[ix]+x2[ix])-len[ix+6])*((x1[ix]-x2[ix])-len[ix+6]))*(x1[ix]-x2[ix])
+                    +pow((x1[ix]-x2[ix]),2.0)*len[ix+3]*len[ix+3]*((x1[ix]-x2[ix])-len[ix+6]))
+                    /pow((len[ix]*len[ix]+len[ix+3]*len[ix+3]*pow(((x1[ix]+x2[ix])-len[ix+6]),2.0)),2.0));
+        }
+
+        /** The second derivative of the covariance function.
+         */
+        template<class vec_t, class vec2_t>
+        double deriv2(vec_t &x1, vec2_t &x2, size_t ix, size_t iy) {
+            double sum=0.0;
+            for (size_t j=0;j<3;j++) {
+                for (size_t k=0;k<3;k++) {
+                    for (size_t l=0;l<3;l++) {
+                        if ((k == l) || (j == k) || (j == l)) {
+//                            sum+=-(((x1[j]-x2[j])*(x1[j]-x2[j]))/((length[j]*length[j])+((slope[k]*slope[k])*(((x1[j]+x2[j])-pos[l])*((x1[j]+x2[j])-pos[l])))*2.0));
+                            sum+=-(((x1[j]-x2[j])*(x1[j]-x2[j]))/((len[j]*len[j])+((len[k+3]*len[k+3])*(((x1[j]+x2[j])-len[l+6])*((x1[j]+x2[j])-len[l+6])))*2.0));
+                        }
+//                        sum+=-(((x1[j]-x2[j])*(x1[j]-x2[j]))/((length[j]*length[j])+((slope[j]*slope[j])*(((x1[j]+x2[j])-pos[j])*((x1[j]+x2[j])-pos[j])))*2.0));
+                    }
+                }
+            }
+/*            double diffx2=(x1[ix]-x2[ix])*(x1[ix]-x2[ix]);
+            double len2=length[ix]*length[ix];
+            double m2=slope[ix]*slope[ix];
+            double diffxn2=((x1[ix]+x2[ix])-pos[ix])*((x1[ix]+x2[ix])-pos[ix]);
+            double denom2=pow((len2+m2*diffxn2),2.0);
+            if (ix==iy) {
+            return exp(sum)*(((-(len2+m2*diffxn2)*(x1[ix]-x2[ix])
+                    +diffx2*m2*((x1[ix]-x2[ix])-pos[ix]))
+                    /denom2)
+                    *((-(len2+m2*diffxn2)*(x1[ix]-x2[ix])
+                    +diffx2*m2*((x1[ix]-x2[ix])-pos[ix]))
+                    /denom2)
+                    +((-2.0*slope[ix]*((x1[ix]-x2[ix])-pos[ix])*(x1[ix]-x2[ix])-(len2+m2*diffxn2))
+                    +2.0*(x1[ix]-x2[ix])*m2*((x1[ix]-x2[ix])-pos[ix])
+                    +diffx2*m2)*(1/denom2)
+                    +((-(len2+m2*diffxn2)*(x1[ix]-x2[ix])
+                    +diffx2*m2*((x1[ix]-x2[ix])-pos[ix]))
+//                    /denom2)
+                    *-2.0*pow((len2+m2*diffxn2),-3.0)*m2*2.0*((x1[ix]-x2[ix]-pos[ix]))));
+            }
+            return exp(sum)*(((-(len2+m2*diffxn2)*(x1[ix]-x2[ix])
+                    +diffx2*m2*((x1[ix]-x2[ix])-pos[ix]))
+                    /denom2)
+                    *((-(length[iy]*length[iy]+slope[iy]*slope[iy]*((x1[iy]+x2[iy])-pos[iy])*((x1[iy]-x2[iy])-pos[iy]))*(x1[iy]-x2[iy])
+                    +pow((x1[iy]-x2[iy]),2.0)*slope[iy]*slope[iy]*((x1[iy]-x2[iy])-pos[iy]))
+                    /pow((length[iy]*length[iy]+slope[iy]*slope[iy]*pow(((x1[iy]+x2[iy])-pos[iy]),2.0)),2.0)));*/
+            double diffx2=(x1[ix]-x2[ix])*(x1[ix]-x2[ix]);
+            double len2=len[ix]*len[ix];
+            double m2=len[ix+3]*len[ix+3];
+            double diffxn2=((x1[ix]+x2[ix])-len[ix+6])*((x1[ix]+x2[ix])-len[ix+6]);
+            double denom2=pow((len2+m2*diffxn2),2.0);
+            if (ix==iy) {
+            return exp(sum)*(((-(len2+m2*diffxn2)*(x1[ix]-x2[ix])
+                    +diffx2*m2*((x1[ix]-x2[ix])-len[ix+6]))
+                    /denom2)
+                    *((-(len2+m2*diffxn2)*(x1[ix]-x2[ix])
+                    +diffx2*m2*((x1[ix]-x2[ix])-len[ix+6]))
+                    /denom2)
+                    +((-2.0*len[ix+3]*((x1[ix]-x2[ix])-len[ix+6])*(x1[ix]-x2[ix])-(len2+m2*diffxn2))
+                    +2.0*(x1[ix]-x2[ix])*m2*((x1[ix]-x2[ix])-len[ix+6])
+                    +diffx2*m2)*(1/denom2)
+                    +((-(len2+m2*diffxn2)*(x1[ix]-x2[ix])
+                    +diffx2*m2*((x1[ix]-x2[ix])-len[ix+6]))
+//                    /denom2)
+                    *-2.0*pow((len2+m2*diffxn2),-3.0)*m2*2.0*((x1[ix]-x2[ix]-len[ix+6]))));
+            }
+            return exp(sum)*(((-(len2+m2*diffxn2)*(x1[ix]-x2[ix])
+                    +diffx2*m2*((x1[ix]-x2[ix])-len[ix+6]))
+                    /denom2)
+                    *((-(len[iy]*len[iy]+len[iy+3]*len[iy+3]*((x1[iy]+x2[iy])-len[iy+6])*((x1[iy]-x2[iy])-len[iy+6]))*(x1[iy]-x2[iy])
+                    +pow((x1[iy]-x2[iy]),2.0)*len[iy+3]*len[iy+3]*((x1[iy]-x2[iy])-len[iy+6]))
+                    /pow((len[iy]*len[iy]+len[iy+3]*len[iy+3]*pow(((x1[iy]+x2[iy])-len[iy+6]),2.0)),2.0)));
+        }
+};
+
 /** \brief Specialized Gaussian process interpolation object
  */
 class interpm_krige_eos :
   public o2scl::interpm_krige_optim
-<std::vector<o2scl::mcovar_funct_rbf_noise>,ubvector,ubmatrix,ubmatrix_row,
+<std::vector<mcovar_funct_quad_correl>,ubvector,ubmatrix,ubmatrix_row,
  ubmatrix,ubmatrix_row,Eigen::MatrixXd,
  o2scl_linalg::matrix_invert_det_eigen<Eigen::MatrixXd>> {
   
@@ -146,6 +399,7 @@ public:
   interpm_krige_eos() {
     elep.include_photons=true;
     interp_Fint=false;
+    //full_min=true;
   } 
 
   /** \brief Set the interpolator given the specified EOS
@@ -839,7 +1093,11 @@ public:
    */
   std::map<std::vector<size_t>, std::vector<double>> calculate_table_values(std::vector<size_t> points_list, interpm_krige_eos& ike);
 
-  /** \brief minimize parameters for interpolation object
+  /** \brief minimize parameters for interpolation object using LHS and random sampling.
+   */
+  void latin_hypercube_sampling(int dim, size_t samples, interpm_krige_eos& ike);
+
+  /** \brief minimize parameters for interpolation object using grid search.
    */
   void minimize_parameters(interpm_krige_eos& ike);
 
@@ -847,7 +1105,7 @@ public:
    */
   int eos_deriv_v2(std::vector<std::string> &sv, bool itive_com);
 
-  /** \brief Compute second derivatives numerically
+  /** \brief Compute second derivatives numerically.
    */
   int eos_second_deriv(std::vector<std::string> &sv, bool itive_com);
 

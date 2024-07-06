@@ -260,19 +260,26 @@ void eos_nuclei::interpolate(double nB_p,
   ptemp.push_back(len_list);
   ptemp.push_back(len_list);
   ptemp.push_back(len_list);
+  ptemp.push_back(len_list);
+  ptemp.push_back(len_list);
+  ptemp.push_back(len_list);
+  ptemp.push_back(len_list);
+  ptemp.push_back(len_list);
+  ptemp.push_back(len_list);
   ptemp.push_back(l10_list);
   std::vector<std::vector<std::vector<double>>> param_lists;
   param_lists.push_back(ptemp);
   std::cout << "Going to set_covar()." << std::endl;
-  vector<mcovar_funct_rbf_noise> mfr(1);
-  mfr[0].len.resize(3);
+  vector<mcovar_funct_quad_correl> mfr(1);
+  mfr[0].len.resize(9);
   ike.set_covar(mfr,param_lists);
  
   ike.skip_optim=true;
   ike.set(nB_grid2,Ye_grid2,T_grid2,tg_Fint,tg_P,tg_Sint,
           tg_mun,tg_mup,tg_mue,tg_F,tg_S,neutron.m,proton.m);
 
-  minimize_parameters(ike);
+  latin_hypercube_sampling(10,2000,ike);
+  //minimize_parameters(ike);
 
   // Use the interpolation results to fix points
   cout << "\nstarting to interpolate here: \n";
@@ -563,25 +570,113 @@ int eos_nuclei::interp_file(std::vector<std::string> &sv,
     return results;
 }
 
+//to make more generic consider returning list of strata and handling generating hyperparameters in another function.
+void eos_nuclei::latin_hypercube_sampling(int dim, size_t samples, interpm_krige_eos& ike) {
+    cout << "Attempting Latin Hypercube Sampling" << std::endl;
+    double min_qual=1.0e99;
+    bool unique=true;
+    vector<double> pnt(dim), min_p;
+    vector<vector<int>> strata(dim);
+    int iter=0;
+    double rangehp1=20.0-2.0;
+    double rangehp2=std::abs(-15.0-(-8.99));
+    double mar_prob=1.0/samples;
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    //std::srand(time(NULL));
+    //consider changing vectors to strings with values separated by a delimiting character here
+    //Works as long as there are no repeating numbers for each dimension
+    for (int x=0;x<strata.size();x++) {
+        vector<int> numrange(samples);
+        for (int y=0;y<numrange.size();y++) {
+            numrange[y]=y;
+        }
+        shuffle (numrange.begin(),numrange.end(),gen);
+        strata[x]=numrange;
+        cout << "Done with dim " << x << std::endl;
+    }
+    /*
+    while (strata.size() != samples) {
+        vector<int> entry(dim);
+        for (int x=0;x<entry.size();x++) {
+            entry[x]=gen() % samples;
+        }
+        for (int y=0;y<strata.size();y++) {
+            for (int z=0;z<strata[y].size();z++) {
+                if (entry[z] == strata[y][z]) {
+                    unique=false;
+                }
+            }
+        }
+        if (unique==true) {
+            strata.push_back(entry);
+            cout << "Added entry: " << strata.size() << std::endl;
+        }
+        unique=true;
+    }*/
+    //maybe shuffle strata
+    while (iter<samples) {
+        //assign strata to point
+        //randomly sample each hparam for the strata assigned to each dim in the point
+        //vector<int> lhstrata = strata.back();
+        //strata.pop_back();
+        for (int x=0;x<pnt.size();x++) {
+            if (x<(pnt.size()-1)) {
+                std::uniform_real_distribution<double> dist((2.0+(rangehp1*mar_prob*strata[x].back())),(2.0+(rangehp1*mar_prob*(strata[x].back()+1))));
+                pnt[x]=dist(gen);
+            }
+            else {
+                std::uniform_real_distribution<double> dist((-15.0+(rangehp2*mar_prob*strata[x].back())),(-15.0+(rangehp2*mar_prob*(strata[x].back()+1))));
+                pnt[x]=dist(gen);
+            }
+            cout << pnt[x] << " " << strata[x].back() << std::endl;
+            strata[x].pop_back();
+        }
+        //test with min_qual func
+        vector_out(cout,pnt,true);
+        (*ike.cf)[0].set_params(pnt);
+        int success;
+        double q=ike.qual_fun(0,success);
+        cout << q << " " << success << endl;
+        if (q<min_qual) {
+            min_p=pnt;
+        }
+        iter++;
+    }
+    vector_out(cout,min_p,true);
+}
+
 void eos_nuclei::minimize_parameters(interpm_krige_eos& ike) {
   double min_qual=1.0e99;
-  vector<double> pnt(4), min_p;  
+  vector<double> pnt(10), min_p;  
   for(pnt[0]=2.0;pnt[0]<20.0;pnt[0]*=1.5) {
     for(pnt[1]=2.0;pnt[1]<20.0;pnt[1]*=1.5) {
       for(pnt[2]=2.0;pnt[2]<20.0;pnt[2]*=1.5) {
-        for(pnt[3]=-15.0;pnt[3]<-8.99;pnt[3]+=2.0) {
-          vector_out(cout,pnt,true);
-          (*ike.cf)[0].set_params(pnt);
-          int success;
-          double q=ike.qual_fun(0,success);
-          cout << q << " " << success << endl;
-          if (q<min_qual) {
-            min_p=pnt;
+        for(pnt[3]=2.0;pnt[3]<20.0;pnt[3]*=1.5) {
+          for(pnt[4]=2.0;pnt[4]<20.0;pnt[4]*=1.5) {
+            for(pnt[5]=2.0;pnt[5]<20.0;pnt[5]*=1.5) {
+              for(pnt[6]=2.0;pnt[6]<20.0;pnt[6]*=1.5) {
+                for(pnt[7]=2.0;pnt[7]<20.0;pnt[7]*=1.5) {
+                  for(pnt[8]=2.0;pnt[8]<20.0;pnt[8]*=1.5) {
+                    for(pnt[9]=-15.0;pnt[9]<-8.99;pnt[9]+=2.0) {
+                      vector_out(cout,pnt,true);
+                      (*ike.cf)[0].set_params(pnt);
+                      int success;
+                      double q=ike.qual_fun(0,success);
+                      cout << q << " " << success << endl;
+                        if (q<min_qual) {
+                          min_p=pnt;
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
     }
-  }
   vector_out(cout,min_p,true);
 }
 
