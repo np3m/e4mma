@@ -1072,7 +1072,7 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
     cout << "Computed k_min, k_max: " << k_min << " " << k_max << endl;
 
     if (false) {
-      tensor_grid3 tg3x;
+      tensor_grid3<> tg3x;
 
       // Create a mapping between index and baryon density
       vector<double> gi, gnb;
