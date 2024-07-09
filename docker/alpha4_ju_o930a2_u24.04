@@ -52,7 +52,7 @@ ENV LD_LIBRARY_PATH /usr/local/hdf5/lib
 
 RUN git clone https://github.com/np3m/e4mma
 WORKDIR /home/np3m/e4mma
-RUN git checkout 1ad18b57810
+RUN git fetch && git pull && git checkout af896b3787
 RUN make eos_nuclei eos
 
 # --------------------------------------------------------------------------
@@ -60,6 +60,13 @@ RUN make eos_nuclei eos
 
 RUN mpirun --allow-run-as-root -np 1 ./eos -help
 RUN mpirun --allow-run-as-root -np 1 ./eos_nuclei -help
+
+# --------------------------------------------------------------------------
+# Try examples
+
+RUN examples/A_point_nuc.scr
+RUN examples/B_point.scr
+RUN examples/C_help.scr
 
 # --------------------------------------------------------------------------
 # Create a "tables" directory for output tables

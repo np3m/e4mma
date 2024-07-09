@@ -4,10 +4,10 @@
 
 cd ..
 
-eos -help
+./eos -help
 
-eos -help select-model
+./eos -help select-model
 
-eos_nuclei -help point-nuclei
+./eos_nuclei -help point-nuclei
 
 cd examples

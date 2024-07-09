@@ -9,17 +9,17 @@ cd ..
 
 # This is the "fiducial" model from Du et al. (2022)
 
-eos_nuclei -select-model 470 738 0.5 13.0 62.4 32.8 0.9 \
+./eos_nuclei -select-model 470 738 0.5 13.0 62.4 32.8 0.9 \
 -point-nuclei 0.08 0.5 5.0
 
 # Pure Skyrme model
 
-eos_nuclei -alt-model Skyrme NRAPR \
+./eos_nuclei -alt-model Skyrme NRAPR \
 -point-nuclei 0.08 0.5 5.0
 
 # RMF support is still experimental
 
-eos_nuclei -alt-model RMF SFHo \
+./eos_nuclei -alt-model RMF SFHo \
 -point-nuclei 0.08 0.5 5.0
 
 # Return to the examples directory
