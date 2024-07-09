@@ -28,7 +28,7 @@ COPY src/eos_nuclei.h /opt/e4mma/src/
 COPY src/eos_nuclei.cpp /opt/e4mma/src/
 RUN  cd e4mma/src/ && make -j 4 eos_nuclei
 
-FROM python:3.11-slim as deps
+FROM python:3.11-slim AS deps
 # Install git for pip install
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -yq \
@@ -134,6 +134,7 @@ COPY --from=builder --chown=$UID:$UID /usr/local/lib/libo2scl.so.* /usr/local/li
 COPY --from=builder --chown=$UID:$UID /usr/local/share/o2scl /usr/local/share/o2scl
 
 # Copy utk-eos files to the runtime stage
+COPY --from=builder --chown=$UID:$UID /opt/e4mma/data /opt/e4mma/data
 COPY --from=builder --chown=$UID:$UID /opt/e4mma/src/eos_nuclei /opt/e4mma/src/ 
 COPY --chown=$UID:$UID src/makefile \
     src/yaml_validator.py \

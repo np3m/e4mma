@@ -1,4 +1,4 @@
-name: eosv2_ci
+name: E4MMA-CI
 
 # This workflow uses actions that are not certified by GitHub.
 # They are provided by a third-party and are governed by
@@ -9,15 +9,15 @@ on:
   schedule:
     - cron: '32 9 * * *'
   push:
-    branches: [ "v2" ]
+    branches: [ "muses" ]
     # Publish semver tags as releases.
     tags: [ 'v*.*.*' ]
   pull_request:
-    branches: [ "v2" ]
+    branches: [ "muses" ]
 
 env:
   # Use docker.io for Docker Hub if empty
-  REGISTRY: ghcr.io
+  REGISTRY: docker.io
   # github.repository as <account>/<repo>
   IMAGE_NAME: nostrad1/utk-eos
 
@@ -35,4 +35,4 @@ jobs:
    - name: test code
      run: |
       sudo docker run nostrad1/utk-eos:v2 sh -c \
-      "mpirun --allow-run-as-root -np 1 ./eos_nuclei -load data/fid_3_5_22.o2 -point-nuclei 0.16 0.4 1.0" 
+      bash test.sh

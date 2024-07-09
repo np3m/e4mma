@@ -441,7 +441,9 @@ int eos_nuclei::load(std::vector<std::string> &sv,
     cerr << "No filename in load." << endl;
     return 1;
   }
-  cout << "Loading: " << sv[1] << endl;
+  if(verbose>2){
+    cout << "Loading: " << sv[1] << endl;
+  }
   read_results(sv[1]);
   return 0;
 }
@@ -6268,8 +6270,10 @@ int eos_nuclei::read_results(std::string fname) {
   }
 #endif
   
+  if (verbose>2){
   cout << "Function read_results(): rank " << mpi_rank
        << " reading file " << fname << endl;
+  }
   
   hdf_file hf;
   string type;
@@ -6294,9 +6298,11 @@ int eos_nuclei::read_results(std::string fname) {
          << "oth_units." << endl;
     return 1;
   }
+  if (verbose>2){
   cout << "n_oth,oth_names.size(),oth_units.size(): "
        << n_oth << " " << oth_names.size() << " "
        << oth_units.size() << endl;
+  }
 
   vector<string> tg_list;
   vector<string> standard_list={"A","E","Eint","F","Fint","P",
@@ -6306,16 +6312,20 @@ int eos_nuclei::read_results(std::string fname) {
   for(size_t i=0;i<n_oth;i++) {
     size_t j;
     if (vector_search(tg_list,oth_names[i],j)==false) {
+      if (verbose>2){
       cout << "Entry " << oth_names[i] << " in oth_names does not "
            << "correspond to a tensor_grid object." << endl;
+      }
     }
   }
   for(size_t i=0;i<tg_list.size();i++) {
     size_t j;
     if (vector_search(oth_names,tg_list[i],j)==false &&
         vector_search(standard_list,tg_list[i],j)==false) {
+      if (verbose>2){
       cout << "Object " << tg_list[i] << " of type tensor_grid "
            << "not found in oth_names." << endl;
+      }
     }
   }
   
@@ -6328,7 +6338,9 @@ int eos_nuclei::read_results(std::string fname) {
       
       vector<string> vs2;
       split_string(mod_str,vs2);
-      cout << "read_results(): model string: " << mod_str << endl;
+      //cout << "read_results(): model string: " << mod_str << endl;
+      cout << "Model: i_ns i_skyrme qmc_a qmc_alpha eos_S eos_L phi" << endl;
+      cout << "       " << mod_str << endl;
       
       if (false && vs2[0]=="0") {
         
@@ -6613,9 +6625,10 @@ int eos_nuclei::read_results(std::string fname) {
   hf.close();
 
   loaded=true;
-  
+  if (verbose>2){
   cout << "Function read_results(): rank " << mpi_rank
        << " done reading file." << endl;
+  }
 
 #ifndef NO_MPI
   // Send a message to the next MPI rank
@@ -7337,9 +7350,6 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
 
 int eos_nuclei::muses(std::vector<std::string> &sv,
 			     bool itive_com) { 
-
-  std::cout << "Function e4mma-muses starting: " << std::endl;
-
   /*  
   ["temperature", "muB", "muS", "muQ", "vector_density", "total_S_density", 
   "total_Q_density", "energy", "pressure", "entropy"]
@@ -7358,7 +7368,6 @@ int eos_nuclei::muses(std::vector<std::string> &sv,
     exit(-1);
   }
 
-  std::cout << "Processing: " << nB_grid_spec << " " << Ye_grid_spec << std::endl;
   calc_utf8<> calc;
   std::map<std::string,double> vars;
   vector<double> packed;
@@ -7387,10 +7396,8 @@ int eos_nuclei::muses(std::vector<std::string> &sv,
   }
 
   if(inc_lepton){
-    std::cout << "including leptons" << endl;
     fout.open("../output/e4mma_w_lepton.csv");
   } else {
-    std::cout << "not including leptons" << endl;
     fout.open("../output/e4mma_wo_lepton.csv");
   }
 
@@ -7405,9 +7412,9 @@ int eos_nuclei::muses(std::vector<std::string> &sv,
           std::vector<std::size_t> ix={inB,iYe,0};
 
           // beta-equilibrium 
-          if(tg_mun.get(ix)-(tg_mup.get(ix)+tg_mue.get(ix))<1.0e-6){
-            std::cout << "beta-equl " << inB << " "<< iYe << std::endl;
-          }  
+          //if(tg_mun.get(ix)-(tg_mup.get(ix)+tg_mue.get(ix))<1.0e-6){
+            //std::cout << "beta-equl " << inB << " "<< iYe << std::endl;
+          //}  
  
           double muB=tg_mun.get(ix)+neutron.m*hc_mev_fm;
           double muQ=tg_mup.get(ix)+proton.m*hc_mev_fm-tg_mun.get(ix)-neutron.m*hc_mev_fm;
@@ -7434,8 +7441,6 @@ int eos_nuclei::muses(std::vector<std::string> &sv,
   }
 
   fout.close();
-
-  std::cout << "Function e4mma-muses completed succesfully." << std::endl;
 
   return 0;
 }

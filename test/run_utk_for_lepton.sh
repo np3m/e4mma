@@ -33,8 +33,7 @@ if [ ! -f "$USER_CONFIG_YAML_PATH" ]; then
 	--load fid_3_5_22.o2 \
 	--output_format HDF5 \
     --nB_grid_spec '301,10^(i*0.04-12)*2.0' \
-	--Ye_grid_spec '70,0.01*(i+1)' \
-    --verbose 0 
+	--Ye_grid_spec '70,0.01*(i+1)' 
 fi
 
 # Check if the user config file is not in the expected location; copy it if needed.
