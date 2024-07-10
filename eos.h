@@ -245,6 +245,9 @@ public:
   
  protected:
 
+  /// Desc
+  void read_data_files();  
+
   /** \brief Process the grid specification strings and store
       the values in the arrays
    */
@@ -262,8 +265,6 @@ public:
   std::vector<double> Ye_grid2;
   std::vector<double> T_grid2;
   std::vector<double> S_grid2;
-  
- protected:
   
   /** \brief The function for default baryon density grid. 
       
@@ -519,6 +520,7 @@ public:
   o2scl::cli::parameter_string p_Ye_grid_spec;
   o2scl::cli::parameter_string p_T_grid_spec;
   o2scl::cli::parameter_string p_S_grid_spec;
+  o2scl::cli::parameter_string p_data_dir;
   //@}
 
   /// If true, then RMF fields are included
@@ -752,6 +754,9 @@ protected:
       (default true)
   */
   bool select_cs2_test;
+  
+  /// Directory containing data files, default "data"
+  std::string data_dir;
   //@}
 
   /// \name Command-line interface functions [public]
@@ -949,6 +954,7 @@ protected:
    */
   virtual void setup_cli(o2scl::cli &cl, bool read_docs=true);
 
+  /// Desc
   int comm_set(std::vector<std::string> &sv, bool itive_com);
   
   //@}

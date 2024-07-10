@@ -684,6 +684,54 @@ void eos::ns_fit(int row) {
   return;
 }
 
+void eos::read_data_files() {
+
+  // Temporary string for object names
+  string name;
+
+  int mpi_rank=0, mpi_size=1;
+
+#ifdef O2SCL_MPI
+  // Get MPI rank, etc.
+  MPI_Comm_rank(MPI_COMM_WORLD,&mpi_rank);
+  MPI_Comm_size(MPI_COMM_WORLD,&mpi_size);
+  
+  // Ensure that multiple MPI ranks aren't reading from the
+  // filesystem at the same time
+  int tag=0, buffer=0;
+  if (mpi_size>1 && mpi_rank>=1) {
+    MPI_Recv(&buffer,1,MPI_INT,mpi_rank-1,
+	     tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
+  }
+#endif
+
+  // Open the neutron star data file
+  std::string ns_file=data_dir+"/qmc_twop_10_0_out";
+  o2scl_hdf::hdf_file hf;
+  hf.open(ns_file);
+  o2scl_hdf::hdf_input(hf,nstar_tab,name);
+  hf.close();
+
+  // Open the Skyrme data file
+  std::string UNEDF_file=data_dir+"/thetaANL-1002x12.o2";
+  hf.open(UNEDF_file);
+  o2scl_hdf::hdf_input(hf,UNEDF_tab,name);
+  hf.close();
+
+  use_alt_eos=false;
+  o2scl_hdf::skyrme_load(sk_alt,"NRAPR");
+
+#ifdef O2SCL_MPI
+  // Send a message to the next MPI rank
+  if (mpi_size>1 && mpi_rank<mpi_size-1) {
+    MPI_Send(&buffer,1,MPI_INT,mpi_rank+1,
+	     tag,MPI_COMM_WORLD);
+  }
+#endif
+
+  return;
+}
+
 eos::eos() {
 
   cs2_verbose=0;
@@ -736,49 +784,8 @@ eos::eos() {
   qmc_a=12.7;
   qmc_b=2.12;
   qmc_n0=0.16;
-
-  // Temporary string for object names
-  string name;
-
-  int mpi_rank=0, mpi_size=1;
-
-#ifdef O2SCL_MPI
-  // Get MPI rank, etc.
-  MPI_Comm_rank(MPI_COMM_WORLD,&mpi_rank);
-  MPI_Comm_size(MPI_COMM_WORLD,&mpi_size);
   
-  // Ensure that multiple MPI ranks aren't reading from the
-  // filesystem at the same time
-  int tag=0, buffer=0;
-  if (mpi_size>1 && mpi_rank>=1) {
-    MPI_Recv(&buffer,1,MPI_INT,mpi_rank-1,
-	     tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
-  }
-#endif
-
-  // Open the neutron star data file
-  std::string ns_file="data/qmc_twop_10_0_out";
-  o2scl_hdf::hdf_file hf;
-  hf.open(ns_file);
-  o2scl_hdf::hdf_input(hf,nstar_tab,name);
-  hf.close();
-
-  // Open the Skyrme data file
-  std::string UNEDF_file="data/thetaANL-1002x12.o2";
-  hf.open(UNEDF_file);
-  o2scl_hdf::hdf_input(hf,UNEDF_tab,name);
-  hf.close();
-
-  use_alt_eos=false;
-  o2scl_hdf::skyrme_load(sk_alt,"NRAPR");
-
-#ifdef O2SCL_MPI
-  // Send a message to the next MPI rank
-  if (mpi_size>1 && mpi_rank<mpi_size-1) {
-    MPI_Send(&buffer,1,MPI_INT,mpi_rank+1,
-	     tag,MPI_COMM_WORLD);
-  }
-#endif
+  data_dir="data";
 
   nB_grid_spec="301,10^(i*0.04-12)*2.0";
   Ye_grid_spec="70,0.01*(i+1)";
@@ -3455,6 +3462,8 @@ int eos::select_internal(int i_ns_loc, int i_skyrme_loc,
     return 2;
   }
 
+  if (UNEDF_tab.get_nlines()==0) read_data_files();
+  
   double rho0=UNEDF_tab.get(((string)"rho0"),i_skyrme);
   double K=UNEDF_tab.get(((string)"K"),i_skyrme);
   double Ms_inv=UNEDF_tab.get(((string)"Ms_inv"),i_skyrme);
@@ -3636,6 +3645,8 @@ int eos::select_internal(int i_ns_loc, int i_skyrme_loc,
 
 int eos::random(std::vector<std::string> &sv, bool itive_com) {
 
+  if (UNEDF_tab.get_nlines()==0) read_data_files();
+  
   // This function never fails, and it requires a call to
   // free_energy_density(), so we set this to true
   model_selected=true;
@@ -4023,14 +4034,21 @@ void eos::setup_cli(o2scl::cli &cl, bool read_docs) {
 
   p_nB_grid_spec.str=&nB_grid_spec;
   p_nB_grid_spec.help="";
-  p_nB_grid_spec.doc_class="eos_nuclei";
+  p_nB_grid_spec.doc_class="eos";
   p_nB_grid_spec.doc_name="nB_grid_spec";
   p_nB_grid_spec.doc_xml_file="doc/xml/classeos.xml";
   cl.par_list.insert(make_pair("nB_grid_spec",&p_nB_grid_spec));
   
+  p_data_dir.str=&data_dir;
+  p_data_dir.help="";
+  p_data_dir.doc_class="eos";
+  p_data_dir.doc_name="data_dir";
+  p_data_dir.doc_xml_file="doc/xml/classeos.xml";
+  cl.par_list.insert(make_pair("data_dir",&p_data_dir));
+  
   p_Ye_grid_spec.str=&Ye_grid_spec;
   p_Ye_grid_spec.help="";
-  p_Ye_grid_spec.doc_class="eos_nuclei";
+  p_Ye_grid_spec.doc_class="eos";
   p_Ye_grid_spec.doc_name="Ye_grid_spec";
   p_Ye_grid_spec.doc_xml_file="doc/xml/classeos.xml";
   cl.par_list.insert(make_pair("Ye_grid_spec",&p_Ye_grid_spec));
@@ -4038,7 +4056,7 @@ void eos::setup_cli(o2scl::cli &cl, bool read_docs) {
   p_T_grid_spec.str=&T_grid_spec;
   p_T_grid_spec.help="";
   p_T_grid_spec.doc_class="eos_nuclei";
-  p_T_grid_spec.doc_name="T_grid_spec";
+  p_T_grid_spec.doc_name="T";
   p_T_grid_spec.doc_xml_file="doc/xml/classeos.xml";
   cl.par_list.insert(make_pair("T_grid_spec",&p_T_grid_spec));
   
