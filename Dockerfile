@@ -142,6 +142,7 @@ COPY --chown=$UID:$UID src/makefile \
     src/yaml_generator.py \
     src/point_generator.py \
     src/postprocess.py \
+    src/Status.py \
     /opt/e4mma/src/
 
 COPY --chown=$UID:$UID manifest.yaml /opt/e4mma/

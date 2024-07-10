@@ -11,6 +11,7 @@ components:
         message:
           type: string
           default: ""
+          description: code message
         code:
           type: integer
           enum: [200, 400, 500]

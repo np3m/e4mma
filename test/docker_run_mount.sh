@@ -5,8 +5,8 @@ set -euo pipefail
 echo -e "\nRunning E4MMA module in Docker...\n"
 
 # Default values for Docker image and tag
-DOCKER_IMAGE_NAME="e4mma"
-DOCKER_IMAGE_TAG="latest"
+DOCKER_IMAGE_NAME="nostrad1/utk-eos"
+DOCKER_IMAGE_TAG="v2"
 
 # Get UID and GID of the current user
 #UID=$(id -u)
@@ -27,14 +27,6 @@ docker run -it --rm --name utk -u $UID:$GID \
   -v "${PWD}/../output:/opt/e4mma/output:rw" \
   -v "${PWD}/../data:/opt/e4mma/data" \
   $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG /bin/bash run_utk_for_lepton.sh
-
-# Check exit status
-if [ $? -eq 0 ]; then
-  echo -e "\n\tE4MMA Docker run: OK\n"
-else
-  echo -e "\n\tE4MMA Docker run: Failed\n"
-  exit 1
-fi
 
 echo -e "\nE4MMA Docker run completed\n"
 exit 0
