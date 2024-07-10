@@ -542,6 +542,8 @@ void eos::min_max_cs2(double &cs2_min, double &cs2_max) {
 
 void eos::ns_fit(int row) {
 
+  if (nstar_tab.get_nlines()==0) read_data_files();
+  
   if (row>=((int)(nstar_tab.get_nlines()))) {
     O2SCL_ERR("Row not allowed in ns_fit().",
 	      exc_efailed);
@@ -3727,7 +3729,7 @@ int eos::point(std::vector<std::string> &sv, bool itive_com) {
     cout.setf(ios::showpos);
     double f_total=th2.ed-T*th2.en;
 
-    cout << "(All of these results are without electrons and photons)."
+    cout << "(All of these results are without electrons and photons.)"
          << endl;
     cout << "fint_total: " << f_total << " 1/fm^4 " << endl;
     cout << "Fint_total: " << f_total/nB*hc_mev_fm << " MeV" << endl;
@@ -3981,7 +3983,7 @@ void eos::setup_cli(o2scl::cli &cl, bool read_docs) {
       1,"","eos","hrg_load","doc/xml/classeos.xml"}
     };
 
-  cl.doc_o2_file="data/eos_nuclei_docs.o2";
+  cl.doc_o2_file=data_dir+"/eos_nuclei_docs.o2";
   
   p_verbose.i=&verbose;
   p_verbose.help="";

@@ -10831,7 +10831,7 @@ void eos_nuclei::setup_cli_nuclei(o2scl::cli &cl) {
       1,"","eos_nuclei","save_compose","doc/xml/classeos__nuclei.xml"}
     };
 
-  cl.doc_o2_file="data/eos_nuclei_docs.o2";
+  cl.doc_o2_file=data_dir+"/eos_nuclei_docs.o2";
 
   p_show_all_nuclei.b=&show_all_nuclei;
   p_show_all_nuclei.help="";
