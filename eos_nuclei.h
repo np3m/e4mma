@@ -150,7 +150,7 @@ public:
   double mprot;
 
   /// Lepton EOS object
-  o2scl::eos_leptons2 elep;
+  o2scl::eos_leptons elep;
 
   /// If true, interpolate Fint, otherwise, interpolate F
   bool interp_Fint;
