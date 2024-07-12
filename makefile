@@ -167,11 +167,11 @@ eos_nuclei_nompi.o: eos_nuclei.cpp eos_nuclei.h
 		-o eos_nuclei_nompi.o -c eos_nuclei.cpp
 
 eos_interp_nompi.o: eos_interp.cpp
-	$(LMPI_CXX) $(LMPI_CFLAGS) \
+	$(LCXX) $(LCFLAGS) \
 		-o eos_interp_nompi.o -c eos_interp.cpp
 
 eos_neutrino_nompi.o: eos_neutrino.cpp
-	$(LMPI_CXX) $(LMPI_CFLAGS) \
+	$(LCXX) $(LCFLAGS) \
 		-o eos_neutrino_nompi.o -c eos_neutrino.cpp
 
 eos_had_skyrme_ext_nompi.o: eos_had_skyrme_ext.cpp \

@@ -797,7 +797,9 @@ public:
       true.
   */
   int eos_deriv(std::vector<std::string> &sv, bool itive_com);
-#ifdef Never_defined
+  
+#ifdef NEVER_DEFINED
+  
   /** \brief Interpolate the EOS to fix the table near a point
 
       <nB> <Ye> <T MeV> <window> <st.o2>
@@ -811,7 +813,8 @@ public:
 
       Use interpolation to fix the table in the neighborhood of
       size \c window around \c (i_fix,j_fix,k_fix) using 
-      interpolation object \c ike. 
+      interpolation object \c ike.
+  */
   int interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
                       size_t window, interpm_krige_eos &ike);
     
@@ -823,6 +826,7 @@ public:
       Under development.
    */
   int interp_fix_table(std::vector<std::string> &sv, bool itive_com);
+  
 #endif
 
   /** \brief Add electrons and photons
