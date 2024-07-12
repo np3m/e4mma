@@ -797,7 +797,7 @@ public:
       true.
   */
   int eos_deriv(std::vector<std::string> &sv, bool itive_com);
-
+#ifdef Never_defined
   /** \brief Interpolate the EOS to fix the table near a point
 
       <nB> <Ye> <T MeV> <window> <st.o2>
@@ -823,7 +823,7 @@ public:
       Under development.
    */
   int interp_fix_table(std::vector<std::string> &sv, bool itive_com);
-  */
+#endif
 
   /** \brief Add electrons and photons
 
