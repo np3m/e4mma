@@ -29,6 +29,7 @@ using namespace o2scl;
 using namespace o2scl_const;
 using namespace o2scl_hdf;
 
+#ifdef NEVER_DEFINED
 int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
                                  bool itive_com) {
 
@@ -1753,3 +1754,4 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
   }
   return 0;
 }
+#endif

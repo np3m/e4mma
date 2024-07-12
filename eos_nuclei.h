@@ -84,6 +84,7 @@ public:
     
 };
 
+#ifdef NEVER_DEFINED
 /** \brief Specialized Gaussian process interpolation object
  */
 class interpm_krige_eos :
@@ -177,6 +178,7 @@ public:
   virtual int addl_const(size_t iout, double &ret);
   
 };
+#endif
 
 /** \brief Solve for the EOS including nuclei
 
@@ -810,10 +812,9 @@ public:
       Use interpolation to fix the table in the neighborhood of
       size \c window around \c (i_fix,j_fix,k_fix) using 
       interpolation object \c ike. 
-   */
   int interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
                       size_t window, interpm_krige_eos &ike);
-
+    
   /** \brief Use interpolation to fix an entire table
 
       <input stability file> <window> <output table> 
@@ -822,7 +823,8 @@ public:
       Under development.
    */
   int interp_fix_table(std::vector<std::string> &sv, bool itive_com);
-  
+  */
+
   /** \brief Add electrons and photons
 
       <no parameters>
