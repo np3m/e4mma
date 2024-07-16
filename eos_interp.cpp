@@ -280,7 +280,7 @@ void eos_nuclei::interpolate(double nB_p,
   ike.set(nB_grid2,Ye_grid2,T_grid2,tg_Fint,tg_P,tg_Sint,
           tg_mun,tg_mup,tg_mue,tg_F,tg_S,neutron.m,proton.m);
 
-  latin_hypercube_sampling(4,2000,ike);
+  latin_hypercube_sampling(4,1300,ike);
   //latin_hypercube_sampling(10,2000,ike);
   //bayesian_optimizationLHS(10, 100, ike);
   //bayesian_optimizationLHS(4, 15, ike);
@@ -653,7 +653,7 @@ void eos_nuclei::bayesian_optimizationLHS (int dim, int samples, interpm_krige_e
     //search_space.push_back(range1);
     //search_space.push_back(range1);
     search_space.push_back(range2);
-    latin_hypercube_sampling_gen LHS(search_space, 1000);
+    randomSearch LHS(search_space, 1000, randomSearch::latin_hypercube);
     map<vector<double>,double> archive;
     vector<vector<double>> xval;
     vector<double> yval;
@@ -679,7 +679,7 @@ void eos_nuclei::bayesian_optimizationLHS (int dim, int samples, interpm_krige_e
     }
   
     //Maybe predict returns 0 for points because the search space isn't being sampled enough?
-    latin_hypercube_sampling_gen LHSbo(search_space, 10000);
+    randomSearch LHSbo(search_space, 10000, randomSearch::latin_hypercube);
     py::scoped_interpreter guard{};
     py::object skGPR = py::module_::import("sklearn.gaussian_process").attr("GaussianProcessRegressor");
     py::object GPR = skGPR();
@@ -869,7 +869,7 @@ void random_search_sampling (int dim, int samples, interpm_krige_eos& ike) {
     //search_space.push_back(range1);
     //search_space.push_back(range1);
     search_space.push_back(range2);
-    randomSample RS(search_space, samples);
+    randomSearch RS(search_space, samples, randomSearch::random_gen);
     double min_qual=1.0e99;
 
     vector<double> pnt, min_p;

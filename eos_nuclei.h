@@ -371,14 +371,22 @@ class randomSearch {
             }
             while (iter<samples) {
                 for (int x=0;x<pnt.size();x++) {
-                    if (alg==random_gen) {
-                        std::uniform_real_distribution<double> dist((sample_space[x][0]),(sample_space[x][0]));
-                    }
+                    double l_val=0.0;
+                    double h_val=0.0;
                     if (alg==latin_hypercube) {
-                        std::uniform_real_distribution<double> dist((sample_space[x][0]+(range[x]*mar_prob*strata[x].back())),(sample_space[x][0]+(range[x]*mar_prob*(strata[x].back()+1))));
+                        l_val=sample_space[x][0]+(range[x]*mar_prob*strata[x].back());
+                        h_val=sample_space[x][0]+(range[x]*mar_prob*(strata[x].back()+1));
                     }
+                    else {
+                        l_val=sample_space[x][0];
+                        h_val=sample_space[x][1];
+                    }
+                    std::uniform_real_distribution<double> dist(l_val,h_val);
                     pnt[x]=dist(gen);
                     std::cout << pnt[x] << " " << x << std::endl;
+                    if (alg==latin_hypercube) {
+                        strata[x].pop_back();
+                    }
                 }
                 points[iter]=pnt;
                 iter++;
@@ -398,9 +406,10 @@ class randomSearch {
                 strata[x]=numrange;
                 //std::cout << "Done with dim " << (x+1) << std::endl;
             }
-            gen_points();
         }
     public:
+	    enum sampling_method {random_gen=1, latin_hypercube=2};
+	    enum sampling_method alg;
         randomSearch(std::vector<std::vector<double>> space, size_t samp, sampling_method algorithm) {
             alg=algorithm;
             sample_space=space;
@@ -461,7 +470,7 @@ class randomSample {
             std::mt19937 gen(rd());
             while (iter<samples) {
                 for (int x=0;x<pnt.size();x++) {
-                    std::uniform_real_distribution<double> dist((sample_space[x][0]),(sample_space[x][0]));
+                    std::uniform_real_distribution<double> dist((sample_space[x][0]),(sample_space[x][1]));
                     pnt[x]=dist(gen);
                     std::cout << pnt[x] << " " << x << std::endl;
                 }
