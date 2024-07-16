@@ -204,7 +204,7 @@ void eos_nuclei::interpolate(double nB_p,
   interpm_krige_eos ike;
   ike.mode=ike.mode_loo_cv_bf;
   ike.full_min=true;
-  ike.def_mmin.verbose=1;
+  //ike.def_mmin.verbose=1;
   
   /// Load cs2 from a file
   hdf_file hff;
@@ -257,12 +257,12 @@ void eos_nuclei::interpolate(double nB_p,
   std::vector<double> len_list={2.0,3.0};
   std::vector<double> l10_list={-15,-13,-11,-9};  
   std::vector<std::vector<double>> ptemp;
-  ptemp.push_back(len_list);
-  ptemp.push_back(len_list);
-  ptemp.push_back(len_list);
-  ptemp.push_back(len_list);
-  ptemp.push_back(len_list);
-  ptemp.push_back(len_list);
+  //ptemp.push_back(len_list);
+  //ptemp.push_back(len_list);
+  //ptemp.push_back(len_list);
+  //ptemp.push_back(len_list);
+  //ptemp.push_back(len_list);
+  //ptemp.push_back(len_list);
   ptemp.push_back(len_list);
   ptemp.push_back(len_list);
   ptemp.push_back(len_list);
@@ -270,15 +270,20 @@ void eos_nuclei::interpolate(double nB_p,
   std::vector<std::vector<std::vector<double>>> param_lists;
   param_lists.push_back(ptemp);
   std::cout << "Going to set_covar()." << std::endl;
-  vector<mcovar_funct_quad_correl> mfr(1);
-  mfr[0].len.resize(9);
+  //vector<mcovar_funct_quad_correl> mfr(1);
+  vector<o2scl::mcovar_funct_rbf_noise> mfr(1);
+  //mfr[0].len.resize(9);
+  mfr[0].len.resize(3);
   ike.set_covar(mfr,param_lists);
  
   ike.skip_optim=true;
   ike.set(nB_grid2,Ye_grid2,T_grid2,tg_Fint,tg_P,tg_Sint,
           tg_mun,tg_mup,tg_mue,tg_F,tg_S,neutron.m,proton.m);
 
-  latin_hypercube_sampling(10,2000,ike);
+  latin_hypercube_sampling(4,2000,ike);
+  //latin_hypercube_sampling(10,2000,ike);
+  //bayesian_optimizationLHS(10, 100, ike);
+  //bayesian_optimizationLHS(4, 15, ike);
   //minimize_parameters(ike);
 
   // Use the interpolation results to fix points
@@ -583,8 +588,7 @@ void eos_nuclei::latin_hypercube_sampling(int dim, size_t samples, interpm_krige
     double mar_prob=1.0/samples;
     std::random_device rd;
     std::mt19937 gen(rd());
-    //std::srand(time(NULL));
-    //consider changing vectors to strings with values separated by a delimiting character here
+
     //Works as long as there are no repeating numbers for each dimension
     for (int x=0;x<strata.size();x++) {
         vector<int> numrange(samples);
@@ -593,33 +597,12 @@ void eos_nuclei::latin_hypercube_sampling(int dim, size_t samples, interpm_krige
         }
         shuffle (numrange.begin(),numrange.end(),gen);
         strata[x]=numrange;
-        cout << "Done with dim " << x << std::endl;
+        cout << "Done with dim " << (x+1) << std::endl;
     }
-    /*
-    while (strata.size() != samples) {
-        vector<int> entry(dim);
-        for (int x=0;x<entry.size();x++) {
-            entry[x]=gen() % samples;
-        }
-        for (int y=0;y<strata.size();y++) {
-            for (int z=0;z<strata[y].size();z++) {
-                if (entry[z] == strata[y][z]) {
-                    unique=false;
-                }
-            }
-        }
-        if (unique==true) {
-            strata.push_back(entry);
-            cout << "Added entry: " << strata.size() << std::endl;
-        }
-        unique=true;
-    }*/
     //maybe shuffle strata
     while (iter<samples) {
         //assign strata to point
         //randomly sample each hparam for the strata assigned to each dim in the point
-        //vector<int> lhstrata = strata.back();
-        //strata.pop_back();
         for (int x=0;x<pnt.size();x++) {
             if (x<(pnt.size()-1)) {
                 std::uniform_real_distribution<double> dist((2.0+(rangehp1*mar_prob*strata[x].back())),(2.0+(rangehp1*mar_prob*(strata[x].back()+1))));
@@ -640,43 +623,279 @@ void eos_nuclei::latin_hypercube_sampling(int dim, size_t samples, interpm_krige
         cout << q << " " << success << endl;
         if (q<min_qual) {
             min_p=pnt;
+            min_qual=q;
         }
         iter++;
     }
+    (*ike.cf)[0].set_params(min_p);
     vector_out(cout,min_p,true);
 }
 
+void eos_nuclei::bayesian_optimizationLHS (int dim, int samples, interpm_krige_eos& ike) {
+    //1. create or use created archive
+    //2. get marg likelihood for each point
+    cout << "Creating Archive" << std::endl;
+    int iter=0;
+    std::vector<double> range1= {2.0,20.0};
+    std::vector<double> range2= {-15.0,-8.99};
+    vector<vector<double>> search_space;
+    search_space.push_back(range1);
+    search_space.push_back(range1);
+    search_space.push_back(range1);
+    //search_space.push_back(range1);
+    //search_space.push_back(range1);
+    //search_space.push_back(range1);
+    //search_space.push_back(range1);
+    //search_space.push_back(range1);
+    //search_space.push_back(range1);
+    search_space.push_back(range2);
+    latin_hypercube_sampling_gen LHS(search_space, 1000);
+    map<vector<double>,double> archive;
+    vector<vector<double>> xval;
+    vector<double> yval;
+
+    vector<double> pnt, min_p, new_p;
+    while (!LHS.isEmpty()) {
+        pnt=LHS.back();
+        LHS.pop_back();
+        vector_out(cout,pnt,true);
+        (*ike.cf)[0].set_params(pnt);
+        int success;
+        double q=ike.qual_fun(0,success);
+        cout << q << " " << success << endl;
+        //archive[pnt]=q;
+        xval.push_back(pnt);
+        yval.push_back(q);
+    }
+  
+    //Maybe predict returns 0 for points because the search space isn't being sampled enough?
+    latin_hypercube_sampling_gen LHSbo(search_space, 10000);
+    py::scoped_interpreter guard{};
+    py::object skGPR = py::module_::import("sklearn.gaussian_process").attr("GaussianProcessRegressor");
+    py::object GPR = skGPR();
+    while (iter<samples) {
+        cout << "Current iteration: " << iter+1 << std::endl;
+        //make new sample of points for aquisition function
+        LHSbo.new_samples();
+
+        cout << "Starting Bayesian Optimization" << std::endl ;
+        //3. fit to GP (maybe in python)
+        //4. use GP in aq func and return new point (maybe in python)
+        //py::object pnt_py=;
+        //new_p = pnt_py.cast<vector<double>>();
+        /*
+        map<vector<double>, double>::iterator it = archive.begin();
+        while (it!=archive.end()) {
+            vector<double> temp = it->first;
+            cout << "test" << std::endl;
+            //xval.push_back(temp);
+            yval.push_back(it->second);
+            it++;
+        }*/
+
+        vector<vector<double>> points = LHSbo.return_points();
+        tuple<vector<double>,vector<double>> xvalGPR, pointsGPR;
+
+        vector<double> aqVal(points.size());
+        py::object pXval = py::array(py::cast(xval));
+        py::object pYval = py::array(py::cast(yval));
+        py::object pPoints = py::array(py::cast(points));
+        py::object fitGP = GPR.attr("fit")(pXval,pYval);
+        fitGP;
+        py::object predictXval = GPR.attr("predict")(pXval, "return_std"_a=true);
+        py::object tupleXval = predictXval;
+        xvalGPR=tupleXval.cast<tuple<vector<double>,vector<double>>>();
+        py::object predictPoints = GPR.attr("predict")(pPoints, "return_std"_a=true);
+        py::object tuplePoints = predictPoints;
+        pointsGPR=tuplePoints.cast<tuple<vector<double>,vector<double>>>();
+
+        double minOb, maxAq;
+        int maxIndex=0;
+        minOb=get<0>(xvalGPR)[0];
+        for (int x=0;x<aqVal.size();x++) {
+            double tempOb=get<0>(xvalGPR)[x];
+            if (tempOb<minOb) {
+                minOb=tempOb;
+            }
+            //cout << tempOb << std::endl;
+        }
+        //cout << "Finished with current points." << std::endl;
+        for (int x=0;x<aqVal.size();x++) {
+            double mu = get<0>(pointsGPR)[x];
+            double sigma = get<1>(pointsGPR)[x];
+            //cout << mu << std::endl;
+            //cout << sigma << std::endl;
+            aqVal[x]=((minOb-mu)*gaussianCDF((minOb-mu)/sigma))+(sigma*gaussianPDF((minOb-mu)/sigma));
+            //cout << aqVal[x] << std::endl;
+        }
+        cout << "Done with aqval: " << iter+1 << endl;
+        maxAq=aqVal[0];
+        cout << minOb << std::endl;
+        for (int x=0;x<aqVal.size();x++) {
+            double tempAq=aqVal[x];
+            if (tempAq>maxAq) {
+                maxAq=tempAq;
+                maxIndex=x;
+            }
+        }
+        cout << maxAq << std::endl;
+        cout << maxIndex << std::endl;
+        new_p = points[maxIndex];
+        //new_p=callPythonBayesian(xval,yval,points);
+        //5. evaluate new point with model (back in c++)
+        //6. if not last step add to GP and repeat 3-5.
+        //7. if last step step return point with lowest marginal likelihood.
+        vector_out(cout,new_p,true);
+        (*ike.cf)[0].set_params(new_p);
+        int success;
+        double new_q=ike.qual_fun(0,success);
+        //archive[new_p]=new_q;
+        xval.push_back(new_p);
+        yval.push_back(new_q);
+        cout << new_q << std::endl;
+        iter++;
+    }
+
+    min_p=xval[0];
+    double min_q=yval[0];
+    for (int x=0;x<xval.size();x++) {
+        double next_q = yval[x];
+        if (next_q<min_q) {
+            min_p=xval[x];
+            min_q=yval[x];
+        }
+    }
+    (*ike.cf)[0].set_params(min_p);
+    vector_out(cout,min_p,true);
+}
+
+//Used https://machinelearningmastery.com/what-is-bayesian-optimization/ to help understand bayesian optimization
+std::vector<double> eos_nuclei::callPythonBayesian(std::vector<std::vector<double>> xval, std::vector<double> yval, std::vector<std::vector<double>> points) {
+    tuple<vector<double>,vector<double>> xvalGPR, pointsGPR;
+
+    vector<double> aqVal(points.size());
+    cout << "1" << std::endl;
+    py::scoped_interpreter guard{};
+    cout << "2" << std::endl;
+    py::object skGPR = py::module_::import("sklearn.gaussian_process").attr("GaussianProcessRegressor");
+    py::object GPR = skGPR();
+    cout << "3" << std::endl;
+    py::object pXval = py::array(py::cast(xval));
+    py::object pYval = py::array(py::cast(yval));
+    py::object pPoints = py::array(py::cast(points));
+    cout << "4" << std::endl;
+    py::object fitGP = GPR.attr("fit")(pXval,pYval);
+    fitGP;
+    cout << "5" << std::endl;
+    py::object predictXval = GPR.attr("predict")(pXval, "return_std"_a=true);
+    cout << "6" << std::endl;
+    py::object tupleXval = predictXval;
+    xvalGPR=tupleXval.cast<tuple<vector<double>,vector<double>>>();
+    cout << "7" << std::endl;
+    py::object predictPoints = GPR.attr("predict")(pPoints, "return_std"_a=true);
+    cout << "8" << std::endl;
+    py::object tuplePoints = predictPoints;
+    pointsGPR=tuplePoints.cast<tuple<vector<double>,vector<double>>>();
+    cout << "9" << std::endl;
+
+    double minOb, maxAq;
+    int maxIndex=0;
+    minOb=get<0>(xvalGPR)[0];
+    for (int x=0;x<aqVal.size();x++) {
+        double tempOb=get<0>(xvalGPR)[x];
+        //cout << tempOb << std::endl;
+        if (tempOb<minOb) {
+            minOb=tempOb;
+        }
+    }
+    cout << "10" << std::endl;
+    for (int x=0;x<aqVal.size();x++) {
+        double mu = get<0>(pointsGPR)[x];
+        double sigma = get<1>(pointsGPR)[x];
+        //cout << mu << std::endl;
+        //cout << sigma << std::endl;
+        aqVal[x]=((minOb-mu)*gaussianCDF((minOb-mu)/sigma))+(sigma*gaussianPDF((minOb-mu)/sigma));
+    }
+    cout << "11" << std::endl;
+    maxAq=aqVal[0];
+    for (int x=0;x<aqVal.size();x++) {
+        double tempAq=aqVal[x];
+        if (tempAq>maxAq) {
+            maxAq=tempAq;
+            maxIndex=x;
+        }
+    }
+    cout << "12" << std::endl;
+    return points[maxIndex];
+}
+
+//reference for the implementation of the cdf and pdf for a standard normal distribution from https://www.boost.org/doc/libs/1_85_0/libs/math/doc/html/math_toolkit/dist_ref/dists/normal_dist.html
+double eos_nuclei::gaussianPDF (double x) {
+    return (1.0/sqrt(2.0*std::acos(-1)))*exp((-x*x)/2.0);
+}
+double eos_nuclei::gaussianCDF (double x) {
+    return (0.5)*erfc((-x)/sqrt(2.0));
+}
+
+void random_search_sampling (int dim, int samples, interpm_krige_eos& ike) {
+    cout << "Attempting Random Search Sampling" << std::endl;
+    int iter=0;
+    std::vector<double> range1= {2.0,15.1875};
+    std::vector<double> range2= {-15.0,-9.0};
+    vector<vector<double>> search_space;
+    search_space.push_back(range1);
+    search_space.push_back(range1);
+    search_space.push_back(range1);
+    //search_space.push_back(range1);
+    //search_space.push_back(range1);
+    //search_space.push_back(range1);
+    //search_space.push_back(range1);
+    //search_space.push_back(range1);
+    //search_space.push_back(range1);
+    search_space.push_back(range2);
+    randomSample RS(search_space, samples);
+    double min_qual=1.0e99;
+
+    vector<double> pnt, min_p;
+    while (!RS.isEmpty()) {
+        pnt=RS.back();
+        RS.pop_back();
+        vector_out(cout,pnt,true);
+        (*ike.cf)[0].set_params(pnt);
+        int success;
+        double q=ike.qual_fun(0,success);
+        cout << q << " " << success << endl;
+        if (q<min_qual) {
+          min_p=pnt;
+          min_qual=q;
+        }
+    }
+    (*ike.cf)[0].set_params(min_p);
+    vector_out(cout,min_p,true);
+}
+
+
 void eos_nuclei::minimize_parameters(interpm_krige_eos& ike) {
   double min_qual=1.0e99;
-  vector<double> pnt(10), min_p;  
+  vector<double> pnt(4), min_p;
   for(pnt[0]=2.0;pnt[0]<20.0;pnt[0]*=1.5) {
     for(pnt[1]=2.0;pnt[1]<20.0;pnt[1]*=1.5) {
       for(pnt[2]=2.0;pnt[2]<20.0;pnt[2]*=1.5) {
-        for(pnt[3]=2.0;pnt[3]<20.0;pnt[3]*=1.5) {
-          for(pnt[4]=2.0;pnt[4]<20.0;pnt[4]*=1.5) {
-            for(pnt[5]=2.0;pnt[5]<20.0;pnt[5]*=1.5) {
-              for(pnt[6]=2.0;pnt[6]<20.0;pnt[6]*=1.5) {
-                for(pnt[7]=2.0;pnt[7]<20.0;pnt[7]*=1.5) {
-                  for(pnt[8]=2.0;pnt[8]<20.0;pnt[8]*=1.5) {
-                    for(pnt[9]=-15.0;pnt[9]<-8.99;pnt[9]+=2.0) {
-                      vector_out(cout,pnt,true);
-                      (*ike.cf)[0].set_params(pnt);
-                      int success;
-                      double q=ike.qual_fun(0,success);
-                      cout << q << " " << success << endl;
-                        if (q<min_qual) {
-                          min_p=pnt;
-                        }
-                      }
-                    }
-                  }
-                }
-              }
+        for(pnt[9]=-15.0;pnt[3]<-8.99;pnt[9]+=2.0) {
+            vector_out(cout,pnt,true);
+            (*ike.cf)[0].set_params(pnt);
+            int success;
+            double q=ike.qual_fun(0,success);
+            cout << q << " " << success << endl;
+            if (q<min_qual) {
+              min_p=pnt;
+              min_qual=q;
             }
           }
         }
       }
     }
+  (*ike.cf)[0].set_params(min_p);
   vector_out(cout,min_p,true);
 }
 

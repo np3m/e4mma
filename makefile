@@ -59,6 +59,12 @@ ifeq ($(DEBUG), 1)
 	LMPI_CFLAGS += -g -Wall -Wextra
 endif
 
+PYTHON ?= 0
+ifeq ($(PYTHON), 1)
+	LCFLAGS += -fno-strict-overflow -Wsign-compare -DNDEBUG
+	LMPI_CFLAGS += -fno-strict-overflow -Wsign-compare -DNDEBUG
+endif
+
 eos.o: eos.cpp eos.h
 	$(LMPI_CXX) $(LMPI_CFLAGS) \
 		-o eos.o -c eos.cpp

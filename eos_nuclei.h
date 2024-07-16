@@ -27,6 +27,17 @@
 #include <map>
 #include <filesystem>
 #include <random>
+//#include <numbers>
+#include "extern/pybind11/include/pybind11/pybind11.h"
+#include "extern/pybind11/include/pybind11/embed.h"
+#include "extern/pybind11/include/pybind11/stl.h"
+#include "extern/pybind11/include/pybind11/numpy.h"
+//#include <pybind11/pybind11.h>
+//#include <pybind11/embed.h>
+//#include <pybind11/stl.h>
+
+namespace py = pybind11;
+using namespace pybind11::literals;
 
 typedef boost::numeric::ublas::vector<double> ubvector;
 typedef boost::numeric::ublas::matrix<double> ubmatrix;
@@ -231,16 +242,17 @@ class mcovar_funct_quad_correl {
             double sum=0.0;
             bool equal=true;
             for (size_t j=0;j<3;j++) {
-                for (size_t k=0;k<3;k++) {
-                    for (size_t l=0;l<3;l++) {
-                        if (x1[j]!=x2[j]) {
-                            equal=false;
-                        }
+                //for (size_t k=0;k<3;k++) {
+                    //for (size_t l=0;l<3;l++) {
+                if (x1[j]!=x2[j]) {
+                    equal=false;
+                }
 //                        sum+=-(((x1[j]-x2[j])*(x1[j]-x2[j]))/((length[j]*length[j])+((slope[k]*slope[k])*(((x1[j]+x2[j])-pos[l])*((x1[j]+x2[j])-pos[l])))*2.0));
 //                        sum+=-(((x1[j]-x2[j])*(x1[j]-x2[j]))/((length[j]*length[j])+((slope[j]*slope[j])*(((x1[j]+x2[j])-pos[j])*((x1[j]+x2[j])-pos[j])))*2.0));
-                        sum+=-(((x1[j]-x2[j])*(x1[j]-x2[j]))/((len[j]*len[j])+((len[k+3]*len[k+3])*(((x1[j]+x2[j])-len[l+6])*((x1[j]+x2[j])-len[l+6])))*2.0));
-                    }
-                }
+                        //sum+=-(((x1[j]-x2[j])*(x1[j]-x2[j]))/((len[j]*len[j])+((len[k+3]*len[k+3])*(((x1[j]+x2[j])-len[l+6])*((x1[j]+x2[j])-len[l+6])))*2.0));
+                sum+=-(((x1[j]-x2[j])*(x1[j]-x2[j]))/((len[j]*len[j])+((len[j+3]*len[j+3])*(((x1[j]+x2[j])-len[j+6])*((x1[j]+x2[j])-len[j+6])))*2.0));
+                    //}
+                //}
             }
             if (equal) {
                 return exp(sum)+pow(10.0,log10_noise);
@@ -271,15 +283,16 @@ class mcovar_funct_quad_correl {
         double deriv2(vec_t &x1, vec2_t &x2, size_t ix, size_t iy) {
             double sum=0.0;
             for (size_t j=0;j<3;j++) {
-                for (size_t k=0;k<3;k++) {
-                    for (size_t l=0;l<3;l++) {
-                        if ((k == l) || (j == k) || (j == l)) {
+                //for (size_t k=0;k<3;k++) {
+                    //for (size_t l=0;l<3;l++) {
+                        //if ((k == l) || (j == k) || (j == l)) {
 //                            sum+=-(((x1[j]-x2[j])*(x1[j]-x2[j]))/((length[j]*length[j])+((slope[k]*slope[k])*(((x1[j]+x2[j])-pos[l])*((x1[j]+x2[j])-pos[l])))*2.0));
-                            sum+=-(((x1[j]-x2[j])*(x1[j]-x2[j]))/((len[j]*len[j])+((len[k+3]*len[k+3])*(((x1[j]+x2[j])-len[l+6])*((x1[j]+x2[j])-len[l+6])))*2.0));
-                        }
+                            //sum+=-(((x1[j]-x2[j])*(x1[j]-x2[j]))/((len[j]*len[j])+((len[k+3]*len[k+3])*(((x1[j]+x2[j])-len[l+6])*((x1[j]+x2[j])-len[l+6])))*2.0));
+                        //}
 //                        sum+=-(((x1[j]-x2[j])*(x1[j]-x2[j]))/((length[j]*length[j])+((slope[j]*slope[j])*(((x1[j]+x2[j])-pos[j])*((x1[j]+x2[j])-pos[j])))*2.0));
-                    }
-                }
+                sum+=-(((x1[j]-x2[j])*(x1[j]-x2[j]))/((len[j]*len[j])+((len[j+3]*len[j+3])*(((x1[j]+x2[j])-len[j+6])*((x1[j]+x2[j])-len[j+6])))*2.0));
+                    //}
+                //}
             }
 /*            double diffx2=(x1[ix]-x2[ix])*(x1[ix]-x2[ix]);
             double len2=length[ix]*length[ix];
@@ -313,19 +326,20 @@ class mcovar_funct_quad_correl {
             double diffxn2=((x1[ix]+x2[ix])-len[ix+6])*((x1[ix]+x2[ix])-len[ix+6]);
             double denom2=pow((len2+m2*diffxn2),2.0);
             if (ix==iy) {
+            //added extra ( here
             return exp(sum)*(((-(len2+m2*diffxn2)*(x1[ix]-x2[ix])
                     +diffx2*m2*((x1[ix]-x2[ix])-len[ix+6]))
                     /denom2)
                     *((-(len2+m2*diffxn2)*(x1[ix]-x2[ix])
                     +diffx2*m2*((x1[ix]-x2[ix])-len[ix+6]))
                     /denom2)
-                    +((-2.0*len[ix+3]*((x1[ix]-x2[ix])-len[ix+6])*(x1[ix]-x2[ix])-(len2+m2*diffxn2))
+                    +(((-2.0*len[ix+3]*((x1[ix]-x2[ix])-len[ix+6])*(x1[ix]-x2[ix])-(len2+m2*diffxn2))
                     +2.0*(x1[ix]-x2[ix])*m2*((x1[ix]-x2[ix])-len[ix+6])
                     +diffx2*m2)*(1/denom2)
                     +((-(len2+m2*diffxn2)*(x1[ix]-x2[ix])
                     +diffx2*m2*((x1[ix]-x2[ix])-len[ix+6]))
 //                    /denom2)
-                    *-2.0*pow((len2+m2*diffxn2),-3.0)*m2*2.0*((x1[ix]-x2[ix]-len[ix+6]))));
+                    *-2.0*pow((len2+m2*diffxn2),-3.0)*m2*2.0*((x1[ix]-x2[ix]-len[ix+6])))));
             }
             return exp(sum)*(((-(len2+m2*diffxn2)*(x1[ix]-x2[ix])
                     +diffx2*m2*((x1[ix]-x2[ix])-len[ix+6]))
@@ -336,11 +350,160 @@ class mcovar_funct_quad_correl {
         }
 };
 
+/** \brief Uses a uniform distribution to generate hyperparameters
+ */
+class randomSample {
+    private:
+        std::vector<std::vector<double>> sample_space;
+        std::vector<std::vector<double>> points;
+        size_t samples;
+        int dim;
+        double mar_prob;
+        void gen_points() {
+            std::vector<double> pnt(dim);
+            int iter=0;
+            std::random_device rd;
+            std::mt19937 gen(rd());
+            while (iter<samples) {
+                for (int x=0;x<pnt.size();x++) {
+                    std::uniform_real_distribution<double> dist((sample_space[x][0]),(sample_space[x][0]));
+                    pnt[x]=dist(gen);
+                    std::cout << pnt[x] << " " << x << std::endl;
+                }
+                points[iter]=pnt;
+                iter++;
+            }
+        }
+    public:
+        randomSample(std::vector<std::vector<double>> space, size_t samp) {
+            sample_space=space;
+            samples=samp;
+            dim=space.size();
+            points.resize(samples);
+            gen_points();
+        }
+        void pop_back() {
+            points.pop_back();
+        }
+        std::vector<double> back() {
+            return points.back();
+        }
+        void new_samples() {
+            points.resize(samples);
+            gen_points();
+        }
+        bool isEmpty() {
+            if (points.size()==0)
+                return true;
+            else {
+                return false;
+            }
+        }
+        std::vector<double> at(size_t x) {
+            return points[x];
+        }
+        int size() {
+            return points.size();
+        }
+        std::vector<std::vector<double>> return_points() {
+            return points;
+        }
+};
+
+/** \brief Uses Latin Hypercube Sampling to find points in a search space specified by the user.
+ */
+class latin_hypercube_sampling_gen {
+    private:
+        std::vector<std::vector<int>> strata;
+        std::vector<std::vector<double>> sample_space;
+        std::vector<std::vector<double>> points;
+        size_t samples;
+        int dim;
+        std::vector<double> range;
+        double mar_prob;
+        void gen_points() {
+            std::vector<double> pnt(dim);
+            int iter=0;
+            std::random_device rd;
+            std::mt19937 gen(rd());
+            while (iter<samples) {
+                //assign strata to point
+                //randomly sample each hparam for the strata assigned to each dim in the point
+                for (int x=0;x<pnt.size();x++) {
+                    std::uniform_real_distribution<double> dist((sample_space[x][0]+(range[x]*mar_prob*strata[x].back())),(sample_space[x][0]+(range[x]*mar_prob*(strata[x].back()+1))));
+                    pnt[x]=dist(gen);
+                    //cout << pnt[x] << " " << strata[x].back() << std::endl;
+                    strata[x].pop_back();
+                }
+                points[iter]=pnt;
+                iter++;
+            }
+        }
+        void gen_strata() {
+            std::cout << "Attempting Latin Hypercube Sampling" << std::endl;
+            std::random_device rd;
+            std::mt19937 gen(rd());
+            //Works as long as there are no repeating numbers for each dimension
+            for (int x=0;x<strata.size();x++) {
+                std::vector<int> numrange(samples);
+                for (int y=0;y<numrange.size();y++) {
+                    numrange[y]=y;
+                }
+                shuffle (numrange.begin(),numrange.end(),gen);
+                strata[x]=numrange;
+                //std::cout << "Done with dim " << (x+1) << std::endl;
+            }
+            gen_points();
+        }
+    public:
+        latin_hypercube_sampling_gen(std::vector<std::vector<double>> space, size_t samp) {
+            sample_space=space;
+            samples=samp;
+            dim=space.size();
+            range.resize(dim);
+            for (int x=0;x<range.size();x++) {
+                range[x]=std::abs(space[x][0]-space[x][1]);
+            }
+            mar_prob=1.0/samples;
+            strata.resize(dim);
+            points.resize(samples);
+            gen_strata();
+        }
+        void pop_back() {
+            points.pop_back();
+        }
+        std::vector<double> back() {
+            return points.back();
+        }
+        void new_samples() {
+            strata.resize(dim);
+            points.resize(samples);
+            gen_strata();
+        }
+        bool isEmpty() {
+            if (points.size()==0)
+                return true;
+            else {
+                return false;
+            }
+        }
+        std::vector<double> at(size_t x) {
+            return points[x];
+        }
+        int size() {
+            return points.size();
+        }
+        std::vector<std::vector<double>> return_points() {
+            return points;
+        }
+};
+
 /** \brief Specialized Gaussian process interpolation object
  */
 class interpm_krige_eos :
   public o2scl::interpm_krige_optim
-<std::vector<mcovar_funct_quad_correl>,ubvector,ubmatrix,ubmatrix_row,
+<std::vector<o2scl::mcovar_funct_rbf_noise>,ubvector,ubmatrix,ubmatrix_row,
+//<std::vector<mcovar_funct_quad_correl>,ubvector,ubmatrix,ubmatrix_row,
  ubmatrix,ubmatrix_row,Eigen::MatrixXd,
  o2scl_linalg::matrix_invert_det_eigen<Eigen::MatrixXd>> {
   
@@ -1096,6 +1259,27 @@ public:
   /** \brief minimize parameters for interpolation object using LHS and random sampling.
    */
   void latin_hypercube_sampling(int dim, size_t samples, interpm_krige_eos& ike);
+
+  /** \brief Bayesian optimization of hyperparamater for interpm_krige_eos. Uses LHS and sklearn.
+   */
+  void bayesian_optimizationLHS (int dim, int samples, interpm_krige_eos& ike);
+
+  /** \brief Handles calls to sklearn for bayesian_optimizationLHS with pybind11. Returns point that maximizes aquisition function.
+   */
+  std::vector<double> callPythonBayesian(std::vector<std::vector<double>> xval, std::vector<double> yval, std::vector<std::vector<double>> points);
+
+  /** \brief Standard normal distribution PDF. Used https://www.boost.org/doc/libs/1_85_0/libs/math/doc/html/math_toolkit/dist_ref/dists/normal_dist.html as reference
+   */
+  double gaussianPDF (double x);
+
+  /** \brief Standard normal distribution CDF. Used https://www.boost.org/doc/libs/1_85_0/libs/math/doc/html/math_toolkit/dist_ref/dists/normal_dist.html as reference
+   */
+  double gaussianCDF (double x);
+
+
+  /** \brief minimize parameters for interpolation object using random sampling.
+   */
+  void random_search_sampling (int dim, int samples, interpm_krige_eos& eos);
 
   /** \brief minimize parameters for interpolation object using grid search.
    */
