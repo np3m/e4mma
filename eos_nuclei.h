@@ -350,6 +350,101 @@ class mcovar_funct_quad_correl {
         }
 };
 
+/** \brief Generates hyperparameters using a random search optimizer. Consider letting users choose the random distribution.
+ */
+class randomSearch {
+    private:
+        std::vector<std::vector<double>> sample_space;
+        std::vector<std::vector<double>> points;
+        std::vector<std::vector<int>> strata;
+        std::vector<double> range;
+        double mar_prob;
+        size_t samples;
+        int dim;
+        void gen_points() {
+            std::vector<double> pnt(dim);
+            int iter=0;
+            std::random_device rd;
+            std::mt19937 gen(rd());
+            if (alg==latin_hypercube) {
+                gen_strata();
+            }
+            while (iter<samples) {
+                for (int x=0;x<pnt.size();x++) {
+                    if (alg==random_gen) {
+                        std::uniform_real_distribution<double> dist((sample_space[x][0]),(sample_space[x][0]));
+                    }
+                    if (alg==latin_hypercube) {
+                        std::uniform_real_distribution<double> dist((sample_space[x][0]+(range[x]*mar_prob*strata[x].back())),(sample_space[x][0]+(range[x]*mar_prob*(strata[x].back()+1))));
+                    }
+                    pnt[x]=dist(gen);
+                    std::cout << pnt[x] << " " << x << std::endl;
+                }
+                points[iter]=pnt;
+                iter++;
+            }
+        }
+        void gen_strata() {
+            std::cout << "Attempting Latin Hypercube Sampling" << std::endl;
+            std::random_device rd;
+            std::mt19937 gen(rd());
+            //Works as long as there are no repeating numbers for each dimension
+            for (int x=0;x<strata.size();x++) {
+                std::vector<int> numrange(samples);
+                for (int y=0;y<numrange.size();y++) {
+                    numrange[y]=y;
+                }
+                shuffle (numrange.begin(),numrange.end(),gen);
+                strata[x]=numrange;
+                //std::cout << "Done with dim " << (x+1) << std::endl;
+            }
+            gen_points();
+        }
+    public:
+        randomSearch(std::vector<std::vector<double>> space, size_t samp, sampling_method algorithm) {
+            alg=algorithm;
+            sample_space=space;
+            samples=samp;
+            dim=space.size();
+            points.resize(samples);
+            if (algorithm != random_gen) {
+                range.resize(dim);
+                for (int x=0;x<range.size();x++) {
+                    range[x]=std::abs(space[x][0]-space[x][1]);
+                }
+                mar_prob=1.0/samples;
+                strata.resize(dim);
+            }
+            gen_points();
+        }
+        void pop_back() {
+            points.pop_back();
+        }
+        std::vector<double> back() {
+            return points.back();
+        }
+        void new_samples() {
+            points.resize(samples);
+            gen_points();
+        }
+        bool isEmpty() {
+            if (points.size()==0)
+                return true;
+            else {
+                return false;
+            }
+        }
+        std::vector<double> at(size_t x) {
+            return points[x];
+        }
+        int size() {
+            return points.size();
+        }
+        std::vector<std::vector<double>> return_points() {
+            return points;
+        }
+};
+
 /** \brief Uses a uniform distribution to generate hyperparameters
  */
 class randomSample {
