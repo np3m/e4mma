@@ -621,7 +621,11 @@ void eos_nuclei::latin_hypercube_sampling(int dim, size_t samples, interpm_krige
         int success;
         double q=ike.qual_fun(0,success);
         cout << q << " " << success << endl;
-        if (q<min_qual) {
+        bool isCausal=false;
+        if (success==0) {
+            isCausal=true;
+        }
+        if ((q<min_qual) && isCausal) {
             min_p=pnt;
             min_qual=q;
         }
@@ -663,9 +667,15 @@ void eos_nuclei::bayesian_optimizationLHS (int dim, int samples, interpm_krige_e
         int success;
         double q=ike.qual_fun(0,success);
         cout << q << " " << success << endl;
+        bool isCausal=false;
+        if (success==0) {
+            isCausal=true;
+        }
+        if (isCausal) {
+            xval.push_back(pnt);
+            yval.push_back(q);
+        }
         //archive[pnt]=q;
-        xval.push_back(pnt);
-        yval.push_back(q);
     }
   
     //Maybe predict returns 0 for points because the search space isn't being sampled enough?
@@ -749,9 +759,15 @@ void eos_nuclei::bayesian_optimizationLHS (int dim, int samples, interpm_krige_e
         (*ike.cf)[0].set_params(new_p);
         int success;
         double new_q=ike.qual_fun(0,success);
+        bool isCausal=false;
+        if (success==0) {
+            isCausal=true;
+        }
+        if (isCausal) {
+            xval.push_back(new_p);
+            yval.push_back(new_q);
+        }
         //archive[new_p]=new_q;
-        xval.push_back(new_p);
-        yval.push_back(new_q);
         cout << new_q << std::endl;
         iter++;
     }
@@ -865,7 +881,11 @@ void random_search_sampling (int dim, int samples, interpm_krige_eos& ike) {
         int success;
         double q=ike.qual_fun(0,success);
         cout << q << " " << success << endl;
-        if (q<min_qual) {
+        bool isCausal=false;
+        if (success==0) {
+            isCausal=true;
+        }
+        if ((q<min_qual) && isCausal) {
           min_p=pnt;
           min_qual=q;
         }
@@ -887,7 +907,11 @@ void eos_nuclei::minimize_parameters(interpm_krige_eos& ike) {
             int success;
             double q=ike.qual_fun(0,success);
             cout << q << " " << success << endl;
-            if (q<min_qual) {
+            bool isCausal=false;
+            if (success==0) {
+                isCausal=true;
+            }
+            if ((q<min_qual) && isCausal) {
               min_p=pnt;
               min_qual=q;
             }
