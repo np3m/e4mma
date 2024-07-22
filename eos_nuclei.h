@@ -25,6 +25,7 @@
 #include <o2scl/slack_messenger.h>
 #include <o2scl/part_funcs.h>
 #include <o2scl/interpm_krige.h>
+#include <o2scl/interpm_python.h>
 #include <o2scl/boson_rel.h>
 #include <map>
 
@@ -90,23 +91,37 @@ typedef const o2scl::const_matrix_row_gen<ubmatrix> mat_x_row_t;
  */
 class interpm_krige_eos :
   public o2scl::interpm_krige_optim
-<ubvector,ubmatrix,mat_x_row_t,
- ubmatrix,ubmatrix_col,Eigen::MatrixXd,
- o2scl_linalg::matrix_invert_det_eigen<Eigen::MatrixXd>> {
+    <ubvector,ubmatrix,mat_x_row_t,
+     ubmatrix,ubmatrix_col> {
+  /*
+    Eigen::MatrixXd,
+    o2scl_linalg::matrix_invert_det_eigen<Eigen::MatrixXd>> {
+  */
   
 public:
   
   // Typedefs from the specialized template parameters
   typedef ubmatrix_col mat_y_col_t;
-  typedef Eigen::MatrixXd mat_inv_kxx_t;
-  typedef o2scl_linalg::matrix_invert_det_eigen<Eigen::MatrixXd>
-  mat_inv_t;
+  typedef boost::numeric::ublas::matrix<double> mat_inv_kxx_t;
+  typedef o2scl_linalg::matrix_invert_det_cholesky<
+             boost::numeric::ublas::matrix<double>> mat_inv_t;
+  /*
+    typedef Eigen::MatrixXd mat_inv_kxx_t;
+    typedef o2scl_linalg::matrix_invert_det_eigen<Eigen::MatrixXd>
+    mat_inv_t;
+  */
 
+  o2scl::interpm_python<ubvector,ubmatrix,ubmatrix> ipy;
+  
   /** \brief Compute the distance between calibration point with index
       \c i_calib and point to fix with index \c i_fix
   */
   double dist_cf(size_t i_calib, size_t i_fix);
 
+  /** \brief Desc
+   */
+  double dist_f(size_t i, size_t j, size_t k, size_t i_fix);
+  
   /// Compute \ref calib_dists
   void compute_dists();
   
