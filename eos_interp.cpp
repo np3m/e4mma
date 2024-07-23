@@ -1,7 +1,7 @@
 /*
   -------------------------------------------------------------------
   
-  Copyright (C) 2022-2023, Andrew W. Steiner
+  Copyright (C) 2022-2024, Andrew W. Steiner
   
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -430,8 +430,8 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
                 std::isfinite(tg_cs2.get(index)) &&
                 tg_cs2.get(index)>0.0) {
               for(size_t ifl=0;ifl<ike.fix_list.size()/3;ifl++) {
-                if (ike.dist_f(index[0],index[1],index[2],ifl)<1.1 &&
-                    (index[0]+index[1]+index[2])%50==0) {
+                if (ike.dist_f(index[0],index[1],index[2],ifl)<1.1) {
+                  //(index[0]+index[1]+index[2])%3==0) {
                   //ike.calib_list.size()<9000) {
                   ike.calib_list.push_back(index[0]);
                   ike.calib_list.push_back(index[1]);
@@ -527,6 +527,8 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
     ike.set_covar(mfr2,param_lists);
   }
 
+  ike.py_fit=true;
+  
   // Use the covariance object to set the data, skipping the
   // optimization for now and performing it manually
   
@@ -976,20 +978,36 @@ void interpm_krige_eos::set() {
   size_t n_T=T_grid.size();
 
   // Call the Gaussian process set_data() function
-  
-  std::cout << "Going to interp_krige_eos::set_data()." << std::endl;
-  verbose=2;
-  set_data(3,1,calib_list.size()/3,ix,iy);
-  
-  ipy.set_functions("o2sclpy","set_data_str","eval","eval_unc",
-                    "interpm_sklearn_gp",
-                    ((std::string)"verbose=0,kernel=ConstantKernel")+
-                    "(1.0,constant_value_bounds=\"fixed\")*"+
-                    "RBF(1.0,length_scale_bounds=\"fixed\")",1);
 
-  ubmatrix ix3=ix2;
-  ubmatrix iy3=iy2;
-  ipy.set_data(3,1,calib_list.size()/3,ix3,iy3);
+  if (py_fit==false) {
+    
+    std::cout << "Going to interp_krige_eos::set_data()." << std::endl;
+    verbose=2;
+    set_data(3,1,calib_list.size()/3,ix,iy);
+
+  } else {
+
+    if (false) {
+      ipy.set_functions("o2sclpy","set_data_str","eval","eval_unc",
+                        "interpm_sklearn_gp",
+                        ((std::string)"verbose=0,transform_in=none,")+
+                        "kernel=ConstantKernel(1.0)*RBF(1.0)",1);
+    } else {
+      ipy.set_functions("o2sclpy","set_data_str","eval","eval",
+                        "interpm_tf_dnn",
+                        ((std::string)"verbose=1,")+
+                        "transform_in=quant,"+
+                        "transform_out=quant,"+
+                        "hlayers=[200,400,200]",1);
+    }
+    
+    ubmatrix ix3=ix2;
+    ubmatrix iy3=iy2;
+    ipy.set_data(3,1,calib_list.size()/3,ix3,iy3);
+
+    double retx;
+    addl_const(0,retx);
+  }
 
   return;
 }
@@ -997,68 +1015,72 @@ void interpm_krige_eos::set() {
 int interpm_krige_eos::addl_const(size_t iout, double &ret) {
 
   std::cout << "In interpm_krige_eos::addl_const()." << std::endl;
-  
-  // First, we need to ensure the interpolator has been
-  // setup to be able to use the eval() and deriv()
-  // functions
-  
-  // Select the row of the data matrix
-  mat_y_col_t yiout2(this->y,iout);
-  
-  // Construct the KXX matrix
-  size_t size=this->x.size1();
-  
-  mat_inv_kxx_t KXX(size,size);
-  for(size_t irow=0;irow<size;irow++) {
-    mat_x_row_t xrow(this->x,irow);
-    for(size_t icol=0;icol<size;icol++) {
-      mat_x_row_t xcol(this->x,icol);
-      if (irow>icol) {
-        KXX(irow,icol)=KXX(icol,irow);
-      } else {
-        KXX(irow,icol)=cf[iout]->covar2(xrow,xcol);
+
+  if (py_fit==false) {
+    
+    // First, we need to ensure the interpolator has been
+    // setup to be able to use the eval() and deriv()
+    // functions
+    
+    // Select the row of the data matrix
+    mat_y_col_t yiout2(this->y,iout);
+    
+    // Construct the KXX matrix
+    size_t size=this->x.size1();
+    
+    mat_inv_kxx_t KXX(size,size);
+    for(size_t irow=0;irow<size;irow++) {
+      mat_x_row_t xrow(this->x,irow);
+      for(size_t icol=0;icol<size;icol++) {
+        mat_x_row_t xcol(this->x,icol);
+        if (irow>icol) {
+          KXX(irow,icol)=KXX(icol,irow);
+        } else {
+          KXX(irow,icol)=cf[iout]->covar2(xrow,xcol);
+        }
       }
     }
+    
+    if (verbose>2) {
+      std::cout << "Done creating covariance matrix with size "
+                << size << std::endl;
+    }
+    
+    // Perform the matrix inversion and compute the determinant
+    
+    double lndet;
+    
+    // Construct the inverse of KXX
+    if (verbose>2) {
+      std::cout << "Performing matrix inversion with size "
+                << size << std::endl;
+    }
+    this->inv_KXX[iout].resize(size,size);
+    int cret=this->mi.invert_det(size,KXX,this->inv_KXX[iout],lndet);
+    if (cret!=0) {
+      cout << "Return failed inversion." << endl;
+      return 3;
+    }
+    
+    lndet=log(lndet);
+    std::cout << "lndet: " << lndet << std::endl;
+    
+    if (verbose>2) {
+      std::cout << "Done performing matrix inversion with size "
+                << size << std::endl;
+    }
+    
+    // Inverse covariance matrix times function vector
+    this->Kinvf[iout].resize(size);
+    o2scl_cblas::dgemv(o2scl_cblas::o2cblas_RowMajor,
+                       o2scl_cblas::o2cblas_NoTrans,
+                       size,size,1.0,this->inv_KXX[iout],
+                       yiout2,0.0,this->Kinvf[iout]);
+    
+    // Done setting interpolator
+    // ----------
+    
   }
-  
-  if (verbose>2) {
-    std::cout << "Done creating covariance matrix with size "
-              << size << std::endl;
-  }
-  
-  // Perform the matrix inversion and compute the determinant
-  
-  double lndet;
-  
-  // Construct the inverse of KXX
-  if (verbose>2) {
-    std::cout << "Performing matrix inversion with size "
-              << size << std::endl;
-  }
-  this->inv_KXX[iout].resize(size,size);
-  int cret=this->mi.invert_det(size,KXX,this->inv_KXX[iout],lndet);
-  if (cret!=0) {
-    cout << "Return failed inversion." << endl;
-    return 3;
-  }
-  
-  lndet=log(lndet);
-  std::cout << "lndet: " << lndet << std::endl;
-  
-  if (verbose>2) {
-    std::cout << "Done performing matrix inversion with size "
-              << size << std::endl;
-  }
-        
-  // Inverse covariance matrix times function vector
-  this->Kinvf[iout].resize(size);
-  o2scl_cblas::dgemv(o2scl_cblas::o2cblas_RowMajor,
-                     o2scl_cblas::o2cblas_NoTrans,
-                     size,size,1.0,this->inv_KXX[iout],
-                     yiout2,0.0,this->Kinvf[iout]);
-
-  // Done setting interpolator
-  // ----------
   
   ret=0.0;
   double window=5.0;
@@ -1087,8 +1109,12 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
       index2[0]=index[0];
       index2[1]=index[1];
       index2[2]=index[2];
-      
-      eval(index2,out);
+
+      if (py_fit) {
+        ipy.eval(index2,out);
+      } else {
+        eval(index2,out);
+      }
 
       if (true) {
         if (interp_Fint==false) {
@@ -1124,8 +1150,7 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
           tgp_F->get(index)=out[0]+F_eg;
         }
       }
-      
-      
+
     }
 
     // Use the interpolation results to modify the calibration points nearby
@@ -1151,8 +1176,12 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
       index2[1]=index[1];
       index2[2]=index[2];
       
-      eval(index2,out);
-      
+      if (py_fit) {
+        ipy.eval(index2,out);
+      } else {
+        eval(index2,out);
+      }
+
       //cout << "dist,fact,F,out: " << calib_dists[j/3] << " " << fact << " "
       //<< tgp_F->get(index) << " " << out[0] << endl;
 
@@ -1295,9 +1324,39 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
           }
         }
       }
+      table_units<> tcalib;
+      tcalib.line_of_names("i j k nB Ye T F");
+      for(size_t j=0;j<calib_list.size();j+=3) {
+        vector<size_t> index={calib_list[j],calib_list[j+1],
+                              calib_list[j+2]};
+        
+        double nB=nB_grid[index[0]];
+        double Ye=Ye_grid[index[1]];
+        double T_MeV=T_grid[index[2]];
+        vector<double> vv={(double)index[0],
+                           (double)index[1],(double)index[2],
+                           nB,Ye,T_MeV,tgp_F_old->get(index)};
+        tcalib.line_of_data(vv.size(),vv);
+      }
+      table_units<> tfix;
+      tfix.line_of_names("i j k nB Ye T F");
+      for(size_t j=0;j<fix_list.size();j+=3) {
+        vector<size_t> index={fix_list[j],fix_list[j+1],
+                              fix_list[j+2]};
+        
+        double nB=nB_grid[index[0]];
+        double Ye=Ye_grid[index[1]];
+        double T_MeV=T_grid[index[2]];
+        vector<double> vv={(double)index[0],(double)index[1],
+                           (double)index[2],
+                           nB,Ye,T_MeV,tgp_F_old->get(index)};
+        tfix.line_of_data(vv.size(),vv);
+      }
       hdf_file hf;
       hf.open_or_create("eit.o2");
       hdf_output(hf,tup,"eit");
+      hdf_output(hf,tcalib,"calib");
+      hdf_output(hf,tfix,"fix");
       hf.close();
       cout << "Created eit." << endl;
       exit(-1);

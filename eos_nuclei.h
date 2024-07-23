@@ -176,11 +176,14 @@ public:
 
   /// Pointer to the eos_nuclei class
   void *enp;
+
+  bool py_fit;
   
   interpm_krige_eos() {
     elep.include_photons=true;
     interp_Fint=false;
     addl_verbose=0;
+    py_fit=false;
   }    
   
   /** \brief Set the interpolator given the specified EOS
