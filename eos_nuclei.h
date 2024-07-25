@@ -91,12 +91,10 @@ typedef const o2scl::const_matrix_row_gen<ubmatrix> mat_x_row_t;
  */
 class interpm_krige_eos :
   public o2scl::interpm_krige_optim
-    <ubvector,ubmatrix,mat_x_row_t,
-     ubmatrix,ubmatrix_col> {
-  /*
-    Eigen::MatrixXd,
-    o2scl_linalg::matrix_invert_det_eigen<Eigen::MatrixXd>> {
-  */
+<ubvector,ubmatrix,mat_x_row_t,
+ ubmatrix,ubmatrix_col> {
+  //Eigen::MatrixXd,
+  //o2scl_linalg::matrix_invert_det_eigen<Eigen::MatrixXd>> {
   
 public:
   
@@ -104,7 +102,7 @@ public:
   typedef ubmatrix_col mat_y_col_t;
   typedef boost::numeric::ublas::matrix<double> mat_inv_kxx_t;
   typedef o2scl_linalg::matrix_invert_det_cholesky<
-             boost::numeric::ublas::matrix<double>> mat_inv_t;
+    boost::numeric::ublas::matrix<double>> mat_inv_t;
   /*
     typedef Eigen::MatrixXd mat_inv_kxx_t;
     typedef o2scl_linalg::matrix_invert_det_eigen<Eigen::MatrixXd>

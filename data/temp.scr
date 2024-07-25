@@ -1,0 +1,12 @@
+acol -set precision 15 -read skyrmeGTall data/x0 -to-table x0 -output > x0.txt
+acol -set precision 15 -read skyrmeGTall data/x1 -to-table x1 -output > x1.txt
+acol -set precision 15 -read skyrmeGTall data/x2 -to-table x2 -output > x2.txt
+acol -set precision 15 -read skyrmeGTall data/x3 -to-table x3 -output > x3.txt
+acol -set precision 15 -read skyrmeGTall data/t0 -to-table t0 -output > t0.txt
+acol -set precision 15 -read skyrmeGTall data/t1 -to-table t1 -output > t1.txt
+acol -set precision 15 -read skyrmeGTall data/t2 -to-table t2 -output > t2.txt
+acol -set precision 15 -read skyrmeGTall data/t3 -to-table t3 -output > t3.txt
+acol -set precision 15 -read skyrmeGTall data/alpha -to-table alpha -output > alpha.txt
+acol -set precision 15 -read skyrmeGTall data/b4 -to-table b4 -output > b4.txt
+acol -set precision 15 -read skyrmeGTall data/b4p -to-table b4p -output > b4p.txt
+paste x0.txt x1.txt x2.txt x3.txt t0.txt t1.txt t2.txt t3.txt alpha.txt b4.txt b4p.txt > all.txt

@@ -348,6 +348,8 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
   int jwindow=12;
   int kwindow=15;
 
+  // First pass, determine all the points to fix and
+  // calibrate in the neighborhood of the user-specified point
   for(int dnB=-iwindow;dnB<=iwindow;dnB++) {
     for(int dYe=-jwindow;dYe<=jwindow;dYe++) {
       for(int dT=-kwindow;dT<=kwindow;dT++) {
@@ -396,8 +398,10 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
   cout << "eos_nuclei:interp_internal(): attempting to fix "
        << ike.fix_list.size()/3 << " points."
        << endl;
-  
+
+  // Second pass, find points to calibrate and fix near fix_list
   if (true) {
+    std::vector<size_t> fix_list2;
     for(int dnB=-iwindow;dnB<=iwindow;dnB++) {
       for(int dYe=-jwindow;dYe<=jwindow;dYe++) {
         for(int dT=-kwindow;dT<=kwindow;dT++) {
@@ -430,12 +434,16 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
                 std::isfinite(tg_cs2.get(index)) &&
                 tg_cs2.get(index)>0.0) {
               for(size_t ifl=0;ifl<ike.fix_list.size()/3;ifl++) {
-                if (ike.dist_f(index[0],index[1],index[2],ifl)<1.1) {
-                  //(index[0]+index[1]+index[2])%3==0) {
-                  //ike.calib_list.size()<9000) {
-                  ike.calib_list.push_back(index[0]);
-                  ike.calib_list.push_back(index[1]);
-                  ike.calib_list.push_back(index[2]);
+                if (ike.dist_f(index[0],index[1],index[2],ifl)<7.1) {
+                  if (index[0]%3==0 && index[1]%3==0 && index[2]%3==0) {
+                    ike.calib_list.push_back(index[0]);
+                    ike.calib_list.push_back(index[1]);
+                    ike.calib_list.push_back(index[2]);
+                  } else if (ike.dist_f(index[0],index[1],index[2],ifl)<4.1) {
+                    fix_list2.push_back(index[0]);
+                    fix_list2.push_back(index[1]);
+                    fix_list2.push_back(index[2]);
+                  }
                   if (false) {
                     cout << index[0] << " " << index[1] << " "
                          << index[2] << " " << ifl << " "
@@ -452,6 +460,10 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
           }
         }
       }
+    }
+
+    for(size_t ifl=0;ifl<fix_list2.size();ifl++) {
+      ike.fix_list.push_back(fix_list2[ifl]);
     }
   }
   
@@ -588,7 +600,7 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
     p[0]=3.0;
     p[1]=3.0;
     p[2]=3.0;
-    p[3]=-10.0;
+    p[3]=-6.0;
     min_p=p;
     
     if (false) {
@@ -987,11 +999,13 @@ void interpm_krige_eos::set() {
 
   } else {
 
-    if (false) {
+    if (true) {
       ipy.set_functions("o2sclpy","set_data_str","eval","eval_unc",
                         "interpm_sklearn_gp",
                         ((std::string)"verbose=0,transform_in=none,")+
-                        "kernel=ConstantKernel(1.0)*RBF(1.0)",1);
+                        "kernel=ConstantKernel"+
+                        "(1.0,constant_value_bounds=\"fixed\")*"+
+                        "RBF(1.0,length_scale_bounds=\"fixed\")");
     } else {
       ipy.set_functions("o2sclpy","set_data_str","eval","eval",
                         "interpm_tf_dnn",
@@ -1081,6 +1095,94 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
     // ----------
     
   }
+
+  eos_nuclei *enp2=(eos_nuclei *)enp;
+
+  size_t i_min, i_max, j_min, j_max, k_min, k_max;
+  if (true) {
+    i_min=fix_list[0];
+    i_max=fix_list[0];
+    j_min=fix_list[1];
+    j_max=fix_list[1];
+    k_min=fix_list[2];
+    k_max=fix_list[2];
+    
+    for(size_t ifx=3;ifx<fix_list.size();ifx+=3) {
+      if (fix_list[ifx]<i_min) {
+        i_min=fix_list[ifx];
+      }
+      if (fix_list[ifx]>i_max) {
+        i_max=fix_list[ifx];
+      }
+      if (fix_list[ifx+1]<j_min) {
+        j_min=fix_list[ifx+1];
+      }
+      if (fix_list[ifx+1]>j_max) {
+        j_max=fix_list[ifx+1];
+      }
+      if (fix_list[ifx+2]<k_min) {
+        k_min=fix_list[ifx+2];
+      }
+      if (fix_list[ifx+2]>k_max) {
+        k_max=fix_list[ifx+2];
+      }
+    }
+    for(size_t icx=0;icx<calib_list.size();icx+=3) {
+      if (calib_list[icx]<i_min) {
+        i_min=calib_list[icx];
+      }
+      if (calib_list[icx]>i_max) {
+        i_max=calib_list[icx];
+      }
+      if (calib_list[icx+1]<j_min) {
+        j_min=calib_list[icx+1];
+      }
+      if (calib_list[icx+1]>j_max) {
+        j_max=calib_list[icx+1];
+      }
+      if (calib_list[icx+2]<k_min) {
+        k_min=calib_list[icx+2];
+      }
+      if (calib_list[icx+2]>k_max) {
+        k_max=calib_list[icx+2];
+      }
+    }
+
+    // Expand by a factor of three if we're not at the boundary
+    //for(size_t ii=0;ii<window;ii++) {
+
+    // Expand by one unit to make sure to catch any interface problems
+    if (true) {
+      if (i_min>0) i_min--;
+      if (i_max<nB_grid.size()-1) i_max++;
+      if (j_min>0) j_min--;
+      if (j_max<Ye_grid.size()-1) j_max++;
+      if (k_min>0) k_min--;
+      if (k_max<T_grid.size()-1) k_max++;
+    }
+    
+    cout << "Computed i_min, i_max: " << i_min << " " << i_max << endl;
+    cout << "Computed j_min, j_max: " << j_min << " " << j_max << endl;
+    cout << "Computed k_min, k_max: " << k_min << " " << k_max << endl;
+  }
+
+  if (true) {
+    
+    std::vector<std::string> vs2;
+    vs2={"stability",o2scl::szttos(i_min),o2scl::szttos(i_max),
+         o2scl::szttos(j_min),o2scl::szttos(j_max),
+         o2scl::szttos(k_min),o2scl::szttos(k_max)};
+    
+    // Update the electron-photon EOS for the specified points
+    enp2->add_eg(vs2,false);
+    
+    // Update the stability and second derivatives
+    cout << "AA" << endl;
+    enp2->stability(vs2,false);
+    cout << "BB" << endl;
+    cout << "ZZ: " << enp2->n_stability_fail << endl;
+    
+  }
   
   ret=0.0;
   double window=5.0;
@@ -1153,6 +1255,7 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
 
     }
 
+    if (false) {
     // Use the interpolation results to modify the calibration points nearby
 
     jout=0;
@@ -1228,73 +1331,9 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
       
     }
 
-    size_t i_min, i_max, j_min, j_max, k_min, k_max;
-    i_min=fix_list[0];
-    i_max=fix_list[0];
-    j_min=fix_list[1];
-    j_max=fix_list[1];
-    k_min=fix_list[2];
-    k_max=fix_list[2];
-    
-    for(size_t ifx=3;ifx<fix_list.size();ifx+=3) {
-      if (fix_list[ifx]<i_min) {
-        i_min=fix_list[ifx];
-      }
-      if (fix_list[ifx]>i_max) {
-        i_max=fix_list[ifx];
-      }
-      if (fix_list[ifx+1]<j_min) {
-        j_min=fix_list[ifx+1];
-      }
-      if (fix_list[ifx+1]>j_max) {
-        j_max=fix_list[ifx+1];
-      }
-      if (fix_list[ifx+2]<k_min) {
-        k_min=fix_list[ifx+2];
-      }
-      if (fix_list[ifx+2]>k_max) {
-        k_max=fix_list[ifx+2];
-      }
-    }
-    for(size_t icx=0;icx<calib_list.size();icx+=3) {
-      if (calib_list[icx]<i_min) {
-        i_min=calib_list[icx];
-      }
-      if (calib_list[icx]>i_max) {
-        i_max=calib_list[icx];
-      }
-      if (calib_list[icx+1]<j_min) {
-        j_min=calib_list[icx+1];
-      }
-      if (calib_list[icx+1]>j_max) {
-        j_max=calib_list[icx+1];
-      }
-      if (calib_list[icx+2]<k_min) {
-        k_min=calib_list[icx+2];
-      }
-      if (calib_list[icx+2]>k_max) {
-        k_max=calib_list[icx+2];
-      }
     }
 
-    // Expand by a factor of three if we're not at the boundary
-    //for(size_t ii=0;ii<window;ii++) {
-
-    // Expand by one unit to make sure to catch any interface problems
-    if (true) {
-      if (i_min>0) i_min--;
-      if (i_max<nB_grid.size()-1) i_max++;
-      if (j_min>0) j_min--;
-      if (j_max<Ye_grid.size()-1) j_max++;
-      if (k_min>0) k_min--;
-      if (k_max<T_grid.size()-1) k_max++;
-    }
-    
-    cout << "Computed i_min, i_max: " << i_min << " " << i_max << endl;
-    cout << "Computed j_min, j_max: " << j_min << " " << j_max << endl;
-    cout << "Computed k_min, k_max: " << k_min << " " << k_max << endl;
-
-    if (true) {
+    if (false) {
       table_units<> tup;
       tup.line_of_names("j Ye F0 intp0 F1 intp1 F2 intp2");
       tup.set_nlines(j_max-j_min+1);
@@ -1441,10 +1480,6 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
     
     std::vector<std::string> sv2;
 
-    eos_nuclei *enp2=(eos_nuclei *)enp;
-
-    exit(-1);
-    
     // Computing the derivatives is fast, so we just do the full table
     enp2->eos_deriv(sv2,false);
 
@@ -1456,8 +1491,10 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
     enp2->add_eg(sv2,false);
 
     // Update the stability and second derivatives
+    cout << "AA" << endl;
     enp2->stability(sv2,false);
     
+    cout << "ZZ: " << enp2->n_stability_fail << endl;
     // Change free energies back to original
 
     for(size_t j=0;j<fix_list.size();j+=3) {
@@ -1470,6 +1507,7 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
       
     }    
     
+    cout << "BB" << endl;
     for(size_t j=0;j<calib_list.size();j+=3) {
       
       vector<size_t> index={calib_list[j],calib_list[j+1],
@@ -1480,6 +1518,7 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
       
     }    
     
+    cout << "CC" << endl;
     for(size_t j=0;j<fix_list.size();j+=3) {
       
       vector<size_t> ix={fix_list[j],fix_list[j+1],
@@ -1505,6 +1544,7 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
           tgp_cs2->get(ix)<0.0 || 
           !std::isfinite(tgp_cs2->get(ix)) || 
           dPdnB<0.0 || !std::isfinite(dPdnB)) {
+        cout << "DD " << addl_verbose << endl;
         if (addl_verbose>=1) {
           cout << "Return failure at fix point." << endl;
         }
@@ -1518,6 +1558,7 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
     
     size_t n_calib_fail=0;
     
+    cout << "EE" << endl;
     for(size_t j=0;j<calib_list.size();j+=3) {
       
       vector<size_t> ix={calib_list[j],calib_list[j+1],
@@ -1548,6 +1589,7 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
       
     }
     
+    cout << "FF" << endl;
     if (n_calib_fail>fix_list.size()/9) {
       if (addl_verbose>=1) {
         cout << n_calib_fail << " calibration failures and "
@@ -1559,6 +1601,8 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
       }
       return 2;
     }
+    cout << "Here1." << endl;
+    exit(-1);
 
     /*
     if (enp2->n_stability_fail>0) {

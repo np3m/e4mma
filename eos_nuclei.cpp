@@ -1896,9 +1896,11 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
         
         // Check entropy and pressure are positive
         if (tg_P.get(ix)<0.0 || tg_S.get(ix)<0.0) {
-          cout << "P or S <0: nB,Ye,T[MeV]:\n  "
-               << nB << " " << Ye << " " << T_MeV << " "
-               << tg_P.get(ix) << " " << tg_S.get(ix) << endl;
+          if (false) {
+            cout << "P or S <0: nB,Ye,T[MeV]:\n  "
+                 << nB << " " << Ye << " " << T_MeV << " "
+                 << tg_P.get(ix) << " " << tg_S.get(ix) << endl;
+          }
           PS_negative_count++;
           i_nB_fix.push_back(i);
           i_Ye_fix.push_back(j);
@@ -1911,8 +1913,10 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
           vector<size_t> ixp1={i+1,j,k};
           double dP=tg_P.get(ixp1)-tg_P.get(ix);
           if (dP<0.0) {
-            cout << "dPdnB<0: nB,Ye,T[MeV]:\n  "
-                 << nB << " " << Ye << " " << T_MeV << endl;
+            if (false) {
+              cout << "dPdnB<0: nB,Ye,T[MeV]:\n  "
+                   << nB << " " << Ye << " " << T_MeV << endl;
+            }
             if (false) {
               cout << "ix  ,P: ";
               vector_out(cout,ix,false);
@@ -2088,11 +2092,13 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
         }
         
         if (cs_sq<0.0 || cs_sq>1.0 || !std::isfinite(cs_sq)) {
-          cout << "Unphysical cs2: nB,Ye,T[MeV],cs2,cs2_hom:\n  "
-               << nB << " " << Ye << " " << T_MeV << " "
-               << cs_sq << " " << tg_cs2_hom.get(ix) << endl;
-          cout << "  A,Z,Fint: " << tg_A.get(ix) << " "
-               << tg_Z.get(ix) << " " << tg_Fint.get(ix) << endl;
+          if (false) {
+            cout << "Unphysical cs2: nB,Ye,T[MeV],cs2,cs2_hom:\n  "
+                 << nB << " " << Ye << " " << T_MeV << " "
+                 << cs_sq << " " << tg_cs2_hom.get(ix) << endl;
+            cout << "  A,Z,Fint: " << tg_A.get(ix) << " "
+                 << tg_Z.get(ix) << " " << tg_Fint.get(ix) << endl;
+          }
           cs2_count++;
           i_nB_fix.push_back(i);
           i_Ye_fix.push_back(j);
