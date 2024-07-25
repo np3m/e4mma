@@ -52,7 +52,7 @@ paths:
         '400':
           description: Invalid input provided
 
-    /output/status.yaml:
+  /output/status.yaml:
     get:
       summary: Status Crust DFT EoS module execution
       description: >

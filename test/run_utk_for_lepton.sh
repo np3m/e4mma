@@ -14,8 +14,8 @@ USER_CONFIG_YAML_PATH="../input/config.yaml"
 USER_STATUS_YAML_PATH="../output/status.yaml"
 
 python3 ../src/Status.py \
-    --code 200 \
-    --message "Starting E4MMA running w/o Lepton" 
+    200 \
+    "Starting E4MMA running w/o Lepton" 
 
 # Check if command-line arguments are given to overwrite defaults
 if [ $# -ge 1 ]; then
@@ -103,8 +103,8 @@ fi
 if [ "$EOS_DATA_HDF5_PATH" != "$(realpath "../data/$(basename "$EOS_DATA_HDF5_PATH")")" ]; then
     echo "Error: EOS data file is not in data/ directory: $EOS_DATA_HDF5_PATH"
     python3 ../src/Status.py \
-    --code 400 \
-    --message "Error: EOS data file is not in data/ directory" \
+    400 \
+    "Error: EOS data file is not in data/ directory" \
     exit 1
 fi
 
@@ -125,13 +125,13 @@ $PYTHON ../src/postprocess.py
 if [ $? -eq 0 ]; then
   echo -e "\n\tE4MMA running w/o Lepton: OK\n"
   python3 ../src/Status.py \
-    --code 200 \
-    --message "Error: E4MMA running w/o Lepton: OK" 
+    200 \
+    "Success: E4MMA running w/o Lepton: OK" 
 else
   echo -e "\n\tE4MMA running w/o Lepton: Failed\n"
   python3 ../src/Status.py \
-    --code 400 \
-    --message "Error: E4MMA running w/o Lepton: Failed"
+    400 \
+    "Error: E4MMA running w/o Lepton: Failed"
   exit 1
 fi
 
