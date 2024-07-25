@@ -15,7 +15,7 @@ def main():
 
     args = parser.parse_args()
 
-    with open(STATUS_FILE_PATH, 'a') as statusfile:
+    with open(STATUS_FILE_PATH, 'w') as statusfile:
         yaml.safe_dump({"code": args.code, "message": args.message}, statusfile)
 
 if __name__ == "__main__":
