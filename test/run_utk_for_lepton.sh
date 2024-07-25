@@ -13,6 +13,10 @@ PYTHON="$(command -v python3 2>/dev/null || echo python)"
 USER_CONFIG_YAML_PATH="../input/config.yaml"
 USER_STATUS_YAML_PATH="../output/status.yaml"
 
+python3 ../src/Status.py \
+    --code 200 \
+    --message "Starting E4MMA running w/o Lepton" 
+
 # Check if command-line arguments are given to overwrite defaults
 if [ $# -ge 1 ]; then
     USER_CONFIG_YAML_PATH="$1"

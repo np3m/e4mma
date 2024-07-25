@@ -52,6 +52,25 @@ paths:
         '400':
           description: Invalid input provided
 
+    /output/status.yaml:
+    get:
+      summary: Status Crust DFT EoS module execution
+      description: >
+          Describes the current status of the Crust DFT 
+          EoS module during execution. This includes warning, 
+          error and success messages.
+      operationId: getStatus
+      security: []
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/status'
+        '500':
+          description: Run time error in calculation
+
   /output/e4mma_w_Lepton.csv:
     get:
       summary: Equation of state with Lepton
@@ -261,6 +280,26 @@ components:
               title: Select a random EOS model.
               type: string
         
+    status:
+      title: Module Status
+      description: Status of module execution including a code and optionally a message
+      type: object
+      required:
+        - code
+      properties:
+        message:
+          type: string
+          default: ""
+        code:
+          type: integer
+          enum: [200, 400, 500]
+          description: >
+            Status code:
+             * `200` - Success/OK
+             * `400` - Bad request/client error
+             * `500` - Internal error
+          default: 200
+    
     e4mma_w_lepton:
       title: e4mma output for Lepton
       description: Output of e4mma for Lepton module
