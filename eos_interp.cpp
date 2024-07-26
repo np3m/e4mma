@@ -544,12 +544,12 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
   // Use the covariance object to set the data, skipping the
   // optimization for now and performing it manually
   
+  ike.addl_verbose=1;
+
   ike.skip_optim=true;
   cout << "Going to ike set." << endl;
   ike.set();
   cout << "H0" << endl;
-
-  ike.addl_verbose=1;
 
   // Manually optimize the Gaussian process interpolation by
   // exhaustively searching
@@ -999,28 +999,37 @@ void interpm_krige_eos::set() {
 
   } else {
 
-    if (true) {
-      ipy.set_functions("o2sclpy","set_data_str","eval","eval_unc",
-                        "interpm_sklearn_gp",
-                        ((std::string)"verbose=0,transform_in=none,")+
-                        "kernel=ConstantKernel"+
-                        "(1.0,constant_value_bounds=\"fixed\")*"+
-                        "RBF(1.0,length_scale_bounds=\"fixed\")");
-    } else {
-      ipy.set_functions("o2sclpy","set_data_str","eval","eval",
-                        "interpm_tf_dnn",
-                        ((std::string)"verbose=1,")+
-                        "transform_in=quant,"+
-                        "transform_out=quant,"+
-                        "hlayers=[200,400,200]",1);
+    int ac_ret=1;
+    double len=0.3;
+    while (ac_ret!=0 && len<50.0) {
+      
+      if (true) {
+        ipy.set_functions("o2sclpy","set_data_str","eval","eval_unc",
+                          "interpm_sklearn_gp",
+                          ((std::string)"verbose=0,transform_in=none,")+
+                          "kernel=ConstantKernel"+
+                          "(1.0,constant_value_bounds=\"fixed\")*"+
+                          "RBF("+o2scl::dtos(len)+
+                          ",length_scale_bounds=\"fixed\")");
+      } else {
+        ipy.set_functions("o2sclpy","set_data_str","eval","eval",
+                          "interpm_tf_dnn",
+                          ((std::string)"verbose=1,")+
+                          "transform_in=quant,"+
+                          "transform_out=quant,"+
+                          "hlayers=[200,400,200]",1);
+      }
+      
+      ubmatrix ix3=ix2;
+      ubmatrix iy3=iy2;
+      ipy.set_data(3,1,calib_list.size()/3,ix3,iy3);
+      
+      double retx;
+      ac_ret=addl_const(0,retx);
+      
+      len*=2.0;
+      std::cout << "XA: " << len << " " << ac_ret << std::endl;
     }
-    
-    ubmatrix ix3=ix2;
-    ubmatrix iy3=iy2;
-    ipy.set_data(3,1,calib_list.size()/3,ix3,iy3);
-
-    double retx;
-    addl_const(0,retx);
   }
 
   return;
@@ -1166,7 +1175,7 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
     cout << "Computed k_min, k_max: " << k_min << " " << k_max << endl;
   }
 
-  if (true) {
+  if (false) {
     
     std::vector<std::string> vs2;
     vs2={"stability",o2scl::szttos(i_min),o2scl::szttos(i_max),
@@ -1177,10 +1186,10 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
     enp2->add_eg(vs2,false);
     
     // Update the stability and second derivatives
-    cout << "AA" << endl;
+    cout << "AA" << addl_verbose << endl;
     enp2->stability(vs2,false);
-    cout << "BB" << endl;
-    cout << "ZZ: " << enp2->n_stability_fail << endl;
+    cout << "BB" << addl_verbose << endl;
+    cout << "ZZ: " << addl_verbose << " " << enp2->n_stability_fail << endl;
     
   }
   
@@ -1491,10 +1500,10 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
     enp2->add_eg(sv2,false);
 
     // Update the stability and second derivatives
-    cout << "AA" << endl;
+    cout << "AA" << addl_verbose << endl;
     enp2->stability(sv2,false);
     
-    cout << "ZZ: " << enp2->n_stability_fail << endl;
+    cout << "XA: " << addl_verbose << " " << enp2->n_stability_fail << endl;
     // Change free energies back to original
 
     for(size_t j=0;j<fix_list.size();j+=3) {
