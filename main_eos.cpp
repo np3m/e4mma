@@ -31,7 +31,22 @@ int main(int argc, char *argv[]) {
   // Init MPI
   MPI_Init(&argc,&argv);
 #endif
+  
   eos e;
+  
+  // The command line interface needs the data directory to get the
+  // help text for all the commands, so we have to set the data
+  // directory first, before initializing the cli class.
+  for(int i=0;i<argc;i++) {
+    
+    if (i+2<argc && ((std::string)argv[i])=="-set" &&
+        ((std::string)argv[i+1])=="data_dir") {
+      e.data_dir=(std::string)argv[i+2];
+      cout << "Setting data_dir to " << e.data_dir << endl;
+    }
+
+  }
+    
   cli cl;
   
   e.setup_cli(cl);

@@ -2,12 +2,9 @@
 # Show how to use the command-line help
 # ----------------------------------------------------------------
 
-cd ..
+../eos -set data_dir "../data" -help
 
-./eos -help
+../eos -set data_dir "../data" -help select-model
 
-./eos -help select-model
+../eos_nuclei -set data_dir "../data" -help point-nuclei
 
-./eos_nuclei -help point-nuclei
-
-cd examples

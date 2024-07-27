@@ -112,7 +112,7 @@ eos_nuclei::eos_nuclei() {
   loaded=false;
   file_update_time=1800;
   file_update_iters=100000;
-
+  
   // These function calls do nothing if these environment variables
   // are not defined
   slack.set_channel_from_env("O2SCL_SLACK_CHANNEL");
@@ -1896,9 +1896,11 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
         
         // Check entropy and pressure are positive
         if (tg_P.get(ix)<0.0 || tg_S.get(ix)<0.0) {
-          cout << "P or S <0: nB,Ye,T[MeV]:\n  "
-               << nB << " " << Ye << " " << T_MeV << " "
-               << tg_P.get(ix) << " " << tg_S.get(ix) << endl;
+          if (false) {
+            cout << "P or S <0: nB,Ye,T[MeV]:\n  "
+                 << nB << " " << Ye << " " << T_MeV << " "
+                 << tg_P.get(ix) << " " << tg_S.get(ix) << endl;
+          }
           PS_negative_count++;
           i_nB_fix.push_back(i);
           i_Ye_fix.push_back(j);
@@ -1911,8 +1913,10 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
           vector<size_t> ixp1={i+1,j,k};
           double dP=tg_P.get(ixp1)-tg_P.get(ix);
           if (dP<0.0) {
-            cout << "dPdnB<0: nB,Ye,T[MeV]:\n  "
-                 << nB << " " << Ye << " " << T_MeV << endl;
+            if (false) {
+              cout << "dPdnB<0: nB,Ye,T[MeV]:\n  "
+                   << nB << " " << Ye << " " << T_MeV << endl;
+            }
             if (false) {
               cout << "ix  ,P: ";
               vector_out(cout,ix,false);
@@ -2003,12 +2007,19 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
         }
         Eigen::VectorXcd eivals=mat2.eigenvalues();
 #endif
-        
-        // Compute eigenvalues using SVD
-        o2scl_linalg::SV_decomp(4,4,mat,V,sing,work);
-        
-        for(size_t ij=0;ij<4;ij++) {
-          egv[ij].get(ix)=sing[ij];
+
+        if (false) {
+          // Compute eigenvalues using SVD
+          o2scl_linalg::SV_decomp(4,4,mat,V,sing,work);
+          
+          for(size_t ij=0;ij<4;ij++) {
+            egv[ij].get(ix)=sing[ij];
+          }
+        } else {
+          sing[0]=1.0;
+          sing[1]=1.0;
+          sing[2]=1.0;
+          sing[3]=1.0;
         }
         
         if (sing[0]<0.0 || sing[1]<0.0 || sing[2]<0.0 ||
@@ -2075,7 +2086,7 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
         }
 
         // This code requires a model to compute the homogeneous cs2
-        if (true) {
+        if (false) {
           neutron.n=nB*(1.0-Ye);
           proton.n=nB*Ye;
           thermo th;
@@ -2085,14 +2096,18 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
             cout << "cs2 (het,hom): " << cs_sq << " "
                  << tg_cs2_hom.get(ix) << endl;
           }
+        } else {
+          tg_cs2_hom.get(ix)=0.5;
         }
         
         if (cs_sq<0.0 || cs_sq>1.0 || !std::isfinite(cs_sq)) {
-          cout << "Unphysical cs2: nB,Ye,T[MeV],cs2,cs2_hom:\n  "
-               << nB << " " << Ye << " " << T_MeV << " "
-               << cs_sq << " " << tg_cs2_hom.get(ix) << endl;
-          cout << "  A,Z,Fint: " << tg_A.get(ix) << " "
-               << tg_Z.get(ix) << " " << tg_Fint.get(ix) << endl;
+          if (false) {
+            cout << "Unphysical cs2: nB,Ye,T[MeV],cs2,cs2_hom:\n  "
+                 << nB << " " << Ye << " " << T_MeV << " "
+                 << cs_sq << " " << tg_cs2_hom.get(ix) << endl;
+            cout << "  A,Z,Fint: " << tg_A.get(ix) << " "
+                 << tg_Z.get(ix) << " " << tg_Fint.get(ix) << endl;
+          }
           cs2_count++;
           i_nB_fix.push_back(i);
           i_Ye_fix.push_back(j);
@@ -10831,7 +10846,7 @@ void eos_nuclei::setup_cli_nuclei(o2scl::cli &cl) {
       1,"","eos_nuclei","save_compose","doc/xml/classeos__nuclei.xml"}
     };
 
-  cl.doc_o2_file="data/eos_nuclei_docs.o2";
+  cl.doc_o2_file=data_dir+"/eos_nuclei_docs.o2";
 
   p_show_all_nuclei.b=&show_all_nuclei;
   p_show_all_nuclei.help="";

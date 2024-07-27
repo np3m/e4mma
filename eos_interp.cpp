@@ -1,7 +1,7 @@
 /*
   -------------------------------------------------------------------
   
-  Copyright (C) 2022-2023, Andrew W. Steiner
+  Copyright (C) 2022-2024, Andrew W. Steiner
   
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -46,7 +46,8 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
 
   // Create interpolation object
   interpm_krige_eos ike;
-  ike.mode=ike.mode_loo_cv_bf;
+  //ike.mode=ike.mode_loo_cv_bf;
+  ike.mode=ike.mode_max_lml;
   ike.full_min=kw.get_bool("full_min",true);
   ike.def_mmin.verbose=1;
   ike.enp=this;
@@ -60,6 +61,7 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
   hff.close();
 
   std::string kernel=kw.get_string("kernel","rbf_noise");
+  cout << "kernel: " << kernel << endl;
   
   int ipx_count=0;
 
@@ -165,8 +167,9 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
             // Create a copy of the free energy for temporary storage
             tg_Fint_old=tg_Fint;
             tg_F_old=tg_F;
-            
-            int ii_ret=interp_internal(i_fix,j_fix,k_fix,window,ike);
+
+            int ii_ret=interp_internal(i_fix,j_fix,k_fix,window,ike,
+                                       kernel);
             cout << "Herexx." << endl;
             exit(-1);
             if (ii_ret!=0) {
@@ -337,9 +340,20 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
   }
   
   int iwindow=((int)window);
+  
+  i_fix=80;
+  j_fix=40;
+  k_fix=15;
+  iwindow=85;
+  int jwindow=12;
+  int kwindow=15;
+
+  // First pass, determine all the points to fix and
+  // calibrate in the neighborhood of the user-specified point
+  
   for(int dnB=-iwindow;dnB<=iwindow;dnB++) {
-    for(int dYe=-iwindow;dYe<=iwindow;dYe++) {
-      for(int dT=-iwindow;dT<=iwindow;dT++) {
+    for(int dYe=-jwindow;dYe<=jwindow;dYe++) {
+      for(int dT=-kwindow;dT<=kwindow;dT++) {
         vector<size_t> index={i_fix+dnB,j_fix+dYe,k_fix+dT};
         if (abs(dnB)+abs(dYe)+abs(dT)<=iwindow &&
             i_fix+dnB>=0 && i_fix+dnB<n_nB2 &&
@@ -372,13 +386,87 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
             ike.fix_list.push_back(index[0]);
             ike.fix_list.push_back(index[1]);
             ike.fix_list.push_back(index[2]);
-          } else {
+          } else if (false) {
             ike.calib_list.push_back(index[0]);
             ike.calib_list.push_back(index[1]);
             ike.calib_list.push_back(index[2]);
           }
         }
       }
+    }
+  }
+
+  cout << "eos_nuclei:interp_internal(): attempting to fix "
+       << ike.fix_list.size()/3 << " points."
+       << endl;
+
+  // Second pass, find points to calibrate and fix near fix_list
+  
+  if (true) {
+    std::vector<size_t> fix_list2;
+    for(int dnB=-iwindow;dnB<=iwindow;dnB++) {
+      for(int dYe=-jwindow;dYe<=jwindow;dYe++) {
+        for(int dT=-kwindow;dT<=kwindow;dT++) {
+          vector<size_t> index={i_fix+dnB,j_fix+dYe,k_fix+dT};
+          if (abs(dnB)+abs(dYe)+abs(dT)<=iwindow &&
+              i_fix+dnB>=0 && i_fix+dnB<n_nB2 &&
+              j_fix+dYe>=0 && j_fix+dYe<n_Ye2 &&
+              k_fix+dT>=0 && k_fix+dT<n_T2) {
+            double dPdnB;
+            size_t i=((size_t)(((int)i_fix)+dnB));
+            size_t j=((size_t)(((int)j_fix)+dYe));
+            size_t k=((size_t)(((int)k_fix)+dT));
+            if (i>0 && i<nB_grid2.size()-1) {
+              vector<size_t> ixp1={i+1,j,k};
+              vector<size_t> ixm1={i-1,j,k};
+              dPdnB=(tg_P.get(ixp1)-tg_P.get(ixm1))/
+                (nB_grid2[i+1]-nB_grid2[i-1])/2;
+            } else if (i>0) {
+              vector<size_t> ixm1={i-1,j,k};
+              dPdnB=(tg_P.get(index)-tg_P.get(ixm1))/
+                (nB_grid2[i]-nB_grid2[i-1]);
+            } else {
+              vector<size_t> ixp1={i+1,j,k};
+              dPdnB=(tg_P.get(ixp1)-tg_P.get(index))/
+                (nB_grid2[i+1]-nB_grid2[i]);
+            }            
+            if (dPdnB>0.0 &&
+                std::isfinite(dPdnB) &&
+                tg_cs2.get(index)<1.0 &&
+                std::isfinite(tg_cs2.get(index)) &&
+                tg_cs2.get(index)>0.0) {
+              for(size_t ifl=0;ifl<ike.fix_list.size()/3;ifl++) {
+                if (ike.dist_f(index[0],index[1],index[2],ifl)<7.1) {
+                  if (index[0]%2==0 && index[1]%2==0 && index[2]%2==0) {
+                    ike.calib_list.push_back(index[0]);
+                    ike.calib_list.push_back(index[1]);
+                    ike.calib_list.push_back(index[2]);
+                    ifl=ike.fix_list.size()/3;
+                  } else if (ike.dist_f(index[0],index[1],index[2],ifl)<4.1) {
+                    fix_list2.push_back(index[0]);
+                    fix_list2.push_back(index[1]);
+                    fix_list2.push_back(index[2]);
+                    ifl=ike.fix_list.size()/3;
+                  }
+                  if (false) {
+                    cout << index[0] << " " << index[1] << " "
+                         << index[2] << " " << ifl << " "
+                         << ike.fix_list[ifl*3] << " "
+                         << ike.fix_list[ifl*3+1] << " "
+                         << ike.fix_list[ifl*3+2] << endl;
+                    //char ch;
+                    //cin >> ch;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    for(size_t ifl=0;ifl<fix_list2.size();ifl++) {
+      ike.fix_list.push_back(fix_list2[ifl]);
     }
   }
   
@@ -388,14 +476,13 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
   cout << "  and attempting to fix " << ike.fix_list.size()/3 << " points."
        << endl;
   size_t count=ike.calib_list.size()/3;
-  exit(-1);
 
   if (ike.fix_list.size()==0) {
     cerr << "No points to fix." << endl;
     return 1;
   }
 
-  // Compute the distanes between the calibration points and the
+  // Compute the distances between the calibration points and the
   // points to fix
   
   ike.compute_dists();
@@ -415,7 +502,7 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
     ptemp.push_back(l10_list);
     std::vector<std::vector<std::vector<double>>> param_lists;
     param_lists.push_back(ptemp);
-    std::cout << "Going to set_covar()." << std::endl;
+    std::cout << "Going to set_covar() for rbf_noise." << std::endl;
     std::vector<std::shared_ptr<mcovar_funct_rbf_noise<ubvector,mat_x_row_t>>>
       mfr(1);
     mfr[0]=std::shared_ptr<mcovar_funct_rbf_noise<ubvector,mat_x_row_t>>
@@ -442,7 +529,7 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
     ptemp.push_back(l10_list);
     std::vector<std::vector<std::vector<double>>> param_lists;
     param_lists.push_back(ptemp);
-    std::cout << "Going to set_covar()." << std::endl;
+    std::cout << "Going to set_covar() for quad_correl." << std::endl;
     vector<std::shared_ptr<mcovar_funct_quad_correl<ubvector,mat_x_row_t>>>
       mfr(1);
     mfr[0]=std::shared_ptr<mcovar_funct_quad_correl<ubvector,mat_x_row_t>>
@@ -458,63 +545,126 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
   // Use the covariance object to set the data, skipping the
   // optimization for now and performing it manually
   
-  ike.skip_optim=true;
-  ike.set();
-
+  ike.py_fit=true;
+  
   ike.addl_verbose=1;
+
+  ike.skip_optim=true;
+  cout << "Going to ike set." << endl;
+  ike.set();
+  cout << "H0" << endl;
 
   // Manually optimize the Gaussian process interpolation by
   // exhaustively searching
   
   double min_qual=1.0e99;
-  ubvector p(4), min_p;
-  
-  //for(p[0]=80.0;p[0]>8.0;p[0]/=1.4) {
-  //for(p[1]=80.0;p[1]>8.0;p[1]/=1.4) {
-  //for(p[2]=80.0;p[2]>8.0;p[2]/=1.4) {
-  //for(p[3]=-15.0;p[3]<-2.99;p[3]+=1.0) {
-  std::cout << "In eos_nuclei::interp_internal(), loop over "
-            << "hyperparameters." << std::endl;
-  for(p[0]=10.0;p[0]>1.99;p[0]/=1.4) {
-    for(p[1]=10.0;p[1]>1.99;p[1]/=1.4) {
-      for(p[2]=10.0;p[2]>1.99;p[2]/=1.4) {
-        for(p[3]=-15.0;p[3]<-14.99;p[3]+=1.0) {
 
-          p[0]=2.0;
-          p[1]=0.01;
-          p[2]=80.0;
-          p[3]=2.0;
-          p[4]=0.01;
-          p[5]=80.0;
-          p[6]=2.0;
-          p[7]=0.01;
-          p[8]=80.0;
-          p[9]=-15.0;
-          
-          if (ike.addl_verbose>=1) {
-            cout << "Covariance parameters: ";
-            vector_out(cout,p,true);
-          }
-          
-          ike.cf[0]->set_params(p);
-          int success;
-          double q=ike.qual_fun(0,success);
-          if (ike.addl_verbose>=1) {
-            cout << "q,min_qual,success: "
-                 << q << " " << min_qual << " " << success << endl;
-            cout << endl;
-          }
-	  exit(-1);
-          
-          if (success==0 && q<min_qual) {
-            min_p=p;
-            min_qual=q;
+  ubvector min_p;
+  
+  cout << "H1." << kernel << endl;
+  if (kernel!="rbf_noise") {
+
+    ubvector p(10);
+    min_p.resize(10);
+    p[0]=3.0;
+    p[1]=3.0;
+    p[2]=3.0;
+    p[3]=0.0;
+    p[4]=0.0;
+    p[5]=0.0;
+    p[6]=80.0;
+    p[7]=40.0;
+    p[8]=5.0;
+    p[9]=-13.0;
+    min_p=p;
+
+    if (ike.addl_verbose>=1) {
+      cout << "Covariance parameters: ";
+      vector_out(cout,p,true);
+    }
+    
+    cout << "H3." << endl;
+    ike.cf[0]->set_params(p);
+    int success;
+    cout << "H2." << endl;
+    ike.verbose=3;
+    double q=ike.qual_fun(0,success);
+    cout << "q,min_qual,success: "
+         << q << " " << min_qual << " " << success << endl;
+    cout << endl;
+
+    exit(-1);
+    
+  } else {
+    
+    ubvector p(4);
+    min_p.resize(4);
+    
+    p[0]=3.0;
+    p[1]=3.0;
+    p[2]=3.0;
+    p[3]=-6.0;
+    min_p=p;
+    
+    if (false) {
+      
+      //for(p[0]=80.0;p[0]>8.0;p[0]/=1.4) {
+      //for(p[1]=80.0;p[1]>8.0;p[1]/=1.4) {
+      //for(p[2]=80.0;p[2]>8.0;p[2]/=1.4) {
+      //for(p[3]=-15.0;p[3]<-2.99;p[3]+=1.0) {
+      std::cout << "In eos_nuclei::interp_internal(), loop over "
+                << "hyperparameters." << std::endl;
+      for(p[0]=10.0;p[0]>1.99;p[0]/=1.4) {
+        for(p[1]=10.0;p[1]>1.99;p[1]/=1.4) {
+          for(p[2]=10.0;p[2]>1.99;p[2]/=1.4) {
+            for(p[3]=-15.0;p[3]<-14.99;p[3]+=1.0) {
+              
+              if (ike.addl_verbose>=1) {
+                cout << "Covariance parameters: ";
+                vector_out(cout,p,true);
+              }
+              
+              ike.cf[0]->set_params(p);
+              int success;
+              double q=ike.qual_fun(0,success);
+              if (ike.addl_verbose>=1) {
+                cout << "q,min_qual,success: "
+                     << q << " " << min_qual << " " << success << endl;
+                cout << endl;
+              }
+              exit(-1);
+              
+              if (success==0 && q<min_qual) {
+                min_p=p;
+                min_qual=q;
+              }
+            }
           }
         }
       }
-    }
+      
+    } else {
+      
+      if (ike.addl_verbose>=1) {
+        cout << "Covariance parameters: ";
+        vector_out(cout,p,true);
+      }
+      
+      cout << "H3." << endl;
+      ike.cf[0]->set_params(p);
+      int success;
+      cout << "H2." << endl;
+      ike.verbose=3;
+      double q=ike.qual_fun(0,success);
+      cout << "q,min_qual,success: "
+           << q << " " << min_qual << " " << success << endl;
+      cout << endl;
+      
+      exit(-1);
+    }      
+    
   }
-
+  
   // Choose the best point
   
   if (min_qual>0.9e99) {
@@ -695,6 +845,18 @@ double interpm_krige_eos::dist_cf(size_t i_calib, size_t i_fix) {
   return sqrt(dist1*dist1+dist2*dist2+dist3*dist3);
 }
 
+double interpm_krige_eos::dist_f(size_t i, size_t j, size_t k,
+                                 size_t i_fix) {
+
+  // These are size_t's so we have to convert to double before
+  // we subtract
+  double dist1=((double)i)-((double)fix_list[i_fix*3]);
+  double dist2=((double)j)-((double)fix_list[i_fix*3+1]);
+  double dist3=((double)k)-((double)fix_list[i_fix*3+2]);
+  
+  return sqrt(dist1*dist1+dist2*dist2+dist3*dist3);
+}
+
 void interpm_krige_eos::compute_dists() {
 
   // Make sure we start with an empty array
@@ -756,25 +918,31 @@ void interpm_krige_eos::set() {
   } else {
     cout << "ix[0] ix[1] ix[2] F" << endl;
   }
+  size_t jout=0;
   for(size_t j=0;j<fix_list.size();j+=3) {
-    ix(j/3,0)=fix_list[j];
-    ix(j/3,1)=fix_list[j+1];
-    ix(j/3,2)=fix_list[j+2];
     vector<size_t> index={fix_list[j],fix_list[j+1],
       fix_list[j+2]};
+    double Foint;
     if (interp_Fint) {
-      iy(j/3,0)=tgp_Fint->get(index);
+      Foint=tgp_Fint->get(index);
     } else {
-      iy(j/3,0)=tgp_F->get(index);
+      Foint=tgp_F->get(index);
     }
-    if (true) {
-      cout << ((int)ix(j/3,0)) << " " << ((int)ix(j/3,1)) << " "
-           << ((int)ix(j/3,2)) << " "
-           << nB_grid[fix_list[j]] << " "
+    if (j>=jout) {
+      cout.width(3);
+      cout << fix_list[j] << " ";
+      cout.width(2);
+      cout << fix_list[j+1] << " ";
+      cout.width(2);
+      cout << fix_list[j+2] << " ";
+      cout << nB_grid[fix_list[j]] << " "
            << Ye_grid[fix_list[j+1]] << " "
-           << T_grid[fix_list[j+2]] << " "
-           << iy(j/3,0) << " ";
+           << T_grid[fix_list[j+2]] << " ";
+      cout.setf(ios::showpos);
+      cout << Foint << " ";
+      cout.unsetf(ios::showpos);
       cout << endl;
+      jout+=fix_list.size()/90;
     }
   }
   cout << "In interpm_krige_eos::set(): Calibration list: " << endl;
@@ -783,6 +951,7 @@ void interpm_krige_eos::set() {
   } else {
     cout << "ix[0] ix[1] ix[2] F dist" << endl;
   }
+  jout=0;
   for(size_t j=0;j<calib_list.size();j+=3) {
     ix(j/3,0)=calib_list[j];
     ix(j/3,1)=calib_list[j+1];
@@ -794,32 +963,88 @@ void interpm_krige_eos::set() {
     } else {
       iy(j/3,0)=tgp_F->get(index);
     }
-    if (true) {
-      cout << ((int)ix(j/3,0)) << " " << ((int)ix(j/3,1)) << " "
-           << ((int)ix(j/3,2)) << " "
-           << nB_grid[calib_list[j]] << " "
+    if (j>=jout) {
+      cout.width(3);
+      cout << ((int)ix(j/3,0)) << " ";
+      cout.width(2);
+      cout << ((int)ix(j/3,1)) << " ";
+      cout.width(2);
+      cout << ((int)ix(j/3,2)) << " ";
+      cout << nB_grid[calib_list[j]] << " "
            << Ye_grid[calib_list[j+1]] << " "
-           << T_grid[calib_list[j+2]] << " "
-           << iy(j/3,0) << " ";
+           << T_grid[calib_list[j+2]] << " ";
+      cout.setf(ios::showpos);
+      cout << iy(j/3,0) << " ";
       if (fix_list.size()>3) {
         cout << calib_dists[j/3];
       }
+      cout.unsetf(ios::showpos);
+      jout+=calib_list.size()/90;
       cout << endl;
     }
   }
   
   // Make a copy because interpm_krige_eos will keep it
   ubmatrix ix2=ix;
+  ubmatrix iy2=iy;
 
   size_t n_nB=nB_grid.size();
   size_t n_Ye=Ye_grid.size();
   size_t n_T=T_grid.size();
 
   // Call the Gaussian process set_data() function
-  
-  std::cout << "Going to interp_krige_eos::set_data()." << std::endl;
-  verbose=2;
-  set_data(3,1,calib_list.size()/3,ix,iy);
+
+  if (py_fit==false) {
+    
+    std::cout << "Going to interp_krige_eos::set_data()." << std::endl;
+    verbose=2;
+    set_data(3,1,calib_list.size()/3,ix,iy);
+
+  } else {
+
+    int ac_ret=1;
+    for(double norm=0.5;norm<2.0;norm*=1.2) {
+      for(double len=4.0;len<50.0;len*=1.5) {
+        //norm=0.864;
+        //len=6.0;
+        
+        if (true) {
+          ipy.set_functions("o2sclpy","set_data_str","eval","eval_unc",
+                            "interpm_sklearn_gp",
+                            ((std::string)"verbose=0,transform_in=none,")+
+                            "kernel=ConstantKernel("+
+                            o2scl::dtos(len)+
+                            ",constant_value_bounds=\"fixed\")*"+
+                            "RBF("+o2scl::dtos(len)+
+                            ",length_scale_bounds=\"fixed\")");
+        } else {
+          ipy.set_functions("o2sclpy","set_data_str","eval","eval",
+                            "interpm_tf_dnn",
+                            ((std::string)"verbose=1,")+
+                            "transform_in=quant,"+
+                            "transform_out=quant,"+
+                            "hlayers=[200,400,200]",1);
+        }
+        
+        ubmatrix ix3=ix2;
+        ubmatrix iy3=iy2;
+        ipy.set_data(3,1,calib_list.size()/3,ix3,iy3);
+        
+        double retx;
+        ac_ret=addl_const(0,retx);
+        
+        std::cout << "XA: " << norm << " " << len << " "
+                  << ac_ret << std::endl;
+        
+        //norm*=100.0;
+        //len*=100.0;
+        //exit(-1);
+        
+      }
+    }
+
+    exit(-1);
+  }
 
   return;
 }
@@ -827,185 +1052,77 @@ void interpm_krige_eos::set() {
 int interpm_krige_eos::addl_const(size_t iout, double &ret) {
 
   std::cout << "In interpm_krige_eos::addl_const()." << std::endl;
-  
-  // First, we need to ensure the interpolator has been
-  // setup to be able to use the eval() and deriv()
-  // functions
-  
-  // Select the row of the data matrix
-  mat_y_col_t yiout2(this->y,iout);
-  
-  // Construct the KXX matrix
-  size_t size=this->x.size1();
-  
-  mat_inv_kxx_t KXX(size,size);
-  for(size_t irow=0;irow<size;irow++) {
-    mat_x_row_t xrow(this->x,irow);
-    for(size_t icol=0;icol<size;icol++) {
-      mat_x_row_t xcol(this->x,icol);
-      if (irow>icol) {
-        KXX(irow,icol)=KXX(icol,irow);
-      } else {
-        KXX(irow,icol)=cf[iout]->covar2(xrow,xcol);
+
+  if (py_fit==false) {
+    
+    // First, we need to ensure the interpolator has been
+    // setup to be able to use the eval() and deriv()
+    // functions
+    
+    // Select the row of the data matrix
+    mat_y_col_t yiout2(this->y,iout);
+    
+    // Construct the KXX matrix
+    size_t size=this->x.size1();
+    
+    mat_inv_kxx_t KXX(size,size);
+    for(size_t irow=0;irow<size;irow++) {
+      mat_x_row_t xrow(this->x,irow);
+      for(size_t icol=0;icol<size;icol++) {
+        mat_x_row_t xcol(this->x,icol);
+        if (irow>icol) {
+          KXX(irow,icol)=KXX(icol,irow);
+        } else {
+          KXX(irow,icol)=cf[iout]->covar2(xrow,xcol);
+        }
       }
     }
+    
+    if (verbose>2) {
+      std::cout << "Done creating covariance matrix with size "
+                << size << std::endl;
+    }
+    
+    // Perform the matrix inversion and compute the determinant
+    
+    double lndet;
+    
+    // Construct the inverse of KXX
+    if (verbose>2) {
+      std::cout << "Performing matrix inversion with size "
+                << size << std::endl;
+    }
+    this->inv_KXX[iout].resize(size,size);
+    int cret=this->mi.invert_det(size,KXX,this->inv_KXX[iout],lndet);
+    if (cret!=0) {
+      cout << "Return failed inversion." << endl;
+      return 3;
+    }
+    
+    lndet=log(lndet);
+    std::cout << "lndet: " << lndet << std::endl;
+    
+    if (verbose>2) {
+      std::cout << "Done performing matrix inversion with size "
+                << size << std::endl;
+    }
+    
+    // Inverse covariance matrix times function vector
+    this->Kinvf[iout].resize(size);
+    o2scl_cblas::dgemv(o2scl_cblas::o2cblas_RowMajor,
+                       o2scl_cblas::o2cblas_NoTrans,
+                       size,size,1.0,this->inv_KXX[iout],
+                       yiout2,0.0,this->Kinvf[iout]);
+    
+    // Done setting interpolator
+    // ----------
+    
   }
-  
-  if (verbose>2) {
-    std::cout << "Done creating covariance matrix with size "
-              << size << std::endl;
-  }
-  
-  // Perform the matrix inversion and compute the determinant
-  
-  double lndet;
-  
-  // Construct the inverse of KXX
-  if (verbose>2) {
-    std::cout << "Performing matrix inversion with size "
-              << size << std::endl;
-  }
-  this->inv_KXX[iout].resize(size,size);
-  int cret=this->mi.invert_det(size,KXX,this->inv_KXX[iout],lndet);
-  if (cret!=0) {
-    cout << "Return failed inversion." << endl;
-    return 3;
-  }
-  
-  lndet=log(lndet);
-  
-  if (verbose>2) {
-    std::cout << "Done performing matrix inversion with size "
-              << size << std::endl;
-  }
-        
-  // Inverse covariance matrix times function vector
-  this->Kinvf[iout].resize(size);
-  o2scl_cblas::dgemv(o2scl_cblas::o2cblas_RowMajor,
-                     o2scl_cblas::o2cblas_NoTrans,
-                     size,size,1.0,this->inv_KXX[iout],
-                     yiout2,0.0,this->Kinvf[iout]);
 
-  // Done setting interpolator
-  // ----------
-  
-  ret=0.0;
-  double window=5.0;
+  eos_nuclei *enp2=(eos_nuclei *)enp;
 
+  size_t i_min, i_max, j_min, j_max, k_min, k_max;
   if (true) {
-    
-    // Use the interpolation results to modify the points to be fixed
-    
-    ubvector out(1);
-    
-    for(size_t j=0;j<fix_list.size();j+=3) {
-      
-      vector<size_t> index={fix_list[j],fix_list[j+1],
-        fix_list[j+2]};
-      
-      double nB=nB_grid[index[0]];
-      double Ye=Ye_grid[index[1]];
-      double T_MeV=T_grid[index[2]];
-      
-      // Electron photon contribution in MeV
-      double F_eg=tgp_F->get(index)-tgp_Fint->get(index);
-      
-      ubvector index2(3);
-      index2[0]=index[0];
-      index2[1]=index[1];
-      index2[2]=index[2];
-      
-      eval(index2,out);
-
-      if (true) {
-        if (interp_Fint==false) {
-          if (false) {
-            cout << "Change F (fix) from " << tgp_F_old->get(index) << " "
-                 << tgp_F->get(index) << " to "
-                 << out[0] << endl;
-            cout << "Change Fint (fix) from "
-                 << tgp_Fint_old->get(index) << " "
-                 << tgp_Fint->get(index) << " to "
-                 << out[0]-F_eg << endl;
-          } else {
-            cout << index[0] << " " << index[1] << " "
-                 << index[2] << " " << nB <<  " " << Ye << " "
-                 << T_MeV << " " << tgp_F_old->get(index)
-                 << " " << out[0] << endl;
-          }
-          tgp_F->get(index)=out[0];
-          tgp_Fint->get(index)=out[0]-F_eg;
-        } else {
-          cout << "Change Fint (fix) from " << tgp_Fint->get(index)
-               << " to " << out[0] << endl;
-          tgp_Fint->get(index)=out[0];
-          tgp_F->get(index)=out[0]+F_eg;
-        }
-      }
-      
-      
-    }
-
-    // Use the interpolation results to modify the calibration points nearby
-    
-    for(size_t j=0;j<calib_list.size();j+=3) {
-      
-      vector<size_t> index={calib_list[j],calib_list[j+1],
-        calib_list[j+2]};
-      
-      double nB=nB_grid[index[0]];
-      double Ye=Ye_grid[index[1]];
-      double T_MeV=T_grid[index[2]];
-
-      double fact=1.0/(1.0+exp(2.0*(calib_dists[j/3]-window/2.0)));
-      
-      // Lepton photon contribution in MeV
-      double F_eg=tgp_F->get(index)-tgp_Fint->get(index);
-      
-      ubvector index2(3);
-      index2[0]=index[0];
-      index2[1]=index[1];
-      index2[2]=index[2];
-      
-      eval(index2,out);
-      
-      //cout << "dist,fact,F,out: " << calib_dists[j/3] << " " << fact << " "
-      //<< tgp_F->get(index) << " " << out[0] << endl;
-
-      if (true) {
-        if (interp_Fint==false) {
-          double corr=out[0]-tgp_F->get(index);
-          if (false) {
-            cout << "Change F (calib) from " << tgp_F->get(index) << " to "
-                 << tgp_F->get(index)+fact*corr << " at dist: "
-                 << calib_dists[j/3] << endl;
-            cout << "Change Fint (calib) from "
-                 << tgp_Fint->get(index) << " to "
-                 << tgp_F->get(index)-F_eg << " at dist: "
-                 << calib_dists[j/3] << endl;
-          } else {
-            cout << index[0] << " " << index[1] << " "
-                 << index[2] << " " << nB <<  " " << Ye << " "
-                 << T_MeV << " " << tgp_F_old->get(index) << " "
-                 << tgp_F_old->get(index)+fact*corr << " "
-                 << fact*corr << endl;
-          }
-          tgp_F->get(index)+=fact*corr;
-          tgp_Fint->get(index)=tgp_F->get(index)-F_eg;
-        } else {
-          double corr=out[0]-tgp_Fint->get(index);
-          cout << "Change Fint (calib) from " << tgp_Fint->get(index)
-               << " to "
-               << tgp_Fint->get(index)+fact*corr << " at dist: "
-               << calib_dists[j/3] << endl;
-          tgp_Fint->get(index)+=fact*corr;
-          tgp_F->get(index)=out[0]+F_eg;
-        }
-      }
-      
-    }
-
-    size_t i_min, i_max, j_min, j_max, k_min, k_max;
     i_min=fix_list[0];
     i_max=fix_list[0];
     j_min=fix_list[1];
@@ -1070,7 +1187,243 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
     cout << "Computed i_min, i_max: " << i_min << " " << i_max << endl;
     cout << "Computed j_min, j_max: " << j_min << " " << j_max << endl;
     cout << "Computed k_min, k_max: " << k_min << " " << k_max << endl;
+  }
 
+  if (false) {
+    
+    std::vector<std::string> vs2;
+    vs2={"stability",o2scl::szttos(i_min),o2scl::szttos(i_max),
+         o2scl::szttos(j_min),o2scl::szttos(j_max),
+         o2scl::szttos(k_min),o2scl::szttos(k_max)};
+    
+    // Update the electron-photon EOS for the specified points
+    enp2->add_eg(vs2,false);
+    
+    // Update the stability and second derivatives
+    enp2->stability(vs2,false);
+    cout << "XA Stability failures: " << enp2->n_stability_fail << endl;
+    
+  }
+  
+  ret=0.0;
+  double window=5.0;
+
+  if (true) {
+    
+    // Use the interpolation results to modify the points to be fixed
+    
+    ubvector out(1);
+    
+    size_t jout=0;
+    cout << "Updates for fix_list:" << endl;
+    for(size_t j=0;j<fix_list.size();j+=3) {
+      
+      vector<size_t> index={fix_list[j],fix_list[j+1],
+        fix_list[j+2]};
+      
+      double nB=nB_grid[index[0]];
+      double Ye=Ye_grid[index[1]];
+      double T_MeV=T_grid[index[2]];
+      
+      // Electron photon contribution in MeV
+      double F_eg=tgp_F->get(index)-tgp_Fint->get(index);
+      
+      ubvector index2(3);
+      index2[0]=index[0];
+      index2[1]=index[1];
+      index2[2]=index[2];
+
+      if (py_fit) {
+        ipy.eval(index2,out);
+      } else {
+        eval(index2,out);
+      }
+
+      if (true) {
+        if (interp_Fint==false) {
+          if (false) {
+            cout << "Change F (fix) from " << tgp_F_old->get(index) << " "
+                 << tgp_F->get(index) << " to "
+                 << out[0] << endl;
+            cout << "Change Fint (fix) from "
+                 << tgp_Fint_old->get(index) << " "
+                 << tgp_Fint->get(index) << " to "
+                 << out[0]-F_eg << endl;
+          } else if (j>=jout) {
+            cout.width(3);
+            cout << index[0] << " ";
+            cout.width(2);
+            cout << index[1] << " ";
+            cout.width(2);
+            cout << index[2] << " ";
+            cout << nB <<  " " << Ye << " "
+                 << T_MeV << " ";
+            cout.setf(ios::showpos);
+            cout << tgp_F_old->get(index)
+                 << " " << out[0] << endl;
+            cout.unsetf(ios::showpos);
+            jout+=fix_list.size()/90;
+          }
+          tgp_F->get(index)=out[0];
+          tgp_Fint->get(index)=out[0]-F_eg;
+        } else {
+          cout << "Change Fint (fix) from " << tgp_Fint->get(index)
+               << " to " << out[0] << endl;
+          tgp_Fint->get(index)=out[0];
+          tgp_F->get(index)=out[0]+F_eg;
+        }
+      }
+
+    }
+
+    if (false) {
+      
+      // Use the interpolation results to modify the calibration
+      // points nearby
+      
+      jout=0;
+      cout << "Updates for calib list: " << endl;
+      for(size_t j=0;j<calib_list.size();j+=3) {
+        
+        vector<size_t> index={calib_list[j],calib_list[j+1],
+                              calib_list[j+2]};
+        
+        double nB=nB_grid[index[0]];
+        double Ye=Ye_grid[index[1]];
+        double T_MeV=T_grid[index[2]];
+        
+        double fact=1.0/(1.0+exp(2.0*(calib_dists[j/3]-window/2.0)));
+        
+        // Lepton photon contribution in MeV
+        double F_eg=tgp_F->get(index)-tgp_Fint->get(index);
+        
+        ubvector index2(3);
+        index2[0]=index[0];
+        index2[1]=index[1];
+        index2[2]=index[2];
+        
+        if (py_fit) {
+          ipy.eval(index2,out);
+        } else {
+          eval(index2,out);
+        }
+        
+        //cout << "dist,fact,F,out: " << calib_dists[j/3] << " " <<
+        //fact << " " << tgp_F->get(index) << " " << out[0] << endl;
+        
+        if (true) {
+          if (interp_Fint==false) {
+            double corr=out[0]-tgp_F->get(index);
+            if (false) {
+              cout << "Change F (calib) from " << tgp_F->get(index) << " to "
+                   << tgp_F->get(index)+fact*corr << " at dist: "
+                   << calib_dists[j/3] << endl;
+              cout << "Change Fint (calib) from "
+                   << tgp_Fint->get(index) << " to "
+                   << tgp_F->get(index)-F_eg << " at dist: "
+                   << calib_dists[j/3] << endl;
+            } else if (j>=jout) {
+              cout.width(3);
+              cout << index[0] << " ";
+              cout.width(2);
+              cout << index[1] << " ";
+              cout.width(2);
+              cout << index[2] << " ";
+              cout << nB <<  " " << Ye << " "
+                   << T_MeV << " ";
+              cout.setf(ios::showpos);
+              cout << tgp_F_old->get(index) << " ";
+              //cout << tgp_F_old->get(index)+fact*corr << " "
+              cout << out[0] << " ";
+              cout << fact*corr << endl;
+              cout.unsetf(ios::showpos);
+              jout+=calib_list.size()/90;
+            }
+            tgp_F->get(index)+=fact*corr;
+            tgp_Fint->get(index)=tgp_F->get(index)-F_eg;
+          } else {
+            double corr=out[0]-tgp_Fint->get(index);
+            cout << "Change Fint (calib) from " << tgp_Fint->get(index)
+                 << " to "
+                 << tgp_Fint->get(index)+fact*corr << " at dist: "
+                 << calib_dists[j/3] << endl;
+            tgp_Fint->get(index)+=fact*corr;
+            tgp_F->get(index)=out[0]+F_eg;
+          }
+        }
+        
+      }
+      
+    }
+
+    if (false) {
+      table_units<> tup;
+      tup.line_of_names("j Ye F0 intp0 F1 intp1 F2 intp2");
+      tup.set_nlines(j_max-j_min+1);
+      for(size_t imi=0;imi<3;imi++) {
+        size_t kp=(k_max+k_min)/2;
+        size_t ip=(i_min*(imi+1)+i_max*(3-imi))/4;
+        cout << "ip,kp: " << ip << " " << kp << endl;
+        for(size_t jp=j_min;jp<=j_max;jp++) {
+          vector<size_t> index={ip,jp,kp};
+          ubvector index2(3);
+          index2[0]=index[0];
+          index2[1]=index[1];
+          index2[2]=index[2];
+          eval(index2,out);
+          ipy.eval(index2,out);
+          if (imi==0) {
+            tup.set("j",jp-j_min,jp);
+            tup.set("Ye",jp-j_min,Ye_grid[jp]);
+            tup.set("F0",jp-j_min,tgp_F_old->get(index));
+            tup.set("intp0",jp-j_min,out[0]);
+          } else if (imi==1) {
+            tup.set("F1",jp-j_min,tgp_F_old->get(index));
+            tup.set("intp1",jp-j_min,out[0]);
+          } else {
+            tup.set("F2",jp-j_min,tgp_F_old->get(index));
+            tup.set("intp2",jp-j_min,out[0]);
+          }
+        }
+      }
+      table_units<> tcalib;
+      tcalib.line_of_names("i j k nB Ye T F");
+      for(size_t j=0;j<calib_list.size();j+=3) {
+        vector<size_t> index={calib_list[j],calib_list[j+1],
+                              calib_list[j+2]};
+        
+        double nB=nB_grid[index[0]];
+        double Ye=Ye_grid[index[1]];
+        double T_MeV=T_grid[index[2]];
+        vector<double> vv={(double)index[0],
+                           (double)index[1],(double)index[2],
+                           nB,Ye,T_MeV,tgp_F_old->get(index)};
+        tcalib.line_of_data(vv.size(),vv);
+      }
+      table_units<> tfix;
+      tfix.line_of_names("i j k nB Ye T F");
+      for(size_t j=0;j<fix_list.size();j+=3) {
+        vector<size_t> index={fix_list[j],fix_list[j+1],
+                              fix_list[j+2]};
+        
+        double nB=nB_grid[index[0]];
+        double Ye=Ye_grid[index[1]];
+        double T_MeV=T_grid[index[2]];
+        vector<double> vv={(double)index[0],(double)index[1],
+                           (double)index[2],
+                           nB,Ye,T_MeV,tgp_F_old->get(index)};
+        tfix.line_of_data(vv.size(),vv);
+      }
+      hdf_file hf;
+      hf.open_or_create("eit.o2");
+      hdf_output(hf,tup,"eit");
+      hdf_output(hf,tcalib,"calib");
+      hdf_output(hf,tfix,"fix");
+      hf.close();
+      cout << "Created eit." << endl;
+      exit(-1);
+    }
+    
     if (false) {
       tensor_grid3<> tg3x;
 
@@ -1150,8 +1503,6 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
     
     std::vector<std::string> sv2;
 
-    eos_nuclei *enp2=(eos_nuclei *)enp;
-  
     // Computing the derivatives is fast, so we just do the full table
     enp2->eos_deriv(sv2,false);
 
@@ -1164,7 +1515,29 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
 
     // Update the stability and second derivatives
     enp2->stability(sv2,false);
-    
+
+    cout << "XA Stability failures: " << enp2->n_stability_fail << endl;
+
+    if (true) {
+      hdf_file hf;
+      hf.open_or_create("big2_st.o2");
+      hdf_output(hf,enp2->dmundnB,"dmundnB");
+      hdf_output(hf,enp2->dmundYe,"dmundYe");
+      hdf_output(hf,enp2->dmupdYe,"dmupdYe");
+      hdf_output(hf,enp2->dsdnB,"dsdnB");
+      hdf_output(hf,enp2->dsdYe,"dsdYe");
+      hdf_output(hf,enp2->dsdT,"dsdT");
+      hdf_output(hf,enp2->egv[0],"egv0");
+      hdf_output(hf,enp2->egv[1],"egv1");
+      hdf_output(hf,enp2->egv[2],"egv2");
+      hdf_output(hf,enp2->egv[3],"egv3");
+      hdf_output(hf,enp2->tg_cs2,"cs2");
+      hdf_output(hf,enp2->tg_cs2_hom,"cs2_hom");
+      hf.close();
+
+      enp2->write_results("big2.o2");
+    }
+
     // Change free energies back to original
 
     for(size_t j=0;j<fix_list.size();j+=3) {
@@ -1266,6 +1639,8 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
       }
       return 2;
     }
+    cout << "Here1." << endl;
+    exit(-1);
 
     /*
     if (enp2->n_stability_fail>0) {
