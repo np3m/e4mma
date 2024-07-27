@@ -344,12 +344,13 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
   i_fix=80;
   j_fix=40;
   k_fix=15;
-  iwindow=80;
+  iwindow=85;
   int jwindow=12;
   int kwindow=15;
 
   // First pass, determine all the points to fix and
   // calibrate in the neighborhood of the user-specified point
+  
   for(int dnB=-iwindow;dnB<=iwindow;dnB++) {
     for(int dYe=-jwindow;dYe<=jwindow;dYe++) {
       for(int dT=-kwindow;dT<=kwindow;dT++) {
@@ -400,6 +401,7 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
        << endl;
 
   // Second pass, find points to calibrate and fix near fix_list
+  
   if (true) {
     std::vector<size_t> fix_list2;
     for(int dnB=-iwindow;dnB<=iwindow;dnB++) {
@@ -435,14 +437,16 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
                 tg_cs2.get(index)>0.0) {
               for(size_t ifl=0;ifl<ike.fix_list.size()/3;ifl++) {
                 if (ike.dist_f(index[0],index[1],index[2],ifl)<7.1) {
-                  if (index[0]%3==0 && index[1]%3==0 && index[2]%3==0) {
+                  if (index[0]%2==0 && index[1]%2==0 && index[2]%2==0) {
                     ike.calib_list.push_back(index[0]);
                     ike.calib_list.push_back(index[1]);
                     ike.calib_list.push_back(index[2]);
+                    ifl=ike.fix_list.size()/3;
                   } else if (ike.dist_f(index[0],index[1],index[2],ifl)<4.1) {
                     fix_list2.push_back(index[0]);
                     fix_list2.push_back(index[1]);
                     fix_list2.push_back(index[2]);
+                    ifl=ike.fix_list.size()/3;
                   }
                   if (false) {
                     cout << index[0] << " " << index[1] << " "
@@ -453,7 +457,6 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
                     //char ch;
                     //cin >> ch;
                   }
-                  ifl=ike.fix_list.size()/3;
                 }
               }
             }
@@ -539,10 +542,10 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
     ike.set_covar(mfr2,param_lists);
   }
 
-  ike.py_fit=true;
-  
   // Use the covariance object to set the data, skipping the
   // optimization for now and performing it manually
+  
+  ike.py_fit=true;
   
   ike.addl_verbose=1;
 
@@ -1000,36 +1003,47 @@ void interpm_krige_eos::set() {
   } else {
 
     int ac_ret=1;
-    double len=0.3;
-    while (ac_ret!=0 && len<50.0) {
-      
-      if (true) {
-        ipy.set_functions("o2sclpy","set_data_str","eval","eval_unc",
-                          "interpm_sklearn_gp",
-                          ((std::string)"verbose=0,transform_in=none,")+
-                          "kernel=ConstantKernel"+
-                          "(1.0,constant_value_bounds=\"fixed\")*"+
-                          "RBF("+o2scl::dtos(len)+
-                          ",length_scale_bounds=\"fixed\")");
-      } else {
-        ipy.set_functions("o2sclpy","set_data_str","eval","eval",
-                          "interpm_tf_dnn",
-                          ((std::string)"verbose=1,")+
-                          "transform_in=quant,"+
-                          "transform_out=quant,"+
-                          "hlayers=[200,400,200]",1);
+    for(double norm=0.5;norm<2.0;norm*=1.2) {
+      for(double len=4.0;len<50.0;len*=1.5) {
+        //norm=0.864;
+        //len=6.0;
+        
+        if (true) {
+          ipy.set_functions("o2sclpy","set_data_str","eval","eval_unc",
+                            "interpm_sklearn_gp",
+                            ((std::string)"verbose=0,transform_in=none,")+
+                            "kernel=ConstantKernel("+
+                            o2scl::dtos(len)+
+                            ",constant_value_bounds=\"fixed\")*"+
+                            "RBF("+o2scl::dtos(len)+
+                            ",length_scale_bounds=\"fixed\")");
+        } else {
+          ipy.set_functions("o2sclpy","set_data_str","eval","eval",
+                            "interpm_tf_dnn",
+                            ((std::string)"verbose=1,")+
+                            "transform_in=quant,"+
+                            "transform_out=quant,"+
+                            "hlayers=[200,400,200]",1);
+        }
+        
+        ubmatrix ix3=ix2;
+        ubmatrix iy3=iy2;
+        ipy.set_data(3,1,calib_list.size()/3,ix3,iy3);
+        
+        double retx;
+        ac_ret=addl_const(0,retx);
+        
+        std::cout << "XA: " << norm << " " << len << " "
+                  << ac_ret << std::endl;
+        
+        //norm*=100.0;
+        //len*=100.0;
+        //exit(-1);
+        
       }
-      
-      ubmatrix ix3=ix2;
-      ubmatrix iy3=iy2;
-      ipy.set_data(3,1,calib_list.size()/3,ix3,iy3);
-      
-      double retx;
-      ac_ret=addl_const(0,retx);
-      
-      len*=2.0;
-      std::cout << "XA: " << len << " " << ac_ret << std::endl;
     }
+
+    exit(-1);
   }
 
   return;
@@ -1186,10 +1200,8 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
     enp2->add_eg(vs2,false);
     
     // Update the stability and second derivatives
-    cout << "AA" << addl_verbose << endl;
     enp2->stability(vs2,false);
-    cout << "BB" << addl_verbose << endl;
-    cout << "ZZ: " << addl_verbose << " " << enp2->n_stability_fail << endl;
+    cout << "XA Stability failures: " << enp2->n_stability_fail << endl;
     
   }
   
@@ -1265,81 +1277,83 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
     }
 
     if (false) {
-    // Use the interpolation results to modify the calibration points nearby
-
-    jout=0;
-    cout << "Updates for calib list: " << endl;
-    for(size_t j=0;j<calib_list.size();j+=3) {
       
-      vector<size_t> index={calib_list[j],calib_list[j+1],
-        calib_list[j+2]};
+      // Use the interpolation results to modify the calibration
+      // points nearby
       
-      double nB=nB_grid[index[0]];
-      double Ye=Ye_grid[index[1]];
-      double T_MeV=T_grid[index[2]];
-
-      double fact=1.0/(1.0+exp(2.0*(calib_dists[j/3]-window/2.0)));
-      
-      // Lepton photon contribution in MeV
-      double F_eg=tgp_F->get(index)-tgp_Fint->get(index);
-      
-      ubvector index2(3);
-      index2[0]=index[0];
-      index2[1]=index[1];
-      index2[2]=index[2];
-      
-      if (py_fit) {
-        ipy.eval(index2,out);
-      } else {
-        eval(index2,out);
-      }
-
-      //cout << "dist,fact,F,out: " << calib_dists[j/3] << " " << fact << " "
-      //<< tgp_F->get(index) << " " << out[0] << endl;
-
-      if (true) {
-        if (interp_Fint==false) {
-          double corr=out[0]-tgp_F->get(index);
-          if (false) {
-            cout << "Change F (calib) from " << tgp_F->get(index) << " to "
-                 << tgp_F->get(index)+fact*corr << " at dist: "
-                 << calib_dists[j/3] << endl;
-            cout << "Change Fint (calib) from "
-                 << tgp_Fint->get(index) << " to "
-                 << tgp_F->get(index)-F_eg << " at dist: "
-                 << calib_dists[j/3] << endl;
-          } else if (j>=jout) {
-            cout.width(3);
-            cout << index[0] << " ";
-            cout.width(2);
-            cout << index[1] << " ";
-            cout.width(2);
-            cout << index[2] << " ";
-            cout << nB <<  " " << Ye << " "
-                 << T_MeV << " ";
-            cout.setf(ios::showpos);
-            cout << tgp_F_old->get(index) << " ";
-            //cout << tgp_F_old->get(index)+fact*corr << " "
-            cout << out[0] << " ";
-            cout << fact*corr << endl;
-            cout.unsetf(ios::showpos);
-            jout+=calib_list.size()/90;
-          }
-          tgp_F->get(index)+=fact*corr;
-          tgp_Fint->get(index)=tgp_F->get(index)-F_eg;
+      jout=0;
+      cout << "Updates for calib list: " << endl;
+      for(size_t j=0;j<calib_list.size();j+=3) {
+        
+        vector<size_t> index={calib_list[j],calib_list[j+1],
+                              calib_list[j+2]};
+        
+        double nB=nB_grid[index[0]];
+        double Ye=Ye_grid[index[1]];
+        double T_MeV=T_grid[index[2]];
+        
+        double fact=1.0/(1.0+exp(2.0*(calib_dists[j/3]-window/2.0)));
+        
+        // Lepton photon contribution in MeV
+        double F_eg=tgp_F->get(index)-tgp_Fint->get(index);
+        
+        ubvector index2(3);
+        index2[0]=index[0];
+        index2[1]=index[1];
+        index2[2]=index[2];
+        
+        if (py_fit) {
+          ipy.eval(index2,out);
         } else {
-          double corr=out[0]-tgp_Fint->get(index);
-          cout << "Change Fint (calib) from " << tgp_Fint->get(index)
-               << " to "
-               << tgp_Fint->get(index)+fact*corr << " at dist: "
-               << calib_dists[j/3] << endl;
-          tgp_Fint->get(index)+=fact*corr;
-          tgp_F->get(index)=out[0]+F_eg;
+          eval(index2,out);
         }
+        
+        //cout << "dist,fact,F,out: " << calib_dists[j/3] << " " <<
+        //fact << " " << tgp_F->get(index) << " " << out[0] << endl;
+        
+        if (true) {
+          if (interp_Fint==false) {
+            double corr=out[0]-tgp_F->get(index);
+            if (false) {
+              cout << "Change F (calib) from " << tgp_F->get(index) << " to "
+                   << tgp_F->get(index)+fact*corr << " at dist: "
+                   << calib_dists[j/3] << endl;
+              cout << "Change Fint (calib) from "
+                   << tgp_Fint->get(index) << " to "
+                   << tgp_F->get(index)-F_eg << " at dist: "
+                   << calib_dists[j/3] << endl;
+            } else if (j>=jout) {
+              cout.width(3);
+              cout << index[0] << " ";
+              cout.width(2);
+              cout << index[1] << " ";
+              cout.width(2);
+              cout << index[2] << " ";
+              cout << nB <<  " " << Ye << " "
+                   << T_MeV << " ";
+              cout.setf(ios::showpos);
+              cout << tgp_F_old->get(index) << " ";
+              //cout << tgp_F_old->get(index)+fact*corr << " "
+              cout << out[0] << " ";
+              cout << fact*corr << endl;
+              cout.unsetf(ios::showpos);
+              jout+=calib_list.size()/90;
+            }
+            tgp_F->get(index)+=fact*corr;
+            tgp_Fint->get(index)=tgp_F->get(index)-F_eg;
+          } else {
+            double corr=out[0]-tgp_Fint->get(index);
+            cout << "Change Fint (calib) from " << tgp_Fint->get(index)
+                 << " to "
+                 << tgp_Fint->get(index)+fact*corr << " at dist: "
+                 << calib_dists[j/3] << endl;
+            tgp_Fint->get(index)+=fact*corr;
+            tgp_F->get(index)=out[0]+F_eg;
+          }
+        }
+        
       }
       
-    }
-
     }
 
     if (false) {
@@ -1500,10 +1514,30 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
     enp2->add_eg(sv2,false);
 
     // Update the stability and second derivatives
-    cout << "AA" << addl_verbose << endl;
     enp2->stability(sv2,false);
-    
-    cout << "XA: " << addl_verbose << " " << enp2->n_stability_fail << endl;
+
+    cout << "XA Stability failures: " << enp2->n_stability_fail << endl;
+
+    if (true) {
+      hdf_file hf;
+      hf.open_or_create("big2_st.o2");
+      hdf_output(hf,enp2->dmundnB,"dmundnB");
+      hdf_output(hf,enp2->dmundYe,"dmundYe");
+      hdf_output(hf,enp2->dmupdYe,"dmupdYe");
+      hdf_output(hf,enp2->dsdnB,"dsdnB");
+      hdf_output(hf,enp2->dsdYe,"dsdYe");
+      hdf_output(hf,enp2->dsdT,"dsdT");
+      hdf_output(hf,enp2->egv[0],"egv0");
+      hdf_output(hf,enp2->egv[1],"egv1");
+      hdf_output(hf,enp2->egv[2],"egv2");
+      hdf_output(hf,enp2->egv[3],"egv3");
+      hdf_output(hf,enp2->tg_cs2,"cs2");
+      hdf_output(hf,enp2->tg_cs2_hom,"cs2_hom");
+      hf.close();
+
+      enp2->write_results("big2.o2");
+    }
+
     // Change free energies back to original
 
     for(size_t j=0;j<fix_list.size();j+=3) {
@@ -1516,7 +1550,6 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
       
     }    
     
-    cout << "BB" << endl;
     for(size_t j=0;j<calib_list.size();j+=3) {
       
       vector<size_t> index={calib_list[j],calib_list[j+1],
@@ -1527,7 +1560,6 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
       
     }    
     
-    cout << "CC" << endl;
     for(size_t j=0;j<fix_list.size();j+=3) {
       
       vector<size_t> ix={fix_list[j],fix_list[j+1],
@@ -1553,7 +1585,6 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
           tgp_cs2->get(ix)<0.0 || 
           !std::isfinite(tgp_cs2->get(ix)) || 
           dPdnB<0.0 || !std::isfinite(dPdnB)) {
-        cout << "DD " << addl_verbose << endl;
         if (addl_verbose>=1) {
           cout << "Return failure at fix point." << endl;
         }
@@ -1567,7 +1598,6 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
     
     size_t n_calib_fail=0;
     
-    cout << "EE" << endl;
     for(size_t j=0;j<calib_list.size();j+=3) {
       
       vector<size_t> ix={calib_list[j],calib_list[j+1],
@@ -1598,7 +1628,6 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
       
     }
     
-    cout << "FF" << endl;
     if (n_calib_fail>fix_list.size()/9) {
       if (addl_verbose>=1) {
         cout << n_calib_fail << " calibration failures and "

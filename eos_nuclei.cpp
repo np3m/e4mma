@@ -112,7 +112,7 @@ eos_nuclei::eos_nuclei() {
   loaded=false;
   file_update_time=1800;
   file_update_iters=100000;
-
+  
   // These function calls do nothing if these environment variables
   // are not defined
   slack.set_channel_from_env("O2SCL_SLACK_CHANNEL");
@@ -2007,12 +2007,19 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
         }
         Eigen::VectorXcd eivals=mat2.eigenvalues();
 #endif
-        
-        // Compute eigenvalues using SVD
-        o2scl_linalg::SV_decomp(4,4,mat,V,sing,work);
-        
-        for(size_t ij=0;ij<4;ij++) {
-          egv[ij].get(ix)=sing[ij];
+
+        if (false) {
+          // Compute eigenvalues using SVD
+          o2scl_linalg::SV_decomp(4,4,mat,V,sing,work);
+          
+          for(size_t ij=0;ij<4;ij++) {
+            egv[ij].get(ix)=sing[ij];
+          }
+        } else {
+          sing[0]=1.0;
+          sing[1]=1.0;
+          sing[2]=1.0;
+          sing[3]=1.0;
         }
         
         if (sing[0]<0.0 || sing[1]<0.0 || sing[2]<0.0 ||
@@ -2079,7 +2086,7 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
         }
 
         // This code requires a model to compute the homogeneous cs2
-        if (true) {
+        if (false) {
           neutron.n=nB*(1.0-Ye);
           proton.n=nB*Ye;
           thermo th;
@@ -2089,6 +2096,8 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
             cout << "cs2 (het,hom): " << cs_sq << " "
                  << tg_cs2_hom.get(ix) << endl;
           }
+        } else {
+          tg_cs2_hom.get(ix)=0.5;
         }
         
         if (cs_sq<0.0 || cs_sq>1.0 || !std::isfinite(cs_sq)) {
