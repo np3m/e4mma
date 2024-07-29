@@ -1003,42 +1003,46 @@ void interpm_krige_eos::set() {
   } else {
 
     int ac_ret=1;
-    for(double alpha=0.5;alpha<2.0;alpha*=1.2) {
-      for(double len=4.0;len<50.0;len*=1.5) {
-        alpha=0.864;
-        len=13.5;
-	
-        if (true) {
-          ipy.set_functions("o2sclpy","set_data_str","eval","eval_unc",
-                            "interpm_sklearn_gp",
-                            ((std::string)"verbose=0,transform_in=none,")+
-                            "kernel=RationalQuadratic("+
-			    "length_scale="+o2scl::dtos(len)+
-                            ",alpha="+o2scl::dtos(alpha)+
-                            ",length_scale_bounds=\"fixed\""+
-			    ",alpha_bounds=\"fixed\")",0);
-        } else {
-          ipy.set_functions("o2sclpy","set_data_str","eval","eval",
-                            "interpm_tf_dnn",
-                            ((std::string)"verbose=1,")+
-                            "transform_in=quant,"+
-                            "transform_out=quant,"+
-                            "hlayers=[200,400,200]",1);
+    for(double Tscale=0.5;Tscale<2.0;Tscale*=1.2) {
+      for(double Yescale=0.5;Yescale<2.0;Yescale*=1.2) {
+        for(double len=4.0;len<50.0;len*=1.5) {
+          //alpha=0.864;
+          //len=13.5;
+          
+          if (true) {
+            ipy.set_functions("o2sclpy","set_data_str","eval","eval_unc",
+                              "interpm_sklearn_gp",
+                              ((std::string)"verbose=0,transform_in=none,")+
+                              "kernel=RBF("+
+                              "length_scale="+o2scl::dtos(len)+
+                              ",length_scale_bounds=\"fixed\")",0);
+          } else {
+            ipy.set_functions("o2sclpy","set_data_str","eval","eval",
+                              "interpm_tf_dnn",
+                              ((std::string)"verbose=1,")+
+                              "transform_in=quant,"+
+                              "transform_out=quant,"+
+                              "hlayers=[200,400,400,200]",1);
+          }
+          
+          ubmatrix ix3=ix2;
+          ubmatrix iy3=iy2;
+          for(size_t irow=0;irow<ix3.size1();irow++) {
+            ix3(irow,1)*=Yescale;
+            ix3(irow,2)*=Tscale;
+          }
+          ipy.set_data(3,1,calib_list.size()/3,ix3,iy3);
+          
+          double retx;
+          ac_ret=addl_const(0,retx);
+          
+          std::cout << "XA: " << Tscale << " " << Yescale << " " << len << " "
+                    << ac_ret << std::endl;
+          
+          //alpha*=100.0;
+          //len*=100.0;
+          exit(-1);
         }
-        
-        ubmatrix ix3=ix2;
-        ubmatrix iy3=iy2;
-        ipy.set_data(3,1,calib_list.size()/3,ix3,iy3);
-        
-        double retx;
-        ac_ret=addl_const(0,retx);
-        
-        std::cout << "XA: " << alpha << " " << len << " "
-                  << ac_ret << std::endl;
-        
-        //alpha*=100.0;
-        //len*=100.0;
-        exit(-1);
         
       }
     }
