@@ -1003,8 +1003,8 @@ void interpm_krige_eos::set() {
   } else {
 
     int ac_ret=1;
-    for(double Tscale=0.5;Tscale<2.0;Tscale*=1.2) {
-      for(double Yescale=0.5;Yescale<2.0;Yescale*=1.2) {
+    for(Tscale=0.5;Tscale<2.0;Tscale*=1.2) {
+      for(Yescale=0.5;Yescale<2.0;Yescale*=1.2) {
         for(double len=4.0;len<50.0;len*=1.5) {
           //alpha=0.864;
           //len=13.5;
@@ -1238,6 +1238,8 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
       index2[2]=index[2];
 
       if (py_fit) {
+        index2[1]*=Yescale;
+        index2[2]*=Tscale;
         ipy.eval(index2,out);
       } else {
         eval(index2,out);
@@ -1307,6 +1309,8 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
         index2[2]=index[2];
         
         if (py_fit) {
+          index2[1]*=Yescale;
+          index2[2]*=Tscale;
           ipy.eval(index2,out);
         } else {
           eval(index2,out);
@@ -1375,6 +1379,8 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
           index2[1]=index[1];
           index2[2]=index[2];
           eval(index2,out);
+          index2[1]*=Yescale;
+          index2[2]*=Tscale;
           ipy.eval(index2,out);
           if (imi==0) {
             tup.set("j",jp-j_min,jp);

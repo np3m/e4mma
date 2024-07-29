@@ -97,6 +97,8 @@ class interpm_krige_eos :
   //o2scl_linalg::matrix_invert_det_eigen<Eigen::MatrixXd>> {
   
 public:
+
+  double Yescale, Tscale;
   
   // Typedefs from the specialized template parameters
   typedef ubmatrix_col mat_y_col_t;
