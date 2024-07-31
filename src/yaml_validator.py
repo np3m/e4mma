@@ -16,7 +16,7 @@ from openapi_core.testing import MockRequest
 DEFAULT_API_FILE_PATH = os.path.join(os.path.dirname(__file__), '..', 'api/OpenAPI_Specifications_UTK.yaml')
 DEFAULT_CONFIG_FILE_PATH = os.path.join(os.path.dirname(__file__), '..', 'input/config.yaml')
 DEFAULT_VALID_CONFIG_FILE_PATH = os.path.join(os.path.dirname(__file__), '..', 'input/validated_config.yaml')
-
+STATUS_FILE_PATH = os.path.join(os.path.dirname(__file__), '..', 'output/status.yaml')
 
 def main():
     # Parse command line arguments
@@ -95,5 +95,21 @@ def validate_unmarshal_file(spec_file_path, input_file_path, valid_file_path, ve
 
 if __name__ == "__main__":
     print("\nStarting execution of yaml_validation.py...")
-    main()
+
+    # Create status.yaml file and write pre-validation message
+    with open(STATUS_FILE_PATH, 'w') as statusfile:
+        yaml.safe_dump({"code": 200, "message": "Validating configuration data provided by user"}, statusfile)
+    
+    try:
+        main()
+    except:
+        # Write failure message if validation fails and raise exception
+        with open(STATUS_FILE_PATH, 'w') as statusfile:
+            yaml.safe_dump({"code": 400, "message": "Validation failed, fix errors in configuration data"}, statusfile)
+        raise
+    else:
+        # Write success message to status file
+        with open(STATUS_FILE_PATH, 'w') as statusfile:
+            yaml.safe_dump({"code": 200, "message": "Successfully validated configuration data"}, statusfile)
+    
     print("\nFinished yaml_validation.py...")

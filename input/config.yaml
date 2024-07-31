@@ -1,3 +1,0 @@
-load: ../data/fid_3_5_22.o2
-output_format: HDF5
-set: {}

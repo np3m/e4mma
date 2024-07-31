@@ -23,23 +23,18 @@ fi
 # Convert the file paths to absolute paths
 USER_CONFIG_YAML_PATH=$(realpath "$USER_CONFIG_YAML_PATH")
 
-# Create the 'input' and 'output' directories if they do not already exist
-#mkdir -p ../input
-#mkdir -p ../output
-
 # Check if user config file exists
 if [ ! -f "$USER_CONFIG_YAML_PATH" ]; then
     echo "YAML configuration file does not exist: $USER_CONFIG_YAML_PATH"
     echo "creating default configuration file: $USER_CONFIG_YAML_PATH"
-fi
-
-python3 ../src/yaml_generator.py \
+    python3 ../src/yaml_generator.py \
 	--verbose 0 \
 	--load fid_3_5_22.o2 \
 	--output_format HDF5 \
     --nB_grid_spec '301,10^(i*0.04-12)*2.0' \
 	--Ye_grid_spec '70,0.01*(i+1)' \
     --inc_lepton 'false'
+fi
 
 # Check if the user config file is not in the expected location; copy it if needed.
 if [ "$USER_CONFIG_YAML_PATH" != "$(realpath "../input/config.yaml")" ]; then
