@@ -18,9 +18,9 @@ image:
     url: "https://github.com/np3m/e4mma"
     git: "https://github.com/np3m/e4mma.git"
     path: "Dockerfile"
-    targetRevision: "99b9c31603ed8b36b94238b61f4542ce6ab6a76c"
+    targetRevision: "9db557302056e18aaa73fb47ca1f78e1d9260b2c"
 docs:
-  path: "doc/"
+  path: "docs/src"
 ## Labels must be unique across both inputs and outputs
 inputs:
   - label: config

@@ -148,8 +148,10 @@ COPY --chown=$UID:$UID src/makefile \
 COPY --chown=$UID:$UID manifest.yaml /opt/e4mma/
 COPY --chown=$UID:$UID test /opt/e4mma/test
 COPY --chown=$UID:$UID api /opt/e4mma/api
-COPY --chown=$UID:$UID input /opt/e4mma/input
-COPY --chown=$UID:$UID output /opt/e4mma/output
+## Create input and output directories
+RUN mkdir /opt/e4mma/input/ && chown $UID:$UID /opt/e4mma/input/
+RUN mkdir /opt/e4mma/output/ && chown $UID:$UID /opt/e4mma/output/
+
 
 # Set environment variables
 ENV O2SCL_ADDL_LIBS="/usr/lib/gcc/x86_64-linux-gnu/12/libgomp.so"

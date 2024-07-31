@@ -11,11 +11,9 @@ PYTHON="$(command -v python3 2>/dev/null || echo python)"
 
 # Default file paths
 USER_CONFIG_YAML_PATH="../input/config.yaml"
-USER_STATUS_YAML_PATH="../output/status.yaml"
 
 python3 ../src/Status.py \
-    200 \
-    "Starting E4MMA running w/o Lepton" 
+    200 "Starting E4MMA running w/o Lepton" 
 
 # Check if command-line arguments are given to overwrite defaults
 if [ $# -ge 1 ]; then
@@ -24,24 +22,24 @@ fi
 
 # Convert the file paths to absolute paths
 USER_CONFIG_YAML_PATH=$(realpath "$USER_CONFIG_YAML_PATH")
-USER_STATUS_YAML_PATH=$(realpath "$USER_STATUS_YAML_PATH")
 
 # Create the 'input' and 'output' directories if they do not already exist
-mkdir -p ../input
-mkdir -p ../output
+#mkdir -p ../input
+#mkdir -p ../output
 
 # Check if user config file exists
 if [ ! -f "$USER_CONFIG_YAML_PATH" ]; then
     echo "YAML configuration file does not exist: $USER_CONFIG_YAML_PATH"
     echo "creating default configuration file: $USER_CONFIG_YAML_PATH"
-    python3 ../src/yaml_generator.py \
+fi
+
+python3 ../src/yaml_generator.py \
 	--verbose 0 \
 	--load fid_3_5_22.o2 \
 	--output_format HDF5 \
     --nB_grid_spec '301,10^(i*0.04-12)*2.0' \
 	--Ye_grid_spec '70,0.01*(i+1)' \
     --inc_lepton 'false'
-fi
 
 # Check if the user config file is not in the expected location; copy it if needed.
 if [ "$USER_CONFIG_YAML_PATH" != "$(realpath "../input/config.yaml")" ]; then
@@ -104,8 +102,7 @@ fi
 if [ "$EOS_DATA_HDF5_PATH" != "$(realpath "../data/$(basename "$EOS_DATA_HDF5_PATH")")" ]; then
     echo "Error: EOS data file is not in data/ directory: $EOS_DATA_HDF5_PATH"
     python3 ../src/Status.py \
-    400 \
-    "Error: EOS data file is not in data/ directory" \
+    400 "Error: EOS data file is not in data/ directory" \
     exit 1
 fi
 
@@ -126,13 +123,11 @@ $PYTHON ../src/postprocess.py
 if [ $? -eq 0 ]; then
   echo -e "\n\tE4MMA running w/o Lepton: OK\n"
   python3 ../src/Status.py \
-    200 \
-    "Success: E4MMA running w/o Lepton: OK" 
+    200 "Success: E4MMA running w/o Lepton: OK" 
 else
   echo -e "\n\tE4MMA running w/o Lepton: Failed\n"
   python3 ../src/Status.py \
-    400 \
-    "Error: E4MMA running w/o Lepton: Failed"
+    400 "Error: E4MMA running w/o Lepton: Failed"
   exit 1
 fi
 
