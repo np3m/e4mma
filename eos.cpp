@@ -871,61 +871,7 @@ double eos::free_energy_density_virial
     dmupdnp=T/zp*vsd.dzpdnp;
     dmundT=log(zn)+T/zn*vsd.dzndT;
     dmupdT=log(zp)+T/zp*vsd.dzpdT;
-    
-    double zn_old=zn, zp_old=zp;
-    double dmundnn_old=dmundnn;
-    double dmundnp_old=dmundnp;
-    double dmupdnn_old=dmupdnn;
-    double dmupdnp_old=dmupdnp;
-    double dmundT_old=dmundT;
-    double dmupdT_old=dmupdT;
 
-    if (false) {
-    
-      if (fabs(zn-zn_old)/fabs(zn_old)>1.0e-5 ||
-	  fabs(zp-zp_old)/fabs(zp_old)>1.0e-5) {
-	cout << "Disagreement." << endl;
-	cout << "nn,np,TMeV: " << n.n << " " << p.n << " "
-	     << T*hc_mev_fm << endl;
-	cout << "zn,zp(old): " << zn_old << " " << zp_old << endl;
-	cout << "zn,zp(new): " << zn << " " << zp << endl;
-	exit(-1);
-      }
-    
-      if (fabs(dmundnn-dmundnn_old)/fabs(dmundnn_old)>1.0e-5 ||
-	  fabs(dmundnp-dmundnp_old)/fabs(dmundnp_old)>1.0e-5) {
-	cout << "Disagreement 2." << endl;
-	cout << "nn,np,TMeV: " << n.n << " " << p.n << " "
-	     << T*hc_mev_fm << endl;
-	cout << "dmundnn,dmundnp(old): " << dmundnn_old << " "
-	     << dmundnp_old << endl;
-	cout << "dmundnn,dmundnp(new): " << dmundnn << " "
-	     << dmundnp << endl;
-	exit(-1);
-      }
-    
-      if (fabs(dmupdnn-dmupdnn_old)/fabs(dmupdnn_old)>1.0e-5 ||
-	  fabs(dmupdnp-dmupdnp_old)/fabs(dmupdnp_old)>1.0e-5) {
-	cout << "Disagreement 3." << endl;
-	cout << "nn,np,TMeV: " << n.n << " " << p.n << " "
-	     << T*hc_mev_fm << endl;
-	cout << "zn,zp(old): " << zn_old << " " << zp_old << endl;
-	cout << "zn,zp(new): " << zn << " " << zp << endl;
-	exit(-1);
-      }
-    
-      if (fabs(dmupdT-dmupdT_old)/fabs(dmupdT_old)>1.0e-5 ||
-	  fabs(dmupdT-dmupdT_old)/fabs(dmupdT_old)>1.0e-5) {
-	cout << "Disagreement 4." << endl;
-	cout << "nn,np,TMeV: " << n.n << " " << p.n << " "
-	     << T*hc_mev_fm << endl;
-	cout << "zn,zp(old): " << zn_old << " " << zp_old << endl;
-	cout << "zn,zp(new): " << zn << " " << zp << endl;
-	exit(-1);
-      }
-
-    }
-    
   } else {
     
     // Otherwise, the virial correction is negligable, so
@@ -1589,10 +1535,12 @@ double eos::free_energy_density_detail
   
   if (verbose>=2) {
     cout << endl;
+    cout << "eos::free_energy_density_detail(): verbose: "
+         << verbose << endl;
     cout << "i_ns,i_skyrme= " << i_ns << " " << i_skyrme << endl;
     cout << endl;
     
-    cout << "zn,zp= " << zn << " " << zp << endl;
+    cout << "fugacities: zn, zp= " << zn << " " << zp << endl;
     cout << "g_virial= " << g_virial << " (g=1 means full virial EOS) dgdT= "
 	 << dgvirialdT << endl;
     cout << "h=        " << h
@@ -1601,7 +1549,7 @@ double eos::free_energy_density_detail
 
     cout.setf(ios::showpos);
     
-    // Three contributions to the symmetry energy
+    cout << "Three contributions to the symmetry energy:" << endl;
     cout << "d2*e_qmc*h,d2*E_qmc*h     = " << delta2*e_qmc*h << " 1/fm^4 "
 	 << delta2*e_qmc/nb*h*hc_mev_fm << " MeV" << endl;
     cout << "d2*e_ns(1-h),d2*E_ns(1-h) = "
@@ -1612,8 +1560,7 @@ double eos::free_energy_density_detail
 	 << -delta2*f_skyrme_eqdenT0/nb*hc_mev_fm << " MeV" << endl;
     cout << endl;
 
-    // The four contributions to the free energy density of degenerate
-    // matter
+    cout << "Four contributions to degenerate free energy: " << endl;
     cout << "f_nucT0, F_nucT0       = " << f_skyrme_eqdenT0 << " 1/fm^4 "
 	 << f_skyrme_eqdenT0/nb*hc_mev_fm << " MeV" << endl;
     cout << "d2*f_symT0, d2*F_symT0 = " << delta2*e_sym << " 1/fm^4 "
@@ -1633,7 +1580,7 @@ double eos::free_energy_density_detail
 	 << f_deg/nb*hc_mev_fm << " MeV" << endl;
     cout << endl;
 
-    // Virial and degenerate contributions and total free energy
+    cout << "Virial, degenerate, and total free energy:" << endl;
     cout << "(1-g)*f_deg,(1-g)*F_deg = " << (1.0-g_virial)*f_deg << " 1/fm^4 "
 	 << (1.0-g_virial)*f_deg/nb*hc_mev_fm << " MeV" << endl;
     cout << "g*f_virial,g*F_virial   = " << g_virial*f_virial << " 1/fm^4 "
@@ -1645,7 +1592,7 @@ double eos::free_energy_density_detail
     cout << "ed (w/rm), pr= "
 	 << th.ed+neutron.n*neutron.m+proton.n*proton.m
 	 << " 1/fm^4 " << th.pr << " 1/fm^4" << endl;
-    cout << "entropy, s per baryon= " << th.en << " 1/fm^3 "
+    cout << "entropy density, s per baryon= " << th.en << " 1/fm^3 "
 	 << th.en/nb << endl;
     //cout << "entropy from sk_Tcorr= " << s_neut_T << " "
     //<< s_eqden_T << endl;
@@ -3729,7 +3676,7 @@ int eos::point(std::vector<std::string> &sv, bool itive_com) {
     cout.setf(ios::showpos);
     double f_total=th2.ed-T*th2.en;
 
-    cout << "(All of these results are without electrons and photons.)"
+    cout << "(All of these quantities are without electrons and photons.)"
          << endl;
     cout << "fint_total: " << f_total << " 1/fm^4 " << endl;
     cout << "Fint_total: " << f_total/nB*hc_mev_fm << " MeV" << endl;
