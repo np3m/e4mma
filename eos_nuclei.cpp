@@ -5995,6 +5995,7 @@ int eos_nuclei::write_results(std::string fname) {
   } else {
     hf.seti("with_leptons",0);
   }
+  
   // The parent class has an include_muons bool but this
   // child class doesn't support muons yet
   hf.seti("include_muons",this->include_muons);
@@ -8499,68 +8500,14 @@ int eos_nuclei::compare_tables(std::vector<std::string> &sv,
 
 void eos_nuclei::new_table() {
 
-  n_nB2=301;
-  n_Ye2=70;
-  n_T2=160;
-
-  if (strange_axis) {
-    n_S2=5;
-  } else {
-    n_S2=0;
-  }
   cout << "Beginning new table." << endl;
 
-  calc_utf8<> calc;
-  std::map<std::string,double> vars;
-    
-  vector<double> packed;
-  vector<std::string> split_res;
-  
-  split_string_delim(nB_grid_spec,split_res,',');
-  n_nB2=stoszt(split_res[0]);
-  
-  calc.compile(split_res[1].c_str());
-  for(size_t i=0;i<n_nB2;i++) {
-    vars["i"]=((double)i);
-    nB_grid2.push_back(calc.eval(&vars));
-    packed.push_back(nB_grid2[i]);
-  }
-    
-  split_string_delim(Ye_grid_spec,split_res,',');
-  n_Ye2=stoszt(split_res[0]);
+  this->process_grid_spec();
 
-  calc.compile(split_res[1].c_str());
-  for(size_t i=0;i<n_Ye2;i++) {
-    vars["i"]=((double)i);
-    Ye_grid2.push_back(calc.eval(&vars));
-    packed.push_back(Ye_grid2[i]);
-  }
-    
-  split_string_delim(T_grid_spec,split_res,',');
-  n_T2=stoszt(split_res[0]);
-
-  calc.compile(split_res[1].c_str());
-  for(size_t i=0;i<n_T2;i++) {
-    vars["i"]=((double)i);
-    T_grid2.push_back(calc.eval(&vars));
-    packed.push_back(T_grid2[i]);
-  }
-
-  if (strange_axis) {
-    split_string_delim(S_grid_spec,split_res,',');
-    n_S2=stoszt(split_res[0]);
-    
-    calc.compile(split_res[1].c_str());
-    for(size_t i=0;i<n_S2;i++) {
-      vars["i"]=((double)i);
-      S_grid2.push_back(calc.eval(&vars));
-      packed.push_back(S_grid2[i]);
-    }
-  }
-  
   if (strange_axis) {
     
     size_t st[4]={n_nB2,n_Ye2,n_T2,n_S2};
+    
     tg_log_xn.resize(4,st);
     tg_log_xp.resize(4,st);
     tg_Z.resize(4,st);
@@ -8601,7 +8548,24 @@ void eos_nuclei::new_table() {
     tg_XLi4.resize(3,st);
 
   }
-  
+
+  vector<double> packed;
+  for(size_t i=0;i<n_nB2;i++) {
+    packed.push_back(nB_grid2[i]);
+  }
+  for(size_t i=0;i<n_Ye2;i++) {
+    packed.push_back(Ye_grid2[i]);
+  }
+  for(size_t i=0;i<n_T2;i++) {
+    packed.push_back(T_grid2[i]);
+  }
+  if (strange_axis) {
+    for(size_t i=0;i<n_S2;i++) {
+      packed.push_back(S_grid2[i]);
+    }
+  }
+   
+
   tg_log_xn.set_grid_packed(packed);
   tg_log_xp.set_grid_packed(packed);
   tg_Z.set_grid_packed(packed);
@@ -8997,6 +8961,9 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	 << endl;
     with_leptons=false;
   }
+
+  // Read grid specification
+  this->process_grid_spec();
   
   int mpi_rank=0, mpi_size=1;
   double mpi_start_time;
@@ -9086,12 +9053,24 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
     if (loaded==false) {
 
       cout << "No data. Creating new table." << endl;
-      
+
+      cout << "Here0." << endl;
       new_table();
+
+      vector_out(cout,nB_grid2);
+      cout << endl;
+      vector_out(cout,Ye_grid2);
+      cout << endl;
+      vector_out(cout,T_grid2);
+      cout << endl;
+      double nB=2.0e-2, Ye=0.51, T=3.65/hc_mev_fm;
+      size_t inB=vector_lookup(n_nB2,nB_grid2,nB);
+      nB=nB_grid2[inB];
+      size_t iYe=vector_lookup(n_Ye2,Ye_grid2,Ye);
+      Ye=Ye_grid2[iYe];
+      size_t iT=vector_lookup(n_T2,T_grid2,T*hc_mev_fm);
+      T=T_grid2[iT]/hc_mev_fm;
       
-      double nB=nB_grid2[250];
-      double Ye=Ye_grid2[50];
-      double T=T_grid2[80]/hc_mev_fm;
       double log_xn=-2.46;
       double log_xp=-1.64;
       if (alg_mode==2 || alg_mode==4) {
@@ -9100,15 +9079,20 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
       }
       double Zbar, Nbar;
       size_t nuc_Z1=50, nuc_N1=50;
+
+      // Note that these settings are ignored by eos_vary_dist()
+      // when alg_mode is 4.
       int NmZ_min=-10;
       int NmZ_max=9;
       int A_min=8;
       int A_max=126;
+      
       double f_min;
       thermo thx;
       double mun_full=0.0, mup_full=0.0;
       int first_ret=0;
       map<string,double> vdet;
+      
       if (include_muons) {
         vdet["mue"]=electron.m;
       }
@@ -9138,7 +9122,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
       ubvector X;
       compute_X(nB,X);
       
-      store_point(250,50,80,nB,Ye,T,thx,log_xn,log_xp,
+      store_point(inB,iYe,iT,nB,Ye,T,thx,log_xn,log_xp,
 		  Zbar,Nbar,mun_full,mup_full,X,A_min,A_max,
 		  NmZ_min,NmZ_max,10.0,vdet);
 

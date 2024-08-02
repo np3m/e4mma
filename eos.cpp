@@ -3826,7 +3826,13 @@ int eos::alt_model(std::vector<std::string> &sv,
   if (sv.size()<2) {
     cout << "Not enough parameters for alt-model." << endl;
   }
-  
+
+  // Combine additional arguments into one string
+  for(size_t i=2;i<sv.size();i++) {
+    sv[1]+=" "+sv[i];
+  }
+
+  /*
   if (sv[1]=="Skyrme" || sv[1]=="skyrme") {
     if (sv.size()<3) {
       cout << "Not enough parameters for alt-model of type Skyrme."
@@ -3841,12 +3847,33 @@ int eos::alt_model(std::vector<std::string> &sv,
     use_alt_eos=true;
   } else if (sv[1]=="RMFH" || sv[1]=="rmfh") {
     o2scl_hdf::rmf_load(rmf_hyp,sv[2]);
-    eosp_alt=&rmf;
+    eosp_alt=&rmf_hyp;
     use_alt_eos=true;
   } else {
-    cerr << "Model " << sv[1] << " not understood." << endl;
-    return 2;
+  */
+  
+  eosp_alt=eos_had_temp_strings(sv[1]);
+  use_alt_eos=true;
+  eos_had_skyrme *skp=dynamic_cast<eos_had_skyrme *>(eosp_alt);
+  if (skp!=0) {
+    //sk_alt=*skp;
+  } else {
+    eos_had_rmf *rmfp=dynamic_cast<eos_had_rmf *>(eosp_alt);
+    if (rmfp!=0) {
+      //rmf=*rmfp;
+    } else {
+      eos_had_rmf_hyp *rhp=dynamic_cast<eos_had_rmf_hyp *>(eosp_alt);
+      if (rhp!=0) {
+        //rmf_hyp=*rhp;
+      }
+    }
   }
+
+  //}
+  //cerr << "Model " << sv[1] << " not understood." << endl;
+  //return 2;
+  //}
+  
   return 0;
 }
 
