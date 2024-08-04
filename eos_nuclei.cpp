@@ -1720,8 +1720,23 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
     return 2;
   }
 
+  kwargs kwa;
+  
   bool range_mode=false;
   if (sv.size()>=7) range_mode=true;
+
+  // Get the keyword arguments
+  if (sv.size()>=8) {
+    kwa.set(sv[7]);
+  } else if (sv.size()==5) {
+    kwa.set(sv[4]);
+  } else if (sv.size()==3) {
+    kwa.set(sv[2]);
+  }
+  bool eigenvalues=kwa.get_bool("eigenvals",false);
+  cout << "eigenvals: " << eigenvalues << endl;
+  bool comp_cs2_hom=kwa.get_bool("cs2_hom",false);
+  cout << "cs2_hom: " << comp_cs2_hom << endl;
 
   if (!range_mode || dmundYe.get_rank()==0) {
     
@@ -2007,8 +2022,8 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
         }
         Eigen::VectorXcd eivals=mat2.eigenvalues();
 #endif
-
-        if (false) {
+        
+        if (kwa.get_bool("eigenvals",false)) {
           // Compute eigenvalues using SVD
           o2scl_linalg::SV_decomp(4,4,mat,V,sing,work);
           
@@ -2086,7 +2101,7 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
         }
 
         // This code requires a model to compute the homogeneous cs2
-        if (false) {
+        if (comp_cs2_hom) {
           neutron.n=nB*(1.0-Ye);
           proton.n=nB*Ye;
           thermo th;
@@ -2128,6 +2143,9 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
     PS_negative_count;
   
   recompute=true;
+
+  // Old code which attempts to automatically fix the
+  // errant points by solving with a smaller tolerance
   
   if (false) {
 
@@ -2178,7 +2196,9 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
     }
     
   }
-  
+
+  // Old code which computes the size of "groups" of points which
+  // fail.
   if (false) {
     
     derivs_computed=false;
@@ -2287,12 +2307,16 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
     hdf_output(hf,dsdnB,"dsdnB");
     hdf_output(hf,dsdYe,"dsdYe");
     hdf_output(hf,dsdT,"dsdT");
-    hdf_output(hf,egv[0],"egv0");
-    hdf_output(hf,egv[1],"egv1");
-    hdf_output(hf,egv[2],"egv2");
-    hdf_output(hf,egv[3],"egv3");
+    if (eigenvalues) {
+      hdf_output(hf,egv[0],"egv0");
+      hdf_output(hf,egv[1],"egv1");
+      hdf_output(hf,egv[2],"egv2");
+      hdf_output(hf,egv[3],"egv3");
+    }
     hdf_output(hf,tg_cs2,"cs2");
-    hdf_output(hf,tg_cs2_hom,"cs2_hom");
+    if (comp_cs2_hom) {
+      hdf_output(hf,tg_cs2_hom,"cs2_hom");
+    }
     hf.close();
   }
   
@@ -5995,6 +6019,7 @@ int eos_nuclei::write_results(std::string fname) {
   } else {
     hf.seti("with_leptons",0);
   }
+  
   // The parent class has an include_muons bool but this
   // child class doesn't support muons yet
   hf.seti("include_muons",this->include_muons);
@@ -8499,68 +8524,14 @@ int eos_nuclei::compare_tables(std::vector<std::string> &sv,
 
 void eos_nuclei::new_table() {
 
-  n_nB2=301;
-  n_Ye2=70;
-  n_T2=160;
-
-  if (strange_axis) {
-    n_S2=5;
-  } else {
-    n_S2=0;
-  }
   cout << "Beginning new table." << endl;
 
-  calc_utf8<> calc;
-  std::map<std::string,double> vars;
-    
-  vector<double> packed;
-  vector<std::string> split_res;
-  
-  split_string_delim(nB_grid_spec,split_res,',');
-  n_nB2=stoszt(split_res[0]);
-  
-  calc.compile(split_res[1].c_str());
-  for(size_t i=0;i<n_nB2;i++) {
-    vars["i"]=((double)i);
-    nB_grid2.push_back(calc.eval(&vars));
-    packed.push_back(nB_grid2[i]);
-  }
-    
-  split_string_delim(Ye_grid_spec,split_res,',');
-  n_Ye2=stoszt(split_res[0]);
+  this->process_grid_spec();
 
-  calc.compile(split_res[1].c_str());
-  for(size_t i=0;i<n_Ye2;i++) {
-    vars["i"]=((double)i);
-    Ye_grid2.push_back(calc.eval(&vars));
-    packed.push_back(Ye_grid2[i]);
-  }
-    
-  split_string_delim(T_grid_spec,split_res,',');
-  n_T2=stoszt(split_res[0]);
-
-  calc.compile(split_res[1].c_str());
-  for(size_t i=0;i<n_T2;i++) {
-    vars["i"]=((double)i);
-    T_grid2.push_back(calc.eval(&vars));
-    packed.push_back(T_grid2[i]);
-  }
-
-  if (strange_axis) {
-    split_string_delim(S_grid_spec,split_res,',');
-    n_S2=stoszt(split_res[0]);
-    
-    calc.compile(split_res[1].c_str());
-    for(size_t i=0;i<n_S2;i++) {
-      vars["i"]=((double)i);
-      S_grid2.push_back(calc.eval(&vars));
-      packed.push_back(S_grid2[i]);
-    }
-  }
-  
   if (strange_axis) {
     
     size_t st[4]={n_nB2,n_Ye2,n_T2,n_S2};
+    
     tg_log_xn.resize(4,st);
     tg_log_xp.resize(4,st);
     tg_Z.resize(4,st);
@@ -8601,7 +8572,24 @@ void eos_nuclei::new_table() {
     tg_XLi4.resize(3,st);
 
   }
-  
+
+  vector<double> packed;
+  for(size_t i=0;i<n_nB2;i++) {
+    packed.push_back(nB_grid2[i]);
+  }
+  for(size_t i=0;i<n_Ye2;i++) {
+    packed.push_back(Ye_grid2[i]);
+  }
+  for(size_t i=0;i<n_T2;i++) {
+    packed.push_back(T_grid2[i]);
+  }
+  if (strange_axis) {
+    for(size_t i=0;i<n_S2;i++) {
+      packed.push_back(S_grid2[i]);
+    }
+  }
+   
+
   tg_log_xn.set_grid_packed(packed);
   tg_log_xp.set_grid_packed(packed);
   tg_Z.set_grid_packed(packed);
@@ -8997,6 +8985,9 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	 << endl;
     with_leptons=false;
   }
+
+  // Read grid specification
+  this->process_grid_spec();
   
   int mpi_rank=0, mpi_size=1;
   double mpi_start_time;
@@ -9086,12 +9077,17 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
     if (loaded==false) {
 
       cout << "No data. Creating new table." << endl;
-      
+
       new_table();
+
+      double nB=2.0e-2, Ye=0.51, T=3.65/hc_mev_fm;
+      size_t inB=vector_lookup(n_nB2,nB_grid2,nB);
+      nB=nB_grid2[inB];
+      size_t iYe=vector_lookup(n_Ye2,Ye_grid2,Ye);
+      Ye=Ye_grid2[iYe];
+      size_t iT=vector_lookup(n_T2,T_grid2,T*hc_mev_fm);
+      T=T_grid2[iT]/hc_mev_fm;
       
-      double nB=nB_grid2[250];
-      double Ye=Ye_grid2[50];
-      double T=T_grid2[80]/hc_mev_fm;
       double log_xn=-2.46;
       double log_xp=-1.64;
       if (alg_mode==2 || alg_mode==4) {
@@ -9100,15 +9096,20 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
       }
       double Zbar, Nbar;
       size_t nuc_Z1=50, nuc_N1=50;
+
+      // Note that these settings are ignored by eos_vary_dist()
+      // when alg_mode is 4.
       int NmZ_min=-10;
       int NmZ_max=9;
       int A_min=8;
       int A_max=126;
+      
       double f_min;
       thermo thx;
       double mun_full=0.0, mup_full=0.0;
       int first_ret=0;
       map<string,double> vdet;
+      
       if (include_muons) {
         vdet["mue"]=electron.m;
       }
@@ -9138,7 +9139,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
       ubvector X;
       compute_X(nB,X);
       
-      store_point(250,50,80,nB,Ye,T,thx,log_xn,log_xp,
+      store_point(inB,iYe,iT,nB,Ye,T,thx,log_xn,log_xp,
 		  Zbar,Nbar,mun_full,mup_full,X,A_min,A_max,
 		  NmZ_min,NmZ_max,10.0,vdet);
 
@@ -9279,9 +9280,9 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
       gtab.line_of_names(((string)"log_xn log_xp Z A A_min ")+
                          "A_max NmZ_min NmZ_max mue");
 
-      size_t nB_step=0;
-      size_t Ye_step=0;
-      size_t T_step=0;
+      size_t nB_step=1;
+      size_t Ye_step=1;
+      size_t T_step=1;
 
       // Interpret variable Ye_list as an array of type size_t
       vector<size_t> Ye_list_sizet;
@@ -9331,6 +9332,10 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	    int iflag=((int)(tg_flag.get(ix)*(1.0+1.0e-12)));
 	    bool guess_found=false;
 
+            //cout << "nB, Ye, T, iflag: "
+            //<< nB_grid2[inB] << " " << Ye_grid2[iYe] << " "
+            //<< T_grid2[iT] << " " << iflag << endl;
+            
 	    if (iflag==iflag_guess) {
 	      
 	      // A point which is not finished, is not yet being
@@ -9363,9 +9368,12 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	      guess_found=true;
 	    }
 
+            // A point which has a guess in the external table
+            // and is not already complete
 	    if (ext_guess.length()>0 &&
 		external.tg_flag.get(ix)>9.9 &&
 		(iflag==iflag_guess || iflag==iflag_empty)) {
+              
 	      tasks.push_back(inB);
 	      tasks.push_back(iYe);
 	      tasks.push_back(iT);

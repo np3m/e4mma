@@ -1186,8 +1186,8 @@ public:
 
   /** \brief Compute the second derivatives and the stability matrix
       
-      <output file> or <nB> <Ye> <T> or 
-      <inB low> <inB high> <iYe low> <iYe high> <iT low> <iT high>
+      <output file> [kwargs] or <nB> <Ye> <T> [kwargs] or 
+      <inB low> <inB high> <iYe low> <iYe high> <iT low> <iT high> [kwargs]
 
       This command computes the second derivatives, speed of sound,
       and stability matrix of the current EOS table. A table with
@@ -1205,9 +1205,12 @@ public:
       and homogeneous matter sound speeds at the grid point nearest
       to the specified values.
 
+      Possible keyword arguments are eigenvals=False and
+      cs2_hom=False.
+      
       This command currently requires that a model has been 
       selected so it can compute the speed of sound of homogeneous
-      matter at acausal points for comparison. 
+      matter at acausal points for comparison.
   */
   int stability(std::vector<std::string> &sv,
 		bool itive_com);
