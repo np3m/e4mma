@@ -390,11 +390,6 @@ public:
   */ 
   double mh_tol_rel;
 
-  /** \brief Filename containing separate table to use as a guess for
-      the \c generate-table command (default is the empty string)
-  */
-  std::string ext_guess;
-  
   /** \brief Function for delta Z and delta N in the single 
       nucleus approximation
       
@@ -463,18 +458,6 @@ public:
   */
   int fixed_dist_alg;
   
-  /** \brief If true, when computing a point, perform the calculation
-      using some of the neighboring points as an initial guess
-      (default 0)
-
-      Values greater than 0 use the point at the next smallest
-      density, values greater than 1 use the point at the next largest
-      density, values greater than 2 use points at the next largest
-      and next smallest temperature, and values greater than 4 use the
-      next largest and smallest electron fraction.
-  */
-  int six_neighbors;
-
   /** \brief A parameter which handles verbosity for several functions
 
       Verbose for individual functions (default value 11111). 1s
@@ -641,7 +624,6 @@ public:
   o2scl::cli::parameter_bool p_verify_only;
   o2scl::cli::parameter_string p_edge_list;
   o2scl::cli::parameter_string p_ext_guess;
-  o2scl::cli::parameter_int p_six_neighbors;
   o2scl::cli::parameter_bool p_full_results;
   o2scl::cli::parameter_bool p_rnuc_less_rws;
   o2scl::cli::parameter_bool p_include_eg;
@@ -785,12 +767,24 @@ public:
    
   /** \brief Generate an EOS table
 
-      [out file]
+      [kwargs]
 
       This command is the full MPI calculation of the EOS table,
       given a model and using the current grid. If no output
       file name is specified, the results are placed in a file
       called \c eos_nuclei.o2 .
+
+      Valid keyword arguments are out_file=eos_nuclei.o2, ext_guess="",
+      and six_neighbors=0.
+      
+      The value of ext_guess is the filename of a separate table
+      to use as a guess for the generate-table command.
+
+      Values of six_neighbors greater than 0 use the point at the next smallest
+      density, values greater than 1 use the point at the next largest
+      density, values greater than 2 use points at the next largest
+      and next smallest temperature, and values greater than 4 use the
+      next largest and smallest electron fraction.
   */
   int generate_table(std::vector<std::string> &sv, bool itive_com);
   //@}

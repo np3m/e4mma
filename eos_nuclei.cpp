@@ -58,7 +58,6 @@ eos_nuclei::eos_nuclei() {
   recompute=false;
   verify_only=false;
   edge_list="";
-  six_neighbors=0;
   propagate_points=true;
   survey_eqs=false;
   
@@ -120,7 +119,6 @@ eos_nuclei::eos_nuclei() {
 
   baryons_only=true;
 
-  ext_guess="";
   include_detail=false;
 
   vdet_units.insert(make_pair("zn",""));
@@ -8986,6 +8984,14 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
     with_leptons=false;
   }
 
+  kwargs kwa;
+  if (sv.size()>=2) kwa.set(sv[1]);
+  string out_file=kwa.get_string("out_file","eos_nuclei.o2");
+  int gt_verbose=kwa.get_int("gt_verbose",2);
+  string ext_guess=kwa.get_string("ext_guess","");
+  bool no_nuclei_gt=kwa.get_bool("no_nuclei",false);
+  int six_neighbors=kwa.get_int("six_neighbors",0);
+  
   // Read grid specification
   this->process_grid_spec();
   
@@ -9009,7 +9015,6 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 #endif
 
   static const size_t buf_size=100;
-  int gt_verbose=2;
 
   // -----------------------------------------------------
   // External guess
@@ -9050,15 +9055,6 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
   // -----------------------------------------------------
   // All processors read input file in turn
 
-  string out_file;
-  if (sv.size()>=2) {
-    out_file=sv[1];
-  } else {
-    cout << "Automatically setting output file to \"eos_nuclei.o2\"."
-	 << endl;
-    out_file="eos_nuclei.o2";
-  }
-  
   if (mpi_rank==0) {
 
     // -----------------------------------------------------
@@ -9118,18 +9114,25 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	     << endl;
 	return 1;
       } else if (alg_mode==0) {
-	first_ret=eos_vary_ZN(nB,Ye,T,log_xn,log_xp,nuc_Z1,nuc_N1,
-			      thx,mun_full,mup_full,false);
+        if (no_nuclei_gt) {
+          first_ret=eos_vary_ZN(nB,Ye,T,log_xn,log_xp,nuc_Z1,nuc_N1,
+                                thx,mun_full,mup_full,true);
+        } else {
+          first_ret=eos_vary_ZN(nB,Ye,T,log_xn,log_xp,nuc_Z1,nuc_N1,
+                                thx,mun_full,mup_full,false);
+        }
 	Zbar=nuc_Z1;
 	Nbar=nuc_N1;
-      } else if (alg_mode==2 || alg_mode==4) {
-	first_ret=eos_vary_dist(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,thx,
-				mun_full,mup_full,A_min,A_max,
-				NmZ_min,NmZ_max,vdet,true,false);
-      } else if (alg_mode==3) {
-	first_ret=eos_vary_dist(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,thx,
-				mun_full,mup_full,A_min,A_max,
-				NmZ_min,NmZ_max,vdet,true,false);
+      } else if (alg_mode==2 || alg_mode==3 || alg_mode==4) {
+        if (no_nuclei_gt) {
+          first_ret=eos_vary_dist(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,thx,
+                                  mun_full,mup_full,A_min,A_max,
+                                  NmZ_min,NmZ_max,vdet,true,true);
+        } else {
+          first_ret=eos_vary_dist(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,thx,
+                                  mun_full,mup_full,A_min,A_max,
+                                  NmZ_min,NmZ_max,vdet,true,false);
+        }
       }
       if (first_ret!=0) {
 	cerr << "Initial point for blank table failed." << endl;
@@ -10094,8 +10097,13 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 		 << endl;
 	    return 1;
 	  } else if (alg_mode==0) {
-	    ret=eos_vary_ZN(nB,Ye,T,log_xn,log_xp,nuc_Z1,nuc_N1,
-			    thx,mun_full,mup_full,no_nuclei);
+            if (no_nuclei_gt) {
+              ret=eos_vary_ZN(nB,Ye,T,log_xn,log_xp,nuc_Z1,nuc_N1,
+                              thx,mun_full,mup_full,no_nuclei_gt);
+            } else {
+              ret=eos_vary_ZN(nB,Ye,T,log_xn,log_xp,nuc_Z1,nuc_N1,
+                              thx,mun_full,mup_full,no_nuclei);
+            }
 	    Zbar=nuc_Z1;
 	    Nbar=nuc_N1;
 	  } else if (alg_mode==2 || alg_mode==3 || alg_mode==4) {
@@ -10103,9 +10111,15 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	    A_max=gtab.get("A_max",i);
 	    NmZ_min=gtab.get("NmZ_min",i);
 	    NmZ_max=gtab.get("NmZ_max",i);
-	    ret=eos_vary_dist
-	      (nB,Ye,T,log_xn,log_xp,Zbar,Nbar,thx,mun_full,mup_full,
-	       A_min,A_max,NmZ_min,NmZ_max,vdet,true,no_nuclei);    
+            if (no_nuclei_gt) {
+              ret=eos_vary_dist
+                (nB,Ye,T,log_xn,log_xp,Zbar,Nbar,thx,mun_full,mup_full,
+                 A_min,A_max,NmZ_min,NmZ_max,vdet,true,no_nuclei_gt);
+            } else {
+              ret=eos_vary_dist
+                (nB,Ye,T,log_xn,log_xp,Zbar,Nbar,thx,mun_full,mup_full,
+                 A_min,A_max,NmZ_min,NmZ_max,vdet,true,no_nuclei);
+            }
 	  }
 	  if (gt_verbose>1) {
             cout.precision(5);
@@ -10352,12 +10366,25 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	       << endl;
 	  return 1;
 	} else if (alg_mode==0) {
-	  ret=eos_vary_ZN(nB,Ye,T,log_xn,log_xp,nuc_Z1,nuc_N1,
-			  thx,mun_full,mup_full,no_nuclei);
+          if (no_nuclei_gt) {
+            ret=eos_vary_ZN(nB,Ye,T,log_xn,log_xp,nuc_Z1,nuc_N1,
+                            thx,mun_full,mup_full,no_nuclei_gt);
+          } else {
+            ret=eos_vary_ZN(nB,Ye,T,log_xn,log_xp,nuc_Z1,nuc_N1,
+                            thx,mun_full,mup_full,no_nuclei);
+          }
 	} else if (alg_mode==2 || alg_mode==3 || alg_mode==4) {
-	  ret=eos_vary_dist(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,
-			    thx,mun_full,mup_full,
-			    A_min,A_max,NmZ_min,NmZ_max,vdet,true,no_nuclei);
+          if (no_nuclei_gt) {
+            ret=eos_vary_dist(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,
+                              thx,mun_full,mup_full,
+                              A_min,A_max,NmZ_min,NmZ_max,vdet,true,
+                              no_nuclei_gt);
+          } else {
+            ret=eos_vary_dist(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,
+                              thx,mun_full,mup_full,
+                              A_min,A_max,NmZ_min,NmZ_max,vdet,true,
+                              no_nuclei);
+          }
 	}
 
 	if (gt_verbose>1) {
@@ -10905,13 +10932,6 @@ void eos_nuclei::setup_cli_nuclei(o2scl::cli &cl) {
   p_edge_list.doc_xml_file="doc/xml/classeos__nuclei.xml";
   cl.par_list.insert(make_pair("edge_list",&p_edge_list));
   
-  p_six_neighbors.i=&six_neighbors;
-  p_six_neighbors.help="";
-  p_six_neighbors.doc_class="eos_nuclei";
-  p_six_neighbors.doc_name="six_neighbors";
-  p_six_neighbors.doc_xml_file="doc/xml/classeos__nuclei.xml";
-  cl.par_list.insert(make_pair("six_neighbors",&p_six_neighbors));
-  
   p_rnuc_less_rws.b=&rnuc_less_rws;
   p_rnuc_less_rws.help="";
   p_rnuc_less_rws.doc_class="eos_nuclei";
@@ -10946,13 +10966,6 @@ void eos_nuclei::setup_cli_nuclei(o2scl::cli &cl) {
   p_nucleon_func.doc_name="nucleon_func";
   p_nucleon_func.doc_xml_file="doc/xml/classeos__nuclei.xml";
   cl.par_list.insert(make_pair("nucleon_func",&p_nucleon_func));
-
-  p_ext_guess.str=&ext_guess;
-  p_ext_guess.help="";
-  p_ext_guess.doc_class="eos_nuclei";
-  p_ext_guess.doc_name="ext_guess";
-  p_ext_guess.doc_xml_file="doc/xml/classeos__nuclei.xml";
-  cl.par_list.insert(make_pair("ext_guess",&p_ext_guess));
 
   p_Ye_list.str=&Ye_list;
   p_Ye_list.help="";
