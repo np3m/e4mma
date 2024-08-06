@@ -98,6 +98,8 @@ class interpm_krige_eos :
   
 public:
 
+  double min(size_t nv, const ubvector &v);
+  
   double Yescale, Tscale;
   
   // Typedefs from the specialized template parameters
@@ -190,6 +192,7 @@ public:
       objects
    */
   virtual void set();
+  virtual void set2();
   
   /** \brief Additional constraints for the interpolation
    */
@@ -817,10 +820,12 @@ public:
 
   /** \brief Interpolate the EOS to fix the table near a point
 
-      <nB> <Ye> <T MeV> <window> <st.o2>
+      <nB> <Ye> <T MeV> <st.o2> [kwargs]
 
       This function requires that an EOS with leptons has been
-      loaded. 
+      loaded.
+
+      Allowed keyword arguments are window=0, kernel=rbf_noise.
    */
   int interp_point(std::vector<std::string> &sv, bool itive_com);
 
@@ -831,19 +836,18 @@ public:
       interpolation object \c ike. 
    */
   int interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
-                      size_t window, interpm_krige_eos &ike,
-                      std::string kernel="rbf_noise");
+                      interpm_krige_eos &ike, o2scl::kwargs &kw);
 
   /** \brief Use interpolation to fix an entire table
 
-      <input stability file> <window> <output table> 
+      <input stability file> <output table> 
       <output stability file> [kwargs]
 
       This requires the model to be selected and an EOS to be
       loaded.
 
-      Keyword arguments: one_point = false, full_min = true, and
-      output = true.
+      Keyword arguments: one_point = false, full_min = true, 
+      output = true, method=gp, and window = 0.
    */
   int interp_fix_table(std::vector<std::string> &sv, bool itive_com);
   
