@@ -1083,16 +1083,16 @@ void interpm_krige_eos::set() {
   } else {
 
     int ac_ret=1;
-    for(Tscale=0.5;Tscale<2.0;Tscale*=1.2) {
-      for(Yescale=0.5;Yescale<2.0;Yescale*=1.2) {
-        for(double len=4.0;len<50.0;len*=1.5) {
+    for(Tscale=0.2;Tscale<0.401;Tscale+=0.1) {
+      for(Yescale=1.6;Yescale<2.21;Yescale+=0.2) {
+        for(double len=8.0;len<10.01;len+=0.5) {
           //alpha=0.864;
           //len=13.5;
           
           if (true) {
             ipy.set_functions("interpm_sklearn_gp",
                               ((std::string)"verbose=0,transform_in=none,")+
-                              "kernel=RBF("+
+                              "alpha=1.0e-7,kernel=RBF("+
                               "length_scale="+o2scl::dtos(len)+
                               ",length_scale_bounds=\"fixed\")",0);
           } else {
@@ -1115,11 +1115,12 @@ void interpm_krige_eos::set() {
           ac_ret=addl_const(0,retx);
           
           std::cout << "XA: " << Tscale << " " << Yescale << " " << len << " "
-                    << ac_ret << std::endl;
+                    << ac_ret << " " << enp2->n_stability_fail << " "
+		    << 1.0e-7 << std::endl;
           
           //alpha*=100.0;
           //len*=100.0;
-          exit(-1);
+          //exit(-1);
         }
         
       }
