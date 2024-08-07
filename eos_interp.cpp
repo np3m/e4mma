@@ -425,6 +425,7 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
   double f_limit=kwa.get_double("f_limit",4.1);
   double c_limit=kwa.get_double("c_limit",7.1);
   int c_mod=kwa.get_int("c_mod",2);
+  
   if (second_pass) {
     std::vector<size_t> fix_list2;
     for(int dnB=-iwindow;dnB<=iwindow;dnB++) {
@@ -533,6 +534,8 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
 
     double fmin;
     mms.verbose=kwa.get_int("mmin_verbose",0);
+    mms.tol_abs=kwa.get_double("mmin_tolx",1.0e-4);
+    mms.ntrial=kwa.get_int("mmin_ntrial",100);
     mms.mmin(ike.fix_list.size()/3,x,fmin,fmf);
 
     // Evaluate the function at the optimal point
@@ -1193,12 +1196,17 @@ double interpm_krige_eos::min(size_t nv, const ubvector &v) {
     double out=tgp_F_old->get(index)*v[j/3];
     
     if (true) {
-      cout << "Change F (fix) from " << tgp_F_old->get(index) << " "
-           << tgp_F->get(index) << " to "
+      cout << "At " << nB << " " << Ye << " " << T_MeV << endl;
+      cout << "Change F (fix) at "
+           << index[0] << " " << index[1] << " "
+           << index[2] << " from " << tgp_F_old->get(index) << " "
+        //<< tgp_F->get(index)
+           << " to "
            << out << endl;
       cout << "Change Fint (fix) from "
            << tgp_Fint_old->get(index) << " "
-           << tgp_Fint->get(index) << " to "
+        //<< tgp_Fint->get(index)
+           << " to "
            << out-F_eg << endl;
     } else if (j>=jout) {
       cout.width(3);
@@ -1225,20 +1233,24 @@ double interpm_krige_eos::min(size_t nv, const ubvector &v) {
   
   // Computing the derivatives is fast, so we just do the full table
   enp2->eos_deriv(sv2,false);
-  
-  sv2={"stability",o2scl::szttos(i_min),o2scl::szttos(i_max),
+
+  sv2={"add_eg",o2scl::szttos(i_min),o2scl::szttos(i_max),
        o2scl::szttos(j_min),o2scl::szttos(j_max),
        o2scl::szttos(k_min),o2scl::szttos(k_max)};
   
   // Update the electron-photon EOS for the specified points
   enp2->add_eg(sv2,false);
   
+  sv2={"stability",o2scl::szttos(i_min),o2scl::szttos(i_max),
+       o2scl::szttos(j_min),o2scl::szttos(j_max),
+       o2scl::szttos(k_min),o2scl::szttos(k_max)};
+  
   // Update the stability and second derivatives
   enp2->stability(sv2,false);
   
-  cout << "XA Stability failures: " << enp2->n_stability_fail << endl;
-  ret+=enp2->n_stability_fail;
-  cout << "ret: " << ret << endl;
+  //cout << "Stability failures: " << enp2->n_stability_fail << endl;
+  ret+=enp2->stability_diff*1000.0;//n_stability_fail;
+  //cout << "ret: " << ret << endl;
   
   return ret;
 }
@@ -1439,11 +1451,13 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
         if (interp_Fint==false) {
           if (false) {
             cout << "Change F (fix) from " << tgp_F_old->get(index) << " "
-                 << tgp_F->get(index) << " to "
+              //<< tgp_F->get(index)
+                 << " to "
                  << out[0] << endl;
             cout << "Change Fint (fix) from "
-                 << tgp_Fint_old->get(index) << " "
-                 << tgp_Fint->get(index) << " to "
+                 << tgp_Fint_old->get(index) 
+              //<< " " << tgp_Fint->get(index)
+                 << " to "
                  << out[0]-F_eg << endl;
           } else if (j>=jout) {
             cout.width(3);

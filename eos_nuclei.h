@@ -252,7 +252,9 @@ public:
   //@{
   o2scl::tensor_grid<> dmundYe, dmundnB, dmupdYe, dsdT, dsdnB, dsdYe;
   o2scl::tensor_grid<> egv[4], tg_cs2, tg_cs2_hom, tg_Fint_old, tg_F_old;
+  o2scl::tensor_grid<> sflag;
   size_t n_stability_fail;
+  double stability_diff;
   //@}
 
   /// Partition functions for the nuclei
@@ -473,11 +475,6 @@ public:
                  double nn, double np, double T,
                  o2scl::table_units<> &tab);
   
-  /** \brief If true, use previously computed points (or guesses) as
-      an initial guess to compute adjacent points (default true)
-  */
-  bool propagate_points;
-
   /** \brief If true, survey the nB and Ye equations near a failed point
       (default false)
   */
@@ -490,6 +487,9 @@ public:
   */
   bool derivs_computed;
 
+  /// If true, the EOS table has no nuclei (default true)
+  bool table_no_nuclei;
+  
   /** \brief Always true, included for consistency with o2scl::eos_sn_base
    */
   bool baryons_only;
@@ -627,7 +627,6 @@ public:
   o2scl::cli::parameter_bool p_full_results;
   o2scl::cli::parameter_bool p_rnuc_less_rws;
   o2scl::cli::parameter_bool p_include_eg;
-  o2scl::cli::parameter_bool p_propagate_points;
   o2scl::cli::parameter_bool p_include_detail;
   o2scl::cli::parameter_bool p_strange_axis;
   o2scl::cli::parameter_double p_mh_tol_rel;
@@ -775,16 +774,20 @@ public:
       called \c eos_nuclei.o2 .
 
       Valid keyword arguments are out_file=eos_nuclei.o2, ext_guess="",
-      and six_neighbors=0.
+      propagate_points=true, and six_neighbors=0.
       
       The value of ext_guess is the filename of a separate table
       to use as a guess for the generate-table command.
 
-      Values of six_neighbors greater than 0 use the point at the next smallest
-      density, values greater than 1 use the point at the next largest
-      density, values greater than 2 use points at the next largest
-      and next smallest temperature, and values greater than 4 use the
-      next largest and smallest electron fraction.
+      Values of six_neighbors greater than 0 use the point at the next
+      smallest density, values greater than 1 use the point at the
+      next largest density, values greater than 2 use points at the
+      next largest and next smallest temperature, and values greater
+      than 4 use the next largest and smallest electron fraction.
+
+      If propagate_points is true, use previously computed points (or
+      guesses) as an initial guess to compute adjacent points (default
+      true)
   */
   int generate_table(std::vector<std::string> &sv, bool itive_com);
   //@}
