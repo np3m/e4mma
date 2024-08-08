@@ -41,6 +41,7 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
   kwargs kw;
   if (sv.size()>=5) kw.set(sv[4]);
   size_t window=kw.get_size_t("window",0);
+  std::string method=kw.get_string("method","gp");
 
   bool one_point=kw.get_bool("one_point",false);
 
@@ -107,18 +108,11 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
 	  tg_F_old=tg_F;
 
 	  int ii_ret=interp_internal(i_fix,j_fix,k_fix,ike,kw);
-	  /*
-	    cout << "Herexx." << endl;
-	    exit(-1);
-	    if (ii_ret!=0) {
-	    cerr << "Interpolation failed." << endl;
-	    O2SCL_ERR("Interpolation failed.",o2scl::exc_efailed);
-	    }
-	  */
 	    
 	  if (ii_ret!=0) {
 	    cout << "Interpolation failed, returning F and Fint to "
 		 << "original." << endl;
+	    //O2SCL_ERR("Interpolation failed.",o2scl::exc_efailed);
 	    tg_Fint=tg_Fint_old;
 	    tg_F=tg_F_old;
 	  } else {
@@ -350,7 +344,7 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
     }
   }
 
-  cout << "eos_nuclei:interp_internal(): attempting to fix "
+  cout << "eos_nuclei:interp_internal(): After first pass, fix list has "
        << ike.fix_list.size()/3 << " points."
        << endl;
 
@@ -432,12 +426,9 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
     }
   }
   
-  cout << "In eos_nuclei:interp_internal(), using "
-       << ike.calib_list.size()/3 << " points to calibrate"
-       << endl;
-  cout << "  and attempting to fix " << ike.fix_list.size()/3 << " points."
-       << endl;
-  size_t count=ike.calib_list.size()/3;
+  cout << "eos_nuclei:interp_internal(): calibrate list has "
+       << ike.calib_list.size()/3 << " points and fix list has "
+       << ike.fix_list.size()/3 << " points."
 
   if (ike.fix_list.size()==0) {
     cerr << "No points to fix." << endl;
@@ -451,6 +442,8 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
   if (ike.calib_list.size()/3!=ike.calib_dists.size()) {
     O2SCL_ERR("Error in calibration distance math.",o2scl::exc_esanity);
   }
+
+  double min_qual=1.0e99;
 
   /// Minimize
   if (method=="min") {
@@ -494,7 +487,8 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
       std::vector<std::vector<std::vector<double>>> param_lists;
       param_lists.push_back(ptemp);
       std::cout << "Going to set_covar() for rbf_noise." << std::endl;
-      std::vector<std::shared_ptr<mcovar_funct_rbf_noise<ubvector,mat_x_row_t>>>
+      std::vector<std::shared_ptr<mcovar_funct_rbf_noise<ubvector,
+                                                         mat_x_row_t>>>
 	mfr(1);
       mfr[0]=std::shared_ptr<mcovar_funct_rbf_noise<ubvector,mat_x_row_t>>
 	(new mcovar_funct_rbf_noise<ubvector,mat_x_row_t>);
@@ -521,9 +515,11 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
       std::vector<std::vector<std::vector<double>>> param_lists;
       param_lists.push_back(ptemp);
       std::cout << "Going to set_covar() for quad_correl." << std::endl;
-      vector<std::shared_ptr<mcovar_funct_quad_correl<ubvector,mat_x_row_t>>>
+      vector<std::shared_ptr<mcovar_funct_quad_correl<ubvector,
+                                                      mat_x_row_t>>>
 	mfr(1);
-      mfr[0]=std::shared_ptr<mcovar_funct_quad_correl<ubvector,mat_x_row_t>>
+      mfr[0]=std::shared_ptr<mcovar_funct_quad_correl<ubvector,
+                                                      mat_x_row_t>>
 	(new mcovar_funct_quad_correl<ubvector,mat_x_row_t>);
       mfr[0]->len.resize(3);
       mfr[0]->slope.resize(3);
@@ -548,8 +544,6 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
     // Manually optimize the Gaussian process interpolation by
     // exhaustively searching
   
-    double min_qual=1.0e99;
-
     ubvector min_p;
   
     cout << "H1." << kernel << endl;

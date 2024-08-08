@@ -6259,7 +6259,7 @@ int eos_nuclei::read_results(std::string fname) {
       split_string(mod_str,vs2);
       cout << "read_results(): model string: " << mod_str << endl;
       
-      if (false && vs2[0]=="0") {
+      if (i_ns==-1 && vs2[0]=="0") {
         
         i_ns=o2scl::stoi(vs2[1]);
         i_skyrme=o2scl::stoi(vs2[2]);
@@ -6277,52 +6277,95 @@ int eos_nuclei::read_results(std::string fname) {
     }
   }
                 
-
+  int itmp;
+  
   // ----------------------------------------------------------------
   // nB, Ye, T grid (the strangeness grid is taken care of later)
 
-  if (verbose>2) cout << "Reading n_nB." << endl;
-  hf.get_szt("n_nB",n_nB2);
-  if (verbose>2) cout << "Reading n_Ye." << endl;
-  hf.get_szt("n_Ye",n_Ye2);
-  if (true) {
-    cout << "Ye: " << hf.find_object_by_name("n_Ye",type) << " "
-         << type << endl;
-  }
-  if (verbose>2) cout << "Reading n_T." << endl;
-  hf.get_szt("n_T",n_T2);
-  if (n_nB2==0 || n_Ye2==0 || n_T2==0) {
-    O2SCL_ERR("One of the grid counts is zero.",o2scl::exc_efailed);
-  }
-  
-  
   if (verbose>2) cout << "Reading nB_grid." << endl;
   hf.getd_vec("nB_grid",nB_grid2);
   if (verbose>2) cout << "Reading Ye_grid." << endl;
   hf.getd_vec("Ye_grid",Ye_grid2);
   if (verbose>2) cout << "Reading T_grid." << endl;
   hf.getd_vec("T_grid",T_grid2);
+
+  if (hf.find_object_by_name("n_nB",type)==0) {
+    if (type=="size_t") {
+      if (verbose>2) cout << "Reading n_nB." << endl;
+      hf.get_szt("n_nB",n_nB2);
+    } else if (type=="int") {
+      if (verbose>2) cout << "Reading n_nB." << endl;
+      hf.geti("n_nB",itmp);
+      n_nB2=(size_t)itmp;
+    } else {
+      O2SCL_ERR("Can't get n_nB.",o2scl::exc_efailed);
+    }
+  } else {
+    n_nB2=nB_grid2.size();
+  }
+
+  if (hf.find_object_by_name("n_Ye",type)==0) {
+    if (type=="size_t") {
+      if (verbose>2) cout << "Reading n_Ye." << endl;
+      hf.get_szt("n_Ye",n_Ye2);
+    } else if (type=="int") {
+      if (verbose>2) cout << "Reading n_Ye." << endl;
+      hf.geti("n_Ye",itmp);
+      n_Ye2=(size_t)itmp;
+    } else {
+      O2SCL_ERR("Can't get n_Ye.",o2scl::exc_efailed);
+    }
+  } else {
+    n_Ye2=Ye_grid2.size();
+  }
+
+  if (hf.find_object_by_name("n_T",type)==0) {
+    if (type=="size_t") {
+      if (verbose>2) cout << "Reading n_T." << endl;
+      hf.get_szt("n_T",n_T2);
+    } else if (type=="int") {
+      if (verbose>2) cout << "Reading n_T." << endl;
+      hf.geti("n_T",itmp);
+      n_T2=(size_t)itmp;
+    } else {
+      O2SCL_ERR("Can't get n_T.",o2scl::exc_efailed);
+    }
+  } else {
+    n_T2=T_grid2.size();
+  }
+  
+  if (n_nB2==0 || n_Ye2==0 || n_T2==0) {
+    O2SCL_ERR("One of the grid counts is zero.",o2scl::exc_efailed);
+  }
+  
   
   // ----------------------------------------------------------------
-  // Flags
+  // Strangeness axis
 
-  int itmp;
   if (verbose>2) cout << "Reading strange_axis (if present)." << endl;
   hf.geti_def("strange_axis",0,itmp);
   if (itmp==1) strange_axis=true;
   else strange_axis=false;
-
-  if (strange_axis==true) {
+  
+  if (hf.find_object_by_name("S_grid",type)==0 && type=="double[]") {
+    strange_axis=true;
+    
+    hf.getd_vec("S_grid",S_grid2);
     hf.get_szt_def("n_S",0,n_S2);
-    if (n_S2>0) {
-      hf.getd_vec("S_grid",S_grid2);
-    } else {
-      cerr << "Variable strange_axis is 1 but n_S2=0." << endl;
-      exit(-1);
+    if (n_S2==0) n_S2=S_grid2.size();
+    
+    if (n_S2==0) {
+      O2SCL_ERR("Found S_grid but n_S2=0.",o2scl::exc_einval);
     }
+  } else if (strange_axis==true) {
+    O2SCL_ERR("Variable strange_axis is 1 but S_grid is not found.",
+              o2scl::exc_einval);
   } else {
     n_S2=0;
   }
+  
+  // ----------------------------------------------------------------
+  // Flags
   
   if (verbose>2) cout << "Reading baryons_only." << endl;
   hf.geti_def("baryons_only",1,itmp);
@@ -6428,7 +6471,14 @@ int eos_nuclei::read_results(std::string fname) {
     hdf_input(hf,tg_flag,"flag");
   }
   if (verbose>2) cout << "Reading Fint." << endl;
-  hdf_input(hf,tg_Fint,"Fint");
+  if (hf.find_object_by_name("Fint",type)==0) {
+    if (type=="tensor_grid") {
+      hdf_input(hf,tg_Fint,"Fint");
+    } else if (type=="tensor") {
+      o2scl::tensor &t=tg_Fint;
+      hdf_input(hf,t,"Fint");
+    }
+  }
   
   // Note that we read Sint and Eint even if derivs_computed is
   // false, because the entropy derivative is analytical
