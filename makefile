@@ -6,10 +6,16 @@ help:
 	@echo "eos_nompi:        Non-parallel version of eos."
 	@echo "eos_nuclei:       Main heterogeneous matter executable."
 	@echo "eos_nuclei_nompi: Non-parallel version of eos_nuclei."
-	@echo "open-doc:         Open local documentation in browser."
-	@echo "doc:              Generate documentation."
-	@echo "sync-doc:         Upload documentation to web."
+	@echo "enn:              Alias for 'eos_nuclei_nompi'."
 	@echo "web-doc:          Open online documentation in browser."
+	@echo "clean:            Delete executables and .o files."
+	@echo ""
+	@echo "Developer targets:"
+	@echo "─────────────────────────────────────────────────────────"
+	@echo "doc:              Generate documentation."
+	@echo "open-doc:         Open local documentation in browser."
+	@echo "sync-doc:         Upload documentation to web."
+	@echo "test-sync:         Upload documentation to web."
 
 # ----------------------------------------------------------------
 # Various user-specific settings
@@ -256,10 +262,10 @@ sync-doc:
 	rsync -Cavzu doc/build/html/* ~/wcs/np3m/np3m.github.io/code/e4mma
 
 test-sync:
-	rsync -Cavzun doc/build/html/* $(STATIC_DOC_DIR)/eos
+	rsync -Cavzun doc/build/html/* ~/wcs/np3m/np3m.github.io/code/e4mma
 
 clean:
-	rm -f *.o eos_nuclei eos_nuclei_nompi eos eos_nompi neutrino/*.o
+	rm -f *.o eos_nuclei eos_nuclei_nompi eos eos_nompi enn neutrino/*.o
 
 # ----------------------------------------------------------------
 # EOS parameter sets from Du et al. (2022)
@@ -273,26 +279,6 @@ P_LARGE_R = 0 738 0.5 13.0 62.4 32.8 0.9
 P_SMALL_SL = 470 738 0.5 13.0 23.7 29.5 0.9
 P_LARGE_SL = 470 738 0.5 13.0 100.0 36.0 0.9
 
-fid_point1: empty
-	eos_nuclei -select-model $(P_FIDUCIAL) \
-		-point-nuclei 0.08 0.5 5.0
-
-nrapr_point1: empty
-	eos_nuclei -alt-model Skyrme NRAPR \
-		-point-nuclei 0.08 0.5 5.0
-
-sfho_point1: empty
-	eos_nuclei -alt-model RMF SFHo \
-		-point-nuclei 0.08 0.5 5.0
-
-fid_point2: empty
-	eos -select-model $(P_FIDUCIAL) \
-		-point 0.15 0.5 0.0
-
-nrapr_point2: empty
-	eos -alt-model Skyrme NRAPR \
-		-point 0.15 0.5 0.0
-
-# This optional file, makefile.user, is a place to store the user's
-# makefile targets
+# This optional file, makefile.user, is an alternate place to store
+# the user's makefile targets.
 -include makefile.user
