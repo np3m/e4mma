@@ -6475,8 +6475,8 @@ int eos_nuclei::read_results(std::string fname) {
     if (type=="tensor_grid") {
       hdf_input(hf,tg_Fint,"Fint");
     } else if (type=="tensor") {
-      o2scl::tensor &t=tg_Fint;
-      hdf_input(hf,t,"Fint");
+      o2scl::tensor<> &t=tg_Fint;
+      //hdf_input(hf,t,"Fint");
     }
   }
   

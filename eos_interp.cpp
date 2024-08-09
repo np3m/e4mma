@@ -73,7 +73,9 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
   for(size_t k=T_grid2.size()-1;kdone==false;k--) {
     for(size_t i=0;i<nB_grid2.size();i++) {
       for(size_t j=0;j<Ye_grid2.size();j++) {
-        
+
+	if (nB_grid2[i]<1.0e-6) {
+	
         vector<size_t> ix={i,j,k};
 
         double dPdnB;
@@ -244,6 +246,7 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
           }
           
         }
+	}
       }
       
     }
@@ -428,7 +431,7 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
   
   cout << "eos_nuclei:interp_internal(): calibrate list has "
        << ike.calib_list.size()/3 << " points and fix list has "
-       << ike.fix_list.size()/3 << " points."
+       << ike.fix_list.size()/3 << " points." << endl;
 
   if (ike.fix_list.size()==0) {
     cerr << "No points to fix." << endl;
