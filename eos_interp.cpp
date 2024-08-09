@@ -195,12 +195,12 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
 		o2scl::szttos(j_min),o2scl::szttos(j_max),
 		o2scl::szttos(k_min),o2scl::szttos(k_max)};
 	      */
-	      sv3={"stability","x.o2"};
+	      sv3={"stability",st_out};
 	      stability(sv3,itive_com);
 	      
 	      ipx_count++;
 	      
-	      if (true) {
+	      if (false) {
 		hdf_file hf;
 		hf.open_or_create(st_out);
 		hdf_output(hf,dmundnB,"dmundnB");
@@ -215,6 +215,7 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
 		hdf_output(hf,egv[3],"egv3");
 		hdf_output(hf,tg_cs2,"cs2");
 		hdf_output(hf,tg_cs2_hom,"cs2_hom");
+		hdf_output(hf,tg_cs2_hom,"sflag");
 		hf.close();
             
 		write_results(table_out);
