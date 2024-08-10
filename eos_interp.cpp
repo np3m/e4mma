@@ -195,7 +195,7 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
 		o2scl::szttos(j_min),o2scl::szttos(j_max),
 		o2scl::szttos(k_min),o2scl::szttos(k_max)};
 	      */
-	      sv3={"stability",st_out};
+	      sv3={"stability",((std::string)"output=")+st_out};
 	      stability(sv3,itive_com);
 	      
 	      ipx_count++;
