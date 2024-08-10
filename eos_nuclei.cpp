@@ -1424,6 +1424,9 @@ int eos_nuclei::eg_point(std::vector<std::string> &sv,
   double nB=o2scl::stod(sv[1]);
   double Ye=o2scl::stod(sv[2]);
   double T_MeV=o2scl::stod(sv[3]);
+
+  elep.e.mu=elep.e.m;
+  elep.mu.mu=elep.mu.m;
   
   elep.include_muons=include_muons;
   if (sv.size()>=3) {
@@ -1443,14 +1446,16 @@ int eos_nuclei::eg_point(std::vector<std::string> &sv,
     relf.calc_mu(electron,T_MeV/hc_mev_fm);
     double eminus=electron.n;
     double eplus=eminus-elep.e.n;
-    cout << "n_{e-} [1/fm^3]: " << dtos(eminus,0) << " n_{e+} [1/fm^3]: "
+    cout << "  n_{e-} [1/fm^3]: " << dtos(eminus,0) << endl;
+    cout << "  n_{e+} [1/fm^3]: "
 	 << dtos(eplus,0) << " difference: " << dtos(eminus-eplus,0) << endl;
   }
   
   cout << "E [MeV]: " << dtos(elep.th.ed/nB*hc_mev_fm,0) << endl;
   cout << "P [MeV/fm^3]: " << dtos(elep.th.pr*hc_mev_fm,0) << endl;
   cout << "S: " << dtos(elep.th.en/nB,0) << endl;
-  cout << "F [MeV]: " << dtos((elep.th.ed*hc_mev_fm-T_MeV*elep.th.en)/nB,0) << endl;
+  cout << "F [MeV]: "
+       << dtos((elep.th.ed*hc_mev_fm-T_MeV*elep.th.en)/nB,0) << endl;
   if (include_muons) {
     cout << "Y_mu: " << dtos(elep.mu.n/nB,0) << endl;
     cout << "n_mu [1/fm^3]: " << dtos(elep.mu.n,0) << endl;
@@ -1459,8 +1464,10 @@ int eos_nuclei::eg_point(std::vector<std::string> &sv,
       relf.calc_mu(muon,T_MeV/hc_mev_fm);
       double muminus=muon.n;
       double muplus=muminus-elep.mu.n;
-      cout << "n_{mu-} [1/fm^3]: " << dtos(muminus,0) << " n_{mu+} [1/fm^3]: "
-	   << dtos(muplus,0) << " difference: " << dtos(muminus-muplus,0) << endl;
+      cout << "  n_{mu-} [1/fm^3]: " << dtos(muminus,0) << endl;
+      cout << "  n_{mu+} [1/fm^3]: " << dtos(muplus,0)
+           << " difference: " << dtos(muminus-muplus,0) << endl;
+	   
     }
   }
   cout << "E_e [MeV]: " << dtos(elep.e.ed/nB*hc_mev_fm,0) << endl;
