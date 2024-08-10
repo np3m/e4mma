@@ -9,6 +9,7 @@ help:
 	@echo "enn:              Alias for 'eos_nuclei_nompi'."
 	@echo "web-doc:          Open online documentation in browser."
 	@echo "clean:            Delete executables and .o files."
+	@echo "check:            Check the code."
 	@echo ""
 	@echo "Developer targets:"
 	@echo "─────────────────────────────────────────────────────────"
@@ -278,6 +279,15 @@ P_SMALLER_R = 256 738 0.5 13.0 62.4 32.8 0.9
 P_LARGE_R = 0 738 0.5 13.0 62.4 32.8 0.9
 P_SMALL_SL = 470 738 0.5 13.0 23.7 29.5 0.9
 P_LARGE_SL = 470 738 0.5 13.0 100.0 36.0 0.9
+
+# ----------------------------------------------------------------
+# Check target
+# ----------------------------------------------------------------
+
+check: eos eos_nuclei
+	cd examples && ./A_point_nuc.scr
+	cd examples && ./B_point.scr
+	cd examples && ./C_help.scr
 
 # This optional file, makefile.user, is an alternate place to store
 # the user's makefile targets.

@@ -861,7 +861,7 @@ public:
 
   /** \brief Construct an electrons and photon table
 
-      <output file>
+      <output file> [accuracy, either "ld" or "25"]
 
       Construct a file consisting only of the electron and photon EOS.
       The grid is determined by the current grid specification.
@@ -877,6 +877,8 @@ public:
       cleared. 
   */
   int eg_table(std::vector<std::string> &sv, bool itive_com);
+  
+  int eg_point(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Construct a table in beta equilibrium
 
@@ -1187,7 +1189,7 @@ public:
 
   /** \brief Compute the second derivatives and the stability matrix
       
-      <output file> [kwargs] or <nB> <Ye> <T> [kwargs] or 
+      [kwargs] or <nB> <Ye> <T> [kwargs] or 
       <inB low> <inB high> <iYe low> <iYe high> <iT low> <iT high> [kwargs]
 
       This command computes the second derivatives, speed of sound,
@@ -1195,19 +1197,19 @@ public:
       electrons must be loaded and the full model must be specified
       (either with select-model or from the table).
 
-      If one output file argument is specified, the \c stability
-      command creates an output file with several additional data
-      objects for the second derivatives of the free energy, the
-      eigenvalues of the curvature matrix, and the squared speed of
-      sound.
-
       Otherwise, if a density, electron fraction, and temperature are
       specified, the \c stability command compares the heterogeneous
       and homogeneous matter sound speeds at the grid point nearest
       to the specified values.
 
-      Possible keyword arguments are eigenvals=False and
-      cs2_hom=False.
+      If an output file argument is specified, the \c stability
+      command creates an output file with several additional data
+      objects for the second derivatives of the free energy, the
+      eigenvalues of the curvature matrix, and the squared speed of
+      sound.
+
+      Possible keyword arguments are eigenvals=False, 
+      cs2_hom=False, and output="".
       
       This command currently requires that a model has been 
       selected so it can compute the speed of sound of homogeneous

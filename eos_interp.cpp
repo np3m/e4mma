@@ -217,7 +217,9 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
 		hdf_output(hf,tg_cs2_hom,"cs2_hom");
 		hdf_output(hf,tg_cs2_hom,"sflag");
 		hf.close();
-            
+	      }
+	      
+	      if (true) {
 		write_results(table_out);
 	      }            
 
@@ -1080,45 +1082,6 @@ double interpm_krige_eos::min(size_t nv, const ubvector &v) {
   
   eos_nuclei *enp2=(eos_nuclei *)enp;
   
-  size_t i_min, i_max, j_min, j_max, k_min, k_max;
-  i_min=fix_list[0];
-  i_max=fix_list[0];
-  j_min=fix_list[1];
-  j_max=fix_list[1];
-  k_min=fix_list[2];
-  k_max=fix_list[2];
-  
-  for(size_t ifx=3;ifx<fix_list.size();ifx+=3) {
-    if (fix_list[ifx]<i_min) {
-      i_min=fix_list[ifx];
-    }
-    if (fix_list[ifx]>i_max) {
-      i_max=fix_list[ifx];
-    }
-    if (fix_list[ifx+1]<j_min) {
-      j_min=fix_list[ifx+1];
-    }
-    if (fix_list[ifx+1]>j_max) {
-      j_max=fix_list[ifx+1];
-    }
-    if (fix_list[ifx+2]<k_min) {
-      k_min=fix_list[ifx+2];
-    }
-    if (fix_list[ifx+2]>k_max) {
-      k_max=fix_list[ifx+2];
-    }
-  }
-  
-  // Expand by one unit to make sure to catch any interface problems
-  if (true) {
-    if (i_min>0) i_min--;
-    if (i_max<nB_grid.size()-1) i_max++;
-    if (j_min>0) j_min--;
-    if (j_max<Ye_grid.size()-1) j_max++;
-    if (k_min>0) k_min--;
-    if (k_max<T_grid.size()-1) k_max++;
-  }
-  
   size_t jout=0;
   for(size_t j=0;j<fix_list.size();j+=3) {
     
@@ -1168,28 +1131,71 @@ double interpm_krige_eos::min(size_t nv, const ubvector &v) {
     ret+=fabs(v[j/3]-1.0);
   }
   
+  size_t i_min, i_max, j_min, j_max, k_min, k_max;
+  i_min=fix_list[0];
+  i_max=fix_list[0];
+  j_min=fix_list[1];
+  j_max=fix_list[1];
+  k_min=fix_list[2];
+  k_max=fix_list[2];
+  
+  for(size_t ifx=3;ifx<fix_list.size();ifx+=3) {
+    if (fix_list[ifx]<i_min) {
+      i_min=fix_list[ifx];
+    }
+    if (fix_list[ifx]>i_max) {
+      i_max=fix_list[ifx];
+    }
+    if (fix_list[ifx+1]<j_min) {
+      j_min=fix_list[ifx+1];
+    }
+    if (fix_list[ifx+1]>j_max) {
+      j_max=fix_list[ifx+1];
+    }
+    if (fix_list[ifx+2]<k_min) {
+      k_min=fix_list[ifx+2];
+    }
+    if (fix_list[ifx+2]>k_max) {
+      k_max=fix_list[ifx+2];
+    }
+  }
+  
+  // Expand to make sure to catch any interface problems
+  //if (true) {
+  for(size_t i=0;i<5;i++) {
+    if (i_min>0) i_min--;
+    if (i_max<nB_grid.size()-1) i_max++;
+    if (j_min>0) j_min--;
+    if (j_max<Ye_grid.size()-1) j_max++;
+    if (k_min>0) k_min--;
+    if (k_max<T_grid.size()-1) k_max++;
+  }
+  
   std::vector<std::string> sv2;
   
   // Computing the derivatives is fast, so we just do the full table
   enp2->eos_deriv(sv2,false);
 
+  // Update the electron-photon EOS for the specified points
   sv2={"add_eg",o2scl::szttos(i_min),o2scl::szttos(i_max),
        o2scl::szttos(j_min),o2scl::szttos(j_max),
        o2scl::szttos(k_min),o2scl::szttos(k_max)};
   
-  // Update the electron-photon EOS for the specified points
   enp2->add_eg(sv2,false);
   
-  sv2={"stability",o2scl::szttos(i_min),o2scl::szttos(i_max),
+  // Update the stability and second derivatives
+  sv2={"stability",
+       o2scl::szttos(i_min),o2scl::szttos(i_max),
        o2scl::szttos(j_min),o2scl::szttos(j_max),
        o2scl::szttos(k_min),o2scl::szttos(k_max)};
   
-  // Update the stability and second derivatives
   enp2->stability(sv2,false);
   
   //cout << "Stability failures: " << enp2->n_stability_fail << endl;
   ret+=enp2->stability_diff*1000.0+enp2->n_stability_fail/10.0;
   //cout << "ret: " << ret << endl;
+  vector_out(cout,v,false);
+  cout << " " << ret << endl;
   
   return ret;
 }

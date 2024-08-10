@@ -986,28 +986,6 @@ int eos_nuclei::maxwell(std::vector<std::string> &sv,
   return 0;
 }
 
-/*
-// this is now replaced by elep.pair_density_eq()
-
-int eos_nuclei::new_muons(size_t nv, const ubvector &x, ubvector &y,
-double nB, double Ye, double T,
-map<string,double> &vdet, eos_sn_base &eso) {
-  
-eso.electron.n=x[0];
-  
-thermo lep;
-eso.compute_eg_point(nB,eso.electron.n/nB,T*hc_mev_fm,lep,vdet["mue"]);
-  
-y[0]=(eso.electron.n+eso.muon.n-nB*Ye)/(nB*Ye);
-//cout << "\t" << eso.electron.n << " " << eso.muon.n << " " << nB*Ye << endl;
-
-vdet["Ymu"]=eso.muon.n/nB;
-  
-return 0;
-}
-*/
-
-
 int eos_nuclei::beta_table(std::vector<std::string> &sv,
                            bool itive_com) {
 
@@ -1440,9 +1418,64 @@ int eos_nuclei::add_eg(std::vector<std::string> &sv,
   return 0;
 }
 
-int eos_nuclei::eg_table(std::vector<std::string> &sv,
+int eos_nuclei::eg_point(std::vector<std::string> &sv,
 			 bool itive_com) {
 
+  double nB=o2scl::stod(sv[1]);
+  double Ye=o2scl::stod(sv[2]);
+  double T_MeV=o2scl::stod(sv[3]);
+  
+  elep.include_muons=include_muons;
+  if (sv.size()>=3) {
+    if (sv[4]=="ld") {
+      elep.ld_acc();
+    } else if (sv[4]=="fp_25") {
+      elep.fp_25_acc();
+    }
+  }
+  elep.pair_density_eq(nB*Ye,T_MeV/hc_mev_fm);
+
+  cout << "mue [MeV]: " << dtos(elep.e.mu*hc_mev_fm,0) << endl;
+  cout << "n_e [1/fm^3]: " << dtos(elep.e.n,0) << endl;
+
+  {
+    electron.mu=elep.e.mu;
+    relf.calc_mu(electron,T_MeV/hc_mev_fm);
+    double eminus=electron.n;
+    double eplus=eminus-elep.e.n;
+    cout << "n_{e-} [1/fm^3]: " << dtos(eminus,0) << " n_{e+} [1/fm^3]: "
+	 << dtos(eplus,0) << " difference: " << dtos(eminus-eplus,0) << endl;
+  }
+  
+  cout << "E [MeV]: " << dtos(elep.th.ed/nB*hc_mev_fm,0) << endl;
+  cout << "P [MeV/fm^3]: " << dtos(elep.th.pr*hc_mev_fm,0) << endl;
+  cout << "S: " << dtos(elep.th.en/nB,0) << endl;
+  cout << "F [MeV]: " << dtos((elep.th.ed*hc_mev_fm-T_MeV*elep.th.en)/nB,0) << endl;
+  if (include_muons) {
+    cout << "Y_mu: " << dtos(elep.mu.n/nB,0) << endl;
+    cout << "n_mu [1/fm^3]: " << dtos(elep.mu.n,0) << endl;
+    {
+      muon.mu=elep.mu.mu;
+      relf.calc_mu(muon,T_MeV/hc_mev_fm);
+      double muminus=muon.n;
+      double muplus=muminus-elep.mu.n;
+      cout << "n_{mu-} [1/fm^3]: " << dtos(muminus,0) << " n_{mu+} [1/fm^3]: "
+	   << dtos(muplus,0) << " difference: " << dtos(muminus-muplus,0) << endl;
+    }
+  }
+  cout << "E_e [MeV]: " << dtos(elep.e.ed/nB*hc_mev_fm,0) << endl;
+  if (include_muons) {
+    cout << "E_mu [MeV]: " << dtos(elep.mu.ed/nB*hc_mev_fm,0) << endl;
+  }
+  cout << "E_g [MeV]: " << dtos(elep.ph.ed/nB*hc_mev_fm,0) << endl;
+
+  return 0;
+}
+
+
+int eos_nuclei::eg_table(std::vector<std::string> &sv,
+			 bool itive_com) {
+  
   if (sv.size()<2) {
     cerr << "Need filename." << endl;
     return 2;
@@ -1503,7 +1536,7 @@ int eos_nuclei::eg_table(std::vector<std::string> &sv,
 	F.set(ix,(elep.th.ed*hc_mev_fm-T_MeV*elep.th.en)/nB);
         
 	if (include_muons) {
-	  Ymu.set(ix,elep.mu.n*hc_mev_fm/nB);
+	  Ymu.set(ix,elep.mu.n/nB);
 	}
       }
     }
@@ -1729,13 +1762,15 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
     kwa.set(sv[7]);
   } else if (sv.size()==5) {
     kwa.set(sv[4]);
-  } else if (sv.size()==3) {
-    kwa.set(sv[2]);
+  } else if (sv.size()==2) {
+    kwa.set(sv[1]);
   }
   bool eigenvalues=kwa.get_bool("eigenvals",false);
   cout << "eigenvals: " << eigenvalues << endl;
   bool comp_cs2_hom=kwa.get_bool("cs2_hom",false);
   cout << "cs2_hom: " << comp_cs2_hom << endl;
+  std::string output_file=kwa.get_string("output","");
+  cout << "output file: " << output_file << endl;
 
   if (!range_mode || dmundYe.get_rank()==0) {
     
@@ -1864,7 +1899,6 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
   vector<size_t> i_T_fix;
   vector<size_t> type_fix;
   
-  string outfile;
   size_t ilo=0, ihi=n_nB2;
   size_t jlo=0, jhi=n_Ye2;
   size_t klo=0, khi=n_T2;
@@ -1894,8 +1928,7 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
     cout << "Electron fraction " << Yex << " index " << jlo << endl;
     cout << "Temperature " << Tx << " index " << klo << endl;
   } else {
-    cout << "Stability function creating full table." << endl;
-    outfile=sv[1];
+    cout << "Stability function computing full table." << endl;
   }
   
   /// Compute the stability matrix and its eigenvalues at each point
@@ -2324,10 +2357,10 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
     }
   }
   
-  if (outfile.length()>0) {
+  if (output_file.length()>0) {
     
     hdf_file hf;
-    hf.open_or_create(outfile);
+    hf.open_or_create(output_file);
     hdf_output(hf,dmundnB,"dmundnB");
     hdf_output(hf,dmundYe,"dmundYe");
     hdf_output(hf,dmupdYe,"dmupdYe");
@@ -10963,7 +10996,7 @@ void eos_nuclei::setup_cli_nuclei(o2scl::cli &cl) {
   
   eos::setup_cli(cl,false);
   
-  static const int nopt=30;
+  static const int nopt=31;
 
   o2scl::comm_option_s options[nopt]=
     {{0,"eos-deriv","",0,0,"","",
@@ -10978,6 +11011,10 @@ void eos_nuclei::setup_cli_nuclei(o2scl::cli &cl) {
       new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::eg_table),o2scl::cli::comm_option_both,
       1,"","eos_nuclei","eg_table","doc/xml/classeos__nuclei.xml"},
+     {0,"eg-point","",3,4,"","",
+      new o2scl::comm_option_mfptr<eos_nuclei>
+      (this,&eos_nuclei::eg_point),o2scl::cli::comm_option_both,
+      1,"","eos_nuclei","eg_point","doc/xml/classeos__nuclei.xml"},
      {0,"maxwell","",0,0,"","",
       new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::maxwell),o2scl::cli::comm_option_both,
