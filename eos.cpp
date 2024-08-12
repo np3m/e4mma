@@ -1,7 +1,7 @@
 /*
   -------------------------------------------------------------------
   
-  Copyright (C) 2018-2023, Xingfu Du, Zidu Lin, and Andrew W. Steiner
+  Copyright (C) 2018-2024, Xingfu Du, Zidu Lin, and Andrew W. Steiner
   
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -57,7 +57,6 @@ double eos_crust_virial_v2::bpn1_free() {
   return 0.0;
 }
 
-/// The temperature must be specified in MeV
 double eos_crust_virial_v2::bna(double T) {
   if (T<1.0 || T>20.0) {
     cout << "Problem 1: " << T << endl;
@@ -66,7 +65,6 @@ double eos_crust_virial_v2::bna(double T) {
   return iv_ba.eval(T);
 }
 
-/// The temperature must be specified in MeV
 double eos_crust_virial_v2::bpna(double T) {
   if (T<1.0 || T>20.0) {
     cout << "Problem 2: " << T << endl;
@@ -850,42 +848,85 @@ double eos::free_energy_density_virial
   double b_pn=ecv.bpn_f(T_MeV);
   double dbpndT=ecv.dbpndT_f(T_MeV)*hc_mev_fm;
 
+  bool new_lambda=true;
   double lambda=sqrt(4.0*o2scl_const::pi/(n.m+p.m)/T);
-  double dlambdadT=-sqrt(o2scl_const::pi/(n.m+p.m))/pow(sqrt(T),3.0);
+  double lambda_n=sqrt(2.0*o2scl_const::pi/(n.m)/T);
+  double lambda_p=sqrt(2.0*o2scl_const::pi/(p.m)/T);
+  double dlambdadT=-sqrt(o2scl_const::pi/(n.m+p.m))/pow(sqrt(T),3);
+  double dlambda_ndT=-sqrt(o2scl_const::pi/(n.m)/2.0)/pow(sqrt(T),3);
+  double dlambda_pdT=-sqrt(o2scl_const::pi/(p.m)/2.0)/pow(sqrt(T),3);
 
   double zn, zp;
 
-  if (nn*pow(lambda,3.0)>1.0e-5 || np*pow(lambda,3.0)>1.0e-5) {
-
-    // If the densities are large enough, then compute the
-    // virial result
-    vsd.solve_fugacity(nn,np,lambda,lambda,b_n,b_pn,zn,zp);
+  if (new_lambda) {
     
-    vsd.calc_deriv(nn,np,lambda,lambda,
-		   b_n,b_pn,zn,zp,
-		   dbndT,dbpndT,dlambdadT,dlambdadT);
+    if (nn*pow(lambda_n,3.0)>1.0e-5 || np*pow(lambda_p,3.0)>1.0e-5) {
+      
+      // If the densities are large enough, then compute the
+      // virial result
+      vsd.solve_fugacity(nn,np,lambda_n,lambda_p,b_n,b_pn,zn,zp);
+      
+      vsd.calc_deriv(nn,np,lambda_n,lambda_p,
+                     b_n,b_pn,zn,zp,
+                     dbndT,dbpndT,dlambda_ndT,dlambda_pdT);
+      
+      dmundnn=T/zn*vsd.dzndnn;
+      dmundnp=T/zn*vsd.dzndnp;
+      dmupdnn=T/zp*vsd.dzpdnn;
+      dmupdnp=T/zp*vsd.dzpdnp;
+      dmundT=log(zn)+T/zn*vsd.dzndT;
+      dmupdT=log(zp)+T/zp*vsd.dzpdT;
+      
+    } else {
+      
+      // Otherwise, the virial correction is negligable, so
+      // just use the classical result
+      zn=nn*pow(lambda_n,3.0)/2.0;
+      zp=np*pow(lambda_p,3.0)/2.0;
+      
+      dmundnn=T*pow(lambda_n,3.0)/2.0/zn;
+      dmundnp=0.0;
+      dmupdnn=0.0;
+      dmupdnp=T*pow(lambda_p,3.0)/2.0/zp;
+      dmundT=n.mu/T-1.5;
+      dmupdT=p.mu/T-1.5;
+      
+    }
     
-    dmundnn=T/zn*vsd.dzndnn;
-    dmundnp=T/zn*vsd.dzndnp;
-    dmupdnn=T/zp*vsd.dzpdnn;
-    dmupdnp=T/zp*vsd.dzpdnp;
-    dmundT=log(zn)+T/zn*vsd.dzndT;
-    dmupdT=log(zp)+T/zp*vsd.dzpdT;
-
   } else {
     
-    // Otherwise, the virial correction is negligable, so
-    // just use the classical result
-    zn=nn*pow(lambda,3.0)/2.0;
-    zp=np*pow(lambda,3.0)/2.0;
-    
-    dmundnn=T*pow(lambda,3.0)/2.0/zn;
-    dmundnp=0.0;
-    dmupdnn=0.0;
-    dmupdnp=T*pow(lambda,3.0)/2.0/zp;
-    dmundT=n.mu/T-1.5;
-    dmupdT=p.mu/T-1.5;
-    
+    if (nn*pow(lambda,3.0)>1.0e-5 || np*pow(lambda,3.0)>1.0e-5) {
+      
+      // If the densities are large enough, then compute the
+      // virial result
+      vsd.solve_fugacity(nn,np,lambda,lambda,b_n,b_pn,zn,zp);
+      
+      vsd.calc_deriv(nn,np,lambda,lambda,
+                     b_n,b_pn,zn,zp,
+                     dbndT,dbpndT,dlambdadT,dlambdadT);
+      
+      dmundnn=T/zn*vsd.dzndnn;
+      dmundnp=T/zn*vsd.dzndnp;
+      dmupdnn=T/zp*vsd.dzpdnn;
+      dmupdnp=T/zp*vsd.dzpdnp;
+      dmundT=log(zn)+T/zn*vsd.dzndT;
+      dmupdT=log(zp)+T/zp*vsd.dzpdT;
+      
+    } else {
+      
+      // Otherwise, the virial correction is negligable, so
+      // just use the classical result
+      zn=nn*pow(lambda,3.0)/2.0;
+      zp=np*pow(lambda,3.0)/2.0;
+      
+      dmundnn=T*pow(lambda,3.0)/2.0/zn;
+      dmundnp=0.0;
+      dmupdnn=0.0;
+      dmupdnp=T*pow(lambda,3.0)/2.0/zp;
+      dmundT=n.mu/T-1.5;
+      dmupdT=p.mu/T-1.5;
+      
+    }
   }
 
   n.mu=log(zn)*T;
@@ -933,6 +974,124 @@ int eos::solve_coeff_small(size_t nv, const ubvector &x,
   y[0]=(a1l-a1l*a2l*pow(ns_nb_max_l,a1l)/
         (1.0+a2l*pow(ns_nb_max_l,a1l)))-cs_ns_last;
   y[1]=(a1l-a1l*a2l*pow(2.0,a1l)/(1.0+a2l*pow(2.0,a1l)))-cs_ns_2;
+  
+  return 0;
+}
+
+int eos::new_nuc_eos(double nb, fermion &n,
+		    double &e_nuc, double &denucdnn) {
+  
+  double a1l, a2l;
+  double c1l, c2l;
+
+  // -----------------------------------------------------
+  // Solve for a1l and a2l
+
+  bool success=true;
+  mroot_hybrids<> mh;
+  mh.err_nonconv=false;
+
+  // Initial guess for a1l and a2l
+  ubvector mx(2), my(2);
+  thermo thx;
+  
+  if (nb<(ns_nb_max-1.0e-6)) {
+    
+    neutron.n=nb/2.0;
+    proton.n=nb/2.0;
+    sk.calc_e(neutron,proton,thx);
+    e_nuc=thx.ed;
+    denucdnn=neutron.mu;
+    
+  } else {
+
+    // If the speed of sound is increasing
+    // at high densities
+    
+    double cs_nuc_last=cs2_fit(nuc_nb_max);
+    double cs_nuc_2=phi;
+    
+    if (cs_nuc_2>cs_nuc_last) {
+      mx[0]=1.0;
+      mx[1]=1.0;
+      mm_funct mfbig=std::bind
+	(std::mem_fn<int(size_t,const ubvector &,
+			 ubvector &, double, double, double)>
+	 (&eos::solve_coeff_big),
+	 this,std::placeholders::_1,
+	 std::placeholders::_2,
+	 std::placeholders::_3,nuc_nb_max,cs_nuc_2,cs_nuc_last);
+      int mret=mh.msolve(2,mx,mfbig);
+      if (mret!=0) success=false;
+      
+      a1l=mx[0];
+      a2l=mx[1];
+      
+      // solve for c1, c2
+      c1l=(e_nuc_last+n.m*nuc_nb_max+p_nuc_last)/((nuc_nb_max*nuc_nb_max)*
+					       (a2l+pow(nuc_nb_max,-a1l)));
+      c2l=0.5*(e_nuc_last+n.m*nuc_nb_max-p_nuc_last+
+	       a1l*(e_nuc_last+n.m*nuc_nb_max+p_nuc_last)
+	       /((a1l-2.0)*(1.0+a2l*pow(nuc_nb_max,a1l))));
+      e_nuc=-n.m*nb+(a2l*nb*nb/2.0+pow(nb,2.0-a1l)/(2.0-a1l))*c1l+c2l;
+      denucdnn=-n.m+c1l*(a2l*nb+pow(nb,1.0-a1l));
+      
+    } else if (cs_nuc_2<cs_nuc_last) {
+
+      // If the speed of sound is decreasing
+      // at high densities
+
+      mx[0]=2.5;
+      mx[1]=1.0;
+      mm_funct mfsmall=std::bind
+	(std::mem_fn<int(size_t,const ubvector &,
+			 ubvector &, double, double ,double)>
+	 (&eos::solve_coeff_small),
+	 this,std::placeholders::_1,
+	 std::placeholders::_2,
+	 std::placeholders::_3,nuc_nb_max,cs_nuc_2,cs_nuc_last);
+      int mret=mh.msolve(2,mx,mfsmall);
+      if (mret!=0) success=false;
+      a1l=mx[0];
+      a2l=mx[1];
+      
+      double hyperg=gsl_sf_hyperg_2F1
+	(1.0,1.0,1.0-1.0/a1l,1.0/a2l*pow(nb,-a1l)/
+         (1.0/a2l*pow(nb,-a1l)+1.0));
+      double hyperg_max=gsl_sf_hyperg_2F1
+	(1.0,1.0,1.0-1.0/a1l,1.0/a2l*pow(nuc_nb_max,-a1l)/
+	 (1.0/a2l*pow(nuc_nb_max,-a1l)+1.0));
+      
+      // Transform hyperg to hyperg_new see notes based on Pfaff
+      // transformation
+      double hyperg_new=hyperg*(1.0/(1.0+1.0/a2l*pow(nb,-a1l)));
+      double hyperg_max_new=hyperg_max*(1.0/(1.0+1.0/a2l*
+                                             pow(nuc_nb_max,-a1l)));
+
+      // solve for c1l, c2l
+      c1l=pow(nuc_nb_max,-a1l-1.0)*(a2l*pow(nuc_nb_max,a1l)+1.0)*
+	(e_nuc_last+n.m*nuc_nb_max+p_nuc_last);
+      c2l=pow(nuc_nb_max,-a1l)*
+	(a2l*pow(nuc_nb_max,a1l)*(e_nuc_last+n.m*nuc_nb_max)-
+	 (a2l*pow(nuc_nb_max,a1l)+1.0)
+	 *hyperg_max_new*(e_nuc_last+n.m*nuc_nb_max+p_nuc_last))/a2l;
+      e_nuc=(c1l*nb*hyperg_new)/a2l+c2l-n.m*nb;
+      denucdnn=-(a2l*n.m*pow(nb,a1l)-c1l*pow(nb,a1l)+n.m)/
+        (a2l*pow(nb,a1l)+1.0);
+
+    } else if (cs_nuc_2==cs_nuc_last) {
+
+      // If the speed of sound is independent of density at
+      // high densities
+      
+      e_nuc=-n.m*nb+(e_nuc_last+n.m*nuc_nb_max+p_nuc_last)/
+	(1.0+cs_nuc_last)*pow((nb/nuc_nb_max),cs_nuc_last+1.0)+
+	(cs_nuc_last*(e_nuc_last+n.m*nuc_nb_max)-p_nuc_last)/
+	(1.0+cs_nuc_last);
+      denucdnn=-n.m+(e_nuc_last+n.m*nuc_nb_max+p_nuc_last)*
+	pow((nb/nuc_nb_max),cs_nuc_last)/nuc_nb_max;
+    }
+  }    
   
   return 0;
 }
@@ -1019,7 +1178,8 @@ int eos::new_ns_eos(double nb, fermion &n,
       a2l=mx[1];
       
       double hyperg=gsl_sf_hyperg_2F1
-	(1.0,1.0,1.0-1.0/a1l,1.0/a2l*pow(nb,-a1l)/(1.0/a2l*pow(nb,-a1l)+1.0));
+	(1.0,1.0,1.0-1.0/a1l,1.0/a2l*pow(nb,-a1l)/
+         (1.0/a2l*pow(nb,-a1l)+1.0));
       double hyperg_max=gsl_sf_hyperg_2F1
 	(1.0,1.0,1.0-1.0/a1l,1.0/a2l*pow(ns_nb_max,-a1l)/
 	 (1.0/a2l*pow(ns_nb_max,-a1l)+1.0));
@@ -1027,7 +1187,8 @@ int eos::new_ns_eos(double nb, fermion &n,
       // Transform hyperg to hyperg_new see notes based on Pfaff
       // transformation
       double hyperg_new=hyperg*(1.0/(1.0+1.0/a2l*pow(nb,-a1l)));
-      double hyperg_max_new=hyperg_max*(1.0/(1.0+1.0/a2l*pow(ns_nb_max,-a1l)));
+      double hyperg_max_new=hyperg_max*(1.0/(1.0+1.0/a2l*
+                                             pow(ns_nb_max,-a1l)));
 
       // solve for c1l, c2l
       c1l=pow(ns_nb_max,-a1l-1.0)*(a2l*pow(ns_nb_max,a1l)+1.0)*
@@ -1037,19 +1198,20 @@ int eos::new_ns_eos(double nb, fermion &n,
 	 (a2l*pow(ns_nb_max,a1l)+1.0)
 	 *hyperg_max_new*(e_ns_last+n.m*ns_nb_max+p_ns_last))/a2l;
       e_ns=(c1l*nb*hyperg_new)/a2l+c2l-n.m*nb;
-      densdnn=-(a2l*n.m*pow(nb,a1l)-c1l*pow(nb,a1l)+n.m)/(a2l*pow(nb,a1l)+1.0);
+      densdnn=-(a2l*n.m*pow(nb,a1l)-c1l*pow(nb,a1l)+n.m)/
+        (a2l*pow(nb,a1l)+1.0);
 
     } else if (cs_ns_2==cs_ns_last) {
 
       // If the speed of sound is independent of density at
       // high densities
       
-      e_ns=-n.m*nb+(e_ns_last+n.m*ns_nb_max+p_ns_last)
-	/(1.0+cs_ns_last)*pow((nb/ns_nb_max),cs_ns_last+1.0)
-	+(cs_ns_last*(e_ns_last+n.m*ns_nb_max)-p_ns_last)
-	/(1.0+cs_ns_last);
-      densdnn=-n.m+(e_ns_last+n.m*ns_nb_max+p_ns_last)
-	*pow((nb/ns_nb_max),cs_ns_last)/ns_nb_max;
+      e_ns=-n.m*nb+(e_ns_last+n.m*ns_nb_max+p_ns_last)/
+	(1.0+cs_ns_last)*pow((nb/ns_nb_max),cs_ns_last+1.0)+
+	(cs_ns_last*(e_ns_last+n.m*ns_nb_max)-p_ns_last)/
+	(1.0+cs_ns_last);
+      densdnn=-n.m+(e_ns_last+n.m*ns_nb_max+p_ns_last)*
+	pow((nb/ns_nb_max),cs_ns_last)/ns_nb_max;
     }
   }
 
@@ -1263,7 +1425,8 @@ double eos::free_energy_density_detail
     msp_Tcorr_T0=p.ms;
     
     // ----------------------------------------------------------------
-    // Compute the Skyrme EOS in nuclear matter at finite T for chiral fit
+    // Compute the Skyrme EOS in nuclear matter at finite T for chiral
+    // fit
     
     n.n=nn;
     p.n=pn;
@@ -1395,11 +1558,11 @@ double eos::free_energy_density_detail
     tx.function_column("nb*dmufdn/muf","cs2");
 
     hdf_file hf;
-    hf.open_or_create("ns2test.o2");
-    hdf_output(hf,tx,"ns2test");
+    hf.open_or_create("test_ns_cs2.o2");
+    hdf_output(hf,tx,"test_ns_cs2");
     hf.close();
 
-    int sret=system("o2graph -read ns2test.o2 -plot nb cs2 -show");
+    exit(-1);
   }
   
   // ----------------------------------------------------------------
@@ -3515,6 +3678,35 @@ int eos::select_internal(int i_ns_loc, int i_skyrme_loc,
     
   }
 
+  // --------------------------------------------------------
+
+  if (false) {
+    // This doesn't quite work yet.
+    double pr_last=0.0, ed_last=0.0;
+    for(double nbx=0.1;nbx<2.00001;nbx+=0.01) {
+      neutron.n=nbx/2.0;
+      proton.n=nbx/2.0;
+      fermion_deriv n2=neutron;
+      fermion_deriv p2=proton;
+      thermo_np_deriv_helm thd;
+      sk.calc_deriv_e(n2,p2,th2,thd);
+      cout << nbx << " " << 2.0*n2.n/(n2.mu+n2.m)*thd.dmundnn << " "
+           << (th2.pr-pr_last)/
+        (th2.ed+neutron.n*neutron.m+proton.n*proton.m-ed_last) << " "
+           << cs2_func(neutron,proton,0.1/hc_mev_fm,th2) << " "
+           << cs2_func(neutron,proton,1.0/hc_mev_fm,th2) << endl;
+      ed_last=th2.ed+neutron.n*neutron.m+proton.n*proton.m;
+      pr_last=th2.pr;
+      if (false && n2.mu/n2.n/thd.dmundnn>0.99) {
+        e_nuc_last=th2.ed;
+        p_nuc_last=th2.pr;
+        nuc_nb_max=nbx;
+        nbx=3.0;
+      }
+    }
+    exit(-1);
+  }
+  
   // --------------------------------------------------------
   // Test cs2
   

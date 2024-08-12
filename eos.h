@@ -1,7 +1,7 @@
 /*
   -------------------------------------------------------------------
   
-  Copyright (C) 2018-2023, Xingfu Du, Zidu Lin, and Andrew W. Steiner
+  Copyright (C) 2018-2024, Xingfu Du, Zidu Lin, and Andrew W. Steiner
   
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -493,6 +493,9 @@ public:
       This quantity is determined by \ref ns_fit()
   */
   double ns_nb_max;
+  double nuc_nb_max;
+  double e_nuc_last;
+  double p_nuc_last;
   
   /** \brief The baryon number chemical potential (in \f$
       \mathrm{fm}^{-1} \f$ ) as a function of number density (in \f$
@@ -540,6 +543,9 @@ public:
   int new_ns_eos(double nb, o2scl::fermion &n, double &e_ns,
 		 double &densdnn);
 
+  int new_nuc_eos(double nb, o2scl::fermion &n,
+                  double &e_nuc, double &denucdnn);
+  
   /** \brief Compute dfdnn including photons and electons
 
       This function is used in \ref cs2_func() .

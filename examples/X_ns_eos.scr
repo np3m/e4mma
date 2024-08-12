@@ -1,0 +1,10 @@
+# ----------------------------------------------------------------
+# Show the neutron star EOS (which is used as the neutron matter EOS).
+# Note that the code needs to be read a few data files so we begin by
+# setting the "data_dir" parameter.
+# ----------------------------------------------------------------
+
+../eos_nuclei -set data_dir "../data" \
+-select-model 470 738 0.5 13.0 62.4 32.8 0.9 \
+-set test_ns_cs2 1 -point-nuclei 0.08 0.5 5.0
+

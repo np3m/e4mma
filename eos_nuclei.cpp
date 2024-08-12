@@ -1,7 +1,7 @@
 /*
   -------------------------------------------------------------------
   
-  Copyright (C) 2018-2023, Xingfu Du, Zidu Lin, and Andrew W. Steiner
+  Copyright (C) 2018-2024, Xingfu Du, Zidu Lin, and Andrew W. Steiner
   
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -1436,12 +1436,23 @@ int eos_nuclei::eg_point(std::vector<std::string> &sv,
       elep.fp_25_acc();
     }
   }
+  elep.verbose=2;
   elep.pair_density_eq(nB*Ye,T_MeV/hc_mev_fm);
 
   cout << "mue [MeV]: " << dtos(elep.e.mu*hc_mev_fm,0) << endl;
   cout << "n_e [1/fm^3]: " << dtos(elep.e.n,0) << endl;
 
-  {
+  if (sv.size()>=3 && sv[4]=="ld") {
+#ifndef O2SCL_NO_BOOST_MULTIPRECISION
+    elep.frel_ld.calc_mu(elep.eld,T_MeV/hc_mev_fm);
+    double eminus=elep.e.n;
+    double eplus=nB*Ye-elep.e.n;
+    cout << "  n_{e-} [1/fm^3]: " << dtos(eminus,0) << endl;
+    cout << "  n_{e+} [1/fm^3]: "
+	 << dtos(eplus,0) << " difference: "
+         << dtos(eminus-eplus,0) << endl;
+#endif
+  } else {
     electron.mu=elep.e.mu;
     relf.calc_mu(electron,T_MeV/hc_mev_fm);
     double eminus=electron.n;
@@ -6561,7 +6572,7 @@ int eos_nuclei::read_results(std::string fname) {
   // ----------------------------------------------------------------
   // Nuclear distribution
   
-  if (table_no_nuclei && (alg_mode==2 || alg_mode==3 || alg_mode==4) &&
+  if (!table_no_nuclei && (alg_mode==2 || alg_mode==3 || alg_mode==4) &&
       hf.find_object_by_name("A_min",type)==0 && type=="tensor_grid") {
     
     if (hf.find_object_by_name("A_min",type)!=0 || type!="tensor_grid") {
@@ -8947,11 +8958,20 @@ int eos_nuclei::edit_data(std::vector<std::string> &sv,
   if (sv.size()>2) {
     calc2.compile(value_func.c_str());
   }
+  if (verbose>2) {
+    cout << "eos_nuclei::edit_data(): Using select=\""
+         << select_func << "\" and value=\"" << value_func
+         << "\"." << endl;
+  }
 
   table_units<> tu;
   tu.line_of_names("inB iYe iT nB Ye T");
 
   for(int inB=0;inB<((int)n_nB2);inB++) {
+    if (verbose>2) {
+      cout << "eos_nuclei::edit_data(): " << inB+1 << " of "
+           << n_nB2 << endl;
+    }
     for(int iYe=0;iYe<((int)n_Ye2);iYe++) {
       for(int iT=0;iT<((int)n_T2);iT++) {
 
@@ -9041,7 +9061,7 @@ int eos_nuclei::edit_data(std::vector<std::string> &sv,
 
 	  count++;
 
-          if (count<10) {
+          if (count<=10) {
             cout << count << "/? (nB,Ye,T[MeV]) "
                  << nB_grid2[inB] << " "
                  << Ye_grid2[iYe] << " "
