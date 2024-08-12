@@ -1430,10 +1430,14 @@ int eos_nuclei::eg_point(std::vector<std::string> &sv,
   
   elep.include_muons=include_muons;
   if (sv.size()>=3) {
-    if (sv[4]=="ld") {
+    if (sv[4]=="imp") {
+      elep.improved_acc();
+    } else if (sv[4]=="ld") {
       elep.ld_acc();
     } else if (sv[4]=="fp_25") {
       elep.fp_25_acc();
+    } else {
+      elep.default_acc();
     }
   }
   elep.verbose=2;
@@ -1444,9 +1448,21 @@ int eos_nuclei::eg_point(std::vector<std::string> &sv,
 
   if (sv.size()>=3 && sv[4]=="ld") {
 #ifndef O2SCL_NO_BOOST_MULTIPRECISION
-    elep.frel_ld.calc_mu(elep.eld,T_MeV/hc_mev_fm);
-    double eminus=elep.e.n;
-    double eplus=nB*Ye-elep.e.n;
+    int cm_ret=elep.frel_ld.calc_mu(elep.eld,T_MeV/hc_mev_fm);
+    double eminus=elep.eld.n;
+    double eplus=elep.eld.n-nB*Ye;
+    cout << "cm_ret: " << cm_ret << endl;
+    cout << "  n_{e-} [1/fm^3]: " << dtos(eminus,0) << endl;
+    cout << "  n_{e+} [1/fm^3]: "
+	 << dtos(eplus,0) << " difference: "
+         << dtos(eminus-eplus,0) << endl;
+#endif
+  } else if (sv.size()>=3 && sv[4]=="25") {
+#ifndef O2SCL_NO_BOOST_MULTIPRECISION
+    int cm_ret=elep.frel_cdf25.calc_mu(elep.ecdf25,T_MeV/hc_mev_fm);
+    double eminus=static_cast<double>(elep.ecdf25.n);
+    double eplus=static_cast<double>(elep.ecdf25.n)-nB*Ye;
+    cout << "cm_ret: " << cm_ret << endl;
     cout << "  n_{e-} [1/fm^3]: " << dtos(eminus,0) << endl;
     cout << "  n_{e+} [1/fm^3]: "
 	 << dtos(eplus,0) << " difference: "
@@ -1467,10 +1483,35 @@ int eos_nuclei::eg_point(std::vector<std::string> &sv,
   cout << "S: " << dtos(elep.th.en/nB,0) << endl;
   cout << "F [MeV]: "
        << dtos((elep.th.ed*hc_mev_fm-T_MeV*elep.th.en)/nB,0) << endl;
+  double ti=(elep.th.ed+elep.th.pr-elep.e.n*elep.e.mu-
+             T_MeV/hc_mev_fm*elep.th.en)/elep.th.ed;
+  cout << "TI []: " << ti << endl;
   if (include_muons) {
     cout << "Y_mu: " << dtos(elep.mu.n/nB,0) << endl;
     cout << "n_mu [1/fm^3]: " << dtos(elep.mu.n,0) << endl;
-    {
+    if (sv.size()>=3 && sv[4]=="ld") {
+#ifndef O2SCL_NO_BOOST_MULTIPRECISION
+      int cm_ret=elep.frel_ld.calc_mu(elep.muld,T_MeV/hc_mev_fm);
+      double muminus=elep.muld.n;
+      double muplus=muminus-elep.muld.n;
+      cout << "cm_ret: " << cm_ret << endl;
+      cout << "  n_{mu-} [1/fm^3]: " << dtos(muminus,0) << endl;
+      cout << "  n_{mu+} [1/fm^3]: "
+           << dtos(muplus,0) << " difference: "
+           << dtos(muminus-muplus,0) << endl;
+#endif
+    } else if (sv.size()>=3 && sv[4]=="25") {
+#ifndef O2SCL_NO_BOOST_MULTIPRECISION
+      int cm_ret=elep.frel_cdf25.calc_mu(elep.mucdf25,T_MeV/hc_mev_fm);
+      double muminus=static_cast<double>(elep.mucdf25.n);
+      double muplus=muminus-static_cast<double>(elep.mucdf25.n);
+      cout << "cm_ret: " << cm_ret << endl;
+      cout << "  n_{mu-} [1/fm^3]: " << dtos(muminus,0) << endl;
+      cout << "  n_{mu+} [1/fm^3]: "
+           << dtos(muplus,0) << " difference: "
+           << dtos(muminus-muplus,0) << endl;
+#endif
+    } else {
       muon.mu=elep.mu.mu;
       relf.calc_mu(muon,T_MeV/hc_mev_fm);
       double muminus=muon.n;
@@ -1478,7 +1519,6 @@ int eos_nuclei::eg_point(std::vector<std::string> &sv,
       cout << "  n_{mu-} [1/fm^3]: " << dtos(muminus,0) << endl;
       cout << "  n_{mu+} [1/fm^3]: " << dtos(muplus,0)
            << " difference: " << dtos(muminus-muplus,0) << endl;
-	   
     }
   }
   cout << "E_e [MeV]: " << dtos(elep.e.ed/nB*hc_mev_fm,0) << endl;
