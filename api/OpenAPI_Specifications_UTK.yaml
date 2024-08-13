@@ -45,7 +45,8 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/table'
+              type: string
+              format: binary
       responses:
         '200':
           description: Successful operation
@@ -113,10 +114,6 @@ paths:
 
 components:
   schemas:
-    table:
-      title: Fiducial table for Crust DFT module
-      description: Fiducial table for Crust DFT module
-      type: object
     config:
       title: Input parameters
       description: Input parameters for e4mma eos
