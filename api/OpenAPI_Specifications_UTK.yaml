@@ -117,14 +117,6 @@ components:
       title: Fiducial table for Crust DFT module
       description: Fiducial table for Crust DFT module
       type: object
-      required: [input_table]
-      properties:
-        input_table:
-          default: "fid_3_5_22.o2"
-          description: Loads an EOS table in to memory. In the case where MPI is used, only one MPI
-            rank reads the table at a time.
-          title: Load an EOS table.
-          type: string
     config:
       title: Input parameters
       description: Input parameters for e4mma eos
