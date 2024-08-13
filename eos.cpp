@@ -3681,7 +3681,9 @@ int eos::select_internal(int i_ns_loc, int i_skyrme_loc,
   // --------------------------------------------------------
 
   if (false) {
-    // This doesn't quite work yet.
+    
+    // Determine the density at which the nuclear matter
+    // EOS becomes acausal. 
     double pr_last=0.0, ed_last=0.0;
     for(double nbx=0.1;nbx<2.00001;nbx+=0.01) {
       neutron.n=nbx/2.0;
@@ -3690,11 +3692,19 @@ int eos::select_internal(int i_ns_loc, int i_skyrme_loc,
       fermion_deriv p2=proton;
       thermo_np_deriv_helm thd;
       sk.calc_deriv_e(n2,p2,th2,thd);
-      cout << nbx << " " << 2.0*n2.n/(n2.mu+n2.m)*thd.dmundnn << " "
+      
+      // Add the electron contribution
+      electron.n=nbx/2.0;
+      relf.calc_density_zerot(electron);
+      th2.ed+=electron.ed;
+      th2.pr+=electron.pr;
+
+      cout << nbx << " " 
            << (th2.pr-pr_last)/
         (th2.ed+neutron.n*neutron.m+proton.n*proton.m-ed_last) << " "
            << cs2_func(neutron,proton,0.1/hc_mev_fm,th2) << " "
            << cs2_func(neutron,proton,1.0/hc_mev_fm,th2) << endl;
+      
       ed_last=th2.ed+neutron.n*neutron.m+proton.n*proton.m;
       pr_last=th2.pr;
       if (false && n2.mu/n2.n/thd.dmundnn>0.99) {
@@ -3705,6 +3715,7 @@ int eos::select_internal(int i_ns_loc, int i_skyrme_loc,
       }
     }
     exit(-1);
+    
   }
   
   // --------------------------------------------------------

@@ -1434,7 +1434,7 @@ int eos_nuclei::eg_point(std::vector<std::string> &sv,
       elep.improved_acc();
     } else if (sv[4]=="ld") {
       elep.ld_acc();
-    } else if (sv[4]=="fp_25") {
+    } else if (sv[4]=="25") {
       elep.fp_25_acc();
     } else {
       elep.default_acc();
@@ -1448,6 +1448,14 @@ int eos_nuclei::eg_point(std::vector<std::string> &sv,
 
   if (sv.size()>=3 && sv[4]=="ld") {
 #ifndef O2SCL_NO_BOOST_MULTIPRECISION
+    if (true) {
+      cout << "ld properties: " << endl;
+      cout << "elep.eld.n : " << dtos(elep.eld.n,0) << endl;
+      cout << "elep.eld.mu: " << dtos(elep.eld.mu,0) << endl;
+      cout << "elep.eld.ed: " << dtos(elep.eld.ed,0) << endl;
+      cout << "elep.eld.en: " << dtos(elep.eld.en,0) << endl;
+      cout << "elep.eld.pr: " << dtos(elep.eld.pr,0) << endl;
+    }
     int cm_ret=elep.frel_ld.calc_mu(elep.eld,T_MeV/hc_mev_fm);
     double eminus=elep.eld.n;
     double eplus=elep.eld.n-nB*Ye;
@@ -1459,6 +1467,14 @@ int eos_nuclei::eg_point(std::vector<std::string> &sv,
 #endif
   } else if (sv.size()>=3 && sv[4]=="25") {
 #ifndef O2SCL_NO_BOOST_MULTIPRECISION
+    if (true) {
+      cout << "cdf25 properties: " << endl;
+      cout << "elep.ecdf25.n : " << dtos(elep.ecdf25.n,0) << endl;
+      cout << "elep.ecdf25.mu: " << dtos(elep.ecdf25.mu,0) << endl;
+      cout << "elep.ecdf25.ed: " << dtos(elep.ecdf25.ed,0) << endl;
+      cout << "elep.ecdf25.en: " << dtos(elep.ecdf25.en,0) << endl;
+      cout << "elep.ecdf25.pr: " << dtos(elep.ecdf25.pr,0) << endl;
+    }
     int cm_ret=elep.frel_cdf25.calc_mu(elep.ecdf25,T_MeV/hc_mev_fm);
     double eminus=static_cast<double>(elep.ecdf25.n);
     double eplus=static_cast<double>(elep.ecdf25.n)-nB*Ye;
@@ -6185,11 +6201,10 @@ int eos_nuclei::write_results(std::string fname) {
     }      
   }
 
-  vector<string> oth_names={"Xd","Xt","XHe3","XLi4","flag",
-                            "log_xn","log_xp"};
-  vector<string> oth_units={"","","","","","",""};
+  vector<string> oth_names={"flag","log_xn","log_xp"};
+  vector<string> oth_units={"","",""};
   if (!table_no_nuclei) {
-    oth_names.push_back("X");
+    oth_names.push_back("Xalpha");
     oth_units.push_back("");
     oth_names.push_back("Xd");
     oth_units.push_back("");
@@ -6306,6 +6321,10 @@ int eos_nuclei::read_results(std::string fname) {
   hf.get_szt("n_oth",n_oth);
   hf.gets_vec_copy("oth_names",oth_names);
   hf.gets_vec_copy("oth_units",oth_units);
+  cout << "oth_names: ";
+  vector_out(cout,oth_names,true);
+  cout << "oth_units: ";
+  vector_out(cout,oth_units,true);
 
   // The units check is commented out until all tables have a correct
   // unit count
@@ -6314,7 +6333,7 @@ int eos_nuclei::read_results(std::string fname) {
          << "oth_units." << endl;
   }
   cout << "eos_nuclei::read_results(): "
-       << "n_oth,oth_names.size(),oth_units.size(): "
+       << "n_oth, oth_names.size(), oth_units.size(): "
        << n_oth << " " << oth_names.size() << " "
        << oth_units.size() << endl;
 
