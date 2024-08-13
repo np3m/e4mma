@@ -89,8 +89,8 @@ EOS_DATA_HDF5_PATH=$(realpath "$EOS_DATA_HDF5_PATH")
 # Check if the EOS file exists
 if [ ! -f "$EOS_DATA_HDF5_PATH" ]; then
     echo "EOS data file does not exist: $EOS_DATA_HDF5_PATH"
-    echo "Downloading EOS table: $EOS_DATA_HDF5_PATH"
-    curl https://isospin.roam.utk.edu/public_data/eos_tables/du21/$load --output $EOS_DATA_HDF5_PATH
+    python3 ../src/Status.py \
+    400 "Error: EOS data file is not in data/ directory" 
 fi
 
 # Check if the EOS file is in the expected location
