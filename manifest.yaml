@@ -13,7 +13,7 @@ command:
 image:
   registry: "docker.io"
   repo: "nostrad1/utk-eos"
-  tag: "v2"
+  tag: "v1.9.1"
   source:
     url: "https://github.com/np3m/e4mma"
     git: "https://github.com/np3m/e4mma.git"
@@ -21,11 +21,10 @@ image:
     targetRevision: "9db557302056e18aaa73fb47ca1f78e1d9260b2c"
 docs:
   path: "docs/src"
+  home: "home.md"
 ## Labels must be unique across both inputs and outputs
 inputs:
   - label: config
-    ## The name "config" is a reserved word used by the Calculation Engine to
-    ## identify where to read the exit code
     description: "Configuration of the module runtime options"
     path: "/input/config.yaml"
     api:
