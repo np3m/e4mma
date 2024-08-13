@@ -18,7 +18,7 @@ image:
     url: "https://github.com/np3m/e4mma"
     git: "https://github.com/np3m/e4mma.git"
     path: "Dockerfile"
-    targetRevision: "a34350ff295a7212e51becc8533bad66fb670c16"
+    targetRevision: "ade34727a55dd223ec868e9de392ccf63424a46e"
 docs:
   path: "docs/src"
   home: "home.md"
