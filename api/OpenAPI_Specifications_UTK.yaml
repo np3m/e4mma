@@ -43,7 +43,7 @@ paths:
         description: EOS table
         required: true
         content:
-          application/json:
+          hdf5:
             schema:
               $ref: '#/components/schemas/table'
       responses:
