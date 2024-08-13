@@ -32,20 +32,20 @@ paths:
         '400':
           description: Invalid input provided
 
-  /input/point.yaml:
+  /data/fid_3_5_22.o2:
     put:
-      summary: Input parameters for point
+      summary: Fiducial table for e4mma module
       description: >
-          possible arguments to take for eos_nuclei
-      operationId: putPointParams
+          Fiducial table for e4mma module
+      operationId: mntEOStab
       security: []
       requestBody:
-        description: Input parameters
+        description: EOS table
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/point_nuclei'
+              $ref: '#/components/schemas/table'
       responses:
         '200':
           description: Successful operation
@@ -84,10 +84,10 @@ paths:
           content:
             csv:
               schema:
-                $ref: '#/components/schemas/e4mma_w_lepton'
+                $ref: '#/components/schemas/e4mma_wo_lepton'
             hdf5:
               schema:
-                $ref: '#/components/schemas/e4mma_w_lepton'
+                $ref: '#/components/schemas/e4mma_wo_lepton'
         '500':
           description: Run time error in calculation
 
@@ -113,6 +113,18 @@ paths:
 
 components:
   schemas:
+    table:
+      title: Fiducial table for Crust DFT module
+      description: Fiducial table for Crust DFT module
+      type: object
+      required: [input_table]
+      properties:
+        input_table:
+          default: "fid_3_5_22.o2"
+          description: Loads an EOS table in to memory. In the case where MPI is used, only one MPI
+            rank reads the table at a time.
+          title: Load an EOS table.
+          type: string
     config:
       title: Input parameters
       description: Input parameters for e4mma eos
@@ -162,123 +174,6 @@ components:
                   type: boolean
                   description: If true, include leptons.
                   default: false
-
-    point_nuclei:
-      title: Point-nuclei function 
-      description: Compute EoS at a particular nB, Ye, T(MeV)
-      type: object
-      properties:
-        options:
-          type: object
-          required: [select_model]
-          properties:
-            select_model:
-              default: "470 738 0.5 13.0 62.4 32.8 0.9"
-              description: Select an EOS model. The possible inputs are 
-                P_FIDUCIAL="470 738 0.5 13.0 62.4 32.8 0.9"
-                P_LARGE_MMAX="783 738 0.5 13.0 62.4 32.8 0.9"
-                P_SMALL_R="214 738 0.5 13.0 62.4 32.8 0.9"
-                P_SMALLER_R="256 738 0.5 13.0 62.4 32.8 0.9"
-                P_LARGE_R="0 738 0.5 13.0 62.4 32.8 0.9"
-                P_SMALL_SL="470 738 0.5 13.0 23.7 29.5 0.9"
-                P_LARGE_SL="470 738 0.5 13.0 100.0 36.0 0.9"
-              title: Select an EOS model.
-              type: string
-            load:
-              default: "fid_3_5_22.o2"
-              description: Loads an EOS table in to memory. In the case where MPI is used, only one MPI
-                rank reads the table at a time.
-              title: Load an EOS table.
-              type: string
-            select_high_T:
-              default: 6
-              description: Select 0 for the original DSH fit, 1 for NRAPR, 2 for Sk chi 414, 3 for
-                Skchi450, 4 for Skchi500, 5 for ?, "+ and 6 for Sk chi m* (the default).
-              title: Select the high-temperature Skyrme EOS.
-              type: number
-            eos_deriv:
-              default:
-              nullable: true 
-              description: Compute derivatives numerically.
-              title: Compute derivatives numerically.
-              type: string
-            set:
-              type: object
-              description: This command sets the value of a parameter. A list of parameters can be
-                obtained by e.g. -help set on the command-line or "help set " in interactive
-                mode.For floating point or integer parameters, constant expressions can be
-                used, e.g. acos(-1). For string-like parameters, quotes can be used to specify
-                parameters which have single spaces. All whitespace is compressed into a
-                single space. Quotes inside a word with no whitespace are ignored.
-              title: Set the value of a parameter.
-              properties:
-                a_virial:
-                  type: number
-                  description: Coefficient for modulation of virial EOS.
-                  default: 10.0
-                b_virial:
-                  type: number
-                  description: Coefficient for modulation of virial EOS.
-                  default: 10.0
-                include_muons:
-                  type: boolean
-                  description: If true, include muons.
-                  default: false
-                max_ratio:
-                  type: number
-                  description: The maximum value of N/Z or Z/N.
-                  default: 7.0
-                mh_tol_rel:
-                  type: number
-                  description: Relative tolerance for the solver in the eos_fixed_dist() function.
-                  default: 1.0e-06
-                recompute:
-                  type: boolean
-                  description: If true, recompute all points, irrespective of the value of the convergence flag.
-                  default: false
-                strange_axis:
-                  type: boolean
-                  description: If true, strangeness is included as an additional tensor rank.
-                  default: false
-                use_alt_eos:
-                  type: boolean
-                  description: Use an alternate EOS rather than the Du et al. combined EOS.
-                  default: false
-
-        commands:
-          type: object
-          properties:
-            get: 
-              default: 'a_virial' 
-              description: This command gets the value of a parameter. A list of parameters can be
-                obtained by e.g. -help get on the command-line or "help get" in interactive
-                mode.
-              title: Get the value of a parameter.
-              type: string
-            point:
-              default: "0.16 0.4 0.1"
-              description: Evaluate the EOS at one (nB,Ye,T) point. Use -set verbose 1 for terminal output
-              title: Evaluate the EOS at one (nB,Ye,T) point.
-              type: string
-            point_nuclei:
-              default: "0.16 0.4 0.1"
-              description: If an EOS is loaded, then the n_B, Y_e, and T values are modified to ensure
-                that they lie on a grid point. If an initial guess is specified on the command
-                line, it is used even if there is a good guess already in the table. If the
-                flag is not 10 or if recompute is true, then the EOS is recomputed. If an EOS
-                is loaded or the recompute was successful, then the results are output to the
-                screen. If the point was successful it is stored in the current tables. If
-                show_all_nuclei is true, then a file named dist.o2 is created which holds the
-                full nuclear distribution.
-              title: Compute and/or show EOS results at one (n_B,Y_e,T) point.
-              type: string
-            random:
-              default: '0'
-              nullable: true
-              description: Select a random EOS, checking several physical constraints and re-selecting a
-                new random EOS until all the constraints are met.
-              title: Select a random EOS model.
-              type: string
         
     status:
       title: Module Status
@@ -299,54 +194,6 @@ components:
              * `400` - Bad request/client error
              * `500` - Internal error
           default: 200
-    
-    e4mma_w_lepton:
-      title: e4mma output for Lepton
-      description: Output of e4mma for Lepton module
-      type: array
-      items:
-        type: object
-        properties:
-          temperature:
-            description: Temperature
-            type: number
-            x-unit: MeV
-          mu_B:
-            description: Baryon chemical potential
-            type: number
-            x-unit: MeV
-          mu_S:
-            description: Strange chemical potential
-            type: number
-            x-unit: MeV
-          mu_Q:
-            description: Charge chemical potential
-            type: number
-            x-unit: MeV
-          baryon_density:
-            description: Baryon density
-            type: number
-            x-unit: 1/fm3
-          total_strangeness_density:
-            description: Total strangeness density
-            type: number
-            x-unit: 1/fm3
-          total_charge_density:
-            description: Total charge density
-            type: number
-            x-unit: 1/fm3 
-          energy_density:
-            description: Energy density
-            type: number
-            x-unit: MeV/fm3
-          pressure:
-            description: Pressure
-            type: number
-            x-unit: MeV/fm3
-          entropy_density:
-            description: Entropy density
-            type: number
-            x-unit: 1/fm3
     
     e4mma_wo_lepton:
       title: e4mma output for Lepton

@@ -18,12 +18,19 @@ image:
     url: "https://github.com/np3m/e4mma"
     git: "https://github.com/np3m/e4mma.git"
     path: "Dockerfile"
-    targetRevision: "9db557302056e18aaa73fb47ca1f78e1d9260b2c"
+    targetRevision: "a34350ff295a7212e51becc8533bad66fb670c16"
 docs:
   path: "docs/src"
   home: "home.md"
 ## Labels must be unique across both inputs and outputs
 inputs:
+  - label: table
+    description: "Fiducial table for e4mma module"
+    path: "/data/fid_3_5_22.o2"
+    api:
+      url: ""
+      targetRevision: ""
+      path: api/OpenAPI_Specifications_UTK.yaml#/components/schemas/table
   - label: config
     description: "Configuration of the module runtime options"
     path: "/input/config.yaml"
