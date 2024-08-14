@@ -24,13 +24,6 @@ docs:
   home: "home.md"
 ## Labels must be unique across both inputs and outputs
 inputs:
-  - label: fid_3_5_22
-    description: "Fiducial table for e4mma module"
-    path: "/data/fid_3_5_22.o2"
-    api:
-      url: ""
-      targetRevision: ""
-      path: api/OpenAPI_Specifications_UTK.yaml#/components/schemas/table
   - label: config
     description: "Configuration of the module runtime options"
     path: "/input/config.yaml"
@@ -38,6 +31,14 @@ inputs:
       url: ""
       targetRevision: ""
       path: api/OpenAPI_Specifications_UTK.yaml#/components/schemas/config
+datas:
+  - label: fid_3_5_22
+    description: "Fiducial table for e4mma module"
+    path: "/data/fid_3_5_22.o2"
+    api:
+      url: ""
+      targetRevision: ""
+      path: api/OpenAPI_Specifications_UTK.yaml#/components/schemas/table
 outputs:
   - label: e4mma w/o lepton
     description: "Calculated equation of state data w/o lepton"
