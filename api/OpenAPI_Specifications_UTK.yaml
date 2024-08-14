@@ -42,6 +42,15 @@ paths:
       requestBody:
         description: EOS table
         required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/table'
+      responses:
+        '200':
+          description: Successful operation
+        '400':
+          description: Invalid input provided
 
   /output/status.yaml:
     get:
