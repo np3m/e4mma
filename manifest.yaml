@@ -9,7 +9,6 @@ command:
   - '/bin/sh'
   - '-c'
   - 'bash run_utk_for_lepton.sh'
-
 image:
   registry: "docker.io"
   repo: "nostrad1/utk-eos"
@@ -18,7 +17,7 @@ image:
     url: "https://github.com/np3m/e4mma"
     git: "https://github.com/np3m/e4mma.git"
     path: "Dockerfile"
-    targetRevision: "5f21547529143ee7343b98d70fb8d3a404f884e8"
+    targetRevision: "dbd33eba9ebc5e3ef35612ca4b70d6c741a9666e"
 docs:
   path: "docs/src"
   home: "home.md"
@@ -31,7 +30,6 @@ inputs:
       url: ""
       targetRevision: ""
       path: api/OpenAPI_Specifications_UTK.yaml#/components/schemas/config
-datas:
   - label: fid_3_5_22
     description: "Fiducial table for e4mma module"
     path: "/data/fid_3_5_22.o2"
@@ -47,7 +45,6 @@ outputs:
       url: ""
       targetRevision: ""
       path: api/OpenAPI_Specifications_UTK.yaml#/components/schemas/e4mma_wo_lepton
-
   - label: e4mma w lepton
     description: "Calculated equation of state data w lepton"
     path: "/output/e4mma_w_lepton.csv"
