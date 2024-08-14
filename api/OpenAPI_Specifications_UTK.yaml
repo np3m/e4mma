@@ -32,7 +32,7 @@ paths:
         '400':
           description: Invalid input provided
 
-  /input/fid_3_5_22.o2:
+  /data/fid_3_5_22.o2:
     put:
       summary: Fiducial table for e4mma module
       description: >
@@ -42,15 +42,6 @@ paths:
       requestBody:
         description: EOS table
         required: true
-        content:
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/table'
-      responses:
-        '200':
-          description: Successful operation
-        '400':
-          description: Invalid input provided
 
   /output/status.yaml:
     get:
@@ -117,11 +108,6 @@ components:
       title: Fiducial table for Crust DFT module
       description: Fiducial table for Crust DFT module
       type: object
-      properties:
-        file:
-          type: string
-          format: binary
-          description: The .o2 format HDF5 file to upload
     config:
       title: Input parameters
       description: Input parameters for e4mma eos
