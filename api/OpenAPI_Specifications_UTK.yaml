@@ -32,7 +32,7 @@ paths:
         '400':
           description: Invalid input provided
 
-  /data/fid_3_5_22.o2:
+  /input/fid_3_5_22.o2:
     put:
       summary: Fiducial table for e4mma module
       description: >
