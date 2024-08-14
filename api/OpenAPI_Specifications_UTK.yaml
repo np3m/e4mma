@@ -37,13 +37,13 @@ paths:
       summary: Fiducial table for e4mma module
       description: >
           Fiducial table for e4mma module
-      operationId: getEoS
+      operationId: putEoS
       security: []
       requestBody:
         description: EOS table
         required: true
         content:
-          hdf5:
+          multipart/form-data:
             schema:
               $ref: '#/components/schemas/table'
       responses:
@@ -116,8 +116,12 @@ components:
     table:
       title: Fiducial table for Crust DFT module
       description: Fiducial table for Crust DFT module
-      type: string
-      format: binary
+      type: object
+      properties:
+        file:
+          type: string
+          format: binary
+          description: The .o2 format HDF5 file to upload
     config:
       title: Input parameters
       description: Input parameters for e4mma eos
