@@ -1,49 +1,51 @@
-name: E4MMA-CI
-
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
+name: CI/CD Pipeline
 
 on:
   schedule:
-    - cron: '32 9 * * *'
+    - cron: '32 9 * * *' 
   push:
-    branches: [ "muses" ]
-    # Publish semver tags as releases.
-    tags: [ 'v*.*.*' ]
+    branches:
+      - "muses"
+    tags:
+      - 'v*.*.*'
   pull_request:
-    branches: [ "muses" ]
+    branches:
+      - "muses"
 
 env:
-  # Use docker.io for Docker Hub if empty
   REGISTRY: docker.io
-  # Image name
   IMAGE_NAME: nostrad1/utk-eos
-  # Image tag
   IMAGE_TAG: v1.9.1
 
 jobs:
- build:
-   runs-on: ubuntu-latest
-   steps:
-   - name: Checkout git repo
-     uses: actions/checkout@v4
-   - name: build the image
-     run: sudo docker build $IMAGE_NAME:$IMAGE_TAG .
-       
- test:
-  runs-on: ubuntu-latest
-  needs: build
-  steps: 
-   - name: test code
-     run: |
-      sudo docker run $IMAGE_NAME:$IMAGE_TAG sh -c \
-      bash test.sh
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout git repo
+        uses: actions/checkout@v4
 
- push: 
-   runs-on: ubuntu-latest
-   needs: [build,test]
-   steps:
-   - name: push the image
-     run: sudo docker push $IMAGE_NAME:$IMAGE_TAG
+      - name: Build Docker image
+        run: |
+          sudo docker build -t $REGISTRY/$IMAGE_NAME:$IMAGE_TAG .
+
+  test:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout git repo
+        uses: actions/checkout@v4
+
+      - name: Test Docker image
+        run: |
+          sudo docker run $REGISTRY/$IMAGE_NAME:$IMAGE_TAG sh -c "bash test.sh"
+
+  push:
+    runs-on: ubuntu-latest
+    needs: [build, test]
+    steps:
+      - name: Log in to Docker Hub
+        run: echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+
+      - name: Push Docker image
+        run: |
+          sudo docker push $REGISTRY/$IMAGE_NAME:$IMAGE_TAG
