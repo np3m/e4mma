@@ -28,7 +28,7 @@ jobs:
    runs-on: ubuntu-latest
    steps:
    - name: Checkout git repo
-     uses: actions/checkout@muses
+     uses: actions/checkout@v4
    - name: build the image
      run: sudo docker build $IMAGE_NAME:$IMAGE_TAG .
        
