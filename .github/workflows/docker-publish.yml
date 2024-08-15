@@ -37,7 +37,7 @@ jobs:
         run: |
           mkdir -p /tmp/.buildx-cache
           docker buildx create --use
-          docker buildx build --cache-to=type=local,dest=/tmp/.buildx-cache --cache-from=type=local,src=/tmp/.buildx-cache -t $REGISTRY/$IMAGE_NAME:$IMAGE_TAG .
+          docker buildx build --cache-to=type=local,dest=/tmp/.buildx-cache --cache-from=type=local,src=/tmp/.buildx-cache -t $REGISTRY/$IMAGE_NAME:$IMAGE_TAG . --load
 
   test:
     runs-on: ubuntu-24.04
@@ -46,17 +46,26 @@ jobs:
       - name: Checkout git repo
         uses: actions/checkout@v4
 
+      - name: Load Docker image
+        run: |
+          docker pull $REGISTRY/$IMAGE_NAME:$IMAGE_TAG || true
+
+      - name: List Docker images
+        run: |
+          docker images
+
       - name: Test Docker image
         run: |
-          sudo docker run $REGISTRY/$IMAGE_NAME:$IMAGE_TAG sh -c "bash test.sh"
+          docker run --rm $REGISTRY/$IMAGE_NAME:$IMAGE_TAG sh -c "bash test.sh"
 
   push:
     runs-on: ubuntu-24.04
     needs: [build, test]
     steps:
       - name: Log in to Docker Hub
-        run: echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+        run: |
+          echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin || exit 1
 
       - name: Push Docker image
         run: |
-          sudo docker push $REGISTRY/$IMAGE_NAME:$IMAGE_TAG
+          docker push $REGISTRY/$IMAGE_NAME:$IMAGE_TAG || exit 1
