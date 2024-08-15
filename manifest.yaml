@@ -2,13 +2,16 @@
 name:
   short_name: e4mma
   display_name: Crust-DFT
+
 authors:
   - Andrew W. Steiner
   - Satyajit Roy
+
 command:
   - '/bin/sh'
   - '-c'
   - 'bash run_utk_for_lepton.sh'
+
 image:
   registry: "docker.io"
   repo: "nostrad1/utk-eos"
@@ -17,11 +20,12 @@ image:
     url: "https://github.com/np3m/e4mma"
     git: "https://github.com/np3m/e4mma.git"
     path: "Dockerfile"
-    targetRevision: "dbd33eba9ebc5e3ef35612ca4b70d6c741a9666e"
+    targetRevision: "de1552bdc2f510b6df70a44333cababe7f1c4233"
+
 docs:
   path: "docs/src"
   home: "home.md"
-## Labels must be unique across both inputs and outputs
+
 inputs:
   - label: config
     description: "Configuration of the module runtime options"
@@ -30,13 +34,15 @@ inputs:
       url: ""
       targetRevision: ""
       path: api/OpenAPI_Specifications_UTK.yaml#/components/schemas/config
-  - label: fid_3_5_22
-    description: "Fiducial table for e4mma module"
-    path: "/data/fid_3_5_22.o2"
+
+  - label: EOS_table
+    description: "EOS table for Crust-DFT module"
+    path: "/data/EOS_table.o2"
     api:
       url: ""
       targetRevision: ""
       path: api/OpenAPI_Specifications_UTK.yaml#/components/schemas/table
+
 outputs:
   - label: e4mma w/o lepton
     description: "Calculated equation of state data w/o lepton"
@@ -45,6 +51,7 @@ outputs:
       url: ""
       targetRevision: ""
       path: api/OpenAPI_Specifications_UTK.yaml#/components/schemas/e4mma_wo_lepton
+
   - label: e4mma w lepton
     description: "Calculated equation of state data w lepton"
     path: "/output/e4mma_w_lepton.csv"

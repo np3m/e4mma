@@ -2,7 +2,7 @@ openapi: 3.0.0
 
 info:
   version: 1.0.0
-  title: E4MMA-EOS module
+  title: Crust-DFT-EOS module
   contact:
     email: sroy14@vols.utk.edu
   description: "Readme.md"
@@ -14,9 +14,9 @@ servers:
 paths:
   /input/config.yaml:
     put:
-      summary: Input parameters for e4mma module
+      summary: Input parameters for Crust-DFT module
       description: >
-          possible arguments to take for e4mma module
+          possible arguments to take for Crust-DFT module
       operationId: putInputParams
       security: []
       requestBody:
@@ -32,11 +32,11 @@ paths:
         '400':
           description: Invalid input provided
 
-  /input/fid_3_5_22.o2:
+  /input/EOS_table.o2:
     put:
-      summary: Fiducial table for e4mma module
+      summary: EOS table for Crust-DFT module
       description: >
-          Fiducial table for e4mma module
+          EOS table for Crust-DFT module
       operationId: putEoS
       security: []
       requestBody:
@@ -54,9 +54,9 @@ paths:
 
   /output/status.yaml:
     get:
-      summary: Status Crust DFT EoS module execution
+      summary: Status Crust-DFT EoS module execution
       description: >
-          Describes the current status of the Crust DFT 
+          Describes the current status of the Crust-DFT 
           EoS module during execution. This includes warning, 
           error and success messages.
       operationId: getStatus
@@ -114,21 +114,14 @@ paths:
 components:
   schemas:
     table:
-      title: Fiducial table for Crust DFT module
-      description: Fiducial table for Crust DFT module
+      title: EOS table for Crust-DFT module
+      description: EOS table for Crust-DFT module
       type: object
     config:
       title: Input parameters
-      description: Input parameters for e4mma eos
+      description: Input parameters for Crust-DFT eos
       type: object
-      required: [load]
       properties:
-        load:
-          default: "fid_3_5_22.o2"
-          description: Loads an EOS table in to memory. In the case where MPI is used, only one MPI
-            rank reads the table at a time.
-          title: Load an EOS table.
-          type: string
         output_format:
           default: "CSV"
           description: "Format of the output files for Lepton module"
@@ -188,8 +181,8 @@ components:
           default: 200
     
     e4mma_wo_lepton:
-      title: e4mma output for Lepton
-      description: Output of e4mma for Lepton module
+      title: Crust-DFT output for Lepton
+      description: Output of Crust-DFT for Lepton module
       type: array
       items:
         type: object

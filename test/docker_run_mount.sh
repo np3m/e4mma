@@ -1,12 +1,12 @@
 #!/bin/bash
 
-# Runs the E4MMA module in a Docker container
+# Runs the Crust-DFT module in a Docker container
 set -euo pipefail
-echo -e "\nRunning E4MMA module in Docker...\n"
+echo -e "\nRunning Crust-DFT module in Docker...\n"
 
 # Default values for Docker image and tag
 DOCKER_IMAGE_NAME="nostrad1/utk-eos"
-DOCKER_IMAGE_TAG="v2"
+DOCKER_IMAGE_TAG="v1.9.1"
 
 # Get UID and GID of the current user
 #UID=$(id -u)
@@ -20,7 +20,7 @@ if [ $# -ge 2 ]; then
     DOCKER_IMAGE_TAG="$2"
 fi
 
-# Run the E4MMA Docker container, mapping input, output and data directories,
+# Run the Crust-DFT Docker container, mapping input, output and data directories,
 # mounting eos table as a volume, and executing in test directory.
 docker run -it --rm --name utk -u $UID:$GID \
   -v "${PWD}/../input:/opt/e4mma/input:rw" \
@@ -28,5 +28,5 @@ docker run -it --rm --name utk -u $UID:$GID \
   -v "${PWD}/../data:/opt/e4mma/data" \
   $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG /bin/bash run_utk_for_lepton.sh
 
-echo -e "\nE4MMA Docker run completed\n"
+echo -e "\nCrust-DFT Docker run completed\n"
 exit 0
