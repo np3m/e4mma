@@ -2,7 +2,7 @@ name: CI/CD Pipeline
 
 on:
   schedule:
-    - cron: '32 9 * * *' 
+    - cron: '32 9 * * *'  # Runs daily at 9:32 AM UTC
   push:
     branches:
       - "muses"
@@ -24,9 +24,20 @@ jobs:
       - name: Checkout git repo
         uses: actions/checkout@v4
 
+      - name: Cache Docker layers
+        uses: actions/cache@v3
+        with:
+          path: |
+            /tmp/.buildx-cache
+          key: ${{ runner.os }}-docker-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-docker-
+
       - name: Build Docker image
         run: |
-          sudo docker build -t $REGISTRY/$IMAGE_NAME:$IMAGE_TAG .
+          mkdir -p /tmp/.buildx-cache
+          docker buildx create --use
+          docker buildx build --cache-to=type=local,dest=/tmp/.buildx-cache --cache-from=type=local,src=/tmp/.buildx-cache -t $REGISTRY/$IMAGE_NAME:$IMAGE_TAG .
 
   test:
     runs-on: ubuntu-latest
