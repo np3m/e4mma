@@ -263,9 +263,6 @@ public:
   /// Particle object for bosons
   o2scl::boson_rel relb;
   
-  /// Particle object for bosons
-  o2scl::boson_eff effb;
-
   /** \brief If true, include a hadron resonance gas (default false)
    */
   bool inc_hrg;

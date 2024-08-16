@@ -1448,7 +1448,7 @@ int eos_nuclei::eg_point(std::vector<std::string> &sv,
 
   if (sv.size()>=3 && sv[4]=="ld") {
 #ifndef O2SCL_NO_BOOST_MULTIPRECISION
-    if (true) {
+    if (verbose>1) {
       cout << "ld properties: " << endl;
       cout << "elep.eld.n : " << dtos(elep.eld.n,0) << endl;
       cout << "elep.eld.mu: " << dtos(elep.eld.mu,0) << endl;
@@ -1457,17 +1457,24 @@ int eos_nuclei::eg_point(std::vector<std::string> &sv,
       cout << "elep.eld.pr: " << dtos(elep.eld.pr,0) << endl;
     }
     int cm_ret=elep.frel_ld.calc_mu(elep.eld,T_MeV/hc_mev_fm);
-    double eminus=elep.eld.n;
-    double eplus=elep.eld.n-nB*Ye;
+    long double eminus=elep.eld.n;
+    long double eplus=elep.eld.n-nB*Ye;
     cout << "cm_ret: " << cm_ret << endl;
     cout << "  n_{e-} [1/fm^3]: " << dtos(eminus,0) << endl;
     cout << "  n_{e+} [1/fm^3]: "
 	 << dtos(eplus,0) << " difference: "
          << dtos(eminus-eplus,0) << endl;
+    long double ti1=elep.eld.ed+elep.eld.pr-elep.eld.n*elep.eld.mu-
+                     T_MeV/hc_mev_fm*elep.eld.en;
+    cout << "ti1: " << dtos(ti1,0) << endl;
+    long double ti2=ti1+elep.ph.ed+elep.ph.pr-
+      T_MeV/hc_mev_fm*elep.ph.en;
+    double ti=ti2/elep.th.ed;
+    cout << "TI []: " << ti << endl;
 #endif
   } else if (sv.size()>=3 && sv[4]=="25") {
 #ifndef O2SCL_NO_BOOST_MULTIPRECISION
-    if (true) {
+    if (verbose>1) {
       cout << "cdf25 properties: " << endl;
       cout << "elep.ecdf25.n : " << dtos(elep.ecdf25.n,0) << endl;
       cout << "elep.ecdf25.mu: " << dtos(elep.ecdf25.mu,0) << endl;
@@ -1476,13 +1483,21 @@ int eos_nuclei::eg_point(std::vector<std::string> &sv,
       cout << "elep.ecdf25.pr: " << dtos(elep.ecdf25.pr,0) << endl;
     }
     int cm_ret=elep.frel_cdf25.calc_mu(elep.ecdf25,T_MeV/hc_mev_fm);
-    double eminus=static_cast<double>(elep.ecdf25.n);
-    double eplus=static_cast<double>(elep.ecdf25.n)-nB*Ye;
+    cpp_dec_float_25 eminus=elep.ecdf25.n;
+    cpp_dec_float_25 eplus=elep.ecdf25.n-static_cast<cpp_dec_float_25>(nB*Ye);
     cout << "cm_ret: " << cm_ret << endl;
     cout << "  n_{e-} [1/fm^3]: " << dtos(eminus,0) << endl;
     cout << "  n_{e+} [1/fm^3]: "
 	 << dtos(eplus,0) << " difference: "
          << dtos(eminus-eplus,0) << endl;
+    cpp_dec_float_25 ti1=elep.ecdf25.ed+elep.ecdf25.pr-
+      elep.ecdf25.n*elep.ecdf25.mu-
+      T_MeV/hc_mev_fm*elep.ecdf25.en;
+    cout << "ti1: " << dtos(ti1,0) << endl;
+    double ti2=static_cast<double>(ti1)+elep.ph.ed+elep.ph.pr-
+      T_MeV/hc_mev_fm*elep.ph.en;
+    double ti=ti2/elep.th.ed;
+    cout << "TI []: " << ti << endl;
 #endif
   } else {
     electron.mu=elep.e.mu;
@@ -1492,6 +1507,9 @@ int eos_nuclei::eg_point(std::vector<std::string> &sv,
     cout << "  n_{e-} [1/fm^3]: " << dtos(eminus,0) << endl;
     cout << "  n_{e+} [1/fm^3]: "
 	 << dtos(eplus,0) << " difference: " << dtos(eminus-eplus,0) << endl;
+    double ti=(elep.th.ed+elep.th.pr-elep.e.n*elep.e.mu-
+               T_MeV/hc_mev_fm*elep.th.en)/elep.th.ed;
+    cout << "TI []: " << ti << endl;
   }
   
   cout << "E [MeV]: " << dtos(elep.th.ed/nB*hc_mev_fm,0) << endl;
@@ -1499,9 +1517,6 @@ int eos_nuclei::eg_point(std::vector<std::string> &sv,
   cout << "S: " << dtos(elep.th.en/nB,0) << endl;
   cout << "F [MeV]: "
        << dtos((elep.th.ed*hc_mev_fm-T_MeV*elep.th.en)/nB,0) << endl;
-  double ti=(elep.th.ed+elep.th.pr-elep.e.n*elep.e.mu-
-             T_MeV/hc_mev_fm*elep.th.en)/elep.th.ed;
-  cout << "TI []: " << ti << endl;
   if (include_muons) {
     cout << "Y_mu: " << dtos(elep.mu.n/nB,0) << endl;
     cout << "n_mu [1/fm^3]: " << dtos(elep.mu.n,0) << endl;
@@ -3066,7 +3081,6 @@ int eos_nuclei::solve_nuclei(size_t nv, const ubvector &x, ubvector &y,
         }
         res_b[ibos].mu=part_db[j].baryon*(neutron.mu+neutron.m)+
           part_db[j].charge*(proton.mu+proton.m-neutron.mu-neutron.m);
-        //effb.calc_mu(res_b[ibos],T);
         relb.pair_mu(res_b[ibos],T);
         
         nB2+=part_db[j].baryon*res_b[ibos].n;
@@ -3625,7 +3639,8 @@ int eos_nuclei::solve_hrg(size_t nv, const ubvector &x,
         
         // Generic boson
         if (ibos>=((int)res_b.size())) {
-          cout << "ibos, res_f.size(): " << ibos << " " << res_b.size() << endl;
+          cout << "ibos, res_f.size(): " << ibos << " "
+               << res_b.size() << endl;
           cout << "part name: " << j << " " << part_db[j].name << endl;
           O2SCL_ERR("Indexing problem with bosons 2.",o2scl::exc_efailed);
         }
@@ -3638,11 +3653,11 @@ int eos_nuclei::solve_hrg(size_t nv, const ubvector &x,
         
         if (res_b[ibos].mu>=res_b[ibos].m) {
           cout << "Chemical potential of "
-               << part_db[j].name << " is larger than or equal to mass." << endl;
+               << part_db[j].name << " is larger than or equal to mass."
+               << endl;
           return 3;
         }
         
-        //effb.calc_mu(res_b[ibos],T);
         relb.pair_mu(res_b[ibos],T);
         
         nB2+=part_db[j].baryon*res_b[ibos].n;
@@ -6447,7 +6462,8 @@ int eos_nuclei::read_results(std::string fname) {
   if (n_nB2==0 || n_Ye2==0 || n_T2==0) {
     O2SCL_ERR("One of the grid counts is zero.",o2scl::exc_efailed);
   }
-  
+
+  vector<vector<double>> grid={nB_grid2,Ye_grid2,T_grid2};
   
   // ----------------------------------------------------------------
   // Strangeness axis
@@ -6584,9 +6600,10 @@ int eos_nuclei::read_results(std::string fname) {
   if (hf.find_object_by_name("Fint",type)==0) {
     if (type=="tensor_grid") {
       hdf_input(hf,tg_Fint,"Fint");
-    } else if (type=="tensor") {
-      o2scl::tensor<> &t=tg_Fint;
-      //hdf_input(hf,t,"Fint");
+    } else if (type=="double[]") {
+      tg_Fint.clear();
+      hf.getd_ten("Fint",tg_Fint);
+      tg_Fint.set_grid(grid);
     }
   }
   
