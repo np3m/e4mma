@@ -744,6 +744,12 @@ eos::eos() {
   o2scl_hdf::hdf_input(hf,UNEDF_tab,name);
   hf.close();
 
+  // Open the GT Skyrme data file
+  std::string GTsky_file="data/acolskyGTall";
+  hf.open(GTsky_file);
+  o2scl_hdf::hdf_input(hf,GTsky_tab,name);
+  hf.close();
+
   use_alt_eos=false;
 #ifdef O2SCL_CORI
   o2scl_hdf::skyrme_load(sk_alt,"data/NRAPR.o2",true,1);
@@ -3377,11 +3383,18 @@ int eos::select_internal(int i_ns_loc, int i_skyrme_loc,
     model_selected=false;
     return 2;
   }
-
-  double rho0=UNEDF_tab.get(((string)"rho0"),i_skyrme);
-  double K=UNEDF_tab.get(((string)"K"),i_skyrme);
-  double Ms_inv=UNEDF_tab.get(((string)"Ms_inv"),i_skyrme);
-  double EoA=UNEDF_tab.get(((string)"EoA"),i_skyrme);
+  bool UNEDFsky=false;
+  double rho0;
+  double K;
+  double Ms_inv;
+  double EoA;
+  double Ms_star;
+  if (UNEDFsky) 
+  {
+   rho0=UNEDF_tab.get(((string)"rho0"),i_skyrme);
+   K=UNEDF_tab.get(((string)"K"),i_skyrme);
+   Ms_inv=UNEDF_tab.get(((string)"Ms_inv"),i_skyrme);
+   EoA=UNEDF_tab.get(((string)"EoA"),i_skyrme);
   double unedf_a=UNEDF_tab.get(((string)"a"),i_skyrme);
   double unedf_L=UNEDF_tab.get(((string)"L"),i_skyrme);
   
@@ -3406,13 +3419,52 @@ int eos::select_internal(int i_ns_loc, int i_skyrme_loc,
     return 3;
   }
   
-  double Ms_star=1/Ms_inv;
+  Ms_star=1/Ms_inv;
 
   sk.alt_params_saturation(rho0,EoA/hc_mev_fm,K/hc_mev_fm,Ms_star,
 			   eos_S/hc_mev_fm,eos_L/hc_mev_fm,1.0/1.249,
 			   Crdr0/hc_mev_fm,Crdr1/hc_mev_fm,
 			   CrdJ0/hc_mev_fm,CrdJ1/hc_mev_fm);
+  }
+  if (!UNEDFsky) 
+  {
+ // if disable UNEDF skyrmes, use the GT skyrme 
+  sk.t0=GTsky_tab.get(((string)"t0"),i_skyrme);
+  sk.t1=GTsky_tab.get(((string)"t1"),i_skyrme);
+  sk.t2=GTsky_tab.get(((string)"t2"),i_skyrme);
+  sk.t3=GTsky_tab.get(((string)"t3"),i_skyrme);
+  sk.x0=GTsky_tab.get(((string)"x0"),i_skyrme);
+  sk.x1=GTsky_tab.get(((string)"x1"),i_skyrme);
+  sk.x2=GTsky_tab.get(((string)"x2"),i_skyrme);
+  sk.x3=GTsky_tab.get(((string)"x3"),i_skyrme);
+  sk.alpha=GTsky_tab.get(((string)"alpha"),i_skyrme);
+ // sk.b4=GTsky_tab.get(((string)"b4"),i_skyrme);
+ // sk.b4p=GTsky_tab.get(((string)"b4p"),i_skyrme);
+ /*   int iret=sk.saturation();
+    sk.def_sat_mroot.err_nonconv=true;
+    sk.def_sat_mroot.def_jac.err_nonconv=true;
+    if (iret!=0) {
+      cout << "2" << endl;
+      return 20;
+    }
 
+   rho0=sk.n0;
+   EoA=sk.eoa*hc_mev_fm;
+   K=sk.comp*hc_mev_fm;*/
+  
+  cout<<" GT t0-t3, x0-x3, alpha: "<<sk.t0<<" "<<sk.t1<<" "<<sk.t2<<" "<<sk.t3<<" "<<sk.x0<<" "<<sk.x1<<" "<<sk.x2<<" "<<sk.x3<<" "<<sk.alpha<<endl;
+ // cout<<" GT n0, E/A, K: "<<rho0<<" "<<EoA<<" "<<K<<endl;
+  // Determine QMC coefficients
+  qmc_b=eos_S+EoA-qmc_a;
+  qmc_beta=(eos_L/3.0-qmc_a*qmc_alpha)/qmc_b;
+
+  if (qmc_b<0.0 || qmc_beta>5.0) {
+    model_selected=false;
+    return 3;
+  }
+
+
+  }
   /*
     double f0, g0, f0p, g0p, f1, g1, f1p, g1p;
     sk.landau_nuclear(rho0,939.0/197.33,f0,g0,f0p,g0p,f1,g1,f1p,g1p);
@@ -3586,10 +3638,16 @@ int eos::random(std::vector<std::string> &sv, bool itive_com) {
     // to perscription in PRC 91, 015804 (2015)
     eos_L=rng.random()*21.0+44.0;
     eos_S=rng.random()*6.6+29.5;
-
-    // Select a random Skyrme model
-    i_skyrme=rng.random_int(UNEDF_tab.get_nlines());
     
+    bool UNEDFsky=false;
+    // Select a random Skyrme model
+    if (UNEDFsky){
+    i_skyrme=rng.random_int(UNEDF_tab.get_nlines());
+    }
+    // Select a random GT skyrme model
+   if (!UNEDFsky) {
+    i_skyrme=rng.random_int(GTsky_tab.get_nlines());
+   } 
     if (true || verbose>1) {
       cout << "Trying random model: " << endl;
       cout << "i_ns= " << i_ns << endl;

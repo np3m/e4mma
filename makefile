@@ -33,32 +33,9 @@ LCFLAGS = -O3 -std=c++11 -DNO_MPI -DTEMP_UPDATES \
 # UTK-specific settings
 # ----------------------------------------------------------------
 
-ifeq ($(LOGNAME),astinso4)
+ifdef UTKNA_MAKEFILE
 
-# On Amber's machines
-
-SHELL_PYTHON_LDFLAGS := $(shell python3-config --ldflags)
-SHELL_PYTHON_INCLUDES := $(shell python3-config --includes)
-
- UTKNA_CXX = g++
- UTKNA_FC = gfortran
- UTKNA_MPI_CXX = mpic++
- UTKNA_MPI_FC = mpif90
- UTKNA_CFLAGS = -O3 -Wall -Wno-unused -Wshadow -Wno-deprecated-declarations -DO2SCL_NO_BOOST_MULTIPRECISION
- UTKNA_OPENMP_FLAGS = -fopenmp -DO2SCL_OPENMP
- UTKNA_MPI_CFLAGS = -DO2SCL_MPI
- UTKNA_FLIBS = -lgfortran
- UTKNA_FFLAGS = -O3
- UTKNA_O2SCL_INCS = -I/usr/lib/x86_64-linux-gnu/hdf5/serial/include \
-	  -I/usr/include/eigen3 -DO2SCL_HDF5_COMP -DO2SCL_PYTHON -DO2SCL_MPFR \
-	   $(SHELL_PYTHON_INCLUDES) -I/usr/lib/python3/dist-packages/numpy/core/include
- UTKNA_O2SCL_LIBS = -L/usr/lib/x86_64-linux-gnu/hdf5/serial -fopenmp \
-	   	-lo2scl -lhdf5 -lgsl -lreadline -lpython3.10
- UTKNA_BAMR_DIR = /home/astinso4/bamr
- UTKNA_COMMENT = "astinso4pc"
- UTKNA_PYTHON_LDFLAGS = $(SHELL_PYTHON_LDFLAGS) -lpython3.10
- UTKNA_PYTHON_INCLUDES = $(SHELL_PYTHON_INCLUDES)
-
+include $(UTKNA_MAKEFILE)
 
 # UTK configuration
 LIBS = $(UTKNA_O2SCL_LIBS) -lo2scl -lhdf5_hl -lhdf5 -lgsl -lgslcblas -lm  
@@ -66,14 +43,10 @@ LCXX = $(UTKNA_CXX)
 LMPI_CXX = $(UTKNA_MPI_CXX)
 LCFLAGS = $(UTKNA_O2SCL_INCS) $(UTKNA_CFLAGS) -DNO_MPI \
         $(UTKNA_OPENMP_FLAGS) \
-	-DO2SCL_NEW_BOOST_INTEGRATION  
+	-DO2SCL_NEW_BOOST_INTEGRATION -I/opt/utkna/lib/python3.12/site-packages/numpy/core/include 
 LMPI_CFLAGS = $(UTKNA_O2SCL_INCS) $(UTKNA_CFLAGS) \
 	$(UTKNA_OPENMP_FLAGS) $(UTKNA_MPI_CFLAGS) \
 	-DO2SCL_NEW_BOOST_INTEGRATION 
-
-else 
-
-# On Zidu's machine
 
 endif
 
@@ -249,7 +222,7 @@ enn: eos_nompi.o main_nompi.o eos_nuclei_nompi.o \
                 neutrino/Couplings.o neutrino/FluidState.o \
                 neutrino/FunctionIntegrator.o neutrino/Polarization.o \
                 neutrino/PolarizationNonRelv2Apr8.o neutrino/jacobi_rule.o \
-                eos_nuclei_nompi.o eos_had_skyrme_ext_nompi.o $(LIBS)
+                eos_nuclei_nompi.o eos_had_skyrme_ext_nompi.o -L/usr/lib/x86_64-linux-gnu/hdf5/serial -fopenmp -L/home/awsteiner/pkgs/cubature -lo2scl -lhdf5 -lgsl -lreadline -lpython3.12 -lmpfr -lo2scl -lhdf5_hl -lhdf5 -lgsl -lgslcblas -lm -lquadmath -fopenmp
 
 enn_miser: eos_nompi.o main_nompi.o eos_nuclei_nompi.o \
                 eos_had_skyrme_ext_nompi.o eos_nompi.o \
@@ -505,7 +478,7 @@ imfps:
 mn-test:
 	./enn \
 		-set select_cs2_test 0 \
-		-select-model 470 738 0.5 13.0 62.4 32.8 0.9 \
+		-select-model 470 300 0.5 13.0 62.4 32.8 0.9 \
 		-set a_virial 10 -set b_virial 10 \
 		-set extend_frdm 0 \
 		-set fd_A_max 600 -set max_ratio 7.0 \
@@ -513,7 +486,7 @@ mn-test:
 		-set function_verbose 0 \
 		-set verbose 3 \
 		-load fid_6_30_21.o2 \
-		-mcarlo-neutron mn_test.o2> mn_test28_withBS_integraltoRound1vigas.out 2>&1 &
+		-mcarlo-neutron mn_test.o2> mn_test37_GTskypara.out 2>&1 &
 
 mn-test_miser:
 	./enn_miser \
@@ -553,6 +526,5 @@ mn-test-newCC:
                 -set verbose 3 \
                 -load fid_6_30_21.o2 \
                 -mcarlo-neutron mn_test.o2> mn_test_newCCana2.out 2>&1 &
-
 
 -include makefile.aws

@@ -11268,8 +11268,7 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
       tab.new_column(temp);
       tab.set_unit(temp,unit_list[ik]);
     }
-
-    if (false) {
+    if (true) {
      /* for(size_t ik=0;ik<100;ik++) {
         tab.new_column(((string)"nc_piRPAvec_")+o2scl::szttos(ik)+"_"+
                        o2scl::szttos(ipoint));
@@ -11284,18 +11283,22 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
         tab.new_column(((string)"nc_resp_RPAax_")+o2scl::szttos(ik)+"_"+
                        o2scl::szttos(ipoint));
       }*/
-      tab.new_column(((string)"crx/crx0_nc_vec_rpa_")+o2scl::szttos(ipoint));
-      tab.new_column(((string)"crx/crx0_nc_vec_rpa_Tran_")+o2scl::szttos(ipoint));
-      tab.new_column(((string)"crx/crx0_nc_ax_rpa_")+o2scl::szttos(ipoint));
-      tab.new_column(((string)"crx/crx0_nc_ax_rpa_Tran_")+o2scl::szttos(ipoint));
-      tab.new_column(((string)"crx/crx0_nc_vec_mf_")+o2scl::szttos(ipoint));
-      tab.new_column(((string)"crx/crx0_nc_vec_mf_Tran_")+o2scl::szttos(ipoint));
-      tab.new_column(((string)"crx/crx0_nc_ax_mf_")+o2scl::szttos(ipoint));
-      tab.new_column(((string)"crx/crx0_nc_ax_mf_Tran_")+o2scl::szttos(ipoint));
-      tab.new_column(((string)"crx/crx0_cc_vec_rpa_")+o2scl::szttos(ipoint));
-      tab.new_column(((string)"crx/crx0_cc_vec_mf_")+o2scl::szttos(ipoint));
-      tab.new_column(((string)"crx/crx0_cc_ax_rpa_")+o2scl::szttos(ipoint));
-      tab.new_column(((string)"crx/crx0_cc_ax_mf_")+o2scl::szttos(ipoint));
+      tab.new_column(((string)"crxoncrx0_nc_vec_rpa_")+o2scl::szttos(ipoint));
+      tab.new_column(((string)"crxoncrx0_nc_vec_rpa_Tran_")+o2scl::szttos(ipoint));
+      tab.new_column(((string)"crxoncrx0_nc_ax_rpa_")+o2scl::szttos(ipoint));
+      tab.new_column(((string)"crxoncrx0_nc_ax_rpa_Tran_")+o2scl::szttos(ipoint));
+      tab.new_column(((string)"crxoncrx0_nc_vec_mf_")+o2scl::szttos(ipoint));
+      tab.new_column(((string)"crxoncrx0_nc_vec_mf_Tran_")+o2scl::szttos(ipoint));
+      tab.new_column(((string)"crxoncrx0_nc_ax_mf_")+o2scl::szttos(ipoint));
+      tab.new_column(((string)"crxoncrx0_nc_ax_mf_Tran_")+o2scl::szttos(ipoint));
+      tab.new_column(((string)"crxoncrx0_cc_vec_rpa_")+o2scl::szttos(ipoint));
+      tab.new_column(((string)"crxoncrx0_cc_vec_mf_")+o2scl::szttos(ipoint));
+      tab.new_column(((string)"crxoncrx0_cc_ax_rpa_")+o2scl::szttos(ipoint));
+      tab.new_column(((string)"crxoncrx0_cc_ax_mf_")+o2scl::szttos(ipoint));
+      tab.new_column(((string)"crxoncrx0_cc(anti)_vec_rpa_")+o2scl::szttos(ipoint));
+      tab.new_column(((string)"crxoncrx0_cc(anti)_vec_mf_")+o2scl::szttos(ipoint));
+      tab.new_column(((string)"crxoncrx0_cc(anti)_ax_rpa_")+o2scl::szttos(ipoint));
+      tab.new_column(((string)"crxoncrx0_cc(anti)_ax_mf_")+o2scl::szttos(ipoint));
       if (ipoint<0){ 
 	              {
                  for (size_t iq=0;iq<15;iq++) {
@@ -11350,7 +11353,6 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
     20,20,20,20,20,20,20,20,
     20,20,20};*/
 
-
  //**************small table**************************************
   /******************
   vector<double> nB_listMenu={1.0e-7,1.0e-6,1.0e-5,0.0001,0.001,0.01,0.05,
@@ -11370,7 +11372,6 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
    
   // * ************************************************************
 
-
  // vector<double> E1_listMenu={5.0,10.0,30.0,60.0,120.0,240.0,450.0};
 
   vector<double> nB_list={0.0};
@@ -11384,7 +11385,7 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
     E1_list.clear();
     for (size_t ee=0; ee<9;ee++) {
         for (size_t tt=0; tt<1; tt++) {
-	   for (size_t nn=13; nn<14;nn++) {
+	   for (size_t nn=2; nn<3;nn++) {
 	      nB_list.push_back(nB_listMenu[nn]);
               TMeV_list.push_back(TMeV_listMenu[tt]);
 	      if (ee<6) {
@@ -11395,7 +11396,6 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
     }
   
   }
-
 // loop for big table
 
     if (true) {
@@ -11403,9 +11403,9 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
     TMeV_list.clear();
     E1_list.clear();
     Ye_list.clear();
-    for (size_t ee=0; ee<1;ee++) {
+    for (size_t ee=5; ee<6;ee++) {
         for (size_t tt=1; tt<2; tt++) {
-           for (size_t nn=13; nn<14;nn++) {
+           for (size_t nn=12; nn<13;nn++) {
              for (size_t yee=0; yee<1; yee++) {
               nB_list.push_back(nB_listMenu[nn]);
               TMeV_list.push_back(TMeV_listMenu[tt]);
@@ -11422,7 +11422,6 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
 
 // in total there are 32(nB)*7(T)*7(ye)*9(E1)=14112 points***********************
 
-
  /* if (n_point>20) {
     nB_list.clear();
     TMeV_list.clear();
@@ -11432,8 +11431,8 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
     }
   }*/
   
-  static const int N=1;
-  for(int j=0;j<N;j++) {
+  static const int N=100;
+  for(int j=5;j<N;j++) {
 
     std::cout << "j: " << j << endl;
 
@@ -11749,7 +11748,6 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
       double E1=E1_list[ipoint];
       double Ye=Ye_list[ipoint];
 
-
        
 
 
@@ -11758,11 +11756,9 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
       size_t iT=vector_lookup(n_T2,T_grid2,T*hc_mev_fm);
       //T=T_grid2[iT]/hc_mev_fm;
       
-
     //  cout << "Using nB = " << nB << " 1/fm^3 and T = " << T*hc_mev_fm
     //       << " MeV and E1= "<<E1<<" MeV for\n  ipoint = " << ipoint << " out of total "
     //       << n_point << endl;
-
       
       double log_xn_best=0.0, log_xp_best=0.0;
       double fr_best=1.0e10;
@@ -11783,7 +11779,6 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
       vector<size_t> ix_best={inB,0,iT};
 
       thermo th_gas;
-
       neutron.n=nB;
       proton.n=nB/1.0e5;
       double fr=free_energy_density_detail(neutron,proton,T,th_gas,vdet);*/
@@ -12208,9 +12203,7 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
         // [1/MeV^2]
         double gpp=gpp_virial*g_virial+gpp_sk*(1.0-g_virial);
         
-
       //  cout<<"fnn_sk, fnn_virial:"<<fnn_sk<<" "<<fnn_virial<<endl;
-
 
       //  cout << "fnn [1/MeV^2], fnn_dg0 [1/MeV^2], fnp [1/MeV^2], "
       //       << "fnp_dg0 [1/MeV^2], fpp [1/MeV^2], fpp_dg0 [1/MeV^2]: "
@@ -12300,7 +12293,6 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
         double vgt=0.5*(w1nn_ax_general-w1np_ax_general)+
           (w2nn_ax_general-w2np_ax_general)*neutron_thread[ipoint].kf*neutron_thread[ipoint].kf;
 
-
 	//in this new section below, calculate the W1 and W2 functions needed for CC Bethe-salpether RPA polarization functions. We only calculate the momentum independent parts of the W1 function here, and the momentum dependent part will be added in the PolarizationNonrel cpp code (when the piL is calculated). Also, W1 and W2 function calculated here have units all composed by MeV^-1, since the PolarizationNonrel code use unit of MeV for both piL q, and q0. In eos_nuclei.cpp code, the W2 functions has a unit of MeV^-2*fm^2, and that is because the n.kf in o2scl always gives quantity in unit of fm or fm^-1
 	double w1cc_vec_part1,w1cc_vec_part2,w1cc_ax_part1,w1cc_ax_part2,w2cc_vec,w2cc_ax;
 	w1cc_vec_part1=-sk.t0*(1.0+2.0*sk.x0)-1.0/6.0*sk.t3*pow((neutron_thread[ipoint].n+proton_thread[ipoint].n),sk.alpha)*(1.0+2.0*sk.x3);
@@ -12327,7 +12319,6 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
        //      << "vf_dg0 [1/MeV^2], vgt_old [1/MeV^2], "
        //      << "vgt [1/MeV^2]: " << vf_old << " " << vf << " "
        //      << vf_dg0 << " " << vgt_old << " " << vgt << endl;
-
         //----------------------------------------------------------------
 	//Neutral current (TRANSPARANT)mean free path in free space
 	
@@ -12337,7 +12328,6 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
 	double nc_ax_free_tran=0.0;
 
 	double FermiConst=1.1663787*1.e-11;//unit is MeV-2
-
 	double ga=1.23;//this is the ga consistent with the weak coupling.cpp in nuopac
 	double pi=3.1415926;
 
@@ -12355,13 +12345,11 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
 	//double cc_vec_free_tran=0.0;
 	//double cc_ax_free_tran=0.0;
 
-
 	cc_ax_free=FermiConst*FermiConst*(E1+dm)*(E1+dm)/pi*3*ga*ga*neutron_thread[ipoint].n*197.3*197.3*197.3*1.e13/197.3;//unit is cm-2
         cc_vec_free=FermiConst*FermiConst*(E1+dm)*(E1+dm)/pi*1.0*1.0*1.0*neutron_thread[ipoint].n*197.3*197.3*197.3*1.e13/197.3;
  
 	//cc_ax_free_tran=FermiConst*FermiConst*(E1+dm)*(E1+dm)/pi*(3+1.0/3.0)*ga*ga*neutron_thread[ipoint].n*197.3*197.3*197.3*1.e13/197.3;//unit is cm-2
        // cc_vec_free_tran=FermiConst*FermiConst*(E1+dm)*(E1+dm)/pi*(1.0-1.0/3.0)*1.0*1.0*neutron_thread[ipoint].n*197.3*197.3*197.3*1.e13/197.3;
-
         
 	 //----------------------------------------------------------------
         //Charged current mean free path in free space
@@ -12392,7 +12380,6 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
       
         pol_nc.flag=Polarization::flag_vector;
         double nc_vec_mfp_dg0=0.0;
-
       //	nc_vec_mfp_dg0=pol_nc.CalculateInverseMFP(E1,true)/
       //    hc_mev_fm*1.e13;//pure neutron matter
 //	nc_vec_mfp_dg0=pol_nc.CalculateInverseMFP(E1)/
@@ -12404,7 +12391,6 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
        //   hc_mev_fm*1.e13;// pure neutron matter
 	//nc_vec_mfp_dg0_Transport=pol_nc.CalculateTransportInverseMFP(E1)/
         //  hc_mev_fm*1.e13; // finite ye matter
-
         cout << "neutral current, TRANSPORT vector part, no dgdn terms: "
              << nc_vec_mfp_dg0_Transport <<" ratio of crx/crx_free (nc vec Tran): "<<nc_vec_mfp_dg0_Transport/nc_vec_free_tran<<endl;
        //cout << "neutral current, TRANSPORT vector part, no dgdn terms: "
@@ -12417,9 +12403,7 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
         double nc_vec_mfp=0.0;
       //  nc_vec_mfp=pol_nc.CalculateInverseMFP(E1,true)/
       //    hc_mev_fm*1.e13;
-
       //  cout << "neutral current, vector part: " << nc_vec_mfp << endl;
-
        //
        //---------------------------------------------------------------------
       //wirte GetResponse functions at various cos\theta at a specific q0 for vec part
@@ -12437,7 +12421,6 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
       
         pol_nc.flag=Polarization::flag_axial;
 	double nc_axvec_mfp=0.0;
-
        // nc_axvec_mfp=pol_nc.CalculateInverseMFP(E1,true)/
        //   hc_mev_fm*1.e13; //pure neutron matter
        //   nc_axvec_mfp=pol_nc.CalculateInverseMFP(E1)/
@@ -12448,7 +12431,6 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
       //    hc_mev_fm*1.e13; //pure neutron matter
     //      nc_axvec_mfp_Transport=pol_nc.CalculateTransportInverseMFP(E1)/
       //    hc_mev_fm*1.e13; //finite ye matter
-
         cout << "neutral current, TRANSPORT axial part: " << nc_axvec_mfp_Transport <<" ratio of crx/crx_free (nc ax Tran): "<<nc_axvec_mfp_Transport/nc_ax_free_tran<< endl;
       // cout << "neutral current, TRANSPORT axial part: " << nc_axvec_mfp_Transport <<" ratio of crx/crx_free (nc ax Tran): "<<nc_axvec_mfp_Transport/nc_ax_free<< endl;//this is for test!!
       //
@@ -12475,7 +12457,6 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
         pol_nc.set_residual(0.0,0.0,-coulombf,0.0,0.0,0.0,0.0,0.0,proton_thread[ipoint].n);//here is tricky, set fpp=-coulombf, so that fppcoulomb=fpp+coulombbf=0
       
         pol_nc.flag=Polarization::flag_vector;
-
         double nc_vec_mfp_norpa=0.0;
       //nc_vec_mfp_norpa=pol_nc.CalculateInverseMFP(E1,true)/
       //    hc_mev_fm*1.e13;//pure neutron matter 
@@ -12487,13 +12468,11 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
       //    hc_mev_fm*1.e13;//pure neutron matter
 //	nc_vec_mfp_norpa_Transport=pol_nc.CalculateTransportInverseMFP(E1)/
   //        hc_mev_fm*1.e13;//finite ye matter
-
         cout << "neutral current, TRANSPORT vector part, no RPA: "
              << nc_vec_mfp_norpa_Transport << " ratio of crx/crx_free (nc vec norpa Tran): "<<nc_vec_mfp_norpa_Transport/nc_vec_free_tran<<endl;
 
       
         pol_nc.flag=Polarization::flag_axial;
-
         double nc_axvec_mfp_norpa=0.0;
 	//nc_axvec_mfp_norpa=pol_nc.CalculateInverseMFP(E1,true)/
         //  hc_mev_fm*1.e13; //pure neutron matter
@@ -12504,19 +12483,16 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
   //        hc_mev_fm*1.e13;//pure neutron matter
 //	nc_axvec_mfp_norpa_Transport=pol_nc.CalculateTransportInverseMFP(E1)/
   //        hc_mev_fm*1.e13;// finite ye matter
-
         cout << "neutral current, TRANSPORT axial part: " << nc_axvec_mfp_norpa_Transport <<" ratio of crx/crx_free (nc ax norpa Tran): "<<nc_axvec_mfp_norpa_Transport/nc_ax_free_tran<< endl;
 
 
         // Go back to the "with RPA" calculations to compute the
         // response below
         pol_nc.set_residual(fnn_dg0,fnp_dg0,fpp_dg0,gnn,gnp,gpp,
-
                             vf,vgt,proton_thread[ipoint].n);
        //-----------------------------------------------------------------
        // Charged current mean free path
        betaEoS.Mu3=(electron_thread[ipoint].mu-electron_thread[ipoint].m)*hc_mev_fm;//this is the chemical potential of outcoming electron in CC reactions, in NC, usually Mu3=0 if neutrino if not trapped
-
        PolarizationNonRel pol_cc(betaEoS, ncap, false, false, false);//note that here the doBlock(last bool value is false), this is because I want to compare it with CC interaction in free space
        pol_cc.current=Polarization::current_charged;
  
@@ -12525,19 +12501,17 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
         pol_cc.integ_method_q0=Polarization::integ_mc;
         //pol_cc.integ_method_mu=Polarization::integ_cubature;
         //pol_cc.integ_method_q0=Polarization::integ_cubature;
-
        // pol_cc.integ_method_mu=Polarization::integ_o2scl;
        // pol_cc.integ_method_q0=Polarization::integ_o2scl;
-
         //pol_cc.integ_method_mu=Polarization::integ_base;
         //pol_cc.integ_method_q0=Polarization::integ_base;
 
-        pol_cc.set_residual(fnn,fnp,fpp,gnn,gnp,gpp,vf_dg0,vgt,proton_thread[ipoint].n);
+        pol_cc.set_residual(fnn,fnp,fpp,gnn,gnp,gpp,
+                            vf_dg0,vgt,proton_thread[ipoint].n);
         pol_cc.set_BSresidual(w1cc_vec_part1,w1cc_vec_part2,w1cc_ax_part1,w1cc_ax_part2,w2cc_vec,w2cc_ax);//set these residual when CC Bethe salpeter EQs are solved exactly 
         pol_cc.flag=Polarization::flag_vector;
 	double cc_vec_mfp_dg0=0.0;
         cc_vec_mfp_dg0=pol_cc.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
-
         cout << "charged current, vector part, no dgdn terms: "
              << cc_vec_mfp_dg0 <<" ratio of crx/crx_free (cc vec): "<<cc_vec_mfp_dg0/cc_vec_free<<endl;
 
@@ -12549,9 +12523,7 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
 
         pol_cc.flag=Polarization::flag_axial;
         double cc_axvec_mfp=0.0;
-
-       	//cc_axvec_mfp=pol_cc.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
-
+       	cc_axvec_mfp=pol_cc.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
         cout << "charged current, axial part: " << cc_axvec_mfp <<" ratio of crx/crx_free (cc ax): "<<cc_axvec_mfp/cc_ax_free<<endl;
 
         // -----------------------------------------------------------------
@@ -12571,14 +12543,11 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
         pol_cc.flag=Polarization::flag_vector;
         double cc_vec_mfp_norpa=0.0;
       //  cc_vec_mfp_norpa=pol_cc.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
-
         cout << "charged current, vector part, no RPA: " << cc_vec_mfp_norpa <<" ratio of crx/crx_free (cc vec norpa): "<<cc_vec_mfp_norpa/cc_vec_free<< endl;
 
         pol_cc.flag=Polarization::flag_axial;
         double cc_axvec_mfp_norpa=0.0;
-
       //  cc_axvec_mfp_norpa=pol_cc.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
-
         cout << "charged current, axial part, no RPA: " << cc_axvec_mfp_norpa <<" ratio of crx/crx_free (cc ax norpa): "<<cc_axvec_mfp_norpa/cc_ax_free<< endl;
         
 	// Go back to the "with RPA" calculations to compute the
@@ -12594,13 +12563,11 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
       //  cout << "U4 (antinu) [MeV]: " << u4eosantinu << endl;
 
 
-
        FluidState betaEoSantinu;
         betaEoSantinu=FluidState::StateFromDensities
           (T*hc_mev_fm,msp_thread[ipoint],msn_thread[ipoint],
            proton_thread[ipoint].n*pow(hc_mev_fm,3.0),neutron_thread[ipoint].n*pow(hc_mev_fm,3.0),
            u2eosantinu,u4eosantinu,electron_thread[ipoint].m*hc_mev_fm,electron_thread[ipoint].n*pow(hc_mev_fm,3.0));//anti electron mass equal to electron mass,  anti electron density is what? 
-
 
        // WeakCouplings nscat=WeakCouplings::NeutronScattering();
        // nscat.F2=0.0;
@@ -12610,7 +12577,6 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
 
         // Incoming neutrino energy
        // double E1=10.0;//E1 was set at upper lines with nB and T
-
 
         betaEoSantinu.Mu2=proton_thread[ipoint].mu*hc_mev_fm;
         betaEoSantinu.Mu4=neutron_thread[ipoint].mu*hc_mev_fm;
@@ -12630,10 +12596,8 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
         pol_cc_antinu.integ_method_q0=Polarization::integ_mc;
         //pol_cc.integ_method_mu=Polarization::integ_cubature;
         //pol_cc.integ_method_q0=Polarization::integ_cubature;
-
        // pol_cc.integ_method_mu=Polarization::integ_o2scl;
        // pol_cc.integ_method_q0=Polarization::integ_o2scl;
-
         //pol_cc.integ_method_mu=Polarization::integ_base;
         //pol_cc.integ_method_q0=Polarization::integ_base;
 	//
@@ -12641,9 +12605,7 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
 	 // Units of 1/MeV^2
         double vf_antinu_dg0=0.5*(w1nn_vec_general_tilde_dg0-
                            w1np_vec_general_tilde_dg0)+
-
           (w2nn_vec_general_dg0-w2np_vec_general_dg0)*proton_thread[ipoint].kf*proton_thread[ipoint].kf;
-
 
 
         // Units of 1/MeV^2
@@ -12660,7 +12622,7 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
 
         pol_cc_antinu.flag=Polarization::flag_vector;
         double cc_vec_mfp_antinu_dg0=0.0;
-	//cc_vec_mfp_antinu_dg0=pol_cc_antinu.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
+	cc_vec_mfp_antinu_dg0=pol_cc_antinu.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
         cout << "charged current, vector part, no dgdn terms: "
              << cc_vec_mfp_antinu_dg0 <<" ratio of crx/crx_free (cc vec antinu): "<<cc_vec_mfp_antinu_dg0/cc_vec_antinu_free<<endl;
 
@@ -12672,111 +12634,123 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
 
         pol_cc_antinu.flag=Polarization::flag_axial;
         double cc_axvec_mfp_antinu=0.0;
-       // cc_axvec_mfp_antinu=pol_cc_antinu.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
+        cc_axvec_mfp_antinu=pol_cc_antinu.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
         cout << "charged current, axial part: " << cc_axvec_mfp_antinu <<" ratio of crx/crx_free (cc ax antinu): "<<cc_axvec_mfp_antinu/cc_ax_antinu_free<<endl;
-
     // -----------------------------------------------------------------
         // Charged current mean free path without RPA anti neutrino
 
-		pol_cc_antinu.integ_method_mu=Polarization::integ_mc;
-		pol_cc_antinu.integ_method_q0=Polarization::integ_mc;
-		//pol_cc.integ_method_mu=Polarization::integ_cubature;
-		//pol_cc.integ_method_q0=Polarization::integ_cubature;
-	       // pol_cc.integ_method_mu=Polarization::integ_o2scl;
-	       // pol_cc.integ_method_q0=Polarization::integ_o2scl;
-		//pol_cc.integ_method_mu=Polarization::integ_base;
-		//pol_cc.integ_method_q0=Polarization::integ_base;
+        pol_cc_antinu.integ_method_mu=Polarization::integ_mc;
+        pol_cc_antinu.integ_method_q0=Polarization::integ_mc;
+        //pol_cc.integ_method_mu=Polarization::integ_cubature;
+        //pol_cc.integ_method_q0=Polarization::integ_cubature;
+       // pol_cc.integ_method_mu=Polarization::integ_o2scl;
+       // pol_cc.integ_method_q0=Polarization::integ_o2scl;
+        //pol_cc.integ_method_mu=Polarization::integ_base;
+        //pol_cc.integ_method_q0=Polarization::integ_base;
 
-		pol_cc_antinu.set_residual(0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,proton_thread[ipoint].n);
-		pol_cc_antinu.set_BSresidual(0.0,0.0,0.0,0.0,0.0,0.0);//set these residual when CC Bethe salpeter EQs are solved exactly
-		pol_cc_antinu.flag=Polarization::flag_vector;
-		double cc_vec_mfp_antinu_norpa=0.0;
-	       // cc_vec_mfp_antinu_norpa=pol_cc_antinu.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
-		cout << "charged current, vector part, no RPA: " << cc_vec_mfp_antinu_norpa <<" ratio of crx/crx_free (cc vec antinu norpa): "<<cc_vec_mfp_antinu_norpa/cc_vec_antinu_free<< endl;
+        pol_cc_antinu.set_residual(0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,proton_thread[ipoint].n);
+        pol_cc_antinu.set_BSresidual(0.0,0.0,0.0,0.0,0.0,0.0);//set these residual when CC Bethe salpeter EQs are solved exactly
+        pol_cc_antinu.flag=Polarization::flag_vector;
+        double cc_vec_mfp_antinu_norpa=0.0;
+       // cc_vec_mfp_antinu_norpa=pol_cc_antinu.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
+        cout << "charged current, vector part, no RPA: " << cc_vec_mfp_antinu_norpa <<" ratio of crx/crx_free (cc vec antinu norpa): "<<cc_vec_mfp_antinu_norpa/cc_vec_antinu_free<< endl;
 
-		pol_cc_antinu.flag=Polarization::flag_axial;
-		double cc_axvec_mfp_antinu_norpa=0.0;
-	   //     cc_axvec_mfp_antinu_norpa=pol_cc_antinu.CalculateInverseMFP(E1)/
-	     //     hc_mev_fm*1.e13;
-		cout << "charged current, axial part, no RPA: " << cc_axvec_mfp_antinu_norpa <<" ratio of crx/crx_free (cc ax antinu norpa): "<<cc_axvec_mfp_antinu_norpa/cc_ax_antinu_free<< endl;
+        pol_cc_antinu.flag=Polarization::flag_axial;
+        double cc_axvec_mfp_antinu_norpa=0.0;
+   //     cc_axvec_mfp_antinu_norpa=pol_cc_antinu.CalculateInverseMFP(E1)/
+     //     hc_mev_fm*1.e13;
+        cout << "charged current, axial part, no RPA: " << cc_axvec_mfp_antinu_norpa <<" ratio of crx/crx_free (cc ax antinu norpa): "<<cc_axvec_mfp_antinu_norpa/cc_ax_antinu_free<< endl;
 
-		// Go back to the "with RPA" calculations to compute the
-		// response below
-		pol_cc_antinu.set_residual(fnn,fnp,fpp,gnn,gnp,gpp,
-				    vf_antinu_dg0,vgt_antinu,proton_thread[ipoint].n);
-		pol_cc_antinu.set_BSresidual(w1cc_vec_part1,w1cc_vec_part2,w1cc_ax_part1,w1cc_ax_part2,w2cc_vec,w2cc_ax);//set these residual when CC Bethe salpeter EQs are solved exactly
-	       //------------------------------------------------------------------------------
-	       // write data in one thread
-	       #pragma omp critical
-		{
-			cout<<"Environment setting: "<< ipoint << " out of total "<< n_point<<endl;
-			cout << "Using nB = " << nB << " 1/fm^3 and T = " << T*hc_mev_fm << " MeV and E1= "<<E1<<" MeV and Ye= "<<Ye<<"for\n  ipoint = " << ipoint << " out of total "<< n_point << endl;
-			cout << "nn,np,ne: " << neutron_thread[ipoint].n << " " << proton_thread[ipoint].n <<" "<<electron_thread[ipoint].n <<" ipoint = "<<ipoint << " out of total "<< n_point<<endl;
-			cout << "mun: " << neutron_thread[ipoint].mu*hc_mev_fm <<" ipoint = "<<ipoint << " out of total "<< endl;
-			cout << "mup: " << proton_thread[ipoint].mu*hc_mev_fm << " ipoint = "<<ipoint << " out of total "<<endl;
-			cout << "mue: " << electron_thread[ipoint].mu*hc_mev_fm << " ipoint = "<<ipoint << " out of total "<<endl;
-			cout << "U2 [MeV]: " << u2eos <<" ipoint = "<<ipoint << " out of total "<< endl;
-			cout << "U4 [MeV]: " << u4eos << " ipoint = "<<ipoint << " out of total "<<endl;
-			cout << "msn: " << msn_thread[ipoint] << " "<< vdet_units.find("msn")->second <<" ipoint = "<<ipoint << " out of total "<< endl;
-			cout << "msp: " << msp_thread[ipoint] << " "<< vdet_units.find("msp")->second << " ipoint = "<<ipoint << " out of total "<<endl;
-			cout << "nn: " << neutron_thread[ipoint].n << " ipoint = "<<ipoint << " out of total "<<endl;
-			cout << "np: " << proton_thread[ipoint].n << " ipoint = "<<ipoint << " out of total "<<endl;
-			cout << "g,dgdnn [fm^3],dgdnp [fm^3]: " << vdet["g"] << " "<< vdet["dgdnn"] << " " << vdet["dgdnp"] << " ipoint = "<<ipoint << " out of total "<<endl;
+        // Go back to the "with RPA" calculations to compute the
+        // response below
+        pol_cc_antinu.set_residual(fnn,fnp,fpp,gnn,gnp,gpp,
+                            vf_antinu_dg0,vgt_antinu,proton_thread[ipoint].n);
+	pol_cc_antinu.set_BSresidual(w1cc_vec_part1,w1cc_vec_part2,w1cc_ax_part1,w1cc_ax_part2,w2cc_vec,w2cc_ax);//set these residual when CC Bethe salpeter EQs are solved exactly
+       //------------------------------------------------------------------------------
+       // write data in one thread
+       #pragma omp critical
+	{
+		cout<<"Environment setting: "<< ipoint << " out of total "<< n_point<<endl;
+		cout << "Using nB = " << nB << " 1/fm^3 and T = " << T*hc_mev_fm << " MeV and E1= "<<E1<<" MeV and Ye= "<<Ye<<" for\n  ipoint = " << ipoint << " out of total "<< n_point << endl;
+		cout << "nn,np,ne: " << neutron_thread[ipoint].n << " " << proton_thread[ipoint].n <<" "<<electron_thread[ipoint].n <<" ipoint = "<<ipoint << " out of total "<< n_point<<endl;
+                cout << "mun: " << neutron_thread[ipoint].mu*hc_mev_fm <<" ipoint = "<<ipoint << " out of total "<< endl;
+                cout << "mup: " << proton_thread[ipoint].mu*hc_mev_fm << " ipoint = "<<ipoint << " out of total "<<endl;
+		cout << "mue: " << electron_thread[ipoint].mu*hc_mev_fm << " ipoint = "<<ipoint << " out of total "<<endl;
+		cout << "U2 [MeV]: " << u2eos <<" ipoint = "<<ipoint << " out of total "<< endl;
+                cout << "U4 [MeV]: " << u4eos << " ipoint = "<<ipoint << " out of total "<<endl;
+                cout << "msn: " << msn_thread[ipoint] << " "<< vdet_units.find("msn")->second <<" ipoint = "<<ipoint << " out of total "<< endl;
+                cout << "msp: " << msp_thread[ipoint] << " "<< vdet_units.find("msp")->second << " ipoint = "<<ipoint << " out of total "<<endl;
+                cout << "nn: " << neutron_thread[ipoint].n << " ipoint = "<<ipoint << " out of total "<<endl;
+                cout << "np: " << proton_thread[ipoint].n << " ipoint = "<<ipoint << " out of total "<<endl;
+                cout << "g,dgdnn [fm^3],dgdnp [fm^3]: " << vdet["g"] << " "<< vdet["dgdnn"] << " " << vdet["dgdnp"] << " ipoint = "<<ipoint << " out of total "<<endl;
 
-			cout<<"Landau-Migdal parameters:"<<" ipoint = "<<ipoint << " out of total "<<endl;
-			cout << "fnn [1/MeV^2], fnn_dg0 [1/MeV^2], fnp [1/MeV^2], "<< "fnp_dg0 [1/MeV^2], fpp [1/MeV^2], fpp_dg0 [1/MeV^2]: " << fnn << " " << fnn_dg0 << " " << fnp << " "<< fnp_dg0 << " " << fpp << " " << fpp_dg0 <<" ipoint = "<<ipoint << " out of total "<< endl;
-			cout << "gnn [1/MeV^2], gnp [1/MeV^2], gpp [1/MeV^2]: " << gnn << " " << gnp << " " << gpp << " ipoint = "<<ipoint << " out of total "<<endl;
-			cout << "vf_old [1/MeV^2], vf [1/MeV^2], "
-		     << "vf_dg0 [1/MeV^2], vgt_old [1/MeV^2], "
-		     << "vgt [1/MeV^2]: " << vf_old << " " << vf << " "
-		     << vf_dg0 << " " << vgt_old << " " << vgt << " ipoint = "<<ipoint << " out of total "<<endl;
+		cout<<"Landau-Migdal parameters:"<<" ipoint = "<<ipoint << " out of total "<<endl;
+		cout << "fnn [1/MeV^2], fnn_dg0 [1/MeV^2], fnp [1/MeV^2], "<< "fnp_dg0 [1/MeV^2], fpp [1/MeV^2], fpp_dg0 [1/MeV^2]: " << fnn << " " << fnn_dg0 << " " << fnp << " "<< fnp_dg0 << " " << fpp << " " << fpp_dg0 <<" ipoint = "<<ipoint << " out of total "<< endl;
+                cout << "gnn [1/MeV^2], gnp [1/MeV^2], gpp [1/MeV^2]: " << gnn << " " << gnp << " " << gpp << " ipoint = "<<ipoint << " out of total "<<endl;
+		cout << "vf_old [1/MeV^2], vf [1/MeV^2], "
+             << "vf_dg0 [1/MeV^2], vgt_old [1/MeV^2], "
+             << "vgt [1/MeV^2]: " << vf_old << " " << vf << " "
+             << vf_dg0 << " " << vgt_old << " " << vgt << " ipoint = "<<ipoint << " out of total "<<endl;
 
-			cout<<"NC calculation setting:"<<" ipoint = "<<ipoint << " out of total "<<endl;
-			cout << "mu2 [MeV], mu4 [MeV], mu3 [MeV] (without rest mass): "<< betaEoS.Mu2 << " "<< betaEoS.Mu4 << " "<< 0.0 << " ipoint = "<<ipoint << " out of total "<<endl;
+		cout<<"NC calculation setting:"<<" ipoint = "<<ipoint << " out of total "<<endl;
+	        cout << "mu2 [MeV], mu4 [MeV], mu3 [MeV] (without rest mass): "<< betaEoS.Mu2 << " "<< betaEoS.Mu4 << " "<< 0.0 << " ipoint = "<<ipoint << " out of total "<<endl;
 
-			cout<<"NC neutrino IMFP:"<<" ipoint = "<<ipoint << " out of total "<<endl;
-			cout << "neutral current, vector part, no dgdn terms: "
-		     << nc_vec_mfp_dg0 <<" ratio of crx/crx_free (nc vec): "<<nc_vec_mfp_dg0/nc_vec_free<< " ipoint = "<<ipoint << " out of total "<<endl;
-			cout << "neutral current, TRANSPORT vector part, no dgdn terms: "
-		     << nc_vec_mfp_dg0_Transport <<" ratio of crx/crx_free (nc vec Tran): "<<nc_vec_mfp_dg0_Transport/nc_vec_free_tran<<" ipoint = "<<ipoint << " out of total "<<endl;
-			cout << "neutral current, axial part: " << nc_axvec_mfp <<" ratio of crx/crx_free (nc ax): "<<nc_axvec_mfp/nc_ax_free<<" ipoint = "<<ipoint << " out of total "<<endl;
-			cout << "neutral current, TRANSPORT axial part: " << nc_axvec_mfp_Transport <<" ratio of crx/crx_free (nc ax Tran): "<<nc_axvec_mfp_Transport/nc_ax_free_tran<<" ipoint = "<<ipoint << " out of total "<< endl;
-			cout << "neutral current, vector part, no RPA: " << nc_vec_mfp_norpa <<" ratio of crx/crx_free (nc vec norpa): "<<nc_vec_mfp_norpa/nc_vec_free<< " ipoint = "<<ipoint << " out of total "<<endl;
-			cout << "neutral current, TRANSPORT vector part, no RPA: "
-		     << nc_vec_mfp_norpa_Transport << " ratio of crx/crx_free (nc vec norpa Tran): "<<nc_vec_mfp_norpa_Transport/nc_vec_free_tran<<" ipoint = "<<ipoint << " out of total "<<endl;
-			cout << "neutral current, axial part, no RPA: " << nc_axvec_mfp_norpa <<" ratio of crx/crx_free (nc ax norpa): "<<nc_axvec_mfp_norpa/nc_ax_free<< " ipoint = "<<ipoint << " out of total "<<endl;
-			cout << "neutral current, TRANSPORT axial part, no RPA: " << nc_axvec_mfp_norpa_Transport <<" ratio of crx/crx_free (nc ax norpa Tran): "<<nc_axvec_mfp_norpa_Transport/nc_ax_free_tran<<" ipoint = "<<ipoint << " out of total "<< endl;
-		      
-		      cout<<"CC calculation setting (just change mu3):"<<" ipoint = "<<ipoint << " out of total "<<endl;
-		      cout<<"Mu3: "<<betaEoS.Mu3<<" ipoint = "<<ipoint << " out of total "<<endl;
+		cout<<"NC neutrino IMFP:"<<" ipoint = "<<ipoint << " out of total "<<endl;
+                cout << "neutral current, vector part, no dgdn terms: "
+             << nc_vec_mfp_dg0 <<" ratio of crx/crx_free (nc vec): "<<nc_vec_mfp_dg0/nc_vec_free<<" at nn, np, T, nueE: "<<neutron_thread[ipoint].n<<" "<<proton_thread[ipoint].n<<" "<<T*hc_mev_fm<<" "<<E1<<" at skyrme #: "<<j<< " ipoint = "<<ipoint << " out of total "<<endl;
 
-		      cout<<"CC neutrino IMFP:"<<" ipoint = "<<ipoint << " out of total "<<endl;
-		      cout << "charged current, vector part, no dgdn terms: "
-		     << cc_vec_mfp_dg0 <<" ratio of crx/crx_free (cc vec): "<<cc_vec_mfp_dg0/cc_vec_free<<" ipoint = "<<ipoint << " out of total "<<endl;
-		      cout << "charged current, axial part: " << cc_axvec_mfp <<" ratio of crx/crx_free (cc ax): "<<cc_axvec_mfp/cc_ax_free<<" ipoint = "<<ipoint << " out of total "<<endl;
-		      cout << "charged current, vector part, no RPA: " << cc_vec_mfp_norpa <<" ratio of crx/crx_free (cc vec norpa): "<<cc_vec_mfp_norpa/cc_vec_free<<" ipoint = "<<ipoint << " out of total "<< endl;
-		      cout << "charged current, axial part, no RPA: " << cc_axvec_mfp_norpa <<" ratio of crx/crx_free (cc ax norpa): "<<cc_axvec_mfp_norpa/cc_ax_free<<" ipoint = "<<ipoint << " out of total "<< endl;
+		cout << "neutral current, TRANSPORT vector part, no dgdn terms: "
+             << nc_vec_mfp_dg0_Transport <<" ratio of crx/crx_free (nc vec Tran): "<<nc_vec_mfp_dg0_Transport/nc_vec_free_tran<<" at nn, np, T, nueE: "<<neutron_thread[ipoint].n<<" "<<proton_thread[ipoint].n<<" "<<T*hc_mev_fm<<" "<<E1<<" at skyrme #: "<<j<<" ipoint = "<<ipoint << " out of total "<<endl;
 
-		      cout<<"CC antinu calculation setting:"<<" ipoint = "<<ipoint << " out of total "<<endl;
-		      cout << "U2 (antinu) [MeV]: " << u2eosantinu << " ipoint = "<<ipoint << " out of total "<<endl;
-		      cout << "U4 (antinu) [MeV]: " << u4eosantinu <<" ipoint = "<<ipoint << " out of total "<< endl;
-		      cout << "mu2 [MeV], mu4 [MeV], mu3 [MeV] (without rest mass): "
-		     << betaEoSantinu.Mu2 << " "
-		     << betaEoSantinu.Mu4 << " "
-		     << betaEoSantinu.Mu3 << " ipoint = "<<ipoint << " out of total "<<endl;
-		      cout << " vf_antinu_dg0 [1/MeV^2], " << "vgt_antinu [1/MeV^2]: " << " " << vf_antinu_dg0 << " "<< vgt_antinu << " ipoint = "<<ipoint << " out of total "<<endl;
+		cout << "neutral current, axial part: " << nc_axvec_mfp <<" ratio of crx/crx_free (nc ax): "<<nc_axvec_mfp/nc_ax_free<<" at nn, np, T, nueE: "<<neutron_thread[ipoint].n<<" "<<proton_thread[ipoint].n<<" "<<T*hc_mev_fm<<" "<<E1<<" at skyrme #: "<<j<<" ipoint = "<<ipoint << " out of total "<<endl;
 
-		      cout<<"CC antinu IMFP:"<<" ipoint = "<<ipoint << " out of total "<<endl;
-		      cout << "charged current, vector part, no dgdn terms: "
-		     << cc_vec_mfp_antinu_dg0 <<" ratio of crx/crx_free (cc vec antinu): "<<cc_vec_mfp_antinu_dg0/cc_vec_antinu_free<<" ipoint = "<<ipoint << " out of total "<<endl;
-		      cout << "charged current, axial part: " << cc_axvec_mfp_antinu <<" ratio of crx/crx_free (cc ax antinu): "<<cc_axvec_mfp_antinu/cc_ax_antinu_free<<" ipoint = "<<ipoint << " out of total "<<endl;
-		      cout << "charged current, vector part, no RPA: " << cc_vec_mfp_antinu_norpa <<" ratio of crx/crx_free (cc vec antinu norpa): "<<cc_vec_mfp_antinu_norpa/cc_vec_antinu_free<< " ipoint = "<<ipoint << " out of total "<<endl;
-		      cout << "charged current, axial part, no RPA: " << cc_axvec_mfp_antinu_norpa <<" ratio of crx/crx_free (cc ax antinu norpa): "<<cc_axvec_mfp_antinu_norpa/cc_ax_antinu_free<<" ipoint = "<<ipoint << " out of total "<< endl;
+		cout << "neutral current, TRANSPORT axial part: " << nc_axvec_mfp_Transport <<" ratio of crx/crx_free (nc ax Tran): "<<nc_axvec_mfp_Transport/nc_ax_free_tran<<" at nn, np, T, nueE: "<<neutron_thread[ipoint].n<<" "<<proton_thread[ipoint].n<<" "<<T*hc_mev_fm<<" "<<E1<<" at skyrme #: "<<j<<" ipoint = "<<ipoint << " out of total "<< endl;
+
+                cout << "neutral current, vector part, no RPA: " << nc_vec_mfp_norpa <<" ratio of crx/crx_free (nc vec norpa): "<<nc_vec_mfp_norpa/nc_vec_free<<" at nn, np, T, nueE: "<<neutron_thread[ipoint].n<<" "<<proton_thread[ipoint].n<<" "<<T*hc_mev_fm<<" "<<E1<<" at skyrme #: "<<j<< " ipoint = "<<ipoint << " out of total "<<endl;
+
+                cout << "neutral current, TRANSPORT vector part, no RPA: "
+             << nc_vec_mfp_norpa_Transport << " ratio of crx/crx_free (nc vec norpa Tran): "<<nc_vec_mfp_norpa_Transport/nc_vec_free_tran<<" at nn, np, T, nueE: "<<neutron_thread[ipoint].n<<" "<<proton_thread[ipoint].n<<" "<<T*hc_mev_fm<<" "<<E1<<" at skyrme #: "<<j<<" ipoint = "<<ipoint << " out of total "<<endl;
+
+		cout << "neutral current, axial part, no RPA: " << nc_axvec_mfp_norpa <<" ratio of crx/crx_free (nc ax norpa): "<<nc_axvec_mfp_norpa/nc_ax_free<< " at nn, np, T, nueE: "<<neutron_thread[ipoint].n<<" "<<proton_thread[ipoint].n<<" "<<T*hc_mev_fm<<" "<<E1<<" at skyrme #: "<<j<<" ipoint = "<<ipoint << " out of total "<<endl;
+
+		cout << "neutral current, TRANSPORT axial part, no RPA: " << nc_axvec_mfp_norpa_Transport <<" ratio of crx/crx_free (nc ax norpa Tran): "<<nc_axvec_mfp_norpa_Transport/nc_ax_free_tran<<" at nn, np, T, nueE: "<<neutron_thread[ipoint].n<<" "<<proton_thread[ipoint].n<<" "<<T*hc_mev_fm<<" "<<E1<<" at skyrme #: "<<j<<" ipoint = "<<ipoint << " out of total "<< endl;
+              
+              cout<<"CC calculation setting (just change mu3):"<<" ipoint = "<<ipoint << " out of total "<<endl;
+	      cout<<"Mu3: "<<betaEoS.Mu3<<" ipoint = "<<ipoint << " out of total "<<endl;
+
+	      cout<<"CC neutrino IMFP:"<<" ipoint = "<<ipoint << " out of total "<<endl;
+	      cout << "charged current, vector part, no dgdn terms: "
+             << cc_vec_mfp_dg0 <<" ratio of crx/crx_free (cc vec): "<<cc_vec_mfp_dg0/cc_vec_free<<" at nn, np, T, nueE: "<<neutron_thread[ipoint].n<<" "<<proton_thread[ipoint].n<<" "<<T*hc_mev_fm<<" "<<E1<<" at skyrme #: "<<j<<" ipoint = "<<ipoint << " out of total "<<endl;
+
+	      cout << "charged current, axial part: " << cc_axvec_mfp <<" ratio of crx/crx_free (cc ax): "<<cc_axvec_mfp/cc_ax_free<<" at nn, np, T, nueE: "<<neutron_thread[ipoint].n<<" "<<proton_thread[ipoint].n<<" "<<T*hc_mev_fm<<" "<<E1<<" at skyrme #: "<<j<<" ipoint = "<<ipoint << " out of total "<<endl;
+
+	      cout << "charged current, vector part, no RPA: " << cc_vec_mfp_norpa <<" ratio of crx/crx_free (cc vec norpa): "<<cc_vec_mfp_norpa/cc_vec_free<<" at nn, np, T, nueE: "<<neutron_thread[ipoint].n<<" "<<proton_thread[ipoint].n<<" "<<T*hc_mev_fm<<" "<<E1<<" at skyrme #: "<<j<<" ipoint = "<<ipoint << " out of total "<< endl;
+
+	      cout << "charged current, axial part, no RPA: " << cc_axvec_mfp_norpa <<" ratio of crx/crx_free (cc ax norpa): "<<cc_axvec_mfp_norpa/cc_ax_free<<" at nn, np, T, nueE: "<<neutron_thread[ipoint].n<<" "<<proton_thread[ipoint].n<<" "<<T*hc_mev_fm<<" "<<E1<<" at skyrme #: "<<j<<" ipoint = "<<ipoint << " out of total "<< endl;
+
+	      cout<<"CC antinu calculation setting:"<<" ipoint = "<<ipoint << " out of total "<<endl;
+	      cout << "U2 (antinu) [MeV]: " << u2eosantinu << " ipoint = "<<ipoint << " out of total "<<endl;
+              cout << "U4 (antinu) [MeV]: " << u4eosantinu <<" ipoint = "<<ipoint << " out of total "<< endl;
+              cout << "mu2 [MeV], mu4 [MeV], mu3 [MeV] (without rest mass): "
+             << betaEoSantinu.Mu2 << " "
+             << betaEoSantinu.Mu4 << " "
+             << betaEoSantinu.Mu3 << " ipoint = "<<ipoint << " out of total "<<endl;
+              cout << " vf_antinu_dg0 [1/MeV^2], " << "vgt_antinu [1/MeV^2]: " << " " << vf_antinu_dg0 << " "<< vgt_antinu << " ipoint = "<<ipoint << " out of total "<<endl;
+
+	      cout<<"CC antinu IMFP:"<<" ipoint = "<<ipoint << " out of total "<<endl;
+	      cout << "charged current, vector part, no dgdn terms: "
+             << cc_vec_mfp_antinu_dg0 <<" ratio of crx/crx_free (cc vec antinu): "<<cc_vec_mfp_antinu_dg0/cc_vec_antinu_free<<" at nn, np, T, nueE: "<<neutron_thread[ipoint].n<<" "<<proton_thread[ipoint].n<<" "<<T*hc_mev_fm<<" "<<E1<<" at skyrme #: "<<j<<" ipoint = "<<ipoint << " out of total "<<endl;
+
+              cout << "charged current, axial part: " << cc_axvec_mfp_antinu <<" ratio of crx/crx_free (cc ax antinu): "<<cc_axvec_mfp_antinu/cc_ax_antinu_free<<" at nn, np, T, nueE: "<<neutron_thread[ipoint].n<<" "<<proton_thread[ipoint].n<<" "<<T*hc_mev_fm<<" "<<E1<<" at skyrme #: "<<j<<" ipoint = "<<ipoint << " out of total "<<endl;
+
+              cout << "charged current, vector part, no RPA: " << cc_vec_mfp_antinu_norpa <<" ratio of crx/crx_free (cc vec antinu norpa): "<<cc_vec_mfp_antinu_norpa/cc_vec_antinu_free<<" at nn, np, T, nueE: "<<neutron_thread[ipoint].n<<" "<<proton_thread[ipoint].n<<" "<<T*hc_mev_fm<<" "<<E1<<" at skyrme #: "<<j<< " ipoint = "<<ipoint << " out of total "<<endl;
+
+              cout << "charged current, axial part, no RPA: " << cc_axvec_mfp_antinu_norpa <<" ratio of crx/crx_free (cc ax antinu norpa): "<<cc_axvec_mfp_antinu_norpa/cc_ax_antinu_free<<" at nn, np, T, nueE: "<<neutron_thread[ipoint].n<<" "<<proton_thread[ipoint].n<<" "<<T*hc_mev_fm<<" "<<E1<<" at skyrme #: "<<j<<" ipoint = "<<ipoint << " out of total "<< endl;
 
 
-	//write to HDF% file
+//write to HDF% file
 
-	if (true) {
+        if (true) {
           line.push_back(nB);
           line.push_back(neutron_thread[ipoint].n);
           line.push_back(proton.n);
@@ -12833,18 +12807,39 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
 	  line.push_back(cc_vec_mfp_dg0);
 	  line.push_back(cc_axvec_mfp);
 
-	  line.push_back(nc_vec_mfp_dg0/nc_vec_free);
-          line.push_back(nc_vec_mfp_dg0_Transport/nc_vec_free_tran);
-          line.push_back(nc_axvec_mfp/nc_ax_free);
-          line.push_back(nc_axvec_mfp_Transport/nc_ax_free_tran);
-          line.push_back(nc_vec_mfp_norpa/nc_vec_free);
-	  line.push_back(nc_vec_mfp_norpa_Transport/nc_vec_free_tran);
-	  line.push_back(nc_axvec_mfp_norpa/nc_ax_free);
-	  line.push_back(nc_axvec_mfp_norpa_Transport/nc_ax_free_tran);
-	  line.push_back(cc_vec_mfp_dg0/cc_vec_free);
-	  line.push_back(cc_vec_mfp_norpa/cc_vec_free);
-	  line.push_back(cc_axvec_mfp/cc_ax_free);
-	  line.push_back(cc_axvec_mfp_norpa/cc_ax_free);
+	  double nc_vec_mfp_dg0_on_nc_vec_free=nc_vec_mfp_dg0/nc_vec_free;
+	  double nc_vec_mfp_dg0_Transport_on_nc_vec_free_tran=nc_vec_mfp_dg0_Transport/nc_vec_free_tran;
+	  double nc_axvec_mfp_on_nc_ax_free=nc_axvec_mfp/nc_ax_free;
+	  double nc_axvec_mfp_Transport_on_nc_ax_free_tran=nc_axvec_mfp_Transport/nc_ax_free_tran;
+	  double nc_vec_mfp_norpa_on_nc_vec_free=nc_vec_mfp_norpa/nc_vec_free;
+	  double nc_vec_mfp_norpa_Transport_on_nc_vec_free_tran=nc_vec_mfp_norpa_Transport/nc_vec_free_tran;
+	  double nc_axvec_mfp_norpa_on_nc_ax_free=nc_axvec_mfp_norpa/nc_ax_free;
+	  double nc_axvec_mfp_norpa_Transport_on_nc_ax_free_tran=nc_axvec_mfp_norpa_Transport/nc_ax_free_tran;
+	  double cc_vec_mfp_dg0_on_cc_vec_free=cc_vec_mfp_dg0/cc_vec_free;
+	  double cc_vec_mfp_norpa_on_cc_vec_free=cc_vec_mfp_norpa/cc_vec_free;
+	  double cc_axvec_mfp_on_cc_ax_free=cc_axvec_mfp/cc_ax_free;
+	  double cc_axvec_mfp_norpa_on_cc_ax_free=cc_axvec_mfp_norpa/cc_ax_free;
+	  double cc_vec_mfp_antinu_dg0_on_cc_vec_antinu_free=cc_vec_mfp_antinu_dg0/cc_vec_antinu_free;
+	  double cc_vec_mfp_antinu_norpa_on_cc_vec_antinu_free=cc_vec_mfp_antinu_norpa/cc_vec_antinu_free;
+	  double cc_axvec_mfp_antinu_on_cc_ax_antinu_free=cc_axvec_mfp_antinu/cc_ax_antinu_free;
+	  double cc_axvec_mfp_antinu_norpa_on_cc_ax_antinu_free=cc_axvec_mfp_antinu_norpa/cc_ax_antinu_free;
+
+	  line.push_back(nc_vec_mfp_dg0_on_nc_vec_free);
+          line.push_back(nc_vec_mfp_dg0_Transport_on_nc_vec_free_tran);
+          line.push_back(nc_axvec_mfp_on_nc_ax_free);
+          line.push_back(nc_axvec_mfp_Transport_on_nc_ax_free_tran);
+          line.push_back(nc_vec_mfp_norpa_on_nc_vec_free);
+	  line.push_back(nc_vec_mfp_norpa_Transport_on_nc_vec_free_tran);
+	  line.push_back(nc_axvec_mfp_norpa_on_nc_ax_free);
+	  line.push_back(nc_axvec_mfp_norpa_Transport_on_nc_ax_free_tran);
+	  line.push_back(cc_vec_mfp_dg0_on_cc_vec_free);
+	  line.push_back(cc_vec_mfp_norpa_on_cc_vec_free);
+	  line.push_back(cc_axvec_mfp_on_cc_ax_free);
+	  line.push_back(cc_axvec_mfp_norpa_on_cc_ax_free);
+	  line.push_back(cc_vec_mfp_antinu_dg0_on_cc_vec_antinu_free);
+          line.push_back(cc_vec_mfp_antinu_norpa_on_cc_vec_antinu_free);
+          line.push_back(cc_axvec_mfp_antinu_on_cc_ax_antinu_free);
+          line.push_back(cc_axvec_mfp_antinu_norpa_on_cc_ax_antinu_free);
 
         }
 
@@ -12860,19 +12855,16 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
         // Neutral current dynamic response at q0=w, q=3*T
         
         if (ipoint<0) {
-
           double q0lowThresh;
  // q0lowThresh=ip.estar-300;
  // q0lowThresh=ip.estar-60;
 
           double kfn=pow(3.0*o2scl_const::pi*o2scl_const::pi*betaEoS.n2,1.0/3.0);
           q0lowThresh=betaEoS.U4-betaEoS.U2-kfn*kfn/2.0/betaEoS.M2;
-
 	 // cout<<"at neutron density= "<<neutron_thread[ipoint].n<<" the lowest q0 is about: "<<q0lowThresh<<endl;
    
           //double T_MeV=T*hc_mev_fm;
           for (int i=0;i<5;i++) {
-
           double dq=1.0*T_MeV/1.0;
 	  double qtran;
 	  qtran=(i+1)*dq;
@@ -12881,7 +12873,6 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
           double wmin;
           double wmax;
          // wmin=-3.0*vel*3*T_MeV-0.00000789;
-
          //  wmin=-300.0+1.0e-3;
 	    wmin=-qtran;
          // wmax=3.0*(vel*3*T_MeV+3*T_MeV*3*T_MeV/(2.0*betaEoS.M2));
@@ -12904,20 +12895,16 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
 	  double sum_vec_cc=0.0;
 	  double sum_ax_cc=0.0;
 
-
 	  double sum_vec_anticc=0.0;
           double sum_ax_anticc=0.0;
-
           
           for (int k=0;k<600;k++) {
             
             double w=wmin+dw*k;
-
            // w_nc.push_back(w);
 
 	    double wCC=wminCC+dwCC*k;
            // w_cc.push_back(wCC);
-
 
             Tensor<double> piVV, piAA, piTT, piVA, piVT, piAT;
             double piL, piLn, piLp, piLnRe, piLpRe, piRPAax, piRPAvec;
@@ -13136,14 +13123,6 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
             line.push_back(piLnRe);
             line.push_back(resp_RPAvec);
             line.push_back(resp_RPAax);
-            if (resp_RPAvec<0) {
-		   // cout<<"at w= "<<zz<<" resp_RPAvec<0 "<<endl; 
-		    resp_RPAvec=0.0;}
-	    if (resp_RPAax<0) {
-		   // cout<<"at w= "<<zz<<" resp_RPAax<0 "<<endl; 
-		    resp_RPAax=0.0;}
-
-
 
             sum_vec_cc+=resp_RPAvec*dw;
             sum_ax_cc+=resp_RPAax*dw;
@@ -13162,10 +13141,7 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
             hdf_file hf;
             hf.open_or_create(sv[1]);
             hf.setd_vec("w_nc",w_nc);
-	   // hf.open_or_create(sv[1]);
-           // hf.setd_vec("w_cc",w_cc);
             hf.close();
-
           }*/
 
 
@@ -13196,7 +13172,7 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
     
     tab.line_of_data(line.size(),line);
     
-    if (true || j%100==0) {
+    if (false) {
       hdf_file hf;
       hf.open_or_create(sv[1]);
       hdf_output(hf,tab,"mb");

@@ -367,6 +367,9 @@ public:
 
   /// The table which stores the Skyrme fits
   o2scl::table_units<> UNEDF_tab;
+
+   /// The table which stores the Skyrme fits
+  o2scl::table_units<> GTsky_tab;
   
   /** \brief If true, a model has been selected (default false)
    */
