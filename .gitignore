@@ -1,12 +1,10 @@
-*.o2
-eos_nompi
 eos
+eos_nompi
 eos_nuclei
 eos_nuclei_nompi
-dist.o2
-*.o
-eos
-*~
+eos_nuclei_mp
 enn
+*.o2
+*.o
+*~
 makefile.user
-st.out
