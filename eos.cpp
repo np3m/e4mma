@@ -1399,7 +1399,7 @@ double eos::free_energy_density_detail
   double nb=nn+pn;
   double ye=pn/nb;
 
-  double n0=0.16;
+  double n0_loc=0.16;
 
   // ----------------------------------------------------------------
   // Compute the virial EOS
@@ -1623,7 +1623,7 @@ double eos::free_energy_density_detail
 
   double T_MeV=T*hc_mev_fm;
   double gamma=20.0;
-  double h=1.0/(1.0+exp(gamma*(nn+pn-n0*1.5)));
+  double h=1.0/(1.0+exp(gamma*(nn+pn-n0_loc*1.5)));
   double e_combine=e_qmc*h+e_ns*(1.0-h);
   double e_sym=e_combine-f_skyrme_eqdenT0;
   double dyednn=-pn/nb/nb;
@@ -1671,9 +1671,9 @@ double eos::free_energy_density_detail
   double dfskyrme_eqden_T0dnn=(mu_n_skyrme_eqdenT0+mu_p_skyrme_eqdenT0)/2.0;
   double dfskyrme_eqden_T0dnp=dfskyrme_eqden_T0dnn;
 	
-  double dhdnn=-gamma*exp(gamma*(nn+pn-1.5*n0))/
-    (1.0+exp(gamma*(nn+pn-1.5*n0)))/
-    (1.0+exp(gamma*(nn+pn-1.5*n0)));
+  double dhdnn=-gamma*exp(gamma*(nn+pn-1.5*n0_loc))/
+    (1.0+exp(gamma*(nn+pn-1.5*n0_loc)))/
+    (1.0+exp(gamma*(nn+pn-1.5*n0_loc)));
   
   double desymdnn=((qmc_a*pow((nn+pn)/qmc_n0,qmc_alpha)*(qmc_alpha+1.0)+
 		    qmc_b*pow((nn+pn)/qmc_n0,qmc_beta)*(qmc_beta+1.0))/

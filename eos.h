@@ -223,7 +223,7 @@ class eos_crust_virial_v2 : public o2scl::eos_crust_virial {
 
 /** \brief Phenomenological EOS for homogeneous nucleonic matter
  */
-class eos {
+class eos : public o2scl::eos_had_temp_eden_base {
   
 public:
 
@@ -242,6 +242,11 @@ public:
   /** \brief Bosonic resonances
    */
   std::vector<o2scl::boson> res_b;
+
+  virtual int calc_temp_e(o2scl::fermion &n, o2scl::fermion &p, double T, 
+                          o2scl::thermo &th) {
+    return -1;
+  }
   
  protected:
 
@@ -404,7 +409,18 @@ public:
   /// The table which stores the neutron star EOS results
   o2scl::table_units<> nstar_tab;
 
-  /// Desc
+  /** \brief Table for the high-density neutron matter EOS, which
+      comes from the neutron star observations
+      
+      This object is set in \ref ns_fit(), which is called by
+      \ref select_internal().
+
+      The original posteriors are in columns "nb" and "EoA".
+      The column "Eerr" contains the uncertainties for the fit.
+      The fit is stored in the columns "EoA_fit", "ed_fit",
+      "mu_fit", and "cs2_fit". The columns "ed", "mu", "dmudn"
+      and "cs2" are computed directly from the original posteriors. 
+  */
   o2scl::table_units<> nstar_high;
   
   /// The table which stores the Skyrme fits
