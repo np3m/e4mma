@@ -6053,11 +6053,11 @@ int eos_nuclei::write_results(std::string fname) {
       eos_str=((string)"0 ");
       eos_str+=o2scl::itos(i_ns)+" ";
       eos_str+=o2scl::itos(i_skyrme)+" ";
-      eos_str+=o2scl::dtos(qmc_a,-1,true)+" ";
-      eos_str+=o2scl::dtos(qmc_alpha,-1,true)+" ";
-      eos_str+=o2scl::dtos(eos_S,-1,true)+" ";
-      eos_str+=o2scl::dtos(eos_L,-1,true)+" ";
-      eos_str+=o2scl::dtos(phi,-1,true);
+      eos_str+=o2scl::dtos(qmc_a,0,true)+" ";
+      eos_str+=o2scl::dtos(qmc_alpha,0,true)+" ";
+      eos_str+=o2scl::dtos(eos_S,0,true)+" ";
+      eos_str+=o2scl::dtos(eos_L,0,true)+" ";
+      eos_str+=o2scl::dtos(phi,0,true);
       matched=true;
     } else {
       eos_str=((string)"1 ");
@@ -6068,15 +6068,15 @@ int eos_nuclei::write_results(std::string fname) {
           eos_str+="skyrme "+alt_name;
         } else {
           eos_str+="skyrme ";
-          eos_str+=o2scl::dtos(sk.t0*hc_mev_fm,-1,true)+" ";
-          eos_str+=o2scl::dtos(sk.t1*hc_mev_fm,-1,true)+" ";
-          eos_str+=o2scl::dtos(sk.t2*hc_mev_fm,-1,true)+" ";
-          eos_str+=o2scl::dtos(sk.t3*hc_mev_fm,-1,true)+" ";
-          eos_str+=o2scl::dtos(sk.x0,-1,true)+" ";
-          eos_str+=o2scl::dtos(sk.x1,-1,true)+" ";
-          eos_str+=o2scl::dtos(sk.x2,-1,true)+" ";
-          eos_str+=o2scl::dtos(sk.x3,-1,true)+" ";
-          eos_str+=o2scl::dtos(sk.alpha,-1,true);
+          eos_str+=o2scl::dtos(sk.t0*hc_mev_fm,0,true)+" ";
+          eos_str+=o2scl::dtos(sk.t1*hc_mev_fm,0,true)+" ";
+          eos_str+=o2scl::dtos(sk.t2*hc_mev_fm,0,true)+" ";
+          eos_str+=o2scl::dtos(sk.t3*hc_mev_fm,0,true)+" ";
+          eos_str+=o2scl::dtos(sk.x0,0,true)+" ";
+          eos_str+=o2scl::dtos(sk.x1,0,true)+" ";
+          eos_str+=o2scl::dtos(sk.x2,0,true)+" ";
+          eos_str+=o2scl::dtos(sk.x3,0,true)+" ";
+          eos_str+=o2scl::dtos(sk.alpha,0,true);
         }
       }
       eos_had_rmf *rmfp=dynamic_cast<eos_had_rmf *>(eosp_alt);
@@ -6086,25 +6086,25 @@ int eos_nuclei::write_results(std::string fname) {
           eos_str+="rmf "+alt_name;
         } else {
           eos_str+="rmf ";
-          eos_str+=o2scl::dtos(rmf.cs,-1,true)+" ";
-          eos_str+=o2scl::dtos(rmf.cw,-1,true)+" ";
-          eos_str+=o2scl::dtos(rmf.cr,-1,true)+" ";
-          eos_str+=o2scl::dtos(rmf.b,-1,true)+" ";
-          eos_str+=o2scl::dtos(rmf.c,-1,true)+" ";
-          eos_str+=o2scl::dtos(rmf.ms*hc_mev_fm,-1,true)+" ";
-          eos_str+=o2scl::dtos(rmf.mw*hc_mev_fm,-1,true)+" ";
-          eos_str+=o2scl::dtos(rmf.mr*hc_mev_fm,-1,true)+" ";
-          eos_str+=o2scl::dtos(rmf.zeta,-1,true)+" ";
-          eos_str+=o2scl::dtos(rmf.xi,-1,true)+" ";
-          eos_str+=o2scl::dtos(rmf.a1,-1,true)+" ";
-          eos_str+=o2scl::dtos(rmf.a2,-1,true)+" ";
-          eos_str+=o2scl::dtos(rmf.a3,-1,true)+" ";
-          eos_str+=o2scl::dtos(rmf.a4,-1,true)+" ";
-          eos_str+=o2scl::dtos(rmf.a5,-1,true)+" ";
-          eos_str+=o2scl::dtos(rmf.a6,-1,true)+" ";
-          eos_str+=o2scl::dtos(rmf.b1,-1,true)+" ";
-          eos_str+=o2scl::dtos(rmf.b2,-1,true)+" ";
-          eos_str+=o2scl::dtos(rmf.b3,-1,true);
+          eos_str+=o2scl::dtos(rmf.cs,0,true)+" ";
+          eos_str+=o2scl::dtos(rmf.cw,0,true)+" ";
+          eos_str+=o2scl::dtos(rmf.cr,0,true)+" ";
+          eos_str+=o2scl::dtos(rmf.b,0,true)+" ";
+          eos_str+=o2scl::dtos(rmf.c,0,true)+" ";
+          eos_str+=o2scl::dtos(rmf.ms*hc_mev_fm,0,true)+" ";
+          eos_str+=o2scl::dtos(rmf.mw*hc_mev_fm,0,true)+" ";
+          eos_str+=o2scl::dtos(rmf.mr*hc_mev_fm,0,true)+" ";
+          eos_str+=o2scl::dtos(rmf.zeta,0,true)+" ";
+          eos_str+=o2scl::dtos(rmf.xi,0,true)+" ";
+          eos_str+=o2scl::dtos(rmf.a1,0,true)+" ";
+          eos_str+=o2scl::dtos(rmf.a2,0,true)+" ";
+          eos_str+=o2scl::dtos(rmf.a3,0,true)+" ";
+          eos_str+=o2scl::dtos(rmf.a4,0,true)+" ";
+          eos_str+=o2scl::dtos(rmf.a5,0,true)+" ";
+          eos_str+=o2scl::dtos(rmf.a6,0,true)+" ";
+          eos_str+=o2scl::dtos(rmf.b1,0,true)+" ";
+          eos_str+=o2scl::dtos(rmf.b2,0,true)+" ";
+          eos_str+=o2scl::dtos(rmf.b3,0,true);
         }
       }
     }

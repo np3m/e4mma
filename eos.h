@@ -404,6 +404,9 @@ public:
   /// The table which stores the neutron star EOS results
   o2scl::table_units<> nstar_tab;
 
+  /// Desc
+  o2scl::table_units<> nstar_high;
+  
   /// The table which stores the Skyrme fits
   o2scl::table_units<> UNEDF_tab;
   
@@ -514,7 +517,6 @@ public:
   o2scl::cli::parameter_bool p_ns_record;
   o2scl::cli::parameter_bool p_include_muons;
   o2scl::cli::parameter_bool p_select_cs2_test;
-  o2scl::cli::parameter_bool p_test_ns_cs2;
   o2scl::cli::parameter_bool p_use_alt_eos;
   o2scl::cli::parameter_double p_a_virial;
   o2scl::cli::parameter_double p_b_virial;
@@ -543,7 +545,7 @@ public:
   int new_ns_eos(double nb, o2scl::fermion &n, double &e_ns,
 		 double &densdnn);
 
-  int new_nuc_eos(double nb, o2scl::fermion &n,
+  int new_nuc_eos(double nb, 
                   double &e_nuc, double &denucdnn);
   
   /** \brief Compute dfdnn including photons and electons
@@ -717,11 +719,6 @@ protected:
   */
   bool strange_axis;
   
-  /** \brief If true, test the neutron star speed of sound 
-      (default true)
-   */
-  bool test_ns_cs2;
-  
   /** \brief If true, save the results of the neutron star fit to
       a file, and immediately exit (default false)
    */
@@ -830,6 +827,18 @@ protected:
       strangeness.
    */
   int table_full(std::vector<std::string> &sv, bool itive_com);
+
+  /** \brief Construct a full 3D EOS table without nuclei
+
+      <filename>
+
+      This constructs a full 3D EOS table without nuclei using the
+      specified model. The resulting file has several tensor_grid
+      objects including Fint, Eint, Pint, Sint, mun, mup, cs2, mue, F,
+      E, P, and S. This function does not yet support muons or
+      strangeness.
+   */
+  int test_cs2(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Test the first derivatives of the free energy (no nuclei)
 
