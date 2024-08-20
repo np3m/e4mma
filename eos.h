@@ -243,6 +243,11 @@ public:
    */
   std::vector<o2scl::boson> res_b;
 
+  /** \brief The parent virtual method
+
+      \note This function is currently empty but could be replaced
+      in an updated version to work better with O2scl.
+   */
   virtual int calc_temp_e(o2scl::fermion &n, o2scl::fermion &p, double T, 
                           o2scl::thermo &th) {
     return -1;
@@ -250,12 +255,15 @@ public:
   
  protected:
 
-  /// Desc
+  /** \brief Read the data files required to construct the EOS
+      
+      This function is called in \ref ns_fit() and \ref random().
+  */
   void read_data_files();  
 
   /** \brief Process the grid specification strings and store
       the values in the arrays
-   */
+  */
   int process_grid_spec();
 
 public:
@@ -415,11 +423,17 @@ public:
       This object is set in \ref ns_fit(), which is called by
       \ref select_internal().
 
-      The original posteriors are in columns "nb" and "EoA".
-      The column "Eerr" contains the uncertainties for the fit.
-      The fit is stored in the columns "EoA_fit", "ed_fit",
-      "mu_fit", and "cs2_fit". The columns "ed", "mu", "dmudn"
-      and "cs2" are computed directly from the original posteriors. 
+      The original posteriors are in columns "nb" and "EoA". The
+      column "Eerr" contains the uncertainties for the fit. The fit is
+      stored in the columns "EoA_fit", "ed_fit", "mu_fit", and
+      "cs2_fit". The columns "ed_fit" and "mu_fit" both include the
+      rest mass contribution. The columns "ed", "mu", "dmudn" and
+      "cs2" are computed directly from the original posteriors.
+      Again, the columns "ed" and "mu" both include the rest mass
+      contribution.
+
+      The maximum baryon density in this table is the value "nb_max",
+      as obtained from the original posterior data value.
   */
   o2scl::table_units<> nstar_high;
   
@@ -458,7 +472,7 @@ public:
       using the most recent fit (without the rest mass contribution)
 
       \note Currently this just returns the value of
-      \ref ed_fit() .
+      \ref ed_fit_norest() .
   */
   double energy_density_ns(double nn);
 
@@ -481,7 +495,7 @@ public:
       Note this function does not include the rest mass 
       energy density for the nucleons. 
   */
-  double ed_fit(double nb);
+  double ed_fit_norest(double nb);
   
   /** \brief The inverse susceptibility (in \f$ \mathrm{fm}^{2} \f$ )
       as a function of baryon density (in \f$ \mathrm{fm}^{-3} \f$ )
@@ -523,7 +537,7 @@ public:
       Note this function does not include the rest mass 
       for the nucleons. 
   */
-  double mu_fit(double nb);
+  double mu_fit_norest(double nb);
   //@}
 
   /// \name Parameter objects
@@ -557,10 +571,27 @@ public:
 
   /** \brief Construct a new neutron star EOS which ensures
       causality at high densities
+
+      Given the input baryon density in \c nb in units of \f$
+      1/\mathrm{fm}^{3} \f$, this returns the energy density of
+      neutron star matter in units of \f$ 1/\mathrm{fm}^{4} \f$ in \c
+      e_ns and the derivative with respect to the density in units of
+      \f$ 1/\mathrm{fm}^{3} \f$ in \c densdnn. The rest mass
+      contribution is not included in either \c e_ns or 
+      \c densdnn.
   */
   int new_ns_eos(double nb, o2scl::fermion &n, double &e_ns,
 		 double &densdnn);
 
+  /** \brief Construct a new nuclear matter EOS which ensures
+      causality at high densities
+
+      Given the input baryon density in \c nb in units of \f$
+      1/\mathrm{fm}^{3} \f$, this returns the energy density of
+      neutron star matter in units of \f$ 1/\mathrm{fm}^{4} \f$ in \c
+      e_nuc and the derivative with respect to the density in units of
+      \f$ 1/\mathrm{fm}^{3} \f$ in \c denucdnn.
+  */
   int new_nuc_eos(double nb, 
                   double &e_nuc, double &denucdnn);
   

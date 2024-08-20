@@ -508,9 +508,9 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
               if (log_xp>-300.0) {
                 xp=pow(10.0,log_xp);
               }
-              double n0=0.16;
-              neutron.n=xn*(1.0-nB/n0)/(1.0-nB*xn/n0-nB*xp/n0)*nB;
-              proton.n=xp*(1.0-nB/n0)/(1.0-nB*xn/n0-nB*xp/n0)*nB;    
+              double n0_loc=0.16;
+              neutron.n=xn*(1.0-nB/n0_loc)/(1.0-nB*xn/n0_loc-nB*xp/n0_loc)*nB;
+              proton.n=xp*(1.0-nB/n0_loc)/(1.0-nB*xn/n0_loc-nB*xp/n0_loc)*nB;    
             } else {
               neutron.n=(1.0-Ye)*nB;
               proton.n=Ye*nB;
@@ -618,9 +618,9 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         if (log_xp>-300.0) {
           xp=pow(10.0,log_xp);
         }
-        double n0=0.16;
-        neutron.n=xn*(1.0-nB/n0)/(1.0-nB*xn/n0-nB*xp/n0)*nB;
-        proton.n=xp*(1.0-nB/n0)/(1.0-nB*xn/n0-nB*xp/n0)*nB;    
+        double n0_loc=0.16;
+        neutron.n=xn*(1.0-nB/n0_loc)/(1.0-nB*xn/n0_loc-nB*xp/n0_loc)*nB;
+        proton.n=xp*(1.0-nB/n0_loc)/(1.0-nB*xn/n0_loc-nB*xp/n0_loc)*nB;    
       } else {
         neutron.n=(1.0-Ye_best)*nB;
         proton.n=Ye_best*nB;

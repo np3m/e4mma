@@ -402,7 +402,7 @@ void eos_crust_virial_v2::fit(bool show_fit) {
 
 int eos::test_cs2(std::vector<std::string> &sv, bool itive_com) {
   
-  cout << "eos::free_energy_density_detail(): Testing neutron star "
+  cout << "eos::test_cs2(): Testing "
        << "EOS and cₛ²:" << endl;
   
   cout << "  ns_nb_max: " << ns_nb_max << endl;
@@ -415,14 +415,20 @@ int eos::test_cs2(std::vector<std::string> &sv, bool itive_com) {
   tx.line_of_units("1/fm^3 1/fm^4 1/fm 1/fm^4 1/fm");
   for(double nb=0.08;nb<2.0;nb+=0.01) {
     new_ns_eos(nb,neutron,e_ns,densdnn);
-    vector<double> line={nb,ed_fit(nb),mu_fit(nb),e_ns,densdnn};
+    vector<double> line={nb,ed_fit_norest(nb)+neutron.m*nb,
+                         mu_fit_norest(nb)+neutron.m,
+                         e_ns+neutron.m*nb,densdnn+neutron.m};
     tx.line_of_data(5,line);
   }
   
   tx.deriv("nb","ed_fit","mu_fit_check");
+  tx.set_unit("mu_fit_check","1/fm");
   tx.deriv("nb","mu_fit","dmudnb_fit");
+  tx.set_unit("dmudnb_fit","1/fm^2");
   tx.deriv("nb","ed_corr","mu_corr_check");
+  tx.set_unit("mu_corr_check","1/fm");
   tx.deriv("nb","mu_corr","dmudnb_corr");
+  tx.set_unit("dmudnb_corr","fm^2");
   tx.function_column("nb*dmudnb_corr/mu_corr","cs2_corr");
   tx.function_column("nb*dmudnb_fit/mu_fit","cs2_fit");
     
@@ -430,14 +436,15 @@ int eos::test_cs2(std::vector<std::string> &sv, bool itive_com) {
   tx.new_column("ed_orig");
   tx.set_unit("ed_orig","1/fm^4");
   for(size_t j=0;j<tx.get_nlines();j++) {
-    tx.set("ed_orig",tx.get("nb",j),
-           nstar_high.interp("nb",tx.get("nb",j),"EoA")*tx.get("nb",j)/
-           hc_mev_fm);
+    double val=(nstar_high.interp("nb",tx.get("nb",j),"EoA")/hc_mev_fm+
+                neutron.m)*tx.get("nb",j);
+    tx.set("ed_orig",j,val);
   }
 
   table_units<> tx2;
   tx2.line_of_names("nb ed_sk mu_sk ed_corr mu_corr");
   tx2.line_of_units("1/fm^3 1/fm^4 1/fm 1/fm^4 1/fm");
+  
   thermo thx;
   double e_nuc, denucdnn;
   for(double nb=0.08;nb<2.0;nb+=0.01) {
@@ -445,20 +452,26 @@ int eos::test_cs2(std::vector<std::string> &sv, bool itive_com) {
     neutron.n=nb/2.0;
     proton.n=nb/2.0;
     sk.calc_e(neutron,proton,thx);
-    e_nuc=thx.ed;
-    denucdnn=(neutron.mu+proton.mu)/2.0;
     
-    new_nuc_eos(nb,e_ns,denucdnn);
+    new_nuc_eos(nb,e_nuc,denucdnn);
     
-    vector<double> line={nb,e_nuc,denucdnn,e_ns,denucdnn};
+    vector<double> line={nb,thx.ed+(neutron.m+proton.m)/2.0*nb,
+                         (neutron.mu+neutron.m+proton.mu+proton.m)/2.0,
+                         e_nuc+(neutron.m+proton.m)/2.0*nb,
+                         denucdnn+(neutron.m+proton.m)/2.0,e_ns,denucdnn};
     tx2.line_of_data(5,line);
   }
+
+  tx2.deriv("nb","mu_sk","dmudnb_sk");
+  tx2.function_column("nb*dmudnb_sk/mu_sk","cs2_sk");
+  tx2.deriv("nb","mu_corr","dmudnb_corr");
+  tx2.function_column("nb*dmudnb_corr/mu_corr","cs2_corr");
   
   hdf_file hf;
   hf.open_or_create("test_cs2.o2");
   hdf_output(hf,nstar_high,"nstar_high");
-  hdf_output(hf,tx,"test_ns_cs2");
-  hdf_output(hf,tx2,"test_nuc_cs2");
+  hdf_output(hf,tx,"ns");
+  hdf_output(hf,tx2,"nuc");
   hf.close();
   cout << "  Created file test_cs2.o2." << endl;
   
@@ -558,11 +571,11 @@ double eos::fit_fun(size_t np, const std::vector<double> &parms,
 	  nb*nb*nb*nb*parms[3]+nb*nb*nb*nb*nb*parms[4]);
 }
 
-double eos::ed_fit(double nb) {
+double eos::ed_fit_norest(double nb) {
   return fit_fun(5,ns_fit_parms,nb)*nb/hc_mev_fm;
 }
 
-double eos::mu_fit(double nb) {
+double eos::mu_fit_norest(double nb) {
   if (old_ns_fit) {
     return (1.5*sqrt(nb)*ns_fit_parms[0]+2.0*nb*ns_fit_parms[1]+
 	    2.5*nb*sqrt(nb)*ns_fit_parms[2]+3.0*nb*nb*ns_fit_parms[3]+
@@ -587,7 +600,7 @@ double eos::dmudn_fit(double nb) {
 }
 
 double eos::cs2_fit(double nb) {
-  return dmudn_fit(nb)*nb/(mu_fit(nb)+939.565/hc_mev_fm);
+  return dmudn_fit(nb)*nb/(mu_fit_norest(nb)+939.565/hc_mev_fm);
 }
 
 void eos::min_max_cs2(double &cs2_min, double &cs2_max) {
@@ -630,6 +643,7 @@ void eos::ns_fit(int row) {
   // and then update it below.
   nstar_high.clear();
   nstar_high.line_of_names("nb EoA");
+  nstar_high.line_of_units("1/fm^3 MeV");
   ns_nb_max=nstar_tab.get((string)"nb_max",i_ns);
 
   // The numbers 0.04 and 0.012 here come from the bamr baryon density
@@ -649,6 +663,7 @@ void eos::ns_fit(int row) {
 
   // The uncertainty is just 1% of the absolute value
   nstar_high.function_column("abs(EoA)/100","Eerr");
+  nstar_high.set_unit("Eerr","MeV");
   
   typedef std::function<
     double(size_t,const std::vector<double> &, double)> fit_funct2;
@@ -688,10 +703,13 @@ void eos::ns_fit(int row) {
   fn.fit(nparms,ns_fit_parms,covar,chi2_ns,cff);
   
   // Store the results of the fit in column named "EoA_fit", then compute
-  // energy density and chemical potential//
+  // energy density and chemical potential
   nstar_high.new_column("EoA_fit");
+  nstar_high.set_unit("EoA_fit","MeV");
   nstar_high.new_column("ed_fit");
+  nstar_high.set_unit("ed_fit","1/fm^4");
   nstar_high.new_column("mu_fit");
+  nstar_high.set_unit("mu_fit","1/fm");
   nstar_high.new_column("cs2_fit");
   for(size_t i=0;i<ndat;i++) {
     double nb=nstar_high.get("nb",i);
@@ -699,17 +717,21 @@ void eos::ns_fit(int row) {
     nstar_high.set("EoA_fit",i,EoA);
     nstar_high.set("ed_fit",i,
                    (EoA/hc_mev_fm+neutron.m)*nstar_high.get("nb",i));
-    double mu=mu_fit(nb)+neutron.m;
+    double mu=mu_fit_norest(nb)+neutron.m;
     nstar_high.set("mu_fit",i,mu);
     double cs2=cs2_fit(nb);
     nstar_high.set("cs2_fit",i,cs2);
   }
-  std::string fc=((std::string)"(EOA")+
+  std::string fc=((std::string)"(EoA+")+
     o2scl::dtos(neutron.m*hc_mev_fm,0)+")/"+
     o2scl::dtos(hc_mev_fm,0)+"*nb";
+  cout << "fc: " << fc << endl;
   nstar_high.function_column(fc,"ed");
+  nstar_high.set_unit("ed","1/fm^4");
   nstar_high.deriv("nb","ed","mu");
+  nstar_high.set_unit("mu","1/fm");
   nstar_high.deriv2("nb","ed","dmudn");
+  nstar_high.set_unit("dmudn","fm^2");
   nstar_high.function_column("nb/mu*dmudn","cs2");
 
   // Readjust ns_nb_max to ensure it's lower than the point
@@ -724,7 +746,11 @@ void eos::ns_fit(int row) {
 	(nstar_high.get("cs2_fit",j+1)-nstar_high.get("cs2_fit",j));
     }
   }
-  if (nb_new>0.01) ns_nb_max=nb_new;
+  if (nb_new>0.01) {
+    cout << "Adjusting ns_nb_max from " << ns_nb_max << " to "
+         << nb_new << " ." << endl;
+    ns_nb_max=nb_new;
+  }
   
   // Output the fit results to the screen
   if (verbose>1) {
@@ -901,7 +927,7 @@ double eos::energy_density_qmc(double nn, double np) {
 }
   
 double eos::energy_density_ns(double nn) {
-  return ed_fit(nn);
+  return ed_fit_norest(nn);
 }    
 
 double eos::free_energy_density_virial
@@ -1175,8 +1201,8 @@ int eos::new_ns_eos(double nb, fermion &n,
   double a1l, a2l;
   double c1l, c2l;
 
-  double e_ns_last=ed_fit(ns_nb_max);
-  double p_ns_last=mu_fit(ns_nb_max)*ns_nb_max-e_ns_last;
+  double e_ns_last=ed_fit_norest(ns_nb_max);
+  double p_ns_last=mu_fit_norest(ns_nb_max)*ns_nb_max-e_ns_last;
 
   // -----------------------------------------------------
   // Solve for a1l and a2l
@@ -1194,7 +1220,7 @@ int eos::new_ns_eos(double nb, fermion &n,
     // EOS is causal, just use that result
     e_ns=energy_density_ns(nb);
     
-    densdnn=mu_fit(nb);
+    densdnn=mu_fit_norest(nb);
     
   } else {
 

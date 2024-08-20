@@ -320,7 +320,7 @@ double eos_nuclei::f_min_search(size_t nvar,const ubvector &x,
                                 double nb, double ye, double T) {
   
   //we need here nb, ye, T, nuclei[i], vomega[i];
-  double n0=0.16;
+  double n0_loc=0.16;
 
   /*if(x[0]>1.0 || x[0]<0.0) {
     return 1.0e100;
@@ -344,8 +344,8 @@ double eos_nuclei::f_min_search(size_t nvar,const ubvector &x,
   double mun_old1=neutron.mu,mup_old1=proton.mu;
   double p0_nuc1=th2.pr;
   double fnp=th2.ed-T*th2.en;
-  double kappa1=1.0-nb/n0;
-  double xi1=kappa1/(1.0-nb*x0/n0-nb*x1/n0);
+  double kappa1=1.0-nb/n0_loc;
+  double xi1=kappa1/(1.0-nb*x0/n0_loc-nb*x1/n0_loc);
 	    
   double f_total1=0.0,f_c=0.0,sum_nuc=0.0;
 
@@ -353,12 +353,12 @@ double eos_nuclei::f_min_search(size_t nvar,const ubvector &x,
   ubvector Ec1(6),f(6);
   for(size_t i=1;i<5;i++) {
     double A=nuclei[i].A;
-    double rA=cbrt(3.0*A/4.0/pi/n0);
-    double xx=cbrt(nb*ye/n0*A/nuclei[i].Z);
+    double rA=cbrt(3.0*A/4.0/pi/n0_loc);
+    double xx=cbrt(nb*ye/n0_loc*A/nuclei[i].Z);
     Ec1[i]=-0.6*nuclei[i].Z*nuclei[i].Z*fine_structure_f<double>()/rA*
       (3.0/2.0*xx-1.0/2.0*pow(xx,3.0));
     double lambda=sqrt(2.0*pi/nuclei[i].m/T);
-    double vv=(nuclei[i].N+nuclei[i].Z)/n0;
+    double vv=(nuclei[i].N+nuclei[i].Z)/n0_loc;
     nuclei[i].n=kappa1*vomega[i]/pow(lambda,3.0)*
       exp((((double)(nuclei[i].N))*mun_old1
 	   +((double)(nuclei[i].Z))*mup_old1
@@ -381,8 +381,8 @@ double eos_nuclei::f_min_search(size_t nvar,const ubvector &x,
 		   -nuclei[3].n*nuclei[3].A-nuclei[4].n*nuclei[4].A)
 		 *Z-np1*A+nn1*Z+np1*Z)/(nuclei[0].Z*A
 					-nuclei[0].A*Z);
-  double rA_alpha=cbrt(3.0*nuclei[0].A/4.0/pi/n0);
-  double xx_alpha=cbrt(nb*ye/n0*nuclei[0].A/nuclei[0].Z);
+  double rA_alpha=cbrt(3.0*nuclei[0].A/4.0/pi/n0_loc);
+  double xx_alpha=cbrt(nb*ye/n0_loc*nuclei[0].A/nuclei[0].Z);
   double Ecalpha=-0.6*nuclei[0].Z*nuclei[0].Z*fine_structure_f<double>()
     /rA_alpha*(3.0/2.0*xx_alpha
 	       -1.0/2.0*pow(xx_alpha,3.0));
@@ -395,8 +395,8 @@ double eos_nuclei::f_min_search(size_t nvar,const ubvector &x,
   if(nheavy<0.0 || nalpha<0.0) {
     return 1.0e100;
   }
-  double rA_heavy=cbrt(3.0*nuclei[5].A/4.0/pi/n0);
-  double xx_heavy=cbrt(nb*ye/n0*nuclei[5].A/nuclei[5].Z);
+  double rA_heavy=cbrt(3.0*nuclei[5].A/4.0/pi/n0_loc);
+  double xx_heavy=cbrt(nb*ye/n0_loc*nuclei[5].A/nuclei[5].Z);
   double Echeavy=-0.6*nuclei[5].Z*nuclei[5].Z*fine_structure_f<double>()
     /rA_heavy*(3.0/2.0*xx_heavy
                -1.0/2.0*pow(xx_heavy,3.0));
@@ -2611,7 +2611,7 @@ double eos_nuclei::compute_fr_nuclei
   // quantities left
   size_t n_nuclei=nuclei.size();
   
-  static const double n0=0.16;
+  static const double n0_loc=0.16;
   
   // -------------------------------------------------------------
   // Compute free energy density and entropy density
@@ -2619,8 +2619,8 @@ double eos_nuclei::compute_fr_nuclei
   double xn=pow(10.0,log_xn);
   double xp=pow(10.0,log_xp);
 
-  double kappa=1.0-nB/n0;
-  double xi=kappa/(1.0-nB*xn/n0-nB*xp/n0);
+  double kappa=1.0-nB/n0_loc;
+  double xi=kappa/(1.0-nB*xn/n0_loc-nB*xp/n0_loc);
 
   // The total of the number density over all nuclei
   double sum_nuc=0.0;
@@ -2814,10 +2814,10 @@ int eos_nuclei::solve_nuclei(size_t nv, const ubvector &x, ubvector &y,
   }
   
   // Compute kappa and xi
-  double n0=0.16;
+  double n0_loc=0.16;
   double T_MeV=T*hc_mev_fm;
-  double kappa=1.0-nB/n0;
-  double xi=kappa/(1.0-nB*xn/n0-nB*xp/n0);
+  double kappa=1.0-nB/n0_loc;
+  double xi=kappa/(1.0-nB*xn/n0_loc-nB*xp/n0_loc);
 
   // Disallow unphysical solutions
   if (xn<=0.0 || xn>1.0) {
@@ -2852,8 +2852,8 @@ int eos_nuclei::solve_nuclei(size_t nv, const ubvector &x, ubvector &y,
   for(size_t i=0;i<n_nuclei;i++) {
     double A=nuclei[i].A;
     // Nuclear radius in fm
-    double rA=cbrt(3.0*A/4.0/pi/n0);
-    xx[i]=cbrt(nB*Ye/n0*A/nuclei[i].Z);
+    double rA=cbrt(3.0*A/4.0/pi/n0_loc);
+    xx[i]=cbrt(nB*Ye/n0_loc*A/nuclei[i].Z);
     // Coulomb energy in 1/fm
     Ec[i]=-0.6*nuclei[i].Z*nuclei[i].Z*fine_structure_f<double>()/rA*
       (1.5*xx[i]-0.5*pow(xx[i],3.0));
@@ -2930,7 +2930,7 @@ int eos_nuclei::solve_nuclei(size_t nv, const ubvector &x, ubvector &y,
       // The nucleon de Broglie wavelength in 1/fm
       double lambda=sqrt(2.0*pi/nuclei[i].m/T);
       // Volume in fm^3
-      double vv=(nuclei[i].A)/n0;
+      double vv=(nuclei[i].A)/n0_loc;
 
       // Section for testing removal of electron binding energy
       if (false) {
@@ -2976,7 +2976,7 @@ int eos_nuclei::solve_nuclei(size_t nv, const ubvector &x, ubvector &y,
       
       double A=nuclei[i].A;
       // Nuclear radius in fm
-      double rA=cbrt(3.0*A/4.0/pi/n0);
+      double rA=cbrt(3.0*A/4.0/pi/n0_loc);
 
       // Add nuclear contribution to total number of neutrons and protons
       nn_tilde+=nuclei[i].N*nuclei[i].n;
@@ -3000,7 +3000,7 @@ int eos_nuclei::solve_nuclei(size_t nv, const ubvector &x, ubvector &y,
 	cout << "xn, xp " << xn << " " << xp << endl;
 	cout << "f_gas " << neutron.mu*nn_prime+proton.mu*np_prime
 	  -th_gas.pr << endl;
-        cout << mun_gas*n0-th_gas.pr << " " << mup_gas*n0-th_gas.pr << endl;
+        cout << mun_gas*n0_loc-th_gas.pr << " " << mup_gas*n0_loc-th_gas.pr << endl;
       }
     }
 
@@ -3195,7 +3195,7 @@ int eos_nuclei::eos_fixed_ZN(double nB, double Ye, double T,
   double f;
 
   double T_MeV=T*hc_mev_fm;
-  double n0=0.16;
+  double n0_loc=0.16;
   
   // Chemical potentials and thermodynamic quantities for homogeneous
   // matter
@@ -3302,7 +3302,7 @@ int eos_nuclei::eos_fixed_ZN(double nB, double Ye, double T,
       // MeV
       double zEt=min(Sneut[i]+zER,Sprot[i]+zER+zEc/2.0);
       // fm
-      double zrA=cbrt(3.0*(nuclei[i].N+nuclei[i].Z)/4.0/pi/n0);
+      double zrA=cbrt(3.0*(nuclei[i].N+nuclei[i].Z)/4.0/pi/n0_loc);
       // MeV
       double delta_p=11.0/sqrt(nuclei[i].Z+nuclei[i].N)*
 	(1.0+pow(-1.0,nuclei[i].Z)/2.0+pow(-1.0,nuclei[i].N)/2.0);
@@ -3508,8 +3508,8 @@ int eos_nuclei::eos_fixed_ZN(double nB, double Ye, double T,
   exit(-1);
   double nn=1.0e10, np=1.0e10;
   
-  double kappa=1.0-nB/n0;
-  double xi=kappa+nn/n0+np/n0;
+  double kappa=1.0-nB/n0_loc;
+  double xi=kappa+nn/n0_loc+np/n0_loc;
   
   double sum_nuc=0.0;
   double f_c=0.0, p_c2=0.0;
@@ -3547,8 +3547,8 @@ int eos_nuclei::eos_fixed_ZN(double nB, double Ye, double T,
     f+=fnuc[i];
     thx.en+=en[i];
     // Coulomb contribution to pressure for nuclei
-    xx[i]=cbrt(nB*Ye/n0*nuclei[i].A/nuclei[i].Z);
-    double rA=cbrt(3.0*nuclei[i].A/4.0/pi/n0);
+    xx[i]=cbrt(nB*Ye/n0_loc*nuclei[i].A/nuclei[i].Z);
+    double rA=cbrt(3.0*nuclei[i].A/4.0/pi/n0_loc);
     p_c2+=-0.6*nuclei[i].n*nuclei[i].Z*nuclei[i].Z*
       fine_structure_f<double>()/rA*
       (0.5*xx[i]-0.5*pow(xx[i],3.0));
@@ -4072,7 +4072,7 @@ int eos_nuclei::eos_fixed_dist
   int loc_verbose=function_verbose/100%10;
 
   double T_MeV=T*hc_mev_fm;
-  double n0=0.16;
+  double n0_loc=0.16;
   // Chemical potentials for homogeneous matter
   double mun_gas, mup_gas;
   thermo th_gas;
@@ -4099,7 +4099,7 @@ int eos_nuclei::eos_fixed_dist
       for(int NmZ=NmZ_min;NmZ<=NmZ_max;NmZ+=2) {
 	int N=(A+NmZ)/2;
 	int Z=A-N;
-	if (N>2 && Z>2 && (rnuc_less_rws==false || Z>=nB*Ye*A/n0) &&
+	if (N>2 && Z>2 && (rnuc_less_rws==false || Z>=nB*Ye*A/n0_loc) &&
 	    N<=max_ratio*Z && Z<=max_ratio*N) {
 	  if (ame.is_included(Z,N) &&
 	      ame.is_included(Z-1,N) &&
@@ -4175,7 +4175,7 @@ int eos_nuclei::eos_fixed_dist
 	int N=(A+NmZ)/2;
 	int Z=A-N;
         
-	if (N>2 && Z>2 && (rnuc_less_rws==false || Z>=nB*Ye*A/n0) &&
+	if (N>2 && Z>2 && (rnuc_less_rws==false || Z>=nB*Ye*A/n0_loc) &&
 	    N<=max_ratio*Z && Z<=max_ratio*N) {
           
           bool skip_nucleus=false;
@@ -4292,7 +4292,7 @@ int eos_nuclei::eos_fixed_dist
       double zER=0.5/nuclei[i].m/zR/zR*hc_mev_fm;
       double zEc=(nuclei[i].Z-1.0)*fine_structure_f<double>()/zR*hc_mev_fm;
       double zEt=min(Sneut[i]+zER,Sprot[i]+zER+zEc/2.0);
-      double zrA=cbrt(3.0*(nuclei[i].N+nuclei[i].Z)/4.0/pi/n0);
+      double zrA=cbrt(3.0*(nuclei[i].N+nuclei[i].Z)/4.0/pi/n0_loc);
       double delta_p=11.0/sqrt(nuclei[i].Z+nuclei[i].N)*
 	(1.0+pow(-1.0,nuclei[i].Z)/2.0+pow(-1.0,nuclei[i].N)/2.0);
       if (nuclei[i].Z<=30) {
@@ -5146,8 +5146,8 @@ int eos_nuclei::eos_fixed_dist
   double xn=pow(10.0,log_xn);
   double xp=pow(10.0,log_xp);
 
-  double kappa=1.0-nB/n0;
-  double xi=kappa/(1.0-nB*xn/n0-nB*xp/n0);
+  double kappa=1.0-nB/n0_loc;
+  double xi=kappa/(1.0-nB*xn/n0_loc-nB*xp/n0_loc);
 
   // The total of the number density over all nuclei
   double sum_nuc=0.0;
@@ -5444,9 +5444,9 @@ int eos_nuclei::store_point
     if (log_xp>-300.0) {
       xp=pow(10.0,log_xp);
     }
-    double n0=0.16;
-    n_fraction=xn*(1.0-nB/n0)/(1.0-nB*xn/n0-nB*xp/n0);
-    p_fraction=xp*(1.0-nB/n0)/(1.0-nB*xn/n0-nB*xp/n0);    
+    double n0_loc=0.16;
+    n_fraction=xn*(1.0-nB/n0_loc)/(1.0-nB*xn/n0_loc-nB*xp/n0_loc);
+    p_fraction=xp*(1.0-nB/n0_loc)/(1.0-nB*xn/n0_loc-nB*xp/n0_loc);    
   } else {
     n_fraction=1.0-Ye;
     p_fraction=Ye;
@@ -7333,8 +7333,8 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
       
       if (true) {
         
-        double n0=0.16;
-        double κ=1.0-nB/n0;
+        double n0_loc=0.16;
+        double κ=1.0-nB/n0_loc;
         double n_fraction, p_fraction, xn, xp, ξ;
         
         if (nB<0.16) {
@@ -7349,7 +7349,7 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
             xp=pow(10.0,log_xp);
           }
           
-          ξ=κ/(1.0-nB*xn/n0-nB*xp/n0);
+          ξ=κ/(1.0-nB*xn/n0_loc-nB*xp/n0_loc);
           n_fraction=xn*ξ;
           p_fraction=xp*ξ;
           
