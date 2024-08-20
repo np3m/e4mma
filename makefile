@@ -15,8 +15,8 @@ help:
 	@echo "─────────────────────────────────────────────────────────"
 	@echo "doc:              Generate documentation."
 	@echo "open-doc:         Open local documentation in browser."
-	@echo "sync-doc:         Upload documentation to web."
-	@echo "test-sync:         Upload documentation to web."
+	@echo "sync-doc:         Copy documentation to web page working copy."
+	@echo "test-sync:        Show which documentation would be copied."
 
 # ----------------------------------------------------------------
 # Various user-specific settings
