@@ -526,10 +526,7 @@ public:
       This quantity is determined by \ref ns_fit()
   */
   double ns_nb_max;
-  double nuc_nb_max;
-  double e_nuc_last;
-  double p_nuc_last;
-  
+
   /** \brief The baryon number chemical potential (in \f$
       \mathrm{fm}^{-1} \f$ ) as a function of number density (in \f$
       \mathrm{fm}^{-3} \f$ )
@@ -540,6 +537,19 @@ public:
   double mu_fit_norest(double nb);
   //@}
 
+  /** \brief The maximum baryon density at which the nuclear matter
+      EOS is causal
+
+      This quantity is determined by \ref ns_fit()
+  */
+  double nuc_nb_max;
+
+  /// The last energy density at which nuclear matter is causal
+  double e_nuc_last;
+
+  /// The last pressure at which nuclear matter is causal
+  double p_nuc_last;
+  
   /// \name Parameter objects
   //@{
   o2scl::cli::parameter_int p_verbose;
@@ -1016,7 +1026,9 @@ protected:
    */
   virtual void setup_cli(o2scl::cli &cl, bool read_docs=true);
 
-  /// Desc
+  /** \brief Wrapper for the set function which ensures grid spec
+      is updated
+  */
   int comm_set(std::vector<std::string> &sv, bool itive_com);
   
   //@}
