@@ -1,5 +1,66 @@
+Developer Guide
+==================
+Tables to Download
+-------------------
+
+Feb. 6 2022, first release
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Tables with electrons and photons:
+
+- `Fiducial
+  <https://isospin.roam.utk.edu/public_data/eos_tables/du21/fid_3_5_22.o2>`_
+- `Large Mmax
+  <https://isospin.roam.utk.edu/public_data/eos_tables/du21/large_max_2_6_22.o2>`_
+- `Large SL
+  <https://isospin.roam.utk.edu/public_data/eos_tables/du21/large_sl_2_6_22.o2>`_
+- `Large R
+  <https://isospin.roam.utk.edu/public_data/eos_tables/du21/large_r_2_6_22.o2>`_
+- `Small SL
+  <https://isospin.roam.utk.edu/public_data/eos_tables/du21/small_sl_2_6_22.o2>`_
+- `Small R
+  <https://isospin.roam.utk.edu/public_data/eos_tables/du21/small_r_2_6_22.o2>`_
+- `Smaller R
+  <https://isospin.roam.utk.edu/public_data/eos_tables/du21/smaller_r_2_6_22.o2>`_
+- `Fiducial L414
+  <https://isospin.roam.utk.edu/public_data/eos_tables/du21/fid_414_2_6_22.o2>`_
+- `Fiducial L450
+  <https://isospin.roam.utk.edu/public_data/eos_tables/du21/fid_450_2_6_22.o2>`_
+
+Baryons-only tables without derivatives of F:
+
+- `Fiducial no leptons
+  <https://isospin.roam.utk.edu/public_data/eos_tables/du21/fid_nolep_noderiv_3_4.o2>`_
+- `Large Mmax no leptons
+  <https://isospin.roam.utk.edu/public_data/eos_tables/du21/large_max_nolep_noderiv_1_17_22.o2>`_
+- `Large SL no leptons
+  <https://isospin.roam.utk.edu/public_data/eos_tables/du21/large_sl_nolep_noderiv_2_5_22.o2>`_
+- `Large R no leptons
+  <https://isospin.roam.utk.edu/public_data/eos_tables/du21/large_r_nolep_noderiv_2_5_22.o2>`_
+- `Small SL no leptons
+  <https://isospin.roam.utk.edu/public_data/eos_tables/du21/small_sl_nolep_noderiv_2_5_22.o2>`_
+- `Small R no leptons
+  <https://isospin.roam.utk.edu/public_data/eos_tables/du21/small_r_nolep_noderiv_2_5_22.o2>`_
+- `Smaller R no leptons
+  <https://isospin.roam.utk.edu/public_data/eos_tables/du21/smaller_r_nolep_noderiv_2_5_22.o2>`_
+- `Fiducial L414 no leptons
+  <https://isospin.roam.utk.edu/public_data/eos_tables/du21/fid_414_nolep_noderiv_2_5_22.o2>`_
+- `Fiducial L450 no leptons
+  <https://isospin.roam.utk.edu/public_data/eos_tables/du21/fid_450_nolep_noderiv_2_5_22.o2>`_
+
+Electron-photon EOS:
+
+- `Electrons and photons
+  <https://isospin.roam.utk.edu/public_data/eos_tables/du21/electron_photon.o2>`_
+
+Nuclear masses:  
+
+- `Nuclear masses
+  <https://isospin.roam.utk.edu/public_data/eos_tables/du21/nuclear_masses.o2>`_
+
+
 Table Format
-============
+------------
 
 The table is an HDF5 file and the datasets are given below. Several
 quantities are stored in :ref:`o2scl:tensor_grid` objects, which are
@@ -8,7 +69,7 @@ contents of the rank 3 tensor are stored in the dataset named data in
 each group.
 
 Grid
-----
+~~~~
 
 - ``n_nB``: number of points in baryon density grid
 - ``n_Ye``: number of points in electron fraction grid
@@ -20,7 +81,7 @@ Grid
   (in :math:`\mathrm{MeV}`)
 
 Physical quantities
--------------------
+~~~~~~~~~~~~~~~~~~~
 
 These are stored as double-precision numbers.
 
@@ -32,7 +93,7 @@ These are stored as double-precision numbers.
   (in :math:`\mathrm{MeV}`)
 
 Flags
------
+~~~~~
 
 These are stored as integers.
 
@@ -47,7 +108,7 @@ These are stored as integers.
 - ``include_muons``: 0 (false) if muons are not included
   
 Quantities for the solver
--------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 These are all :ref:`o2scl:tensor_grid` objects. The contents of the
 tensor are stored in an HDF5 dataset named "data" in row-major
@@ -81,7 +142,7 @@ tensors are included:
   :math:`^{4}\mathrm{Li}`, and :math:`\alpha`.
 
 Composition
------------
+~~~~~~~~~~~
 	
 These are all :ref:`o2scl:tensor_grid` objects and included for
 all tables.
@@ -109,8 +170,7 @@ command. At high densities or temperatures when nuclei are not
 present, :math:`\xi=1`.
 
 Thermodynamic quantities
-------------------------
-
+~~~~~~~~~~~~~~~~~~~~~~~~
 In this section, all quantities are stored as
 :ref:`o2scl:tensor_grid` objects.
 
@@ -183,7 +243,7 @@ energy but they *do* include the electron rest mass energy, :math:`m_e
 Y_e`.
   
 String arrays
--------------
+~~~~~~~~~~~~~
 
 For compatibility with O\ :sub:`2`\ scl, a set of two string arrays is
 also included. The first, ``oth_names`` contains the list: ``Xd, Xt,
@@ -195,7 +255,7 @@ any units. The unsigned integer ``n_oth`` contains the size of the
 ``oth_names`` array.
 
 Electron and photon table
--------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The electron and photon table, contains five :ref:`o2scl:tensor_grid`
 objects which includes electrons, positrons, and photons, 
@@ -211,7 +271,7 @@ objects which includes electrons, positrons, and photons,
   (in :math:`\mathrm{MeV}`)
 
 Nuclear masses table
---------------------
+~~~~~~~~~~~~~~~~~~~~
 
 The nuclear massses table, contains a :ref:`o2scl:table`
 object with the columns

@@ -4,7 +4,7 @@ Our EoS describes the relationship between energy density and pressure
 in a large three-dimensional ($\mathrm{nB}$, $\mathrm{Ye}$,
 $\mathrm{T}$) space,
 
-There are several different physical regimes each constrained by
+There are several physical regimes each constrained by
 different observables and theoretical approaches.
 
 First the zero temperature nuclear matter at nuclear saturation
