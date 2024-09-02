@@ -244,13 +244,11 @@ public:
   std::vector<o2scl::boson> res_b;
 
   /** \brief The parent virtual method
-
-      \note This function is currently empty but could be replaced
-      in an updated version to work better with O2scl.
    */
   virtual int calc_temp_e(o2scl::fermion &n, o2scl::fermion &p, double T, 
                           o2scl::thermo &th) {
-    return -1;
+    double fr=free_energy_density(n,p,T,th);
+    return 0;
   }
   
  protected:
@@ -872,6 +870,15 @@ protected:
       crust.
    */
   int pns_eos(std::vector<std::string> &sv, bool itive_com);
+  
+  /** \brief Construct the PNS EOS and the M-R curve
+
+      <entropy per baryon> <lepton fraction> <output filename>
+
+      Use YL=0 for beta equilibrium. Currently always uses a cold
+      crust.
+   */
+  int mvsr(std::vector<std::string> &sv, bool itive_com);
   
   /** \brief Construct a full 3D EOS table without nuclei
 

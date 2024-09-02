@@ -3558,6 +3558,25 @@ int eos::pns_eos(std::vector<std::string> &sv, bool itive_com) {
   return 0;
 }
 
+int eos::mvsr(std::vector<std::string> &sv, bool itive_com) {
+
+  nstar_cold ns;
+  ns.set_eos(*this);
+  ns.calc_eos();
+  ns.calc_nstar();
+
+  shared_ptr<table_units<> > t1=ns.get_eos_results();
+  shared_ptr<table_units<> > t2=ns.get_tov_results();
+
+  hdf_file hf;
+  hf.open_or_create(sv[1]);
+  hdf_output(hf,*t1,"eos");
+  hdf_output(hf,*t2,"mvsr");
+  hf.close();
+
+  return 0;
+}
+
 int eos::select_model(std::vector<std::string> &sv, bool itive_com) {
 
   i_ns=o2scl::stod(sv[1]);
@@ -4081,71 +4100,17 @@ int eos::alt_model(std::vector<std::string> &sv,
     sv[1]+=" "+sv[i];
   }
 
-  /*
-  if (sv[1]=="Skyrme" || sv[1]=="skyrme") {
-    if (sv.size()<3) {
-      cout << "Not enough parameters for alt-model of type Skyrme."
-           << endl;
-    }
-    o2scl_hdf::skyrme_load(sk_alt,sv[2]);
-    eosp_alt=&sk_alt;
-    use_alt_eos=true;
-  } else if (sv[1]=="RMF" || sv[1]=="rmf") {
-    o2scl_hdf::rmf_load(rmf,sv[2]);
-    eosp_alt=&rmf;
-    use_alt_eos=true;
-  } else if (sv[1]=="RMFH" || sv[1]=="rmfh") {
-    o2scl_hdf::rmf_load(rmf_hyp,sv[2]);
-    eosp_alt=&rmf_hyp;
-    use_alt_eos=true;
-  } else {
-  */
-  
   eosp_alt=eos_had_temp_strings(sv[1]);
   use_alt_eos=true;
   eos_had_skyrme *skp=dynamic_cast<eos_had_skyrme *>(eosp_alt);
   if (skp!=0) {
     eosp_alt=&sk_alt;
-    sk_alt.a=skp->a;
-    sk_alt.b=skp->b;
-    sk_alt.t0=skp->t0;
-    sk_alt.t1=skp->t1;
-    sk_alt.t2=skp->t2;
-    sk_alt.t3=skp->t3;
-    sk_alt.x0=skp->x0;
-    sk_alt.x1=skp->x1;
-    sk_alt.x2=skp->x2;
-    sk_alt.x3=skp->x3;
-    sk_alt.alpha=skp->alpha;
-    sk_alt.W0=skp->W0;
-    sk_alt.b4=skp->b4;
-    sk_alt.b4p=skp->b4p;
-    sk_alt.reference=skp->reference;
+    sk_alt=*skp;
   } else {
     eos_had_rmf *rmfp=dynamic_cast<eos_had_rmf *>(eosp_alt);
     if (rmfp!=0) {
       eosp_alt=&rmf;
-      rmf.cs=rmfp->cs;
-      rmf.cw=rmfp->cw;
-      rmf.cr=rmfp->cr;
-      rmf.ms=rmfp->ms;
-      rmf.mw=rmfp->mw;
-      rmf.mr=rmfp->mr;
-      rmf.mnuc=rmfp->mnuc;
-      rmf.b=rmfp->b;
-      rmf.c=rmfp->c;
-      rmf.zeta=rmfp->zeta;
-      rmf.xi=rmfp->xi;
-      rmf.zm_mode=rmfp->zm_mode;
-      rmf.a1=rmfp->a1;
-      rmf.a2=rmfp->a2;
-      rmf.a3=rmfp->a3;
-      rmf.a4=rmfp->a4;
-      rmf.a5=rmfp->a5;
-      rmf.a6=rmfp->a6;
-      rmf.b1=rmfp->b1;
-      rmf.b2=rmfp->b2;
-      rmf.b3=rmfp->b3;
+      rmf=*rmfp;
     } else {
       eos_had_rmf_hyp *rhp=dynamic_cast<eos_had_rmf_hyp *>(eosp_alt);
       if (rhp!=0) {
@@ -4199,7 +4164,7 @@ void eos::setup_cli(o2scl::cli &cl, bool read_docs) {
   o2scl::comm_option_mfptr<eos> *cset=
     new o2scl::comm_option_mfptr<eos>(this,&eos::comm_set);
   
-  static const int nopt=16;
+  static const int nopt=17;
   o2scl::comm_option_s options[nopt]=
     {{0,"test-deriv","",0,0,"","",
        new o2scl::comm_option_mfptr<eos>
@@ -4245,6 +4210,10 @@ void eos::setup_cli(o2scl::cli &cl, bool read_docs) {
       new o2scl::comm_option_mfptr<eos>
       (this,&eos::pns_eos),o2scl::cli::comm_option_both,
       1,"","eos","pns_eos","doc/xml/classeos.xml"},      
+     {0,"mvsr","",1,1,"","",
+      new o2scl::comm_option_mfptr<eos>
+      (this,&eos::mvsr),o2scl::cli::comm_option_both,
+      1,"","eos","mvsr","doc/xml/classeos.xml"},      
      {0,"select-model","",7,7,"","",
       new o2scl::comm_option_mfptr<eos>
       (this,&eos::select_model),o2scl::cli::comm_option_both,
