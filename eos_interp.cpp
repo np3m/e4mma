@@ -455,12 +455,14 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
   double min_qual=1.0e99;
 
   /// Minimize
-  if (method=="min") {
+  if (method=="min" || method=="dea") {
     
     ike.set2();
     
     mmin_simp2 <> mms;
+    diff_evo_adapt<> dea;
     mms.err_nonconv=false;
+    dea.err_nonconv=false;
 
     multi_funct fmf=std::bind
       (std::mem_fn<double(size_t,const ubvector &)>
@@ -472,11 +474,19 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
 
     double fmin;
     mms.verbose=kwa.get_int("mmin_verbose",0);
+    dea.verbose=kwa.get_int("mmin_verbose",0);
     mms.tol_abs=kwa.get_double("mmin_tolx",1.0e-4);
+    dea.tol_abs=kwa.get_double("mmin_tolx",1.0e-4);
+    dea.tol_rel=kwa.get_double("mmin_tolf",1.0e-4);
     mms.ntrial=kwa.get_int("mmin_ntrial",100);
-    int min_ret=mms.mmin(ike.fix_list.size()/3,x,fmin,fmf);
+    dea.ntrial=kwa.get_int("mmin_ntrial",100);
+    int min_ret;
+    if (method=="min") {
+      min_ret=mms.mmin(ike.fix_list.size()/3,x,fmin,fmf);
+    } else {
+      min_ret=dea.mmin(ike.fix_list.size()/3,x,fmin,fmf);
+    }
     if (min_ret==0) min_qual=fmin;
-   
 
     // Evaluate the function at the optimal point
     fmf(ike.fix_list.size()/3,x);
