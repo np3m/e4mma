@@ -12,19 +12,19 @@ is available on `github <https://github.com/np3m/e4mma>`_. The installation of `
 <http://www.hdfgroup.org>`_ (versions 1.8.14 and later), and more current version of `O2scl <https://neutronstars.utk.edu/code/o2scl/index.html>`_ (version 0.928 or later) is required in order to
 compile the code to generate and analyze EOS tables. You do not need
 to compile the code to use the EOS tables - they can be read by any
-application which reads HDF5 files. The EoS tables are availlable to
+application which reads HDF5 files. The EOS tables are available to
 download at our
 `website <https://neutronstars.utk.edu/code/eos/download.html>`_
 
 Build the docker image
 ~~~~~~~~~~~~~~~~~~~~~~
-To build the EOS code inside a docker container:
+To build the crust-dft code inside a docker container:
 
 clone the Github repository. Particularly the ``muses`` branch.
 
 .. code-block:: bash
 
-    git git clone https://github.com/np3m/e4mma && \
+    git clone https://github.com/np3m/e4mma && \
     cd e4mma && \
     git checkout muses
 
@@ -62,14 +62,14 @@ After either building or downloading the image the user can just run
 ``docker_run_mount.sh`` script locally inside the ``test`` folder to mount
 the local input, output and data folders inside the ``e4mma`` folder to the
 container and execute the function ``utk_for_lepton`` inside the
-container with default configuration that creates the eos output for
+container with default configuration that creates the crust-dft output for
 lepton module in the ``output`` folder in ``csv`` format.
 
 .. code-block:: bash
 
     bash docker_run_mount.sh
 
-This grabs the default ``config.yaml`` file, validates it, runs the eos
+This grabs the default ``config.yaml`` file, validates it, runs the crust-dft
 code with the validated configuration and afterwards post-processes the
 output using ``muses-porter``.
 
@@ -80,10 +80,11 @@ Now if they want to use another configuration, they need to run the
 .. code-block:: bash
 
     cd ../src
-    python3 yaml_generator.py --load data/fid_3_5_22.o2 \
+    python3 yaml_generator.py \
 	    --output_format HDF5 \
         --nB_grid_spec '150,10^(i*0.04-12)*2.0' \
 	    --Ye_grid_spec '30,0.01*(i+1)' \
+        --inc_lepton false
 
 before running the previous command.
 
@@ -102,25 +103,26 @@ Possible inputs for the module:
                     desired function (default: ``'70,0.01*(i+1)'``).
                     ``Ye_grid`` ranges from in :math:`1.0\times10^{-2}-0.7`. Values outside this range will be ignored for now
 
+- ``inc_lepton``: whether to include leptons or not (boolean, default: ``False``)
 More functions will be added later.
 
-Use EoS inside docker
+Use Crust-DFT inside docker
 ~~~~~~~~~~~~~~~~~~~~~
 If the user wants to get into the container and run the code from inside, use
 
 .. code-block:: bash
 
-    docker run -it --rm --name utk -u 0:0 \
+    docker run -it --rm --name crust-dft -u 0:0 \
     -v "${PWD}/input:/opt/eos/input" \
     -v "${PWD}/output:/opt/eos/output" \
     -v "${PWD}/data:/opt/eos/data" \
-    nostrad1/utk-eos:v2 /bin/bash
+    nostrad1/utk-eos:v1.9.1 /bin/bash
 
-in the ``eos`` folder to get into the container. 
-Creating a user specific config.yaml is similar inside the container as well. Finally run ``run_utk_for_lepton.sh`` script inside the ``test`` folder using
+in the ``e4mma`` folder to get into the container. 
+Creating a user specific ``config.yaml`` is similar inside the container as well. Finally, run ``run_utk_for_lepton.sh`` script inside the ``test`` folder using
 
 .. code-block:: bash
 
     bash run_utk_for_lepton.sh
 
-to validate the ``config.yaml`` generate the eos output file from the user-specified configuration and post-process the file in the specified format in the output directory.
+to validate the ``config.yaml`` generate the crust-dft output file from the user-specified configuration and post-process the file in the specified format in the output directory.

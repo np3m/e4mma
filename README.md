@@ -21,7 +21,7 @@ thermodynamic consistency and the connection to experimental or
 observational data, thus providing a probability distribution of the
 astrophysical hot and dense matter equation of state.
 
-For more in depth look, see MUSES documentation.
+For more in depth look, see [MUSES documentation](https://musesframework.io/docs/).
 
 
 

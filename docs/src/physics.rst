@@ -1,5 +1,58 @@
-Module Physics Overview
+Physics Overview
 =======================
+Our EoS describes the relationship between energy density and pressure
+in a large three-dimensional (:math:`\mathrm{nB}`, :math:`\mathrm{Ye}`,
+:math:`\mathrm{T}`) space,
+
+There are several physical regimes each constrained by
+different observables and theoretical approaches.
+
+First the zero temperature nuclear matter at nuclear saturation
+density is closely connected to nuclear masses, charge radii, giant
+resonances, and other laboratory observables. Global fits to
+experimental data have been performed with Skyrme and covariant
+mean-field models.
+
+Secondly, cold neutron matter below nuclear saturation density, is
+difficult to probe experimentally but is well-constrained by
+theoretical calculations based on semi-phenomenological nuclear forces
+or microscopic chiral effective field theory-based interactions.
+
+The third regime, strongly-interacting high-temperature matter, is
+best described by interactions and many-body approaches similar to
+those applied to cold neutron matter near saturation density.
+
+The fourth regime, low-density and high-temperature matter that is
+nearly non-degenerate, is best described by the virial expansion. The
+equation of state in this regime is determined from nucleon-nucleon
+scattering phase shifts.
+
+Finally, neutron-rich matter at densities above twice saturation
+density is most strongly constrained by observations of neutron star
+masses and radii, particularly the observation of neutron stars with
+:math:`M \simeq 2M_\odot`.
+
+In this work, we construct a phenomenological free energy density that
+is consistent with observational and theoretical constraints in the
+five aforementioned physical regimes. This is in contrast to works
+which attempt to describe matter over the entire density and
+temperature range with a single detailed model of the nucleon-nucleon
+interaction.
+
+Our second advance is in the treatment of uncertainties. The most
+relevant parameters which describe the uncertainties in different
+density and temperature regimes are not clearly related. In this work,
+through the construction of a phenomenological model one can vary
+uncertainties in different regimes independently, without spoiling
+agreement elsewhere.
+
+The module produces an EoS table in a 3 dimensional grid of
+:math:`\mathrm{nB}`, :math:`\mathrm{Ye}` and
+:math:`\mathrm{T}` and stores various
+physical and thermodynamics properties in the data files (detailed
+documentation
+[here](https://neutronstars.utk.edu/code/eos/table_format.html#thermodynamic-quantities)).
+
 Rest mass contribution
 -----------------------
 
@@ -400,14 +453,16 @@ To compute this we need
    \left(\frac{\partial f}{\partial n_i}\right)_{\{n_{j\neq i}\},T,V} +
    \left(\frac{\partial f}{\partial T}\right)_{n_B,\{n_{j\neq i}\},V}
    \left(\frac{\partial T}{\partial n_i}\right)_{\{n_{j\neq i}\},s,V}
-   = \mu_i - s \left(\frac{\partial T}{\partial n_i}
+   \nonumber \\
+   &=& \mu_i - s \left(\frac{\partial T}{\partial n_i}
    \right)_{\{n_{j\neq i}\},s,V}
    \nonumber \\
    \left(\frac{\partial \mu_k}{\partial n_i}\right)_{s,\{n_{j\neq i}\},V} &=&
    \left(\frac{\partial \mu_k}{\partial n_i}\right)_{\{n_{j\neq i}\},T,V} +
    \left(\frac{\partial \mu_k}{\partial T}\right)_{n_i,\{n_{j\neq i}\},V}
    \left(\frac{\partial T}{\partial n_i}\right)_{\{n_{j\neq i}\},s,V} 
-   = f_{n_i n_k} + f_{n_k T}
+   \nonumber \\
+   &=& f_{n_i n_k} + f_{n_k T}
    \left(\frac{\partial T}{\partial n_i}\right)_{\{n_{j\neq i}\},s,V}
  
 which requires
@@ -428,7 +483,8 @@ Finally, we get
    + \sum_i n_i \left[ \sum_k n_k \left(f_{n_i n_k}- f_{n_k T}
    f_{n_i T} f_{TT}^{-1}\right) 
    - s f_{n_i T} f_{TT}^{-1}\right]
-   \right\} \left(
+   \right\} \\
+   \times \left(
    T s + \sum_i \mu_i n_i \right)^{-1}
 
 and   
@@ -446,3 +502,46 @@ Note that, when applying this expression, one must be consistent about
 the free energy which one differentiates and the densities and
 chemical potentials which are used. See :ref:`Chemical Potentials` for
 more information regarding this issue. 
+
+WIP
+----
+First, we define the symmetry energy to include a zero
+temperature contribution which combines the QMC EOS 
+near saturation density, the neutron star fit at higher densities, 
+and the Skyrme interaction for isospin-symmetric matter
+
+.. math::
+
+   \epsilon_{sym}(n_B) = h(n_B)\epsilon_{QMC}(nB) + [1-h(n_B)]\epsilon_{NS}(n_B) - f_{Skyrme}(nB,x_p = 1/2, T=0)
+
+
+Defining the isospin asymmetry $ \delta = 1-2x_p$, we can combine this
+ with the model described in `Du et al. 2019 <https://arxiv.org/pdf/1802.09710>`_ to obtain the free energy
+ density of degenerate matter
+
+.. math::
+
+   f_{deg}(n_B,x_p,T) = f_{Skyrme}(nB,x_p = 1/2, T=0) + \delta^2\epsilon_{sym}(n_B) \\
+   + \delta^2\Delta f_{hot}(nB,x_p = 0, T) + (1-\delta^2)\Delta f_{hot}(nB,x_p = 1/2, T)
+
+
+Finally, we ensure that the total nucleonic free energy gives the
+ result from the virial expansion at high tem peratures using
+
+.. math::
+
+   f_{np}(n_B,x_p,T) = f_{virial}(n_n,x_p,T)g+f_{deg}(n_B,x_p,T)(1-g)
+
+
+When we need to include the
+ electrons, positrons, and photons, we define the free en
+ergy density
+
+.. math::
+
+   f_{npe\gamma} \equiv f_{np} + f_{e^-}+f_{e^+}+f_\gamma
+
+
+Using this formalism, the chemical potentials and entropy can be computed directly (eq. 28-32 in `Du et al. 2019 <https://arxiv.org/pdf/1802.09710>`_).
+
+We enforce causality at high densities.
