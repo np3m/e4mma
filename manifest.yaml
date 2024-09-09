@@ -15,12 +15,12 @@ command:
 image:
   registry: "docker.io"
   repo: "nostrad1/utk-eos"
-  tag: "v1.9.2"
+  tag: "v1.9.1"
   source:
     url: "https://github.com/np3m/e4mma"
     git: "https://github.com/np3m/e4mma.git"
     path: "Dockerfile"
-    targetRevision: "v1.9.2"
+    targetRevision: "v1.9.1"
 
 docs:
   path: "docs/src"
