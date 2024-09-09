@@ -57,15 +57,3 @@ jobs:
       - name: Test Docker image
         run: |
           docker run --rm $REGISTRY/$IMAGE_NAME:$IMAGE_TAG sh -c "bash test.sh"
-
-  push:
-    runs-on: ubuntu-24.04
-    needs: [build, test]
-    steps:
-      - name: Log in to Docker Hub
-        run: |
-          echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin || exit 1
-
-      - name: Push Docker image
-        run: |
-          docker push $REGISTRY/$IMAGE_NAME:$IMAGE_TAG || exit 1
