@@ -51,7 +51,7 @@ The module produces an EoS table in a 3 dimensional grid of
 :math:`\mathrm{T}` and stores various
 physical and thermodynamics properties in the data files (detailed
 documentation
-[here](https://neutronstars.utk.edu/code/eos/table_format.html#thermodynamic-quantities)).
+`here <https://neutronstars.utk.edu/code/eos/table_format.html#thermodynamic-quantities>`_).
 
 Rest mass contribution
 -----------------------
@@ -514,28 +514,23 @@ and the Skyrme interaction for isospin-symmetric matter
 
    \epsilon_{sym}(n_B) = h(n_B)\epsilon_{QMC}(nB) + [1-h(n_B)]\epsilon_{NS}(n_B) - f_{Skyrme}(nB,x_p = 1/2, T=0)
 
-
-Defining the isospin asymmetry $ \delta = 1-2x_p$, we can combine this
- with the model described in `Du et al. 2019 <https://arxiv.org/pdf/1802.09710>`_ to obtain the free energy
- density of degenerate matter
+Defining the isospin asymmetry :math: `\delta = 1-2x_p`, we can combine this 
+with the model described in `Du et al. 2019 <https://arxiv.org/pdf/1802.09710>`_ to obtain the free energy 
+density of degenerate matter
 
 .. math::
 
    f_{deg}(n_B,x_p,T) = f_{Skyrme}(nB,x_p = 1/2, T=0) + \delta^2\epsilon_{sym}(n_B) \\
    + \delta^2\Delta f_{hot}(nB,x_p = 0, T) + (1-\delta^2)\Delta f_{hot}(nB,x_p = 1/2, T)
 
-
-Finally, we ensure that the total nucleonic free energy gives the
- result from the virial expansion at high tem peratures using
+Finally, we ensure that the total nucleonic free energy gives the result from the virial 
+expansion at high temperatures using
 
 .. math::
 
    f_{np}(n_B,x_p,T) = f_{virial}(n_n,x_p,T)g+f_{deg}(n_B,x_p,T)(1-g)
 
-
-When we need to include the
- electrons, positrons, and photons, we define the free en
-ergy density
+When we need to include the electrons, positrons, and photons, we define the free energy density
 
 .. math::
 
