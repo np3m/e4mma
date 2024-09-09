@@ -22,7 +22,7 @@ RUN git clone https://github.com/awsteiner/o2scl \
 
 RUN git clone https://github.com/np3m/e4mma && \
     cd e4mma && \
-    git checkout muses 
+    git checkout muses && git checkout e69d61e4a52bf18db5b1229bef16c3e496d206c0
 
 COPY src/eos_nuclei.h /opt/e4mma/src/
 COPY src/eos_nuclei.cpp /opt/e4mma/src/
