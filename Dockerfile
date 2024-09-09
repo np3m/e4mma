@@ -16,7 +16,7 @@ RUN git clone https://github.com/awsteiner/o2scl \
     && cd o2scl \
     && git checkout eee9fd83 && autoreconf -i \
 # We disable static and make blank-doc to keep the image small
-    && LDFLAGS="-larmadillo -llapack -lblas" CXXFLAGS="-O3 -DO2SCL_UBUNTU_HDF5 -DO2SCL_HDF5_PRE_1_12 -DO2SCL_REGEX -DO2SCL_HDF5_COMP --DO2SCL_NO_BOOST_MULTIPRECISION -I/usr/include" ./configure --enable-eigen --enable-armadillo --enable-openmp --enable-fftw --disable-static \
+    && LDFLAGS="-larmadillo -llapack -lblas" CXXFLAGS="-O3 -DO2SCL_UBUNTU_HDF5 -DO2SCL_HDF5_PRE_1_12 -DO2SCL_REGEX -DO2SCL_HDF5_COMP -DO2SCL_NO_BOOST_MULTIPRECISION -I/usr/include" ./configure --enable-eigen --enable-armadillo --enable-openmp --enable-fftw --disable-static \
     && make blank-doc && make -j 3 && make install \ 
     && cd ../
 
