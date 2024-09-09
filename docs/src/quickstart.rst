@@ -1,6 +1,6 @@
 Quick Start Guide
 ====================
-calculation Engine
+Calculation Engine
 --------------------
 Docker
 --------------------
@@ -20,7 +20,7 @@ Build the docker image
 ~~~~~~~~~~~~~~~~~~~~~~
 To build the crust-dft code inside a docker container:
 
-clone the Github repository. Particularly the ``muses`` branch.
+Clone the Github repository. Particularly the ``muses`` branch.
 
 .. code-block:: bash
 
@@ -29,9 +29,10 @@ clone the Github repository. Particularly the ``muses`` branch.
     git checkout muses
 
 
-Download the EOS table and copy it to that ``e4mma/data/`` folder. This is
+Download an EOS table and copy it to that ``e4mma/data/`` folder. This is
 done, so the calculations are much faster. Since the code reads the
-table and creates an output with the MUSES standard.
+table and creates an output with the MUSES standard. The tables and their contents 
+are explained in developer guide.
 
 .. code-block:: bash
 
@@ -43,7 +44,7 @@ build the docker image inside the ``e4mma`` folder themselves using
 
 .. code-block:: bash
 
-    docker build . -t crust_dft
+    docker build . -t nostrad1/utk-eos:v1.9.1
 
 However, the process is lengthy and it is advised to just download the
 already built image from dockerhub.

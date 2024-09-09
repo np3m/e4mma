@@ -20,31 +20,27 @@ help:
 # LCFLAGS are the local C++ compiler flags
 
 # Default settings
-LIBS = -L/usr/local/hdf5/lib \
+LIBS = -L/usr/lib/x86_64-linux-gnu/hdf5/serial \
 	-lo2scl -lhdf5 -lgsl \
-	-lreadline -lpython3.12
+	-lreadline 
 FLIBS = -lgfortran
 # PLIBS = -L/usr/lib/x86_64-linux-gnu/ 
 LCXX = g++
 LFC = gfortran
 LMPI_FC = mpif90
 LMPI_CXX = mpic++
-LCFLAGS = -I/usr/local/hdf5/include \
-	-I/usr/lib/python3.12/site-packages/numpy/_core/include \
-	-DNO_MPI -DNO_OPENMP -DO2SCL_PYTHON \
-	-I/usr/include/python3.12 \
+LCFLAGS = -I/usr/lib/x86_64-linux-gnu/hdf5/serial/include \
+	-DNO_MPI -DNO_OPENMP \
 	-DO2SCL_NO_BOOST_MULTIPRECISION
-LCFLAGS_OMP = -I/usr/local/hdf5/include \
-	-DNO_MPI -DO2SCL_PYTHON \
+LCFLAGS_OMP = -I/usr/lib/x86_64-linux-gnu/hdf5/serial/include \
+	-DNO_MPI \
 	-fopenmp \
-	-I/usr/include/python3.12 \
 	-DO2SCL_NO_BOOST_MULTIPRECISION
 LFFLAGS = -O3
-LMPI_CFLAGS = -I/usr/local/hdf5/include \
-	-I/usr/lib/python3.12/site-packages/numpy/_core/include \
-	-I/home/nostra/.local/lib/python3.12/site-packages/tensorflow/include/external/local_config_python/python_include \
-	-DO2SCL_MPI -DO2SCL_OPENMP -DO2SCL_PYTHON \
-	-fopenmp -I/usr/include/python3.12 \
+LMPI_CFLAGS = -I/usr/lib/x86_64-linux-gnu/hdf5/serial/include \
+	-I/usr/local/lib/python3.10/dist-packages/numpy/core/include \
+	-DO2SCL_MPI -DO2SCL_OPENMP \
+	-fopenmp \
 	-DO2SCL_NO_BOOST_MULTIPRECISION
 
 COMMENT = "default"
@@ -507,8 +503,7 @@ enn_fid_lep:
 		-set fixed_dist_alg 1999 \
 		-set function_verbose 0 \
 		-load ../data/fid_3_5_22.o2 \
-		-set inc_lepton true \
-		-muses create
+		-utk-for-lepton create
 
 enn_create_table:
 	./eos_nuclei \
