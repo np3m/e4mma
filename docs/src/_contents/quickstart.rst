@@ -28,16 +28,6 @@ Clone the Github repository. Particularly the ``muses`` branch.
     cd e4mma && \
     git checkout muses
 
-
-Download an EOS table and copy it to that ``e4mma/data/`` folder. This is
-done, so the calculations are much faster. Since the code reads the
-table and creates an output with the MUSES standard. The tables and their contents 
-are explained in developer guide.
-
-.. code-block:: bash
-
-    curl https://isospin.roam.utk.edu/public_data/eos_tables/du21/fid_3_5_22.o2 --output data/fid_3_5_22.o2
-
 The dockerfile ``Dockerfile`` uses a multistage docker build to build a
 minimal image with the executable ``eos_nuclei`` in it. The user can
 build the docker image inside the ``e4mma`` folder themselves using
@@ -59,24 +49,11 @@ To download the built image from dockerhub the user can use
 
 Running the module
 ~~~~~~~~~~~~~~~~~~
-After either building or downloading the image the user can just run
-``docker_run_mount.sh`` script locally inside the ``test`` folder to mount
-the local input, output and data folders inside the ``e4mma`` folder to the
-container and execute the function ``utk_for_lepton`` inside the
-container with default configuration that creates the crust-dft output for
-lepton module in the ``output`` folder in ``csv`` format.
+After either building or downloading the image, the user needs a configuration file ``config.yaml`` 
+in the ``input`` folder and an EOS table file in the ``data`` folder.
 
-.. code-block:: bash
-
-    bash docker_run_mount.sh
-
-This grabs the default ``config.yaml`` file, validates it, runs the crust-dft
-code with the validated configuration and afterwards post-processes the
-output using ``muses-porter``.
-
-Now if they want to use another configuration, they need to run the
-``yaml_generator.py`` in the ``src`` folder to create a user specific
-``config.yaml`` like:
+To generate ``config.yaml``, run the
+``yaml_generator.py`` in the ``src`` folder like:
 
 .. code-block:: bash
 
@@ -87,7 +64,28 @@ Now if they want to use another configuration, they need to run the
 	    --Ye_grid_spec '30,0.01*(i+1)' \
         --inc_lepton false
 
-before running the previous command.
+Download an EOS table and copy it to the ``data/`` folder as ``EOS_table.o2``. This is
+done, so the calculations are much faster. Since the code reads the
+table and creates an output with the MUSES standard. The tables and their contents 
+are explained in developer guide.
+
+.. code-block:: bash
+
+    curl https://isospin.roam.utk.edu/public_data/eos_tables/du21/fid_3_5_22.o2 --output data/EOS_table.o2
+
+The user can run ``docker_run_mount.sh`` script locally inside the ``test`` folder to mount
+the local input, output and data folders inside the ``e4mma`` folder to the
+container and execute the function ``utk_for_lepton`` inside the
+container with default configuration that creates the crust-dft output for
+lepton module in the ``output`` folder in ``csv`` format.
+
+.. code-block:: bash
+
+    bash docker_run_mount.sh
+
+This grabs the ``config.yaml`` file, validates it, runs the crust-dft
+code with the validated configuration and afterwards post-processes the
+output using ``muses-porter``.
 
 Possible inputs for the module:
 
