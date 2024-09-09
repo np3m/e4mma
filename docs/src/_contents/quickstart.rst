@@ -26,7 +26,7 @@ Clone the GitHub repository. Particularly the ``muses`` branch.
 
     git clone https://github.com/np3m/e4mma && \
     cd e4mma && \
-    git checkout muses
+    git checkout muses && git checkout 9885d74da3d0aafbf13d403cfffe7025bb424a67
 
 The dockerfile ``Dockerfile`` uses a multistage docker build to build a
 minimal image with the executable ``eos_nuclei`` in it. The user can
@@ -34,7 +34,7 @@ build the docker image inside the ``e4mma`` folder themselves using
 
 .. code-block:: bash
 
-    docker build . -t nostrad1/utk-eos:v1.9.1
+    docker build . -t nostrad1/utk-eos:v1.9.2
 
 However, the process is lengthy, and it is advised to just download the
 already built image from dockerhub.
@@ -45,7 +45,7 @@ To download the built image from dockerhub the user can use
 
 .. code-block:: bash
 
-    docker pull nostrad1/utk-eos:v1.9.1
+    docker pull nostrad1/utk-eos:v1.9.2
 
 Running the module
 ~~~~~~~~~~~~~~~~~~
@@ -115,7 +115,7 @@ If the user wants to get into the container and run the code from inside, use
     -v "${PWD}/input:/opt/eos/input" \
     -v "${PWD}/output:/opt/eos/output" \
     -v "${PWD}/data:/opt/eos/data" \
-    nostrad1/utk-eos:v1.9.1 /bin/bash
+    nostrad1/utk-eos:v1.9.2 /bin/bash
 
 in the ``e4mma`` folder to get into the container. 
 Creating a user specific ``config.yaml`` is similar inside the container as well. Finally, run ``run_utk_for_lepton.sh`` script inside the ``test`` folder using
