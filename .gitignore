@@ -8,3 +8,5 @@ enn
 *.o
 *~
 makefile.user
+
+out
