@@ -3860,6 +3860,232 @@ int eos::select_internal(int i_ns_loc, int i_skyrme_loc,
   return 0;
 }
 
+int eos::select_full(std::vector<double> &param) {
+  
+  qmc_alpha=param[0];
+  qmc_a=param[1];
+  eos_L=param[2];
+  eos_S=param[3];
+  phi=param[4];
+  ns_fit_parms[0]=param[5];
+  ns_fit_parms[1]=param[6];
+  ns_fit_parms[2]=param[7];
+  ns_fit_parms[3]=param[8];
+  ns_fit_parms[4]=param[9];
+  sk.t0=param[10];
+  sk.t1=param[11];
+  sk.t2=param[12];
+  sk.t3=param[13];
+  sk.x0=param[14];
+  sk.x1=param[15];
+  sk.x2=param[16];
+  sk.x3=param[17];
+  sk.alpha=param[18];
+  sk_Tcorr.t0=param[19];
+  sk_Tcorr.t1=param[20];
+  sk_Tcorr.t2=param[21];
+  sk_Tcorr.t3=param[22];
+  sk_Tcorr.x0=param[23];
+  sk_Tcorr.x1=param[24];
+  sk_Tcorr.x2=param[25];
+  sk_Tcorr.x3=param[26];
+  sk_Tcorr.alpha=param[27];
+  
+  model_selected=true;
+
+  double ns_min_cs2, ns_max_cs2;
+  min_max_cs2(ns_min_cs2,ns_max_cs2);
+  if (ns_min_cs2<0.0) {
+    model_selected=false;
+    return 1;
+  }
+
+  if (9.17*eos_S-266.0>eos_L || 14.3*eos_S-379.0<eos_L) {
+    model_selected=false;
+    return 2;
+  }
+
+  // Test to make sure dineutrons are not bound
+  for(double nb=0.01;nb<0.16;nb+=0.001) {
+    neutron.n=nb;
+    proton.n=0.0;
+    sk.calc_e(neutron,proton,th2);
+    if (th2.ed/nb<0.0) {
+      model_selected=false;
+      return 4;
+    }
+  }
+
+  // Ensure effective masses are positive
+  
+  fermion &n=neutron;
+  fermion &p=proton;
+  thermo &th=th2;
+  double term, term2;
+  
+  n.n=1.0;
+  p.n=1.0;
+  
+  term=0.25*(sk.t1*(1.0+sk.x1/2.0)+sk.t2*(1.0+sk.x2/2.0));
+  term2=0.25*(sk.t2*(0.5+sk.x2)-sk.t1*(0.5+sk.x1));
+  n.ms=n.m/(1.0+2.0*((n.n+p.n)*term+n.n*term2)*n.m);
+  p.ms=p.m/(1.0+2.0*((n.n+p.n)*term+p.n*term2)*p.m);
+  
+  if (n.ms<0.0 || p.ms<0.0) {
+    model_selected=false;
+    return 5;
+  }
+  
+  n.n=2.0;
+  p.n=0.0;
+  
+  term=0.25*(sk.t1*(1.0+sk.x1/2.0)+sk.t2*(1.0+sk.x2/2.0));
+  term2=0.25*(sk.t2*(0.5+sk.x2)-sk.t1*(0.5+sk.x1));
+  n.ms=n.m/(1.0+2.0*((n.n+p.n)*term+n.n*term2)*n.m);
+  p.ms=p.m/(1.0+2.0*((n.n+p.n)*term+p.n*term2)*p.m);
+  
+  if (n.ms<0.0 || p.ms<0.0) {
+    model_selected=false;
+    return 6;
+  }
+  
+  n.n=0.0;
+  p.n=2.0;
+  
+  term=0.25*(sk.t1*(1.0+sk.x1/2.0)+sk.t2*(1.0+sk.x2/2.0));
+  term2=0.25*(sk.t2*(0.5+sk.x2)-sk.t1*(0.5+sk.x1));
+  n.ms=n.m/(1.0+2.0*((n.n+p.n)*term+n.n*term2)*n.m);
+  p.ms=p.m/(1.0+2.0*((n.n+p.n)*term+p.n*term2)*p.m);
+  
+  if (n.ms<0.0 || p.ms<0.0) {
+    model_selected=false;
+    return 7;
+  }
+
+  // --------------------------------------------------------
+  // Test beta equilibrium
+  
+  // Loop over baryon densities
+  cout << "Going to beta-eq test: " << endl;
+  for(double nbx=0.1;nbx<2.00001;nbx+=0.05) {
+    
+    // Beta equilibrium at T=1 MeV
+    mm_funct mf=std::bind
+      (std::mem_fn<int(size_t,const ubvector &,ubvector &,
+		       double, double,double)>
+       (&eos::solve_Ye),this,std::placeholders::_1, 
+       std::placeholders::_2,std::placeholders::_3,nbx,1.0/hc_mev_fm,0.0);
+    
+    int verbose_store=verbose;
+    verbose=0;
+
+    ubvector Ye_trial(1);
+    Ye_trial[0]=0.05;
+    mroot_hybrids<> mh;
+    mh.err_nonconv=false;
+    mh.def_jac.err_nonconv=false;
+    int ret=mh.msolve(1,Ye_trial,mf);
+    if (ret!=0) {
+      model_selected=false;
+      return 8;
+    }
+    
+    double Ye=Ye_trial[0];
+    
+    verbose=verbose_store;
+    
+    if (Ye<0.0 || Ye>1.0) {
+      model_selected=false;
+      return 9;
+    }
+    
+  }
+
+  // --------------------------------------------------------
+
+  if (true) {
+    
+    // Determine the density at which the nuclear matter
+    // EOS becomes acausal. This code uses just the cs2 at
+    // T=0.1 MeV, but it's probably accurate enough for now
+    
+    double pr_last=0.0, ed_last=0.0;
+    for(double nbx=0.1;nbx<2.00001;nbx+=0.01) {
+      
+      neutron.n=nbx/2.0;
+      proton.n=nbx/2.0;
+      fermion_deriv n2=neutron;
+      fermion_deriv p2=proton;
+      thermo_np_deriv_helm thd;
+      sk.calc_deriv_e(n2,p2,th2,thd);
+      double sk_ed=th2.ed;
+      double sk_pr=th2.pr;
+      
+      // Add the electron contribution
+      electron.n=nbx/2.0;
+      relf.calc_density_zerot(electron);
+      th2.ed+=electron.ed;
+      th2.pr+=electron.pr;
+
+      if (false) {
+        cout << nbx << " " 
+             << (th2.pr-pr_last)/
+          (th2.ed+neutron.n*neutron.m+proton.n*proton.m-ed_last) << " ";
+      }
+      
+      ed_last=th2.ed+neutron.n*neutron.m+proton.n*proton.m;
+      pr_last=th2.pr;
+
+      double cs2x=cs2_func(neutron,proton,0.1/hc_mev_fm,th2);
+      if (false) {
+        cout << cs2x << " "
+             << cs2_func(neutron,proton,1.0/hc_mev_fm,th2) << endl;
+      }
+      
+      if (cs2x>0.99) {
+        e_nuc_last=sk_ed;
+        p_nuc_last=sk_pr;
+        nuc_nb_max=nbx;
+        nbx=3.0;
+        cout << "Setting e_nuc_last, p_nuc_last, nuc_nb_max:\n  "
+             << e_nuc_last << " " << p_nuc_last << " "
+             << nuc_nb_max << endl;
+      }
+    }
+    
+  }
+  
+  // --------------------------------------------------------
+  // Test cs2
+  
+  model_selected=true;
+
+  if (select_cs2_test) {
+    cout << "Going to cs2 test: " << endl;
+    for(double nbx=0.1;nbx<2.00001;nbx+=0.05) {
+      for(double yex=0.05;yex<0.4501;yex+=0.1) {
+	for(double Tx=1.0/hc_mev_fm;Tx<10.01/hc_mev_fm;Tx+=9.0/hc_mev_fm) {
+	  neutron.n=nbx*(1.0-yex);
+	  proton.n=nbx*yex;
+	  double cs2x=cs2_func(neutron,proton,Tx,th2);
+	  if (cs2x<0.0) {
+	    model_selected=false;
+	    if (true) {
+	      cout << "Negative speed of sound." << endl;
+	      cout << nbx << " " << yex << " " << Tx*hc_mev_fm << " "
+		   << cs2x << endl;
+	      exit(-1);
+	    }	    
+	    return 10;
+	  }
+	}
+      }
+    }
+  }
+
+  return 0;
+}
+
 int eos::random(std::vector<std::string> &sv, bool itive_com) {
 
   if (UNEDF_tab.get_nlines()==0) read_data_files();

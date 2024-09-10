@@ -1663,7 +1663,13 @@ int eos_nuclei::eos_deriv(std::vector<std::string> &sv,
                           bool itive_com) {
 
   std::cout << "Computing derivatives." << endl;
-  
+
+  if (n_nB2<3 || n_Ye2<3 || n_T2<3) {
+    std::cout << "Cannot compute derivatives with less than "
+              << "three grid points in any direction." << std::endl;
+    return 1;
+  }
+
   // -----------------------------------------------------
   // Read table
     
@@ -10376,7 +10382,10 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	    string msg="Table "+out_file+" is "+
 	      o2scl::dtos(((double)conv2_count)/((double)tc)*100.0)+
 	      " percent completed.";
-	    slack.send(msg);
+	    int slack_ret=slack.send(msg,false);
+            if (slack_ret!=0 && verbose>0) {
+              cout << "Sending slack message failed." << endl;
+            }
 	    
 	  }
 	  
