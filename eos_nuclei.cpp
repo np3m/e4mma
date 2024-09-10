@@ -9307,13 +9307,14 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 #endif
 
   eos_nuclei external;
+  bool ext_grid_matches=false;
+  external.data_dir=data_dir;
   if (ext_guess.length()>0) {
     external.read_results(ext_guess);
-    if (nB_grid2!=external.nB_grid2 ||
-	Ye_grid2!=external.Ye_grid2 ||
-	T_grid2!=external.T_grid2) {
-      O2SCL_ERR("Grids don't match for external guess.",
-		o2scl::exc_einval);
+    if (nB_grid2==external.nB_grid2 ||
+	Ye_grid2==external.Ye_grid2 ||
+	T_grid2==external.T_grid2) {
+      ext_grid_matches=true;
     }
   }
   
@@ -9685,12 +9686,25 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
                                      external.tg_NmZ_max.get(ix),mue};
 		gtab.line_of_data(line.size(),line);
 	      } else {
-		vector<double> line={external.tg_log_xn.get(ix),
-                                     external.tg_log_xp.get(ix),
-                                     external.tg_Z.get(ix),
-                                     external.tg_A.get(ix),
-                                     0.0,0.0,0.0,0.0,0.0};
-		gtab.line_of_data(line.size(),line);
+                if (ext_grid_matches) {
+                  vector<double> line={external.tg_log_xn.get(ix),
+                                       external.tg_log_xp.get(ix),
+                                       external.tg_Z.get(ix),
+                                       external.tg_A.get(ix),
+                                       0.0,0.0,0.0,0.0,0.0};
+                  gtab.line_of_data(line.size(),line);
+                } else {
+                  vector<double> pointx={nB_grid2[inB],Ye_grid2[iYe],
+                                         T_grid2[iT]};
+
+                  vector<double> line=
+                    {external.tg_log_xn.interp_linear(pointx),
+                     external.tg_log_xp.interp_linear(pointx),
+                     external.tg_Z.interp_linear(pointx),
+                     external.tg_A.interp_linear(pointx),
+                     0.0,0.0,0.0,0.0,0.0};
+                  gtab.line_of_data(line.size(),line);
+                }
 	      }
 	      guess_found=true;
 	    }

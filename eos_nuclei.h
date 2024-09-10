@@ -179,6 +179,7 @@ public:
   /// Pointer to the eos_nuclei class
   void *enp;
 
+  /// Desc
   bool py_fit;
   
   interpm_krige_eos() {
@@ -192,6 +193,8 @@ public:
       objects
    */
   virtual void set();
+
+  /// Desc
   virtual void set2();
   
   /** \brief Additional constraints for the interpolation

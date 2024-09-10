@@ -1,0 +1,8 @@
+# ----------------------------------------------------------------
+# Desc
+# ----------------------------------------------------------------
+
+../eos_nuclei -set data_dir "../data" -random \
+-set nB_grid_spec "5,0.01*(i+1)" -set Ye_grid_spec "1,0.4" \
+-set T_grid_spec "1,5" -help set -generate-table \
+"out_file=table.o2,ext_guess=/home/awsteiner/data/eos/fid_3_14_23.o2"
