@@ -9259,7 +9259,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 
   kwargs kwa;
   if (sv.size()>=2) kwa.set(sv[1]);
-  string out_file=kwa.get_string("out_file","eos_nuclei.o2");
+  string out_file=kwa.get_string("out_file","");
   int gt_verbose=kwa.get_int("gt_verbose",2);
   string ext_guess=kwa.get_string("ext_guess","");
 
@@ -10363,10 +10363,12 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	  // Update file if necessary
 	  if (((int)i)%file_update_iters==file_update_iters-1 ||
 	      MPI_Wtime()-last_file_time>file_update_time) {
-	    
-	    cout << "Updating file." << endl;
-	    write_results(out_file);
-	    last_file_time=MPI_Wtime();
+
+            if (out_file.length()>0) {
+              cout << "Updating file." << endl;
+              write_results(out_file);
+              last_file_time=MPI_Wtime();
+            }
 	    
 	    size_t tc=0,conv2_count=0;
 	    for(size_t ii=0;ii<n_nB2;ii++) {
@@ -10379,7 +10381,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	      }
 	    }
 	    
-	    string msg="Table "+out_file+" is "+
+	    string msg="Table is "+
 	      o2scl::dtos(((double)conv2_count)/((double)tc)*100.0)+
 	      " percent completed.";
 	    int slack_ret=slack.send(msg,false);
@@ -10515,12 +10517,14 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	      curr_time-last_file_time>file_update_time) {
 	    
 	    cout << "Updating file." << endl;
-            write_results(out_file);
+            if (out_file.length()>0) {
+              write_results(out_file);
 #ifdef NO_MPI
-	    last_file_time=time(0);
+              last_file_time=time(0);
 #else
-	    last_file_time=MPI_Wtime();
+              last_file_time=MPI_Wtime();
 #endif
+            }
             
             size_t tc=0,conv2_count=0;
             for(size_t ii=0;ii<n_nB2;ii++) {
@@ -10533,10 +10537,10 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
               }
             }
             
-            string msg="Table "+out_file+" is "+
+            string msg="Table is "+
               o2scl::dtos(((double)conv2_count)/((double)tc)*100.0)+
               " percent completed.";
-            slack.send(msg);
+            slack.send(msg,false);
             
 
 	  }
@@ -10581,17 +10585,19 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	cout << "Finished. " << ntasks << " " << max_time << " "
 	     << elapsed << endl;
 	done=true;
-	
+        
       } else if (write_elapsed>file_update_time) {
 	
 	cout << "Updating file." << endl;
-	write_results(out_file);
+        if (out_file.length()>0) {
+          write_results(out_file);
 #ifdef NO_MPI	
-	last_file_time=time(0);
+          last_file_time=time(0);
 #else
-	last_file_time=MPI_Wtime();
+          last_file_time=MPI_Wtime();
 #endif
-
+        }
+        
 	// Go through the entire table and count how many points have
 	// finished
 	
@@ -10606,10 +10612,10 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	  }
 	}
 	
-	string msg="Table "+out_file+" is "+
+	string msg="Table is "+
 	  o2scl::dtos(((double)conv2_count)/((double)tc)*100.0)+
 	  " percent completed.";
-	slack.send(msg);
+	slack.send(msg,false);
       }
       
       // For debugging
@@ -10651,17 +10657,18 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
     // -----------------------------------------------------
     // Output file
     
-    write_results(out_file);
+    if (out_file.length()>0) {
+      write_results(out_file);
+    }
     
     if (gt_verbose>0) {
       cout << "Rank " << mpi_rank << " sending exit to children." << endl;
     }
       
-    string msg="Function generate_table() done. Wrote file "+
-      out_file+" . There are "+
+    string msg="Function generate_table() done. There are "+
       o2scl::szttos(conv2_count)+" points finished out of "+
       o2scl::szttos(total_tasks)+".";
-    slack.send(msg);
+    slack.send(msg,false);
     
     // End of else for 'if (mpi_rank==0)'
     
