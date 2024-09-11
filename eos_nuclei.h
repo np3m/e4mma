@@ -120,7 +120,7 @@ public:
   */
   double dist_cf(size_t i_calib, size_t i_fix);
 
-  /** \brief Desc
+  /** \brief Compute distance to nearest fix point
    */
   double dist_f(size_t i, size_t j, size_t k, size_t i_fix);
   
@@ -179,7 +179,7 @@ public:
   /// Pointer to the eos_nuclei class
   void *enp;
 
-  /// Desc
+  /// If true, use python to perform the fit (default false)
   bool py_fit;
   
   interpm_krige_eos() {
@@ -194,7 +194,7 @@ public:
    */
   virtual void set();
 
-  /// Desc
+  /// Set function for the minimizer
   virtual void set2();
   
   /** \brief Additional constraints for the interpolation
@@ -469,7 +469,7 @@ public:
   */
   int function_verbose;
 
-  /** \brief Desc
+  /** \brief Store the hadron resonances
    */
   void store_hrg(double mun, double mup,
                  double nn, double np, double T,
@@ -641,13 +641,13 @@ public:
   o2scl::cli::parameter_int p_file_update_iters;
   //@}
 
-  /// Desc
+  /// Solve for nuclei at fixed chemical potential (experimental)
   int solve_nuclei_mu
   (size_t nv, const ubvector &x, ubvector &y, double mun, double mup,
    double T, double &mun_gas, double &mup_gas, o2scl::thermo &th_gas,
    bool no_nuclei);
 
-  /// Desc
+  /// Compute the free energy with nuclei
   double compute_fr_nuclei(double nB, double Ye, double T,
                            double log_xn, double log_xp,
                            o2scl::thermo &th, o2scl::thermo &th_gas);
@@ -1237,7 +1237,7 @@ public:
    */		      
   int init_function(size_t dim, const ubvector &x, ubvector &y);
   
-  /** \brief Maxwell construction
+  /** \brief Maxwell construction (experimental)
 
       Params.
 
@@ -1245,7 +1245,7 @@ public:
   */
   int maxwell(std::vector<std::string> &sv, bool itive_com);
 
-  /** \brief Desc
+  /** \brief Maxwell function
    */
   int max_fun(size_t nv, const ubvector &x, ubvector &y,
               o2scl::interp_vec<std::vector<double>,ubvector> &itp_P, 

@@ -27,6 +27,7 @@ More documentation will be added as time permits.
 
    download	      
    table_format
+   examples
    eos_nuclei
    class_doc
    todos

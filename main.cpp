@@ -42,7 +42,7 @@ int main(int argc, char *argv[]) {
     if (i+2<argc && ((std::string)argv[i])=="-set" &&
         ((std::string)argv[i+1])=="data_dir") {
       eph.data_dir=(std::string)argv[i+2];
-      cout << "Setting data_dir to " << eph.data_dir << endl;
+      cout << "Setting data_dir to \"" << eph.data_dir << "\"." << endl;
     }
 
   }

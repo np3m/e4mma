@@ -4416,7 +4416,7 @@ int eos_nuclei::eos_fixed_dist
   x1[1]=log_xp;
 
   if (mpi_size==1 && loc_verbose>=2) {
-    cout << "Initial guess (log_xn,log_xp): "
+    cout << "eos_nuclei::eos_fixed_dist(): Initial guess (log_xn,log_xp): "
          << x1[0] << " " << x1[1] << endl;
   }
 
@@ -4440,7 +4440,7 @@ int eos_nuclei::eos_fixed_dist
     if (fabs(y1[0])+fabs(y1[1])<mh.tol_rel) {
       mh_ret=0;
     } else {
-      cout << "Verify failed." << endl;
+      cout << "eos_nuclei::eos_fixed_dist(): Verify failed." << endl;
       cout << "  nB,Ye,T[MeV]: " << nB << " " << Ye << " "
 	   << T*hc_mev_fm << endl;
       cout << "  y[0],y[1],tol: " << y1[0] << " " << y1[1] << " "
@@ -4457,7 +4457,7 @@ int eos_nuclei::eos_fixed_dist
     mh_ret=mh.msolve(2,x1,sn_func);
     if (mh_ret==0 && mpi_size==1) {
       if (loc_verbose>1) {
-        cout << "Rank " << mpi_rank
+        cout << "eos_nuclei::eos_fixed_dist(): Rank " << mpi_rank
              << " finished after initial solve." << endl;
       }
     }
@@ -4472,7 +4472,8 @@ int eos_nuclei::eos_fixed_dist
 	qual_best=fabs(y1[0])+fabs(y1[1]);
       }
       if (loc_verbose>=2 && mpi_size==1) {
-	cout << "Rank " << mpi_rank << " solve " << k+1
+	cout << "eos_nuclei::eos_fixed_dist(): "
+             << "Rank " << mpi_rank << " solve " << k+1
 	     << "/" << n_solves << " x1[0],x1[1],qual: ";
         cout.precision(5);
         cout << x1[0] << " " << x1[1] << " "
@@ -4480,7 +4481,8 @@ int eos_nuclei::eos_fixed_dist
         cout.precision(6);
       }
       if (mh_ret==0 && mpi_size==1 && loc_verbose>0) {
-	cout << "Rank " << mpi_rank << " finished after solve " << k
+	cout << "eos_nuclei::eos_fixed_dist(): Rank "
+             << mpi_rank << " finished after solve " << k
 	     << "." << endl;
       }
     }
@@ -7136,12 +7138,14 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
     
     flag=((int)(tg_flag.get(ix)+1.0e-10));
     
-    cout << "Found grid point (inB,iYe,iT)=(" << inB << ","
-	 << iYe << "," << iT << ")\n\t(nB,Ye,T[MeV])=("
-	 << nB << "," << Ye << "," << T*hc_mev_fm << "), flag="
+    cout << "eos_nuclei::point_nuclei(): "
+         << "Found grid point (inB,iYe,iT)=(" << inB << ","
+         << iYe << "," << iT << ")\n\t(nB,Ye,T[MeV])=("
+         << nB << "," << Ye << "," << T*hc_mev_fm << "), flag="
 	 << flag << "." << endl;
   } else {
-    cout << "No table loaded. Using exact (nB,Ye,T) specified." << endl;
+    cout << "eos_nuclei::point_nuclei(): "
+         << "No table loaded. Using exact (nB,Ye,T) specified." << endl;
   }
 
   // -------------------------------------------------------------------
@@ -7150,7 +7154,7 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
   
   if ((alg_mode==2 || alg_mode==3 || alg_mode==4) && sv.size()>=10) {
     
-    cout << "Function point_nuclei(): "
+    cout << "eos_nuclei::point_nuclei(): "
 	 << "Reading guess (log_xn,log_xp,A_min,A_max,NmZ_min,NmZ_max) "
 	 << "from command line." << endl;
     
@@ -7183,7 +7187,7 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
     if (flag>=5 || flag==-5) {
       
       if (alg_mode==0 || alg_mode==1) {
-	cout << "Function point_nuclei(): "
+	cout << "eos_nuclei::point_nuclei(): "
 	     << "Reading guess (N,Z) from current table." << endl;
 	log_xn=tg_log_xn.get(ix);
 	log_xp=tg_log_xp.get(ix);
@@ -7193,7 +7197,7 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
 	     << log_xp << " " << nuc_Z1 << " " << nuc_N1 << endl;
 	guess_provided=true;
       } else {
-	cout << "Function point_nuclei():\n"
+	cout << "eos_nuclei::point_nuclei():\n"
 	     << "  Reading guess (log_xn,log_xp,A_min,A_max,NmZ_min,NmZ_max) "
 	     << "from current table." << endl;
 	log_xn=tg_log_xn.get(ix);
@@ -7234,7 +7238,7 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
   // If no guess was found, then just use a default guess
   
   if (guess_provided==false) {
-    cout << "Function point_nuclei(): "
+    cout << "eos_nuclei::point_nuclei(): "
 	 << "Using hard-coded initial guess." << endl;
     if (nB<0.16) {
       log_xn=log10(nB*(1.0-Ye)/2.0);
@@ -7265,7 +7269,8 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
   int ret=-1;
 
   if (use_alt_eos==false && model_selected==false) {
-    cout << "Cannot compute point because model_selected is false "
+    cout << "eos_nuclei::point_nuclei(): "
+         << "Cannot compute point because model_selected is false "
          << "and use_alt_eos is false." << endl;
   }
   
@@ -7273,17 +7278,21 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
       (flag<10 || recompute==true || loaded==false)) {
 
     if (flag<10) {
-      cout << "Computing point because flag < 10." << endl;
+      cout << "eos_nuclei::point_nuclei(): "
+           << "Computing point because flag < 10." << endl;
     } else if (recompute==true) {
-      cout << "Computing point because recompute is true." << endl;
+      cout << "eos_nuclei::point_nuclei(): "
+           << "Computing point because recompute is true." << endl;
     } else if (loaded==false) {
-      cout << "Computing point because loaded is false." << endl;
+      cout << "eos_nuclei::point_nuclei(): "
+           << "Computing point because loaded is false." << endl;
     }
 
     if (loaded && inB>0 && inB<n_nB2-1 &&
 	tg_flag.get(ix_left)>9.9 &&
 	tg_flag.get(ix_right)>9.9) {
-      cout << "Automatically setting ranges for log_xn and log_xp "
+      cout << "eos_nuclei::point_nuclei(): "
+           << "Automatically setting ranges for log_xn and log_xp "
            << "from neighboring points." << endl;
       fd_rand_ranges.resize(4);
       fd_rand_ranges[0]=tg_log_xn.get(ix_left);
@@ -7317,25 +7326,25 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
     }
 
     if (ret!=0) {
-      cout << "Point failed." << endl;
+      cout << "eos_nuclei::point_nuclei(): Point failed." << endl;
     } else if (loaded) {
-      cout << "Point succeeded. Storing." << endl;
+      cout << "eos_nuclei::point_nuclei(): Point succeeded. Storing." << endl;
 
       store_point(inB,iYe,iT,nB,Ye,T,thx,log_xn,log_xp,Zbar,Nbar,
 		  mun_full,mup_full,X,A_min,A_max,NmZ_min,NmZ_max,
 		  10.0,vdet);
       
     } else {
-      cout << "Point succeeded." << endl;
+      cout << "eos_nuclei::point_nuclei(): Point succeeded." << endl;
     }
 
     if (ret==0) {
-      cout << "log_xn: " << log_xn << endl;
-      cout << "log_xp: " << log_xp << endl;
-      cout << "fint: " << thx.ed-T*thx.en << " 1/fm^4" << endl;
-      cout << "Fint: " << (thx.ed-T*thx.en)/nB*hc_mev_fm << " MeV" << endl;
-      cout << "A: " << Zbar+Nbar << endl;
-      cout << "Z: " << Zbar << endl;
+      cout << "  log_xn: " << log_xn << endl;
+      cout << "  log_xp: " << log_xp << endl;
+      cout << "  fint: " << thx.ed-T*thx.en << " 1/fm^4" << endl;
+      cout << "  Fint: " << (thx.ed-T*thx.en)/nB*hc_mev_fm << " MeV" << endl;
+      cout << "  A: " << Zbar+Nbar << endl;
+      cout << "  Z: " << Zbar << endl;
       
       if (true) {
         
@@ -7369,14 +7378,14 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
           
         }
 
-        cout << "ξ: " << ξ << endl;
-        cout << "n_{n,gas} [in 1/fm^3; called n_n^{\\prime} in "
+        cout << "  ξ: " << ξ << endl;
+        cout << "  n_{n,gas} [in 1/fm^3; called n_n^{\\prime} in "
              << "Du et al. (2022)]: " << xn*nB << endl;
-        cout << "n_{p,gas} [in 1/fm^3; called n_n^{\\prime} in "
+        cout << "  n_{p,gas} [in 1/fm^3; called n_n^{\\prime} in "
              << "Du et al. (2022)]: " << xp*nB << endl;
-        cout << "n_{n,avg} [in 1/fm^3: equal to Xn*nB]: "
+        cout << "  n_{n,avg} [in 1/fm^3: equal to Xn*nB]: "
              << xn*nB*ξ << endl;
-        cout << "n_{n,avg} [in 1/fm^3: equal to Xn*nB]: "
+        cout << "  n_{n,avg} [in 1/fm^3: equal to Xn*nB]: "
              << xp*nB*ξ << endl;
         
         if (inc_hrg) {
@@ -7395,26 +7404,26 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
       
       
       if (include_detail) {
-	cout << "zn: " << vdet["zn"] << endl;
-	cout << "zp: " << vdet["zp"] << endl;
-	cout << "F1: " << vdet["F1"] << " "
+	cout << "  zn: " << vdet["zn"] << endl;
+	cout << "  zp: " << vdet["zp"] << endl;
+	cout << "  F1: " << vdet["F1"] << " "
              << vdet_units.find("F1")->second << endl;
-	cout << "F2: " << vdet["F2"] << " "
+	cout << "  F2: " << vdet["F2"] << " "
              << vdet_units.find("F2")->second << endl;
-	cout << "F3: " << vdet["F3"] << " "
+	cout << "  F3: " << vdet["F3"] << " "
              << vdet_units.find("F3")->second << endl;
-	cout << "F4: " << vdet["F4"] << " "
+	cout << "  F4: " << vdet["F4"] << " "
              << vdet_units.find("F4")->second << endl;
-	cout << "msn: " << vdet["msn"] << " "
+	cout << "  msn: " << vdet["msn"] << " "
              << vdet_units.find("msn")->second << endl;
-	cout << "msp: " << vdet["msp"] << " "
+	cout << "  msp: " << vdet["msp"] << " "
              << vdet_units.find("msp")->second << endl;
-	cout << "Un: " << vdet["Un"] << " "
+	cout << "  Un: " << vdet["Un"] << " "
              << vdet_units.find("Un")->second << endl;
-	cout << "Up: " << vdet["Up"] << " "
+	cout << "  Up: " << vdet["Up"] << " "
              << vdet_units.find("Up")->second << endl;
-	cout << "g: " << vdet["g"] << endl;
-	cout << "dgdT: " << vdet["dgdT"] << " "
+	cout << "  g: " << vdet["g"] << endl;
+	cout << "  dgdT: " << vdet["dgdT"] << " "
              << vdet_units.find("dgdT")->second << endl;
       }
     }      
@@ -7427,7 +7436,8 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
   // flag, not the new flag, which is stored in tg_flag)
 
   if (flag>=10 && recompute==false) {
-    cout << "Point already computed and recompute is false." << endl;
+    cout << "eos_nuclei::point_nuclei(): "
+         << "Point already computed and recompute is false." << endl;
   }
 
   // -------------------------------------------------------------------
@@ -7436,73 +7446,73 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
   // done (flag==10).
   
   if ((ret==0 || flag==10) && loaded) {
-    cout << "Results stored in table:" << endl;
-    cout << "nB,Ye,T: " << nB << " " << Ye << " " << T*hc_mev_fm
+    cout << "eos_nuclei::point_nuclei(): Results stored in table:" << endl;
+    cout << "  nB,Ye,T: " << nB << " " << Ye << " " << T*hc_mev_fm
          << " MeV" << endl;
-    cout << "flag: " << tg_flag.get(ix) << endl;
-    cout << "log_xn: " << tg_log_xn.get(ix) << endl;
-    cout << "log_xp: " << tg_log_xp.get(ix) << endl;
-    cout << "Z: " << tg_Z.get(ix) << endl;
-    cout << "A: " << tg_A.get(ix) << endl;
-    cout << "Fint: " << tg_Fint.get(ix) << " MeV" << endl;
-    cout << "Sint: " << tg_Sint.get(ix) << endl;
-    cout << "Eint: " << tg_Eint.get(ix) << " MeV" << endl;
-    cout << "A_min: " << tg_A_min.get(ix) << endl;
-    cout << "A_max: " << tg_A_max.get(ix) << endl;
-    cout << "NmZ_min: " << tg_NmZ_min.get(ix) << endl;
-    cout << "NmZ_max: " << tg_NmZ_max.get(ix) << endl;
-    cout << "Xn: " << tg_Xn.get(ix) << endl;
-    cout << "Xp: " << tg_Xp.get(ix) << endl;
-    cout << "Xd: " << tg_Xd.get(ix) << endl;
-    cout << "Xt: " << tg_Xt.get(ix) << endl;
-    cout << "XHe3: " << tg_XHe3.get(ix) << endl;
-    cout << "XLi4: " << tg_XLi4.get(ix) << endl;
-    cout << "Xalpha: " << tg_Xalpha.get(ix) << endl;
-    cout << "Xnuclei: " << tg_Xnuclei.get(ix) << endl;
+    cout << "  flag: " << tg_flag.get(ix) << endl;
+    cout << "  log_xn: " << tg_log_xn.get(ix) << endl;
+    cout << "  log_xp: " << tg_log_xp.get(ix) << endl;
+    cout << "  Z: " << tg_Z.get(ix) << endl;
+    cout << "  A: " << tg_A.get(ix) << endl;
+    cout << "  Fint: " << tg_Fint.get(ix) << " MeV" << endl;
+    cout << "  Sint: " << tg_Sint.get(ix) << endl;
+    cout << "  Eint: " << tg_Eint.get(ix) << " MeV" << endl;
+    cout << "  A_min: " << tg_A_min.get(ix) << endl;
+    cout << "  A_max: " << tg_A_max.get(ix) << endl;
+    cout << "  NmZ_min: " << tg_NmZ_min.get(ix) << endl;
+    cout << "  NmZ_max: " << tg_NmZ_max.get(ix) << endl;
+    cout << "  Xn: " << tg_Xn.get(ix) << endl;
+    cout << "  Xp: " << tg_Xp.get(ix) << endl;
+    cout << "  Xd: " << tg_Xd.get(ix) << endl;
+    cout << "  Xt: " << tg_Xt.get(ix) << endl;
+    cout << "  XHe3: " << tg_XHe3.get(ix) << endl;
+    cout << "  XLi4: " << tg_XLi4.get(ix) << endl;
+    cout << "  Xalpha: " << tg_Xalpha.get(ix) << endl;
+    cout << "  Xnuclei: " << tg_Xnuclei.get(ix) << endl;
     if (rmf_fields) {
-      cout << "sigma: " << tg_sigma.get(ix) << " MeV" << endl;
-      cout << "omega: " << tg_omega.get(ix) << " MeV" << endl;
-      cout << "rho: " << tg_rho.get(ix) << " MeV" << endl;
+      cout << "  sigma: " << tg_sigma.get(ix) << " MeV" << endl;
+      cout << "  omega: " << tg_omega.get(ix) << " MeV" << endl;
+      cout << "  rho: " << tg_rho.get(ix) << " MeV" << endl;
     }
     if (include_muons) {
-      cout << "Ymu: " << tg_Ymu.get(ix) << endl;
+      cout << "  Ymu: " << tg_Ymu.get(ix) << endl;
     }
     if (include_muons || with_leptons) {
-      cout << "mue: " << tg_mue.get(ix) << " MeV" << endl;
+      cout << "  mue: " << tg_mue.get(ix) << " MeV" << endl;
       if (include_muons==false) {
         electron.mu=tg_mue.get(ix)/hc_mev_fm;
         relf.calc_mu(electron,T);
         double eminus=electron.n;
         double eplus=eminus-Ye*nB;
-        cout << "Density of electrons: " << eminus << " positrons: "
+        cout << "  Density of electrons: " << eminus << " positrons: "
              << eplus << " Ye*nB: " << Ye*nB << endl;
         electron.n=Ye*nB;
       }
     }
     if (derivs_computed) {
-      cout << "Pint: " << tg_Pint.get(ix) << " MeV/fm^3" << endl;
-      cout << "mun: " << tg_mun.get(ix) << " MeV" << endl;
-      cout << "mup: " << tg_mup.get(ix) << " MeV" << endl;
+      cout << "  Pint: " << tg_Pint.get(ix) << " MeV/fm^3" << endl;
+      cout << "  mun: " << tg_mun.get(ix) << " MeV" << endl;
+      cout << "  mup: " << tg_mup.get(ix) << " MeV" << endl;
       if (with_leptons) {
-        cout << "F: " << tg_F.get(ix) << " MeV" << endl;
-        cout << "E: " << tg_E.get(ix) << " MeV" << endl;
-        cout << "S: " << tg_S.get(ix) << endl;
-        cout << "P: " << tg_P.get(ix) << " MeV/fm^3" << endl;
+        cout << "  F: " << tg_F.get(ix) << " MeV" << endl;
+        cout << "  E: " << tg_E.get(ix) << " MeV" << endl;
+        cout << "  S: " << tg_S.get(ix) << endl;
+        cout << "  P: " << tg_P.get(ix) << " MeV/fm^3" << endl;
       }
     }
     if (include_detail && tg_zn.get_rank()>=3) {
-      cout << "zn: " << tg_zn.get(ix) << endl;
-      cout << "zp: " << tg_zp.get(ix) << endl;
-      cout << "F1: " << tg_F1.get(ix) << " MeV" << endl;
-      cout << "F2: " << tg_F2.get(ix) << " MeV" << endl;
-      cout << "F3: " << tg_F3.get(ix) << " MeV" << endl;
-      cout << "F3: " << tg_F3.get(ix) << " MeV" << endl;
-      cout << "msn: " << tg_msn.get(ix) << " MeV" << endl;
-      cout << "msp: " << tg_msp.get(ix) << " MeV" << endl;
-      cout << "Un: " << tg_Un.get(ix) << " MeV" << endl;
-      cout << "Up: " << tg_Up.get(ix) << " MeV" << endl;
-      cout << "g: " << tg_g.get(ix) << endl;
-      cout << "dgdT: " << tg_dgdT.get(ix) << " 1/MeV" << endl;
+      cout << "  zn: " << tg_zn.get(ix) << endl;
+      cout << "  zp: " << tg_zp.get(ix) << endl;
+      cout << "  F1: " << tg_F1.get(ix) << " MeV" << endl;
+      cout << "  F2: " << tg_F2.get(ix) << " MeV" << endl;
+      cout << "  F3: " << tg_F3.get(ix) << " MeV" << endl;
+      cout << "  F3: " << tg_F3.get(ix) << " MeV" << endl;
+      cout << "  msn: " << tg_msn.get(ix) << " MeV" << endl;
+      cout << "  msp: " << tg_msp.get(ix) << " MeV" << endl;
+      cout << "  Un: " << tg_Un.get(ix) << " MeV" << endl;
+      cout << "  Up: " << tg_Up.get(ix) << " MeV" << endl;
+      cout << "  g: " << tg_g.get(ix) << endl;
+      cout << "  dgdT: " << tg_dgdT.get(ix) << " 1/MeV" << endl;
     }
   }
 
@@ -7511,7 +7521,8 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
   
   if (alg_mode>=2 && show_all_nuclei) {
     
-    cout << "Writing distribution to dist.o2." << endl;
+    cout << "eos_nuclei::point_nuclei(): "
+         << "Writing distribution to dist.o2." << endl;
     
     table3d t3d;
     A_max=((int)(tg_A_max.get(ix)+1.0e-10));

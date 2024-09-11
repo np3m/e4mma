@@ -632,7 +632,7 @@ public:
   int solve_coeff_small(size_t nv, const ubvector &x, ubvector &y, 
 			double nb_last, double cs_ns_2, double cs_ns_last);
 
-  /// Desc
+  /// Experimental select function for all parameters
   int select_full(std::vector<double> &p);
   
   /** \brief Internal select function

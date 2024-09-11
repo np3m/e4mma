@@ -722,10 +722,10 @@ void eos::ns_fit(int row) {
     double cs2=cs2_fit(nb);
     nstar_high.set("cs2_fit",i,cs2);
   }
+  
   std::string fc=((std::string)"(EoA+")+
     o2scl::dtos(neutron.m*hc_mev_fm,0)+")/"+
     o2scl::dtos(hc_mev_fm,0)+"*nb";
-  cout << "fc: " << fc << endl;
   nstar_high.function_column(fc,"ed");
   nstar_high.set_unit("ed","1/fm^4");
   nstar_high.deriv("nb","ed","mu");
@@ -747,7 +747,7 @@ void eos::ns_fit(int row) {
     }
   }
   if (nb_new>0.01) {
-    cout << "Adjusting ns_nb_max from " << ns_nb_max << " to "
+    cout << "eos::ns_fit(): Adjusting ns_nb_max from " << ns_nb_max << " to "
          << nb_new << " ." << endl;
     ns_nb_max=nb_new;
   }
@@ -3740,7 +3740,7 @@ int eos::select_internal(int i_ns_loc, int i_skyrme_loc,
   // Test beta equilibrium
   
   // Loop over baryon densities
-  cout << "Going to beta-eq test: " << endl;
+  cout << "eos::select_internal(): Going to beta-eq test." << endl;
   for(double nbx=0.1;nbx<2.00001;nbx+=0.05) {
     
     // Beta equilibrium at T=1 MeV
@@ -3821,7 +3821,8 @@ int eos::select_internal(int i_ns_loc, int i_skyrme_loc,
         p_nuc_last=sk_pr;
         nuc_nb_max=nbx;
         nbx=3.0;
-        cout << "Setting e_nuc_last, p_nuc_last, nuc_nb_max:\n  "
+        cout << "eos::select_internal(): "
+             << "Setting e_nuc_last, p_nuc_last, nuc_nb_max:\n  "
              << e_nuc_last << " " << p_nuc_last << " "
              << nuc_nb_max << endl;
       }
@@ -3835,7 +3836,7 @@ int eos::select_internal(int i_ns_loc, int i_skyrme_loc,
   model_selected=true;
 
   if (select_cs2_test) {
-    cout << "Going to cs2 test: " << endl;
+    cout << "eos::select_internal(): Going to cs2 test." << endl;
     for(double nbx=0.1;nbx<2.00001;nbx+=0.05) {
       for(double yex=0.05;yex<0.4501;yex+=0.1) {
 	for(double Tx=1.0/hc_mev_fm;Tx<10.01/hc_mev_fm;Tx+=9.0/hc_mev_fm) {
@@ -4165,28 +4166,24 @@ int eos::point(std::vector<std::string> &sv, bool itive_com) {
   proton.n=nB*Ye;
   free_energy_density(neutron,proton,T,th2);
   
-  if (true) {
-    
-    cout.setf(ios::showpos);
-    double f_total=th2.ed-T*th2.en;
-
-    cout << "(All of these quantities are without electrons and photons.)"
-         << endl;
-    cout << "fint_total: " << f_total << " 1/fm^4 " << endl;
-    cout << "Fint_total: " << f_total/nB*hc_mev_fm << " MeV" << endl;
-    
-    cout << "energy density (with rest mass): "
-         << th2.ed+neutron.n*neutron.m+proton.n*proton.m
-         << " 1/fm^4 " << endl;
-    cout << "pressure: " << th2.pr << " 1/fm^4" << endl;
-    cout << "entropy density: " << th2.en << " 1/fm^3 " << endl;
-    cout << "entropy per baryon: " << th2.en/nB << endl;
-    cout << "mu_n: " << neutron.mu*hc_mev_fm << " MeV" << endl;
-    cout << "mu_p: " << proton.mu*hc_mev_fm << " MeV" << endl;
-    cout << endl;
-    cout.unsetf(ios::showpos);
-    
-  }
+  double f_total=th2.ed-T*th2.en;
+  
+  cout << "eos::point():" << endl;
+  cout << "  (All of these quantities are without electrons and photons.)"
+       << endl;
+  cout << "  free energy density: " << f_total << " 1/fm^4 " << endl;
+  cout << "  free energy per baryon: " << f_total/nB*hc_mev_fm
+       << " MeV" << endl;
+  
+  cout << "  energy density (with rest mass): "
+       << th2.ed+neutron.n*neutron.m+proton.n*proton.m
+       << " 1/fm^4 " << endl;
+  cout << "  pressure: " << th2.pr << " 1/fm^4" << endl;
+  cout << "  entropy density: " << th2.en << " 1/fm^3 " << endl;
+  cout << "  entropy per baryon: " << th2.en/nB << endl;
+  cout << "  mu_n: " << neutron.mu*hc_mev_fm << " MeV" << endl;
+  cout << "  mu_p: " << proton.mu*hc_mev_fm << " MeV" << endl;
+  cout << endl;
   
   return 0;
 }
