@@ -416,7 +416,7 @@ double eos_nuclei::f_min_search(size_t nvar,const ubvector &x,
 }
 
 int eos_nuclei::init_function(size_t dim, const ubvector &x, ubvector &y) {
-  for (size_t i=0;i<dim;i++) {
+  for(size_t i=0;i<dim;i++) {
     y[i]=0.1*rng.random();
   }
   return 0;
@@ -477,8 +477,8 @@ int eos_nuclei::maxwell(std::vector<std::string> &sv,
       return 0;
     }
   
-    for (size_t iYe=0;iYe<n_Ye2;iYe++) {
-      for (size_t iT=0;iT<n_T2;iT++) {
+    for(size_t iYe=0;iYe<n_Ye2;iYe++) {
+      for(size_t iT=0;iT<n_T2;iT++) {
 
         if (verbose>1) {
           for(size_t inB=0;inB<n_nB2;inB++) {
@@ -659,8 +659,8 @@ int eos_nuclei::maxwell(std::vector<std::string> &sv,
       return 0;
     }
   
-    for (size_t iYe=0;iYe<n_Ye2;iYe++) {
-      for (size_t iT=0;iT<n_T2;iT++) {
+    for(size_t iYe=0;iYe<n_Ye2;iYe++) {
+      for(size_t iT=0;iT<n_T2;iT++) {
       
         double Ye=Ye_grid2[iYe];
         double T_MeV=T_grid2[iT];
@@ -761,8 +761,8 @@ int eos_nuclei::maxwell(std::vector<std::string> &sv,
       return 0;
     }
   
-    for (size_t iYe=0;iYe<n_Ye2;iYe++) {
-      for (size_t iT=0;iT<n_T2;iT++) {
+    for(size_t iYe=0;iYe<n_Ye2;iYe++) {
+      for(size_t iT=0;iT<n_T2;iT++) {
       
         double Ye=Ye_grid2[iYe];
         double T_MeV=T_grid2[iT];
@@ -900,8 +900,8 @@ int eos_nuclei::maxwell(std::vector<std::string> &sv,
       return 0;
     }
   
-    for (size_t iYe=0;iYe<n_Ye2;iYe++) {
-      for (size_t iT=0;iT<n_T2;iT++) {
+    for(size_t iYe=0;iYe<n_Ye2;iYe++) {
+      for(size_t iT=0;iT<n_T2;iT++) {
       
         double Ye=Ye_grid2[iYe];
         double T_MeV=T_grid2[iT];
@@ -1015,19 +1015,19 @@ int eos_nuclei::beta_table(std::vector<std::string> &sv,
 
   int fails=0;
   
-  for (size_t i=0;i<n_nB2;i++) {
-    for (size_t k=0;k<n_T2;k++) {
+  for(size_t i=0;i<n_nB2;i++) {
+    for(size_t k=0;k<n_T2;k++) {
 
       // Set up the "x" grid, extending Ye down to 0 and up to 1
       vector<double> Ye_grid_ext, mu_hat(n_Ye2+2);
       Ye_grid_ext.push_back(0.0);
-      for (size_t j=0;j<n_Ye2;j++) {
+      for(size_t j=0;j<n_Ye2;j++) {
         Ye_grid_ext.push_back(Ye_grid2[j]);
       }
       Ye_grid_ext.push_back(1.0);
 
       // Set up the "y" grid
-      for (size_t j=0;j<n_Ye2;j++) {
+      for(size_t j=0;j<n_Ye2;j++) {
         vector<size_t> ix={i,j,k};
         mu_hat[j+1]=tg_mun.get(ix)-tg_mup.get(ix)-tg_mue.get(ix);
       }
@@ -1098,8 +1098,8 @@ int eos_nuclei::beta_table(std::vector<std::string> &sv,
   Ye_grid2[0]=0.0;
 
   // Insert the beta-equilibrium value in the first Ye index
-  for (size_t i=0;i<n_nB2;i++) {
-    for (size_t k=0;k<n_T2;k++) {
+  for(size_t i=0;i<n_nB2;i++) {
+    for(size_t k=0;k<n_T2;k++) {
       vector<size_t> ix={i,0,k};
       vector<double> grid={nB_grid2[i],tg_Ye.get(ix),T_grid2[k]};
       for(size_t i_arr=0;i_arr<n_arr;i_arr++) {
@@ -1254,9 +1254,9 @@ int eos_nuclei::add_eg(std::vector<std::string> &sv,
     hdf_input(hf,uS,"S");
     hdf_input(hf,umue,"mue");
     
-    for (size_t i=ilo;i<ihi;i++) {
-      for (size_t j=jlo;j<jhi;j++) {
-        for (size_t k=klo;k<khi;k++) {
+    for(size_t i=ilo;i<ihi;i++) {
+      for(size_t j=jlo;j<jhi;j++) {
+        for(size_t k=klo;k<khi;k++) {
           vector<size_t> ix={i,j,k};
           vector<double> vals={nB_grid2[i],Ye_grid2[j],T_grid2[k]};
           tg_F.set(ix,tg_Fint.get(ix)+uF.interp_linear(vals));
@@ -1286,10 +1286,10 @@ int eos_nuclei::add_eg(std::vector<std::string> &sv,
 
   map<std::string,double> vdet;
   
-  for (size_t i=ilo;i<ihi;i++) {
-    for (size_t j=jlo;j<jhi;j++) {
+  for(size_t i=ilo;i<ihi;i++) {
+    for(size_t j=jlo;j<jhi;j++) {
       double mue_last=0.0;
-      for (size_t k=klo;k<khi;k++) {
+      for(size_t k=klo;k<khi;k++) {
 	
 	thermo lep;
         double nB=nB_grid2[i];
@@ -1607,10 +1607,10 @@ int eos_nuclei::eg_table(std::vector<std::string> &sv,
     }
   }
   
-  for (size_t i=0;i<n_nB2;i++) {
+  for(size_t i=0;i<n_nB2;i++) {
     double nB=nB_grid2[i];
-    for (size_t j=0;j<n_Ye2;j++) {
-      for (size_t k=0;k<n_T2;k++) {
+    for(size_t j=0;j<n_Ye2;j++) {
+      for(size_t k=0;k<n_T2;k++) {
         vector<size_t> ix={i,j,k};
         
 	double T_MeV=T_grid2[k];
@@ -1745,8 +1745,8 @@ int eos_nuclei::eos_deriv(std::vector<std::string> &sv,
 
   // First, compute the temperature derivative, which is just the
   // entropy times minus one
-  for (size_t i=0;i<n_nB2;i++) {
-    for (size_t j=0;j<n_Ye2;j++) {
+  for(size_t i=0;i<n_nB2;i++) {
+    for(size_t j=0;j<n_Ye2;j++) {
       for(size_t k=0;k<n_T2;k++) {
         vector<size_t> ix={i,j,k};
 	fint_vec_T[k]=tg_Fint.get(ix)*nB_grid2[i];
@@ -1765,14 +1765,14 @@ int eos_nuclei::eos_deriv(std::vector<std::string> &sv,
 
   // Second, compute the electron fraction derivative, which we
   // temporarily store in tg_mup
-  for (size_t i=0;i<n_nB2;i++) {
+  for(size_t i=0;i<n_nB2;i++) {
     for(size_t k=0;k<n_T2;k++) {
-      for (size_t j=0;j<n_Ye2;j++) {
+      for(size_t j=0;j<n_Ye2;j++) {
         vector<size_t> ix={i,j,k};
 	fint_vec_Ye[j]=tg_Fint.get(ix)*nB_grid2[i];
       }
       itp_stf.set(n_Ye2,Ye_grid2,fint_vec_Ye);
-      for (size_t j=0;j<n_Ye2;j++) {
+      for(size_t j=0;j<n_Ye2;j++) {
         vector<size_t> ix={i,j,k};
 	tg_mup.set(ix,itp_stf.deriv(Ye_grid2[j]));
       }
@@ -1781,14 +1781,14 @@ int eos_nuclei::eos_deriv(std::vector<std::string> &sv,
 
   // Third, compute the baryon density derivative, which we
   // temporarily store in tg_mun
-  for (size_t j=0;j<n_Ye2;j++) {
+  for(size_t j=0;j<n_Ye2;j++) {
     for(size_t k=0;k<n_T2;k++) {
-      for (size_t i=0;i<n_nB2;i++) {
+      for(size_t i=0;i<n_nB2;i++) {
         vector<size_t> ix={i,j,k};
 	fint_vec_nB[i]=tg_Fint.get(ix)*nB_grid2[i];
       }
       itp_stf.set(n_nB2,nB_grid2,fint_vec_nB);
-      for (size_t i=0;i<n_nB2;i++) {
+      for(size_t i=0;i<n_nB2;i++) {
         vector<size_t> ix={i,j,k};
 	tg_mun.set(ix,itp_stf.deriv(nB_grid2[i]));
       }
@@ -1797,9 +1797,9 @@ int eos_nuclei::eos_deriv(std::vector<std::string> &sv,
 
   // Now go through every point and compute the remaining
   // quantities
-  for (size_t i=0;i<n_nB2;i++) {
-    for (size_t j=0;j<n_Ye2;j++) {
-      for (size_t k=0;k<n_T2;k++) {
+  for(size_t i=0;i<n_nB2;i++) {
+    for(size_t j=0;j<n_Ye2;j++) {
+      for(size_t k=0;k<n_T2;k++) {
         vector<size_t> ix={i,j,k};
 	
 	double en=tg_Sint.get(ix)*nB_grid2[i];
@@ -1916,10 +1916,10 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
   interp_vec<vector<double> > itp_sta_a, itp_sta_b, itp_sta_c;
   
   // The baryon density derivatives
-  for (size_t j=0;j<n_Ye2;j++) {
-    for (size_t k=0;k<n_T2;k++) {
+  for(size_t j=0;j<n_Ye2;j++) {
+    for(size_t k=0;k<n_T2;k++) {
       vector<double> mun_of_nB, s_of_nB;
-      for (size_t i=0;i<n_nB2;i++) {
+      for(size_t i=0;i<n_nB2;i++) {
         vector<size_t> ix={i,j,k};
         mun_of_nB.push_back(tg_mun.get(ix)/hc_mev_fm+
                             neutron.m);
@@ -1927,7 +1927,7 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
       }
       itp_sta_a.set(n_nB2,nB_grid2,mun_of_nB,itp_steffen);
       itp_sta_b.set(n_nB2,nB_grid2,s_of_nB,itp_steffen);
-      for (size_t i=0;i<n_nB2;i++) {
+      for(size_t i=0;i<n_nB2;i++) {
         vector<size_t> ix={i,j,k};
         dmundnB.get(ix)=itp_sta_a.deriv(nB_grid2[i]);
         dsdnB.get(ix)=itp_sta_b.deriv(nB_grid2[i]);
@@ -1936,11 +1936,11 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
   }
   
   // The electron fraction derivatives
-  for (size_t i=0;i<n_nB2;i++) {
+  for(size_t i=0;i<n_nB2;i++) {
     double nB=nB_grid2[i];
-    for (size_t k=0;k<n_T2;k++) {
+    for(size_t k=0;k<n_T2;k++) {
       vector<double> mun_of_Ye, mup_of_Ye, s_of_Ye;
-      for (size_t j=0;j<n_Ye2;j++) {
+      for(size_t j=0;j<n_Ye2;j++) {
         vector<size_t> ix={i,j,k};
         mun_of_Ye.push_back(tg_mun.get(ix)/hc_mev_fm+
                             neutron.m);
@@ -1951,7 +1951,7 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
       itp_sta_a.set(n_Ye2,Ye_grid2,mun_of_Ye,itp_steffen);
       itp_sta_b.set(n_Ye2,Ye_grid2,mup_of_Ye,itp_steffen);
       itp_sta_c.set(n_Ye2,Ye_grid2,s_of_Ye,itp_steffen);
-      for (size_t j=0;j<n_Ye2;j++) {
+      for(size_t j=0;j<n_Ye2;j++) {
         vector<size_t> ix={i,j,k};
         dmundYe.get(ix)=itp_sta_a.deriv(Ye_grid2[j]);
         dmupdYe.get(ix)=itp_sta_b.deriv(Ye_grid2[j]);
@@ -1961,16 +1961,16 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
   }
   
   // The temperature derivative
-  for (size_t i=0;i<n_nB2;i++) {
+  for(size_t i=0;i<n_nB2;i++) {
     double nB=nB_grid2[i];
-    for (size_t j=0;j<n_Ye2;j++) {
+    for(size_t j=0;j<n_Ye2;j++) {
       vector<double> s_of_T;
-      for (size_t k=0;k<n_T2;k++) {
+      for(size_t k=0;k<n_T2;k++) {
         vector<size_t> ix={i,j,k};
         s_of_T.push_back(tg_S.get(ix)*nB);
       }
       itp_sta_a.set(n_T2,T_grid2,s_of_T,itp_steffen);
-      for (size_t k=0;k<n_T2;k++) {
+      for(size_t k=0;k<n_T2;k++) {
         vector<size_t> ix={i,j,k};
         dsdT.get(ix)=itp_sta_a.deriv(T_grid2[k])*hc_mev_fm;
       }
@@ -2027,12 +2027,12 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
   }
   
   /// Compute the stability matrix and its eigenvalues at each point
-  for (size_t i=ilo;i<ihi;i++) {
+  for(size_t i=ilo;i<ihi;i++) {
     double nB=nB_grid2[i];
     cout << "nB at " << i << " is " << nB << endl;
-    for (size_t j=jlo;j<jhi;j++) {
+    for(size_t j=jlo;j<jhi;j++) {
       double Ye=Ye_grid2[j];
-      for (size_t k=klo;k<khi;k++) {
+      for(size_t k=klo;k<khi;k++) {
         
         total_count++;
         
@@ -2637,7 +2637,7 @@ double eos_nuclei::compute_fr_nuclei
 
   thx.en=0.0;
 
-  for (size_t i=0;i<n_nuclei;i++) {
+  for(size_t i=0;i<n_nuclei;i++) {
     
     double en_nuc, fr_nuc;
     
@@ -3288,7 +3288,7 @@ int eos_nuclei::eos_fixed_ZN(double nB, double Ye, double T,
   
   double res, err, ret, ret_prime, res_prime, err_prime;
   
-  for (int i=0;i<6;i++) {
+  for(int i=0;i<6;i++) {
 
     if (i==1) {
       
@@ -3523,7 +3523,7 @@ int eos_nuclei::eos_fixed_ZN(double nB, double Ye, double T,
   f=0.0;
   thx.en=0.0;
   
-  for (size_t i=0;i<6;i++) {
+  for(size_t i=0;i<6;i++) {
     if (nuclei[i].n>1.0e-300) {
       double lambda=sqrt(2.0*pi/nuclei[i].m/T);
       fnuc[i]=-T*(log(vomega[i]/nuclei[i].n/pow(lambda,3.0))+1.0)*
@@ -4284,7 +4284,7 @@ int eos_nuclei::eos_fixed_dist
   
   double res, err, ret, ret_prime, res_prime, err_prime;
   
-  for (size_t i=0;i<n_nuclei;i++) {
+  for(size_t i=0;i<n_nuclei;i++) {
 
     if (i==1) {
       
@@ -4490,11 +4490,11 @@ int eos_nuclei::eos_fixed_dist
   } else {
     double count=0;
     double count_total=5000;
-    if(nB<2.2e-12) {
+    if (nB<2.2e-12) {
       count_total=200;
     }
-    if(nB<0.08 && nB>0.01 && T*197.33<10.0) {
-      while((mh_ret!=0||((x1[0]>log_xn*0.9||x1[1]>log_xp*0.9)&& 
+    if (nB<0.08 && nB>0.01 && T*197.33<10.0) {
+      while ((mh_ret!=0||((x1[0]>log_xn*0.9||x1[1]>log_xp*0.9)&& 
 			 pow(10.0,x1[0])+pow(10.0,x1[1])>0.50))
 	    && count<count_total) {
         mh.tol_abs=mh.tol_rel/1.0e4;
@@ -4504,7 +4504,7 @@ int eos_nuclei::eos_fixed_dist
         count++;
       }
     } else {
-      while(mh_ret!=0 && count<count_total) {
+      while (mh_ret!=0 && count<count_total) {
 
         mh.tol_abs=mh.tol_rel/1.0e4;
         x1[0]=log_xn*(1.0+0.5*rng.random_int(100)*0.01);
@@ -4585,11 +4585,12 @@ int eos_nuclei::eos_fixed_dist
 	  bracketing_done=true;
 	}
 
-	// End of for (j=0;j<2;j++) {
+	// End of for(j=0;j<2;j++) {
       }
 
       if (loc_verbose>=2 && mpi_size==1) {
-	cout << "Rank " << mpi_rank << " bracket " << k+1
+	cout << "eos_nuclei::eos_fixed_dist(): "
+             << "Rank " << mpi_rank << " bracket " << k+1
 	     << "/" << n_brackets << " x1[0],x1[1]: ";
         cout.precision(5);
         cout << x1[0] << " " << x1[1] << endl;
@@ -4616,7 +4617,8 @@ int eos_nuclei::eos_fixed_dist
 	  k=n_brackets;
 	  mh_ret=0;
 	  if (mpi_size==1 && loc_verbose>0) {
-	    cout << "Rank " << mpi_rank << " finished after "
+	    cout << "eos_nuclei::eos_fixed_dist(): "
+                 << "Rank " << mpi_rank << " finished after "
 		 << k << " brackets." << endl;
 	  }
 	} else if (k>0 && qual_last==qual) {
@@ -4630,7 +4632,7 @@ int eos_nuclei::eos_fixed_dist
 	
       }
       
-      // End of for (k=0;k<10;k++) {
+      // End of for(k=0;k<10;k++) {
     }
 
     {
@@ -4736,7 +4738,8 @@ int eos_nuclei::eos_fixed_dist
 	}
 
 	if (loc_verbose>=2 && mpi_size==1) {
-	  cout << "Rank " << mpi_rank << " min " << jk+1
+	  cout << "eos_nuclei::eos_fixed_dist(): "
+               << "Rank " << mpi_rank << " min " << jk+1
 	       << "/" << n_minimizes << " ret,qual,x1[0],x1[1]: ";
           cout.precision(5);
           cout << mret << " " << qual_best
@@ -4760,7 +4763,8 @@ int eos_nuclei::eos_fixed_dist
 	// Set mh_ret to zero to indicate that we're done
 	mh_ret=0;
 	if (mpi_size==1 && loc_verbose>0) {
-	  cout << "Rank " << mpi_rank << " finished after "
+	  cout << "eos_nuclei::eos_fixed_dist(): "
+               << "Rank " << mpi_rank << " finished after "
 	       << jk << " minimizer calls." << endl;
 	}
       }
@@ -4817,7 +4821,8 @@ int eos_nuclei::eos_fixed_dist
 	}
 	
 	if (loc_verbose>=2 && mpi_size==1 && kk%100==99) {
-	  cout << "Rank " << mpi_rank << " solve " << kk+1
+	  cout << "eos_nuclei::eos_fixed_dist(): "
+               << "Rank " << mpi_rank << " solve " << kk+1
 	       << "/" << n_randoms << " x1[0],x1[1],qual: ";
           cout.precision(4);
           cout << x1[0] << " " << x1[1] << " "
@@ -4825,7 +4830,8 @@ int eos_nuclei::eos_fixed_dist
           cout.precision(6);
 	}
 	if (mh_ret==0 && mpi_size==1 && loc_verbose>0) {
-	  cout << "Rank " << mpi_rank << " finished after "
+	  cout << "eos_nuclei::eos_fixed_dist(): "
+               << "Rank " << mpi_rank << " finished after "
 	       << kk << " random solves." << endl;
 	}
 	//cout << kk << " " << mh_ret << endl;
@@ -5166,7 +5172,7 @@ int eos_nuclei::eos_fixed_dist
 
   thx.en=0.0;
 
-  for (size_t i=0;i<n_nuclei;i++) {
+  for(size_t i=0;i<n_nuclei;i++) {
     
     double en_nuc, fr_nuc;
     
@@ -7387,6 +7393,13 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
              << xn*nB*ξ << endl;
         cout << "  n_{n,avg} [in 1/fm^3: equal to Xn*nB]: "
              << xp*nB*ξ << endl;
+
+        cout << "  X_{alpha}: " << X[0] << endl;
+        cout << "  X_{d}: " << X[1] << endl;
+        cout << "  X_{t}: " << X[2] << endl;
+        cout << "  X_{He3}: " << X[3] << endl;
+        cout << "  X_{Li4}: " << X[4] << endl;
+        cout << "  X_{nuclei}: " << X[5] << endl;
         
         if (inc_hrg) {
           

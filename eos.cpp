@@ -4101,7 +4101,7 @@ int eos::random(std::vector<std::string> &sv, bool itive_com) {
     done=true;
     
     if (verbose>0) {
-      cout << "Selecting random model." << endl;
+      cout << "eos::random(): Selecting random model." << endl;
     }
 
     // Select a random value for phi
@@ -4123,23 +4123,24 @@ int eos::random(std::vector<std::string> &sv, bool itive_com) {
     i_skyrme=rng.random_int(UNEDF_tab.get_nlines());
     
     if (true || verbose>1) {
-      cout << "Trying random model: " << endl;
-      cout << "i_ns= " << i_ns << endl;
-      cout << "i_skyrme= " << i_skyrme << endl;
-      cout << "alpha= " << qmc_alpha << endl;
-      cout << "a= " << qmc_a << endl;
-      cout << "eos_L= " << eos_L << endl;
-      cout << "eos_S= " << eos_S << endl;
-      cout << "phi= " << phi << endl;
+      cout << "  Trying random model: " << endl;
+      cout << "  i_ns= " << i_ns << endl;
+      cout << "  i_skyrme= " << i_skyrme << endl;
+      cout << "  alpha= " << qmc_alpha << endl;
+      cout << "  a= " << qmc_a << endl;
+      cout << "  eos_L= " << eos_L << endl;
+      cout << "  eos_S= " << eos_S << endl;
+      cout << "  phi= " << phi << endl;
     }
 
     int ret=select_internal(i_ns,i_skyrme,qmc_alpha,qmc_a,
 			    eos_L,eos_S,phi);
     if (true || verbose>1) {
       if (ret==0) {
-	cout << "Success." << endl;
+	cout << "eos::random(): Success." << endl;
       } else {
-	cout << "Failed (" << ret << "). Selecting new random model." << endl;
+	cout << "eos::random(): Failed (ret=" << ret
+             << "). Selecting new random model." << endl;
       }
     }
 
@@ -4147,8 +4148,8 @@ int eos::random(std::vector<std::string> &sv, bool itive_com) {
   }
   
   if (true) {
-    cout << "Function eos::random() selected parameters: " << endl;
-    cout << i_ns << " " << i_skyrme << " " << qmc_alpha
+    cout << "eos::random(): Selected parameters: " << endl;
+    cout << "  " << i_ns << " " << i_skyrme << " " << qmc_alpha
 	 << " " << qmc_a << " " << eos_L << " " << eos_S << " "
 	 << phi << endl;
   }
