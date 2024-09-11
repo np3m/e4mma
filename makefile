@@ -392,6 +392,8 @@ check: eos eos_nuclei
 	cd examples && ./A_point_nuc.scr
 	cd examples && ./B_point.scr
 	cd examples && ./C_help.scr
+	cd examples && ./D_table.scr
+	cd examples && ./E_table_deriv.scr
 
 # This optional file, makefile.user, is an alternate place to store
 # the user's makefile targets.

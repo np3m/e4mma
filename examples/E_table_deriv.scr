@@ -1,10 +1,17 @@
 # ----------------------------------------------------------------
-# Desc
+# Create a small table with derivatives based on an initial guess
 # ----------------------------------------------------------------
+
+# Download the initial guess. The file is compared with the SHA256
+# hash and only downloaded if the current file doesn't match the hash.
 
 acol -download fid_3_5_22.o2 \
 https://isospin.roam.utk.edu/public_data/eos_tables/du21/fid_3_5_22.o2 \
 840f6f171f05081deed53fd8bf50bad1b16a865418c37b1b630817ae10ad6736
+
+# Select a random EOS parameterization, create the table, and then
+# compute derivatives and store it in E_table_deriv.o2. This table
+# does not include leptons.
 
 ../eos_nuclei -set data_dir "../data" -random \
 -set nB_grid_spec "5,0.01*(i+1)" -set Ye_grid_spec "3,0.4+0.01*i" \
