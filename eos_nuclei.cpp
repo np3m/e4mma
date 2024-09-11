@@ -8105,6 +8105,7 @@ int eos_nuclei::stats(std::vector<std::string> &sv,
     ptrs.push_back(&tg_S);
     ptrs.push_back(&tg_mue);
   }
+
   ptrs.push_back(&tg_Fint);
   ptrs.push_back(&tg_Eint);
   ptrs.push_back(&tg_Sint);
@@ -8134,7 +8135,7 @@ int eos_nuclei::stats(std::vector<std::string> &sv,
   }
   
   for(size_t i=0;i<data.size();i++) {
-    
+
     int iflag=((int)(data[i]*(1.0+1.0e-12)));
     if (iflag<-10 || iflag>10) {
       iflag=11;
@@ -8250,7 +8251,7 @@ int eos_nuclei::stats(std::vector<std::string> &sv,
       }
 
       // Check that E*nB=-P+T*S*nB+nn*mun+np*mup+ne*mue
-      if (derivs_computed) {
+      if (derivs_computed && with_leptons) {
 	double nn=nB*(1.0-Ye);
 	double np=nB*Ye;
 	double scale=fabs(tg_E.get_data()[i]);
