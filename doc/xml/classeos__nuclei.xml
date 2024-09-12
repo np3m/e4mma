@@ -990,7 +990,7 @@
           <declname>tab</declname>
         </param>
         <briefdescription>
-<para>Desc. </para>
+<para>Store the hadron resonances. </para>
         </briefdescription>
         <detaileddescription>
         </detaileddescription>
@@ -2149,7 +2149,7 @@
           <declname>no_nuclei</declname>
         </param>
         <briefdescription>
-<para>Desc. </para>
+<para>Solve for nuclei at fixed chemical potential (experimental) </para>
         </briefdescription>
         <detaileddescription>
         </detaileddescription>
@@ -2192,7 +2192,7 @@
           <declname>th_gas</declname>
         </param>
         <briefdescription>
-<para>Desc. </para>
+<para>Compute the free energy with nuclei. </para>
         </briefdescription>
         <detaileddescription>
         </detaileddescription>
@@ -4050,7 +4050,7 @@ file&gt;, or &quot;point&quot; &lt;output file&gt; &lt;nB&gt; &lt;Ye&gt; &lt;T&g
           <declname>itive_com</declname>
         </param>
         <briefdescription>
-<para>Maxwell construction. </para>
+<para>Maxwell construction (experimental) </para>
         </briefdescription>
         <detaileddescription>
 <para>Params.</para>
@@ -4087,7 +4087,7 @@ file&gt;, or &quot;point&quot; &lt;output file&gt; &lt;nB&gt; &lt;Ye&gt; &lt;T&g
           <declname>itp_mun</declname>
         </param>
         <briefdescription>
-<para>Desc. </para>
+<para>Maxwell function. </para>
         </briefdescription>
         <detaileddescription>
         </detaileddescription>

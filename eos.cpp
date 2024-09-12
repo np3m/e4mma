@@ -4349,6 +4349,9 @@ int eos::alt_model(std::vector<std::string> &sv,
   if (skp!=0) {
     eosp_alt=&sk_alt;
     sk_alt=*skp;
+    cout << "eos::alt_model(): Checking saturation properties:" << endl;
+    sk_alt.saturation();
+    cout << "n0: " << sk_alt.n0 << endl;
   } else {
     eos_had_rmf *rmfp=dynamic_cast<eos_had_rmf *>(eosp_alt);
     if (rmfp!=0) {
@@ -4469,7 +4472,7 @@ void eos::setup_cli(o2scl::cli &cl, bool read_docs) {
       new o2scl::comm_option_mfptr<eos>
       (this,&eos::vir_comp),o2scl::cli::comm_option_both,
       1,"","eos","vir_comp","doc/xml/classeos.xml"},      
-     {0,"alt-model","",1,2,"","",
+     {0,"alt-model","",-1,-1,"","",
       new o2scl::comm_option_mfptr<eos>
       (this,&eos::alt_model),o2scl::cli::comm_option_both,
       1,"","eos","alt_model","doc/xml/classeos.xml"},
