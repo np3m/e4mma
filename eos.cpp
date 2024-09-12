@@ -2190,8 +2190,11 @@ int eos::process_grid_spec() {
   // the cli setup
   
   size_t st[3]={n_nB2,n_Ye2,n_T2};
-  //cout << "Processing: " << nB_grid_spec << " " << Ye_grid_spec << " "
-  //<< T_grid_spec << endl;
+  if (verbose>=2) {
+    cout << "eos::process_grid_spec(): Processing: "
+         << nB_grid_spec << " " << Ye_grid_spec << " "
+         << T_grid_spec << endl;
+  }
   
   calc_utf8<> calc;
   std::map<std::string,double> vars;
@@ -2199,6 +2202,10 @@ int eos::process_grid_spec() {
   vector<std::string> split_res;
 
   split_string_delim(nB_grid_spec,split_res,',');
+  if (split_res.size()<2) {
+    O2SCL_ERR("Invalid nB_grid_spec in eos::process_grid_spec().",
+              o2scl::exc_einval);
+  }
   n_nB2=stoszt(split_res[0]);
   nB_grid2.resize(0);
   //cout << "n_nB: " << n_nB2 << endl;
@@ -2210,6 +2217,10 @@ int eos::process_grid_spec() {
   }
   
   split_string_delim(Ye_grid_spec,split_res,',');
+  if (split_res.size()<2) {
+    O2SCL_ERR("Invalid Ye_grid_spec in eos::process_grid_spec().",
+              o2scl::exc_einval);
+  }
   n_Ye2=stoszt(split_res[0]);
   Ye_grid2.resize(0);
   //cout << "n_Ye: " << n_Ye2 << endl;
@@ -2221,6 +2232,10 @@ int eos::process_grid_spec() {
   }
   
   split_string_delim(T_grid_spec,split_res,',');
+  if (split_res.size()<2) {
+    O2SCL_ERR("Invalid T_grid_spec in eos::process_grid_spec().",
+              o2scl::exc_einval);
+  }
   n_T2=stoszt(split_res[0]);
   T_grid2.resize(0);
   //cout << "n_T: " << n_T2 << endl;
@@ -2232,6 +2247,10 @@ int eos::process_grid_spec() {
   }
   
   split_string_delim(S_grid_spec,split_res,',');
+  if (split_res.size()<2) {
+    O2SCL_ERR("Invalid S_grid_spec in eos::process_grid_spec().",
+              o2scl::exc_einval);
+  }
   n_S2=stoszt(split_res[0]);
   S_grid2.resize(0);
   //cout << "n_S: " << n_S2 << endl;

@@ -74,7 +74,7 @@ eos_nuclei::eos_nuclei() {
   baryons_only=true;
   derivs_computed=false;
   with_leptons=false;
-
+  
   //nucleon_func="(nb<0.04)*((i<100)*10+(i>=100)*sqrt(i))+(nb>=0.04)*100";
   nucleon_func="(i<100)*10+(i>=100)*sqrt(i)";
   
@@ -5579,8 +5579,9 @@ int eos_nuclei::store_point
   
   if (!table_no_nuclei && include_detail) {
     if (tg_zn.get_rank()<=1) {
-      cout << "Value of include_detail is true but the associated "
+      cerr << "Value of include_detail is true but the associated "
            << "tensor_grid objects have not been allocated." << endl;
+      exit(-1);
     } else {
       tg_zn.set(ix,vdet["zn"]);
       tg_zp.set(ix,vdet["zp"]);
@@ -6125,7 +6126,8 @@ int eos_nuclei::write_results(std::string fname) {
     if (matched==false) {
       eos_str="<unknown>";
     }
-    cout << "write_results(), model string: " << eos_str << endl;
+    cout << "eos_nuclei::write_results(), model string:\n  "
+         << eos_str << endl;
     hf.sets("model",eos_str);
   }
   
@@ -6332,7 +6334,7 @@ int eos_nuclei::read_results(std::string fname) {
 
 #endif
   
-  cout << "Function read_results(): rank " << mpi_rank
+  cout << "eos_nuclei::read_results(): Rank " << mpi_rank
        << " reading file " << fname << endl;
   
   hdf_file hf;
@@ -6396,7 +6398,8 @@ int eos_nuclei::read_results(std::string fname) {
       
       vector<string> vs2;
       split_string(mod_str,vs2);
-      cout << "read_results(): model string: " << mod_str << endl;
+      cout << "eos_nuclei::read_results():\n  model string: "
+           << mod_str << endl;
       
       if (i_ns==-1 && vs2[0]=="0") {
         
@@ -6408,7 +6411,8 @@ int eos_nuclei::read_results(std::string fname) {
         eos_L=o2scl::stod(vs2[6]);
         phi=o2scl::stod(vs2[7]);
 
-        cout << "read_results(): selecting model: " << mod_str << endl;
+        cout << "eos_nuclei::read_results():\n  selecting model: "
+             << mod_str << endl;
         select_internal(i_ns,i_skyrme,qmc_alpha,qmc_a,
                         eos_L,eos_S,phi);
         
@@ -8795,7 +8799,7 @@ int eos_nuclei::compare_tables(std::vector<std::string> &sv,
 
 void eos_nuclei::new_table() {
 
-  cout << "Beginning new table." << endl;
+  cout << "eos_nuclei::new_table(): Beginning new table." << endl;
 
   this->process_grid_spec();
 
@@ -9377,7 +9381,8 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
     
     if (loaded==false) {
 
-      cout << "No data. Creating new table." << endl;
+      cout << "eos_nuclei::generate_table(): "
+           << "No data. Creating new table." << endl;
 
       new_table();
 
@@ -10437,7 +10442,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	  size_t inB=tasks[i*6+3];
 	  size_t iYe=tasks[i*6+4];
 	  size_t iT=tasks[i*6+5];
-	  cout << "Computing " 
+	  cout << "eos_nuclei::generate_table(): Computing " 
 	       << i << "/" << ntasks << " (" << tasks[i*6] << ","
 	       << tasks[i*6+1] << "," 
 	       << tasks[i*6+2] << ") -> ("
@@ -10516,7 +10521,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	  }
 	  if (gt_verbose>1) {
             cout.precision(5);
-	    cout << "Point at (nB,Ye,T[MeV])=("
+	    cout << "eos_nuclei::generate_table(): Point at (nB,Ye,T[MeV])=("
 		 << nB << "," << Ye << "," << T*hc_mev_fm << "), ret="
 		 << ret << ", " << i << "/" << ntasks << endl;
             cout.precision(6);

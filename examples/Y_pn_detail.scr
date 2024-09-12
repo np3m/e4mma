@@ -1,0 +1,13 @@
+# ----------------------------------------------------------------
+# Desc
+# ----------------------------------------------------------------
+
+../eos_nuclei -set data_dir "../data" \
+-select-model 470 738 0.5 13.0 62.4 32.8 0.9 \
+-set include_detail 1 \
+-point-nuclei 0.08 0.5 5.0
+
+../eos_nuclei -set include_detail 1 -set data_dir "../data" -random \
+-set nB_grid_spec "5,0.01*(i+1)" -set Ye_grid_spec "3,0.4+0.01*i" \
+-set T_grid_spec "3,5+i" -generate-table \
+"ext_guess=fid_3_5_22.o2" -eos-deriv -output E_table_deriv.o2

@@ -8,6 +8,7 @@
 
 ../eos_nuclei -set data_dir "../data" \
 -select-model 470 738 0.5 13.0 62.4 32.8 0.9 \
+-set include_detail 1 \
 -point-nuclei 0.08 0.5 5.0
 
 # Pure Skyrme model
