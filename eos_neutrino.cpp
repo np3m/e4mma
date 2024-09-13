@@ -51,7 +51,7 @@ int eos_nuclei::mcarlo_nuclei(std::vector<std::string> &sv, bool itive_com) {
     cout << "j: " << j << endl;
     
     if (j==0) {
-      select_internal(470,738,0.5,13.0,62.4,32.8,0.9);
+      select_seven(470,738,0.5,13.0,62.4,32.8,0.9);
     } else {
       std::vector<std::string> obj;
       random(obj,false);

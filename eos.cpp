@@ -3607,6 +3607,8 @@ int eos::select_model(std::vector<std::string> &sv, bool itive_com) {
   eos_S=o2scl::stod(sv[6]);
   phi=o2scl::stod(sv[7]);
 
+  use_alt_eos=false;
+
   int iret=select_seven(i_ns,i_skyrme,qmc_alpha,qmc_a,eos_L,eos_S,phi);
   if (iret!=0) {
     cerr << "Model is unphysical (iret=" << iret << ")." << endl;
@@ -3673,6 +3675,7 @@ int eos::select_seven(int i_ns_loc, int i_skyrme_loc,
   
   if (qmc_b<0.0 || qmc_beta>5.0) {
     cout << "eos::select_seven(): Value of b or beta unphysical."
+         << endl;
     return 3;
   }
   
@@ -3692,13 +3695,15 @@ int eos::select_common() {
   min_max_cs2(ns_min_cs2,ns_max_cs2);
   if (ns_min_cs2<0.0) {
     cout << "eos::select_common(): Minimum NS cs2 is negative."
+         << endl;
     return 1;
   }
 
   // Check that the symmetry energy is reasonable
   
   if (9.17*eos_S-266.0>eos_L || 14.3*eos_S-379.0<eos_L) {
-    cout << "eos::select_common(): SL combination unphysical."
+    cout << "eos::select_common(): SL combination unphysical. "
+         << eos_S << " " << eos_L << endl;
     return 2;
   }
 
@@ -3722,6 +3727,7 @@ int eos::select_common() {
     sk.calc_e(neutron,proton,th2);
     if (th2.ed/nb<0.0) {
       cout << "eos::select_common(): Dineutrons bound."
+           << endl;
       return 4;
     }
   }
@@ -3742,7 +3748,8 @@ int eos::select_common() {
   p.ms=p.m/(1.0+2.0*((n.n+p.n)*term+p.n*term2)*p.m);
   
   if (n.ms<0.0 || p.ms<0.0) {
-    cout << "eos::select_common(): Effective masses negative in nuclear matter."
+    cout << "eos::select_common(): "
+         << "Effective masses negative in nuclear matter." << endl;
     return 5;
   }
   
@@ -3755,7 +3762,8 @@ int eos::select_common() {
   p.ms=p.m/(1.0+2.0*((n.n+p.n)*term+p.n*term2)*p.m);
   
   if (n.ms<0.0 || p.ms<0.0) {
-    cout << "eos::select_common(): Effective masses negative in neutron matter."
+    cout << "eos::select_common(): "
+         << "Effective masses negative in neutron matter." << endl;
     return 6;
   }
   
@@ -3768,10 +3776,16 @@ int eos::select_common() {
   p.ms=p.m/(1.0+2.0*((n.n+p.n)*term+p.n*term2)*p.m);
   
   if (n.ms<0.0 || p.ms<0.0) {
-    cout << "eos::select_common(): Effective masses negative in proton matter."
+    cout << "eos::select_common(): "
+         << "Effective masses negative in proton matter." << endl;
     return 7;
   }
 
+  // Set model_selected to true in order to call free_energy_density()
+  // for the remaining tests.
+  
+  model_selected=true;
+  
   // -----------------------------------------------------------------
   // Test beta equilibrium at T=1 MeV to ensure the proton fraction is
   // physical
@@ -3807,6 +3821,8 @@ int eos::select_common() {
     
     if (Ye<0.0 || Ye>1.0) {
       cout << "eos::select_common(): Beta-equilibrium unphysical."
+           << endl;
+      model_selected=false;
       return 9;
     }
     
@@ -3889,6 +3905,7 @@ int eos::select_common() {
                    << nbx << " " << yex << " " << Tx*hc_mev_fm << " "
 		   << cs2x << endl;
 	    }	    
+            model_selected=false;
 	    return 10;
 	  }
 	}
@@ -3896,20 +3913,19 @@ int eos::select_common() {
     }
   }
 
-  // Finally, if everything worked, set the flag
-  model_selected=true;
-
   return 0;
 }
 
 int eos::select_full(std::vector<std::string> &sv, bool itive_com) {
 
+  use_alt_eos=false;
+  
   int ret;
   o2scl::rng<> r;
   if (sv.size()<29) {
     cerr << "The 'select-full' command needs 28 parameters."
          << endl;
-    return 1;
+    return 11;
   }
 
   qmc_alpha=o2scl::stod(sv[1]);
@@ -3943,6 +3959,9 @@ int eos::select_full(std::vector<std::string> &sv, bool itive_com) {
   sk.x2=o2scl::stod(sv[17]);
   sk.x3=o2scl::stod(sv[18]);
   sk.alpha=o2scl::stod(sv[19]);
+
+  sk.a=0.0;
+  sk.b=1.0;
   
   ret=function_to_double_nothrow(sv[20],sk_Tcorr.t0,0,&r);
   if (ret!=0) return 0;
@@ -3963,7 +3982,10 @@ int eos::select_full(std::vector<std::string> &sv, bool itive_com) {
   sk_Tcorr.x3=o2scl::stod(sv[27]);
   sk_Tcorr.alpha=o2scl::stod(sv[28]);
   
-  // Set the saturation properties
+  sk_Tcorr.a=0.0;
+  sk_Tcorr.b=1.0;
+  
+  // Compute the saturation properties
   sk.saturation();
   
   eos_n0=sk.n0;
@@ -3979,7 +4001,9 @@ int eos::select_full(std::vector<std::string> &sv, bool itive_com) {
     return 3;
   }
 
-  return select_common();
+  ret=select_common();
+  
+  return ret;
 }
 
 int eos::random(std::vector<std::string> &sv, bool itive_com) {
@@ -4054,6 +4078,13 @@ int eos::random(std::vector<std::string> &sv, bool itive_com) {
 
 int eos::point(std::vector<std::string> &sv, bool itive_com) {
 
+  if (use_alt_eos==false && model_selected==false) {
+    cout << "eos::point(): "
+         << "Cannot compute point because 'model_selected' is false\n"
+         << "  and 'use_alt_eos' is false." 
+         << endl;
+  }
+  
   double nB=o2scl::stod(sv[1]);
   double Ye=o2scl::stod(sv[2]);
   double T=o2scl::stod(sv[3])/hc_mev_fm;
@@ -4227,7 +4258,7 @@ int eos::alt_model(std::vector<std::string> &sv,
     sk_alt=*skp;
     cout << "eos::alt_model(): Checking saturation properties:" << endl;
     sk_alt.saturation();
-    cout << "n0: " << sk_alt.n0 << endl;
+    cout << "  n0: " << sk_alt.n0 << endl;
   } else {
     eos_had_rmf *rmfp=dynamic_cast<eos_had_rmf *>(eosp_alt);
     if (rmfp!=0) {
@@ -4262,11 +4293,6 @@ int eos::alt_model(std::vector<std::string> &sv,
     }
   }
 
-  //}
-  //cerr << "Model " << sv[1] << " not understood." << endl;
-  //return 2;
-  //}
-  
   return 0;
 }
 

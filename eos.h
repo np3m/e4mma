@@ -930,7 +930,7 @@ protected:
 
   /** \brief Select an EOS model
 
-      <i_ns> <i_skyrme> <alpha> <a> <L> <S> <phi>
+      <i_ns> <i_skyrme> <alpha> <qmc a> <nuclear L> <nuclear S> <phi>
 
       Select an EOS model given the 7 specified parameters.
    */

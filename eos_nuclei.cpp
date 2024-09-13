@@ -6413,8 +6413,8 @@ int eos_nuclei::read_results(std::string fname) {
 
         cout << "eos_nuclei::read_results():\n  selecting model: "
              << mod_str << endl;
-        select_internal(i_ns,i_skyrme,qmc_alpha,qmc_a,
-                        eos_L,eos_S,phi);
+        select_seven(i_ns,i_skyrme,qmc_alpha,qmc_a,
+                     eos_L,eos_S,phi);
         
       }
     }
