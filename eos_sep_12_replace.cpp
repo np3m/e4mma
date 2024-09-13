@@ -745,8 +745,7 @@ eos::eos() {
   hf.close();
 
   // Open the GT Skyrme data file
-    std::string GTsky_file="data/acolskyGTall_aug29";
- // std::string GTsky_file="data/acolskyUNEDF_test";//use UNEDF parameters to test if mixing method works
+  std::string GTsky_file="data/acolskyGTall_aug29";
   hf.open(GTsky_file);
   o2scl_hdf::hdf_input(hf,GTsky_tab,name);
   hf.close();
@@ -3441,27 +3440,23 @@ int eos::select_internal(int i_ns_loc, int i_skyrme_loc,
   sk.alpha=GTsky_tab.get(((string)"alpha"),i_skyrme);
  // sk.b4=GTsky_tab.get(((string)"b4"),i_skyrme);
  // sk.b4p=GTsky_tab.get(((string)"b4p"),i_skyrme);
-   // int iret=sk.saturation();
-   // sk.def_sat_mroot.err_nonconv=true;
-   // sk.def_sat_mroot.def_jac.err_nonconv=true;
-   // if (iret!=0) {
-   //   cout << "2" << endl;
-   //   return 20;
-   // }
+ /*   int iret=sk.saturation();
+    sk.def_sat_mroot.err_nonconv=true;
+    sk.def_sat_mroot.def_jac.err_nonconv=true;
+    if (iret!=0) {
+      cout << "2" << endl;
+      return 20;
+    }
 
-  // rho0=sk.n0;
-  // EoA=sk.eoa*hc_mev_fm;
-  // K=sk.comp*hc_mev_fm;
-
-  EoA=-16.0;
+   rho0=sk.n0;
+   EoA=sk.eoa*hc_mev_fm;
+   K=sk.comp*hc_mev_fm;*/
   
   cout<<" GT t0-t3, x0-x3, alpha: "<<sk.t0<<" "<<sk.t1<<" "<<sk.t2<<" "<<sk.t3<<" "<<sk.x0<<" "<<sk.x1<<" "<<sk.x2<<" "<<sk.x3<<" "<<sk.alpha<<endl;
  // cout<<" GT n0, E/A, K: "<<rho0<<" "<<EoA<<" "<<K<<endl;
   // Determine QMC coefficients
   qmc_b=eos_S+EoA-qmc_a;
   qmc_beta=(eos_L/3.0-qmc_a*qmc_alpha)/qmc_b;
-
-  cout<<" EoA, qmc_b, qmc_beta: "<<EoA<<" "<<qmc_b<<" "<<qmc_beta<<endl;
 
   if (qmc_b<0.0 || qmc_beta>5.0) {
     model_selected=false;
@@ -3549,8 +3544,8 @@ int eos::select_internal(int i_ns_loc, int i_skyrme_loc,
   
   // Loop over baryon densities
   cout << "Going to beta-eq test: " << endl;
- // for(double nbx=0.1;nbx<2.00001;nbx+=0.05) {
-    for(double nbx=0.1;nbx<2.00001;nbx+=0.05) { //september 7, zidu reduce the checking range 
+  for(double nbx=0.1;nbx<2.00001;nbx+=0.05) {
+    
     // Beta equilibrium at T=1 MeV
     mm_funct mf=std::bind
       (std::mem_fn<int(size_t,const ubvector &,ubvector &,
@@ -3628,25 +3623,21 @@ int eos::random(std::vector<std::string> &sv, bool itive_com) {
     if (verbose>0) {
       cout << "Selecting random model." << endl;
     }
-   bool Norand=false;// if this is true, it is mixing a specific choice of eos models, no random anymore, below the choise is from the j=199 mix eos setting in mn_test43_standardEoSandGTsky_noNeutrinoOpa_hybridrandom.out
+
     // Select a random value for phi
     phi=rng.random();
-   // if (Norand) {phi=0.863875;}
 
     // Random neutron star EOS
     i_ns=rng.random_int(nstar_tab.get_nlines());
-   // if (Norand) {i_ns=322;}//993 is the one with the largest weight in qmc_twop_10_0_out
 
     // Select a random QMC two-body interaction
     qmc_alpha=(rng.random()*0.06)+0.47;
     qmc_a=(rng.random()*1.0)+12.5;
-   // if (Norand) {qmc_alpha=0.482297; qmc_a=12.7381;}
    
     // Select a random value of S and L according
     // to perscription in PRC 91, 015804 (2015)
     eos_L=rng.random()*21.0+44.0;
     eos_S=rng.random()*6.6+29.5;
-   // if (Norand) {eos_L=51.1133; eos_S=33.1074;}
     
     bool UNEDFsky=false;
     // Select a random Skyrme model
@@ -3656,7 +3647,6 @@ int eos::random(std::vector<std::string> &sv, bool itive_com) {
     // Select a random GT skyrme model
    if (!UNEDFsky) {
     i_skyrme=rng.random_int(GTsky_tab.get_nlines());
-    if (Norand) {i_skyrme=224;}//224 it the eos model that passes all select internal tests and with largest log_wgt in 
    } 
     if (true || verbose>1) {
       cout << "Trying random model: " << endl;
