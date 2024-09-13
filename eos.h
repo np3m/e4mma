@@ -319,10 +319,10 @@ public:
    */
   double phi;
 
-  /// The symmetry energy
+  /// The symmetry energy in \f$ \mathrm{MeV} \f$
   double eos_S;
 
-  /// The slope of the symmetry energy
+  /// The slope of the symmetry energy in \f$ \mathrm{MeV} \f$
   double eos_L;
 
   /// The index of the neutron star model
@@ -419,7 +419,7 @@ public:
       comes from the neutron star observations
       
       This object is set in \ref ns_fit(), which is called by
-      \ref select_internal().
+      \ref select_seven().
 
       The original posteriors are in columns "nb" and "EoA". The
       column "Eerr" contains the uncertainties for the fit. The fit is
@@ -633,13 +633,18 @@ public:
 			double nb_last, double cs_ns_2, double cs_ns_last);
 
   /// Experimental select function for all parameters
-  int select_full(std::vector<double> &p);
+  int select_full(std::vector<std::string> &sv, bool itive_com);
   
-  /** \brief Internal select function
+  /** \brief Select a model based on the seven Du et al. (2019)
+      parameters
    */
-  int select_internal(int i_ns_loc, int i_skyrme_loc,
+  int select_seven(int i_ns_loc, int i_skyrme_loc,
 		      double qmc_alpha_loc, double qmc_a_loc,
 		      double eos_L_loc, double eos_S_loc, double phi_loc);
+
+  /** \brief Common select function
+   */
+  int select_common();
   //@}
 
   /// \name Particle objects [protected]
@@ -740,13 +745,18 @@ protected:
   
   /// \name Output saturation properties [protected]
   //@{
-  /// The binding energy per particle
+  /** \brief The binding energy per particle in \f$ \mathrm{MeV} \f$
+      (with the minus sign, typically about -16)
+  */
   double eos_EoA;
   
-  /// The incompressibility
+  /// The incompressibility in \f$ \mathrm{MeV} \f$
   double eos_K;
   
-  /// The saturation density
+  /** \brief The saturation density in \f$ 1/\mathrm{fm}^{-3} \f$
+
+      Not necessarily equal to <tt>sk.n0</tt> or \ref qmc_n0.
+   */
   double eos_n0;
   //@}
 
@@ -811,7 +821,7 @@ protected:
    */
   bool include_muons;
 
-  /** \brief If true, test cs2 in the \ref select_internal() function
+  /** \brief If true, test cs2 in the \ref select_seven() function
       (default true)
   */
   bool select_cs2_test;
