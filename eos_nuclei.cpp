@@ -1866,6 +1866,9 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
   cout << "cs2_hom: " << comp_cs2_hom << endl;
   std::string output_file=kwa.get_string("output","");
   cout << "output file: " << output_file << endl;
+  std::string interp_type=kwa.get_string("interp_type","steffen");
+  int itype=itp_steffen;
+  if (interp_type=="cspline") itype=itp_cspline;
 
   if (!range_mode || dmundYe.get_rank()==0) {
     
@@ -1925,8 +1928,8 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
                             neutron.m);
         s_of_nB.push_back(tg_S.get(ix)*nB_grid2[i]);
       }
-      itp_sta_a.set(n_nB2,nB_grid2,mun_of_nB,itp_steffen);
-      itp_sta_b.set(n_nB2,nB_grid2,s_of_nB,itp_steffen);
+      itp_sta_a.set(n_nB2,nB_grid2,mun_of_nB,itype);
+      itp_sta_b.set(n_nB2,nB_grid2,s_of_nB,itype);
       for(size_t i=0;i<n_nB2;i++) {
         vector<size_t> ix={i,j,k};
         dmundnB.get(ix)=itp_sta_a.deriv(nB_grid2[i]);
@@ -1948,9 +1951,9 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
                             proton.m+tg_mue.get(ix)/hc_mev_fm);
         s_of_Ye.push_back(tg_S.get(ix)*nB);
       }
-      itp_sta_a.set(n_Ye2,Ye_grid2,mun_of_Ye,itp_steffen);
-      itp_sta_b.set(n_Ye2,Ye_grid2,mup_of_Ye,itp_steffen);
-      itp_sta_c.set(n_Ye2,Ye_grid2,s_of_Ye,itp_steffen);
+      itp_sta_a.set(n_Ye2,Ye_grid2,mun_of_Ye,itype);
+      itp_sta_b.set(n_Ye2,Ye_grid2,mup_of_Ye,itype);
+      itp_sta_c.set(n_Ye2,Ye_grid2,s_of_Ye,itype);
       for(size_t j=0;j<n_Ye2;j++) {
         vector<size_t> ix={i,j,k};
         dmundYe.get(ix)=itp_sta_a.deriv(Ye_grid2[j]);
@@ -1969,7 +1972,7 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
         vector<size_t> ix={i,j,k};
         s_of_T.push_back(tg_S.get(ix)*nB);
       }
-      itp_sta_a.set(n_T2,T_grid2,s_of_T,itp_steffen);
+      itp_sta_a.set(n_T2,T_grid2,s_of_T,itype);
       for(size_t k=0;k<n_T2;k++) {
         vector<size_t> ix={i,j,k};
         dsdT.get(ix)=itp_sta_a.deriv(T_grid2[k])*hc_mev_fm;

@@ -1209,7 +1209,7 @@ public:
       sound.
 
       Possible keyword arguments are eigenvals=False, 
-      cs2_hom=False, and output="".
+      cs2_hom=False, output="", and interp_type="steffen".
       
       This command currently requires that a model has been 
       selected so it can compute the speed of sound of homogeneous
