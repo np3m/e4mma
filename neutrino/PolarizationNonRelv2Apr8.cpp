@@ -2055,7 +2055,7 @@ void PolarizationNonRel::SetPolarizations_charged
   piRPAaxBS=(ImRPAnumeratorAx*ReRPAdenominatorAx-ReRPAnumeratorAx*ImRPAdenominatorAx)/(ReRPAdenominatorAx*ReRPAdenominatorAx+ImRPAdenominatorAx*ImRPAdenominatorAx);//the Imaginary part of the RPA beta in Navarro's version
   piRPAaxBS=(-2.0)*piRPAaxBS;//The RPA beta in Navarro's version *(-4) is the PiL, and Navarro's version *(-2) is the piRPA (polarization function)
 
-  cout<<" at q= "<<q<<" q0= "<<q0<<" PolarizationNonRel called by cc integral "<<endl;
+ // cout<<" at q= "<<q<<" q0= "<<q0<<" PolarizationNonRel called by cc integral "<<endl;
   }
   //piL is 2*Im PI
   if (flag==flag_vector) {
