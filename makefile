@@ -486,7 +486,7 @@ mn-test:
 		-set function_verbose 0 \
 		-set verbose 3 \
 		-load fid_6_30_21.o2 \
-		-mcarlo-neutron mn_test.o2> mn_test37_GTskypara.out 2>&1 &
+		-mcarlo-neutron mn_test.o2> mn_test38_pureGTskypara_onePoint.out 2>&1 &
 
 mn-test_miser:
 	./enn_miser \

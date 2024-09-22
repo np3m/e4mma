@@ -11291,10 +11291,12 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
       tab.new_column(((string)"crxoncrx0_nc_vec_mf_Tran_")+o2scl::szttos(ipoint));
       tab.new_column(((string)"crxoncrx0_nc_ax_mf_")+o2scl::szttos(ipoint));
       tab.new_column(((string)"crxoncrx0_nc_ax_mf_Tran_")+o2scl::szttos(ipoint));
+      tab.new_column(((string)"electronblock_")+o2scl::szttos(ipoint));
       tab.new_column(((string)"crxoncrx0_cc_vec_rpa_")+o2scl::szttos(ipoint));
       tab.new_column(((string)"crxoncrx0_cc_vec_mf_")+o2scl::szttos(ipoint));
       tab.new_column(((string)"crxoncrx0_cc_ax_rpa_")+o2scl::szttos(ipoint));
       tab.new_column(((string)"crxoncrx0_cc_ax_mf_")+o2scl::szttos(ipoint));
+      tab.new_column(((string)"positronblock_")+o2scl::szttos(ipoint));
       tab.new_column(((string)"crxoncrx0_cc(anti)_vec_rpa_")+o2scl::szttos(ipoint));
       tab.new_column(((string)"crxoncrx0_cc(anti)_vec_mf_")+o2scl::szttos(ipoint));
       tab.new_column(((string)"crxoncrx0_cc(anti)_ax_rpa_")+o2scl::szttos(ipoint));
@@ -11500,7 +11502,7 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
 
 
     }
-    if (use_alt_eos && j<5) {
+    if (use_alt_eos) {
       // Copy the couplings to the 'sk' object so we can use
       // those for the Fermi Liquid parameters
       sk.t0=sk_alt.t0;
@@ -12548,7 +12550,7 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
         betaEoS.Mu3=(electron_thread[ipoint].mu-electron_thread[ipoint].m)*hc_mev_fm;//this is the chemical potential of outcoming electron in CC reactions, in NC, usually neutrino final state blocking is not considered
         double dU=u2eos-u4eos;
         double EelecApprox=E1+dU;
-        double ElecBlockApproxanti=1.0/(1+exp((EelecApprox-betaEoS.Mu3)/T/hc_mev_fm));
+        double ElecBlockApprox=1.0-1.0/(1+exp((EelecApprox-betaEoS.Mu3)/T/hc_mev_fm));
       //  cout<<"approximated lepton blocking (nu): "<<ElecBlockApproxanti<<endl;
 
        
@@ -12649,7 +12651,7 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
         betaEoSantinu.Mu3=-betaEoSantinu.Mu3;// since anti elctron chemical potential is opposite to electron chemical potential
 	double dUanti=u2eosantinu-u4eosantinu;
         double EposiApprox=E1+dUanti;
-        double PosiBlockApproxanti=1.0/(1+exp((EposiApprox-betaEoSantinu.Mu3)/T/hc_mev_fm));
+        double PosiBlockApproxanti=1.0-1.0/(1+exp((EposiApprox-betaEoSantinu.Mu3)/T/hc_mev_fm));
       //  cout<<"approximated lepton blocking (antinu): "<<PosiBlockApproxanti<<endl;	
       //  cout << "mu2 [MeV], mu4 [MeV], mu3 [MeV] (without rest mass): "
       //       << betaEoSantinu.Mu2 << " "
@@ -12752,7 +12754,7 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
 		cout << "mue: " << electron_thread[ipoint].mu*hc_mev_fm << " ipoint = "<<ipoint << " out of total "<<endl;
 		cout << "U2 [MeV]: " << u2eos <<" ipoint = "<<ipoint << " out of total "<< endl;
                 cout << "U4 [MeV]: " << u4eos << " ipoint = "<<ipoint << " out of total "<<endl;
-		cout<<"approximated lepton blocking (nu): "<<ElecBlockApproxanti<<" ipoint = "<<ipoint << " out of total "<< endl;
+		cout<<"approximated lepton blocking (nu): "<<ElecBlockApprox<<" ipoint = "<<ipoint << " out of total "<< endl;
                 cout<<"approximated lepton blocking (antinu): "<<PosiBlockApproxanti<<" ipoint = "<<ipoint << " out of total "<< endl;
                 cout << "msn: " << msn_thread[ipoint] << " "<< vdet_units.find("msn")->second <<" ipoint = "<<ipoint << " out of total "<< endl;
                 cout << "msp: " << msp_thread[ipoint] << " "<< vdet_units.find("msp")->second << " ipoint = "<<ipoint << " out of total "<<endl;
@@ -12908,10 +12910,12 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
 	  line.push_back(nc_vec_mfp_norpa_Transport_on_nc_vec_free_tran);
 	  line.push_back(nc_axvec_mfp_norpa_on_nc_ax_free);
 	  line.push_back(nc_axvec_mfp_norpa_Transport_on_nc_ax_free_tran);
+	  line.push_back(ElecBlockApprox);
 	  line.push_back(cc_vec_mfp_dg0_on_cc_vec_free);
 	  line.push_back(cc_vec_mfp_norpa_on_cc_vec_free);
 	  line.push_back(cc_axvec_mfp_on_cc_ax_free);
 	  line.push_back(cc_axvec_mfp_norpa_on_cc_ax_free);
+	  line.push_back(PosiBlockApproxanti);
 	  line.push_back(cc_vec_mfp_antinu_dg0_on_cc_vec_antinu_free);
           line.push_back(cc_vec_mfp_antinu_norpa_on_cc_vec_antinu_free);
           line.push_back(cc_axvec_mfp_antinu_on_cc_ax_antinu_free);
