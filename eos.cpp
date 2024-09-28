@@ -1404,8 +1404,8 @@ double eos::free_energy_density_detail
     vdet["dgdnp"]=0.0;
     vdet["msn"]=neutron.ms*hc_mev_fm;
     vdet["msp"]=proton.ms*hc_mev_fm;
-    vdet["Un"]=neutron.nu*hc_mev_fm;
-    vdet["Up"]=proton.nu*hc_mev_fm;
+    vdet["Un"]=(neutron.mu-neutron.nu)*hc_mev_fm;
+    vdet["Up"]=(proton.mu-proton.nu)*hc_mev_fm;
     if (rmf_fields) {
       double sigma, omega, rho;
       rmf.get_fields(sigma,omega,rho);
@@ -1472,6 +1472,7 @@ double eos::free_energy_density_detail
   sk.calc_e(n,p,th);
   
   double msn_T0=n.ms, msp_T0=p.ms;
+  double nun_T0=n.nu, nup_T0=p.nu;
   
   // ----------------------------------------------------------------
   // Compute the Skyrme EOS in nuclear matter at T=0
@@ -1509,6 +1510,8 @@ double eos::free_energy_density_detail
 
   double msn_Tcorr_T0=0.0, msp_Tcorr_T0=0.0;
   double msn_Tcorr_T=0.0, msp_Tcorr_T=0.0;
+  double nun_Tcorr_T0=0.0, nup_Tcorr_T0=0.0;
+  double nun_Tcorr_T=0.0, nup_Tcorr_T=0.0;
   
   if (old_version==false) {
     
@@ -1528,6 +1531,8 @@ double eos::free_energy_density_detail
     f_skyrme_T0=th.ed;
     msn_Tcorr_T0=n.ms;
     msp_Tcorr_T0=p.ms;
+    nun_Tcorr_T0=n.nu;
+    nup_Tcorr_T0=p.nu;
     
     // ----------------------------------------------------------------
     // Compute the Skyrme EOS in nuclear matter at finite T for chiral
@@ -1548,6 +1553,8 @@ double eos::free_energy_density_detail
     
     msn_Tcorr_T=n.ms;
     msp_Tcorr_T=p.ms;
+    nun_Tcorr_T=n.nu;
+    nup_Tcorr_T=p.nu;
     
     eos_Tcorr->calc_temp_e(n,p,T,th);
     
@@ -1741,9 +1748,15 @@ double eos::free_energy_density_detail
   p.mu=dfvirialdnp*g_virial+f_virial*dgvirialdnp+dfdegdnp*(1.0-g_virial)
     +f_deg*(-dgvirialdnp);
 
-  // Final effective masses
+  // Final effective masses. We take the effective masses from the
+  // Skryme models and assume they are equal to the bare masses for
+  // the virial expansion and ignore any impact from the QMC or
+  // neutron star EOSs.
   n.ms=neutron.m*g_virial+(1.0-g_virial)*(msn_T0+msn_Tcorr_T-msn_Tcorr_T0);
   p.ms=proton.m*g_virial+(1.0-g_virial)*(msp_T0+msp_Tcorr_T-msp_Tcorr_T0);
+
+  //n.nu=neutron.m*g_virial+(1.0-g_virial)*(nun_T0+nun_Tcorr_T-nun_Tcorr_T0);
+  //p.nu=proton.m*g_virial+(1.0-g_virial)*(nup_T0+nup_Tcorr_T-nup_Tcorr_T0);
   
   // -------------------------------------------------------------
   // Compute derivatives for entropy
@@ -1869,8 +1882,8 @@ double eos::free_energy_density_detail
   vdet["dgdnp"]=dgvirialdnp;
   vdet["msn"]=neutron.ms*hc_mev_fm;
   vdet["msp"]=proton.ms*hc_mev_fm;
-  vdet["Un"]=neutron.nu*hc_mev_fm;
-  vdet["Up"]=proton.nu*hc_mev_fm;
+  vdet["Un"]=(neutron.mu-neutron.nu)*hc_mev_fm;
+  vdet["Up"]=(proton.mu-proton.nu)*hc_mev_fm;
   
   return f_total;
 }
