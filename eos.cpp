@@ -1048,6 +1048,8 @@ double eos::free_energy_density_virial
   
   th.ed=f_vir+T*th.en;
 
+  vsd.calc_nun_nup(n,p,T);
+
   return f_vir;
 }
 
@@ -1432,6 +1434,8 @@ double eos::free_energy_density_detail
   // Compute the virial EOS
 
   double dmundT, dmupdT, dmundnn, dmupdnn, dmundnp, dmupdnp;
+  double nun_virial, nup_virial;
+  
   if (T==0.0) {
     f_virial=0.0;
     s_virial=0.0;
@@ -1441,12 +1445,16 @@ double eos::free_energy_density_detail
     dmupdnn=0.0;
     dmundnp=0.0;
     dmupdnp=0.0;
+    nun_virial=0.0;
+    nup_virial=0.0;
   } else {
     f_virial=free_energy_density_virial
       (n,p,T,th,dmundnn,dmundnp,dmupdnn,dmupdnp,dmundT,dmupdT);
     s_virial=th.en;
+    nun_virial=n.nu;
+    nup_virial=p.nu;
   }
-
+  
   double dfvirialdT=-th.en;
   double P_virial=th.pr;
   double mu_n_virial=n.mu;
@@ -1755,8 +1763,9 @@ double eos::free_energy_density_detail
   n.ms=neutron.m*g_virial+(1.0-g_virial)*(msn_T0+msn_Tcorr_T-msn_Tcorr_T0);
   p.ms=proton.m*g_virial+(1.0-g_virial)*(msp_T0+msp_Tcorr_T-msp_Tcorr_T0);
 
-  //n.nu=neutron.m*g_virial+(1.0-g_virial)*(nun_T0+nun_Tcorr_T-nun_Tcorr_T0);
-  //p.nu=proton.m*g_virial+(1.0-g_virial)*(nup_T0+nup_Tcorr_T-nup_Tcorr_T0);
+  // Compute "nu" for the nucleons so we can compute Un and Up below
+  n.nu=nun_virial*g_virial+(1.0-g_virial)*(nun_T0+nun_Tcorr_T-nun_Tcorr_T0);
+  p.nu=nup_virial*g_virial+(1.0-g_virial)*(nup_T0+nup_Tcorr_T-nup_Tcorr_T0);
   
   // -------------------------------------------------------------
   // Compute derivatives for entropy

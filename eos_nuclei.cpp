@@ -9041,6 +9041,46 @@ void eos_nuclei::new_table() {
     }
   }
 
+  if (include_detail) {
+    size_t st[3]={n_nB2,n_Ye2,n_T2};
+    tg_zn.resize(3,st);
+    tg_zn.set_grid_packed(packed);
+    tg_zn.set_all(0.0);
+    tg_zp.resize(3,st);
+    tg_zp.set_grid_packed(packed);
+    tg_zp.set_all(0.0);
+    tg_F1.resize(3,st);
+    tg_F1.set_grid_packed(packed);
+    tg_F1.set_all(0.0);
+    tg_F2.resize(3,st);
+    tg_F2.set_grid_packed(packed);
+    tg_F2.set_all(0.0);
+    tg_F3.resize(3,st);
+    tg_F3.set_grid_packed(packed);
+    tg_F3.set_all(0.0);
+    tg_F4.resize(3,st);
+    tg_F4.set_grid_packed(packed);
+    tg_F4.set_all(0.0);
+    tg_Un.resize(3,st);
+    tg_Un.set_grid_packed(packed);
+    tg_Un.set_all(0.0);
+    tg_Up.resize(3,st);
+    tg_Up.set_grid_packed(packed);
+    tg_Up.set_all(0.0);
+    tg_msn.resize(3,st);
+    tg_msn.set_grid_packed(packed);
+    tg_msn.set_all(0.0);
+    tg_msp.resize(3,st);
+    tg_msp.set_grid_packed(packed);
+    tg_msp.set_all(0.0);
+    tg_g.resize(3,st);
+    tg_g.set_grid_packed(packed);
+    tg_g.set_all(0.0);
+    tg_dgdT.resize(3,st);
+    tg_dgdT.set_grid_packed(packed);
+    tg_dgdT.set_all(0.0);
+  }
+
   loaded=true;
   
   return;
