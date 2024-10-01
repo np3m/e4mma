@@ -23,5 +23,9 @@ build3:
 	sudo docker build . --rm -f alpha4_ju_o930a2_u24.04 \
 		-t awsteiner/e4mma:alpha4_ju_o930a2_u24.04 > build.out 2>&1
 
+build4:
+	sudo docker build . --rm -f alpha5_ju_o930a3_u24.04 \
+		-t awsteiner/e4mma:alpha5_ju_o930a3_u24.04 > build.out 2>&1
+
 push:
 	sudo docker push awsteiner/eos:alpha2
