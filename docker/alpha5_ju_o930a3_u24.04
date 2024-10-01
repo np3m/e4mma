@@ -74,11 +74,6 @@ RUN ./F_pn_detail.scr
 WORKDIR /home/np3m/e4mma
 
 # --------------------------------------------------------------------------
-# Create a "tables" directory for output tables
-
-RUN mkdir -p tables
-
-# --------------------------------------------------------------------------
 # The port on which the Jupyter server is accessible
 
 EXPOSE 8888
