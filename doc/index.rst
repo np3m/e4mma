@@ -28,6 +28,7 @@ More documentation will be added as time permits.
    download	      
    table_format
    examples
+   docker
    eos_nuclei
    class_doc
    todos
@@ -36,7 +37,6 @@ More documentation will be added as time permits.
    trans
    cs2
    plotting
-   docker
 
 * :ref:`genindex`
 * :ref:`modindex`
