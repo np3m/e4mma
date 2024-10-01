@@ -1662,7 +1662,7 @@ int eos_nuclei::eg_table(std::vector<std::string> &sv,
 int eos_nuclei::eos_deriv(std::vector<std::string> &sv,
                           bool itive_com) {
 
-  std::cout << "Computing derivatives." << endl;
+  std::cout << "eos_nuclei::eos_deriv(): Computing derivatives." << endl;
 
   if (n_nB2<3 || n_Ye2<3 || n_T2<3) {
     std::cout << "Cannot compute derivatives with less than "
@@ -1832,7 +1832,8 @@ int eos_nuclei::eos_deriv(std::vector<std::string> &sv,
     }
   }
   
-  std::cout << "Finished computing derivatives." << endl;
+  std::cout << "eos_nuclei::eos_deriv(): "
+            << "Finished computing derivatives." << endl;
 
   return 0;
     
@@ -5908,7 +5909,8 @@ int eos_nuclei::write_nuclei(std::vector<std::string> &sv,
 
 void eos_nuclei::write_nuclei_intl(std::string fname) {
 
-  cout << "Function write_nuclei_intl() file " << fname << endl;
+  cout << "eos_nuclei::write_nuclei_intl(): Using file " << fname
+       << "." << endl;
   
   hdf_file hf;
   
@@ -6355,9 +6357,9 @@ int eos_nuclei::read_results(std::string fname) {
   hf.get_szt("n_oth",n_oth);
   hf.gets_vec_copy("oth_names",oth_names);
   hf.gets_vec_copy("oth_units",oth_units);
-  cout << "oth_names: ";
+  cout << "eos_nuclei::read_results(): oth_names: ";
   vector_out(cout,oth_names,true);
-  cout << "oth_units: ";
+  cout << "eos_nuclei::read_results(): oth_units: ";
   vector_out(cout,oth_units,true);
 
   // The units check is commented out until all tables have a correct
@@ -6854,7 +6856,7 @@ int eos_nuclei::read_results(std::string fname) {
 
   loaded=true;
   
-  cout << "Function read_results(): rank " << mpi_rank
+  cout << "eos_nuclei::read_results(): Rank " << mpi_rank
        << " done reading file." << endl;
 
 #ifndef NO_MPI
@@ -9655,7 +9657,8 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
       }
 
       // Output Ye_list
-      string sout=((string)"Ye_list: ")+Ye_list+" ";
+      string sout=((string)"eos_nuclei::generate_table(): Ye_list: ")+
+        Ye_list+" ";
       for(size_t jk=0;jk<Ye_list_sizet.size();jk++) {
 	sout+=o2scl::szttos(Ye_list_sizet[jk])+" ";
       }
@@ -10227,14 +10230,16 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
       size_t ntasks=tasks.size()/6;
       if (gt_verbose>1) {
 	if (ntasks>0) {
-	  cout << "Rank " << mpi_rank 
+	  cout << "eos_nuclei::generate_table(): Rank " << mpi_rank 
 	       << " tasks " << ntasks << endl;
 	} else {
-	  cout << "Rank " << mpi_rank << " tasks " << ntasks << endl;
+	  cout << "eos_nuclei::generate_table(): Rank " << mpi_rank
+               << " tasks " << ntasks << endl;
 	}
       }
       if (ntasks==0) {
-	cout << "Found no tasks to complete." << endl;
+	cout << "eos_nuclei::generate_table(): "
+             << "Found no tasks to complete." << endl;
       }
 
 #ifndef NO_MPI
@@ -10629,16 +10634,18 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
       
       current_tasks+=ntasks;
       if (gt_verbose>0) {
-	cout << "Rank " << mpi_rank << " computed " << current_tasks
-	     << " out of " << total_tasks << ". "
+	cout << "eos_nuclei::generate_table(): "
+             << "Rank " << mpi_rank << " computed " << current_tasks
+	     << " out of " << total_tasks << ".\n  "
 	     << ((int)(((double)current_tasks)/
 		       ((double)total_tasks)*100.0))
 	     << " percent done." << endl;
       }
-
+      
       if (one_success==false) {
         if (gt_verbose>0) {
-          cout << "Rank " << mpi_rank << " found no successes. Stopping."
+          cout << "eos_nuclei::generate_table(): Rank "
+               << mpi_rank << " found no successes. Stopping."
                << endl;
         }
         done=true;
@@ -10655,12 +10662,14 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
       
       if (ntasks==0 || (max_time>0.0 && elapsed>max_time)) {
 	
-	cout << "Finished. " << ntasks << " " << max_time << " "
+	cout << "eos_nuclei::generate_table(): Finished. "
+             << ntasks << " " << max_time << " "
 	     << elapsed << endl;
 	done=true;
         
       } else if (write_elapsed>file_update_time) {
 	
+	cout << "eos_nuclei::generate_table(): ";
 	cout << "Updating file." << endl;
         if (out_file.length()>0) {
           write_results(out_file);
@@ -10724,7 +10733,8 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	}
       }
     }
-    cout << "There are " << conv2_count << " total points finished "
+    cout << "eos_nuclei::generate_table(): There are "
+         << conv2_count << " total points finished "
 	 << "out of " << total_tasks << endl;
 
     // -----------------------------------------------------
@@ -10735,10 +10745,11 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
     }
     
     if (gt_verbose>0) {
-      cout << "Rank " << mpi_rank << " sending exit to children." << endl;
+      cout << "eos_nuclei::generate_table(): Rank "
+           << mpi_rank << " sending exit to children." << endl;
     }
       
-    string msg="Function generate_table() done. There are "+
+    string msg="eos_nuclei::generate_table(): Done. There are "+
       o2scl::szttos(conv2_count)+" points finished out of "+
       o2scl::szttos(total_tasks)+".";
     slack.send(msg,false);

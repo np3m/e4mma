@@ -691,11 +691,12 @@ void eos::ns_fit(int row) {
 
   // The fit chi-squared
   if (verbose>0) {
-    cout << "ns_fit_parms[0]=" << ns_fit_parms[0] << ";" << endl;
-    cout << "ns_fit_parms[1]=" << ns_fit_parms[1] << ";" << endl;
-    cout << "ns_fit_parms[2]=" << ns_fit_parms[2] << ";" << endl;
-    cout << "ns_fit_parms[3]=" << ns_fit_parms[3] << ";" << endl;
-    cout << "ns_fit_parms[4]=" << ns_fit_parms[4] << ";" << endl;
+    cout << "eos::ns_fit():" << endl;
+    cout << "  ns_fit_parms[0]=" << ns_fit_parms[0] << ";" << endl;
+    cout << "  ns_fit_parms[1]=" << ns_fit_parms[1] << ";" << endl;
+    cout << "  ns_fit_parms[2]=" << ns_fit_parms[2] << ";" << endl;
+    cout << "  ns_fit_parms[3]=" << ns_fit_parms[3] << ";" << endl;
+    cout << "  ns_fit_parms[4]=" << ns_fit_parms[4] << ";" << endl;
   }
 
   // Perform the fit
@@ -749,7 +750,7 @@ void eos::ns_fit(int row) {
   }
   if (nb_new>0.01) {
     cout << "eos::ns_fit(): Adjusting ns_nb_max from " << ns_nb_max << " to "
-         << nb_new << " ." << endl;
+         << nb_new << "." << endl;
     ns_nb_max=nb_new;
   }
   

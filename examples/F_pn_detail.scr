@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------
-# Desc
+# Compute a point or small table with the "include_detail" option
 # ----------------------------------------------------------------
 
 ../eos_nuclei -set data_dir "../data" \
@@ -10,4 +10,4 @@
 ../eos_nuclei -set include_detail 1 -set data_dir "../data" -random \
 -set nB_grid_spec "5,0.01*(i+1)" -set Ye_grid_spec "3,0.4+0.01*i" \
 -set T_grid_spec "3,5+i" -generate-table \
-"ext_guess=fid_3_5_22.o2" -eos-deriv -output E_table_deriv.o2
+"ext_guess=fid_3_5_22.o2" -eos-deriv -output F_pn_detail.o2

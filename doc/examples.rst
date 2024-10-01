@@ -41,3 +41,11 @@ Taken from ``examples/E_table_deriv.scr``.
 .. literalinclude:: ../examples/E_table_deriv.scr
    :language: c++		    
               
+Single point or small table with more detail
+--------------------------------------------
+
+Taken from ``examples/F_pn_detail.scr``
+
+.. literalinclude:: ../examples/F_pn_detail.scr
+   :language: c++		    
+              
