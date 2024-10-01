@@ -1,0 +1,85 @@
+FROM awsteiner/o2scl:v0.930a3_u24.04_py
+MAINTAINER Andrew W. Steiner (awsteiner0@protonmail.com)
+
+# --------------------------------------------------------------------------
+# Additional packages
+
+RUN apt-get update -y && apt-get install -y libopenmpi-dev xclip sudo && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# --------------------------------------------------------------------------
+# Install the jupyter notebook python packages with pip
+
+RUN pip3 install --break-system-packages jupyterlab \
+notebook jupytext jupyter jupyter_server_ydoc \
+jupyter_server_fileid nbclassic
+
+# --------------------------------------------------------------------------
+# Create a user called "np3m" and give them root privileges
+
+RUN useradd --create-home --shell /bin/bash --uid "1001" --no-user-group \
+    "np3m" && \
+    echo np3m ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/np3m && \
+    chmod 0440 /etc/sudoers.d/np3m 
+
+# --------------------------------------------------------------------------
+# We copy the start_server command first as root so it's easier
+# to chown it
+
+COPY start_server /home/np3m/start_server
+RUN chown np3m /home/np3m/start_server
+RUN chmod 755 /home/np3m/start_server
+
+# --------------------------------------------------------------------------
+# Now we switch to the np3m user
+
+USER np3m
+WORKDIR /home/np3m
+
+# --------------------------------------------------------------------------
+# UTK EOS
+
+# Set makefile variables
+ENV CXX g++
+ENV MPI_CXX mpicxx
+ENV CFLAGS -I/usr/lib/x86_64-linux-gnu/openmpi/include/ \
+  -I/usr/include/python3.12 \
+  -I/usr/local/lib/python3.12/dist-packages/numpy/core/include \
+  -I/usr/local/hdf5/include -std=c++14 
+ENV LDFLAGS -L/usr/local/hdf5/lib \
+  -L/usr/lib/x86_64-linux-gnu -lpython3.12
+ENV LD_LIBRARY_PATH /usr/local/hdf5/lib
+
+RUN git clone https://github.com/np3m/e4mma
+WORKDIR /home/np3m/e4mma
+RUN git fetch && git pull && git checkout 48fc26421
+RUN make eos_nuclei eos
+
+# --------------------------------------------------------------------------
+# Make sure it runs
+
+RUN mpirun --allow-run-as-root -np 1 ./eos -help
+RUN mpirun --allow-run-as-root -np 1 ./eos_nuclei -help
+
+# --------------------------------------------------------------------------
+# Try examples
+
+WORKDIR /home/np3m/e4mma/examples
+RUN ./A_point_nuc.scr
+RUN ./B_point.scr
+RUN ./C_help.scr
+RUN ./D_table.scr
+RUN ./E_table_deriv.scr
+RUN ./F_pn_detail.scr
+WORKDIR /home/np3m/e4mma
+
+# --------------------------------------------------------------------------
+# Create a "tables" directory for output tables
+
+RUN mkdir -p tables
+
+# --------------------------------------------------------------------------
+# The port on which the Jupyter server is accessible
+
+EXPOSE 8888
+
