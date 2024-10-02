@@ -4,6 +4,9 @@
 
 # Download the initial guess. The file is compared with the SHA256
 # hash and only downloaded if the current file doesn't match the hash.
+# The 'acol' command is part of O2scl (one of the e4mma dependencies).
+# Instead of acol, you can just use, e.g. 'curl' to download the file
+# and 'openssl dgst -sha256' to obtain the hash.
 
 acol -download ../output/fid_3_5_22.o2 \
 https://isospin.roam.utk.edu/public_data/eos_tables/du21/fid_3_5_22.o2 \
