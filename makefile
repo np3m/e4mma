@@ -396,6 +396,7 @@ check: eos eos_nuclei
 	cd examples && ./D_table.scr
 	cd examples && ./E_table_deriv.scr
 	cd examples && ./F_pn_detail.scr
+	cd examples && ./G_file_props.scr
 	cd python && pytest A_plot_h5py.py
 
 # This optional file, makefile.user, is an alternate place to store
