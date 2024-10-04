@@ -52,7 +52,7 @@ ENV LD_LIBRARY_PATH /usr/local/hdf5/lib
 
 RUN git clone https://github.com/np3m/e4mma
 WORKDIR /home/np3m/e4mma
-RUN git fetch && git pull && git checkout fe0e79d714
+RUN git fetch && git pull && git checkout b4ea4a7c3d3ab
 RUN make eos_nuclei eos
 
 # --------------------------------------------------------------------------
