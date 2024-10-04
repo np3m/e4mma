@@ -8,9 +8,9 @@ use the images (available at
 https://hub.docker.com/repository/docker/awsteiner/e4mma/general),
 just use, for example::
 
-  sudo docker pull awsteiner/e4mma:alpha4_ju_o930a2_u24.04
+  sudo docker pull awsteiner/e4mma:alpha5_ju_o930a4_u24.04
   sudo docker run -p 8888:8888 -it `sudo docker images | \
-    grep "alpha4_ju_o930a2_u24.04" | awk '{print $3}'`
+    grep "alpha5_ju_o930a4_u24.04" | awk '{print $3}'`
 
 Then, inside the docker image, you can either run the code directly::
 
