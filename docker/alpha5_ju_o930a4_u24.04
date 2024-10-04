@@ -1,4 +1,4 @@
-FROM awsteiner/o2scl:v0.930a3_u24.04_py
+FROM awsteiner/o2scl:v0.930a4_u24.04_py
 MAINTAINER Andrew W. Steiner (awsteiner0@protonmail.com)
 
 # --------------------------------------------------------------------------
@@ -71,6 +71,7 @@ RUN ./C_help.scr
 RUN ./D_table.scr
 RUN ./E_table_deriv.scr
 RUN ./F_pn_detail.scr
+RUN ./G_file_props.scr
 WORKDIR /home/np3m/e4mma
 
 # --------------------------------------------------------------------------

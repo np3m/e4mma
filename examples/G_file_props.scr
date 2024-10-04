@@ -28,5 +28,5 @@ acol -filelist ../output/fid_3_5_22.o2
 
 # Output the nB_grid object using 'acol'
 
-acol -read ../output/fid_3_5_22.o2 -set precision 10 -output
+acol -read ../output/fid_3_5_22.o2 nB_grid -set precision 10 -output
 

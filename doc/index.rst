@@ -37,6 +37,7 @@ More documentation will be added as time permits.
    trans
    cs2
    plotting
+   issues
 
 * :ref:`genindex`
 * :ref:`modindex`
