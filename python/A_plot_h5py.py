@@ -1,4 +1,3 @@
-
 # # E4MMA - Plotting with h5py and matplotlib
 
 # +

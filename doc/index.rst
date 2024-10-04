@@ -27,8 +27,9 @@ More documentation will be added as time permits.
 
    download	      
    table_format
-   examples
    docker
+   jupyter
+   examples
    eos_nuclei
    class_doc
    todos

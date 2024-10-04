@@ -1,5 +1,5 @@
-Examples
-========
+Command-line Examples
+=====================
 
 EOS at a single point with nuclei
 ---------------------------------
