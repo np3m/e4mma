@@ -1,5 +1,8 @@
-Chemical Potentials
+Chemical potentials
 ===================
+
+Here, we explain the ambiguities associated with the definition of
+the chemical potentials and how they relate to the code.
 
 Denote the number density of neutrons in the low-density phase
 :math:`n_n`, the number density of protons in the low-density phase

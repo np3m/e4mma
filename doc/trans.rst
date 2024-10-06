@@ -1,4 +1,4 @@
-Variable Transformations
+Variable transformations
 ========================
 
 It is useful to be able to convert derivative operators between the

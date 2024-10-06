@@ -1,11 +1,14 @@
-Python/Jupyter Examples
+Python/Jupyter examples
 =======================
 
 Reading a table and plotting with h5py/matplotlib
 -------------------------------------------------
 
-Taken from ``python/A_point_nuc.scr``.
+See the matching Jupyter notebook at
+https://github.com/np3m/e4mma/blob/andrew/python/A_plot_h5py.ipynb .
 
-.. literalinclude:: ../examples/A_point_nuc.scr
-   :language: c++		    
+Taken from ``python/A_plot_h5py.py``:
+
+.. literalinclude:: ../python/A_plot_h5py.py
+   :language: python		    
 

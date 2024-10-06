@@ -1,4 +1,4 @@
-Command-line Examples
+Command-line examples
 =====================
 
 EOS at a single point with nuclei

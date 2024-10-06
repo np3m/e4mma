@@ -43,9 +43,9 @@ breathe_projects = { "eos": os.path.abspath('xml') }
 breathe_default_project = "eos"
 #
 
-#intersphinx_mapping = {'o2scl':
-#                       ('https://awsteiner.org/code/o2scl/html/',
-#                        'o2scl_objects.inv')}
+intersphinx_mapping = {'o2scl':
+                       ('https://awsteiner.org/code/o2scl/html/',
+                        'o2scl_objects.inv')}
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['templates']

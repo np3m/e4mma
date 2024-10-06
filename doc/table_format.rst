@@ -1,4 +1,4 @@
-Table Format
+Table format
 ============
 
 The table is an HDF5 file and the datasets are given below. Several

@@ -1,4 +1,4 @@
-Tables to Download
+Tables to download
 ==================
 
 Feb. 6 2022, first release

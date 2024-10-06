@@ -1,4 +1,4 @@
-How to Get Help
+How to get help
 ===============
 
 For assistance, post an issue at https://github.com/np3m/e4mma/issues
