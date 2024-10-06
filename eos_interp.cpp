@@ -435,7 +435,8 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
     }
   }
   
-  cout << "eos_nuclei:interp_internal(): calibrate list has "
+  cout << "eos_nuclei:interp_internal(): After second pass, "
+       << "calibrate list has "
        << ike.calib_list.size()/3 << " points and fix list has "
        << ike.fix_list.size()/3 << " points." << endl;
 
