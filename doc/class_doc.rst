@@ -1,4 +1,4 @@
-Other Classes
+Other classes
 =============
 
 Class eos

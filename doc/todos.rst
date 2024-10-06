@@ -1,4 +1,4 @@
-Todo List
+Todo list
 =========
 
 .. todolist::

@@ -1,5 +1,11 @@
-# Minimal makefile for Sphinx documentation
-#
+
+help:
+	@echo "html"
+	@echo "html-nocache"
+	@echo "sphinx-help"
+
+# --------------------------------------------------------------------
+# Sphinx section
 
 # You can set these variables from the command line.
 SPHINXOPTS    =
@@ -9,7 +15,7 @@ SOURCEDIR     = .
 BUILDDIR      = build
 
 # Put it first so that "make" without argument is like "make help".
-help:
+sphinx-help:
 	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
 .PHONY: help Makefile
@@ -18,4 +24,7 @@ help:
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
 %: Makefile
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+
+html-nocache:
+	sphinx-build -v -a -E -b html "." build
 
