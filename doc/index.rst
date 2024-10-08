@@ -11,26 +11,20 @@ available on `github <https://github.com/np3m/e4mma>`_.
 You may either use one of the Docker images (see :ref:`Using docker`)
 or compile the code yourself. You do not need to compile the code to
 use the equation of state (EOS) tables -- they can be read by any
-application which can read HDF5 files.
-
-Compiling the code requires the installation of `Boost
-<http://www.boost.org>`_, `GSL <http://www.gnu.org/software/gsl>`_
-(versions 2.0 and later), `HDF5 <http://www.hdfgroup.org>`_ (versions
-1.8.14 and later), and `O2scl
-<https://awsteiner.org/code/o2scl/index.html>`_. You will need to
-manually edit the makefile to work with your system and then compile
-``eos_nuclei`` in order to generate an EOS.
+application which can read HDF5 files. For more information on
+compiling the code, see :ref:`Compiling E4MMA`.
 
 More documentation will be added as time permits.
 
 .. toctree:: 
    :maxdepth: 2
 
-   download	      
+   download
    table_format
    docker
    python
    examples
+   compile
    rest_mass
    chem_pot
    trans
