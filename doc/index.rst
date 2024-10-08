@@ -8,7 +8,7 @@ and neutron star mergers. This code is based on `Du et al. (2019)
 <https://doi.org/10.1103/PhysRevC.105.035803>`_. The source code is
 available on `github <https://github.com/np3m/e4mma>`_.
 
-You may either use one of the Docker images (see :ref:`Using docker`)
+You may either use one of the Docker images (see :ref:`Using Docker`)
 or compile the code yourself. You do not need to compile the code to
 use the equation of state (EOS) tables -- they can be read by any
 application which can read HDF5 files. For more information on
