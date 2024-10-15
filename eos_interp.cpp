@@ -62,13 +62,17 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
   hff.close();
 
   std::string kernel=kw.get_string("kernel","rbf_noise");
+  cout << "kernel: " << kernel << endl;
   int ilo=kw.get_int("ilo",0);
   int ihi=kw.get_int("ihi",nB_grid2.size()-1);
   int jlo=kw.get_int("jlo",0);
   int jhi=kw.get_int("jhi",Ye_grid2.size()-1);
   int klo=kw.get_int("klo",0);
   int khi=kw.get_int("khi",T_grid2.size()-1);
-  cout << "kernel: " << kernel << endl;
+  cout << "ilo,ihi,jlo,jhi,klo,khi: "
+       << ilo << " " << ihi << " "
+       << jlo << " " << jhi << " "
+       << klo << " " << khi << endl;
   
   int ipx_count=0;
 
@@ -79,20 +83,20 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
     for(int i=ilo;i<=ihi;i++) {
       for(int j=jlo;j<=jhi;j++) {
         
-        vector<size_t> ix={i,j,k};
+        vector<size_t> ix={(size_t)i,(size_t)j,(size_t)k};
         
         double dPdnB;
-        if (i>0 && i<nB_grid2.size()-1) {
-          vector<size_t> ixp1={i+1,j,k};
-          vector<size_t> ixm1={i-1,j,k};
+        if (i>0 && ((size_t)i)<nB_grid2.size()-1) {
+          vector<size_t> ixp1={(size_t)(i+1),(size_t)j,(size_t)k};
+          vector<size_t> ixm1={(size_t)(i-1),(size_t)j,(size_t)k};
           dPdnB=(tg_P.get(ixp1)-tg_P.get(ixm1))/
             (nB_grid2[i+1]-nB_grid2[i-1])/2;
         } else if (i>0) {
-          vector<size_t> ixm1={i-1,j,k};
+          vector<size_t> ixm1={(size_t)(i-1),(size_t)j,(size_t)k};
           dPdnB=(tg_P.get(ix)-tg_P.get(ixm1))/
             (nB_grid2[i]-nB_grid2[i-1]);
         } else {
-          vector<size_t> ixp1={i+1,j,k};
+          vector<size_t> ixp1={(size_t)(i+1),(size_t)j,(size_t)k};
           dPdnB=(tg_P.get(ixp1)-tg_P.get(ix))/
             (nB_grid2[i+1]-nB_grid2[i]);
         }
