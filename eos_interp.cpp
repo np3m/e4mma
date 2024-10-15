@@ -62,6 +62,12 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
   hff.close();
 
   std::string kernel=kw.get_string("kernel","rbf_noise");
+  int ilo=kw.get_int("ilo",0);
+  int ihi=kw.get_int("ihi",nB_grid2.size()-1);
+  int jlo=kw.get_int("jlo",0);
+  int jhi=kw.get_int("jhi",Ye_grid2.size()-1);
+  int klo=kw.get_int("klo",0);
+  int khi=kw.get_int("khi",T_grid2.size()-1);
   cout << "kernel: " << kernel << endl;
   
   int ipx_count=0;
@@ -69,192 +75,174 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
   cout << "eos_nuclei::interp_fix_table(): "
        << "Starting loop over entire grid." << endl;
 
-  bool kdone=false;
-  for(size_t k=T_grid2.size()-1;kdone==false;k--) {
-    for(size_t i=0;i<nB_grid2.size();i++) {
-      for(size_t j=0;j<Ye_grid2.size();j++) {
-
-	if (nB_grid2[i]<1.0e-6) {
-	
-	  vector<size_t> ix={i,j,k};
-
-	  double dPdnB;
-	  if (i>0 && i<nB_grid2.size()-1) {
-	    vector<size_t> ixp1={i+1,j,k};
-	    vector<size_t> ixm1={i-1,j,k};
-	    dPdnB=(tg_P.get(ixp1)-tg_P.get(ixm1))/
-	      (nB_grid2[i+1]-nB_grid2[i-1])/2;
-	  } else if (i>0) {
-	    vector<size_t> ixm1={i-1,j,k};
-	    dPdnB=(tg_P.get(ix)-tg_P.get(ixm1))/
-	      (nB_grid2[i]-nB_grid2[i-1]);
-	  } else {
-	    vector<size_t> ixp1={i+1,j,k};
-	    dPdnB=(tg_P.get(ixp1)-tg_P.get(ix))/
-	      (nB_grid2[i+1]-nB_grid2[i]);
-	  }
+  for(int k=khi;k>=klo;k--) {
+    for(int i=ilo;i<=ihi;i++) {
+      for(int j=jlo;j<=jhi;j++) {
         
-	  if (tg_cs2.get(ix)>1.0 ||
-	      tg_cs2.get(ix)<0.0 || 
-	      !std::isfinite(tg_cs2.get(ix)) || 
-	      dPdnB<=0.0 || !std::isfinite(dPdnB)) {
+        vector<size_t> ix={i,j,k};
+        
+        double dPdnB;
+        if (i>0 && i<nB_grid2.size()-1) {
+          vector<size_t> ixp1={i+1,j,k};
+          vector<size_t> ixm1={i-1,j,k};
+          dPdnB=(tg_P.get(ixp1)-tg_P.get(ixm1))/
+            (nB_grid2[i+1]-nB_grid2[i-1])/2;
+        } else if (i>0) {
+          vector<size_t> ixm1={i-1,j,k};
+          dPdnB=(tg_P.get(ix)-tg_P.get(ixm1))/
+            (nB_grid2[i]-nB_grid2[i-1]);
+        } else {
+          vector<size_t> ixp1={i+1,j,k};
+          dPdnB=(tg_P.get(ixp1)-tg_P.get(ix))/
+            (nB_grid2[i+1]-nB_grid2[i]);
+        }
+        
+        if (tg_cs2.get(ix)>1.0 ||
+            tg_cs2.get(ix)<0.0 || 
+            !std::isfinite(tg_cs2.get(ix)) || 
+            dPdnB<=0.0 || !std::isfinite(dPdnB)) {
           
-	    size_t i_fix=i, j_fix=j, k_fix=k;
-	    cout << "Found point to fix at (" << i << "," << j << ","
-		 << k << ") = (" << nB_grid2[i] << ","
-		 << Ye_grid2[j] << "," << T_grid2[k] << ")\n  cs2: "
-		 << tg_cs2.get(ix) << " dPdnB: " << dPdnB << endl;
-            
-	    // Create a copy of the free energy for temporary storage
-	    tg_Fint_old=tg_Fint;
-	    tg_F_old=tg_F;
-
-	    int ii_ret=interp_internal(i_fix,j_fix,k_fix,ike,kw);
-	    
-	    if (ii_ret!=0) {
-	      cout << "Interpolation failed, returning F and Fint to "
-		   << "original." << endl;
-	      //O2SCL_ERR("Interpolation failed.",o2scl::exc_efailed);
-	      tg_Fint=tg_Fint_old;
-	      tg_F=tg_F_old;
-	    } else {
-	      cout << "Interpolation succeeded." << endl;
-	      std::vector<std::string> sv2;
-	      eos_deriv(sv2,itive_com);
-	      add_eg(sv2,itive_com);
-	      
-	      size_t i_min, i_max, j_min, j_max, k_min, k_max;
-	      i_min=ike.fix_list[0];
-	      i_max=ike.fix_list[0];
-	      j_min=ike.fix_list[1];
-	      j_max=ike.fix_list[1];
-	      k_min=ike.fix_list[2];
-	      k_max=ike.fix_list[2];
-	      
-	      for(size_t ifx=3;ifx<ike.fix_list.size();ifx+=3) {
-		if (ike.fix_list[ifx]<i_min) {
-		  i_min=ike.fix_list[ifx];
-		}
-		if (ike.fix_list[ifx]>i_max) {
-		  i_max=ike.fix_list[ifx];
-		}
-		if (ike.fix_list[ifx+1]<j_min) {
-		  j_min=ike.fix_list[ifx+1];
-		}
-		if (ike.fix_list[ifx+1]>j_max) {
-		  j_max=ike.fix_list[ifx+1];
-		}
-		if (ike.fix_list[ifx+2]<k_min) {
-		  k_min=ike.fix_list[ifx+2];
-		}
-		if (ike.fix_list[ifx+2]>k_max) {
-		  k_max=ike.fix_list[ifx+2];
-		}
-	      }
-	      if (method=="gp") {
-		for(size_t icx=3;icx<ike.calib_list.size();icx+=3) {
-		  if (ike.calib_list[icx]<i_min) {
-		    i_min=ike.calib_list[icx];
-		  }
-		  if (ike.calib_list[icx]>i_max) {
-		    i_max=ike.calib_list[icx];
-		  }
-		  if (ike.calib_list[icx+1]<j_min) {
-		    j_min=ike.calib_list[icx+1];
-		  }
-		  if (ike.calib_list[icx+1]>j_max) {
-		    j_max=ike.calib_list[icx+1];
-		  }
-		  if (ike.calib_list[icx+2]<k_min) {
-		    k_min=ike.calib_list[icx+2];
-		  }
-		  if (ike.calib_list[icx+2]>k_max) {
-		    k_max=ike.calib_list[icx+2];
-		  }
-		}
-	      }
-	      for(size_t ii=0;ii<window;ii++) {
-		if (i_min>0) i_min--;
-		if (i_max<nB_grid2.size()-1) i_max++;
-		if (j_min>0) j_min--;
-		if (j_max<Ye_grid2.size()-1) j_max++;
-		if (k_min>0) k_min--;
-		if (k_max<T_grid2.size()-1) k_max++;
-	      }
-	      
-	      cout << "Computed i_min, i_max: " << i_min << " "
-		   << i_max << endl;
-	      cout << "Computed j_min, j_max: " << j_min << " "
-		   << j_max << endl;
-	      cout << "Computed k_min, k_max: " << k_min << " "
-		   << k_max << endl;
-	      
-	      std::vector<std::string> sv3;
-	      /*
-		sv3={"stability",o2scl::szttos(i_min),o2scl::szttos(i_max),
-		o2scl::szttos(j_min),o2scl::szttos(j_max),
-		o2scl::szttos(k_min),o2scl::szttos(k_max)};
-	      */
-	      sv3={"stability",((std::string)"output=")+st_out};
-	      stability(sv3,itive_com);
-	      
-	      ipx_count++;
-	      
-	      if (false) {
-		hdf_file hf;
-		hf.open_or_create(st_out);
-		hdf_output(hf,dmundnB,"dmundnB");
-		hdf_output(hf,dmundYe,"dmundYe");
-		hdf_output(hf,dmupdYe,"dmupdYe");
-		hdf_output(hf,dsdnB,"dsdnB");
-		hdf_output(hf,dsdYe,"dsdYe");
-		hdf_output(hf,dsdT,"dsdT");
-		hdf_output(hf,egv[0],"egv0");
-		hdf_output(hf,egv[1],"egv1");
-		hdf_output(hf,egv[2],"egv2");
-		hdf_output(hf,egv[3],"egv3");
-		hdf_output(hf,tg_cs2,"cs2");
-		hdf_output(hf,tg_cs2_hom,"cs2_hom");
-		hdf_output(hf,tg_cs2_hom,"sflag");
-		hf.close();
-	      }
-	      
-	      if (true) {
-		write_results(table_out);
-	      }            
-
-	    }
-	    
+          size_t i_fix=i, j_fix=j, k_fix=k;
+          cout << "Found point to fix at (" << i << "," << j << ","
+               << k << ") = (" << nB_grid2[i] << ","
+               << Ye_grid2[j] << "," << T_grid2[k] << ")\n  cs2: "
+               << tg_cs2.get(ix) << " dPdnB: " << dPdnB << endl;
+          
+          // Create a copy of the free energy for temporary storage
+          tg_Fint_old=tg_Fint;
+          tg_F_old=tg_F;
+          
+          int ii_ret=interp_internal(i_fix,j_fix,k_fix,ike,kw);
 	  
-	    j++;
-	    //k+=window*2;
+          if (ii_ret!=0) {
+            cout << "Interpolation failed, returning F and Fint to "
+                 << "original." << endl;
+            //O2SCL_ERR("Interpolation failed.",o2scl::exc_efailed);
+            tg_Fint=tg_Fint_old;
+            tg_F=tg_F_old;
+          } else {
+            cout << "Interpolation succeeded." << endl;
+            std::vector<std::string> sv2;
+            eos_deriv(sv2,itive_com);
+            add_eg(sv2,itive_com);
+	    
+            size_t i_min, i_max, j_min, j_max, k_min, k_max;
+            i_min=ike.fix_list[0];
+            i_max=ike.fix_list[0];
+            j_min=ike.fix_list[1];
+            j_max=ike.fix_list[1];
+            k_min=ike.fix_list[2];
+            k_max=ike.fix_list[2];
+	    
+            for(size_t ifx=3;ifx<ike.fix_list.size();ifx+=3) {
+              if (ike.fix_list[ifx]<i_min) {
+                i_min=ike.fix_list[ifx];
+              }
+              if (ike.fix_list[ifx]>i_max) {
+                i_max=ike.fix_list[ifx];
+              }
+              if (ike.fix_list[ifx+1]<j_min) {
+                j_min=ike.fix_list[ifx+1];
+              }
+              if (ike.fix_list[ifx+1]>j_max) {
+                j_max=ike.fix_list[ifx+1];
+              }
+              if (ike.fix_list[ifx+2]<k_min) {
+                k_min=ike.fix_list[ifx+2];
+              }
+              if (ike.fix_list[ifx+2]>k_max) {
+                k_max=ike.fix_list[ifx+2];
+              }
+            }
+            if (method=="gp") {
+              for(size_t icx=3;icx<ike.calib_list.size();icx+=3) {
+                if (ike.calib_list[icx]<i_min) {
+                  i_min=ike.calib_list[icx];
+                }
+                if (ike.calib_list[icx]>i_max) {
+                  i_max=ike.calib_list[icx];
+                }
+                if (ike.calib_list[icx+1]<j_min) {
+                  j_min=ike.calib_list[icx+1];
+                }
+                if (ike.calib_list[icx+1]>j_max) {
+                  j_max=ike.calib_list[icx+1];
+                }
+                if (ike.calib_list[icx+2]<k_min) {
+                  k_min=ike.calib_list[icx+2];
+                }
+                if (ike.calib_list[icx+2]>k_max) {
+                  k_max=ike.calib_list[icx+2];
+                }
+              }
+            }
+            for(size_t ii=0;ii<window;ii++) {
+              if (i_min>0) i_min--;
+              if (i_max<nB_grid2.size()-1) i_max++;
+              if (j_min>0) j_min--;
+              if (j_max<Ye_grid2.size()-1) j_max++;
+              if (k_min>0) k_min--;
+              if (k_max<T_grid2.size()-1) k_max++;
+            }
+	    
+            cout << "Computed i_min, i_max: " << i_min << " "
+                 << i_max << endl;
+            cout << "Computed j_min, j_max: " << j_min << " "
+                 << j_max << endl;
+            cout << "Computed k_min, k_max: " << k_min << " "
+                 << k_max << endl;
             
-	    cout << "ipx_count: " << ipx_count << endl;
+            std::vector<std::string> sv3;
+            /*
+              sv3={"stability",o2scl::szttos(i_min),o2scl::szttos(i_max),
+              o2scl::szttos(j_min),o2scl::szttos(j_max),
+              o2scl::szttos(k_min),o2scl::szttos(k_max)};
+            */
+            sv3={"stability",((std::string)"output=")+st_out};
+            stability(sv3,itive_com);
+	    
+            ipx_count++;
+            
+            if (false) {
+              hdf_file hf;
+              hf.open_or_create(st_out);
+              hdf_output(hf,dmundnB,"dmundnB");
+              hdf_output(hf,dmundYe,"dmundYe");
+              hdf_output(hf,dmupdYe,"dmupdYe");
+              hdf_output(hf,dsdnB,"dsdnB");
+              hdf_output(hf,dsdYe,"dsdYe");
+              hdf_output(hf,dsdT,"dsdT");
+              hdf_output(hf,egv[0],"egv0");
+              hdf_output(hf,egv[1],"egv1");
+              hdf_output(hf,egv[2],"egv2");
+              hdf_output(hf,egv[3],"egv3");
+              hdf_output(hf,tg_cs2,"cs2");
+              hdf_output(hf,tg_cs2_hom,"cs2_hom");
+              hdf_output(hf,tg_cs2_hom,"sflag");
+              hf.close();
+            }
+	    
+            if (true) {
+              write_results(table_out);
+            }            
+            
+          }
+	  
+          j++;
           
-	    if (false && ipx_count==10) {
-	      cout << "Exiting since ipx_count is 10." << endl;
-	      exit(-1);
-	    }
-
-	    if (false && ipx_count==100) {
-	      i=nB_grid2.size();
-	      j=Ye_grid2.size();
-	      k=T_grid2.size();
-	    }
-
-	    if (one_point && ipx_count==1) {
-	      i=nB_grid2.size();
-	      j=Ye_grid2.size();
-	      k=T_grid2.size();
-	    }
+          cout << "ipx_count: " << ipx_count << endl;
           
-	  }
+          if (one_point && ipx_count==1) {
+            i=nB_grid2.size();
+            j=Ye_grid2.size();
+            k=T_grid2.size();
+          }
+          
 	}
       }
       
     }
 
-    if (k==0) kdone=true;
   }
 
   
