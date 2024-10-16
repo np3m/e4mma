@@ -1421,9 +1421,30 @@ int eos_nuclei::add_eg(std::vector<std::string> &sv,
 int eos_nuclei::eg_point(std::vector<std::string> &sv,
 			 bool itive_com) {
 
-  double nB=o2scl::stod(sv[1]);
-  double Ye=o2scl::stod(sv[2]);
-  double T_MeV=o2scl::stod(sv[3]);
+  size_t inB, iYe, iT;
+  double nB, Ye, T_MeV;
+  bool index_mode;
+  
+  if (sv[1].find('.')==std::string::npos &&
+      sv[2].find('.')==std::string::npos &&
+      sv[3].find('.')==std::string::npos) {
+    
+    inB=o2scl::stoszt(sv[1]);
+    iYe=o2scl::stoszt(sv[2]);
+    iT=o2scl::stoszt(sv[3]);
+    index_mode=true;
+    nB=nB_grid2[inB];
+    Ye=Ye_grid2[iYe];
+    T_MeV=T_grid2[iT];
+
+  } else {
+    
+    index_mode=false;
+    nB=o2scl::stod(sv[1]);
+    Ye=o2scl::stod(sv[2]);
+    T_MeV=o2scl::stod(sv[3]);
+
+  }
 
   elep.e.mu=elep.e.m;
   elep.mu.mu=elep.mu.m;
