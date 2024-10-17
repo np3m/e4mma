@@ -1421,7 +1421,7 @@ int eos_nuclei::add_eg(std::vector<std::string> &sv,
 int eos_nuclei::eg_point(std::vector<std::string> &sv,
 			 bool itive_com) {
 
-  size_t inB, iYe, iT;
+  size_t inB=0, iYe=0, iT=0;
   double nB, Ye, T_MeV;
   bool index_mode;
   
@@ -1469,7 +1469,7 @@ int eos_nuclei::eg_point(std::vector<std::string> &sv,
     calc_utf8<> calc;
     calc_utf8<cpp_dec_float_25> calc_25;
     calc_utf8<long double> calc_ld;
-    
+
     std::map<std::string,double> vars;
     std::map<std::string,long double> vars_ld;
     std::map<std::string,cpp_dec_float_25> vars_25;
@@ -1531,40 +1531,65 @@ int eos_nuclei::eg_point(std::vector<std::string> &sv,
 
     if (false) {
       cout << "eos_nuclei::eg_point(): nB:" << endl;
-      cout << "  " << dtos(nB,0) << " " << << dtos(nB_ld,0) << endl;
+      cout << "  " << dtos(nB,0) << " " << dtos(nB_ld,0) << endl;
       cout << "  " << dtos(nB_25,0) << endl;
 
       cout << "eos_nuclei::eg_point(): Ye:" << endl;
-      cout << "  " << dtos(Ye,0) << " " << << dtos(Ye_ld,0) << endl;
+      cout << "  " << dtos(Ye,0) << " " << dtos(Ye_ld,0) << endl;
       cout << "  " << dtos(Ye_25,0) << endl;
 
       cout << "eos_nuclei::eg_point(): T:" << endl;
-      cout << "  " << dtos(T,0) << " " << << dtos(T_ld,0) << endl;
+      cout << "  " << dtos(T_MeV,0) << " " << dtos(T_ld,0) << endl;
       cout << "  " << dtos(T_25,0) << endl;
     }
 
     elep.verbose=2;
-    
-    //elep.fp_25_acc();
-    //elep.pair_density_eq_cdf25(nB_25*Ye_25,T_25/hc_mev_fm_25);
-    
-    //cout << "mue [MeV]: " << dtos(elep.ecdf25.mu*hc_mev_fm_25,0) << endl;
-    //cout << "n_e [1/fm^3]: " << dtos(elep.ecdf25.n,0) << endl;
+
+    elep.fp_25_acc();
+    elep.pair_density_eq_cdf25(nB_25*Ye_25,T_25/hc_mev_fm_25);
     
     elep.ld_acc();
     elep.pair_density_eq_ld(nB_ld*Ye_ld,T_ld/hc_mev_fm_ld);
     
-    cout << "mue [MeV]: " << dtos(elep.eld.mu*hc_mev_fm_ld,0) << endl;
-    cout << "n_e [1/fm^3]: " << dtos(elep.eld.n,0) << endl;
-    
     elep.default_acc();
     elep.pair_density_eq(nB*Ye,T_MeV/hc_mev_fm);
     
-    cout << "mue [MeV]: " << dtos(elep.e.mu*hc_mev_fm,0) << endl;
-    cout << "n_e [1/fm^3]: " << dtos(elep.e.n,0) << endl;
-
-    cout << count_digits_same(elep.ecdf25.mu,elep.eld.mu) << " "
-         << count_digits_same(elep.eld.mu,elep.e.mu) << endl;
+    cout << "mu_e [MeV]: ";
+    cout << count_digits_same(elep.eld.mu,elep.e.mu) << " "
+         << count_digits_same(elep.ecdf25.mu,elep.eld.mu) << endl;
+    cout << "  " << dtos(elep.e.mu*hc_mev_fm,0) << endl;
+    cout << "  " << dtos(elep.eld.mu*hc_mev_fm_ld,0) << endl;
+    cout << "  " << dtos(elep.ecdf25.mu*hc_mev_fm_25,0) << endl;
+    
+    cout << "E_{eg} [MeV]: ";
+    double E=elep.th.ed/nB*hc_mev_fm;
+    long double E_ld=elep.th_ld.ed/nB_ld*hc_mev_fm_ld;
+    cpp_dec_float_25 E_25=elep.th_cdf25.ed/nB_25*hc_mev_fm_25;
+    cout << count_digits_same(E_ld,E) << " "
+         << count_digits_same(E_25,E_ld) << endl;
+    cout << "  " << dtos(E,0) << endl;
+    cout << "  " << dtos(E_ld,0) << endl;
+    cout << "  " << dtos(E_25,0) << endl;
+    
+    cout << "P_{eg} [MeV/fm^3]: ";
+    double P=elep.th.pr*hc_mev_fm;
+    long double P_ld=elep.th_ld.pr*hc_mev_fm_ld;
+    cpp_dec_float_25 P_25=elep.th_cdf25.pr*hc_mev_fm_25;
+    cout << count_digits_same(P_ld,P) << " "
+         << count_digits_same(P_25,P_ld) << endl;
+    cout << "  " << dtos(P,0) << endl;
+    cout << "  " << dtos(P_ld,0) << endl;
+    cout << "  " << dtos(P_25,0) << endl;
+    
+    cout << "S_{eg}: ";
+    double S=elep.th.en/nB;
+    long double S_ld=elep.th_ld.en/nB_ld;
+    cpp_dec_float_25 S_25=elep.th_cdf25.en/nB_25;
+    cout << count_digits_same(S_ld,S) << " "
+         << count_digits_same(S_25,S_ld) << endl;
+    cout << "  " << dtos(S,0) << endl;
+    cout << "  " << dtos(S_ld,0) << endl;
+    cout << "  " << dtos(S_25,0) << endl;
     
 #endif
     
