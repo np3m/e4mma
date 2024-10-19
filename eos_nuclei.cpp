@@ -1543,7 +1543,11 @@ int eos_nuclei::eg_point(std::vector<std::string> &sv,
       cout << "  " << dtos(T_25,0) << endl;
     }
 
+    elep.include_deriv=true;
     elep.verbose=2;
+    //elep.frel.verbose=2;
+    //elep.frel_ld.verbose=2;
+    //elep.frel_cdf25.verbose=2;
 
     elep.fp_25_acc();
     elep.pair_density_eq_cdf25(nB_25*Ye_25,T_25/hc_mev_fm_25);
@@ -1555,11 +1559,13 @@ int eos_nuclei::eg_point(std::vector<std::string> &sv,
     elep.pair_density_eq(nB*Ye,T_MeV/hc_mev_fm);
     
     cout << "mu_e [MeV]: ";
+    long double mue_ld=elep.eld.mu*hc_mev_fm_ld;
+    cpp_dec_float_25 mue_25=elep.ecdf25.mu*hc_mev_fm_25;
     cout << count_digits_same(elep.eld.mu,elep.e.mu) << " "
          << count_digits_same(elep.ecdf25.mu,elep.eld.mu) << endl;
     cout << "  " << dtos(elep.e.mu*hc_mev_fm,0) << endl;
     cout << "  " << dtos(elep.eld.mu*hc_mev_fm_ld,0) << endl;
-    cout << "  " << dtos(elep.ecdf25.mu*hc_mev_fm_25,0) << endl;
+    cout << "  " << dtos(mue_25,0) << endl;
     
     cout << "E_{eg} [MeV]: ";
     double E=elep.th.ed/nB*hc_mev_fm;
@@ -1590,6 +1596,33 @@ int eos_nuclei::eg_point(std::vector<std::string> &sv,
     cout << "  " << dtos(S,0) << endl;
     cout << "  " << dtos(S_ld,0) << endl;
     cout << "  " << dtos(S_25,0) << endl;
+
+    cout << "dndmu [1/fm^2]: ";
+    cout << count_digits_same(elep.thd_ld.dndmu,
+                              elep.thd.dndmu) << " "
+         << count_digits_same(elep.thd_cdf25.dndmu,
+                              elep.thd_ld.dndmu) << endl;
+    cout << "  " << dtos(elep.thd.dndmu,0) << endl;
+    cout << "  " << dtos(elep.thd_ld.dndmu,0) << endl;
+    cout << "  " << dtos(elep.thd_cdf25.dndmu,0) << endl;
+    
+    cout << "dndT [1/fm^2]: ";
+    cout << count_digits_same(elep.thd_ld.dndT,
+                              elep.thd.dndT) << " "
+         << count_digits_same(elep.thd_cdf25.dndT,
+                              elep.thd_ld.dndT) << endl;
+    cout << "  " << dtos(elep.thd.dndT,0) << endl;
+    cout << "  " << dtos(elep.thd_ld.dndT,0) << endl;
+    cout << "  " << dtos(elep.thd_cdf25.dndT,0) << endl;
+    
+    cout << "dsdT [1/fm^2]: ";
+    cout << count_digits_same(elep.thd_ld.dsdT,
+                              elep.thd.dsdT) << " "
+         << count_digits_same(elep.thd_cdf25.dsdT,
+                              elep.thd_ld.dsdT) << endl;
+    cout << "  " << dtos(elep.thd.dsdT,0) << endl;
+    cout << "  " << dtos(elep.thd_ld.dsdT,0) << endl;
+    cout << "  " << dtos(elep.thd_cdf25.dsdT,0) << endl;
     
 #endif
     

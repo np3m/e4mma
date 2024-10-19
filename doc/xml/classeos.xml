@@ -965,7 +965,7 @@
         <location file="/home/awsteiner/wcs/e4mma/eos.h" line="665" column="18" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="665" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a5ff2fbd5f7622bf05e31bb03a63c900e" prot="public" static="no" mutable="no">
-        <type>o2scl::boson</type>
+        <type><ref refid="namespaceo2scl_1a3de9476453a19adb5c1b6e28b84f27a4" kindref="member" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag">o2scl::boson</ref></type>
         <definition>o2scl::boson eos::photon</definition>
         <argsstring></argsstring>
         <name>photon</name>
@@ -2970,7 +2970,7 @@
         <location file="/home/awsteiner/wcs/e4mma/eos.h" line="240" column="15" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="240" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a26a9aa2bd8891eddc06dbae463307896" prot="public" static="no" mutable="no">
-        <type>std::vector&lt; o2scl::boson &gt;</type>
+        <type>std::vector&lt; <ref refid="namespaceo2scl_1a3de9476453a19adb5c1b6e28b84f27a4" kindref="member" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag">o2scl::boson</ref> &gt;</type>
         <definition>std::vector&lt;o2scl::boson&gt; eos::res_b</definition>
         <argsstring></argsstring>
         <name>res_b</name>
@@ -3093,11 +3093,29 @@
       </node>
     </inheritancegraph>
     <collaborationgraph>
-      <node id="59">
+      <node id="53">
+        <label>o2scl::boson_tl&lt; boost::multiprecision::number&lt; boost::multiprecision::cpp_dec_float&lt; 25 &gt; &gt; &gt;</label>
+        <link refid="classo2scl_1_1boson__tl" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
+        <childnode refid="47" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="46">
+        <label>o2scl::boson_tl&lt; double &gt;</label>
+        <link refid="classo2scl_1_1boson__tl" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
+        <childnode refid="47" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="52">
+        <label>o2scl::boson_tl&lt; long double &gt;</label>
+        <link refid="classo2scl_1_1boson__tl" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
+        <childnode refid="47" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="68">
         <label>o2scl::classical_thermo_tl&lt; double &gt;</label>
         <link refid="classo2scl_1_1classical__thermo__tl" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
       </node>
-      <node id="52">
+      <node id="59">
         <label>o2scl::convert_units&lt; cpp_dec_float_25 &gt;</label>
         <link refid="classo2scl_1_1convert__units" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
         <childnode refid="36" relation="usage">
@@ -3111,7 +3129,7 @@
           <edgelabel>fc</edgelabel>
         </childnode>
       </node>
-      <node id="51">
+      <node id="58">
         <label>o2scl::convert_units&lt; long double &gt;</label>
         <link refid="classo2scl_1_1convert__units" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
         <childnode refid="36" relation="usage">
@@ -3162,55 +3180,63 @@
         <childnode refid="43" relation="usage">
           <edgelabel>elep</edgelabel>
         </childnode>
-        <childnode refid="58" relation="usage">
+        <childnode refid="67" relation="usage">
           <edgelabel>vsd</edgelabel>
         </childnode>
-        <childnode refid="60" relation="usage">
+        <childnode refid="69" relation="usage">
           <edgelabel>sk</edgelabel>
           <edgelabel>sk_Tcorr</edgelabel>
           <edgelabel>sk_alt</edgelabel>
         </childnode>
-        <childnode refid="61" relation="usage">
+        <childnode refid="71" relation="usage">
           <edgelabel>rmf</edgelabel>
         </childnode>
-        <childnode refid="63" relation="usage">
+        <childnode refid="73" relation="usage">
           <edgelabel>rmf_hyp</edgelabel>
         </childnode>
         <childnode refid="2" relation="usage">
           <edgelabel>eos_Tcorr</edgelabel>
         </childnode>
-        <childnode refid="64" relation="usage">
+        <childnode refid="74" relation="usage">
           <edgelabel>ecv</edgelabel>
         </childnode>
         <childnode refid="3" relation="usage">
           <edgelabel>eosp_alt</edgelabel>
         </childnode>
       </node>
-      <node id="64">
+      <node id="74">
         <label>eos_crust_virial_v2</label>
         <link refid="classeos__crust__virial__v2"/>
-        <childnode refid="65" relation="public-inheritance">
+        <childnode refid="75" relation="public-inheritance">
         </childnode>
-        <childnode refid="66" relation="usage">
+        <childnode refid="76" relation="usage">
           <edgelabel>iv_ba</edgelabel>
           <edgelabel>iv_bpna</edgelabel>
         </childnode>
       </node>
-      <node id="49">
-        <label>o2scl::fermion_rel_tl&lt; fermion_deriv_t &gt;</label>
-        <link refid="classo2scl_1_1fermion__rel__tl" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
-        <childnode refid="17" relation="public-inheritance">
+      <node id="57">
+        <label>o2scl::fermion_deriv_rel_tl&lt; fermion_deriv_tl&lt; cpp_dec_float_25 &gt;, fermion_rel_cdf25, inte_double_exp_boost&lt;&gt;, inte_double_exp_boost&lt;&gt;, cpp_dec_float_25 &gt;</label>
+        <link refid="classo2scl_1_1fermion__deriv__rel__tl" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
+        <childnode refid="49" relation="public-inheritance">
         </childnode>
-        <childnode refid="28" relation="public-inheritance">
+        <childnode refid="51" relation="public-inheritance">
         </childnode>
         <childnode refid="29" relation="usage">
           <edgelabel>it_multip</edgelabel>
         </childnode>
-        <childnode refid="30" relation="usage">
-          <edgelabel>alt_solver</edgelabel>
-        </childnode>
       </node>
       <node id="56">
+        <label>o2scl::fermion_deriv_rel_tl&lt; fermion_deriv_tl&lt; long double &gt;, fermion_rel_ld, inte_double_exp_boost&lt;&gt;, inte_double_exp_boost&lt;&gt;, long double &gt;</label>
+        <link refid="classo2scl_1_1fermion__deriv__rel__tl" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
+        <childnode refid="49" relation="public-inheritance">
+        </childnode>
+        <childnode refid="51" relation="public-inheritance">
+        </childnode>
+        <childnode refid="29" relation="usage">
+          <edgelabel>it_multip</edgelabel>
+        </childnode>
+      </node>
+      <node id="65">
         <label>o2scl::fermion_rel_tl&lt; fermion_tl&lt; cpp_dec_float_25 &gt;, fermi_dirac_integ_direct&lt; cpp_dec_float_25, funct_cdf35, cpp_dec_float_35 &gt;, bessel_K_exp_integ_boost&lt; cpp_dec_float_25, cpp_dec_float_35 &gt;, inte_double_exp_boost&lt;&gt;, inte_double_exp_boost&lt;&gt;, root_brent_gsl&lt; funct_cdf25, cpp_dec_float_25 &gt;, funct_cdf25, cpp_dec_float_25 &gt;</label>
         <link refid="classo2scl_1_1fermion__rel__tl" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
         <childnode refid="17" relation="public-inheritance">
@@ -3224,7 +3250,7 @@
           <edgelabel>alt_solver</edgelabel>
         </childnode>
       </node>
-      <node id="54">
+      <node id="63">
         <label>o2scl::fermion_rel_tl&lt; fermion_tl&lt; long double &gt;, fermi_dirac_integ_direct&lt; long double, funct_cdf25, cpp_dec_float_25 &gt;, bessel_K_exp_integ_boost&lt; long double, cpp_dec_float_25 &gt;, inte_double_exp_boost&lt;&gt;, inte_double_exp_boost&lt;&gt;, root_brent_gsl&lt; funct_ld, long double &gt;, funct_ld, long double &gt;</label>
         <link refid="classo2scl_1_1fermion__rel__tl" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
         <childnode refid="17" relation="public-inheritance">
@@ -3242,7 +3268,7 @@
         <label>o2scl::find_constants&lt; fp_t &gt;</label>
         <link refid="classo2scl_1_1find__constants" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
       </node>
-      <node id="68">
+      <node id="78">
         <label>o2scl::interp_base&lt; vec_t, vec2_t, fp_t &gt;</label>
         <link refid="classo2scl_1_1interp__base" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
         <childnode refid="34" relation="usage">
@@ -3256,15 +3282,15 @@
           <edgelabel>svx</edgelabel>
         </childnode>
       </node>
-      <node id="66">
+      <node id="76">
         <label>o2scl::interp_vec&lt; std::vector&lt; double &gt; &gt;</label>
         <link refid="classo2scl_1_1interp__vec" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
-        <childnode refid="67" relation="public-inheritance">
+        <childnode refid="77" relation="public-inheritance">
         </childnode>
-        <childnode refid="68" relation="usage">
+        <childnode refid="78" relation="usage">
           <edgelabel>itp</edgelabel>
         </childnode>
-        <childnode refid="69" relation="usage">
+        <childnode refid="79" relation="usage">
           <edgelabel>cf</edgelabel>
         </childnode>
       </node>
@@ -3306,7 +3332,7 @@
         <childnode refid="39" relation="public-inheritance">
         </childnode>
       </node>
-      <node id="69">
+      <node id="79">
         <label>o2scl::covar_funct</label>
         <link refid="classo2scl_1_1covar__funct" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
       </node>
@@ -3332,7 +3358,7 @@
         <childnode refid="9" relation="public-inheritance">
         </childnode>
       </node>
-      <node id="48">
+      <node id="50">
         <label>o2scl::deriv_thermo_base_tl&lt; class fp_t &gt;</label>
         <link refid="classo2scl_1_1deriv__thermo__base__tl" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
       </node>
@@ -3346,10 +3372,14 @@
           <edgelabel>eos_thermo</edgelabel>
         </childnode>
       </node>
-      <node id="65">
+      <node id="75">
         <label>o2scl::eos_crust_virial</label>
         <link refid="classo2scl_1_1eos__crust__virial" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
-        <childnode refid="62" relation="public-inheritance">
+        <childnode refid="72" relation="public-inheritance">
+        </childnode>
+        <childnode refid="46" relation="usage">
+          <edgelabel>alpha</edgelabel>
+          <edgelabel>deuteron</edgelabel>
         </childnode>
       </node>
       <node id="4">
@@ -3375,22 +3405,25 @@
           <edgelabel>sat_deriv2</edgelabel>
         </childnode>
       </node>
-      <node id="61">
+      <node id="71">
         <label>o2scl::eos_had_rmf</label>
         <link refid="classo2scl_1_1eos__had__rmf" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
-        <childnode refid="62" relation="public-inheritance">
+        <childnode refid="72" relation="public-inheritance">
         </childnode>
       </node>
-      <node id="63">
+      <node id="73">
         <label>o2scl::eos_had_rmf_hyp</label>
         <link refid="classo2scl_1_1eos__had__rmf__hyp" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
-        <childnode refid="61" relation="public-inheritance">
+        <childnode refid="71" relation="public-inheritance">
         </childnode>
       </node>
-      <node id="60">
+      <node id="69">
         <label>o2scl::eos_had_skyrme</label>
         <link refid="classo2scl_1_1eos__had__skyrme" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
         <childnode refid="2" relation="public-inheritance">
+        </childnode>
+        <childnode refid="70" relation="usage">
+          <edgelabel>nrf</edgelabel>
         </childnode>
       </node>
       <node id="3">
@@ -3411,16 +3444,16 @@
         <childnode refid="3" relation="public-inheritance">
         </childnode>
       </node>
-      <node id="62">
+      <node id="72">
         <label>o2scl::eos_had_temp_pres_base</label>
         <link refid="classo2scl_1_1eos__had__temp__pres__base" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
         <childnode refid="3" relation="public-inheritance">
         </childnode>
       </node>
-      <node id="58">
+      <node id="67">
         <label>o2scl::eos_had_virial</label>
         <link refid="classo2scl_1_1eos__had__virial" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
-        <childnode refid="59" relation="usage">
+        <childnode refid="68" relation="usage">
           <edgelabel>cl</edgelabel>
         </childnode>
       </node>
@@ -3433,6 +3466,9 @@
           <edgelabel>phd</edgelabel>
           <edgelabel>thd</edgelabel>
         </childnode>
+        <childnode refid="46" relation="usage">
+          <edgelabel>ph</edgelabel>
+        </childnode>
         <childnode refid="6" relation="usage">
           <edgelabel>th</edgelabel>
         </childnode>
@@ -3442,7 +3478,7 @@
         <childnode refid="27" relation="usage">
           <edgelabel>frel</edgelabel>
         </childnode>
-        <childnode refid="46" relation="usage">
+        <childnode refid="48" relation="usage">
           <edgelabel>fdrel</edgelabel>
         </childnode>
       </node>
@@ -3451,60 +3487,96 @@
         <link refid="classo2scl_1_1eos__leptons__multip" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
         <childnode refid="44" relation="public-inheritance">
         </childnode>
-        <childnode refid="51" relation="usage">
-          <edgelabel>cu_ld</edgelabel>
-        </childnode>
         <childnode refid="52" relation="usage">
-          <edgelabel>cu_cdf25</edgelabel>
+          <edgelabel>ph_ld</edgelabel>
         </childnode>
         <childnode refid="53" relation="usage">
-          <edgelabel>frel_ld</edgelabel>
+          <edgelabel>ph_cdf25</edgelabel>
+        </childnode>
+        <childnode refid="54" relation="usage">
+          <edgelabel>ed_ld</edgelabel>
+          <edgelabel>mud_ld</edgelabel>
+          <edgelabel>phd_ld</edgelabel>
+          <edgelabel>thd_ld</edgelabel>
         </childnode>
         <childnode refid="55" relation="usage">
-          <edgelabel>frel_cdf25</edgelabel>
+          <edgelabel>ed_cdf25</edgelabel>
+          <edgelabel>mud_cdf25</edgelabel>
+          <edgelabel>phd_cdf25</edgelabel>
+          <edgelabel>thd_cdf25</edgelabel>
+        </childnode>
+        <childnode refid="56" relation="usage">
+          <edgelabel>fdrel_ld</edgelabel>
         </childnode>
         <childnode refid="57" relation="usage">
+          <edgelabel>fdrel_cdf25</edgelabel>
+        </childnode>
+        <childnode refid="58" relation="usage">
+          <edgelabel>cu_ld</edgelabel>
+        </childnode>
+        <childnode refid="59" relation="usage">
+          <edgelabel>cu_cdf25</edgelabel>
+        </childnode>
+        <childnode refid="60" relation="usage">
+          <edgelabel>th_ld</edgelabel>
+        </childnode>
+        <childnode refid="61" relation="usage">
+          <edgelabel>th_cdf25</edgelabel>
+        </childnode>
+        <childnode refid="62" relation="usage">
+          <edgelabel>frel_ld</edgelabel>
+        </childnode>
+        <childnode refid="64" relation="usage">
+          <edgelabel>frel_cdf25</edgelabel>
+        </childnode>
+        <childnode refid="66" relation="usage">
           <edgelabel>rc</edgelabel>
         </childnode>
       </node>
-      <node id="50">
+      <node id="51">
         <label>o2scl::fermion_deriv_rel_integ&lt; class fp_t &gt;</label>
         <link refid="classo2scl_1_1fermion__deriv__rel__integ" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
       </node>
-      <node id="46">
+      <node id="48">
         <label>o2scl::fermion_deriv_rel_tl&lt; class fermion_deriv_t, class fermion_rel_t, class nit_t, class dit_t, class fp_t &gt;</label>
         <link refid="classo2scl_1_1fermion__deriv__rel__tl" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
-        <childnode refid="47" relation="public-inheritance">
+        <childnode refid="49" relation="public-inheritance">
         </childnode>
-        <childnode refid="50" relation="public-inheritance">
+        <childnode refid="51" relation="public-inheritance">
         </childnode>
         <childnode refid="29" relation="usage">
           <edgelabel>it_multip</edgelabel>
         </childnode>
       </node>
-      <node id="47">
-        <label>o2scl::fermion_deriv_thermo_tl&lt; class fermion_deriv_t, class fp_t &gt;</label>
+      <node id="49">
+        <label>o2scl::fermion_deriv_thermo_tl&lt; class fermion_deriv_t, class fermion_rel_t, class fp_t &gt;</label>
         <link refid="classo2scl_1_1fermion__deriv__thermo__tl" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
-        <childnode refid="48" relation="public-inheritance">
-        </childnode>
-        <childnode refid="49" relation="usage">
-          <edgelabel>fr</edgelabel>
+        <childnode refid="50" relation="public-inheritance">
         </childnode>
       </node>
-      <node id="55">
+      <node id="70">
+        <label>o2scl::fermion_nonrel_tl&lt; class fermion_t, class fd_inte_t, class be_inte_t, class root_t, class func_t, class fp_t &gt;</label>
+        <link refid="classo2scl_1_1fermion__nonrel__tl" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
+        <childnode refid="17" relation="public-inheritance">
+        </childnode>
+        <childnode refid="25" relation="usage">
+          <edgelabel>density_root</edgelabel>
+        </childnode>
+      </node>
+      <node id="64">
         <label>o2scl::fermion_rel_cdf25</label>
         <link refid="classo2scl_1_1fermion__rel__cdf25" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
-        <childnode refid="56" relation="public-inheritance">
+        <childnode refid="65" relation="public-inheritance">
         </childnode>
       </node>
       <node id="28">
         <label>o2scl::fermion_rel_integ&lt; class fp_t &gt;</label>
         <link refid="classo2scl_1_1fermion__rel__integ" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
       </node>
-      <node id="53">
+      <node id="62">
         <label>o2scl::fermion_rel_ld</label>
         <link refid="classo2scl_1_1fermion__rel__ld" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
-        <childnode refid="54" relation="public-inheritance">
+        <childnode refid="63" relation="public-inheritance">
         </childnode>
       </node>
       <node id="27">
@@ -3541,7 +3613,7 @@
         <label>o2scl::inte_double_exp_boost&lt; class fp_25_t, class fp_35_t, class fp_50_t, class fp_100_t &gt;</label>
         <link refid="classo2scl_1_1inte__double__exp__boost" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
       </node>
-      <node id="67">
+      <node id="77">
         <label>o2scl::interp_base&lt; class vec_t, class vec2_t, class fp_t &gt;</label>
         <link refid="classo2scl_1_1interp__base" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
         <childnode refid="34" relation="usage">
@@ -3585,6 +3657,10 @@
         <label>o2scl::mroot_hybrids_base</label>
         <link refid="classo2scl_1_1mroot__hybrids__base" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
       </node>
+      <node id="47">
+        <label>o2scl::part_tl&lt; class fp_t &gt;</label>
+        <link refid="classo2scl_1_1part__tl" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
+      </node>
       <node id="22">
         <label>o2scl::poly_real_base&lt; class fp_t &gt;</label>
         <link refid="classo2scl_1_1poly__real__base" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
@@ -3626,8 +3702,16 @@
         <label>o2scl::thermo_tl&lt; class fp_t &gt;</label>
         <link refid="classo2scl_1_1thermo__tl" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
       </node>
+      <node id="55">
+        <label>o2scl::part_deriv_press_tl&lt; boost::multiprecision::number&lt; boost::multiprecision::cpp_dec_float&lt; 25 &gt; &gt; &gt;</label>
+        <link refid="classo2scl_1_1part__deriv__press__tl" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
+      </node>
       <node id="45">
         <label>o2scl::part_deriv_press_tl&lt; double &gt;</label>
+        <link refid="classo2scl_1_1part__deriv__press__tl" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
+      </node>
+      <node id="54">
+        <label>o2scl::part_deriv_press_tl&lt; long double &gt;</label>
         <link refid="classo2scl_1_1part__deriv__press__tl" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
       </node>
       <node id="26">
@@ -3646,7 +3730,7 @@
         <childnode refid="24" relation="public-inheritance">
         </childnode>
       </node>
-      <node id="57">
+      <node id="66">
         <label>o2scl::root_cern&lt; funct, double &gt;</label>
         <link refid="classo2scl_1_1root__cern" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
         <childnode refid="25" relation="public-inheritance">
@@ -3656,8 +3740,16 @@
         <label>o2scl::search_vec&lt; const vec_t, double &gt;</label>
         <link refid="classo2scl_1_1search__vec" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
       </node>
+      <node id="61">
+        <label>o2scl::thermo_tl&lt; boost::multiprecision::number&lt; boost::multiprecision::cpp_dec_float&lt; 25 &gt; &gt; &gt;</label>
+        <link refid="classo2scl_1_1thermo__tl" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
+      </node>
       <node id="6">
         <label>o2scl::thermo_tl&lt; double &gt;</label>
+        <link refid="classo2scl_1_1thermo__tl" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
+      </node>
+      <node id="60">
+        <label>o2scl::thermo_tl&lt; long double &gt;</label>
         <link refid="classo2scl_1_1thermo__tl" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
       </node>
       <node id="15">
