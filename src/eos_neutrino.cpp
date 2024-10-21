@@ -1,7 +1,7 @@
 /*
   -------------------------------------------------------------------
   
-  Copyright (C) 2018-2023, Zidu Lin and Andrew W. Steiner
+  Copyright (C) 2018-2024, Zidu Lin and Andrew W. Steiner
   
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -51,7 +51,7 @@ int eos_nuclei::mcarlo_nuclei(std::vector<std::string> &sv, bool itive_com) {
     cout << "j: " << j << endl;
     
     if (j==0) {
-      select_internal(470,738,0.5,13.0,62.4,32.8,0.9);
+      select_seven(470,738,0.5,13.0,62.4,32.8,0.9);
     } else {
       std::vector<std::string> obj;
       random(obj,false);
@@ -508,9 +508,9 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
               if (log_xp>-300.0) {
                 xp=pow(10.0,log_xp);
               }
-              double n0=0.16;
-              neutron.n=xn*(1.0-nB/n0)/(1.0-nB*xn/n0-nB*xp/n0)*nB;
-              proton.n=xp*(1.0-nB/n0)/(1.0-nB*xn/n0-nB*xp/n0)*nB;    
+              double n0_loc=0.16;
+              neutron.n=xn*(1.0-nB/n0_loc)/(1.0-nB*xn/n0_loc-nB*xp/n0_loc)*nB;
+              proton.n=xp*(1.0-nB/n0_loc)/(1.0-nB*xn/n0_loc-nB*xp/n0_loc)*nB;    
             } else {
               neutron.n=(1.0-Ye)*nB;
               proton.n=Ye*nB;
@@ -618,9 +618,9 @@ int eos_nuclei::mcarlo_beta(std::vector<std::string> &sv,
         if (log_xp>-300.0) {
           xp=pow(10.0,log_xp);
         }
-        double n0=0.16;
-        neutron.n=xn*(1.0-nB/n0)/(1.0-nB*xn/n0-nB*xp/n0)*nB;
-        proton.n=xp*(1.0-nB/n0)/(1.0-nB*xn/n0-nB*xp/n0)*nB;    
+        double n0_loc=0.16;
+        neutron.n=xn*(1.0-nB/n0_loc)/(1.0-nB*xn/n0_loc-nB*xp/n0_loc)*nB;
+        proton.n=xp*(1.0-nB/n0_loc)/(1.0-nB*xn/n0_loc-nB*xp/n0_loc)*nB;    
       } else {
         neutron.n=(1.0-Ye_best)*nB;
         proton.n=Ye_best*nB;

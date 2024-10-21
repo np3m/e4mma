@@ -1,7 +1,7 @@
 /*
   -------------------------------------------------------------------
   
-  Copyright (C) 2018-2023, Xingfu Du, Zidu Lin, and Andrew W. Steiner
+  Copyright (C) 2018-2024, Xingfu Du, Zidu Lin, and Andrew W. Steiner
   
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@
 #include <o2scl/slack_messenger.h>
 #include <o2scl/part_funcs.h>
 #include <o2scl/interpm_krige.h>
+#include <o2scl/interpm_python.h>
 #include <o2scl/boson_rel.h>
 #include <map>
 
@@ -84,28 +85,45 @@ public:
     
 };
 
+typedef const o2scl::const_matrix_row_gen<ubmatrix> mat_x_row_t;
+
 /** \brief Specialized Gaussian process interpolation object
  */
 class interpm_krige_eos :
   public o2scl::interpm_krige_optim
-<std::vector<o2scl::mcovar_funct_rbf_noise>,ubvector,ubmatrix,ubmatrix_row,
- ubmatrix,ubmatrix_row,Eigen::MatrixXd,
- o2scl_linalg::matrix_invert_det_eigen<Eigen::MatrixXd>> {
+<ubvector,ubmatrix,mat_x_row_t,
+ ubmatrix,ubmatrix_col> {
+  //Eigen::MatrixXd,
+  //o2scl_linalg::matrix_invert_det_eigen<Eigen::MatrixXd>> {
   
 public:
+
+  double min(size_t nv, const ubvector &v);
+  
+  double Yescale, Tscale;
   
   // Typedefs from the specialized template parameters
-  typedef ubmatrix_row mat_y_row_t;
-  typedef ubmatrix_row mat_x_row_t;
-  typedef Eigen::MatrixXd mat_inv_kxx_t;
-  typedef o2scl_linalg::matrix_invert_det_eigen<Eigen::MatrixXd>
-  mat_inv_t;
+  typedef ubmatrix_col mat_y_col_t;
+  typedef boost::numeric::ublas::matrix<double> mat_inv_kxx_t;
+  typedef o2scl_linalg::matrix_invert_det_cholesky<
+    boost::numeric::ublas::matrix<double>> mat_inv_t;
+  /*
+    typedef Eigen::MatrixXd mat_inv_kxx_t;
+    typedef o2scl_linalg::matrix_invert_det_eigen<Eigen::MatrixXd>
+    mat_inv_t;
+  */
 
+  o2scl::interpm_python<ubvector,ubmatrix,ubmatrix> ipy;
+  
   /** \brief Compute the distance between calibration point with index
       \c i_calib and point to fix with index \c i_fix
   */
   double dist_cf(size_t i_calib, size_t i_fix);
 
+  /** \brief Compute distance to nearest fix point
+   */
+  double dist_f(size_t i, size_t j, size_t k, size_t i_fix);
+  
   /// Compute \ref calib_dists
   void compute_dists();
   
@@ -160,17 +178,24 @@ public:
 
   /// Pointer to the eos_nuclei class
   void *enp;
+
+  /// If true, use python to perform the fit (default false)
+  bool py_fit;
   
   interpm_krige_eos() {
     elep.include_photons=true;
     interp_Fint=false;
     addl_verbose=0;
+    py_fit=false;
   }    
   
   /** \brief Set the interpolator given the specified EOS
       objects
    */
   virtual void set();
+
+  /// Set function for the minimizer
+  virtual void set2();
   
   /** \brief Additional constraints for the interpolation
    */
@@ -230,7 +255,9 @@ public:
   //@{
   o2scl::tensor_grid<> dmundYe, dmundnB, dmupdYe, dsdT, dsdnB, dsdYe;
   o2scl::tensor_grid<> egv[4], tg_cs2, tg_cs2_hom, tg_Fint_old, tg_F_old;
+  o2scl::tensor_grid<> sflag;
   size_t n_stability_fail;
+  double stability_diff;
   //@}
 
   /// Partition functions for the nuclei
@@ -239,9 +266,6 @@ public:
   /// Particle object for bosons
   o2scl::boson_rel relb;
   
-  /// Particle object for bosons
-  o2scl::boson_eff effb;
-
   /** \brief If true, include a hadron resonance gas (default false)
    */
   bool inc_hrg;
@@ -372,11 +396,6 @@ public:
   */ 
   double mh_tol_rel;
 
-  /** \brief Filename containing separate table to use as a guess for
-      the \c generate-table command (default is the empty string)
-  */
-  std::string ext_guess;
-  
   /** \brief Function for delta Z and delta N in the single 
       nucleus approximation
       
@@ -445,18 +464,6 @@ public:
   */
   int fixed_dist_alg;
   
-  /** \brief If true, when computing a point, perform the calculation
-      using some of the neighboring points as an initial guess
-      (default 0)
-
-      Values greater than 0 use the point at the next smallest
-      density, values greater than 1 use the point at the next largest
-      density, values greater than 2 use points at the next largest
-      and next smallest temperature, and values greater than 4 use the
-      next largest and smallest electron fraction.
-  */
-  int six_neighbors;
-
   /** \brief A parameter which handles verbosity for several functions
 
       Verbose for individual functions (default value 11111). 1s
@@ -466,17 +473,12 @@ public:
   */
   int function_verbose;
 
-  /** \brief Desc
+  /** \brief Store the hadron resonances
    */
   void store_hrg(double mun, double mup,
                  double nn, double np, double T,
                  o2scl::table_units<> &tab);
   
-  /** \brief If true, use previously computed points (or guesses) as
-      an initial guess to compute adjacent points (default true)
-  */
-  bool propagate_points;
-
   /** \brief If true, survey the nB and Ye equations near a failed point
       (default false)
   */
@@ -489,6 +491,9 @@ public:
   */
   bool derivs_computed;
 
+  /// If true, the EOS table has no nuclei (default true)
+  bool table_no_nuclei;
+  
   /** \brief Always true, included for consistency with o2scl::eos_sn_base
    */
   bool baryons_only;
@@ -624,11 +629,9 @@ public:
   o2scl::cli::parameter_bool p_verify_only;
   o2scl::cli::parameter_string p_edge_list;
   o2scl::cli::parameter_string p_ext_guess;
-  o2scl::cli::parameter_int p_six_neighbors;
   o2scl::cli::parameter_bool p_full_results;
   o2scl::cli::parameter_bool p_rnuc_less_rws;
   o2scl::cli::parameter_bool p_include_eg;
-  o2scl::cli::parameter_bool p_propagate_points;
   o2scl::cli::parameter_bool p_include_detail;
   o2scl::cli::parameter_bool p_strange_axis;
   o2scl::cli::parameter_double p_mh_tol_rel;
@@ -643,13 +646,13 @@ public:
   o2scl::cli::parameter_int p_file_update_iters;
   //@}
 
-  /// Desc
+  /// Solve for nuclei at fixed chemical potential (experimental)
   int solve_nuclei_mu
   (size_t nv, const ubvector &x, ubvector &y, double mun, double mup,
    double T, double &mun_gas, double &mup_gas, o2scl::thermo &th_gas,
    bool no_nuclei);
 
-  /// Desc
+  /// Compute the free energy with nuclei
   double compute_fr_nuclei(double nB, double Ye, double T,
                            double log_xn, double log_xp,
                            o2scl::thermo &th, o2scl::thermo &th_gas);
@@ -748,9 +751,9 @@ public:
 
   /* \brief Compute muons in nuclear matter
    */
-  int nuc_matter_muons(size_t nv, const ubvector &x, ubvector &y,
-      double nB, double Ye, double T,
-      std::map<std::string,double> &vdet);
+  //int nuc_matter_muons(size_t nv, const ubvector &x, ubvector &y,
+  //double nB, double Ye, double T,
+  //std::map<std::string,double> &vdet);
   
   // this is now replaced by elep.pair_density_eq()
   /* \brief Compute muons
@@ -774,12 +777,28 @@ public:
    
   /** \brief Generate an EOS table
 
-      [out file]
+      [kwargs]
 
       This command is the full MPI calculation of the EOS table,
       given a model and using the current grid. If no output
       file name is specified, the results are placed in a file
       called \c eos_nuclei.o2 .
+
+      Valid keyword arguments are out_file=eos_nuclei.o2, ext_guess="",
+      propagate_points=true, and six_neighbors=0.
+      
+      The value of ext_guess is the filename of a separate table
+      to use as a guess for the generate-table command.
+
+      Values of six_neighbors greater than 0 use the point at the next
+      smallest density, values greater than 1 use the point at the
+      next largest density, values greater than 2 use points at the
+      next largest and next smallest temperature, and values greater
+      than 4 use the next largest and smallest electron fraction.
+
+      If propagate_points is true, use previously computed points (or
+      guesses) as an initial guess to compute adjacent points (default
+      true)
   */
   int generate_table(std::vector<std::string> &sv, bool itive_com);
   //@}
@@ -807,20 +826,14 @@ public:
   */
   int eos_deriv(std::vector<std::string> &sv, bool itive_com);
 
-  /** \brief Desc
-   */
-  int eos_deriv_v2(std::vector<std::string> &sv, bool itive_com);
-
-  /** \brief Compute second derivatives numerically
-   */
-  int eos_second_deriv(std::vector<std::string> &sv, bool itive_com);
-
   /** \brief Interpolate the EOS to fix the table near a point
 
-      <nB> <Ye> <T MeV> <window> <st.o2>
+      <nB> <Ye> <T MeV> <st.o2> [kwargs]
 
       This function requires that an EOS with leptons has been
-      loaded. 
+      loaded.
+
+      Allowed keyword arguments are window=0, kernel=rbf_noise.
    */
   int interp_point(std::vector<std::string> &sv, bool itive_com);
 
@@ -831,14 +844,18 @@ public:
       interpolation object \c ike. 
    */
   int interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
-                      size_t window, interpm_krige_eos &ike);
+                      interpm_krige_eos &ike, o2scl::kwargs &kw);
 
   /** \brief Use interpolation to fix an entire table
 
-      <input stability file> <window> <output table> 
-      <output stability file>
+      <input stability file> <output table> 
+      <output stability file> [kwargs]
 
-      Under development.
+      This requires the model to be selected and an EOS to be
+      loaded.
+
+      Keyword arguments: one_point = false, full_min = true, 
+      output = true, method=gp, and window = 0.
    */
   int interp_fix_table(std::vector<std::string> &sv, bool itive_com);
   
@@ -855,7 +872,7 @@ public:
 
   /** \brief Construct an electrons and photon table
 
-      <output file>
+      <output file> [accuracy, either "ld" or "25"]
 
       Construct a file consisting only of the electron and photon EOS.
       The grid is determined by the current grid specification.
@@ -863,7 +880,7 @@ public:
       The output file has five tensor grid objects, \c F, \c E, \c P,
       \c S, and \c mue. If muons are included, then the file also
       includes \c Ymu. The electron (and muon) masses are also written
-      to the table.
+      to the table. The output file also has the nB, Ye, and T grid.
 
       This command works independent of whether or not a table
       was loaded or if a model was selected. However, if a table
@@ -871,6 +888,8 @@ public:
       cleared. 
   */
   int eg_table(std::vector<std::string> &sv, bool itive_com);
+  
+  int eg_point(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Construct a table in beta equilibrium
 
@@ -962,11 +981,11 @@ public:
   */
   int point_nuclei(std::vector<std::string> &sv, bool itive_com);
 
-  /** \brief Desc
+  /** \brief Experimental results at fixed mu
 
-      args
+      Arguments here.
 
-      Desc
+      Full description here.
   */
   int point_nuclei_mu(std::vector<std::string> &sv, bool itive_com);
   int muses(std::vector<std::string> &sv,
@@ -1185,28 +1204,31 @@ public:
 
   /** \brief Compute the second derivatives and the stability matrix
       
-      <output file> or <nB> <Ye> <T> or 
-      <inB low> <inB high> <iYe low> <iYe high> <iT low> <iT high>
+      [kwargs] or <nB> <Ye> <T> [kwargs] or 
+      <inB low> <inB high> <iYe low> <iYe high> <iT low> <iT high> [kwargs]
 
       This command computes the second derivatives, speed of sound,
       and stability matrix of the current EOS table. A table with
       electrons must be loaded and the full model must be specified
       (either with select-model or from the table).
 
-      If one output file argument is specified, the \c stability
-      command creates an output file with several additional data
-      objects for the second derivatives of the free energy, the
-      eigenvalues of the curvature matrix, and the squared speed of
-      sound.
-
       Otherwise, if a density, electron fraction, and temperature are
       specified, the \c stability command compares the heterogeneous
       and homogeneous matter sound speeds at the grid point nearest
       to the specified values.
 
+      If an output file argument is specified, the \c stability
+      command creates an output file with several additional data
+      objects for the second derivatives of the free energy, the
+      eigenvalues of the curvature matrix, and the squared speed of
+      sound.
+
+      Possible keyword arguments are eigenvals=False, 
+      cs2_hom=False, output="", and interp_type="steffen".
+      
       This command currently requires that a model has been 
       selected so it can compute the speed of sound of homogeneous
-      matter at acausal points for comparison. 
+      matter at acausal points for comparison.
   */
   int stability(std::vector<std::string> &sv,
 		bool itive_com);
@@ -1230,7 +1252,7 @@ public:
    */		      
   int init_function(size_t dim, const ubvector &x, ubvector &y);
   
-  /** \brief Maxwell construction
+  /** \brief Maxwell construction (experimental)
 
       Params.
 
@@ -1238,7 +1260,7 @@ public:
   */
   int maxwell(std::vector<std::string> &sv, bool itive_com);
 
-  /** \brief Desc
+  /** \brief Maxwell function
    */
   int max_fun(size_t nv, const ubvector &x, ubvector &y,
               o2scl::interp_vec<std::vector<double>,ubvector> &itp_P, 

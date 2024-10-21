@@ -1,7 +1,7 @@
 /*
   -------------------------------------------------------------------
   
-  Copyright (C) 2018-2023, Xingfu Du, Zidu Lin, and Andrew W. Steiner
+  Copyright (C) 2018-2024, Xingfu Du, Zidu Lin, and Andrew W. Steiner
   
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -33,13 +33,26 @@ int main(int argc, char *argv[]) {
 #endif
   
   eos_nuclei eph;
-
-  eph.load_nuclei();
   
+  // The command line interface needs the data directory to get the
+  // help text for all the commands, so we have to set the data
+  // directory first, before initializing the cli class.
+  for(int i=0;i<argc;i++) {
+    
+    if (i+2<argc && ((std::string)argv[i])=="-set" &&
+        ((std::string)argv[i+1])=="data_dir") {
+      eph.data_dir=(std::string)argv[i+2];
+      cout << "Setting data_dir to \"" << eph.data_dir << "\"." << endl;
+    }
+
+  }
+    
   cli cl;
   
   eph.setup_cli_nuclei(cl);
 
+  eph.load_nuclei();
+  
   cl.run_auto(argc,argv);
 
 #ifndef NO_MPI

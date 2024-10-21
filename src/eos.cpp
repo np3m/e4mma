@@ -1,7 +1,7 @@
 /*
   -------------------------------------------------------------------
   
-  Copyright (C) 2018-2023, Xingfu Du, Zidu Lin, and Andrew W. Steiner
+  Copyright (C) 2018-2024, Xingfu Du, Zidu Lin, and Andrew W. Steiner
   
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -35,6 +35,7 @@
 #include <o2scl/fit_nonlin.h>
 #include <o2scl/nstar_cold.h>
 #include <o2scl/nucmass_densmat.h>
+#include <o2scl/rng.h>
 
 using namespace std;
 using namespace o2scl;
@@ -57,7 +58,6 @@ double eos_crust_virial_v2::bpn1_free() {
   return 0.0;
 }
 
-/// The temperature must be specified in MeV
 double eos_crust_virial_v2::bna(double T) {
   if (T<1.0 || T>20.0) {
     cout << "Problem 1: " << T << endl;
@@ -66,7 +66,6 @@ double eos_crust_virial_v2::bna(double T) {
   return iv_ba.eval(T);
 }
 
-/// The temperature must be specified in MeV
 double eos_crust_virial_v2::bpna(double T) {
   if (T<1.0 || T>20.0) {
     cout << "Problem 2: " << T << endl;
@@ -402,6 +401,84 @@ void eos_crust_virial_v2::fit(bool show_fit) {
   return;
 }
 
+int eos::test_cs2(std::vector<std::string> &sv, bool itive_com) {
+  
+  cout << "eos::test_cs2(): Testing "
+       << "EOS and cₛ²:" << endl;
+  
+  cout << "  ns_nb_max: " << ns_nb_max << endl;
+  cout << "  phi: " << phi << endl;
+
+  double e_ns, densdnn;
+  
+  table_units<> tx;
+  tx.line_of_names("nb ed_fit mu_fit ed_corr mu_corr");
+  tx.line_of_units("1/fm^3 1/fm^4 1/fm 1/fm^4 1/fm");
+  for(double nb=0.08;nb<2.0;nb+=0.01) {
+    new_ns_eos(nb,neutron,e_ns,densdnn);
+    vector<double> line={nb,ed_fit_norest(nb)+neutron.m*nb,
+                         mu_fit_norest(nb)+neutron.m,
+                         e_ns+neutron.m*nb,densdnn+neutron.m};
+    tx.line_of_data(5,line);
+  }
+  
+  tx.deriv("nb","ed_fit","mu_fit_check");
+  tx.set_unit("mu_fit_check","1/fm");
+  tx.deriv("nb","mu_fit","dmudnb_fit");
+  tx.set_unit("dmudnb_fit","1/fm^2");
+  tx.deriv("nb","ed_corr","mu_corr_check");
+  tx.set_unit("mu_corr_check","1/fm");
+  tx.deriv("nb","mu_corr","dmudnb_corr");
+  tx.set_unit("dmudnb_corr","fm^2");
+  tx.function_column("nb*dmudnb_corr/mu_corr","cs2_corr");
+  tx.function_column("nb*dmudnb_fit/mu_fit","cs2_fit");
+    
+  nstar_high.set_interp_type(itp_linear);
+  tx.new_column("ed_orig");
+  tx.set_unit("ed_orig","1/fm^4");
+  for(size_t j=0;j<tx.get_nlines();j++) {
+    double val=(nstar_high.interp("nb",tx.get("nb",j),"EoA")/hc_mev_fm+
+                neutron.m)*tx.get("nb",j);
+    tx.set("ed_orig",j,val);
+  }
+
+  table_units<> tx2;
+  tx2.line_of_names("nb ed_sk mu_sk ed_corr mu_corr");
+  tx2.line_of_units("1/fm^3 1/fm^4 1/fm 1/fm^4 1/fm");
+  
+  thermo thx;
+  double e_nuc, denucdnn;
+  for(double nb=0.08;nb<2.0;nb+=0.01) {
+
+    neutron.n=nb/2.0;
+    proton.n=nb/2.0;
+    sk.calc_e(neutron,proton,thx);
+    
+    new_nuc_eos(nb,e_nuc,denucdnn);
+    
+    vector<double> line={nb,thx.ed+(neutron.m+proton.m)/2.0*nb,
+                         (neutron.mu+neutron.m+proton.mu+proton.m)/2.0,
+                         e_nuc+(neutron.m+proton.m)/2.0*nb,
+                         denucdnn+(neutron.m+proton.m)/2.0,e_ns,denucdnn};
+    tx2.line_of_data(5,line);
+  }
+
+  tx2.deriv("nb","mu_sk","dmudnb_sk");
+  tx2.function_column("nb*dmudnb_sk/mu_sk","cs2_sk");
+  tx2.deriv("nb","mu_corr","dmudnb_corr");
+  tx2.function_column("nb*dmudnb_corr/mu_corr","cs2_corr");
+  
+  hdf_file hf;
+  hf.open_or_create("test_cs2.o2");
+  hdf_output(hf,nstar_high,"nstar_high");
+  hdf_output(hf,tx,"ns");
+  hdf_output(hf,tx2,"nuc");
+  hf.close();
+  cout << "  Created file test_cs2.o2." << endl;
+  
+  return 0;
+}
+  
 int eos::hrg_load(std::vector<std::string> &sv, bool itive_com) {
 
   std::string fn=sv[1];
@@ -442,35 +519,39 @@ int eos::hrg_load(std::vector<std::string> &sv, bool itive_com) {
   int nbos=0;
   for(size_t j=0;j<part_db.size();j++) {
 
-     // Skip the photon because it's a boson with two degrees of freedom
-    if (part_db[j].spin_deg%2==0 && part_db[j].id!=22) {
-      fermion f;
-      f.m=part_db[j].mass*1.0e3/hc_mev_fm;
-      f.g=part_db[j].spin_deg;
-      f.n=0.0;
-      f.ed=0.0;
-      f.en=0.0;
-      f.pr=0.0;
-      f.mu=0.0;
-      f.nu=0.0;
-      f.ms=0.0;
-      res_f.push_back(f);
-      nferm++;
-      //cout << j << " " << part_db[j].id << " "
-      //<< nferm << " " << f.m*hc_mev_fm << " " << f.g << endl;
-    } else {
-      boson b;
-      b.m=part_db[j].mass*1.0e3/hc_mev_fm;
-      b.g=part_db[j].spin_deg;
-      res_b.push_back(b);
-      b.n=0.0;
-      b.ed=0.0;
-      b.en=0.0;
-      b.pr=0.0;
-      b.mu=0.0;
-      b.nu=0.0;
-      b.ms=0.0;
-      nbos++;
+    // Skip the photon, nucleons, and antibaryons
+    
+    if (part_db[j].id!=22 && part_db[j].id!=2212 &&
+        part_db[j].baryon>=0) {
+      if (part_db[j].spin_deg%2==0) {
+        fermion f;
+        // The mass in the table is given in GeV, so we convert to 1/fm
+        f.m=part_db[j].mass*1.0e3/hc_mev_fm;
+        f.g=part_db[j].spin_deg;
+        f.n=0.0;
+        f.ed=0.0;
+        f.en=0.0;
+        f.pr=0.0;
+        f.mu=0.0;
+        f.nu=0.0;
+        f.ms=0.0;
+        res_f.push_back(f);
+        nferm++;
+      } else {
+        boson b;
+        // The mass in the table is given in GeV, so we convert to 1/fm
+        b.m=part_db[j].mass*1.0e3/hc_mev_fm;
+        b.g=part_db[j].spin_deg;
+        b.n=0.0;
+        b.ed=0.0;
+        b.en=0.0;
+        b.pr=0.0;
+        b.mu=0.0;
+        b.nu=0.0;
+        b.ms=0.0;
+        res_b.push_back(b);
+        nbos++;
+      }
     }
   }
 
@@ -494,11 +575,11 @@ double eos::fit_fun(size_t np, const std::vector<double> &parms,
 	  nb*nb*nb*nb*parms[3]+nb*nb*nb*nb*nb*parms[4]);
 }
 
-double eos::ed_fit(double nb) {
+double eos::ed_fit_norest(double nb) {
   return fit_fun(5,ns_fit_parms,nb)*nb/hc_mev_fm;
 }
 
-double eos::mu_fit(double nb) {
+double eos::mu_fit_norest(double nb) {
   if (old_ns_fit) {
     return (1.5*sqrt(nb)*ns_fit_parms[0]+2.0*nb*ns_fit_parms[1]+
 	    2.5*nb*sqrt(nb)*ns_fit_parms[2]+3.0*nb*nb*ns_fit_parms[3]+
@@ -523,7 +604,7 @@ double eos::dmudn_fit(double nb) {
 }
 
 double eos::cs2_fit(double nb) {
-  return dmudn_fit(nb)*nb/(mu_fit(nb)+939.565/hc_mev_fm);
+  return dmudn_fit(nb)*nb/(mu_fit_norest(nb)+939.565/hc_mev_fm);
 }
 
 void eos::min_max_cs2(double &cs2_min, double &cs2_max) {
@@ -541,6 +622,8 @@ void eos::min_max_cs2(double &cs2_min, double &cs2_max) {
 
 void eos::ns_fit(int row) {
 
+  if (nstar_tab.get_nlines()==0) read_data_files();
+  
   if (row>=((int)(nstar_tab.get_nlines()))) {
     O2SCL_ERR("Row not allowed in ns_fit().",
 	      exc_efailed);
@@ -560,10 +643,15 @@ void eos::ns_fit(int row) {
   ns_fit_parms[4]=-5.228209e2;
 
   // This table stores the neutron star EOS in a form that
-  // can be used by the fitting object 
-  table_units<> nstar_high;  
+  // can be used by the fitting object. We set ns_nb_max here
+  // and then update it below.
+  nstar_high.clear();
   nstar_high.line_of_names("nb EoA");
+  nstar_high.line_of_units("1/fm^3 MeV");
   ns_nb_max=nstar_tab.get((string)"nb_max",i_ns);
+
+  // The numbers 0.04 and 0.012 here come from the bamr baryon density
+  // grid which was used to create the data file qmc_twop_10_0_out
   for(size_t i=0;i<100 && (0.04+((double)i)*0.012)<(ns_nb_max+0.000001);i++) {
     double EoA=nstar_tab.get(((string)"EoA_")+szttos(i),i_ns)*hc_mev_fm;
     if (fabs(nstar_tab.get(((string)"EoA_")+szttos(i),i_ns))>1.0e-2) {
@@ -573,9 +661,14 @@ void eos::ns_fit(int row) {
       nstar_high.line_of_data(2,line);
     }
   }
-  
-  // Fit the energy per baryon 
+
+  // ---------------------------------------------------------------------
+  // Fit the energy per baryon from the neutron star EOS
+
+  // The uncertainty is just 1% of the absolute value
   nstar_high.function_column("abs(EoA)/100","Eerr");
+  nstar_high.set_unit("Eerr","MeV");
+  
   typedef std::function<
     double(size_t,const std::vector<double> &, double)> fit_funct2;
   fit_funct2 ff=std::bind
@@ -583,19 +676,10 @@ void eos::ns_fit(int row) {
      (&eos::fit_fun),this,std::placeholders::_1,
      std::placeholders::_2,std::placeholders::_3);
 
+  size_t ndat=nstar_high.get_nlines();
+  
   // Collect vector references to specify the data as
   // a fit function
-  size_t ndat=nstar_high.get_nlines();
-
-  if (false) {
-    //plot nstarhigh 
-    hdf_file nshf;
-    nshf.open_or_create("nbcs2.o2");
-    hdf_output(nshf,nstar_high,"nbcs2");
-    nshf.close();
-    //int sret=system("o2graph -read nbcs2.o2 -plot nb EoA -show");
-  }
-
   const std::vector<double> &xdat=nstar_high["nb"];
   const std::vector<double> &ydat=nstar_high["EoA"];
   const std::vector<double> &yerr=nstar_high["Eerr"];
@@ -610,11 +694,12 @@ void eos::ns_fit(int row) {
 
   // The fit chi-squared
   if (verbose>0) {
-    cout << "ns_fit_parms[0]=" << ns_fit_parms[0] << ";" << endl;
-    cout << "ns_fit_parms[1]=" << ns_fit_parms[1] << ";" << endl;
-    cout << "ns_fit_parms[2]=" << ns_fit_parms[2] << ";" << endl;
-    cout << "ns_fit_parms[3]=" << ns_fit_parms[3] << ";" << endl;
-    cout << "ns_fit_parms[4]=" << ns_fit_parms[4] << ";" << endl;
+    cout << "eos::ns_fit():" << endl;
+    cout << "  ns_fit_parms[0]=" << ns_fit_parms[0] << ";" << endl;
+    cout << "  ns_fit_parms[1]=" << ns_fit_parms[1] << ";" << endl;
+    cout << "  ns_fit_parms[2]=" << ns_fit_parms[2] << ";" << endl;
+    cout << "  ns_fit_parms[3]=" << ns_fit_parms[3] << ";" << endl;
+    cout << "  ns_fit_parms[4]=" << ns_fit_parms[4] << ";" << endl;
   }
 
   // Perform the fit
@@ -623,24 +708,35 @@ void eos::ns_fit(int row) {
   fn.fit(nparms,ns_fit_parms,covar,chi2_ns,cff);
   
   // Store the results of the fit in column named "EoA_fit", then compute
-  // energy density and chemical potential//
+  // energy density and chemical potential
   nstar_high.new_column("EoA_fit");
+  nstar_high.set_unit("EoA_fit","MeV");
   nstar_high.new_column("ed_fit");
+  nstar_high.set_unit("ed_fit","1/fm^4");
   nstar_high.new_column("mu_fit");
+  nstar_high.set_unit("mu_fit","1/fm");
   nstar_high.new_column("cs2_fit");
   for(size_t i=0;i<ndat;i++) {
     double nb=nstar_high.get("nb",i);
     double EoA=ff(nparms,ns_fit_parms,nb);
     nstar_high.set("EoA_fit",i,EoA);
-    nstar_high.set("ed_fit",i,(EoA+939.0)/hc_mev_fm*nstar_high.get("nb",i));
-    double mu=mu_fit(nb)+939.0/hc_mev_fm;
+    nstar_high.set("ed_fit",i,
+                   (EoA/hc_mev_fm+neutron.m)*nstar_high.get("nb",i));
+    double mu=mu_fit_norest(nb)+neutron.m;
     nstar_high.set("mu_fit",i,mu);
     double cs2=cs2_fit(nb);
     nstar_high.set("cs2_fit",i,cs2);
   }
-  nstar_high.function_column("(EoA+939)/197.33*nb","ed");
+  
+  std::string fc=((std::string)"(EoA+")+
+    o2scl::dtos(neutron.m*hc_mev_fm,0)+")/"+
+    o2scl::dtos(hc_mev_fm,0)+"*nb";
+  nstar_high.function_column(fc,"ed");
+  nstar_high.set_unit("ed","1/fm^4");
   nstar_high.deriv("nb","ed","mu");
+  nstar_high.set_unit("mu","1/fm");
   nstar_high.deriv2("nb","ed","dmudn");
+  nstar_high.set_unit("dmudn","fm^2");
   nstar_high.function_column("nb/mu*dmudn","cs2");
 
   // Readjust ns_nb_max to ensure it's lower than the point
@@ -655,10 +751,14 @@ void eos::ns_fit(int row) {
 	(nstar_high.get("cs2_fit",j+1)-nstar_high.get("cs2_fit",j));
     }
   }
-  if (nb_new>0.01) ns_nb_max=nb_new;
+  if (nb_new>0.01) {
+    cout << "eos::ns_fit(): Adjusting ns_nb_max from " << ns_nb_max << " to "
+         << nb_new << "." << endl;
+    ns_nb_max=nb_new;
+  }
   
   // Output the fit results to the screen
-  if (verbose>0) {
+  if (verbose>1) {
     cout << "Parameters: " << endl;
     cout << "ns_fit_parms[0]=" << ns_fit_parms[0] << ";" << endl;
     cout << "ns_fit_parms[1]=" << ns_fit_parms[1] << ";" << endl;
@@ -668,7 +768,9 @@ void eos::ns_fit(int row) {
     cout << "chi2: " << chi2_ns << endl;
   }
 
+  // ---------------------------------------------------------------------
   // If true, record the results of the fit
+  
   if (ns_record) {
     table_units<> tab2=nstar_high;
     // If ns_record is true, this file stores the original neutron star
@@ -677,9 +779,59 @@ void eos::ns_fit(int row) {
     hf.open_or_create("ns_fit.o2");
     hdf_output(hf,tab2,"ns_fit");
     hf.close();
-    exit(-1);
+
+    cout << "Exiting in eos::ns_fit()." << endl;
+    exit(0);
   }
   
+  return;
+}
+
+void eos::read_data_files() {
+
+  // Temporary string for object names
+  string name;
+
+  int mpi_rank=0, mpi_size=1;
+
+#ifdef O2SCL_MPI
+  // Get MPI rank, etc.
+  MPI_Comm_rank(MPI_COMM_WORLD,&mpi_rank);
+  MPI_Comm_size(MPI_COMM_WORLD,&mpi_size);
+  
+  // Ensure that multiple MPI ranks aren't reading from the
+  // filesystem at the same time
+  int tag=0, buffer=0;
+  if (mpi_size>1 && mpi_rank>=1) {
+    MPI_Recv(&buffer,1,MPI_INT,mpi_rank-1,
+	     tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
+  }
+#endif
+
+  // Open the neutron star data file
+  std::string ns_file=data_dir+"/qmc_twop_10_0_out";
+  o2scl_hdf::hdf_file hf;
+  hf.open(ns_file);
+  o2scl_hdf::hdf_input(hf,nstar_tab,name);
+  hf.close();
+
+  // Open the Skyrme data file
+  std::string UNEDF_file=data_dir+"/thetaANL-1002x12.o2";
+  hf.open(UNEDF_file);
+  o2scl_hdf::hdf_input(hf,UNEDF_tab,name);
+  hf.close();
+
+  use_alt_eos=false;
+  o2scl_hdf::skyrme_load(sk_alt,"NRAPR");
+
+#ifdef O2SCL_MPI
+  // Send a message to the next MPI rank
+  if (mpi_size>1 && mpi_rank<mpi_size-1) {
+    MPI_Send(&buffer,1,MPI_INT,mpi_rank+1,
+	     tag,MPI_COMM_WORLD);
+  }
+#endif
+
   return;
 }
 
@@ -716,8 +868,7 @@ eos::eos() {
   photon.init(0.0,2.0);
 
   // Default settings
-  verbose=0;
-  test_ns_cs2=false;
+  verbose=1;
   include_muons=false;
   output_files=true; 
   old_ns_fit=true;
@@ -735,49 +886,8 @@ eos::eos() {
   qmc_a=12.7;
   qmc_b=2.12;
   qmc_n0=0.16;
-
-  // Temporary string for object names
-  string name;
-
-  int mpi_rank=0, mpi_size=1;
-
-#ifdef O2SCL_MPI
-  // Get MPI rank, etc.
-  MPI_Comm_rank(MPI_COMM_WORLD,&mpi_rank);
-  MPI_Comm_size(MPI_COMM_WORLD,&mpi_size);
   
-  // Ensure that multiple MPI ranks aren't reading from the
-  // filesystem at the same time
-  int tag=0, buffer=0;
-  if (mpi_size>1 && mpi_rank>=1) {
-    MPI_Recv(&buffer,1,MPI_INT,mpi_rank-1,
-	     tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
-  }
-#endif
-
-  // Open the neutron star data file
-  std::string ns_file="../data/qmc_twop_10_0_out";
-  o2scl_hdf::hdf_file hf;
-  hf.open(ns_file);
-  o2scl_hdf::hdf_input(hf,nstar_tab,name);
-  hf.close();
-
-  // Open the Skyrme data file
-  std::string UNEDF_file="../data/thetaANL-1002x12.o2";
-  hf.open(UNEDF_file);
-  o2scl_hdf::hdf_input(hf,UNEDF_tab,name);
-  hf.close();
-
-  use_alt_eos=false;
-  o2scl_hdf::skyrme_load(sk_alt,"NRAPR");
-
-#ifdef O2SCL_MPI
-  // Send a message to the next MPI rank
-  if (mpi_size>1 && mpi_rank<mpi_size-1) {
-    MPI_Send(&buffer,1,MPI_INT,mpi_rank+1,
-	     tag,MPI_COMM_WORLD);
-  }
-#endif
+  data_dir="data";
 
   nB_grid_spec="301,10^(i*0.04-12)*2.0";
   Ye_grid_spec="70,0.01*(i+1)";
@@ -822,7 +932,7 @@ double eos::energy_density_qmc(double nn, double np) {
 }
   
 double eos::energy_density_ns(double nn) {
-  return ed_fit(nn);
+  return ed_fit_norest(nn);
 }    
 
 double eos::free_energy_density_virial
@@ -840,96 +950,85 @@ double eos::free_energy_density_virial
   double b_pn=ecv.bpn_f(T_MeV);
   double dbpndT=ecv.dbpndT_f(T_MeV)*hc_mev_fm;
 
+  bool new_lambda=true;
   double lambda=sqrt(4.0*o2scl_const::pi/(n.m+p.m)/T);
-  double dlambdadT=-sqrt(o2scl_const::pi/(n.m+p.m))/pow(sqrt(T),3.0);
+  double lambda_n=sqrt(2.0*o2scl_const::pi/(n.m)/T);
+  double lambda_p=sqrt(2.0*o2scl_const::pi/(p.m)/T);
+  double dlambdadT=-sqrt(o2scl_const::pi/(n.m+p.m))/pow(sqrt(T),3);
+  double dlambda_ndT=-sqrt(o2scl_const::pi/(n.m)/2.0)/pow(sqrt(T),3);
+  double dlambda_pdT=-sqrt(o2scl_const::pi/(p.m)/2.0)/pow(sqrt(T),3);
 
   double zn, zp;
 
-  if (nn*pow(lambda,3.0)>1.0e-5 || np*pow(lambda,3.0)>1.0e-5) {
-
-    // If the densities are large enough, then compute the
-    // virial result
-    vsd.solve_fugacity(nn,np,lambda,lambda,b_n,b_pn,zn,zp);
+  if (new_lambda) {
     
-    vsd.calc_deriv(nn,np,lambda,lambda,
-		   b_n,b_pn,zn,zp,
-		   dbndT,dbpndT,dlambdadT,dlambdadT);
-    
-    dmundnn=T/zn*vsd.dzndnn;
-    dmundnp=T/zn*vsd.dzndnp;
-    dmupdnn=T/zp*vsd.dzpdnn;
-    dmupdnp=T/zp*vsd.dzpdnp;
-    dmundT=log(zn)+T/zn*vsd.dzndT;
-    dmupdT=log(zp)+T/zp*vsd.dzpdT;
-    
-    double zn_old=zn, zp_old=zp;
-    double dmundnn_old=dmundnn;
-    double dmundnp_old=dmundnp;
-    double dmupdnn_old=dmupdnn;
-    double dmupdnp_old=dmupdnp;
-    double dmundT_old=dmundT;
-    double dmupdT_old=dmupdT;
-
-    if (false) {
-    
-      if (fabs(zn-zn_old)/fabs(zn_old)>1.0e-5 ||
-	  fabs(zp-zp_old)/fabs(zp_old)>1.0e-5) {
-	cout << "Disagreement." << endl;
-	cout << "nn,np,TMeV: " << n.n << " " << p.n << " "
-	     << T*hc_mev_fm << endl;
-	cout << "zn,zp(old): " << zn_old << " " << zp_old << endl;
-	cout << "zn,zp(new): " << zn << " " << zp << endl;
-	exit(-1);
-      }
-    
-      if (fabs(dmundnn-dmundnn_old)/fabs(dmundnn_old)>1.0e-5 ||
-	  fabs(dmundnp-dmundnp_old)/fabs(dmundnp_old)>1.0e-5) {
-	cout << "Disagreement 2." << endl;
-	cout << "nn,np,TMeV: " << n.n << " " << p.n << " "
-	     << T*hc_mev_fm << endl;
-	cout << "dmundnn,dmundnp(old): " << dmundnn_old << " "
-	     << dmundnp_old << endl;
-	cout << "dmundnn,dmundnp(new): " << dmundnn << " "
-	     << dmundnp << endl;
-	exit(-1);
-      }
-    
-      if (fabs(dmupdnn-dmupdnn_old)/fabs(dmupdnn_old)>1.0e-5 ||
-	  fabs(dmupdnp-dmupdnp_old)/fabs(dmupdnp_old)>1.0e-5) {
-	cout << "Disagreement 3." << endl;
-	cout << "nn,np,TMeV: " << n.n << " " << p.n << " "
-	     << T*hc_mev_fm << endl;
-	cout << "zn,zp(old): " << zn_old << " " << zp_old << endl;
-	cout << "zn,zp(new): " << zn << " " << zp << endl;
-	exit(-1);
-      }
-    
-      if (fabs(dmupdT-dmupdT_old)/fabs(dmupdT_old)>1.0e-5 ||
-	  fabs(dmupdT-dmupdT_old)/fabs(dmupdT_old)>1.0e-5) {
-	cout << "Disagreement 4." << endl;
-	cout << "nn,np,TMeV: " << n.n << " " << p.n << " "
-	     << T*hc_mev_fm << endl;
-	cout << "zn,zp(old): " << zn_old << " " << zp_old << endl;
-	cout << "zn,zp(new): " << zn << " " << zp << endl;
-	exit(-1);
-      }
-
+    if (nn*pow(lambda_n,3.0)>1.0e-5 || np*pow(lambda_p,3.0)>1.0e-5) {
+      
+      // If the densities are large enough, then compute the
+      // virial result
+      vsd.solve_fugacity(nn,np,lambda_n,lambda_p,b_n,b_pn,zn,zp);
+      
+      vsd.calc_deriv(nn,np,lambda_n,lambda_p,
+                     b_n,b_pn,zn,zp,
+                     dbndT,dbpndT,dlambda_ndT,dlambda_pdT);
+      
+      dmundnn=T/zn*vsd.dzndnn;
+      dmundnp=T/zn*vsd.dzndnp;
+      dmupdnn=T/zp*vsd.dzpdnn;
+      dmupdnp=T/zp*vsd.dzpdnp;
+      dmundT=log(zn)+T/zn*vsd.dzndT;
+      dmupdT=log(zp)+T/zp*vsd.dzpdT;
+      
+    } else {
+      
+      // Otherwise, the virial correction is negligable, so
+      // just use the classical result
+      zn=nn*pow(lambda_n,3.0)/2.0;
+      zp=np*pow(lambda_p,3.0)/2.0;
+      
+      dmundnn=T*pow(lambda_n,3.0)/2.0/zn;
+      dmundnp=0.0;
+      dmupdnn=0.0;
+      dmupdnp=T*pow(lambda_p,3.0)/2.0/zp;
+      dmundT=n.mu/T-1.5;
+      dmupdT=p.mu/T-1.5;
+      
     }
     
   } else {
     
-    // Otherwise, the virial correction is negligable, so
-    // just use the classical result
-    zn=nn*pow(lambda,3.0)/2.0;
-    zp=np*pow(lambda,3.0)/2.0;
-    
-    dmundnn=T*pow(lambda,3.0)/2.0/zn;
-    dmundnp=0.0;
-    dmupdnn=0.0;
-    dmupdnp=T*pow(lambda,3.0)/2.0/zp;
-    dmundT=n.mu/T-1.5;
-    dmupdT=p.mu/T-1.5;
-    
+    if (nn*pow(lambda,3.0)>1.0e-5 || np*pow(lambda,3.0)>1.0e-5) {
+      
+      // If the densities are large enough, then compute the
+      // virial result
+      vsd.solve_fugacity(nn,np,lambda,lambda,b_n,b_pn,zn,zp);
+      
+      vsd.calc_deriv(nn,np,lambda,lambda,
+                     b_n,b_pn,zn,zp,
+                     dbndT,dbpndT,dlambdadT,dlambdadT);
+      
+      dmundnn=T/zn*vsd.dzndnn;
+      dmundnp=T/zn*vsd.dzndnp;
+      dmupdnn=T/zp*vsd.dzpdnn;
+      dmupdnp=T/zp*vsd.dzpdnp;
+      dmundT=log(zn)+T/zn*vsd.dzndT;
+      dmupdT=log(zp)+T/zp*vsd.dzpdT;
+      
+    } else {
+      
+      // Otherwise, the virial correction is negligable, so
+      // just use the classical result
+      zn=nn*pow(lambda,3.0)/2.0;
+      zp=np*pow(lambda,3.0)/2.0;
+      
+      dmundnn=T*pow(lambda,3.0)/2.0/zn;
+      dmundnp=0.0;
+      dmupdnn=0.0;
+      dmupdnp=T*pow(lambda,3.0)/2.0/zp;
+      dmundT=n.mu/T-1.5;
+      dmupdT=p.mu/T-1.5;
+      
+    }
   }
 
   n.mu=log(zn)*T;
@@ -952,6 +1051,8 @@ double eos::free_energy_density_virial
   double f_vir=n.mu*nn+p.mu*np-th.pr;
   
   th.ed=f_vir+T*th.en;
+
+  vsd.calc_nun_nup(n,p,T);
 
   return f_vir;
 }
@@ -981,6 +1082,124 @@ int eos::solve_coeff_small(size_t nv, const ubvector &x,
   return 0;
 }
 
+int eos::new_nuc_eos(double nb, 
+                     double &e_nuc, double &denucdnn) {
+  
+  double a1l, a2l;
+  double c1l, c2l;
+
+  // -----------------------------------------------------
+  // Solve for a1l and a2l
+
+  bool success=true;
+  mroot_hybrids<> mh;
+  mh.err_nonconv=false;
+
+  // Initial guess for a1l and a2l
+  ubvector mx(2), my(2);
+  thermo thx;
+  
+  if (nb<(ns_nb_max-1.0e-6)) {
+    
+    neutron.n=nb/2.0;
+    proton.n=nb/2.0;
+    sk.calc_e(neutron,proton,thx);
+    e_nuc=thx.ed;
+    denucdnn=(neutron.mu+proton.mu)/2.0;
+    
+  } else {
+
+    // If the speed of sound is increasing
+    // at high densities
+    
+    double cs_nuc_last=cs2_fit(nuc_nb_max);
+    double cs_nuc_2=phi;
+    
+    if (cs_nuc_2>cs_nuc_last) {
+      mx[0]=1.0;
+      mx[1]=1.0;
+      mm_funct mfbig=std::bind
+	(std::mem_fn<int(size_t,const ubvector &,
+			 ubvector &, double, double, double)>
+	 (&eos::solve_coeff_big),
+	 this,std::placeholders::_1,
+	 std::placeholders::_2,
+	 std::placeholders::_3,nuc_nb_max,cs_nuc_2,cs_nuc_last);
+      int mret=mh.msolve(2,mx,mfbig);
+      if (mret!=0) success=false;
+      
+      a1l=mx[0];
+      a2l=mx[1];
+      
+      // solve for c1, c2
+      c1l=(e_nuc_last+neutron.m*nuc_nb_max+p_nuc_last)/((nuc_nb_max*nuc_nb_max)*
+                                                  (a2l+pow(nuc_nb_max,-a1l)));
+      c2l=0.5*(e_nuc_last+neutron.m*nuc_nb_max-p_nuc_last+
+	       a1l*(e_nuc_last+neutron.m*nuc_nb_max+p_nuc_last)
+	       /((a1l-2.0)*(1.0+a2l*pow(nuc_nb_max,a1l))));
+      e_nuc=-neutron.m*nb+(a2l*nb*nb/2.0+pow(nb,2.0-a1l)/(2.0-a1l))*c1l+c2l;
+      denucdnn=-neutron.m+c1l*(a2l*nb+pow(nb,1.0-a1l));
+      
+    } else if (cs_nuc_2<cs_nuc_last) {
+
+      // If the speed of sound is decreasing
+      // at high densities
+
+      mx[0]=2.5;
+      mx[1]=1.0;
+      mm_funct mfsmall=std::bind
+	(std::mem_fn<int(size_t,const ubvector &,
+			 ubvector &, double, double ,double)>
+	 (&eos::solve_coeff_small),
+	 this,std::placeholders::_1,
+	 std::placeholders::_2,
+	 std::placeholders::_3,nuc_nb_max,cs_nuc_2,cs_nuc_last);
+      int mret=mh.msolve(2,mx,mfsmall);
+      if (mret!=0) success=false;
+      a1l=mx[0];
+      a2l=mx[1];
+      
+      double hyperg=gsl_sf_hyperg_2F1
+	(1.0,1.0,1.0-1.0/a1l,1.0/a2l*pow(nb,-a1l)/
+         (1.0/a2l*pow(nb,-a1l)+1.0));
+      double hyperg_max=gsl_sf_hyperg_2F1
+	(1.0,1.0,1.0-1.0/a1l,1.0/a2l*pow(nuc_nb_max,-a1l)/
+	 (1.0/a2l*pow(nuc_nb_max,-a1l)+1.0));
+      
+      // Transform hyperg to hyperg_new see notes based on Pfaff
+      // transformation
+      double hyperg_new=hyperg*(1.0/(1.0+1.0/a2l*pow(nb,-a1l)));
+      double hyperg_max_new=hyperg_max*(1.0/(1.0+1.0/a2l*
+                                             pow(nuc_nb_max,-a1l)));
+
+      // solve for c1l, c2l
+      c1l=pow(nuc_nb_max,-a1l-1.0)*(a2l*pow(nuc_nb_max,a1l)+1.0)*
+	(e_nuc_last+neutron.m*nuc_nb_max+p_nuc_last);
+      c2l=pow(nuc_nb_max,-a1l)*
+	(a2l*pow(nuc_nb_max,a1l)*(e_nuc_last+neutron.m*nuc_nb_max)-
+	 (a2l*pow(nuc_nb_max,a1l)+1.0)
+	 *hyperg_max_new*(e_nuc_last+neutron.m*nuc_nb_max+p_nuc_last))/a2l;
+      e_nuc=(c1l*nb*hyperg_new)/a2l+c2l-neutron.m*nb;
+      denucdnn=-(a2l*neutron.m*pow(nb,a1l)-c1l*pow(nb,a1l)+neutron.m)/
+        (a2l*pow(nb,a1l)+1.0);
+
+    } else if (cs_nuc_2==cs_nuc_last) {
+
+      // If the speed of sound is independent of density at
+      // high densities
+      
+      e_nuc=-neutron.m*nb+(e_nuc_last+neutron.m*nuc_nb_max+p_nuc_last)/
+	(1.0+cs_nuc_last)*pow((nb/nuc_nb_max),cs_nuc_last+1.0)+
+	(cs_nuc_last*(e_nuc_last+neutron.m*nuc_nb_max)-p_nuc_last)/
+	(1.0+cs_nuc_last);
+      denucdnn=-neutron.m+(e_nuc_last+neutron.m*nuc_nb_max+p_nuc_last)*
+	pow((nb/nuc_nb_max),cs_nuc_last)/nuc_nb_max;
+    }
+  }    
+  
+  return 0;
+}
+
 int eos::new_ns_eos(double nb, fermion &n,
 		    double &e_ns, double &densdnn) {
   
@@ -989,8 +1208,8 @@ int eos::new_ns_eos(double nb, fermion &n,
   double a1l, a2l;
   double c1l, c2l;
 
-  double e_ns_last=ed_fit(ns_nb_max);
-  double p_ns_last=mu_fit(ns_nb_max)*ns_nb_max-e_ns_last;
+  double e_ns_last=ed_fit_norest(ns_nb_max);
+  double p_ns_last=mu_fit_norest(ns_nb_max)*ns_nb_max-e_ns_last;
 
   // -----------------------------------------------------
   // Solve for a1l and a2l
@@ -1008,7 +1227,7 @@ int eos::new_ns_eos(double nb, fermion &n,
     // EOS is causal, just use that result
     e_ns=energy_density_ns(nb);
     
-    densdnn=mu_fit(nb);
+    densdnn=mu_fit_norest(nb);
     
   } else {
 
@@ -1063,7 +1282,8 @@ int eos::new_ns_eos(double nb, fermion &n,
       a2l=mx[1];
       
       double hyperg=gsl_sf_hyperg_2F1
-	(1.0,1.0,1.0-1.0/a1l,1.0/a2l*pow(nb,-a1l)/(1.0/a2l*pow(nb,-a1l)+1.0));
+	(1.0,1.0,1.0-1.0/a1l,1.0/a2l*pow(nb,-a1l)/
+         (1.0/a2l*pow(nb,-a1l)+1.0));
       double hyperg_max=gsl_sf_hyperg_2F1
 	(1.0,1.0,1.0-1.0/a1l,1.0/a2l*pow(ns_nb_max,-a1l)/
 	 (1.0/a2l*pow(ns_nb_max,-a1l)+1.0));
@@ -1071,7 +1291,8 @@ int eos::new_ns_eos(double nb, fermion &n,
       // Transform hyperg to hyperg_new see notes based on Pfaff
       // transformation
       double hyperg_new=hyperg*(1.0/(1.0+1.0/a2l*pow(nb,-a1l)));
-      double hyperg_max_new=hyperg_max*(1.0/(1.0+1.0/a2l*pow(ns_nb_max,-a1l)));
+      double hyperg_max_new=hyperg_max*(1.0/(1.0+1.0/a2l*
+                                             pow(ns_nb_max,-a1l)));
 
       // solve for c1l, c2l
       c1l=pow(ns_nb_max,-a1l-1.0)*(a2l*pow(ns_nb_max,a1l)+1.0)*
@@ -1081,19 +1302,20 @@ int eos::new_ns_eos(double nb, fermion &n,
 	 (a2l*pow(ns_nb_max,a1l)+1.0)
 	 *hyperg_max_new*(e_ns_last+n.m*ns_nb_max+p_ns_last))/a2l;
       e_ns=(c1l*nb*hyperg_new)/a2l+c2l-n.m*nb;
-      densdnn=-(a2l*n.m*pow(nb,a1l)-c1l*pow(nb,a1l)+n.m)/(a2l*pow(nb,a1l)+1.0);
+      densdnn=-(a2l*n.m*pow(nb,a1l)-c1l*pow(nb,a1l)+n.m)/
+        (a2l*pow(nb,a1l)+1.0);
 
     } else if (cs_ns_2==cs_ns_last) {
 
       // If the speed of sound is independent of density at
       // high densities
       
-      e_ns=-n.m*nb+(e_ns_last+n.m*ns_nb_max+p_ns_last)
-	/(1.0+cs_ns_last)*pow((nb/ns_nb_max),cs_ns_last+1.0)
-	+(cs_ns_last*(e_ns_last+n.m*ns_nb_max)-p_ns_last)
-	/(1.0+cs_ns_last);
-      densdnn=-n.m+(e_ns_last+n.m*ns_nb_max+p_ns_last)
-	*pow((nb/ns_nb_max),cs_ns_last)/ns_nb_max;
+      e_ns=-n.m*nb+(e_ns_last+n.m*ns_nb_max+p_ns_last)/
+	(1.0+cs_ns_last)*pow((nb/ns_nb_max),cs_ns_last+1.0)+
+	(cs_ns_last*(e_ns_last+n.m*ns_nb_max)-p_ns_last)/
+	(1.0+cs_ns_last);
+      densdnn=-n.m+(e_ns_last+n.m*ns_nb_max+p_ns_last)*
+	pow((nb/ns_nb_max),cs_ns_last)/ns_nb_max;
     }
   }
 
@@ -1188,8 +1410,8 @@ double eos::free_energy_density_detail
     vdet["dgdnp"]=0.0;
     vdet["msn"]=neutron.ms*hc_mev_fm;
     vdet["msp"]=proton.ms*hc_mev_fm;
-    vdet["Un"]=neutron.nu*hc_mev_fm;
-    vdet["Up"]=proton.nu*hc_mev_fm;
+    vdet["Un"]=(neutron.mu-neutron.nu)*hc_mev_fm;
+    vdet["Up"]=(proton.mu-proton.nu)*hc_mev_fm;
     if (rmf_fields) {
       double sigma, omega, rho;
       rmf.get_fields(sigma,omega,rho);
@@ -1210,12 +1432,14 @@ double eos::free_energy_density_detail
   double nb=nn+pn;
   double ye=pn/nb;
 
-  double n0=0.16;
+  double n0_loc=0.16;
 
   // ----------------------------------------------------------------
   // Compute the virial EOS
 
   double dmundT, dmupdT, dmundnn, dmupdnn, dmundnp, dmupdnp;
+  double nun_virial, nup_virial;
+  
   if (T==0.0) {
     f_virial=0.0;
     s_virial=0.0;
@@ -1225,12 +1449,16 @@ double eos::free_energy_density_detail
     dmupdnn=0.0;
     dmundnp=0.0;
     dmupdnp=0.0;
+    nun_virial=0.0;
+    nup_virial=0.0;
   } else {
     f_virial=free_energy_density_virial
       (n,p,T,th,dmundnn,dmundnp,dmupdnn,dmupdnp,dmundT,dmupdT);
     s_virial=th.en;
+    nun_virial=n.nu;
+    nup_virial=p.nu;
   }
-
+  
   double dfvirialdT=-th.en;
   double P_virial=th.pr;
   double mu_n_virial=n.mu;
@@ -1256,6 +1484,7 @@ double eos::free_energy_density_detail
   sk.calc_e(n,p,th);
   
   double msn_T0=n.ms, msp_T0=p.ms;
+  double nun_T0=n.nu, nup_T0=p.nu;
   
   // ----------------------------------------------------------------
   // Compute the Skyrme EOS in nuclear matter at T=0
@@ -1273,6 +1502,13 @@ double eos::free_energy_density_detail
     mu_p_skyrme_eqdenT0*p.n;
   double f_skyrme_eqdenT0=th.ed;
 
+  if (false) {
+    double x1, x2;
+    new_nuc_eos(nn+pn,x1,x2);
+    cout << th.ed << " " << (n.mu+p.mu)/2.0 << " " << x1 << " " << x2 << endl;
+    exit(-1);
+  }
+
   double f_skyrme_T=0.0, f_skyrme_T0=0.0;
   double f_skyrme_neut_T, f_skyrme_neut_T0;
   double f_skyrme_eqden_T, f_skyrme_eqden_T0;
@@ -1286,6 +1522,8 @@ double eos::free_energy_density_detail
 
   double msn_Tcorr_T0=0.0, msp_Tcorr_T0=0.0;
   double msn_Tcorr_T=0.0, msp_Tcorr_T=0.0;
+  double nun_Tcorr_T0=0.0, nup_Tcorr_T0=0.0;
+  double nun_Tcorr_T=0.0, nup_Tcorr_T=0.0;
   
   if (old_version==false) {
     
@@ -1305,9 +1543,12 @@ double eos::free_energy_density_detail
     f_skyrme_T0=th.ed;
     msn_Tcorr_T0=n.ms;
     msp_Tcorr_T0=p.ms;
+    nun_Tcorr_T0=n.nu;
+    nup_Tcorr_T0=p.nu;
     
     // ----------------------------------------------------------------
-    // Compute the Skyrme EOS in nuclear matter at finite T for chiral fit
+    // Compute the Skyrme EOS in nuclear matter at finite T for chiral
+    // fit
     
     n.n=nn;
     p.n=pn;
@@ -1324,6 +1565,8 @@ double eos::free_energy_density_detail
     
     msn_Tcorr_T=n.ms;
     msp_Tcorr_T=p.ms;
+    nun_Tcorr_T=n.nu;
+    nup_Tcorr_T=p.nu;
     
     eos_Tcorr->calc_temp_e(n,p,T,th);
     
@@ -1420,39 +1663,13 @@ double eos::free_energy_density_detail
 
   new_ns_eos(nb,n,e_ns,densdnn);
 
-  if (test_ns_cs2) {
-    cout << "ns_nb_max: " << ns_nb_max << endl;
-    cout << "phi: " << phi << endl;
-    table_units<> tx;
-    tx.line_of_names("nb ed mu");
-    for(nb=0.08;nb<2.0;nb+=0.01) {
-      new_ns_eos(nb,n,e_ns,densdnn);
-      vector<double> line={nb,e_ns,densdnn};
-      tx.line_of_data(3,line);
-    }
-
-    tx.function_column("ed+939.0/197.33*nb","edf");
-    tx.function_column("mu+939.0/197.33","muf");
-    tx.deriv("nb","ed","mu2");
-    tx.deriv("nb","edf","muf2");
-    tx.deriv("nb","muf2","dmufdn");
-    tx.function_column("nb*dmufdn/muf","cs2");
-
-    hdf_file hf;
-    hf.open_or_create("ns2test.o2");
-    hdf_output(hf,tx,"ns2test");
-    hf.close();
-
-    int sret=system("o2graph -read ns2test.o2 -plot nb cs2 -show");
-  }
-  
   // ----------------------------------------------------------------
   // Combine all the results to get the full free energy density
   // and put it in f_total
 
   double T_MeV=T*hc_mev_fm;
   double gamma=20.0;
-  double h=1.0/(1.0+exp(gamma*(nn+pn-n0*1.5)));
+  double h=1.0/(1.0+exp(gamma*(nn+pn-n0_loc*1.5)));
   double e_combine=e_qmc*h+e_ns*(1.0-h);
   double e_sym=e_combine-f_skyrme_eqdenT0;
   double dyednn=-pn/nb/nb;
@@ -1500,9 +1717,9 @@ double eos::free_energy_density_detail
   double dfskyrme_eqden_T0dnn=(mu_n_skyrme_eqdenT0+mu_p_skyrme_eqdenT0)/2.0;
   double dfskyrme_eqden_T0dnp=dfskyrme_eqden_T0dnn;
 	
-  double dhdnn=-gamma*exp(gamma*(nn+pn-1.5*n0))/
-    (1.0+exp(gamma*(nn+pn-1.5*n0)))/
-    (1.0+exp(gamma*(nn+pn-1.5*n0)));
+  double dhdnn=-gamma*exp(gamma*(nn+pn-1.5*n0_loc))/
+    (1.0+exp(gamma*(nn+pn-1.5*n0_loc)))/
+    (1.0+exp(gamma*(nn+pn-1.5*n0_loc)));
   
   double desymdnn=((qmc_a*pow((nn+pn)/qmc_n0,qmc_alpha)*(qmc_alpha+1.0)+
 		    qmc_b*pow((nn+pn)/qmc_n0,qmc_beta)*(qmc_beta+1.0))/
@@ -1543,9 +1760,16 @@ double eos::free_energy_density_detail
   p.mu=dfvirialdnp*g_virial+f_virial*dgvirialdnp+dfdegdnp*(1.0-g_virial)
     +f_deg*(-dgvirialdnp);
 
-  // Final effective masses
+  // Final effective masses. We take the effective masses from the
+  // Skryme models and assume they are equal to the bare masses for
+  // the virial expansion and ignore any impact from the QMC or
+  // neutron star EOSs.
   n.ms=neutron.m*g_virial+(1.0-g_virial)*(msn_T0+msn_Tcorr_T-msn_Tcorr_T0);
   p.ms=proton.m*g_virial+(1.0-g_virial)*(msp_T0+msp_Tcorr_T-msp_Tcorr_T0);
+
+  // Compute "nu" for the nucleons so we can compute Un and Up below
+  n.nu=nun_virial*g_virial+(1.0-g_virial)*(nun_T0+nun_Tcorr_T-nun_Tcorr_T0);
+  p.nu=nup_virial*g_virial+(1.0-g_virial)*(nup_T0+nup_Tcorr_T-nup_Tcorr_T0);
   
   // -------------------------------------------------------------
   // Compute derivatives for entropy
@@ -1577,12 +1801,14 @@ double eos::free_energy_density_detail
   // Ensure the entropy is exactly zero at T=0 
   if (T==0.0) th.en=0.0;
   
-  if (verbose>=1) {
+  if (verbose>=2) {
     cout << endl;
+    cout << "eos::free_energy_density_detail(): verbose: "
+         << verbose << endl;
     cout << "i_ns,i_skyrme= " << i_ns << " " << i_skyrme << endl;
     cout << endl;
     
-    cout << "zn,zp= " << zn << " " << zp << endl;
+    cout << "fugacities: zn, zp= " << zn << " " << zp << endl;
     cout << "g_virial= " << g_virial << " (g=1 means full virial EOS) dgdT= "
 	 << dgvirialdT << endl;
     cout << "h=        " << h
@@ -1591,7 +1817,7 @@ double eos::free_energy_density_detail
 
     cout.setf(ios::showpos);
     
-    // Three contributions to the symmetry energy
+    cout << "Three contributions to the symmetry energy:" << endl;
     cout << "d2*e_qmc*h,d2*E_qmc*h     = " << delta2*e_qmc*h << " 1/fm^4 "
 	 << delta2*e_qmc/nb*h*hc_mev_fm << " MeV" << endl;
     cout << "d2*e_ns(1-h),d2*E_ns(1-h) = "
@@ -1602,8 +1828,7 @@ double eos::free_energy_density_detail
 	 << -delta2*f_skyrme_eqdenT0/nb*hc_mev_fm << " MeV" << endl;
     cout << endl;
 
-    // The four contributions to the free energy density of degenerate
-    // matter
+    cout << "Four contributions to degenerate free energy: " << endl;
     cout << "f_nucT0, F_nucT0       = " << f_skyrme_eqdenT0 << " 1/fm^4 "
 	 << f_skyrme_eqdenT0/nb*hc_mev_fm << " MeV" << endl;
     cout << "d2*f_symT0, d2*F_symT0 = " << delta2*e_sym << " 1/fm^4 "
@@ -1623,7 +1848,7 @@ double eos::free_energy_density_detail
 	 << f_deg/nb*hc_mev_fm << " MeV" << endl;
     cout << endl;
 
-    // Virial and degenerate contributions and total free energy
+    cout << "Virial, degenerate, and total free energy:" << endl;
     cout << "(1-g)*f_deg,(1-g)*F_deg = " << (1.0-g_virial)*f_deg << " 1/fm^4 "
 	 << (1.0-g_virial)*f_deg/nb*hc_mev_fm << " MeV" << endl;
     cout << "g*f_virial,g*F_virial   = " << g_virial*f_virial << " 1/fm^4 "
@@ -1635,7 +1860,7 @@ double eos::free_energy_density_detail
     cout << "ed (w/rm), pr= "
 	 << th.ed+neutron.n*neutron.m+proton.n*proton.m
 	 << " 1/fm^4 " << th.pr << " 1/fm^4" << endl;
-    cout << "entropy, s per baryon= " << th.en << " 1/fm^3 "
+    cout << "entropy density, s per baryon= " << th.en << " 1/fm^3 "
 	 << th.en/nb << endl;
     //cout << "entropy from sk_Tcorr= " << s_neut_T << " "
     //<< s_eqden_T << endl;
@@ -1670,8 +1895,8 @@ double eos::free_energy_density_detail
   vdet["dgdnp"]=dgvirialdnp;
   vdet["msn"]=neutron.ms*hc_mev_fm;
   vdet["msp"]=proton.ms*hc_mev_fm;
-  vdet["Un"]=neutron.nu*hc_mev_fm;
-  vdet["Up"]=proton.nu*hc_mev_fm;
+  vdet["Un"]=(neutron.mu-neutron.nu)*hc_mev_fm;
+  vdet["Up"]=(proton.mu-proton.nu)*hc_mev_fm;
   
   return f_total;
 }
@@ -1690,8 +1915,6 @@ double eos::free_energy_density_ep
   
   elep.include_muons=include_muons;
   elep.pair_density_eq(proton.n,T);
-  //cout << "three: " << elep.include_muons << " "
-  //<< proton.n << " " << elep.e.n << endl;
   
   double frnp=free_energy_density(neutron,proton,T,th2);
   
@@ -1881,31 +2104,10 @@ int eos::table_Ye(std::vector<std::string> &sv, bool itive_com) {
   std::string fname=sv[1];
   double Ye=o2scl::stod(sv[2]);
 
-  size_t n_nB=301;
-  size_t n_T=160;
-    
-  std::string nB_grid_spec2="10^(i*0.04-12)*2.0";
-  std::string T_grid_spec2="0.2+0.81*i";
-
-  vector<double> nB_grid, T_grid;
+  this->process_grid_spec();
   
-  calc_utf8<> calc;
-  std::map<std::string,double> vars;
-  
-  calc.compile(nB_grid_spec2.c_str());
-  for(size_t i=0;i<n_nB;i++) {
-    vars["i"]=((double)i);
-    nB_grid.push_back(calc.eval(&vars));
-  }
-  
-  calc.compile(T_grid_spec2.c_str());
-  for(size_t i=0;i<n_T;i++) {
-    vars["i"]=((double)i);
-    T_grid.push_back(calc.eval(&vars));
-  }
-
   table3d t;
-  t.set_xy("nB",n_nB,nB_grid,"T",n_T,T_grid);
+  t.set_xy("nB",n_nB2,nB_grid2,"T",n_T2,T_grid2);
   t.new_slice("Fint");
   t.new_slice("Pint");
   t.new_slice("Sint");
@@ -1924,23 +2126,23 @@ int eos::table_Ye(std::vector<std::string> &sv, bool itive_com) {
 
   elep.e.mu=elep.e.m;
   
-  for(int i=n_nB-1;i>=0;i--) {
-    cout << i << "/" << n_nB << endl;
-    for(size_t j=0;j<n_T;j++) {
+  for(int i=n_nB2-1;i>=0;i--) {
+    cout << i << "/" << n_nB2 << endl;
+    for(size_t j=0;j<n_T2;j++) {
       
-      neutron.n=nB_grid[i]*(1.0-Ye);
-      proton.n=nB_grid[i]*Ye;
+      neutron.n=nB_grid2[i]*(1.0-Ye);
+      proton.n=nB_grid2[i]*Ye;
       
-      free_energy_density(neutron,proton,T_grid[j]/hc_mev_fm,th2);
-      double foa_hc=(hc_mev_fm*th2.ed-T_grid[j]*th2.en)/nB_grid[i];
+      free_energy_density(neutron,proton,T_grid2[j]/hc_mev_fm,th2);
+      double foa_hc=(hc_mev_fm*th2.ed-T_grid2[j]*th2.en)/nB_grid2[i];
       
       elep.include_muons=include_muons;
-      elep.e.n=nB_grid[i]*Ye/2.0;
-      elep.pair_density_eq(nB_grid[i]*Ye,T_grid[j]/hc_mev_fm);
+      elep.e.n=nB_grid2[i]*Ye/2.0;
+      elep.pair_density_eq(nB_grid2[i]*Ye,T_grid2[j]/hc_mev_fm);
 
       t.set(i,j,"Fint",foa_hc);
-      t.set(i,j,"Sint",th2.en/nB_grid[i]);
-      t.set(i,j,"Eint",th2.ed/nB_grid[i]*hc_mev_fm);
+      t.set(i,j,"Sint",th2.en/nB_grid2[i]);
+      t.set(i,j,"Eint",th2.ed/nB_grid2[i]*hc_mev_fm);
       t.set(i,j,"Pint",th2.pr*hc_mev_fm);
       t.set(i,j,"g",0.0);
       
@@ -1952,13 +2154,13 @@ int eos::table_Ye(std::vector<std::string> &sv, bool itive_com) {
       t.set(i,j,"mue",elep.e.mu*hc_mev_fm);
 
       t.set(i,j,"F",foa_hc+(elep.th.ed*hc_mev_fm-
-                            elep.th.en*T_grid[j])/nB_grid[i]);
-      t.set(i,j,"E",th2.ed/nB_grid[i]*hc_mev_fm+
-            (elep.th.ed*hc_mev_fm)/nB_grid[i]);
+                            elep.th.en*T_grid2[j])/nB_grid2[i]);
+      t.set(i,j,"E",th2.ed/nB_grid2[i]*hc_mev_fm+
+            (elep.th.ed*hc_mev_fm)/nB_grid2[i]);
       t.set(i,j,"P",th2.pr+elep.th.pr*hc_mev_fm);
-      t.set(i,j,"S",th2.en/nB_grid[i]+elep.th.en/nB_grid[i]);
+      t.set(i,j,"S",th2.en/nB_grid2[i]+elep.th.en/nB_grid2[i]);
 
-      double cs2_val=cs2_func(neutron,proton,T_grid[j]/hc_mev_fm,th2);
+      double cs2_val=cs2_func(neutron,proton,T_grid2[j]/hc_mev_fm,th2);
       t.set(i,j,"cs2",cs2_val);
       
     }
@@ -1977,41 +2179,18 @@ int eos::table_nB(std::vector<std::string> &sv, bool itive_com) {
   std::string fname=sv[1];
   double nB=o2scl::stod(sv[2]);
 
-  size_t n_Ye=99;
-  size_t n_T=160;
-    
-  std::string Ye_grid_spec2="0.01*(i+1)";
-  std::string T_grid_spec2="0.2+0.81*i";
-
-  vector<double> Ye_grid, T_grid;
-  
-  calc_utf8<> calc;
-  std::map<std::string,double> vars;
-  
-  calc.compile(Ye_grid_spec2.c_str());
-  for(size_t i=0;i<n_Ye;i++) {
-    vars["i"]=((double)i);
-    Ye_grid.push_back(calc.eval(&vars));
-  }
-  
-  calc.compile(T_grid_spec2.c_str());
-  for(size_t i=0;i<n_T;i++) {
-    vars["i"]=((double)i);
-    T_grid.push_back(calc.eval(&vars));
-  }
-
   table3d t;
-  t.set_xy("Ye",n_Ye,Ye_grid,"T",n_T,T_grid);
+  t.set_xy("Ye",n_Ye2,Ye_grid2,"T",n_T2,T_grid2);
   t.line_of_names("Fint Sint Pint g msn msp cs2");
 
-  for(size_t i=0;i<n_Ye;i++) {
-    cout << i << "/" << n_Ye << endl;
-    for(size_t j=0;j<n_T;j++) {
-      neutron.n=nB*(1.0-Ye_grid[i]);
-      proton.n=nB*Ye_grid[i];
+  for(size_t i=0;i<n_Ye2;i++) {
+    cout << i << "/" << n_Ye2 << endl;
+    for(size_t j=0;j<n_T2;j++) {
+      neutron.n=nB*(1.0-Ye_grid2[i]);
+      proton.n=nB*Ye_grid2[i];
       double t1, t2, t3, t4, t5;
-      free_energy_density(neutron,proton,T_grid[j]/hc_mev_fm,th2);
-      double foa_hc=hc_mev_fm*(th2.ed-T_grid[j]/hc_mev_fm*th2.en)/
+      free_energy_density(neutron,proton,T_grid2[j]/hc_mev_fm,th2);
+      double foa_hc=hc_mev_fm*(th2.ed-T_grid2[j]/hc_mev_fm*th2.en)/
 	(neutron.n+proton.n);
       t.set(i,j,"Fint",foa_hc);
       t.set(i,j,"Sint",th2.en/nB);
@@ -2019,7 +2198,7 @@ int eos::table_nB(std::vector<std::string> &sv, bool itive_com) {
       t.set(i,j,"g",0.0);
       t.set(i,j,"msn",neutron.ms/neutron.m);
       t.set(i,j,"msp",proton.ms/proton.m);
-      double cs2_val=cs2_func(neutron,proton,T_grid[j]/hc_mev_fm,th2);
+      double cs2_val=cs2_func(neutron,proton,T_grid2[j]/hc_mev_fm,th2);
       t.set(i,j,"cs2",cs2_val);
     }
   }
@@ -2038,8 +2217,11 @@ int eos::process_grid_spec() {
   // the cli setup
   
   size_t st[3]={n_nB2,n_Ye2,n_T2};
-  //cout << "Processing: " << nB_grid_spec << " " << Ye_grid_spec << " "
-  //<< T_grid_spec << endl;
+  if (verbose>=2) {
+    cout << "eos::process_grid_spec(): Processing: "
+         << nB_grid_spec << " " << Ye_grid_spec << " "
+         << T_grid_spec << endl;
+  }
   
   calc_utf8<> calc;
   std::map<std::string,double> vars;
@@ -2047,6 +2229,10 @@ int eos::process_grid_spec() {
   vector<std::string> split_res;
 
   split_string_delim(nB_grid_spec,split_res,',');
+  if (split_res.size()<2) {
+    O2SCL_ERR("Invalid nB_grid_spec in eos::process_grid_spec().",
+              o2scl::exc_einval);
+  }
   n_nB2=stoszt(split_res[0]);
   nB_grid2.resize(0);
   //cout << "n_nB: " << n_nB2 << endl;
@@ -2058,6 +2244,10 @@ int eos::process_grid_spec() {
   }
   
   split_string_delim(Ye_grid_spec,split_res,',');
+  if (split_res.size()<2) {
+    O2SCL_ERR("Invalid Ye_grid_spec in eos::process_grid_spec().",
+              o2scl::exc_einval);
+  }
   n_Ye2=stoszt(split_res[0]);
   Ye_grid2.resize(0);
   //cout << "n_Ye: " << n_Ye2 << endl;
@@ -2069,6 +2259,10 @@ int eos::process_grid_spec() {
   }
   
   split_string_delim(T_grid_spec,split_res,',');
+  if (split_res.size()<2) {
+    O2SCL_ERR("Invalid T_grid_spec in eos::process_grid_spec().",
+              o2scl::exc_einval);
+  }
   n_T2=stoszt(split_res[0]);
   T_grid2.resize(0);
   //cout << "n_T: " << n_T2 << endl;
@@ -2080,6 +2274,10 @@ int eos::process_grid_spec() {
   }
   
   split_string_delim(S_grid_spec,split_res,',');
+  if (split_res.size()<2) {
+    O2SCL_ERR("Invalid S_grid_spec in eos::process_grid_spec().",
+              o2scl::exc_einval);
+  }
   n_S2=stoszt(split_res[0]);
   S_grid2.resize(0);
   //cout << "n_S: " << n_S2 << endl;
@@ -3406,6 +3604,25 @@ int eos::pns_eos(std::vector<std::string> &sv, bool itive_com) {
   return 0;
 }
 
+int eos::mvsr(std::vector<std::string> &sv, bool itive_com) {
+
+  nstar_cold ns;
+  ns.set_eos(*this);
+  ns.calc_eos();
+  ns.calc_nstar();
+
+  shared_ptr<table_units<> > t1=ns.get_eos_results();
+  shared_ptr<table_units<> > t2=ns.get_tov_results();
+
+  hdf_file hf;
+  hf.open_or_create(sv[1]);
+  hdf_output(hf,*t1,"eos");
+  hdf_output(hf,*t2,"mvsr");
+  hf.close();
+
+  return 0;
+}
+
 int eos::select_model(std::vector<std::string> &sv, bool itive_com) {
 
   i_ns=o2scl::stod(sv[1]);
@@ -3416,7 +3633,9 @@ int eos::select_model(std::vector<std::string> &sv, bool itive_com) {
   eos_S=o2scl::stod(sv[6]);
   phi=o2scl::stod(sv[7]);
 
-  int iret=select_internal(i_ns,i_skyrme,qmc_alpha,qmc_a,eos_L,eos_S,phi);
+  use_alt_eos=false;
+
+  int iret=select_seven(i_ns,i_skyrme,qmc_alpha,qmc_a,eos_L,eos_S,phi);
   if (iret!=0) {
     cerr << "Model is unphysical (iret=" << iret << ")." << endl;
     return 1;
@@ -3425,10 +3644,10 @@ int eos::select_model(std::vector<std::string> &sv, bool itive_com) {
   return 0;
 }
 
-int eos::select_internal(int i_ns_loc, int i_skyrme_loc,
-			 double qmc_alpha_loc, double qmc_a_loc,
-			 double eos_L_loc, double eos_S_loc,
-			 double phi_loc) {
+int eos::select_seven(int i_ns_loc, int i_skyrme_loc,
+                      double qmc_alpha_loc, double qmc_a_loc,
+                      double eos_L_loc, double eos_S_loc,
+                      double phi_loc) {
   
   i_ns=i_ns_loc;
   i_skyrme=i_skyrme_loc;
@@ -3437,23 +3656,15 @@ int eos::select_internal(int i_ns_loc, int i_skyrme_loc,
   eos_L=eos_L_loc;
   eos_S=eos_S_loc;
   phi=phi_loc;
-  
-  model_selected=true;
 
+  // Fit the neutron star EOS to row i_ns_loc in the data table
+  
   ns_fit(i_ns);
+
+  // Compute the Skyrme EOS from row i_skyrme_loc
   
-  double ns_min_cs2, ns_max_cs2;
-  min_max_cs2(ns_min_cs2,ns_max_cs2);
-  if (ns_min_cs2<0.0) {
-    model_selected=false;
-    return 1;
-  }
-
-  if (9.17*eos_S-266.0>eos_L || 14.3*eos_S-379.0<eos_L) {
-    model_selected=false;
-    return 2;
-  }
-
+  if (UNEDF_tab.get_nlines()==0) read_data_files();
+  
   double rho0=UNEDF_tab.get(((string)"rho0"),i_skyrme);
   double K=UNEDF_tab.get(((string)"K"),i_skyrme);
   double Ms_inv=UNEDF_tab.get(((string)"Ms_inv"),i_skyrme);
@@ -3468,20 +3679,6 @@ int eos::select_internal(int i_ns_loc, int i_skyrme_loc,
   double Vp=UNEDF_tab.get(((string)"Vp"),i_skyrme);
   double Vn=UNEDF_tab.get(((string)"Vn"),i_skyrme);
 
-  // Store some of the nuclear matter parameters
-  eos_n0=rho0;
-  eos_EoA=EoA;
-  eos_K=K;
-    
-  // Determine QMC coefficients
-  qmc_b=eos_S+EoA-qmc_a;
-  qmc_beta=(eos_L/3.0-qmc_a*qmc_alpha)/qmc_b;
-    
-  if (qmc_b<0.0 || qmc_beta>5.0) {
-    model_selected=false;
-    return 3;
-  }
-  
   double Ms_star=1/Ms_inv;
 
   sk.alt_params_saturation(rho0,EoA/hc_mev_fm,K/hc_mev_fm,Ms_star,
@@ -3489,7 +3686,56 @@ int eos::select_internal(int i_ns_loc, int i_skyrme_loc,
 			   Crdr0/hc_mev_fm,Crdr1/hc_mev_fm,
 			   CrdJ0/hc_mev_fm,CrdJ1/hc_mev_fm);
 
+  // Store some of the nuclear matter parameters
+  
+  eos_n0=rho0;
+  eos_EoA=EoA;
+  eos_K=K;
+    
+  // Determine QMC coefficients based on the UNEDF Skyrme
+  
+  qmc_b=eos_S+EoA-qmc_a;
+  qmc_beta=(eos_L/3.0-qmc_a*qmc_alpha)/qmc_b;
+
+  // Check that "b" and "beta" are physical
+  
+  if (qmc_b<0.0 || qmc_beta>5.0) {
+    cout << "eos::select_seven(): Value of b or beta unphysical."
+         << endl;
+    return 3;
+  }
+  
+  return select_common();
+}
+
+int eos::select_common() {
+
+  // Ensure that this flag is true only if we successfully
+  // selected a model
+  model_selected=false;
+
+  // Find the minimum and maximum speed of sound from the
+  // neutron star EOS
+  
+  double ns_min_cs2, ns_max_cs2;
+  min_max_cs2(ns_min_cs2,ns_max_cs2);
+  if (ns_min_cs2<0.0) {
+    cout << "eos::select_common(): Minimum NS cs2 is negative."
+         << endl;
+    return 1;
+  }
+
+  // Check that the symmetry energy is reasonable
+  
+  if (9.17*eos_S-266.0>eos_L || 14.3*eos_S-379.0<eos_L) {
+    cout << "eos::select_common(): SL combination unphysical. "
+         << eos_S << " " << eos_L << endl;
+    return 2;
+  }
+
   /*
+    // Check the Landau parameters
+    
     double f0, g0, f0p, g0p, f1, g1, f1p, g1p;
     sk.landau_nuclear(rho0,939.0/197.33,f0,g0,f0p,g0p,f1,g1,f1p,g1p);
     cout << f0 << " " << g0 << " " << f0p << " " << g0p << " " << f1 << " "
@@ -3499,25 +3745,20 @@ int eos::select_internal(int i_ns_loc, int i_skyrme_loc,
     exit(-1);
   */
 
-  /*
-    sk.saturation();
-    cout << "Here " << 0.15 << " " << rho0 << " "
-    << sk.f_effm_neut(0.15,(0.1441255-0.00758352)/0.15) << " "
-    << sk.f_effm_prot(0.15,(0.1441255-0.00758352)/0.15) << endl;
-  */
-  
   // Test to make sure dineutrons are not bound
+  
   for(double nb=0.01;nb<0.16;nb+=0.001) {
     neutron.n=nb;
     proton.n=0.0;
     sk.calc_e(neutron,proton,th2);
     if (th2.ed/nb<0.0) {
-      model_selected=false;
+      cout << "eos::select_common(): Dineutrons bound."
+           << endl;
       return 4;
     }
   }
 
-  // Ensure effective masses are positive
+  // Ensure that the effective masses are positive at high density
   
   fermion &n=neutron;
   fermion &p=proton;
@@ -3533,7 +3774,8 @@ int eos::select_internal(int i_ns_loc, int i_skyrme_loc,
   p.ms=p.m/(1.0+2.0*((n.n+p.n)*term+p.n*term2)*p.m);
   
   if (n.ms<0.0 || p.ms<0.0) {
-    model_selected=false;
+    cout << "eos::select_common(): "
+         << "Effective masses negative in nuclear matter." << endl;
     return 5;
   }
   
@@ -3546,7 +3788,8 @@ int eos::select_internal(int i_ns_loc, int i_skyrme_loc,
   p.ms=p.m/(1.0+2.0*((n.n+p.n)*term+p.n*term2)*p.m);
   
   if (n.ms<0.0 || p.ms<0.0) {
-    model_selected=false;
+    cout << "eos::select_common(): "
+         << "Effective masses negative in neutron matter." << endl;
     return 6;
   }
   
@@ -3559,15 +3802,23 @@ int eos::select_internal(int i_ns_loc, int i_skyrme_loc,
   p.ms=p.m/(1.0+2.0*((n.n+p.n)*term+p.n*term2)*p.m);
   
   if (n.ms<0.0 || p.ms<0.0) {
-    model_selected=false;
+    cout << "eos::select_common(): "
+         << "Effective masses negative in proton matter." << endl;
     return 7;
   }
 
-  // --------------------------------------------------------
-  // Test beta equilibrium
+  // Set model_selected to true in order to call free_energy_density()
+  // for the remaining tests.
   
+  model_selected=true;
+  
+  // -----------------------------------------------------------------
+  // Test beta equilibrium at T=1 MeV to ensure the proton fraction is
+  // physical
+  
+  cout << "eos::select_common(): Going to beta-eq test." << endl;
+
   // Loop over baryon densities
-  cout << "Going to beta-eq test: " << endl;
   for(double nbx=0.1;nbx<2.00001;nbx+=0.05) {
     
     // Beta equilibrium at T=1 MeV
@@ -3587,7 +3838,6 @@ int eos::select_internal(int i_ns_loc, int i_skyrme_loc,
     mh.def_jac.err_nonconv=false;
     int ret=mh.msolve(1,Ye_trial,mf);
     if (ret!=0) {
-      model_selected=false;
       return 8;
     }
     
@@ -3596,19 +3846,78 @@ int eos::select_internal(int i_ns_loc, int i_skyrme_loc,
     verbose=verbose_store;
     
     if (Ye<0.0 || Ye>1.0) {
+      cout << "eos::select_common(): Beta-equilibrium unphysical."
+           << endl;
       model_selected=false;
       return 9;
     }
     
   }
 
-  // --------------------------------------------------------
-  // Test cs2
+  // -----------------------------------------------------------------
+  // Determine the density at which the nuclear matter
+  // EOS becomes acausal.
   
-  model_selected=true;
+  if (true) {
+    
+    // This code uses just the cs2 at T=0.1 MeV, but it's probably
+    // accurate enough for now.
+    
+    double pr_last=0.0, ed_last=0.0;
+    for(double nbx=0.1;nbx<2.00001;nbx+=0.01) {
+      
+      neutron.n=nbx/2.0;
+      proton.n=nbx/2.0;
+      fermion_deriv n2=neutron;
+      fermion_deriv p2=proton;
+      thermo_np_deriv_helm thd;
+      sk.calc_deriv_e(n2,p2,th2,thd);
+      double sk_ed=th2.ed;
+      double sk_pr=th2.pr;
+      
+      // Add the electron contribution
+      electron.n=nbx/2.0;
+      relf.calc_density_zerot(electron);
+      th2.ed+=electron.ed;
+      th2.pr+=electron.pr;
 
+      if (false) {
+        cout << nbx << " " 
+             << (th2.pr-pr_last)/
+          (th2.ed+neutron.n*neutron.m+proton.n*proton.m-ed_last) << " ";
+      }
+      
+      ed_last=th2.ed+neutron.n*neutron.m+proton.n*proton.m;
+      pr_last=th2.pr;
+
+      double cs2x=cs2_func(neutron,proton,0.1/hc_mev_fm,th2);
+
+      if (false) {
+        cout << cs2x << " "
+             << cs2_func(neutron,proton,1.0/hc_mev_fm,th2) << endl;
+      }
+      
+      if (cs2x>0.99) {
+        e_nuc_last=sk_ed;
+        p_nuc_last=sk_pr;
+        nuc_nb_max=nbx;
+        nbx=3.0;
+        cout << "eos::select_common(): "
+             << "Setting e_nuc_last, p_nuc_last, nuc_nb_max:\n  "
+             << e_nuc_last << " " << p_nuc_last << " "
+             << nuc_nb_max << endl;
+      }
+    }
+    
+  }
+  
+  // -----------------------------------------------------------------
+  // Test cs2 to ensure it's positive over a wide range of densities,
+  // electron fractions, and temperatures. Acausal regions are
+  // (partially) handled separately elsewhere.
+  
   if (select_cs2_test) {
-    cout << "Going to cs2 test: " << endl;
+    cout << "eos::select_common(): Going to cs2 test." << endl;
     for(double nbx=0.1;nbx<2.00001;nbx+=0.05) {
       for(double yex=0.05;yex<0.4501;yex+=0.1) {
 	for(double Tx=1.0/hc_mev_fm;Tx<10.01/hc_mev_fm;Tx+=9.0/hc_mev_fm) {
@@ -3616,13 +3925,13 @@ int eos::select_internal(int i_ns_loc, int i_skyrme_loc,
 	  proton.n=nbx*yex;
 	  double cs2x=cs2_func(neutron,proton,Tx,th2);
 	  if (cs2x<0.0) {
-	    model_selected=false;
 	    if (true) {
-	      cout << "Negative speed of sound." << endl;
-	      cout << nbx << " " << yex << " " << Tx*hc_mev_fm << " "
+	      cout << "eos::select_common(): Negative speed of sound." << endl;
+	      cout << "  nB,Ye,T[MeV],cs2: "
+                   << nbx << " " << yex << " " << Tx*hc_mev_fm << " "
 		   << cs2x << endl;
-	      exit(-1);
 	    }	    
+            model_selected=false;
 	    return 10;
 	  }
 	}
@@ -3633,8 +3942,100 @@ int eos::select_internal(int i_ns_loc, int i_skyrme_loc,
   return 0;
 }
 
+int eos::select_full(std::vector<std::string> &sv, bool itive_com) {
+
+  use_alt_eos=false;
+  
+  int ret;
+  o2scl::rng<> r;
+  if (sv.size()<29) {
+    cerr << "The 'select-full' command needs 28 parameters."
+         << endl;
+    return 11;
+  }
+
+  qmc_alpha=o2scl::stod(sv[1]);
+  qmc_a=o2scl::stod(sv[2]);
+  eos_L=o2scl::stod(sv[3]);
+  eos_S=o2scl::stod(sv[4]);
+  phi=o2scl::stod(sv[5]);
+
+  ns_fit_parms.resize(5);
+  ns_fit_parms[0]=o2scl::stod(sv[6]);
+  ns_fit_parms[1]=o2scl::stod(sv[7]);
+  ns_fit_parms[2]=o2scl::stod(sv[8]);
+  ns_fit_parms[3]=o2scl::stod(sv[9]);
+  ns_fit_parms[4]=o2scl::stod(sv[10]);
+
+  ret=function_to_double_nothrow(sv[11],sk.t0,0,&r);
+  if (ret!=0) return 0;
+  sk.t0/=hc_mev_fm;
+  ret=function_to_double_nothrow(sv[12],sk.t1,0,&r);
+  if (ret!=0) return 0;
+  sk.t1/=hc_mev_fm;
+  ret=function_to_double_nothrow(sv[13],sk.t2,0,&r);
+  if (ret!=0) return 0;
+  sk.t2/=hc_mev_fm;
+  ret=function_to_double_nothrow(sv[14],sk.t3,0,&r);
+  if (ret!=0) return 0;
+  sk.t3/=hc_mev_fm;
+  
+  sk.x0=o2scl::stod(sv[15]);
+  sk.x1=o2scl::stod(sv[16]);
+  sk.x2=o2scl::stod(sv[17]);
+  sk.x3=o2scl::stod(sv[18]);
+  sk.alpha=o2scl::stod(sv[19]);
+
+  sk.a=0.0;
+  sk.b=1.0;
+  
+  ret=function_to_double_nothrow(sv[20],sk_Tcorr.t0,0,&r);
+  if (ret!=0) return 0;
+  sk_Tcorr.t0/=hc_mev_fm;
+  ret=function_to_double_nothrow(sv[21],sk_Tcorr.t1,0,&r);
+  if (ret!=0) return 0;
+  sk_Tcorr.t1/=hc_mev_fm;
+  ret=function_to_double_nothrow(sv[22],sk_Tcorr.t2,0,&r);
+  if (ret!=0) return 0;
+  sk_Tcorr.t2/=hc_mev_fm;
+  ret=function_to_double_nothrow(sv[23],sk_Tcorr.t3,0,&r);
+  if (ret!=0) return 0;
+  sk_Tcorr.t3/=hc_mev_fm;
+  
+  sk_Tcorr.x0=o2scl::stod(sv[24]);
+  sk_Tcorr.x1=o2scl::stod(sv[25]);
+  sk_Tcorr.x2=o2scl::stod(sv[26]);
+  sk_Tcorr.x3=o2scl::stod(sv[27]);
+  sk_Tcorr.alpha=o2scl::stod(sv[28]);
+  
+  sk_Tcorr.a=0.0;
+  sk_Tcorr.b=1.0;
+  
+  // Compute the saturation properties
+  sk.saturation();
+  
+  eos_n0=sk.n0;
+  eos_EoA=sk.eoa*hc_mev_fm;
+  eos_K=sk.comp*hc_mev_fm;
+
+  // Set and test the QMC coefficients
+  qmc_b=eos_S+eos_EoA-qmc_a;
+  qmc_beta=(eos_L/3.0-qmc_a*qmc_alpha)/qmc_b;
+    
+  if (qmc_b<0.0 || qmc_beta>5.0) {
+    model_selected=false;
+    return 3;
+  }
+
+  ret=select_common();
+  
+  return ret;
+}
+
 int eos::random(std::vector<std::string> &sv, bool itive_com) {
 
+  if (UNEDF_tab.get_nlines()==0) read_data_files();
+  
   // This function never fails, and it requires a call to
   // free_energy_density(), so we set this to true
   model_selected=true;
@@ -3645,7 +4046,7 @@ int eos::random(std::vector<std::string> &sv, bool itive_com) {
     done=true;
     
     if (verbose>0) {
-      cout << "Selecting random model." << endl;
+      cout << "eos::random(): Selecting random model." << endl;
     }
 
     // Select a random value for phi
@@ -3667,23 +4068,24 @@ int eos::random(std::vector<std::string> &sv, bool itive_com) {
     i_skyrme=rng.random_int(UNEDF_tab.get_nlines());
     
     if (true || verbose>1) {
-      cout << "Trying random model: " << endl;
-      cout << "i_ns= " << i_ns << endl;
-      cout << "i_skyrme= " << i_skyrme << endl;
-      cout << "alpha= " << qmc_alpha << endl;
-      cout << "a= " << qmc_a << endl;
-      cout << "eos_L= " << eos_L << endl;
-      cout << "eos_S= " << eos_S << endl;
-      cout << "phi= " << phi << endl;
+      cout << "  Trying random model: " << endl;
+      cout << "  i_ns= " << i_ns << endl;
+      cout << "  i_skyrme= " << i_skyrme << endl;
+      cout << "  alpha= " << qmc_alpha << endl;
+      cout << "  a= " << qmc_a << endl;
+      cout << "  eos_L= " << eos_L << endl;
+      cout << "  eos_S= " << eos_S << endl;
+      cout << "  phi= " << phi << endl;
     }
 
-    int ret=select_internal(i_ns,i_skyrme,qmc_alpha,qmc_a,
+    int ret=select_seven(i_ns,i_skyrme,qmc_alpha,qmc_a,
 			    eos_L,eos_S,phi);
     if (true || verbose>1) {
       if (ret==0) {
-	cout << "Success." << endl;
+	cout << "eos::random(): Success." << endl;
       } else {
-	cout << "Failed (" << ret << "). Selecting new random model." << endl;
+	cout << "eos::random(): Failed (ret=" << ret
+             << "). Selecting new random model." << endl;
       }
     }
 
@@ -3691,8 +4093,8 @@ int eos::random(std::vector<std::string> &sv, bool itive_com) {
   }
   
   if (true) {
-    cout << "Function eos::random() selected parameters: " << endl;
-    cout << i_ns << " " << i_skyrme << " " << qmc_alpha
+    cout << "eos::random(): Selected parameters: " << endl;
+    cout << "  " << i_ns << " " << i_skyrme << " " << qmc_alpha
 	 << " " << qmc_a << " " << eos_L << " " << eos_S << " "
 	 << phi << endl;
   }
@@ -3702,6 +4104,13 @@ int eos::random(std::vector<std::string> &sv, bool itive_com) {
 
 int eos::point(std::vector<std::string> &sv, bool itive_com) {
 
+  if (use_alt_eos==false && model_selected==false) {
+    cout << "eos::point(): "
+         << "Cannot compute point because 'model_selected' is false\n"
+         << "  and 'use_alt_eos' is false." 
+         << endl;
+  }
+  
   double nB=o2scl::stod(sv[1]);
   double Ye=o2scl::stod(sv[2]);
   double T=o2scl::stod(sv[3])/hc_mev_fm;
@@ -3709,26 +4118,25 @@ int eos::point(std::vector<std::string> &sv, bool itive_com) {
   neutron.n=nB*(1.0-Ye);
   proton.n=nB*Ye;
   free_energy_density(neutron,proton,T,th2);
-  if (verbose>=1) {
-    
-    cout.setf(ios::showpos);
-    double f_total=th2.ed-T*th2.en;
-    
-    cout << "f_total,F_total         = " << f_total << " 1/fm^4 "
-         << f_total/nB*hc_mev_fm << " MeV" << endl;
-    cout << endl;
-    
-    cout << "ed (w/rm), pr= "
-         << th2.ed+neutron.n*neutron.m+proton.n*proton.m
-         << " 1/fm^4 " << th2.pr << " 1/fm^4" << endl;
-    cout << "entropy, s per baryon= " << th2.en << " 1/fm^3 "
-         << th2.en/nB << endl;
-    cout << "mu_n, mu_p = " << neutron.mu*hc_mev_fm << " MeV "
-         << proton.mu*hc_mev_fm << " MeV" << endl;
-    cout << endl;
-    cout.unsetf(ios::showpos);
-    
-  }
+  
+  double f_total=th2.ed-T*th2.en;
+  
+  cout << "eos::point():" << endl;
+  cout << "  (All of these quantities are without electrons and photons.)"
+       << endl;
+  cout << "  free energy density: " << f_total << " 1/fm^4 " << endl;
+  cout << "  free energy per baryon: " << f_total/nB*hc_mev_fm
+       << " MeV" << endl;
+  
+  cout << "  energy density (with rest mass): "
+       << th2.ed+neutron.n*neutron.m+proton.n*proton.m
+       << " 1/fm^4 " << endl;
+  cout << "  pressure: " << th2.pr << " 1/fm^4" << endl;
+  cout << "  entropy density: " << th2.en << " 1/fm^3 " << endl;
+  cout << "  entropy per baryon: " << th2.en/nB << endl;
+  cout << "  mu_n: " << neutron.mu*hc_mev_fm << " MeV" << endl;
+  cout << "  mu_p: " << proton.mu*hc_mev_fm << " MeV" << endl;
+  cout << endl;
   
   return 0;
 }
@@ -3862,27 +4270,55 @@ int eos::alt_model(std::vector<std::string> &sv,
   if (sv.size()<2) {
     cout << "Not enough parameters for alt-model." << endl;
   }
-  
-  if (sv[1]=="Skyrme" || sv[1]=="skyrme") {
-    if (sv.size()<3) {
-      cout << "Not enough parameters for alt-model of type Skyrme."
-           << endl;
-    }
-    o2scl_hdf::skyrme_load(sk_alt,sv[2]);
-    eosp_alt=&sk_alt;
-    use_alt_eos=true;
-  } else if (sv[1]=="RMF" || sv[1]=="rmf") {
-    o2scl_hdf::rmf_load(rmf,sv[2]);
-    eosp_alt=&rmf;
-    use_alt_eos=true;
-  } else if (sv[1]=="RMFH" || sv[1]=="rmfh") {
-    o2scl_hdf::rmf_load(rmf_hyp,sv[2]);
-    eosp_alt=&rmf;
-    use_alt_eos=true;
-  } else {
-    cerr << "Model " << sv[1] << " not understood." << endl;
-    return 2;
+
+  // Combine additional arguments into one string
+  for(size_t i=2;i<sv.size();i++) {
+    sv[1]+=" "+sv[i];
   }
+
+  eosp_alt=eos_had_temp_strings(sv[1]);
+  use_alt_eos=true;
+  eos_had_skyrme *skp=dynamic_cast<eos_had_skyrme *>(eosp_alt);
+  if (skp!=0) {
+    eosp_alt=&sk_alt;
+    sk_alt=*skp;
+    cout << "eos::alt_model(): Checking saturation properties:" << endl;
+    sk_alt.saturation();
+    cout << "  n0: " << sk_alt.n0 << endl;
+  } else {
+    eos_had_rmf *rmfp=dynamic_cast<eos_had_rmf *>(eosp_alt);
+    if (rmfp!=0) {
+      eosp_alt=&rmf;
+      rmf=*rmfp;
+    } else {
+      eos_had_rmf_hyp *rhp=dynamic_cast<eos_had_rmf_hyp *>(eosp_alt);
+      if (rhp!=0) {
+        eosp_alt=&rmf_hyp;
+        rmf_hyp.cs=rhp->cs;
+        rmf_hyp.cw=rhp->cw;
+        rmf_hyp.cr=rhp->cr;
+        rmf_hyp.ms=rhp->ms;
+        rmf_hyp.mw=rhp->mw;
+        rmf_hyp.mr=rhp->mr;
+        rmf_hyp.mnuc=rhp->mnuc;
+        rmf_hyp.b=rhp->b;
+        rmf_hyp.c=rhp->c;
+        rmf_hyp.zeta=rhp->zeta;
+        rmf_hyp.xi=rhp->xi;
+        rmf_hyp.zm_mode=rhp->zm_mode;
+        rmf_hyp.a1=rhp->a1;
+        rmf_hyp.a2=rhp->a2;
+        rmf_hyp.a3=rhp->a3;
+        rmf_hyp.a4=rhp->a4;
+        rmf_hyp.a5=rhp->a5;
+        rmf_hyp.a6=rhp->a6;
+        rmf_hyp.b1=rhp->b1;
+        rmf_hyp.b2=rhp->b2;
+        rmf_hyp.b3=rhp->b3;
+      }
+    }
+  }
+
   return 0;
 }
 
@@ -3902,7 +4338,7 @@ void eos::setup_cli(o2scl::cli &cl, bool read_docs) {
   o2scl::comm_option_mfptr<eos> *cset=
     new o2scl::comm_option_mfptr<eos>(this,&eos::comm_set);
   
-  static const int nopt=15;
+  static const int nopt=18;
   o2scl::comm_option_s options[nopt]=
     {{0,"test-deriv","",0,0,"","",
        new o2scl::comm_option_mfptr<eos>
@@ -3920,6 +4356,10 @@ void eos::setup_cli(o2scl::cli &cl, bool read_docs) {
       new o2scl::comm_option_mfptr<eos>
       (this,&eos::table_full),o2scl::cli::comm_option_both,
       1,"","eos","table_full","doc/xml/classeos.xml"},      
+     {0,"test-cs2","",0,0,"","",
+      new o2scl::comm_option_mfptr<eos>
+      (this,&eos::test_cs2),o2scl::cli::comm_option_both,
+      1,"","eos","test_cs2","doc/xml/classeos.xml"},      
      {0,"vir-fit","",0,0,"","",
       new o2scl::comm_option_mfptr<eos>
       (this,&eos::vir_fit),o2scl::cli::comm_option_both,
@@ -3944,10 +4384,18 @@ void eos::setup_cli(o2scl::cli &cl, bool read_docs) {
       new o2scl::comm_option_mfptr<eos>
       (this,&eos::pns_eos),o2scl::cli::comm_option_both,
       1,"","eos","pns_eos","doc/xml/classeos.xml"},      
+     {0,"mvsr","",1,1,"","",
+      new o2scl::comm_option_mfptr<eos>
+      (this,&eos::mvsr),o2scl::cli::comm_option_both,
+      1,"","eos","mvsr","doc/xml/classeos.xml"},      
      {0,"select-model","",7,7,"","",
       new o2scl::comm_option_mfptr<eos>
       (this,&eos::select_model),o2scl::cli::comm_option_both,
       1,"","eos","select_model","doc/xml/classeos.xml"},
+     {0,"select-full","",-1,-1,"","",
+      new o2scl::comm_option_mfptr<eos>
+      (this,&eos::select_full),o2scl::cli::comm_option_both,
+      1,"","eos","select_full","doc/xml/classeos.xml"},
      {0,"test-eg","",0,1,"","",
       new o2scl::comm_option_mfptr<eos>
       (this,&eos::test_eg),o2scl::cli::comm_option_both,
@@ -3956,7 +4404,7 @@ void eos::setup_cli(o2scl::cli &cl, bool read_docs) {
       new o2scl::comm_option_mfptr<eos>
       (this,&eos::vir_comp),o2scl::cli::comm_option_both,
       1,"","eos","vir_comp","doc/xml/classeos.xml"},      
-     {0,"alt-model","",1,2,"","",
+     {0,"alt-model","",-1,-1,"","",
       new o2scl::comm_option_mfptr<eos>
       (this,&eos::alt_model),o2scl::cli::comm_option_both,
       1,"","eos","alt_model","doc/xml/classeos.xml"},
@@ -3966,7 +4414,7 @@ void eos::setup_cli(o2scl::cli &cl, bool read_docs) {
       1,"","eos","hrg_load","doc/xml/classeos.xml"}
     };
 
-  cl.doc_o2_file="data/eos_nuclei_docs.o2";
+  cl.doc_o2_file=data_dir+"/eos_nuclei_docs.o2";
   
   p_verbose.i=&verbose;
   p_verbose.help="";
@@ -4003,13 +4451,6 @@ void eos::setup_cli(o2scl::cli &cl, bool read_docs) {
   p_select_cs2_test.doc_xml_file="doc/xml/classeos.xml";
   cl.par_list.insert(make_pair("select_cs2_test",&p_select_cs2_test));
 
-  p_test_ns_cs2.b=&test_ns_cs2;
-  p_test_ns_cs2.help="";
-  p_test_ns_cs2.doc_class="eos";
-  p_test_ns_cs2.doc_name="test_ns_cs2";
-  p_test_ns_cs2.doc_xml_file="doc/xml/classeos.xml";
-  cl.par_list.insert(make_pair("test_ns_cs2",&p_test_ns_cs2));
-
   p_use_alt_eos.b=&use_alt_eos;
   p_use_alt_eos.help="";
   p_use_alt_eos.doc_class="eos";
@@ -4019,14 +4460,21 @@ void eos::setup_cli(o2scl::cli &cl, bool read_docs) {
 
   p_nB_grid_spec.str=&nB_grid_spec;
   p_nB_grid_spec.help="";
-  p_nB_grid_spec.doc_class="eos_nuclei";
+  p_nB_grid_spec.doc_class="eos";
   p_nB_grid_spec.doc_name="nB_grid_spec";
   p_nB_grid_spec.doc_xml_file="doc/xml/classeos.xml";
   cl.par_list.insert(make_pair("nB_grid_spec",&p_nB_grid_spec));
   
+  p_data_dir.str=&data_dir;
+  p_data_dir.help="";
+  p_data_dir.doc_class="eos";
+  p_data_dir.doc_name="data_dir";
+  p_data_dir.doc_xml_file="doc/xml/classeos.xml";
+  cl.par_list.insert(make_pair("data_dir",&p_data_dir));
+  
   p_Ye_grid_spec.str=&Ye_grid_spec;
   p_Ye_grid_spec.help="";
-  p_Ye_grid_spec.doc_class="eos_nuclei";
+  p_Ye_grid_spec.doc_class="eos";
   p_Ye_grid_spec.doc_name="Ye_grid_spec";
   p_Ye_grid_spec.doc_xml_file="doc/xml/classeos.xml";
   cl.par_list.insert(make_pair("Ye_grid_spec",&p_Ye_grid_spec));
@@ -4034,7 +4482,7 @@ void eos::setup_cli(o2scl::cli &cl, bool read_docs) {
   p_T_grid_spec.str=&T_grid_spec;
   p_T_grid_spec.help="";
   p_T_grid_spec.doc_class="eos_nuclei";
-  p_T_grid_spec.doc_name="T_grid_spec";
+  p_T_grid_spec.doc_name="T";
   p_T_grid_spec.doc_xml_file="doc/xml/classeos.xml";
   cl.par_list.insert(make_pair("T_grid_spec",&p_T_grid_spec));
   
