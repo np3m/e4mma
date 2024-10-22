@@ -37,9 +37,9 @@ To mount local directories and run the docker image as a container run
 .. code-block:: bash
 
     docker run -it --rm --name crust-dft -u 0:0 \
-    -v "${PWD}/input:/opt/eos/input" \
-    -v "${PWD}/output:/opt/eos/output" \
-    -v "${PWD}/data:/opt/eos/data" \
+    -v "${PWD}/input:/opt/e4mma/input" \
+    -v "${PWD}/output:/opt/e4mma/output" \
+    -v "${PWD}/data:/opt/e4mma/data" \
     nostrad1/utk-eos:v1.9.3 /bin/bash
 
 This will put the user in a terminal inside the src folder where the 

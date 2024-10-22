@@ -20,8 +20,7 @@ ENV CFLAGS="-I/usr/lib/x86_64-linux-gnu/openmpi/include/ \
   -DO2SCL_PLAIN_HDF5_HEADER -DO2SCL_HDF5_COMP \
   -I/usr/local/include -std=c++14"
 ENV LDFLAGS="-L/usr/local/hdf5/lib -lpython3.12"
-#ENV MPI_CFLAGS 
-#ENV LD_LIBRARY_PATH /usr/local/hdf5/lib
+#ENV LD_LIBRARY_PATH="/usr/local/hdf5/lib"
 
 RUN git clone https://github.com/np3m/e4mma && \
     cd e4mma && \
@@ -72,39 +71,55 @@ COPY --from=builder --chown=$UID:$UID /usr/local/hdf5/lib/libhdf5.so.310 \
     /usr/local/hdf5/lib/libhdf5_hl.so.310 /usr/local/hdf5/lib/
 COPY --from=builder --chown=$UID:$UID /usr/lib64/ld-linux-x86-64.so.2 /usr/lib64/
 COPY --from=builder --chown=$UID:$UID \
-    /usr/lib/x86_64-linux-gnu/libgsl.so.* \
-    /usr/lib/x86_64-linux-gnu/libreadline.so.8 \
-    /usr/lib/x86_64-linux-gnu/libpython3.12.so.1.0 \
-    /usr/lib/x86_64-linux-gnu/libmpi.so.40 \
-    /usr/lib/x86_64-linux-gnu/libstdc++.so.6 \
-    /usr/lib/x86_64-linux-gnu/libm.so.6 \
-    /usr/lib/x86_64-linux-gnu/libgomp.so.1 \
-    /usr/lib/x86_64-linux-gnu/libgcc_s.so.1 \
-    /usr/lib/x86_64-linux-gnu/libc.so.6 \
-    /usr/lib/x86_64-linux-gnu/libfftw3.so.3 \
-    /usr/lib/x86_64-linux-gnu/libsz.so.* \
-    /usr/lib/x86_64-linux-gnu/libz.so.* \
-    /usr/lib/x86_64-linux-gnu/libncursesw.so.* \
-    /usr/lib/x86_64-linux-gnu/libquadmath.so.* \
-    /usr/lib/x86_64-linux-gnu/libcblas.so.* \
-    /usr/lib/x86_64-linux-gnu/libopen-pal.so.* \
-    /usr/lib/x86_64-linux-gnu/libfabric.so.* \
-    /usr/lib/x86_64-linux-gnu/libucp.so.* \
-    /usr/lib/x86_64-linux-gnu/libucs.so.* \
-    /usr/lib/x86_64-linux-gnu/libevent_core-2.1.so.* \
-    /usr/lib/x86_64-linux-gnu/libevent_pthreads-2.1.so.* \
-    /usr/lib/x86_64-linux-gnu/libhwloc.so.15 \
-    /usr/lib/x86_64-linux-gnu/libpmix.so.2 \
-    /usr/lib/x86_64-linux-gnu/libblas.so.3 \
-    /usr/lib/x86_64-linux-gnu/libucm.so.0 \
-    /usr/lib/x86_64-linux-gnu/libuct.so.0 \
-    /usr/lib/x86_64-linux-gnu/libnuma.so.1 \
-    /usr/lib/x86_64-linux-gnu/libsframe.so.1 \
-    /usr/lib/x86_64-linux-gnu/libzstd.so.1 \
-    /usr/lib/x86_64-linux-gnu/libudev.so.1 \
-    /usr/lib/x86_64-linux-gnu/libgfortran.so.5 \
-    /usr/lib/x86_64-linux-gnu/libcap.so.2 \
-    /usr/lib/x86_64-linux-gnu/
+    /lib/x86_64-linux-gnu/libgsl.so.27 \
+    /lib/x86_64-linux-gnu/libpython3.12.so.1.0 \
+    /lib/x86_64-linux-gnu/libmpi_cxx.so.40 \
+    /lib/x86_64-linux-gnu/libmpi.so.40 \
+    /lib/x86_64-linux-gnu/libstdc++.so.6 \
+    /lib/x86_64-linux-gnu/libm.so.6 \
+    /lib/x86_64-linux-gnu/libgomp.so.1 \
+    /lib/x86_64-linux-gnu/libgcc_s.so.1 \
+    /lib/x86_64-linux-gnu/libc.so.6 \
+    /lib/x86_64-linux-gnu/libfftw3.so.3 \
+    /lib/x86_64-linux-gnu/libquadmath.so.0 \
+    /lib/x86_64-linux-gnu/libz.so.1 \
+    /lib/x86_64-linux-gnu/libgslcblas.so.0 \
+    /lib/x86_64-linux-gnu/libexpat.so.1 \
+    /lib/x86_64-linux-gnu/libopen-pal.so.40 \
+    /lib/x86_64-linux-gnu/libopen-rte.so.40 \
+    /lib/x86_64-linux-gnu/libhwloc.so.15 \
+    /lib/x86_64-linux-gnu/libevent_core-2.1.so.7 \
+    /lib/x86_64-linux-gnu/libevent_pthreads-2.1.so.7 \
+    /lib/x86_64-linux-gnu/libudev.so.1 \
+    /lib/x86_64-linux-gnu/libcap.so.2 \
+    #-----------------------
+    /lib/x86_64-linux-gnu/libibverbs.so.1 \
+    /lib/x86_64-linux-gnu/libucp.so.0 \
+    /lib/x86_64-linux-gnu/libucs.so.0 \
+    /lib/x86_64-linux-gnu/libuct.so.0 \
+    /lib/x86_64-linux-gnu/libfabric.so.1 \
+    /lib/x86_64-linux-gnu/libmca_common_ofi.so.10 \
+    /lib/x86_64-linux-gnu/libmca_common_sm.so.40 \
+    /lib/x86_64-linux-gnu/libmca_common_monitoring.so.50 \
+    /lib/x86_64-linux-gnu/libmca_common_ofi.so.10 \
+    /lib/x86_64-linux-gnu/libmca_common_verbs.so.40 \
+    /lib/x86_64-linux-gnu/libinfinipath.so.4 \
+    /lib/x86_64-linux-gnu/libpsm2.so.2 \
+    /lib/x86_64-linux-gnu/libpsm_infinipath.so.1 \
+    /lib/x86_64-linux-gnu/libnuma.so.1 \
+    /lib/x86_64-linux-gnu/libfabric.so.1 \
+    /lib/x86_64-linux-gnu/librdmacm.so.1 \
+    /lib/x86_64-linux-gnu/libmca_common_ucx.so.40 \
+    /lib/x86_64-linux-gnu/libefa.so.1 \
+    /lib/x86_64-linux-gnu/libatomic.so.1 \
+    /lib/x86_64-linux-gnu/libucm.so.0 \
+    /lib/x86_64-linux-gnu/libmunge.so.2 \
+    /lib/x86_64-linux-gnu/libnl-3.so.200 \
+    /lib/x86_64-linux-gnu/libnl-route-3.so.200 \
+    /lib/x86_64-linux-gnu/libgomp.so.1 \
+    /lib/x86_64-linux-gnu/libpmix.so.2 \
+    /lib/x86_64-linux-gnu/libopen-rte.so.40 \
+    /lib/x86_64-linux-gnu/
 # --------------------------------------------------------------------------
 COPY --from=builder --chown=$UID:$UID /usr/lib/x86_64-linux-gnu/openmpi /usr/lib/x86_64-linux-gnu/openmpi
 COPY --from=builder --chown=$UID:$UID /usr/lib/x86_64-linux-gnu/pmix2 /usr/lib/x86_64-linux-gnu/pmix2
@@ -131,8 +146,7 @@ RUN mkdir /opt/e4mma/output/ && chown $UID:$UID /opt/e4mma/output/
 # --------------------------------------------------------------------------
 # Set environment variables
 ENV O2SCL_ADDL_LIBS="/usr/lib/gcc/x86_64-linux-gnu/12/libgomp.so"
-ENV LD_LIBRARY_PATH="/usr/local/lib" 
+ENV LD_LIBRARY_PATH="/usr/local/lib:/usr/local/hdf5/lib" 
 # --------------------------------------------------------------------------
 # Set working directory
 WORKDIR /opt/e4mma/src/
-ENTRYPOINT /bin/bash

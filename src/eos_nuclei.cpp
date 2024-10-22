@@ -11790,7 +11790,7 @@ void eos_nuclei::setup_cli_nuclei(o2scl::cli &cl) {
   
   eos::setup_cli(cl,false);
   
-  static const int nopt=31;
+  static const int nopt=33;
 
   o2scl::comm_option_s options[nopt]=
     {{0,"eos-deriv","",0,0,"","",
@@ -11916,7 +11916,15 @@ void eos_nuclei::setup_cli_nuclei(o2scl::cli &cl) {
      {0,"save-compose","",1,1,"","",
       new o2scl::comm_option_mfptr<eos_nuclei>
       (this,&eos_nuclei::save_compose),o2scl::cli::comm_option_both,
-      1,"","eos_nuclei","save_compose","doc/xml/classeos__nuclei.xml"}
+      1,"","eos_nuclei","save_compose","doc/xml/classeos__nuclei.xml"},
+     {0,"muses","",1,1,"","",
+      new o2scl::comm_option_mfptr<eos_nuclei>
+      (this,&eos_nuclei::muses),o2scl::cli::comm_option_both,
+      1,"","eos_nuclei","muses","doc/xml/classeos__nuclei.xml"},
+     {0,"create-new-table","",-1,-1,"","",
+      new o2scl::comm_option_mfptr<eos_nuclei>
+      (this,&eos_nuclei::create_new_table),o2scl::cli::comm_option_both,
+      1,"","eos_nuclei","create_new_table","doc/xml/classeos__nuclei.xml"}
     };
 
   cl.doc_o2_file=data_dir+"/eos_nuclei_docs.o2";

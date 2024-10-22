@@ -6,7 +6,7 @@ echo -e "\nRunning Crust-DFT module in Docker...\n"
 
 # Default values for Docker image and tag
 DOCKER_IMAGE_NAME="nostrad1/utk-eos"
-DOCKER_IMAGE_TAG="v1.9.1"
+DOCKER_IMAGE_TAG="v1.9.3"
 
 # Get UID and GID of the current user
 #UID=$(id -u)
@@ -26,7 +26,7 @@ docker run -it --rm --name utk -u $UID:$GID \
   -v "${PWD}/../input:/opt/e4mma/input:rw" \
   -v "${PWD}/../output:/opt/e4mma/output:rw" \
   -v "${PWD}/../data:/opt/e4mma/data" \
-  $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG /bin/bash run_utk_for_lepton.sh
+  $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG sh -c "cd ../test && bash run_utk_for_lepton.sh"
 
 echo -e "\nCrust-DFT Docker run completed\n"
 exit 0
