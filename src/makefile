@@ -145,11 +145,11 @@ main_eos.o: main_eos.cpp eos.h
 	$(LMPI_CXX) $(LMPI_CFLAGS) -DO2SCL_NO_BOOST_MULTIPRECISION \
 		-o main_eos.o -c main_eos.cpp 
 
-eos: eos.o main_eos.o \
+eos: eos.o main_eos.o fore.o \
 		eos_had_skyrme_ext.o 
 	$(LMPI_CXX) $(LMPI_CFLAGS) -DO2SCL_NO_BOOST_MULTIPRECISION \
 		-o eos eos.o \
-		main_eos.o eos_had_skyrme_ext.o $(LIBS) \
+		main_eos.o fore.o eos_had_skyrme_ext.o $(LIBS) \
 		-lreadline
 
 # ----------------------------------------------------------------
@@ -338,10 +338,10 @@ enn: eos_nompi.o main_nompi.o eos_nuclei_nompi.o eos_interp_nompi.o \
 		neutrino/jacobi_rule.o eos_nuclei_nompi.o \
 		eos_had_skyrme_ext_nompi.o $(LIBS)
 
-eos_nompi: eos_nompi.o main_eos_nompi.o \
+eos_nompi: eos_nompi.o main_eos_nompi.o fore_nompi.o \
 		eos_had_skyrme_ext_nompi.o 
 	$(LCXX) $(LCFLAGS) -DO2SCL_NO_BOOST_MULTIPRECISION -o eos_nompi \
-		eos_nompi.o main_eos_nompi.o \
+		eos_nompi.o main_eos_nompi.o fore_nompi.o \
 		eos_had_skyrme_ext_nompi.o $(LIBS) -lreadline
 
 # ----------------------------------------------------------------

@@ -27,7 +27,7 @@ RUN git clone https://github.com/np3m/e4mma && \
     cd e4mma && \
     git checkout muses 
  
-RUN cd e4mma/src && make -j 4 eos_nuclei
+RUN cd e4mma/src && make -j 4 eos_nuclei eos
 # --------------------------------------------------------------------------
 # Stage 2: Dependencies MUSES
 FROM python:3.11-slim AS deps
@@ -114,12 +114,10 @@ COPY --from=builder --chown=$UID:$UID /usr/local/share/o2scl /usr/local/share/o2
 # --------------------------------------------------------------------------
 # Copy utk-eos files to the runtime stage
 COPY --from=builder --chown=$UID:$UID e4mma/data /opt/e4mma/data
-COPY --from=builder --chown=$UID:$UID e4mma/src/eos_nuclei /opt/e4mma/src/ 
+COPY --from=builder --chown=$UID:$UID e4mma/src/eos_nuclei e4mma/src/eos /opt/e4mma/src/ 
 COPY --chown=$UID:$UID src/makefile \
     src/yaml_validator.py \
-    src/point_validator.py \
     src/yaml_generator.py \
-    src/point_generator.py \
     src/postprocess.py \
     src/Status.py \
     /opt/e4mma/src/

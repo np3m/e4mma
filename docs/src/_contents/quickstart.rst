@@ -30,8 +30,8 @@ build the docker image inside the ``e4mma`` folder themselves using
 
     docker build . -t nostrad1/utk-eos:v1.9.3
 
-Use Crust-DFT inside docker
-~~~~~~~~~~~~~~~~~~~~~
+Run the docker image
+~~~~~~~~~~~~~~~~~~~~
 To mount local directories and run the docker image as a container run
 
 .. code-block:: bash
@@ -43,8 +43,90 @@ To mount local directories and run the docker image as a container run
     nostrad1/utk-eos:v1.9.3 /bin/bash
 
 This will put the user in a terminal inside the src folder where the 
-main executable ``eos_nuclei`` is.
+main executable ``eos_nuclei`` is. To exit the container type ``exit`` 
+and press enter.
 
+Use Crust-DFT inside docker
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Once the user is in the container, they can run the main executable 
+``eos_nuclei`` followed by ``-help`` to get accustomed to the 
+command-line and the available commands
+
+.. code-block:: bash
+
+    ./eos_nuclei -set data_dir "../data" -help
+
+or
+
+.. code-block:: bash
+
+    ./eos_nuclei -set data_dir "../data" -help point-nuclei
+
+
+Evaluate the EOS (without nuclei) at a particular point.
+Note that the code needs to be read a few data files, so we begin
+by setting the ``data_dir`` parameter.
+
+
+This is the ``fiducial`` model from Du et al. (2022)
+
+.. code-block:: bash
+
+    ./eos -set data_dir "../data" \
+    -select-model 470 738 0.5 13.0 62.4 32.8 0.9 -point 0.08 0.5 5.0
+
+Pure Skyrme model
+
+.. code-block:: bash
+
+    ./eos -set data_dir "../data" -alt-model Skyrme NRAPR \
+    -point 0.08 0.5 5.0
+
+RMF support is still experimental
+
+.. code-block:: bash
+
+    ./eos -set data_dir "../data" -alt-model RMF SFHo \
+    -point 0.08 0.5 5.0
+
+For non-RMF models, the code without nuclei also works at T=0
+
+.. code-block:: bash
+
+    ./eos -set data_dir "../data" \
+    -select-model 470 738 0.5 13.0 62.4 32.8 0.9 -point 0.08 0.5 5.0 -point 0.08 0.5 0.0
+    ./eos -set data_dir "../data" -alt-model Skyrme NRAPR \
+    -point 0.08 0.5 0.0
+
+
+Create a small table with derivatives based on an initial guess
+
+
+Download the initial guess. The file is compared with the SHA256
+hash and only downloaded if the current file doesn't match the hash.
+The `acol` command is part of O2scl (one of the e4mma dependencies).
+Instead of acol, you can just use, e.g. 'curl' to download the file
+and `openssl dgst -sha256` to obtain the hash.
+
+.. code-block:: bash
+
+    acol -download ../output/fid_3_5_22.o2 \
+    https://isospin.roam.utk.edu/public_data/eos_tables/du21/fid_3_5_22.o2 \
+    840f6f171f05081deed53fd8bf50bad1b16a865418c37b1b630817ae10ad6736
+
+Select a random EOS parameterization, create the table, and then
+compute derivatives and store it in E_table_deriv.o2. This table
+does not include leptons.
+
+.. code-block:: bash
+
+    ./eos_nuclei -set data_dir "../data" -random \
+    -set nB_grid_spec "5,0.01*(i+1)" -set Ye_grid_spec "3,0.4+0.01*i" \
+    -set T_grid_spec "3,5+i" -generate-table \
+    "ext_guess=../data/fid_3_5_22.o2" -eos-deriv \
+    -output ../output/E_table_deriv.o2
+
+For more examples see the script files in examples directory.
 
 Calculation Engine
 --------------------
