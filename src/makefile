@@ -6,10 +6,18 @@ help:
 	@echo "eos_nompi:        Non-parallel version of eos."
 	@echo "eos_nuclei:       Main heterogeneous matter executable."
 	@echo "eos_nuclei_nompi: Non-parallel version of eos_nuclei."
+	@echo "eos_nuclei_mp:    Multiprecision version of eos_nuclei."
+	@echo "enn:              Alias for 'eos_nuclei_nompi'."
 	@echo "open-doc:         Open local documentation in browser."
-	@echo "doc:              Generate documentation."
-	@echo "sync-doc:         Upload documentation to web."
 	@echo "web-doc:          Open online documentation in browser."
+	@echo "clean:            Delete executables and object files."
+	@echo "check:            Check the code by running the examples."
+	@echo ""
+	@echo "Developer targets:"
+	@echo "─────────────────────────────────────────────────────────"
+	@echo "doc:              Generate documentation."
+	@echo "sync-doc:         Copy documentation to web page working copy."
+	@echo "test-sync:        Show which documentation would be copied."
 
 # ----------------------------------------------------------------
 # Various user-specific settings
@@ -20,31 +28,12 @@ help:
 # LCFLAGS are the local C++ compiler flags
 
 # Default settings
-LIBS = -L/usr/lib/x86_64-linux-gnu/hdf5/serial \
-	-lo2scl -lhdf5 -lgsl \
-	-lreadline 
-FLIBS = -lgfortran
-# PLIBS = -L/usr/lib/x86_64-linux-gnu/ 
-LCXX = g++
-LFC = gfortran
-LMPI_FC = mpif90
-LMPI_CXX = mpic++
-LCFLAGS = -I/usr/lib/x86_64-linux-gnu/hdf5/serial/include \
-	-DNO_MPI -DNO_OPENMP \
-	-DO2SCL_NO_BOOST_MULTIPRECISION
-LCFLAGS_OMP = -I/usr/lib/x86_64-linux-gnu/hdf5/serial/include \
-	-DNO_MPI \
-	-fopenmp \
-	-DO2SCL_NO_BOOST_MULTIPRECISION
-LFFLAGS = -O3
-LMPI_CFLAGS = -I/usr/lib/x86_64-linux-gnu/hdf5/serial/include \
-	-I/usr/local/lib/python3.10/dist-packages/numpy/core/include \
-	-DO2SCL_MPI -DO2SCL_OPENMP \
-	-fopenmp \
-	-DO2SCL_NO_BOOST_MULTIPRECISION
+LCXX = $(CXX)
+LMPI_CXX = $(MPI_CXX)
+LIBS = -L/usr/local/lib -lo2scl -lhdf5 -lgsl -lreadline $(LDFLAGS) 
+LMPI_CFLAGS = -O3 -std=c++11 -DO2SCL_MPI -fopenmp $(CFLAGS) $(MPI_CFLAGS)
+LCFLAGS = -O3 -std=c++11 -DNO_MPI -fopenmp $(CFLAGS)
 
-COMMENT = "default"
-PYTHON_LDFLAGS = 
 # ----------------------------------------------------------------
 # UTK-specific settings
 # ----------------------------------------------------------------
@@ -60,11 +49,10 @@ LIBS = $(UTKNA_O2SCL_LIBS) $(UTKNA_PYTHON_LDFLAGS)
 LCXX = $(UTKNA_CXX) 
 LMPI_CXX = $(UTKNA_MPI_CXX)
 LCFLAGS = $(UTKNA_O2SCL_INCS) $(UTKNA_CFLAGS) -DNO_MPI \
-        $(UTKNA_OPENMP_FLAGS) -DO2SCL_EIGEN \
-	-DO2SCL_NEW_BOOST_INTEGRATION 
+        $(UTKNA_OPENMP_FLAGS)
 LMPI_CFLAGS = $(UTKNA_O2SCL_INCS) $(UTKNA_CFLAGS) \
-	$(UTKNA_OPENMP_FLAGS) $(UTKNA_MPI_CFLAGS) \
-	-DO2SCL_NEW_BOOST_INTEGRATION 
+	$(UTKNA_OPENMP_FLAGS) $(UTKNA_MPI_CFLAGS)
+
 endif
 
 # ----------------------------------------------------------------
@@ -72,147 +60,263 @@ endif
 # ----------------------------------------------------------------
 
 eos.o: eos.cpp eos.h
-	$(LMPI_CXX) $(LMPI_CFLAGS) \
+	$(LMPI_CXX) $(LMPI_CFLAGS) -DO2SCL_NO_BOOST_MULTIPRECISION \
 		-o eos.o -c eos.cpp
 
 eos_nuclei.o: eos_nuclei.cpp eos_nuclei.h
-	$(LMPI_CXX) $(LMPI_CFLAGS) \
+	$(LMPI_CXX) $(LMPI_CFLAGS) -DO2SCL_NO_BOOST_MULTIPRECISION \
 		-o eos_nuclei.o -c eos_nuclei.cpp
 
 eos_interp.o: eos_interp.cpp
-	$(LMPI_CXX) $(LMPI_CFLAGS) \
+	$(LMPI_CXX) $(LMPI_CFLAGS) -DO2SCL_NO_BOOST_MULTIPRECISION \
 		-o eos_interp.o -c eos_interp.cpp
 
 eos_neutrino.o: eos_neutrino.cpp
-	$(LMPI_CXX) $(LMPI_CFLAGS) \
+	$(LMPI_CXX) $(LMPI_CFLAGS) -DO2SCL_NO_BOOST_MULTIPRECISION \
 		-o eos_neutrino.o -c eos_neutrino.cpp
 
 eos_had_skyrme_ext.o: eos_had_skyrme_ext.cpp \
 		eos_had_skyrme_ext.h
-	$(LMPI_CXX) $(LMPI_CFLAGS) -o eos_had_skyrme_ext.o \
+	$(LMPI_CXX) $(LMPI_CFLAGS) -DO2SCL_NO_BOOST_MULTIPRECISION \
+		-o eos_had_skyrme_ext.o \
 		-c eos_had_skyrme_ext.cpp
 
 main.o: main.cpp eos.h 
-	$(LMPI_CXX) $(LMPI_CFLAGS) -o main.o -c main.cpp 
+	$(LMPI_CXX) $(LMPI_CFLAGS) -DO2SCL_NO_BOOST_MULTIPRECISION \
+		-o main.o -c main.cpp 
 
 neutrino/Couplings.o: neutrino/Couplings.cpp neutrino/Couplings.hpp
-	$(LCXX) $(LCFLAGS) -DNUOPAC_HAS_GSL -o neutrino/Couplings.o \
+	$(LMPI_CXX) $(LMPI_CFLAGS) -DO2SCL_NO_BOOST_MULTIPRECISION \
+		-DNUOPAC_HAS_GSL -o neutrino/Couplings.o \
 		-c neutrino/Couplings.cpp
 
 neutrino/FluidState.o: neutrino/FluidState.cpp neutrino/FluidState.hpp
-	$(LCXX) $(LCFLAGS) -DNUOPAC_HAS_GSL -o neutrino/FluidState.o \
+	$(LMPI_CXX) $(LMPI_CFLAGS) -DO2SCL_NO_BOOST_MULTIPRECISION \
+		-DNUOPAC_HAS_GSL -o neutrino/FluidState.o \
 		-c neutrino/FluidState.cpp
 
 neutrino/FunctionIntegrator.o: neutrino/FunctionIntegrator.cpp \
 	neutrino/FunctionIntegrator.hpp
-	$(LCXX) $(LCFLAGS) -DNUOPAC_HAS_GSL -o neutrino/FunctionIntegrator.o \
-	-c neutrino/FunctionIntegrator.cpp
+	$(LMPI_CXX) $(LMPI_CFLAGS) -DO2SCL_NO_BOOST_MULTIPRECISION \
+		-DNUOPAC_HAS_GSL -o \
+		neutrino/FunctionIntegrator.o \
+		-c neutrino/FunctionIntegrator.cpp
 
-neutrino/Polarization.o: neutrino/Polarization.cpp neutrino/Polarization.hpp
-	$(LCXX) $(LCFLAGS) -DNUOPAC_HAS_GSL -o neutrino/Polarization.o \
+neutrino/Polarization.o: neutrino/Polarization.cpp \
+		neutrino/Polarization.hpp
+	$(LMPI_CXX) $(LMPI_CFLAGS) -DO2SCL_NO_BOOST_MULTIPRECISION \
+		-DNUOPAC_HAS_GSL -o neutrino/Polarization.o \
 		-c neutrino/Polarization.cpp
 
-neutrino/PolarizationNonRelv2Apr8.o: neutrino/PolarizationNonRelv2Apr8.cpp 
-	$(LCXX) $(LCFLAGS) -DNUOPAC_HAS_GSL \
+neutrino/PolarizationNonRelv2Apr8.o: \
+		neutrino/PolarizationNonRelv2Apr8.cpp 
+	$(LMPI_CXX) $(LMPI_CFLAGS) -DO2SCL_NO_BOOST_MULTIPRECISION \
+		-DNUOPAC_HAS_GSL \
 		-o neutrino/PolarizationNonRelv2Apr8.o \
 		-c neutrino/PolarizationNonRelv2Apr8.cpp
 
 neutrino/jacobi_rule.o: neutrino/jacobi_rule.cpp neutrino/jacobi_rule.hpp
-	$(LCXX) $(LCFLAGS) -DNUOPAC_HAS_GSL -o neutrino/jacobi_rule.o \
+	$(LMPI_CXX) $(LMPI_CFLAGS) -DO2SCL_NO_BOOST_MULTIPRECISION \
+		-DNUOPAC_HAS_GSL -o neutrino/jacobi_rule.o \
 		-c neutrino/jacobi_rule.cpp
 
 fore.o: fore.cpp fore.h
-	$(LMPI_CXX) $(LMPI_CFLAGS) -o fore.o -c fore.cpp 
+	$(LMPI_CXX) $(LMPI_CFLAGS) -DO2SCL_NO_BOOST_MULTIPRECISION \
+		-DNUOPAC_HAS_GSL -o fore.o -c fore.cpp 
 
-fore_nompi.o: fore.cpp fore.h
-	$(LCXX) $(LCFLAGS) -o fore_nompi.o -c fore.cpp 
-
-fore_test.o: fore_test.cpp fore.h
-	$(LMPI_CXX) $(LMPI_CFLAGS) -o fore_test.o -c fore_test.cpp
+#fore_test.o: fore_test.cpp fore.h
+#	$(LMPI_CXX) $(LMPI_CFLAGS) -DO2SCL_NO_BOOST_MULTIPRECISION \
+#		-DNUOPAC_HAS_GSL -o fore_test.o -c fore_test.cpp
 
 eos_nuclei: eos.o main.o eos_nuclei.o fore.o eos_had_skyrme_ext.o eos_interp.o \
 		neutrino/Couplings.o neutrino/FluidState.o \
 		neutrino/FunctionIntegrator.o neutrino/Polarization.o \
 		neutrino/PolarizationNonRelv2Apr8.o neutrino/jacobi_rule.o \
 		eos_neutrino.o
-	$(LMPI_CXX) $(LMPI_CFLAGS) -o eos_nuclei eos.o main.o \
+	$(LMPI_CXX) $(LMPI_CFLAGS) -DO2SCL_NO_BOOST_MULTIPRECISION \
+		-o eos_nuclei eos.o main.o \
 		eos_nuclei.o fore.o eos_had_skyrme_ext.o eos_interp.o \
 		neutrino/Couplings.o neutrino/FluidState.o eos_neutrino.o \
 		neutrino/FunctionIntegrator.o neutrino/Polarization.o \
 		neutrino/PolarizationNonRelv2Apr8.o neutrino/jacobi_rule.o \
-		$(LIBS)
+		$(LIBS) -lreadline
 
-fore_test: fore_test.o fore.o 
-	$(LMPI_CXX) $(LMPI_CFLAGS)-o fore_test fore_test.o fore.o $(LIBS)
+main_eos.o: main_eos.cpp eos.h 
+	$(LMPI_CXX) $(LMPI_CFLAGS) -DO2SCL_NO_BOOST_MULTIPRECISION \
+		-o main_eos.o -c main_eos.cpp 
+
+eos: eos.o main_eos.o \
+		eos_had_skyrme_ext.o 
+	$(LMPI_CXX) $(LMPI_CFLAGS) -DO2SCL_NO_BOOST_MULTIPRECISION \
+		-o eos eos.o \
+		main_eos.o eos_had_skyrme_ext.o $(LIBS) \
+		-lreadline
+
+# ----------------------------------------------------------------
+# Main with multiprecision
+# ----------------------------------------------------------------
+
+eos_mp.o: eos.cpp eos.h
+	$(LMPI_CXX) $(LMPI_CFLAGS) \
+		-o eos_mp.o -c eos.cpp
+
+eos_nuclei_mp.o: eos_nuclei.cpp eos_nuclei.h
+	$(LMPI_CXX) $(LMPI_CFLAGS) \
+		-o eos_nuclei_mp.o -c eos_nuclei.cpp
+
+eos_interp_mp.o: eos_interp.cpp
+	$(LMPI_CXX) $(LMPI_CFLAGS) \
+		-o eos_interp_mp.o -c eos_interp.cpp
+
+eos_neutrino_mp.o: eos_neutrino.cpp
+	$(LMPI_CXX) $(LMPI_CFLAGS) \
+		-o eos_neutrino_mp.o -c eos_neutrino.cpp
+
+eos_had_skyrme_ext_mp.o: eos_had_skyrme_ext.cpp \
+		eos_had_skyrme_ext.h
+	$(LMPI_CXX) $(LMPI_CFLAGS) -o eos_had_skyrme_ext_mp.o \
+		-c eos_had_skyrme_ext.cpp
+
+main_mp.o: main.cpp eos.h 
+	$(LMPI_CXX) $(LMPI_CFLAGS) -o main_mp.o -c main.cpp 
+
+neutrino/Couplings_mp.o: neutrino/Couplings.cpp neutrino/Couplings.hpp
+	$(LMPI_CXX) $(LMPI_CFLAGS) -DNUOPAC_HAS_GSL \
+		-o neutrino/Couplings_mp.o \
+		-c neutrino/Couplings.cpp
+
+neutrino/FluidState_mp.o: neutrino/FluidState.cpp neutrino/FluidState.hpp
+	$(LMPI_CXX) $(LMPI_CFLAGS) -DNUOPAC_HAS_GSL \
+		-o neutrino/FluidState_mp.o \
+		-c neutrino/FluidState.cpp
+
+neutrino/FunctionIntegrator_mp.o: neutrino/FunctionIntegrator.cpp \
+	neutrino/FunctionIntegrator.hpp
+	$(LMPI_CXX) $(LMPI_CFLAGS) -DNUOPAC_HAS_GSL -o \
+	neutrino/FunctionIntegrator_mp.o \
+	-c neutrino/FunctionIntegrator.cpp
+
+neutrino/Polarization_mp.o: neutrino/Polarization.cpp \
+		neutrino/Polarization.hpp
+	$(LMPI_CXX) $(LMPI_CFLAGS) -DNUOPAC_HAS_GSL -o \
+		neutrino/Polarization_mp.o \
+		-c neutrino/Polarization.cpp
+
+neutrino/PolarizationNonRelv2Apr8_mp.o: \
+		neutrino/PolarizationNonRelv2Apr8.cpp 
+	$(LMPI_CXX) $(LMPI_CFLAGS) -DNUOPAC_HAS_GSL \
+		-o neutrino/PolarizationNonRelv2Apr8_mp.o \
+		-c neutrino/PolarizationNonRelv2Apr8.cpp
+
+neutrino/jacobi_rule_mp.o: neutrino/jacobi_rule.cpp \
+		neutrino/jacobi_rule.hpp
+	$(LMPI_CXX) $(LMPI_CFLAGS) -DNUOPAC_HAS_GSL -o \
+		neutrino/jacobi_rule_mp.o \
+		-c neutrino/jacobi_rule.cpp
+
+fore_mp.o: fore.cpp fore.h
+	$(LMPI_CXX) $(LMPI_CFLAGS) \
+		-o fore.o -c fore.cpp 
+
+eos_nuclei_mp: eos_mp.o main_mp.o eos_nuclei_mp.o \
+		fore_mp.o eos_had_skyrme_ext_mp.o eos_interp_mp.o \
+		neutrino/Couplings_mp.o neutrino/FluidState_mp.o \
+		neutrino/FunctionIntegrator_mp.o \
+		neutrino/Polarization_mp.o \
+		neutrino/PolarizationNonRelv2Apr8_mp.o \
+		neutrino/jacobi_rule_mp.o \
+		eos_neutrino_mp.o
+	$(LMPI_CXX) $(LMPI_CFLAGS) -o eos_nuclei_mp eos_mp.o main_mp.o \
+		eos_nuclei_mp.o fore_mp.o eos_had_skyrme_ext_mp.o eos_interp_mp.o \
+		neutrino/Couplings_mp.o neutrino/FluidState_mp.o \
+		eos_neutrino_mp.o neutrino/FunctionIntegrator_mp.o \
+		neutrino/Polarization_mp.o \
+		neutrino/PolarizationNonRelv2Apr8_mp.o \
+		neutrino/jacobi_rule_mp.o \
+		$(LIBS) -lreadline
 
 # ----------------------------------------------------------------
 # Version without MPI
 # ----------------------------------------------------------------
 
 neutrino/Couplings_nompi.o: neutrino/Couplings.cpp neutrino/Couplings.hpp
-	$(LCXX) $(LCFLAGS) -DNUOPAC_HAS_GSL -o neutrino/Couplings_nompi.o \
+	$(LCXX) $(LCFLAGS) -DO2SCL_NO_BOOST_MULTIPRECISION \
+		-DNUOPAC_HAS_GSL -o neutrino/Couplings_nompi.o \
 		-c neutrino/Couplings.cpp
 
 neutrino/FluidState_nompi.o: neutrino/FluidState.cpp neutrino/FluidState.hpp
-	$(LCXX) $(LCFLAGS) -DNUOPAC_HAS_GSL -o neutrino/FluidState_nompi.o \
+	$(LCXX) $(LCFLAGS) -DO2SCL_NO_BOOST_MULTIPRECISION \
+		-DNUOPAC_HAS_GSL -o neutrino/FluidState_nompi.o \
 		-c neutrino/FluidState.cpp
 
 neutrino/FunctionIntegrator_nompi.o: neutrino/FunctionIntegrator.cpp \
 		neutrino/FunctionIntegrator.hpp
-	$(LCXX) $(LCFLAGS) -DNUOPAC_HAS_GSL -o \
-	neutrino/FunctionIntegrator_nompi.o \
+	$(LCXX) $(LCFLAGS) -DO2SCL_NO_BOOST_MULTIPRECISION \
+		-DNUOPAC_HAS_GSL -o neutrino/FunctionIntegrator_nompi.o \
 	-c neutrino/FunctionIntegrator.cpp
 
 neutrino/Polarization_nompi.o: neutrino/Polarization.cpp \
 		neutrino/Polarization.hpp
-	$(LCXX) $(LCFLAGS) -DNUOPAC_HAS_GSL -o neutrino/Polarization_nompi.o \
+	$(LCXX) $(LCFLAGS) -DO2SCL_NO_BOOST_MULTIPRECISION \
+		-DNUOPAC_HAS_GSL -o neutrino/Polarization_nompi.o \
 		-c neutrino/Polarization.cpp
 
 neutrino/PolarizationNonRelv2Apr8_nompi.o: \
 		neutrino/PolarizationNonRelv2Apr8.cpp 
-	$(LCXX) $(LCFLAGS) -DNUOPAC_HAS_GSL \
+	$(LCXX) $(LCFLAGS) -DO2SCL_NO_BOOST_MULTIPRECISION \
+		-DNUOPAC_HAS_GSL \
 		-o neutrino/PolarizationNonRelv2Apr8_nompi.o \
 		-c neutrino/PolarizationNonRelv2Apr8.cpp
 
-neutrino/jacobi_rule_nompi.o: neutrino/jacobi_rule.cpp neutrino/jacobi_rule.hpp
-	$(LCXX) $(LCFLAGS) -DNUOPAC_HAS_GSL -o neutrino/jacobi_rule_nompi.o \
+neutrino/jacobi_rule_nompi.o: neutrino/jacobi_rule.cpp \
+		neutrino/jacobi_rule.hpp
+	$(LCXX) $(LCFLAGS) -DO2SCL_NO_BOOST_MULTIPRECISION \
+		-DNUOPAC_HAS_GSL -o neutrino/jacobi_rule_nompi.o \
 		-c neutrino/jacobi_rule.cpp
 
 eos_nompi.o: eos.cpp eos.h
-	$(LCXX) $(LCFLAGS) \
+	$(LCXX) $(LCFLAGS) -DO2SCL_NO_BOOST_MULTIPRECISION \
 		-o eos_nompi.o -c eos.cpp
 
 eos_nuclei_nompi.o: eos_nuclei.cpp eos_nuclei.h
-	$(LCXX) $(LCFLAGS) \
+	$(LCXX) $(LCFLAGS) -DO2SCL_NO_BOOST_MULTIPRECISION \
 		-o eos_nuclei_nompi.o -c eos_nuclei.cpp
 
 eos_interp_nompi.o: eos_interp.cpp
-	$(LMPI_CXX) $(LMPI_CFLAGS) \
+	$(LCXX) $(LCFLAGS) -DO2SCL_NO_BOOST_MULTIPRECISION \
 		-o eos_interp_nompi.o -c eos_interp.cpp
 
 eos_neutrino_nompi.o: eos_neutrino.cpp
-	$(LMPI_CXX) $(LMPI_CFLAGS) \
+	$(LCXX) $(LCFLAGS) -DO2SCL_NO_BOOST_MULTIPRECISION \
 		-o eos_neutrino_nompi.o -c eos_neutrino.cpp
 
 eos_had_skyrme_ext_nompi.o: eos_had_skyrme_ext.cpp \
 		eos_had_skyrme_ext.h
-	$(LCXX) $(LCFLAGS) -o eos_had_skyrme_ext_nompi.o \
+	$(LCXX) $(LCFLAGS) -DO2SCL_NO_BOOST_MULTIPRECISION \
+		-o eos_had_skyrme_ext_nompi.o \
 		-c eos_had_skyrme_ext.cpp
 
 main_nompi.o: main.cpp eos.h 
-	$(LCXX) $(LCFLAGS) -o main_nompi.o -c main.cpp 
+	$(LCXX) $(LCFLAGS) -DO2SCL_NO_BOOST_MULTIPRECISION \
+		-o main_nompi.o -c main.cpp 
 
 main_eos_nompi.o: main_eos.cpp eos.h 
-	$(LCXX) $(LCFLAGS) -o main_eos_nompi.o -c main_eos.cpp 
+	$(LCXX) $(LCFLAGS) -DO2SCL_NO_BOOST_MULTIPRECISION \
+		-o main_eos_nompi.o -c main_eos.cpp 
+
+fore_nompi.o: fore.cpp fore.h
+	$(LCXX) $(LCFLAGS) -DO2SCL_NO_BOOST_MULTIPRECISION \
+		-o fore_nompi.o -c fore.cpp 
 
 eos_nuclei_nompi: eos_nompi.o main_nompi.o eos_nuclei_nompi.o \
-		eos_had_skyrme_ext_nompi.o eos_interp_nompi.o \
+		fore_nompi.o eos_had_skyrme_ext_nompi.o eos_interp_nompi.o \
 		neutrino/Couplings.o neutrino/FluidState.o \
 		neutrino/FunctionIntegrator.o neutrino/Polarization.o \
-		neutrino/PolarizationNonRelv2Apr8.o neutrino/jacobi_rule.o \
-		eos_neutrino_nompi.o
-	$(LCXX) $(LCFLAGS) -o eos_nuclei_nompi eos_nompi.o main_nompi.o \
-		neutrino/Couplings.o neutrino/FluidState.o \
+		neutrino/PolarizationNonRelv2Apr8.o \
+		neutrino/jacobi_rule.o eos_neutrino_nompi.o
+	$(LCXX) $(LCFLAGS) -DO2SCL_NO_BOOST_MULTIPRECISION \
+		-o eos_nuclei_nompi eos_nompi.o main_nompi.o \
+		fore_nompi.o neutrino/Couplings.o neutrino/FluidState.o \
 		neutrino/FunctionIntegrator.o neutrino/Polarization.o \
 		neutrino/PolarizationNonRelv2Apr8.o neutrino/jacobi_rule.o \
 		 eos_nuclei_nompi.o eos_had_skyrme_ext_nompi.o $(LIBS) \
@@ -220,26 +324,26 @@ eos_nuclei_nompi: eos_nompi.o main_nompi.o eos_nuclei_nompi.o \
 
 # A shorthand alias for eos_nuclei_nompi
 enn: eos_nompi.o main_nompi.o eos_nuclei_nompi.o eos_interp_nompi.o \
-		eos_had_skyrme_ext_nompi.o eos_nompi.o \
+		fore_nompi.o eos_had_skyrme_ext_nompi.o eos_nompi.o \
 		neutrino/Couplings.o neutrino/FluidState.o \
 		neutrino/FunctionIntegrator.o neutrino/Polarization.o \
 		neutrino/PolarizationNonRelv2Apr8.o neutrino/jacobi_rule.o \
 		eos_neutrino_nompi.o
-	$(LCXX) $(LCFLAGS) -o enn eos_nompi.o main_nompi.o \
+	$(LCXX) $(LCFLAGS) -DO2SCL_NO_BOOST_MULTIPRECISION -o enn \
+		eos_nompi.o main_nompi.o fore_nompi.o \
 		eos_interp_nompi.o neutrino/Couplings.o \
 		neutrino/FluidState.o neutrino/FunctionIntegrator.o \
 		neutrino/Polarization.o eos_neutrino_nompi.o \
-		neutrino/PolarizationNonRelv2Apr8.o neutrino/jacobi_rule.o \
-		eos_nuclei_nompi.o eos_had_skyrme_ext_nompi.o $(LIBS)
+		neutrino/PolarizationNonRelv2Apr8.o \
+		neutrino/jacobi_rule.o eos_nuclei_nompi.o \
+		eos_had_skyrme_ext_nompi.o $(LIBS)
 
 eos_nompi: eos_nompi.o main_eos_nompi.o \
 		eos_had_skyrme_ext_nompi.o 
-	$(LCXX) $(LCFLAGS) -o eos_nompi eos_nompi.o \
-		main_eos_nompi.o eos_had_skyrme_ext_nompi.o $(LIBS) \
-		-lreadline
+	$(LCXX) $(LCFLAGS) -DO2SCL_NO_BOOST_MULTIPRECISION -o eos_nompi \
+		eos_nompi.o main_eos_nompi.o \
+		eos_had_skyrme_ext_nompi.o $(LIBS) -lreadline
 
-test: 
-	$(LMPI_CXX) $(LMPI_CFLAGS) fore.o -o test test.cpp $(LIBS)
 # ----------------------------------------------------------------
 # Other targets
 # ----------------------------------------------------------------
@@ -253,6 +357,14 @@ doc: empty
 	cd doc; doxygen doxyfile
 	cd doc; make html
 
+doc-auto: enn
+	cd doc; cp ~/o2scl/doc/o2scl/o2scl.tag .
+	cd doc; cp ~/o2scl/doc/o2scl/html/objects.inv \
+		o2scl_objects.inv
+	cd doc; doxygen doxyfile
+	enn -xml-to-o2
+	cd doc; make html
+
 BROWSER = 
 UNAME_S := $(shell uname -s)
     ifeq ($(UNAME_S),Linux)
@@ -263,22 +375,22 @@ UNAME_S := $(shell uname -s)
     endif
 
 web-doc:
-	$(BROWSER) https://neutronstars.utk.edu/code/eos/
+	$(BROWSER) https://np3m.org/code/e4mma
 
 open-doc:
 	$(BROWSER) doc/build/html/index.html
 
 sync-doc:
-	rsync -Cavzu doc/build/html/* $(STATIC_DOC_DIR)/eos
+	rsync -Cavzu doc/build/html/* ~/wcs/np3m/np3m.github.io/code/e4mma
 
 test-sync:
-	rsync -Cavzun doc/build/html/* $(STATIC_DOC_DIR)/eos
+	rsync -Cavzun doc/build/html/* ~/wcs/np3m/np3m.github.io/code/e4mma
 
 clean:
-	rm -f *.o eos_nuclei eos_nuclei_nompi eos eos_nompi neutrino/*.o
+	rm -f *.o eos_nuclei eos_nuclei_nompi eos eos_nompi enn neutrino/*.o
 
 # ----------------------------------------------------------------
-# New EOS parameter sets
+# EOS parameter sets from Du et al. (2022)
 # ----------------------------------------------------------------
 
 P_FIDUCIAL = 470 738 0.5 13.0 62.4 32.8 0.9
@@ -290,181 +402,9 @@ P_SMALL_SL = 470 738 0.5 13.0 23.7 29.5 0.9
 P_LARGE_SL = 470 738 0.5 13.0 100.0 36.0 0.9
 
 # ----------------------------------------------------------------
+# Check target
+# ----------------------------------------------------------------
 
-mbtest:
-	enn \
-		-set select_cs2_test 0 \
-		-select-model $(P_FIDUCIAL) \
-		-set a_virial 10 -set b_virial 10 \
-		-set extend_frdm 0 \
-		-set fd_A_max 600 -set max_ratio 7.0 \
-		-set fixed_dist_alg 1999 \
-		-set function_verbose 0 \
-		-load ~/data/eos/final/fid_6_30_21.o2 \
-		-mcarlo-beta mb_temp1.o2
-
-mbtestd:
-	enn \
-		-set select_cs2_test 0 \
-		-select-model $(P_FIDUCIAL) \
-		-set a_virial 10 -set b_virial 10 \
-		-set extend_frdm 0 \
-		-set fd_A_max 600 -set max_ratio 7.0 \
-		-set fixed_dist_alg 1999 \
-		-set function_verbose 0 \
-		-load ~/data/eos/final/fid_6_30_21.o2 \
-		-mcarlo-beta mb_temp1.o2 100
-
-mb1:
-	eos_nuclei \
-		-set select_cs2_test 0 \
-		-select-model $(P_FIDUCIAL) \
-		-set a_virial 10 -set b_virial 10 \
-		-set extend_frdm 0 \
-		-set fd_A_max 600 -set max_ratio 7.0 \
-		-set fixed_dist_alg 1999 \
-		-set function_verbose 0 \
-		-load ~/data/eos/final/fid_6_30_21.o2 \
-		-mcarlo-beta mb1.o2 > mb1.out 2>&1 &
-
-mb2:
-	eos_nuclei \
-		-set select_cs2_test 0 \
-		-select-model $(P_FIDUCIAL) \
-		-set a_virial 10 -set b_virial 10 \
-		-set extend_frdm 0 \
-		-set fd_A_max 600 -set max_ratio 7.0 \
-		-set fixed_dist_alg 1999 \
-		-set function_verbose 0 \
-		-load ~/data/eos/final/fid_6_30_21.o2 \
-		-mcarlo-beta mb2.o2 > mb2.out 2>&1 &
-
-mb3:
-	eos_nuclei \
-		-set select_cs2_test 0 \
-		-select-model $(P_FIDUCIAL) \
-		-set a_virial 10 -set b_virial 10 \
-		-set extend_frdm 0 \
-		-set fd_A_max 600 -set max_ratio 7.0 \
-		-set fixed_dist_alg 1999 \
-		-set function_verbose 0 \
-		-load ~/data/eos/final/fid_6_30_21.o2 \
-		-mcarlo-beta mb3.o2 > mb3.out 2>&1 &
-
-mb4:
-	eos_nuclei \
-		-set select_cs2_test 0 \
-		-select-model $(P_FIDUCIAL) \
-		-set a_virial 10 -set b_virial 10 \
-		-set extend_frdm 0 \
-		-set fd_A_max 600 -set max_ratio 7.0 \
-		-set fixed_dist_alg 1999 \
-		-set function_verbose 0 \
-		-load ~/data/eos/final/fid_6_30_21.o2 \
-		-mcarlo-beta mb4.o2 > mb4.out 2>&1 &
-
-mb1d:
-	enn \
-		-set select_cs2_test 0 \
-		-select-model $(P_FIDUCIAL) \
-		-set a_virial 10 -set b_virial 10 \
-		-set extend_frdm 0 \
-		-set fd_A_max 600 -set max_ratio 7.0 \
-		-set fixed_dist_alg 1999 \
-		-set function_verbose 0 \
-		-load ~/data/eos/final/fid_6_30_21.o2 \
-		-mcarlo-beta mb1d.o2 100 > mb1d.out 2>&1 &
-
-mb2d:
-	enn \
-		-set select_cs2_test 0 \
-		-select-model $(P_FIDUCIAL) \
-		-set a_virial 10 -set b_virial 10 \
-		-set extend_frdm 0 \
-		-set fd_A_max 600 -set max_ratio 7.0 \
-		-set fixed_dist_alg 1999 \
-		-set function_verbose 0 \
-		-load ~/data/eos/final/fid_6_30_21.o2 \
-		-mcarlo-beta mb2d.o2 100 > mb2d.out 2>&1 &
-
-mbt2:
-	eos_nuclei \
-		-set select_cs2_test 0 \
-		-select-model $(P_FIDUCIAL) \
-		-set a_virial 10 -set b_virial 10 \
-		-set extend_frdm 0 \
-		-set fd_A_max 600 -set max_ratio 7.0 \
-		-set fixed_dist_alg 1999 \
-		-set function_verbose 0 \
-		-load ~/data/eos/final/fid_6_30_21.o2 \
-		-mcarlo-beta mb_temp2.o2 > mbt2.out 2>&1 &
-
-mbt3:
-	eos_nuclei \
-		-set select_cs2_test 0 \
-		-select-model $(P_FIDUCIAL) \
-		-set a_virial 10 -set b_virial 10 \
-		-set extend_frdm 0 \
-		-set fd_A_max 600 -set max_ratio 7.0 \
-		-set fixed_dist_alg 1999 \
-		-set function_verbose 0 \
-		-load ~/data/eos/final/fid_6_30_21.o2 \
-		-mcarlo-beta mb_temp3.o2 > mbt3.out 2>&1 &
-
-nt:
-	./enn -test-neutrino
-
-nt2:
-	./enn -test-neutrino > tn_new.out
-	 head -n 170 tn.out | tail -n 10
-	 head -n 40 tn_new.out | tail -n 12
-
-yetest:
-	o2graph -set logx 1 \
-		-plotv "grid:1.0e-4,0.15,(0.15/1.0e-4)^(1/99),log" \
-		"hdf5:~awsteiner/data/21/09/23/mb1d.o2:mb:0:Ye_best_*" \
-		-create table x \
-		"grid:1.0e-4,0.15,(0.15/1.0e-4)^(1/99),log" \
-		-function "log10(x)*31.485+126" i \
-		-function "0.05+0.28*exp(-i/24)" ye2 \
-		-plot x ye2 \
-		-show
-
-imfps:
-	o2graph -subplots 2 2 -set logx 1 -set logy 1 \
-		-selax 0 \
-		-plotv "grid:1.0e-4,0.15,(0.15/1.0e-4)^(1/99),log" \
-		"hdf5:mb1d.o2:mb:0-4:cc_vec_imfp" \
-		-ttext 0.3 0.8 "CC,vec" \
-		-selax 1 \
-		-plotv "grid:1.0e-4,0.15,(0.15/1.0e-4)^(1/99),log" \
-		"hdf5:mb1d.o2:mb:0-4:cc_axvec_imfp" \
-		-ttext 0.2 0.8 "CC,ax" \
-		-selax 2 \
-		-plotv "grid:1.0e-4,0.15,(0.15/1.0e-4)^(1/99),log" \
-		"hdf5:mb1d.o2:mb:0-4:nc_vec_imfp" \
-		-ttext 0.65 0.8 "NC,vec" \
-		-selax 3 \
-		-plotv "grid:1.0e-4,0.15,(0.15/1.0e-4)^(1/99),log" \
-		"hdf5:mb1d.o2:mb:0-4:nc_axvec_imfp" \
-		-ttext 0.3 0.8 "NC,ax" \
-		-subadj "left=0.12,right=0.99,top=0.99,bottom=0.09,wspace=0.27,hspace=0.17" \
-		-save imfps.pdf -show
-
-mn-test:
-	enn \
-		-set select_cs2_test 0 \
-		-select-model $(P_FIDUCIAL) \
-		-set a_virial 10 -set b_virial 10 \
-		-set extend_frdm 0 \
-		-set fd_A_max 600 -set max_ratio 7.0 \
-		-set fixed_dist_alg 1999 \
-		-set function_verbose 9999 \
-		-set verbose 3 \
-		-load ~/data/eos/final/fid_6_30_21.o2 \
-		-mcarlo-neutron mn_test.o2
-
-# MUSES ----------------------------------------------------------------
 enn_test:
 	./eos_nuclei \
 		-set select_cs2_test 0 \
@@ -475,7 +415,6 @@ enn_test:
 		-set fixed_dist_alg 1999 \
 		-set function_verbose 0 \
 		-load ../data/fid_3_5_22.o2 \
-		-set include_detail 1 \
 		-set recompute 1 \
 		-point-nuclei 0.16 0.465 0.1 
 
@@ -494,116 +433,6 @@ enn_pi:
 		-set recompute 1 \
 		-point-nuclei 0.16 0.5 30 
 
-enn_fid_lep:
-	./eos_nuclei \
-		-select-model $(P_FIDUCIAL) \
-		-set a_virial 10 -set b_virial 10 \
-		-set extend_frdm 0 \
-		-set fd_A_max 600 -set max_ratio 7.0 \
-		-set fixed_dist_alg 1999 \
-		-set function_verbose 0 \
-		-load ../data/fid_3_5_22.o2 \
-		-utk-for-lepton create
-
-enn_create_table:
-	./eos_nuclei \
-		-select-model $(P_FIDUCIAL) \
-		-set a_virial 10 -set b_virial 10 \
-		-set extend_frdm 0 \
-		-set fd_A_max 600 -set max_ratio 7.0 \
-		-set fixed_dist_alg 1999 \
-		-set function_verbose 0 \
-		-load ../data/fid_3_5_22.o2 \
-		-create-new-table
-
-yml_gen:
-	python3 yaml_generator.py \
-	--select_model "$(P_FIDUCIAL)" \
-	--a_virial 10.0 --b_virial 10.0 \
-	--extend_frdm 0 \
-	--fd_A_max 600 --max_ratio 7.0 \
-	--fixed_dist_alg 1999 \
-	--function_verbose 0 \
-	--load ../data/fid_3_5_22.o2 \
-	--output_format HDF5
-	
-# testing
-enn_fid_flav_eq:
-	./eos_nuclei \
-		-select-model $(P_FIDUCIAL) \
-		-set a_virial 10 -set b_virial 10 \
-		-set extend_frdm 0 \
-		-set fd_A_max 600 -set max_ratio 7.0 \
-		-set fixed_dist_alg 1999 \
-		-set function_verbose 9999 \
-		-set verbose 3 \
-		-load data/fid_3_5_22.o2 \
-		-set recompute 1 \
-		-utk-for-flav-eq 
-
-# ------------------------------------------------------------
-
--include makefile.aws
-
-
-
-# muses plots
-
-# nB vs T den-plot for A at Ye=0.4
-plot1:
-	o2graph -read data/fid_3_5_22.o2 mun -set colbar 1 \
-	-to-table3d 0 1 slice 0.1 -den-plot slice pcm=True \
-	-xtitle "$$ n_B~(\mathrm{fm}^{-3}) $$" -ytitle "$$ Y_e $$" \
-	-show
-
-# nB vs Ye den-plot for mup at T=0.1
-plot2:
-	o2graph -read data/fid_3_5_22.o2 mup -set colbar 1 \
-	-to-table3d 0 1 slice 1 -den-plot slice pcm=True \
-	-xtitle "$$ n_B~(\mathrm{fm}^{-3}) $$" -ytitle "$$ Y_e $$" \
-	-show
-
-# nB vs Ye den-plot for P at T=0.1
-plot3:
-	o2graph -read data/fid_3_5_22.o2 P -set colbar 1 \
-	-to-table3d 0 1 slice 0.1 -den-plot slice pcm=True \
-	-xtitle "$$ n_B~(\mathrm{fm}^{-3}) $$" -ytitle "$$ Y_e $$" \
-	-show
-
-# nB vs Ye den-plot for E at T=0.1
-plot4:
-	o2graph -read data/fid_3_5_22.o2 E -set colbar 1 \
-	-to-table3d 0 1 slice 0.1 -den-plot slice pcm=True \
-	-xtitle "$$ n_B~(\mathrm{fm}^{-3}) $$" -ytitle "$$ Y_e $$" \
-	-show
-
-plot5:
-	o2graph \
-		-read data/fid_3_5_22.o2 mun -to-table 0 nB mun 0.5 0.1 -plot nB mun \
-		-read data/fid_3_5_22.o2 mup -to-table 0 nB mup 0.5 0.1 -plot nB mup \
-	-xtitle "$$ n_B~(\mathrm{fm}^{-3}) $$" -ytitle "$$ \mu_N~(\mathrm{MeV}) $$" \
-	-show
-
-plot6:
-	o2graph \
-		-read data/fid_3_5_22.o2 P -to-table 0 nB P 0.5 0.1 -plot nB P \
-		-read data/fid_3_5_22.o2 S -to-table 0 nB S 0.5 0.1 -plot nB S \
-	-xtitle "$$ n_B~(\mathrm{fm}^{-3}) $$" -ytitle "$$ P, S~(\mathrm{MeV/fm^{-3}}) $$" \
-	-save ps.png -show
-
-plot7:
-	o2graph \
-		-read data/fid_3_5_22.o2 P -to-table 2 T P 0.16 0.5 -plot T P \
-		-read data/fid_3_5_22.o2 S -to-table 2 T S 0.16 0.5 -plot T S \
-	-xtitle "$$ T~(\mathrm{MeV}) $$" -ytitle "$$ P, S~(\mathrm{MeV/fm^{-3}}) $$" \
-	-save psvsT.png -show
-
-plot8:
-	o2graph \
-		-read data/fid_3_5_22.o2 mun -to-table 1 Ye mun 0.16 0.1 -plot Ye mun \
-		-read data/fid_3_5_22.o2 mup -to-table 1 Ye mup 0.16 0.1 -plot Ye mup \
-		-read data/fid_3_5_22.o2 mue -to-table 1 Ye mue 0.16 0.1 -plot Ye mue \
-		-create table Ye "grid:1.0e-2,0.7,(0.7-1.0e-2)/70" -function "mun(Ye)-mup(Ye)-mue(Ye)" mutot -internal data/mutot.o2 \
-		-read data/mutot.o2 -plot Ye mutot \
-	-xtitle "$$ Ye $$" -ytitle "$$ \mu_n, \mu_p, \mu_e S~(\mathrm{MeV}) $$" \
-	 -show
+# This optional file, makefile.user, is an alternate place to store
+# the user's makefile targets.
+-include makefile.sroy

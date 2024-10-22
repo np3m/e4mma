@@ -1631,8 +1631,8 @@ int eos_nuclei::eg_point(std::vector<std::string> &sv,
     elep.verbose=2;
     elep.pair_density_eq(nB*Ye,T_MeV/hc_mev_fm);
     
-    cout << "mue [MeV]: " << dtos(elep.ecdf25.mu*hc_mev_fm,0) << endl;
-    cout << "n_e [1/fm^3]: " << dtos(elep.ecdf25.n,0) << endl;
+    //cout << "mue [MeV]: " << dtos(elep.ecdf25.mu*hc_mev_fm,0) << endl;
+    //cout << "n_e [1/fm^3]: " << dtos(elep.ecdf25.n,0) << endl;
     
     if (sv.size()>=3 && sv[4]=="ld") {
 #ifndef O2SCL_NO_BOOST_MULTIPRECISION
@@ -4088,7 +4088,7 @@ int eos_nuclei::nuc_matter(double nB, double Ye, double T,
       } else {
       res_b[ibos].mu=part_db[j].baryon*(neutron.mu+neutron.m)+
         part_db[j].charge*(proton.mu+proton.m-neutron.mu-neutron.m);
-      effb.calc_mu(res_b[ibos],T);
+      relb.pair_mu(res_b[ibos],T);
       nB2+=part_db[j].baryon*res_b[ibos].n;
       Ye2+=part_db[j].charge*res_b[ibos].n;
       ibos++;

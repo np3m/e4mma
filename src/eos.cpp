@@ -887,7 +887,7 @@ eos::eos() {
   qmc_b=2.12;
   qmc_n0=0.16;
   
-  data_dir="data";
+  data_dir="../data";
 
   nB_grid_spec="301,10^(i*0.04-12)*2.0";
   Ye_grid_spec="70,0.01*(i+1)";

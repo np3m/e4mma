@@ -48,10 +48,6 @@ class eos_crust_virial_v2 : public o2scl::eos_crust_virial {
   
  public:
 
-  /** \brief The pion class, include the pion contribution
-   */
-  fore fr;
-
   /** \brief If true, include the deuteron contribution in the
       virial coefficients
    */
@@ -231,6 +227,10 @@ class eos_crust_virial_v2 : public o2scl::eos_crust_virial {
 class eos : public o2scl::eos_had_temp_eden_base {
   
 public:
+
+  /** \brief The pion class, include the pion contribution
+   */
+  fore fr;
 
   /** \brief If true, increase the verbosity for cs2 (default false)
    */
