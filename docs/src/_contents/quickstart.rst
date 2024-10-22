@@ -1,24 +1,18 @@
 Quick Start Guide
 ====================
-Calculation Engine
---------------------
 Docker
 --------------------
-This code was originally described in `Du et al.
-2019 <https://arxiv.org/pdf/1802.09710>`_ and improved upon `Du et al.
-2022 <https://arxiv.org/pdf/2107.06697>`_ with nuclei. The source code
-is available on `github <https://github.com/np3m/e4mma>`_. The installation of `Boost <http://www.boost.org>`_, `GSL
-<http://www.gnu.org/software/gsl>`_ (versions 1.16 and later), `HDF5
-<http://www.hdfgroup.org>`_ (versions 1.8.14 and later), and more current version of `O2scl <https://neutronstars.utk.edu/code/o2scl/index.html>`_ (version 0.928 or later) is required in order to
-compile the code to generate and analyze EOS tables. You do not need
-to compile the code to use the EOS tables - they can be read by any
-application which reads HDF5 files. The EOS tables are available to
-download at our
-`website <https://neutronstars.utk.edu/code/eos/download.html>`_
+Download the docker image
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+To download the built image from dockerhub the user can use
+
+.. code-block:: bash
+
+    docker pull nostrad1/utk-eos:v1.9.3
 
 Build the docker image
 ~~~~~~~~~~~~~~~~~~~~~~
-To build the crust-dft code inside a docker container:
+To build the docker image themselves, the user can use:
 
 Clone the GitHub repository. Particularly the ``muses`` branch.
 
@@ -26,7 +20,7 @@ Clone the GitHub repository. Particularly the ``muses`` branch.
 
     git clone https://github.com/np3m/e4mma && \
     cd e4mma && \
-    git checkout muses && git checkout 9885d74da3d0aafbf13d403cfffe7025bb424a67
+    git checkout muses 
 
 The dockerfile ``Dockerfile`` uses a multistage docker build to build a
 minimal image with the executable ``eos_nuclei`` in it. The user can
@@ -34,18 +28,26 @@ build the docker image inside the ``e4mma`` folder themselves using
 
 .. code-block:: bash
 
-    docker build . -t nostrad1/utk-eos:v1.9.2
+    docker build . -t nostrad1/utk-eos:v1.9.3
 
-However, the process is lengthy, and it is advised to just download the
-already built image from dockerhub.
-
-Download the docker image
-~~~~~~~~~~~~~~~~~~~~~~~~~~
-To download the built image from dockerhub the user can use
+Use Crust-DFT inside docker
+~~~~~~~~~~~~~~~~~~~~~
+To mount local directories and run the docker image as a container run
 
 .. code-block:: bash
 
-    docker pull nostrad1/utk-eos:v1.9.2
+    docker run -it --rm --name crust-dft -u 0:0 \
+    -v "${PWD}/input:/opt/eos/input" \
+    -v "${PWD}/output:/opt/eos/output" \
+    -v "${PWD}/data:/opt/eos/data" \
+    nostrad1/utk-eos:v1.9.3 /bin/bash
+
+This will put the user in a terminal inside the src folder where the 
+main executable ``eos_nuclei`` is.
+
+
+Calculation Engine
+--------------------
 
 Running the module
 ~~~~~~~~~~~~~~~~~~
@@ -105,17 +107,7 @@ Possible inputs for the module:
 - ``inc_lepton``: whether to include leptons or not (boolean, default: ``False``)
 More functions will be added later.
 
-Use Crust-DFT inside docker
-~~~~~~~~~~~~~~~~~~~~~
-If the user wants to get into the container and run the code from inside, use
 
-.. code-block:: bash
-
-    docker run -it --rm --name crust-dft -u 0:0 \
-    -v "${PWD}/input:/opt/eos/input" \
-    -v "${PWD}/output:/opt/eos/output" \
-    -v "${PWD}/data:/opt/eos/data" \
-    nostrad1/utk-eos:v1.9.2 /bin/bash
 
 in the ``e4mma`` folder to get into the container. 
 Creating a user specific ``config.yaml`` is similar inside the container as well. Finally, run ``run_utk_for_lepton.sh`` script inside the ``test`` folder using

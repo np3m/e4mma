@@ -136,5 +136,5 @@ ENV O2SCL_ADDL_LIBS="/usr/lib/gcc/x86_64-linux-gnu/12/libgomp.so"
 ENV LD_LIBRARY_PATH="/usr/local/lib" 
 # --------------------------------------------------------------------------
 # Set working directory
-WORKDIR /opt/e4mma/test/
+WORKDIR /opt/e4mma/src/
 ENTRYPOINT /bin/bash
