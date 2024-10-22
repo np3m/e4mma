@@ -30,8 +30,8 @@ help:
 # Default settings
 LCXX = $(CXX)
 LMPI_CXX = $(MPI_CXX)
-LIBS = -L/usr/local/lib -lo2scl -lhdf5 -lgsl -lreadline $(LDFLAGS) 
-LMPI_CFLAGS = -O3 -std=c++11 -DO2SCL_MPI -fopenmp $(CFLAGS) $(MPI_CFLAGS)
+LIBS = -lo2scl -lhdf5 -lgsl -lreadline $(LDFLAGS) 
+LMPI_CFLAGS = -O3 -DO2SCL_MPI -fopenmp $(CFLAGS) $(MPI_CFLAGS)
 LCFLAGS = -O3 -std=c++11 -DNO_MPI -fopenmp $(CFLAGS)
 
 # ----------------------------------------------------------------
@@ -351,19 +351,19 @@ eos_nompi: eos_nompi.o main_eos_nompi.o \
 empty:
 
 doc: empty
-	cd doc; cp ~/o2scl/doc/o2scl/o2scl.tag .
-	cd doc; cp ~/o2scl/doc/o2scl/html/objects.inv \
+	cd ../docs/build/sphinx; cp ~/opt/o2scl/doc/o2scl/o2scl.tag .
+	cd ../docs/build/sphinx; cp ~/opt/o2scl/doc/o2scl/html/objects.inv \
 		o2scl_objects.inv
-	cd doc; doxygen doxyfile
-	cd doc; make html
+	cd ../docs/build/sphinx; doxygen doxyfile
+	cd ../docs/build/sphinx; make html
 
 doc-auto: enn
-	cd doc; cp ~/o2scl/doc/o2scl/o2scl.tag .
-	cd doc; cp ~/o2scl/doc/o2scl/html/objects.inv \
+	cd ../docs/build/sphinx; cp ~/opt/o2scl/doc/o2scl/o2scl.tag .
+	cd ../docs/build/sphinx; cp ~/opt/o2scl/doc/o2scl/html/objects.inv \
 		o2scl_objects.inv
-	cd doc; doxygen doxyfile
+	cd ../docs/build/sphinx; doxygen doxyfile
 	enn -xml-to-o2
-	cd doc; make html
+	cd ../docs/build/sphinx; make html
 
 BROWSER = 
 UNAME_S := $(shell uname -s)
@@ -378,13 +378,13 @@ web-doc:
 	$(BROWSER) https://np3m.org/code/e4mma
 
 open-doc:
-	$(BROWSER) doc/build/html/index.html
+	$(BROWSER) ../docs/src/index.rst
 
-sync-doc:
-	rsync -Cavzu doc/build/html/* ~/wcs/np3m/np3m.github.io/code/e4mma
+#sync-doc:
+#	rsync -Cavzu doc/build/html/* ~/wcs/np3m/np3m.github.io/code/e4mma
 
-test-sync:
-	rsync -Cavzun doc/build/html/* ~/wcs/np3m/np3m.github.io/code/e4mma
+#test-sync:
+#	rsync -Cavzun doc/build/html/* ~/wcs/np3m/np3m.github.io/code/e4mma
 
 clean:
 	rm -f *.o eos_nuclei eos_nuclei_nompi eos eos_nompi enn neutrino/*.o
@@ -417,21 +417,6 @@ enn_test:
 		-load ../data/fid_3_5_22.o2 \
 		-set recompute 1 \
 		-point-nuclei 0.16 0.465 0.1 
-
-enn_pi:
-	./eos_nuclei \
-	-set select_cs2_test 0 \
-		-select-model $(P_FIDUCIAL) \
-		-set a_virial 10 -set b_virial 10 \
-		-set extend_frdm 0 \
-		-set fd_A_max 600 -set max_ratio 7.0 \
-		-set fixed_dist_alg 1999 \
-		-set function_verbose 0 \
-		-set inc_hrg false \
-		-load ../data/fid_3_5_22.o2 \
-		-hrg-load ./pdg_uh_nonp.dat \
-		-set recompute 1 \
-		-point-nuclei 0.16 0.5 30 
 
 # This optional file, makefile.user, is an alternate place to store
 # the user's makefile targets.

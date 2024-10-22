@@ -92,12 +92,12 @@ Possible inputs for the module:
 - ``output format``: format of the output files for Lepton module (either ``csv`` or ``hdf5``)
 - ``verbose``: verbosity parameter for the code.(either 0,1,2)
 - ``nB_grid_spec``: the function for default baryon density grid. ``'N,func(i)'``, 
-                    i takes values from 0-N 
+                    i takes values from 0-N-1 
                     and func(i) fills up the grid . The user can change the grid length N and the 
                     desired function (default: ``'301,10^(i*0.04-12)*2.0'``)
                     ``nB_grid`` ranges from in :math:`2.0\times10^{-12}-2~\mathrm{fm^{-3}}`. Values outside this range will be ignored for now
 - ``Ye_grid_spec``: The function for default electron fraction grid. ``'N,func(i)'``, 
-                    i takes values from 0-N 
+                    i takes values from 0-N-1 
                     and func(i) fills up the grid. The user can change the grid length N and the 
                     desired function (default: ``'70,0.01*(i+1)'``).
                     ``Ye_grid`` ranges from in :math:`1.0\times10^{-2}-0.7`. Values outside this range will be ignored for now
