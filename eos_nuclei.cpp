@@ -1423,11 +1423,36 @@ int eos_nuclei::eg_point(std::vector<std::string> &sv,
 
   size_t inB=0, iYe=0, iT=0;
   double nB, Ye, T_MeV;
-  bool index_mode;
+  bool index_mode, separate;
+
+  // -----------------------------------------------------------
+  // Process options and settings
   
-  if (sv[1].find('.')==std::string::npos &&
-      sv[2].find('.')==std::string::npos &&
-      sv[3].find('.')==std::string::npos) {
+  kwargs kwa;
+  
+  if (sv.size()>=3) {
+    kwa.set(sv[4]);
+  }
+  
+  if (kwa.get_string("mode","")=="imp") {
+    elep.improved_acc();
+  } else if (kwa.get_string("mode","")=="ld") {
+    elep.ld_acc();
+  } else if (kwa.get_string("mode","")=="25") {
+    elep.fp_25_acc();
+  } else {
+    elep.default_acc();
+  }
+  
+  if (kwa.get_int("fr_verbose",0)!=0) {
+    elep.frel.verbose=kwa.get_int("fr_verbose",0);
+    elep.frel_ld.verbose=kwa.get_int("fr_verbose",0);
+    elep.frel_cdf25.verbose=kwa.get_int("fr_verbose",0);
+  }
+
+  separate=kwa.get_bool("separate",false);
+  
+  if (kwa.get_bool("grid",false)==true) {
     
     inB=o2scl::stoszt(sv[1]);
     iYe=o2scl::stoszt(sv[2]);
@@ -1448,37 +1473,33 @@ int eos_nuclei::eg_point(std::vector<std::string> &sv,
 
   elep.e.mu=elep.e.m;
   elep.mu.mu=elep.mu.m;
-  
+  elep.include_deriv=true;
   elep.include_muons=include_muons;
-  if (sv.size()>=3) {
-    if (sv[4]=="imp") {
-      elep.improved_acc();
-    } else if (sv[4]=="ld") {
-      elep.ld_acc();
-    } else if (sv[4]=="25") {
-      elep.fp_25_acc();
-    } else {
-      elep.default_acc();
-    }
-  }
-  
-  if (sv.size()>=3 && sv[4]=="comp") {
+  elep.verbose=kwa.get_int("elep_verbose",0);
 
+  // -----------------------------------------------------------
+  // Convert arguments to nB, Ye, T in multiprecision
+  
 #ifndef O2SCL_NO_BOOST_MULTIPRECISION
+  
+  long double nB_ld, Ye_ld, T_ld;
+  cpp_dec_float_25 nB_25, Ye_25, T_25;
+  
+  long double hc_mev_fm_ld=hc_mev_fm_f<long double>();
+  cpp_dec_float_25 hc_mev_fm_25=hc_mev_fm_f<cpp_dec_float_25>();
+    
+  if (kwa.get_bool("grid",false)==true) {
     
     calc_utf8<> calc;
     calc_utf8<cpp_dec_float_25> calc_25;
     calc_utf8<long double> calc_ld;
-
+    
     std::map<std::string,double> vars;
     std::map<std::string,long double> vars_ld;
     std::map<std::string,cpp_dec_float_25> vars_25;
-
+    
     vector<std::string> split_res;
-
-    long double hc_mev_fm_ld=hc_mev_fm_f<long double>();
-    cpp_dec_float_25 hc_mev_fm_25=hc_mev_fm_f<cpp_dec_float_25>();
-
+    
     // nB
     
     split_string_delim(nB_grid_spec,split_res,',');
@@ -1490,11 +1511,11 @@ int eos_nuclei::eg_point(std::vector<std::string> &sv,
     vars["i"]=((double)inB);
     vars_ld["i"]=((long double)inB);
     vars_25["i"]=((cpp_dec_float_25)inB);
-
+    
     nB=calc.eval(&vars);
-    long double nB_ld=calc_ld.eval(&vars_ld);
-    cpp_dec_float_25 nB_25=calc_25.eval(&vars_25);
-
+    nB_ld=calc_ld.eval(&vars_ld);
+    nB_25=calc_25.eval(&vars_25);
+    
     // Ye
     
     split_string_delim(Ye_grid_spec,split_res,',');
@@ -1506,11 +1527,11 @@ int eos_nuclei::eg_point(std::vector<std::string> &sv,
     vars["i"]=((double)iYe);
     vars_ld["i"]=((long double)iYe);
     vars_25["i"]=((cpp_dec_float_25)iYe);
-
+    
     Ye=calc.eval(&vars);
-    long double Ye_ld=calc_ld.eval(&vars_ld);
-    cpp_dec_float_25 Ye_25=calc_25.eval(&vars_25);
-
+    Ye_ld=calc_ld.eval(&vars_ld);
+    Ye_25=calc_25.eval(&vars_25);
+    
     // T
     
     split_string_delim(T_grid_spec,split_res,',');
@@ -1522,33 +1543,56 @@ int eos_nuclei::eg_point(std::vector<std::string> &sv,
     vars["i"]=((double)iT);
     vars_ld["i"]=((long double)iT);
     vars_25["i"]=((cpp_dec_float_25)iT);
-
+    
     T_MeV=calc.eval(&vars);
-    long double T_ld=calc_ld.eval(&vars_ld);
-    cpp_dec_float_25 T_25=calc_25.eval(&vars_25);
+    T_ld=calc_ld.eval(&vars_ld);
+    T_25=calc_25.eval(&vars_25);
+    
+  } else {
 
-    // output
+    char *end;
+    nB_ld=strtold(sv[1].c_str(),&end);
+    Ye_ld=strtold(sv[2].c_str(),&end);
+    T_ld=strtold(sv[3].c_str(),&end);
 
-    if (false) {
-      cout << "eos_nuclei::eg_point(): nB:" << endl;
-      cout << "  " << dtos(nB,0) << " " << dtos(nB_ld,0) << endl;
-      cout << "  " << dtos(nB_25,0) << endl;
+    nB_25=cpp_dec_float_25(sv[1]);
+    Ye_25=cpp_dec_float_25(sv[2]);
+    T_25=cpp_dec_float_25(sv[3]);
 
-      cout << "eos_nuclei::eg_point(): Ye:" << endl;
-      cout << "  " << dtos(Ye,0) << " " << dtos(Ye_ld,0) << endl;
-      cout << "  " << dtos(Ye_25,0) << endl;
+  }
+  
+  // Output at every precision
+  
+  if (verbose>1) {
+    cout << "eos_nuclei::eg_point(): nB:" << endl;
+    cout << "  " << dtos(nB,0) << " " << dtos(nB_ld,0) << endl;
+    cout << "  " << dtos(nB_25,0) << endl;
+    
+    cout << "eos_nuclei::eg_point(): Ye:" << endl;
+    cout << "  " << dtos(Ye,0) << " " << dtos(Ye_ld,0) << endl;
+    cout << "  " << dtos(Ye_25,0) << endl;
+    
+    cout << "eos_nuclei::eg_point(): T:" << endl;
+    cout << "  " << dtos(T_MeV,0) << " " << dtos(T_ld,0) << endl;
+    cout << "  " << dtos(T_25,0) << endl;
+  }
 
-      cout << "eos_nuclei::eg_point(): T:" << endl;
-      cout << "  " << dtos(T_MeV,0) << " " << dtos(T_ld,0) << endl;
-      cout << "  " << dtos(T_25,0) << endl;
-    }
+#endif
+    
+  // -----------------------------------------------------------
+  // Compare mode
+  
+  if (sv.size()>=3 && kwa.get_string("mode","")=="comp") {
 
-    elep.include_deriv=true;
-    elep.verbose=2;
-    //elep.frel.verbose=2;
-    //elep.frel_ld.verbose=2;
-    //elep.frel_cdf25.verbose=2;
-
+    cout << "tol_rel: " << elep.frel.density_root.tol_rel << endl;
+    cout << "tol_abs: " << elep.frel.density_root.tol_abs << endl;
+    cout << "tol_rel_ld: " << elep.frel_ld.density_root.tol_rel << endl;
+    cout << "tol_abs_ld: " << elep.frel_ld.density_root.tol_abs << endl;
+    cout << "tol_rel_25: " << elep.frel_cdf25.density_root.tol_rel << endl;
+    cout << "tol_abs_25: " << elep.frel_cdf25.density_root.tol_abs << endl;
+    
+#ifndef O2SCL_NO_BOOST_MULTIPRECISION
+    
     elep.fp_25_acc();
     elep.pair_density_eq_cdf25(nB_25*Ye_25,T_25/hc_mev_fm_25);
     
@@ -1558,7 +1602,7 @@ int eos_nuclei::eg_point(std::vector<std::string> &sv,
     elep.default_acc();
     elep.pair_density_eq(nB*Ye,T_MeV/hc_mev_fm);
     
-    cout << "mu_e [MeV]: ";
+    cout << "eos_nuclei::eg_point(): mu_e [MeV]: ";
     long double mue_ld=elep.eld.mu*hc_mev_fm_ld;
     cpp_dec_float_25 mue_25=elep.ecdf25.mu*hc_mev_fm_25;
     cout << count_digits_same(elep.eld.mu,elep.e.mu) << " "
@@ -1567,7 +1611,7 @@ int eos_nuclei::eg_point(std::vector<std::string> &sv,
     cout << "  " << dtos(elep.eld.mu*hc_mev_fm_ld,0) << endl;
     cout << "  " << dtos(mue_25,0) << endl;
     
-    cout << "E_{eg} [MeV]: ";
+    cout << "eos_nuclei::eg_point(): E_{eg} [MeV]: ";
     double E=elep.th.ed/nB*hc_mev_fm;
     long double E_ld=elep.th_ld.ed/nB_ld*hc_mev_fm_ld;
     cpp_dec_float_25 E_25=elep.th_cdf25.ed/nB_25*hc_mev_fm_25;
@@ -1577,7 +1621,7 @@ int eos_nuclei::eg_point(std::vector<std::string> &sv,
     cout << "  " << dtos(E_ld,0) << endl;
     cout << "  " << dtos(E_25,0) << endl;
     
-    cout << "P_{eg} [MeV/fm^3]: ";
+    cout << "eos_nuclei::eg_point(): P_{eg} [MeV/fm^3]: ";
     double P=elep.th.pr*hc_mev_fm;
     long double P_ld=elep.th_ld.pr*hc_mev_fm_ld;
     cpp_dec_float_25 P_25=elep.th_cdf25.pr*hc_mev_fm_25;
@@ -1587,7 +1631,7 @@ int eos_nuclei::eg_point(std::vector<std::string> &sv,
     cout << "  " << dtos(P_ld,0) << endl;
     cout << "  " << dtos(P_25,0) << endl;
     
-    cout << "S_{eg}: ";
+    cout << "eos_nuclei::eg_point(): S_{eg}: ";
     double S=elep.th.en/nB;
     long double S_ld=elep.th_ld.en/nB_ld;
     cpp_dec_float_25 S_25=elep.th_cdf25.en/nB_25;
@@ -1597,7 +1641,7 @@ int eos_nuclei::eg_point(std::vector<std::string> &sv,
     cout << "  " << dtos(S_ld,0) << endl;
     cout << "  " << dtos(S_25,0) << endl;
 
-    cout << "dndmu [1/fm^2]: ";
+    cout << "eos_nuclei::eg_point(): dndmu [1/fm^2]: ";
     cout << count_digits_same(elep.thd_ld.dndmu,
                               elep.thd.dndmu) << " "
          << count_digits_same(elep.thd_cdf25.dndmu,
@@ -1606,7 +1650,7 @@ int eos_nuclei::eg_point(std::vector<std::string> &sv,
     cout << "  " << dtos(elep.thd_ld.dndmu,0) << endl;
     cout << "  " << dtos(elep.thd_cdf25.dndmu,0) << endl;
     
-    cout << "dndT [1/fm^2]: ";
+    cout << "eos_nuclei::eg_point(): dndT [1/fm^2]: ";
     cout << count_digits_same(elep.thd_ld.dndT,
                               elep.thd.dndT) << " "
          << count_digits_same(elep.thd_cdf25.dndT,
@@ -1615,7 +1659,7 @@ int eos_nuclei::eg_point(std::vector<std::string> &sv,
     cout << "  " << dtos(elep.thd_ld.dndT,0) << endl;
     cout << "  " << dtos(elep.thd_cdf25.dndT,0) << endl;
     
-    cout << "dsdT [1/fm^2]: ";
+    cout << "eos_nuclei::eg_point(): dsdT [1/fm^2]: ";
     cout << count_digits_same(elep.thd_ld.dsdT,
                               elep.thd.dsdT) << " "
          << count_digits_same(elep.thd_cdf25.dsdT,
@@ -1623,130 +1667,195 @@ int eos_nuclei::eg_point(std::vector<std::string> &sv,
     cout << "  " << dtos(elep.thd.dsdT,0) << endl;
     cout << "  " << dtos(elep.thd_ld.dsdT,0) << endl;
     cout << "  " << dtos(elep.thd_cdf25.dsdT,0) << endl;
-    
-#endif
-    
-  } else {
 
-    elep.verbose=2;
-    elep.pair_density_eq(nB*Ye,T_MeV/hc_mev_fm);
+#else    
+
+    cerr << "Long double accuracy not available because "
+         << "O2SCL_NO_BOOST_MULTIPRECISION was defined." << endl;
+    exit(-1);
     
-    cout << "mue [MeV]: " << dtos(elep.ecdf25.mu*hc_mev_fm,0) << endl;
-    cout << "n_e [1/fm^3]: " << dtos(elep.ecdf25.n,0) << endl;
+#endif
     
-    if (sv.size()>=3 && sv[4]=="ld") {
+  } else if (kwa.get_string("mode","")=="25") {
+
 #ifndef O2SCL_NO_BOOST_MULTIPRECISION
-      if (verbose>1) {
-        cout << "ld properties: " << endl;
-      cout << "elep.eld.n : " << dtos(elep.eld.n,0) << endl;
-      cout << "elep.eld.mu: " << dtos(elep.eld.mu,0) << endl;
-      cout << "elep.eld.ed: " << dtos(elep.eld.ed,0) << endl;
-      cout << "elep.eld.en: " << dtos(elep.eld.en,0) << endl;
-      cout << "elep.eld.pr: " << dtos(elep.eld.pr,0) << endl;
+    
+    // -----------------------------------------------------------
+    // 25-digit precision mode
+
+    elep.fp_25_acc();
+    elep.pair_density_eq_cdf25(nB_25*Ye_25,T_25/hc_mev_fm_25);
+    
+    cout << "eos_nuclei::eg_point(): mu_e [MeV]: ";
+    cpp_dec_float_25 mue_25=elep.ecdf25.mu*hc_mev_fm_25;
+    cout << "  " << dtos(mue_25,0) << endl;
+    
+    cout << "eos_nuclei::eg_point(): E_{eg} [MeV]: ";
+    cpp_dec_float_25 E_25=elep.th_cdf25.ed/nB_25*hc_mev_fm_25;
+    cout << "  " << dtos(E_25,0) << endl;
+    
+    cout << "eos_nuclei::eg_point(): P_{eg} [MeV/fm^3]: ";
+    cpp_dec_float_25 P_25=elep.th_cdf25.pr*hc_mev_fm_25;
+    cout << "  " << dtos(P_25,0) << endl;
+    
+    cout << "eos_nuclei::eg_point(): S_{eg}: ";
+    cpp_dec_float_25 S_25=elep.th_cdf25.en/nB_25;
+    cout << "  " << dtos(S_25,0) << endl;
+
+    cout << "eos_nuclei::eg_point(): dndmu [1/fm^2]: ";
+    cout << "  " << dtos(elep.thd_cdf25.dndmu,0) << endl;
+    
+    cout << "eos_nuclei::eg_point(): dndT [1/fm^2]: ";
+    cout << "  " << dtos(elep.thd_cdf25.dndT,0) << endl;
+    
+    cout << "eos_nuclei::eg_point(): dsdT [1/fm^2]: ";
+    cout << "  " << dtos(elep.thd_cdf25.dsdT,0) << endl;
+
+    if (separate) {
+      int cm_ret=elep.frel_cdf25.calc_mu(elep.ecdf25,T_25/hc_mev_fm_25);
+      cpp_dec_float_25 eminus=elep.ecdf25.n;
+      cpp_dec_float_25 eplus=elep.ecdf25.n-nB_25*Ye_25;
+      cout << "eos_nuclei::eg_point(): cm_ret: " << cm_ret << endl;
+      cout << "  n_{e-} [1/fm^3]: " << dtos(eminus,0) << endl;
+      cout << "  n_{e+} [1/fm^3]: "
+           << dtos(eplus,0) << " difference: "
+           << dtos(eminus-eplus,0) << endl;
+      /*
+        cpp_dec_float_25 ti1=elep.ecdf25.ed+elep.ecdf25.pr-
+        elep.ecdf25.n*elep.ecdf25.mu-
+        T_MeV/hc_mev_fm*elep.ecdf25.en;
+        cout << "ti1: " << dtos(ti1,0) << endl;
+        double ti2=static_cast<double>(ti1)+elep.ph.ed+elep.ph.pr-
+        T_MeV/hc_mev_fm*elep.ph.en;
+        double ti=ti2/elep.th.ed;
+        cout << "TI []: " << ti << endl;
+      */
     }
-    int cm_ret=elep.frel_ld.calc_mu(elep.eld,T_MeV/hc_mev_fm);
-    long double eminus=elep.eld.n;
-    long double eplus=elep.eld.n-nB*Ye;
-    cout << "cm_ret: " << cm_ret << endl;
-    cout << "  n_{e-} [1/fm^3]: " << dtos(eminus,0) << endl;
-    cout << "  n_{e+} [1/fm^3]: "
-	 << dtos(eplus,0) << " difference: "
-         << dtos(eminus-eplus,0) << endl;
-    long double ti1=elep.eld.ed+elep.eld.pr-elep.eld.n*elep.eld.mu-
-                     T_MeV/hc_mev_fm*elep.eld.en;
-    cout << "ti1: " << dtos(ti1,0) << endl;
-    long double ti2=ti1+elep.ph.ed+elep.ph.pr-
-      T_MeV/hc_mev_fm*elep.ph.en;
-    double ti=ti2/elep.th.ed;
-    cout << "TI []: " << ti << endl;
+
+#else    
+
+    cerr << "25-digit accuracy not available because "
+         << "O2SCL_NO_BOOST_MULTIPRECISION was defined." << endl;
+    exit(-1);
+    
 #endif
-  } else if (sv.size()>=3 && sv[4]=="25") {
+
+  } else if (kwa.get_string("mode","")=="ld") {
+    
 #ifndef O2SCL_NO_BOOST_MULTIPRECISION
-    if (verbose>1) {
-      cout << "cdf25 properties: " << endl;
-      cout << "elep.ecdf25.n : " << dtos(elep.ecdf25.n,0) << endl;
-      cout << "elep.ecdf25.mu: " << dtos(elep.ecdf25.mu,0) << endl;
-      cout << "elep.ecdf25.ed: " << dtos(elep.ecdf25.ed,0) << endl;
-      cout << "elep.ecdf25.en: " << dtos(elep.ecdf25.en,0) << endl;
-      cout << "elep.ecdf25.pr: " << dtos(elep.ecdf25.pr,0) << endl;
-    }
-    int cm_ret=elep.frel_cdf25.calc_mu(elep.ecdf25,T_MeV/hc_mev_fm);
-    cpp_dec_float_25 eminus=elep.ecdf25.n;
-    cpp_dec_float_25 eplus=elep.ecdf25.n-static_cast<cpp_dec_float_25>(nB*Ye);
-    cout << "cm_ret: " << cm_ret << endl;
-    cout << "  n_{e-} [1/fm^3]: " << dtos(eminus,0) << endl;
-    cout << "  n_{e+} [1/fm^3]: "
-	 << dtos(eplus,0) << " difference: "
-         << dtos(eminus-eplus,0) << endl;
-    cpp_dec_float_25 ti1=elep.ecdf25.ed+elep.ecdf25.pr-
-      elep.ecdf25.n*elep.ecdf25.mu-
-      T_MeV/hc_mev_fm*elep.ecdf25.en;
-    cout << "ti1: " << dtos(ti1,0) << endl;
-    double ti2=static_cast<double>(ti1)+elep.ph.ed+elep.ph.pr-
-      T_MeV/hc_mev_fm*elep.ph.en;
-    double ti=ti2/elep.th.ed;
-    cout << "TI []: " << ti << endl;
+    
+    // -----------------------------------------------------------
+    // Long double precision mode
+    
+    elep.ld_acc();
+    elep.pair_density_eq_ld(nB_ld*Ye_ld,T_ld/hc_mev_fm_ld);
+
+    cout << "eos_nuclei::eg_point(): mu_e [MeV]: ";
+    long double mue_ld=elep.eld.mu*hc_mev_fm_ld;
+    cout << "  " << dtos(elep.eld.mu*hc_mev_fm_ld,0) << endl;
+    
+    cout << "eos_nuclei::eg_point(): E_{eg} [MeV]: ";
+    long double E_ld=elep.th_ld.ed/nB_ld*hc_mev_fm_ld;
+    cout << "  " << dtos(E_ld,0) << endl;
+    
+    cout << "eos_nuclei::eg_point(): P_{eg} [MeV/fm^3]: ";
+    long double P_ld=elep.th_ld.pr*hc_mev_fm_ld;
+    cout << "  " << dtos(P_ld,0) << endl;
+    
+    cout << "eos_nuclei::eg_point(): S_{eg}: ";
+    long double S_ld=elep.th_ld.en/nB_ld;
+    cout << "  " << dtos(S_ld,0) << endl;
+
+    cout << "eos_nuclei::eg_point(): dndmu [1/fm^2]: ";
+    cout << "  " << dtos(elep.thd_ld.dndmu,0) << endl;
+    
+    cout << "eos_nuclei::eg_point(): dndT [1/fm^2]: ";
+    cout << "  " << dtos(elep.thd_ld.dndT,0) << endl;
+    
+    cout << "eos_nuclei::eg_point(): dsdT [1/fm^2]: ";
+    cout << "  " << dtos(elep.thd_ld.dsdT,0) << endl;
+
+#else
+
+    cerr << "Long double accuracy not available because "
+         << "O2SCL_NO_BOOST_MULTIPRECISION was defined." << endl;
+    exit(-1);
+      
 #endif
+      
   } else {
+    
+    // -----------------------------------------------------------
+    // Double precision mode
+    
+    elep.pair_density_eq(nB*Ye,T_MeV/hc_mev_fm);
+
+    cout << "eos_nuclei::eg_point(): mu_e [MeV]: ";
+    cout << "  " << dtos(elep.e.mu*hc_mev_fm,0) << endl;
+    
+    cout << "eos_nuclei::eg_point(): E_{eg} [MeV]: ";
+    double E=elep.th.ed/nB*hc_mev_fm;
+    cout << "  " << dtos(E,0) << endl;
+    
+    cout << "eos_nuclei::eg_point(): P_{eg} [MeV/fm^3]: ";
+    double P=elep.th.pr*hc_mev_fm;
+    cout << "  " << dtos(P,0) << endl;
+    
+    cout << "eos_nuclei::eg_point(): S_{eg}: ";
+    double S=elep.th.en/nB;
+    cout << "  " << dtos(S,0) << endl;
+
+    cout << "eos_nuclei::eg_point(): dndmu [1/fm^2]: ";
+    cout << "  " << dtos(elep.thd.dndmu,0) << endl;
+    
+    cout << "eos_nuclei::eg_point(): dndT [1/fm^2]: ";
+    cout << "  " << dtos(elep.thd.dndT,0) << endl;
+    
+    cout << "eos_nuclei::eg_point(): dsdT [1/fm^2]: ";
+    cout << "  " << dtos(elep.thd.dsdT,0) << endl;
+    
+    /*
     electron.mu=elep.e.mu;
     relf.calc_mu(electron,T_MeV/hc_mev_fm);
     double eminus=electron.n;
     double eplus=eminus-elep.e.n;
     cout << "  n_{e-} [1/fm^3]: " << dtos(eminus,0) << endl;
     cout << "  n_{e+} [1/fm^3]: "
-	 << dtos(eplus,0) << " difference: " << dtos(eminus-eplus,0) << endl;
+         << dtos(eplus,0) << " difference: " << dtos(eminus-eplus,0) << endl;
     double ti=(elep.th.ed+elep.th.pr-elep.e.n*elep.e.mu-
                T_MeV/hc_mev_fm*elep.th.en)/elep.th.ed;
     cout << "TI []: " << ti << endl;
-  }
-  
-  cout << "E [MeV]: " << dtos(elep.th.ed/nB*hc_mev_fm,0) << endl;
-  cout << "P [MeV/fm^3]: " << dtos(elep.th.pr*hc_mev_fm,0) << endl;
-  cout << "S: " << dtos(elep.th.en/nB,0) << endl;
-  cout << "F [MeV]: "
-       << dtos((elep.th.ed*hc_mev_fm-T_MeV*elep.th.en)/nB,0) << endl;
-  if (include_muons) {
-    cout << "Y_mu: " << dtos(elep.mu.n/nB,0) << endl;
-    cout << "n_mu [1/fm^3]: " << dtos(elep.mu.n,0) << endl;
-    if (sv.size()>=3 && sv[4]=="ld") {
-#ifndef O2SCL_NO_BOOST_MULTIPRECISION
-      int cm_ret=elep.frel_ld.calc_mu(elep.muld,T_MeV/hc_mev_fm);
-      double muminus=elep.muld.n;
-      double muplus=muminus-elep.muld.n;
-      cout << "cm_ret: " << cm_ret << endl;
-      cout << "  n_{mu-} [1/fm^3]: " << dtos(muminus,0) << endl;
-      cout << "  n_{mu+} [1/fm^3]: "
-           << dtos(muplus,0) << " difference: "
-           << dtos(muminus-muplus,0) << endl;
-#endif
-    } else if (sv.size()>=3 && sv[4]=="25") {
-#ifndef O2SCL_NO_BOOST_MULTIPRECISION
-      int cm_ret=elep.frel_cdf25.calc_mu(elep.mucdf25,T_MeV/hc_mev_fm);
-      double muminus=static_cast<double>(elep.mucdf25.n);
-      double muplus=muminus-static_cast<double>(elep.mucdf25.n);
-      cout << "cm_ret: " << cm_ret << endl;
-      cout << "  n_{mu-} [1/fm^3]: " << dtos(muminus,0) << endl;
-      cout << "  n_{mu+} [1/fm^3]: "
-           << dtos(muplus,0) << " difference: "
-           << dtos(muminus-muplus,0) << endl;
-#endif
-    } else {
+    }
+    */
+
+    /*
+    cout << "E [MeV]: " << dtos(elep.th.ed/nB*hc_mev_fm,0) << endl;
+    cout << "P [MeV/fm^3]: " << dtos(elep.th.pr*hc_mev_fm,0) << endl;
+    cout << "S: " << dtos(elep.th.en/nB,0) << endl;
+    cout << "F [MeV]: "
+         << dtos((elep.th.ed*hc_mev_fm-T_MeV*elep.th.en)/nB,0) << endl;
+    if (include_muons) {
+      cout << "Y_mu: " << dtos(elep.mu.n/nB,0) << endl;
+      cout << "n_mu [1/fm^3]: " << dtos(elep.mu.n,0) << endl;
       muon.mu=elep.mu.mu;
       relf.calc_mu(muon,T_MeV/hc_mev_fm);
       double muminus=muon.n;
       double muplus=muminus-elep.mu.n;
       cout << "  n_{mu-} [1/fm^3]: " << dtos(muminus,0) << endl;
-      cout << "  n_{mu+} [1/fm^3]: " << dtos(muplus,0)
-           << " difference: " << dtos(muminus-muplus,0) << endl;
+        cout << "  n_{mu+} [1/fm^3]: " << dtos(muplus,0)
+             << " difference: " << dtos(muminus-muplus,0) << endl;
+      }
     }
+    cout << "E_e [MeV]: " << dtos(elep.e.ed/nB*hc_mev_fm,0) << endl;
+    if (include_muons) {
+      cout << "E_mu [MeV]: " << dtos(elep.mu.ed/nB*hc_mev_fm,0) << endl;
+    }
+    cout << "E_g [MeV]: " << dtos(elep.ph.ed/nB*hc_mev_fm,0) << endl;
+    */
+    
   }
-  cout << "E_e [MeV]: " << dtos(elep.e.ed/nB*hc_mev_fm,0) << endl;
-  if (include_muons) {
-    cout << "E_mu [MeV]: " << dtos(elep.mu.ed/nB*hc_mev_fm,0) << endl;
-  }
-  cout << "E_g [MeV]: " << dtos(elep.ph.ed/nB*hc_mev_fm,0) << endl;
 
-  }
+  elep.include_deriv=false;
 
   return 0;
 }
