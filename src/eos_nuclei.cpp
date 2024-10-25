@@ -7953,6 +7953,14 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
 
 int eos_nuclei::muses(std::vector<std::string> &sv,
 			     bool itive_com) { 
+
+  if (sv.size()<1) {
+    cerr << "No output filename provided" << endl;
+    return 2;
+  }
+
+  std::string outfile=sv[1];
+
   /*  
   ["temperature", "muB", "muS", "muQ", "vector_density", "total_S_density", 
   "total_Q_density", "energy", "pressure", "entropy"]
@@ -7998,11 +8006,7 @@ int eos_nuclei::muses(std::vector<std::string> &sv,
     packed.push_back(calc.eval(&vars));
   }
 
-  if(inc_lepton){
-    fout.open("../output/e4mma_w_lepton.csv");
-  } else {
-    fout.open("../output/e4mma_wo_lepton.csv");
-  }
+  fout.open(outfile);
 
   for (size_t j=0;j<Ye_grid3.size()-1;j++){
     if (Ye_grid3[j]>=Ye_grid2[0] && Ye_grid3[j]<=Ye_grid2[n_Ye2-1]){
@@ -8024,23 +8028,23 @@ int eos_nuclei::muses(std::vector<std::string> &sv,
 
           double En, Pr, ent;
 
-          if(inc_lepton){
-            En=(tg_E.get(ix)+Ye*proton.m*hc_mev_fm+(1-Ye)*neutron.m*hc_mev_fm)*nB;
-            Pr=tg_P.get(ix);
-            ent=tg_S.get(ix)*nB;
-          } else {
-            En=(tg_Eint.get(ix)+Ye*proton.m*hc_mev_fm+(1-Ye)*neutron.m*hc_mev_fm)*nB;
-            Pr=tg_Pint.get(ix);
-            ent=tg_Sint.get(ix)*nB;
-          }
-
+          En=(tg_Eint.get(ix)+Ye*proton.m*hc_mev_fm+(1-Ye)*neutron.m*hc_mev_fm)*nB;
+          Pr=tg_Pint.get(ix);
+          ent=tg_Sint.get(ix)*nB;
+          
           fout << "0.1" << "," << muB << "," << 0 
             << "," << muQ << "," 
             << nB <<"," << 0 << "," << Ye*nB << "," << En 
             << "," << Pr << "," << ent << std::endl;
-        } else continue; 
+        } else {
+            cerr << "nB_grid spec out of bounds" << endl;
+            return 3;
+        } 
       }
-    } else continue;
+    } else {
+        cerr << "Ye_grid spec out of bounds" << endl;
+        return 3;
+    }
   }
 
   fout.close();

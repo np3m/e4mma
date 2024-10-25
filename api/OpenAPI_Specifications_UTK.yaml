@@ -41,7 +41,7 @@ paths:
       security: []
       requestBody:
         description: EOS table
-        required: true
+        required: false
         content:
           application/json:
             schema:
@@ -71,27 +71,7 @@ paths:
         '500':
           description: Run time error in calculation
 
-  /output/e4mma_w_Lepton.csv:
-    get:
-      summary: Equation of state with Lepton
-      description: >
-        fill
-      operationId: getEoSwLepton
-      security: []
-      responses:
-        '200':
-          description: Successful operation
-          content:
-            csv:
-              schema:
-                $ref: '#/components/schemas/e4mma_wo_lepton'
-            hdf5:
-              schema:
-                $ref: '#/components/schemas/e4mma_wo_lepton'
-        '500':
-          description: Run time error in calculation
-
-  /output/e4mma_wo_Lepton.csv:
+  /output/crust_dft.csv:
     get:
       summary: Equation of state without Lepton
       description: >
@@ -122,6 +102,14 @@ components:
       description: Input parameters for Crust-DFT eos
       type: object
       properties:
+        generate_table:
+          type: boolean
+          default: false
+          description: If true, Generate Tables instead of interpolating.
+        ext_guess:
+          type: boolean
+          default: true
+          description: If true, use guess file for table generation.
         output_format:
           default: "CSV"
           description: "Format of the output files for Lepton module"
@@ -155,10 +143,6 @@ components:
                   type: integer
                   description: Verbose parameter.
                   default: 0
-                inc_lepton:
-                  type: boolean
-                  description: If true, include leptons.
-                  default: false
         
     status:
       title: Module Status

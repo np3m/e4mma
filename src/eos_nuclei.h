@@ -270,10 +270,6 @@ public:
    */
   bool inc_hrg;
 
-  /** \brief If true, include leptons (default false)
-   */
-  bool inc_lepton;
-
   /** \brief Solve for charge neutrality and fixed baryon fraction
       with a hadron resonance gas
 
@@ -620,7 +616,6 @@ public:
   /// \name Other parameter objects
   //@{
   o2scl::cli::parameter_bool p_inc_hrg;
-  o2scl::cli::parameter_bool p_inc_lepton;
   o2scl::cli::parameter_bool p_survey_eqs;
   o2scl::cli::parameter_bool p_extend_frdm;
   o2scl::cli::parameter_bool p_show_all_nuclei;

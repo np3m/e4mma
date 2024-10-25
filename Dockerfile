@@ -24,7 +24,7 @@ ENV LDFLAGS="-L/usr/local/hdf5/lib -lpython3.12"
 
 RUN git clone https://github.com/np3m/e4mma && \
     cd e4mma && \
-    git checkout muses 
+    git checkout muses
  
 RUN cd e4mma/src && make -j 4 eos_nuclei eos
 # --------------------------------------------------------------------------
