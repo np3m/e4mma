@@ -10,21 +10,21 @@ authors:
 command:
   - '/bin/sh'
   - '-c'
-  - 'bash run_utk_for_lepton.sh'
+  - 'bash ../test/run_utk_for_lepton.sh'
 
 image:
   registry: "docker.io"
   repo: "nostrad1/utk-eos"
-  tag: "v1.9.2"
+  tag: "v1.9.3"
   source:
     url: "https://github.com/np3m/e4mma"
     git: "https://github.com/np3m/e4mma.git"
     path: "Dockerfile"
-    targetRevision: "v1.9.2"
+    targetRevision: "v1.9.3"
 
 docs:
   path: "docs/src"
-  home: "home.md"
+  home: "index.rst"
 
 inputs:
   - label: config
@@ -44,17 +44,9 @@ inputs:
       path: api/OpenAPI_Specifications_UTK.yaml#/components/schemas/table
 
 outputs:
-  - label: e4mma w/o lepton
-    description: "Calculated equation of state data w/o lepton"
-    path: "/output/e4mma_wo_lepton.csv"
-    api:
-      url: ""
-      targetRevision: ""
-      path: api/OpenAPI_Specifications_UTK.yaml#/components/schemas/e4mma_wo_lepton
-
-  - label: e4mma w lepton
-    description: "Calculated equation of state data w lepton"
-    path: "/output/e4mma_w_lepton.csv"
+  - label: crust_dft_output
+    description: "Crust DFT EOS data w/o lepton"
+    path: "/output/crust_dft.csv"
     api:
       url: ""
       targetRevision: ""

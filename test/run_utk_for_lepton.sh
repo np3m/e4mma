@@ -51,7 +51,7 @@ read_parameters() {
 
         # Set Bash parameters
         case $name in
-            "generate_table" | "ext_guess" | "output_format" | "nB_grid_spec" | "Ye_grid_spec" | "verbose")
+            "select_model" | "generate_table" | "ext_guess" | "output_format" | "nB_grid_spec" | "Ye_grid_spec" | "verbose")
                 eval "${name}=\$value"
                 ;;
         esac
@@ -69,8 +69,6 @@ read_parameters() {
 
 read_parameters "../input/validated_config.yaml"
 # ----------------------------------------------------------------
-
-
 # Check if the EOS file is in the expected location
 #if [ "$EOS_DATA_HDF5_PATH" != "$(realpath "../data/$(basename "$EOS_DATA_HDF5_PATH")")" ]; then
 #    echo "Error: EOS data file is not in data/ directory: $EOS_DATA_HDF5_PATH"
@@ -81,22 +79,10 @@ read_parameters "../input/validated_config.yaml"
 # ------------------------------------------------------------
 # Run Crust-DFT module
 # ------------------------------------------------------------
-# ----------------------------------------------------------------
-# EOS parameter sets from Du et al. (2022)
-# ----------------------------------------------------------------
-
-P_FIDUCIAL="470 738 0.5 13.0 62.4 32.8 0.9"
-P_LARGE_MMAX="783 738 0.5 13.0 62.4 32.8 0.9"
-P_SMALL_R="214 738 0.5 13.0 62.4 32.8 0.9"
-P_SMALLER_R="256 738 0.5 13.0 62.4 32.8 0.9"
-P_LARGE_R="0 738 0.5 13.0 62.4 32.8 0.9"
-P_SMALL_SL="470 738 0.5 13.0 23.7 29.5 0.9"
-P_LARGE_SL="470 738 0.5 13.0 100.0 36.0 0.9"
-# ----------------------------------------------------------------
-if [ $generate_table ]; then
+if [ $generate_table = "true" ]; then
     echo "Generating new table..."
 
-    if [ $ext_guess ]; then
+    if [ $ext_guess = "true" ]; then
         # Default EOS table paths
         EOS_DATA_HDF5_PATH=../data/EOS_table.o2
         # Check if command-line arguments are given to overwrite defaults
@@ -117,7 +103,7 @@ if [ $generate_table ]; then
         echo "With external guess: $EOS_DATA_HDF5_PATH" 
         ../src/eos_nuclei \
             -set data_dir "../data" \
-            -select-model $P_FIDUCIAL \
+            -select-model $select_model \
             -set nB_grid_spec $nB_grid_spec \
             -set Ye_grid_spec $Ye_grid_spec \
             -set T_grid_spec "3,0.1+i" \
@@ -130,7 +116,7 @@ if [ $generate_table ]; then
         echo "Without external guess" 
         ../src/eos_nuclei \
             -set data_dir "../data" \
-            -select-model $P_FIDUCIAL \
+            -select-model $select_model \
             -set nB_grid_spec $nB_grid_spec \
             -set Ye_grid_spec $Ye_grid_spec \
             -set T_grid_spec "3,0.1+i" \
