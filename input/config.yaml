@@ -1,0 +1,6 @@
+ext_guess: false
+generate_table: false
+output_format: CSV
+set:
+  Ye_grid_spec: 70,0.01*(i+1)
+  nB_grid_spec: 301,10^(i*0.04-12)*2.0

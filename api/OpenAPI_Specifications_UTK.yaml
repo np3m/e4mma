@@ -123,7 +123,7 @@ components:
           description: If true, use guess file for table generation.
         output_format:
           default: "CSV"
-          description: "Format of the output files for Lepton module"
+          description: "Format of the output files for Lepton module (either csv or hdf5)"
           type: string
           title: output format
         set:
@@ -139,16 +139,16 @@ components:
                 nB_grid_spec:
                   type: string
                   description: The function for default baryon density grid. 'N,func(i)', 
-                    i takes values from 0-N 
+                    i takes values from '0-N-1'
                     and func(i) fills up the grid . The user can change the grid length N and the 
-                    desired function.
+                    desired function. 'nB_grid' ranges from in '2.0\times10^{-12}-2~\mathrm{fm^{-3}}'. Values outside this range will be ignored for now. At least 'N=3' is needed to compute derivatives.
                   default: '301,10^(i*0.04-12)*2.0'   
                 Ye_grid_spec:
                   type: string
                   description: The function for default electron fraction grid. 'N,func(i)', 
-                    i takes values from 0-N 
+                    i takes values from '0-N-1' 
                     and func(i) fills up the grid. The user can change the grid length N and the 
-                    desired function.
+                    desired function. ``Ye_grid`` ranges from in '1.0\times10^{-2}-0.7'. Values outside this range will be ignored for now. At least 'N=3' is needed to compute derivatives.
                   default: '70,0.01*(i+1)'
                 verbose:
                   type: integer
