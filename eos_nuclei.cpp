@@ -1446,8 +1446,10 @@ int eos_nuclei::eg_point(std::vector<std::string> &sv,
   
   if (kwa.get_int("fr_verbose",0)!=0) {
     elep.frel.verbose=kwa.get_int("fr_verbose",0);
+#ifndef O2SCL_NO_BOOST_MULTIPRECISION
     elep.frel_ld.verbose=kwa.get_int("fr_verbose",0);
     elep.frel_cdf25.verbose=kwa.get_int("fr_verbose",0);
+#endif
   }
 
   separate=kwa.get_bool("separate",false);
@@ -1587,12 +1589,14 @@ int eos_nuclei::eg_point(std::vector<std::string> &sv,
     cout.precision(14);
     cout << "tol_rel: " << elep.frel.density_root.tol_rel << endl;
     cout << "tol_abs: " << elep.frel.density_root.tol_abs << endl;
+    
+#ifndef O2SCL_NO_BOOST_MULTIPRECISION
+    
     cout << "tol_rel_ld: " << elep.frel_ld.density_root.tol_rel << endl;
     cout << "tol_abs_ld: " << elep.frel_ld.density_root.tol_abs << endl;
     cout << "tol_rel_25: " << elep.frel_cdf25.density_root.tol_rel << endl;
     cout << "tol_abs_25: " << elep.frel_cdf25.density_root.tol_abs << endl;
     
-#ifndef O2SCL_NO_BOOST_MULTIPRECISION
     
     elep.fp_25_acc();
     elep.pair_density_eq_cdf25(nB_25*Ye_25,T_25/hc_mev_fm_25);
