@@ -1584,6 +1584,7 @@ int eos_nuclei::eg_point(std::vector<std::string> &sv,
   
   if (sv.size()>=3 && kwa.get_string("mode","")=="comp") {
 
+    cout.precision(14);
     cout << "tol_rel: " << elep.frel.density_root.tol_rel << endl;
     cout << "tol_abs: " << elep.frel.density_root.tol_abs << endl;
     cout << "tol_rel_ld: " << elep.frel_ld.density_root.tol_rel << endl;
