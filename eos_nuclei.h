@@ -113,7 +113,11 @@ public:
     mat_inv_t;
   */
 
+#ifdef O2SCL_SET_PYTHON
+  
   o2scl::interpm_python<ubvector,ubmatrix,ubmatrix> ipy;
+  
+#endif
   
   /** \brief Compute the distance between calibration point with index
       \c i_calib and point to fix with index \c i_fix

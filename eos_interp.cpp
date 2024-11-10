@@ -911,6 +911,8 @@ void interpm_krige_eos::set2() {
   
 void interpm_krige_eos::set() {
 
+#ifdef O2SCL_SET_PYTHON
+  
   // Set the grids and the pointers to the tensor_grid objects
 
   eos_nuclei *enp2=(eos_nuclei *)enp;
@@ -1076,6 +1078,8 @@ void interpm_krige_eos::set() {
     exit(-1);
   }
 
+#endif
+  
   return;
 }
 
@@ -1205,6 +1209,8 @@ double interpm_krige_eos::min(size_t nv, const ubvector &v) {
   
 int interpm_krige_eos::addl_const(size_t iout, double &ret) {
 
+#ifdef O2SCL_SET_PYTHON
+  
   std::cout << "In interpm_krige_eos::addl_const()." << std::endl;
 
   if (py_fit==false) {
@@ -2401,5 +2407,8 @@ int interpm_krige_eos::addl_const(size_t iout, double &ret) {
   if (addl_verbose>=1) {
     cout << "Return success." << endl;
   }
+
+#endif
+  
   return 0;
 }
