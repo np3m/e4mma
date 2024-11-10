@@ -27,5 +27,13 @@ build4:
 	sudo docker build . --rm -f alpha5_ju_o930a4_u24.04 \
 		-t awsteiner/e4mma:alpha5_ju_o930a4_u24.04 > build.out 2>&1
 
+build5:
+	sudo docker build . --rm -f alpha5_o930a5_u24.04_min \
+		-t awsteiner/e4mma:alpha5_o930a5_u24.04_min > build.out 2>&1
+
+build5t:
+	sudo docker build . --rm -f alpha5_o930a5_u24.04_min \
+		--no-cache --target working
+
 push:
 	sudo docker push awsteiner/eos:alpha2

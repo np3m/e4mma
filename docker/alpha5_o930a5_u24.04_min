@@ -1,4 +1,4 @@
-FROM awsteiner/o2scl:v0.930a5_u24.04_min
+FROM awsteiner/o2scl:v0.930a5_u24.04_min AS working
 MAINTAINER Andrew W. Steiner (awsteiner0@protonmail.com)
 
 # --------------------------------------------------------------------------
@@ -28,14 +28,15 @@ WORKDIR /home/np3m
 ENV CXX g++
 ENV MPI_CXX mpicxx
 ENV CFLAGS -I/usr/lib/x86_64-linux-gnu/openmpi/include/ \
-  -I/usr/local/hdf5/include -std=c++14 
+  -I/usr/local/hdf5/include -std=c++14 -I/usr/include/hdf5/serial
 ENV LDFLAGS -L/usr/local/hdf5/lib \
-  -L/usr/lib/x86_64-linux-gnu
+  -L/usr/lib/x86_64-linux-gnu -L/usr/lib/x86_64-linux-gnu/hdf5/serial
 ENV LD_LIBRARY_PATH /usr/local/hdf5/lib
 
 RUN git clone https://github.com/np3m/e4mma
 WORKDIR /home/np3m/e4mma
-RUN git fetch && git pull && git checkout b4ea4a7c3d3ab
+RUN git fetch && git pull && git checkout 99e0533071
+FROM working
 RUN make eos_nuclei eos
 
 # --------------------------------------------------------------------------
@@ -51,9 +52,8 @@ WORKDIR /home/np3m/e4mma/examples
 RUN ./A_point_nuc.scr
 RUN ./B_point.scr
 RUN ./C_help.scr
-RUN ./D_table.scr
-RUN ./E_table_deriv.scr
-RUN ./F_pn_detail.scr
-RUN ./G_file_props.scr
+# We combine these so we can remove the temporary table
+RUN ./D_table.scr && ./E_table_deriv.scr && ./F_pn_detail.scr && \
+  ./G_file_props.scr && rm ../output/fid_3_5_22.o2
 WORKDIR /home/np3m/e4mma
 
