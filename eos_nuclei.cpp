@@ -1969,9 +1969,9 @@ int eos_nuclei::eos_deriv(std::vector<std::string> &sv,
   std::cout << "eos_nuclei::eos_deriv(): Computing derivatives." << endl;
 
   if (n_nB2<3 || n_Ye2<3 || n_T2<3) {
-    std::cout << "Cannot compute derivatives with less than "
-              << "three grid points in any direction." << std::endl;
-    return 1;
+    O2SCL_ERR2("eos_nuclei::eos_deriv(): Cannot compute derivatives ",
+               "with less than three grid points in any direction.",
+               o2scl::exc_einval);
   }
 
   // -----------------------------------------------------
@@ -1983,36 +1983,14 @@ int eos_nuclei::eos_deriv(std::vector<std::string> &sv,
     
     size_t st[3]={n_nB2,n_Ye2,n_T2};
     
-    calc_utf8<> calc;
-    std::map<std::string,double> vars;
-    
     vector<double> packed;
-    vector<std::string> split_res;
-
-    split_string_delim(nB_grid_spec,split_res,',');
-    n_nB2=stoszt(split_res[0]);
-    
-    calc.compile(split_res[1].c_str());
     for(size_t i=0;i<n_nB2;i++) {
-      vars["i"]=((double)i);
       packed.push_back(nB_grid2[i]);
     }
-    
-    split_string_delim(Ye_grid_spec,split_res,',');
-    n_Ye2=stoszt(split_res[0]);
-    
-    calc.compile(split_res[1].c_str());
     for(size_t i=0;i<n_Ye2;i++) {
-      vars["i"]=((double)i);
       packed.push_back(Ye_grid2[i]);
     }
-    
-    split_string_delim(T_grid_spec,split_res,',');
-    n_T2=stoszt(split_res[0]);
-    
-    calc.compile(split_res[1].c_str());
     for(size_t i=0;i<n_T2;i++) {
-      vars["i"]=((double)i);
       packed.push_back(T_grid2[i]);
     }
     
@@ -6370,7 +6348,7 @@ int eos_nuclei::write_results(std::string fname) {
 
   // These quantities are output with a precision of max_digits10,
   // which should hopefully ensure that the values are exact.
-  if (model_selected) {
+  if (model_selected || use_alt_eos) {
     bool matched=false;
     std::string eos_str;
     if (use_alt_eos==false) {
@@ -6388,19 +6366,19 @@ int eos_nuclei::write_results(std::string fname) {
       eos_had_skyrme *skp=dynamic_cast<eos_had_skyrme *>(eosp_alt);
       if (skp!=0) {
         matched=true;
-        if (alt_name.length()==0) {
-          eos_str+="skyrme "+alt_name;
+        if (alt_name.length()!=0) {
+          eos_str+="Skyrme "+alt_name;
         } else {
-          eos_str+="skyrme ";
-          eos_str+=o2scl::dtos(sk.t0*hc_mev_fm,0,true)+" ";
-          eos_str+=o2scl::dtos(sk.t1*hc_mev_fm,0,true)+" ";
-          eos_str+=o2scl::dtos(sk.t2*hc_mev_fm,0,true)+" ";
-          eos_str+=o2scl::dtos(sk.t3*hc_mev_fm,0,true)+" ";
-          eos_str+=o2scl::dtos(sk.x0,0,true)+" ";
-          eos_str+=o2scl::dtos(sk.x1,0,true)+" ";
-          eos_str+=o2scl::dtos(sk.x2,0,true)+" ";
-          eos_str+=o2scl::dtos(sk.x3,0,true)+" ";
-          eos_str+=o2scl::dtos(sk.alpha,0,true);
+          eos_str+="Skyrme ";
+          eos_str+=o2scl::dtos(sk_alt.t0*hc_mev_fm,0,true)+" ";
+          eos_str+=o2scl::dtos(sk_alt.t1*hc_mev_fm,0,true)+" ";
+          eos_str+=o2scl::dtos(sk_alt.t2*hc_mev_fm,0,true)+" ";
+          eos_str+=o2scl::dtos(sk_alt.t3*hc_mev_fm,0,true)+" ";
+          eos_str+=o2scl::dtos(sk_alt.x0,0,true)+" ";
+          eos_str+=o2scl::dtos(sk_alt.x1,0,true)+" ";
+          eos_str+=o2scl::dtos(sk_alt.x2,0,true)+" ";
+          eos_str+=o2scl::dtos(sk_alt.x3,0,true)+" ";
+          eos_str+=o2scl::dtos(sk_alt.alpha,0,true);
         }
       }
       eos_had_rmf *rmfp=dynamic_cast<eos_had_rmf *>(eosp_alt);
@@ -6439,7 +6417,7 @@ int eos_nuclei::write_results(std::string fname) {
          << eos_str << endl;
     hf.sets("model",eos_str);
   }
-  
+
   hf.set_szt("n_nB",n_nB2);
   hf.set_szt("n_Ye",n_Ye2);
   hf.set_szt("n_T",n_T2);

@@ -882,6 +882,8 @@ public:
   */
   int eg_table(std::vector<std::string> &sv, bool itive_com);
   
+  /** \brief Construct an electrons and photon at one point
+   */
   int eg_point(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Construct a table in beta equilibrium

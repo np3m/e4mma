@@ -4269,17 +4269,27 @@ int eos::alt_model(std::vector<std::string> &sv,
   }
 
   // Combine additional arguments into one string
+  std::string addl_args=sv[1];
   for(size_t i=2;i<sv.size();i++) {
-    sv[1]+=" "+sv[i];
+    addl_args+=" "+sv[i];
   }
 
-  eosp_alt=eos_had_temp_strings(sv[1]);
+  eosp_alt=eos_had_temp_strings(addl_args);
   use_alt_eos=true;
   eos_had_skyrme *skp=dynamic_cast<eos_had_skyrme *>(eosp_alt);
   if (skp!=0) {
     eosp_alt=&sk_alt;
+    if (sv.size()==3) {
+      alt_name=sv[2];
+    }
     sk_alt=*skp;
-    cout << "eos::alt_model(): Checking saturation properties:" << endl;
+    if (sv.size()==3) {
+      cout << "eos::alt_model(): Checking saturation properties for "
+           << "Skyrme model " << sv[2] << "." << endl;
+    } else {
+      cout << "eos::alt_model(): Checking saturation properties for "
+           << "Skyrme model." << endl;
+    }
     sk_alt.saturation();
     cout << "  n0: " << sk_alt.n0 << endl;
   } else {
