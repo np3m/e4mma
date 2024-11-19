@@ -1,0 +1,5 @@
+acol -download ../output/fid_3_5_22.o2 \
+https://isospin.roam.utk.edu/public_data/eos_tables/du21/fid_3_5_22.o2 \
+840f6f171f05081deed53fd8bf50bad1b16a865418c37b1b630817ae10ad6736
+
+o2graph -read ../output/fid_3_5_22.o2 A -set logx 1 -set logy 1 -set colbar 1 -set fig_dict "dpi=250,left_margin=0.15,right_margin=0.01,top_margin=0.02" -xtitle "$\log_{10}~n_B~(\mathrm{fm}^{-3})$" -ytitle "$\log_{10}~T~(\mathrm{MeV})$" -to-table3d 0 2 slice 0.4 -den-plot slice -textbox 0.2 0.9 "$ Y_e = 0.4 $" "facecolor=white" -show
