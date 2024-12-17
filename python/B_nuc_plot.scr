@@ -2,4 +2,4 @@ acol -download ../output/fid_3_5_22.o2 \
 https://isospin.roam.utk.edu/public_data/eos_tables/du21/fid_3_5_22.o2 \
 840f6f171f05081deed53fd8bf50bad1b16a865418c37b1b630817ae10ad6736
 
-o2graph -read ../output/fid_3_5_22.o2 A -set logx 1 -set logy 1 -set colbar 1 -set fig_dict "dpi=250,left_margin=0.15,right_margin=0.01,top_margin=0.02" -xtitle "$\log_{10}~n_B~(\mathrm{fm}^{-3})$" -ytitle "$\log_{10}~T~(\mathrm{MeV})$" -to-table3d 0 2 slice 0.4 -den-plot slice -textbox 0.2 0.9 "$ Y_e = 0.4 $" "facecolor=white" -save fid_A_Ye0p4.pdf -show
+o2graph -read ../output/fid_3_5_22.o2 A -rearrange "index(0),index(1),range(2,0,103)" -internal temp.o2 -set logx 1 -set logy 1 -set colbar 1 -set fig_dict "dpi=250,left_margin=0.15,right_margin=0.04,top_margin=0.02" -xtitle "$\log_{10}~n_B~[\mathrm{fm}^{-3}]$" -ytitle "$\log_{10}~T~[\mathrm{MeV}]$" -to-table3d 0 2 slice 0.4 -den-plot slice "pcm=True" -textbox 0.2 0.9 "$ Y_e = 0.4 $" "facecolor=white" -ttext 1.25 0.52 "$ \left< A \right> $" "rotation=90" -line 0.16 0.1 0.16 10 "color=white,ls=:,lw=1" -text 0.35 1.0 "$ n_{\mathrm{sat}} $" "color=white,rotation=90" -save fid_A_Ye0p4.pdf -show
