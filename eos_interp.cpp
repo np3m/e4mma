@@ -1049,13 +1049,13 @@ void interpm_krige_eos::set() {
           //len=13.5;
           
           if (true) {
-            ipy.set_functions("interpm_sklearn_gp",
+            ipy.set_function("interpm_sklearn_gp",
                               ((std::string)"verbose=0,transform_in=none,")+
                               "alpha=1.0e-7,kernel=RBF("+
                               "length_scale="+o2scl::dtos(len)+
                               ",length_scale_bounds=\"fixed\")",0);
           } else {
-            ipy.set_functions("interpm_tf_dnn",
+            ipy.set_function("interpm_tf_dnn",
                               ((std::string)"verbose=1,")+
                               "transform_in=quant,"+
                               "transform_out=quant,"+
