@@ -59,6 +59,7 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
   hdf_file hff;
   hff.open(st_in);
   hdf_input(hff,tg_cs2,"cs2");
+  hdf_input(hff,tg_sflag,"sflag");
   hff.close();
 
   std::string kernel=kw.get_string("kernel","rbf_noise");
@@ -80,6 +81,7 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
        << "Starting loop over entire grid." << endl;
 
   for(int k=khi;k>=klo;k--) {
+    std::cout << "k: " << k << std::endl;
     for(int i=ilo;i<=ihi;i++) {
       for(int j=jlo;j<=jhi;j++) {
         
@@ -100,6 +102,13 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
           dPdnB=(tg_P.get(ixp1)-tg_P.get(ix))/
             (nB_grid2[i+1]-nB_grid2[i]);
         }
+
+	/*
+	if (tg_sflag.get(ix)>0.5) {
+          cout << "Value of sflag>0 at (" << i << "," << j << ","
+               << k << ")." << endl;
+	}
+	*/
         
         if (tg_cs2.get(ix)>1.0 ||
             tg_cs2.get(ix)<0.0 || 
@@ -243,6 +252,7 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
           }
           
 	}
+	
       }
       
     }

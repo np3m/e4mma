@@ -259,7 +259,7 @@ public:
   //@{
   o2scl::tensor_grid<> dmundYe, dmundnB, dmupdYe, dsdT, dsdnB, dsdYe;
   o2scl::tensor_grid<> egv[4], tg_cs2, tg_cs2_hom, tg_Fint_old, tg_F_old;
-  o2scl::tensor_grid<> sflag;
+  o2scl::tensor_grid<> tg_sflag;
   size_t n_stability_fail;
   double stability_diff;
   //@}

@@ -2167,7 +2167,7 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
     }
     size_t st[3]={n_nB2,n_Ye2,n_T2};
     
-    sflag.resize(3,st);
+    tg_sflag.resize(3,st);
     dmundYe.resize(3,st);
     dmundnB.resize(3,st);
     dmupdYe.resize(3,st);
@@ -2182,7 +2182,7 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
     }
     tg_cs2_hom.resize(3,st);
     
-    sflag.set_grid_packed(packed);
+    tg_sflag.set_grid_packed(packed);
     dmundYe.set_grid_packed(packed);
     dmundnB.set_grid_packed(packed);
     dmupdYe.set_grid_packed(packed);
@@ -2324,7 +2324,7 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
         
         double T_MeV=T_grid2[k];
         vector<size_t> ix={i,j,k};
-        sflag.get(ix)=0;
+        tg_sflag.get(ix)=0;
         
         // Check entropy and pressure are positive
         if (tg_P.get(ix)<0.0 || tg_S.get(ix)<0.0) {
@@ -2338,7 +2338,7 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
           i_Ye_fix.push_back(j);
           i_T_fix.push_back(k);
           type_fix.push_back(1);
-          sflag.get(ix)=1;
+          tg_sflag.get(ix)=1;
           if (tg_P.get(ix)<0.0) {
             stability_diff+=fabs(tg_P.get(ix));
           }
@@ -2374,7 +2374,7 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
             i_Ye_fix.push_back(j);
             i_T_fix.push_back(k);
             type_fix.push_back(2);
-            sflag.get(ix)+=10;
+            tg_sflag.get(ix)+=10;
             stability_diff+=fabs(dP);
           }
         }
@@ -2473,7 +2473,7 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
           i_Ye_fix.push_back(j);
           i_T_fix.push_back(k);
           type_fix.push_back(3);
-          sflag.get(ix)+=100;
+          tg_sflag.get(ix)+=100;
           for(size_t kik=0;kik<4;kik++) {
             if (sing[kik]<0.0) {
               stability_diff+=fabs(sing[kik]);
@@ -2560,7 +2560,7 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
           i_Ye_fix.push_back(j);
           i_T_fix.push_back(k);
           type_fix.push_back(4);
-          sflag.get(ix)+=1000;
+          tg_sflag.get(ix)+=1000;
           if (std::isfinite(cs_sq)) {
             if (cs_sq<0.0) {
               stability_diff+=fabs(cs_sq);
@@ -2748,7 +2748,7 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
     hdf_output(hf,dsdnB,"dsdnB");
     hdf_output(hf,dsdYe,"dsdYe");
     hdf_output(hf,dsdT,"dsdT");
-    hdf_output(hf,sflag,"sflag");
+    hdf_output(hf,tg_sflag,"sflag");
     if (eigenvalues) {
       hdf_output(hf,egv[0],"egv0");
       hdf_output(hf,egv[1],"egv1");
@@ -3021,7 +3021,8 @@ void eos_nuclei::store_hrg(double mun, double mup,
       photon.massless_calc(T);
       vector<double> line={((double)22),0.0,2,
                            photon.mu,photon.n,photon.ed,photon.pr,photon.en,
-                           ((double)part_db[j].baryon),((double)part_db[j].charge)};
+                           ((double)part_db[j].baryon),
+			   ((double)part_db[j].charge)};
       tab.line_of_data(line.size(),line);
       ibos++;
       
@@ -3030,7 +3031,8 @@ void eos_nuclei::store_hrg(double mun, double mup,
       // Proton (already computed)
       vector<double> line={((double)2212),neutron.m*hc_mev_fm,2,
                            mun*hc_mev_fm,nn,0.0,0.0,0.0,
-                           ((double)part_db[j].baryon),((double)part_db[j].charge)};
+                           ((double)part_db[j].baryon),
+			   ((double)part_db[j].charge)};
       tab.line_of_data(line.size(),line);
       iferm++;
       
@@ -3039,7 +3041,8 @@ void eos_nuclei::store_hrg(double mun, double mup,
       // Neutron (already computed?)
       vector<double> line={((double)2212),neutron.m*hc_mev_fm,2,
                            mun*hc_mev_fm,nn,0.0,0.0,0.0,
-                           ((double)part_db[j].baryon),((double)part_db[j].charge)};
+                           ((double)part_db[j].baryon),
+			   ((double)part_db[j].charge)};
       tab.line_of_data(line.size(),line);
       iferm++;
       
@@ -3048,10 +3051,13 @@ void eos_nuclei::store_hrg(double mun, double mup,
       // Generic fermion
       vector<double> line={((double)part_db[j].id),
                            res_f[iferm].m*hc_mev_fm,
-                           res_f[iferm].g,res_f[iferm].mu*hc_mev_fm,res_f[iferm].n,
-                           res_f[iferm].ed*hc_mev_fm,res_f[iferm].pr*hc_mev_fm,
+                           res_f[iferm].g,
+			   res_f[iferm].mu*hc_mev_fm,res_f[iferm].n,
+                           res_f[iferm].ed*hc_mev_fm,
+			   res_f[iferm].pr*hc_mev_fm,
                            res_f[iferm].en,
-                           ((double)part_db[j].baryon),((double)part_db[j].charge)};
+                           ((double)part_db[j].baryon),
+			   ((double)part_db[j].charge)};
       tab.line_of_data(line.size(),line);
       iferm++;
       
@@ -3060,10 +3066,13 @@ void eos_nuclei::store_hrg(double mun, double mup,
       // Generic boson
       vector<double> line={((double)part_db[j].id),
                            res_b[ibos].m*hc_mev_fm,
-                           res_b[ibos].g,res_b[ibos].mu*hc_mev_fm,res_b[ibos].n,
-                           res_b[ibos].ed*hc_mev_fm,res_b[ibos].pr*hc_mev_fm,
+                           res_b[ibos].g,
+			   res_b[ibos].mu*hc_mev_fm,res_b[ibos].n,
+                           res_b[ibos].ed*hc_mev_fm,
+			   res_b[ibos].pr*hc_mev_fm,
                            res_b[ibos].en,
-                           ((double)part_db[j].baryon),((double)part_db[j].charge)};
+                           ((double)part_db[j].baryon),
+			   ((double)part_db[j].charge)};
       tab.line_of_data(line.size(),line);
       ibos++;
       
