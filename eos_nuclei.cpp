@@ -428,7 +428,7 @@ int eos_nuclei::load(std::vector<std::string> &sv,
     cerr << "No filename in load." << endl;
     return 1;
   }
-  cout << "Loading: " << sv[1] << endl;
+  cout << "eos_nuclei::load(): Loading: " << sv[1] << endl;
   read_results(sv[1]);
   return 0;
 }
@@ -1244,7 +1244,7 @@ int eos_nuclei::add_eg(std::vector<std::string> &sv,
   if (sv.size()==2) {
     hdf_file hf;
     tensor_grid<> uE, uP, uS, uF, umue;
-    cout << "Function eos_nuclei::add_eg() adding leptons and photons\n"
+    cout << "eos_nuclei::add_eg(): Adding leptons and photons\n"
          << "  from file " << sv[1] << "." << endl;
     
     hf.open(sv[1]);
@@ -1276,7 +1276,7 @@ int eos_nuclei::add_eg(std::vector<std::string> &sv,
     }
 
     with_leptons=true;
-    cout << "Function eos_nuclei::add_eg() Done adding leptons and photons."
+    cout << "eos_nuclei::add_eg(): Done adding leptons and photons."
          << endl;
     
     return 0;
@@ -5725,7 +5725,8 @@ int eos_nuclei::store_point
   if (iflag==iflag_done) {
     double fr_old=tg_Fint.get(ix)/hc_mev_fm*nB;
     if (fr>=fr_old) {
-      cout << "Old point has smaller free energy. Old: " << fr_old
+      cout << "eos_nuclei::store_point(): "
+           << " Old point has smaller Fint.\n  Old: " << fr_old
 	   << " New: " << fr << endl;
       
       // If a good point is already stored, and the current free
@@ -5738,7 +5739,8 @@ int eos_nuclei::store_point
       return 0;
       
     } else {
-      cout << "New point has smaller free energy. Old: " << fr_old
+      cout << "eos_nuclei::store_point(): ";
+      cout << "New point has smaller Fint.\n  Old: " << fr_old
 	   << " New: " << fr << endl;
     }      
   }
@@ -6339,14 +6341,15 @@ int eos_nuclei::write_results(std::string fname) {
   MPI_Comm_size(MPI_COMM_WORLD,&mpi_size);
 
   if (mpi_size>1 && mpi_rank>0) {
-    cerr << "Shouldn't output multiple ranks to the same file "
+    cerr << "eos_nuclei::write_results(): "
+         << "Shouldn't output multiple ranks to the same file "
          << "in write_results." << endl;
     return 2;
   }
 
 #endif
   
-  cout << "Function write_results(): rank " << mpi_rank
+  cout << "eos_nuclei::write_results(): rank " << mpi_rank
        << " writing file " << fname << endl;
   
   hdf_file hf;
@@ -6539,7 +6542,7 @@ int eos_nuclei::write_results(std::string fname) {
     oth_units.push_back("");
     oth_names.push_back("XHe3");
     oth_units.push_back("");
-    oth_names.push_back("Li4");
+    oth_names.push_back("XLi4");
     oth_units.push_back("");
     if (alg_mode==2 || alg_mode==3 || alg_mode==4) {
       oth_names.push_back("A_min");
@@ -6604,7 +6607,7 @@ int eos_nuclei::write_results(std::string fname) {
   
   hf.close();
   
-  cout << "Function write_results(): rank " << mpi_rank
+  cout << "eos_nuclei::write_results(): rank " << mpi_rank
        << " done writing file." << endl;
 
   return 0;
@@ -6672,8 +6675,9 @@ int eos_nuclei::read_results(std::string fname) {
   for(size_t i=0;i<n_oth;i++) {
     size_t j;
     if (vector_search(tg_list,oth_names[i],j)==false) {
-      cerr << "Entry " << oth_names[i] << " in oth_names does not "
-           << "correspond to a tensor_grid object." << endl;
+      cerr << "eos_nuclei::read_results(): "
+           << "Entry " << oth_names[i] << " in oth_names does not "
+           << "correspond\n  to a tensor_grid object." << endl;
     }
   }
   for(size_t i=0;i<tg_list.size();i++) {
@@ -7476,7 +7480,7 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
     
   } else if ((alg_mode==0 || alg_mode==1) && sv.size()>=8) {
     
-    cout << "Function point_nuclei(): "
+    cout << "eos_nuclei::point_nuclei(): "
 	 << "Reading guess (log_xn,log_xp,N,Z) from command line." << endl;
     
     log_xn=o2scl::function_to_double(sv[4]);
@@ -7931,6 +7935,11 @@ int eos_nuclei::increase_density(std::vector<std::string> &sv,
   size_t iYe_end=vector_lookup(n_Ye2,Ye_grid2,Ye_end);
   size_t iT_end=vector_lookup(n_T2,T_grid2,T_end*hc_mev_fm);
 
+  cout << "eos_nuclei::increase_density(): "
+       << "inB,iYe,iT start and end: "
+       << inB_start << " " << iYe_start << " " << iT_start << " " 
+       << inB_end << " " << iYe_end << " " << iT_end << endl;
+  
   double log_xn, log_xp;
   size_t nuc_Z1, nuc_N1;
   int A_min, A_max, NmZ_min, NmZ_max;
@@ -7981,6 +7990,7 @@ int eos_nuclei::increase_density(std::vector<std::string> &sv,
 	  double sec_last_ratio=sec_last_N/sec_last_Z;
 	  double dratio=last_ratio-sec_last_ratio;
 	  if (last_ratio>sec_last_ratio && last_ratio+dratio>max_ratio-1.0) {
+            cout << "eos_nuclei::increase_density(): ";
 	    cout << "Predicted ratio: " << last_ratio+dratio << " "
 		 << "max_ratio: " << max_ratio << endl;
 	    if (last_ratio+dratio>max_ratio-0.1) {
@@ -7998,12 +8008,16 @@ int eos_nuclei::increase_density(std::vector<std::string> &sv,
 			      A_min,A_max,NmZ_min,NmZ_max,
 			      vdet,true,no_nuclei);
 	if (Zbar>0.0 && Nbar>0.0) {
+          cout << "eos_nuclei::increase_density(): ";
 	  cout << "ret,nB,Ye,T_MeV,Z,N,N/Z: "
-	       << ret << " " << nB << " " << Ye << " " << T*hc_mev_fm << " "
+	       << ret << " " << nB << "\n  "
+               << Ye << " " << T*hc_mev_fm << " "
 	       << Zbar << " " << Nbar << " " << Nbar/Zbar << endl;
 	} else {
+          cout << "eos_nuclei::increase_density(): ";
 	  cout << "ret,nB,Ye,T_MeV,Z,N: "
-	       << ret << " " << nB << " " << Ye << " " << T*hc_mev_fm << " "
+	       << ret << " " << nB << "\n  "
+               << Ye << " " << T*hc_mev_fm << " "
 	       << Zbar << " " << Nbar << endl;
 	}
 
@@ -8011,7 +8025,8 @@ int eos_nuclei::increase_density(std::vector<std::string> &sv,
 	Narr.push_back(Nbar);
 	
 	if (no_nuclei==false && Zbar<1.0e-6 && Nbar<1.0e-6) {
-	  cout << "Function eos_vary_dist() found no nuclei preferred.\n"
+          cout << "eos_nuclei::increase_density(): "
+               << "found no nuclei preferred.\n"
 	       << "  Setting no-nuclei to true for this Ye and T."
 	       << endl;
 	  no_nuclei=true;
@@ -8023,12 +8038,14 @@ int eos_nuclei::increase_density(std::vector<std::string> &sv,
 	  compute_X(nB,X);
 
 	  if (tg_A.get(ix)>0.0) {
-	    cout << "before: " << tg_Z.get(ix) << " "
+            cout << "eos_nuclei::increase_density(): ";
+	    cout << "before: Z,A,x:\n  " << tg_Z.get(ix) << " "
 		 << tg_A.get(ix) << " "
 		 << tg_A.get(ix)/
 	      tg_Z.get(ix) << endl;
 	  } else {
-	    cout << "before: " << tg_Z.get(ix) << " "
+            cout << "eos_nuclei::increase_density(): ";
+	    cout << "before: Z,A,x:\n  " << tg_Z.get(ix) << " "
 		 << tg_A.get(ix) << " " << 0.0 << endl;
 	  }
 	  
@@ -8037,7 +8054,9 @@ int eos_nuclei::increase_density(std::vector<std::string> &sv,
 		      NmZ_max,10.0,vdet);
 	  
 	  if (tg_A.get(ix)>0.0) {
-	    cout << "after: " << tg_log_xn.get(ix) << " "
+            cout << "eos_nuclei::increase_density(): ";
+	    cout << "after: xn,xp,Xnuclei,Z,A,x: "
+                 << tg_log_xn.get(ix) << " "
 		 << tg_log_xp.get(ix) << " "
 		 << tg_Xnuclei.get(ix) << " "
 		 << tg_Z.get(ix) << " "
@@ -8045,7 +8064,9 @@ int eos_nuclei::increase_density(std::vector<std::string> &sv,
 		 << tg_A.get(ix)/
 	      tg_Z.get(ix) << endl;
 	  } else {
-	    cout << "after: " << tg_log_xn.get(ix) << " "
+            cout << "eos_nuclei::increase_density(): ";
+	    cout << "after: xn,xp,Xnuclei,Z,A,x: "
+                 << tg_log_xn.get(ix) << " "
 		 << tg_log_xp.get(ix) << " "
 		 << tg_Xnuclei.get(ix) << " "
 		 << tg_Z.get(ix) << " "
@@ -8177,7 +8198,7 @@ int eos_nuclei::fix_cc(std::vector<std::string> &sv,
 				A_min,A_max,NmZ_min,NmZ_max,
 				vdet,true,no_nuclei);
 	  if (ret!=0) {
-	    cout << "Function eos_vary_dist() failed, going "
+	    cout << "eos_nuclei::fix_cc(): eos_vary_dist() failed, going "
 		 << "without nuclei." << endl;
 	    no_nuclei=true;
 	    ret=eos_vary_dist(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,
@@ -9612,12 +9633,12 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 			       bool itive_com) {
 
   if (derivs_computed) {
-    cout << "Function generate-table setting derivs_computed to false."
+    cout << "eos_nuclei::generate_table(): Setting derivs_computed to false."
 	 << endl;
     derivs_computed=false;
   }
   if (with_leptons) {
-    cout << "Function generate-table setting with_leptons to false."
+    cout << "eos_nuclei::generate_table(): setting with_leptons to false."
 	 << endl;
     with_leptons=false;
   }
