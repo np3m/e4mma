@@ -136,7 +136,7 @@ public:
     o2scl::fermion delta_pp;
   */
   o2scl::boson_rel relb;
-  o2scl::boson_eff effb;
+ // o2scl::boson_eff effb;
 
   bool inc_hrg;
   

@@ -745,7 +745,7 @@ eos::eos() {
   hf.close();
 
   // Open the GT Skyrme data file
-    std::string GTsky_file="data/acolskyGTall_aug29";
+    std::string GTsky_file="data/acolskyGTall_Jan26_2025";
  // std::string GTsky_file="data/acolskyUNEDF_test";//use UNEDF parameters to test if mixing method works
   hf.open(GTsky_file);
   o2scl_hdf::hdf_input(hf,GTsky_tab,name);

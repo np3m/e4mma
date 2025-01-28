@@ -1175,7 +1175,7 @@ double Polarization::CalculateInverseMFP(double E1, bool pnm) {
       }
       mm.n_points/=10;
     }*/
-   /* if (fabs(err)/fabs(val)>1.0e-2) {
+    if (fabs(err)/fabs(val)>1.0e-2) {
       mm.n_points*=10;
       cout << "Round two." << endl;
       ret=mm.minteg_err(mf,2,xmin,xmax,val,err);
@@ -1183,7 +1183,7 @@ double Polarization::CalculateInverseMFP(double E1, bool pnm) {
           cout << "Still inaccurate." << endl;
         }
       mm.n_points/=10;
-    }*///6/12/2024 zidu reduce the accuracy of integration because of the expense of bethe salpeter intergals
+    } //6/12/2024 zidu reduce the accuracy of integration because of the expense of bethe salpeter intergals
     //on 6/16/2024 test accuracy of just running round 1
     cout << "MC ret,val,err: " << ret << " " << val << " " << err << " "
          << fabs(err)/fabs(val) << endl;
@@ -1206,7 +1206,7 @@ double Polarization::CalculateInverseMFP(double E1, bool pnm) {
       }
       mm.n_points/=10;
     }*/
-   /* if (fabs(err)/fabs(val)>1.0e-2) {
+    if (fabs(err)/fabs(val)>1.0e-2) {
       mm.n_points*=10;
       cout << "Round two." << endl;
       ret=mm.minteg_err(mf,2,xmin,xmax,val,err);
@@ -1214,7 +1214,7 @@ double Polarization::CalculateInverseMFP(double E1, bool pnm) {
           cout << "Still inaccurate." << endl;
         }
       mm.n_points/=10;
-    }*///6/12/2024 zidu reduce the accuracy of integration because of the expense of bethe salpeter intergals
+    } //6/12/2024 zidu reduce the accuracy of integration because of the expense of bethe salpeter intergals
     //6/16/2024, test accuracy of just running round 1
     cout << "MC ret,val,err: " << ret << " " << val << " " << err << " "
          << fabs(err)/fabs(val) << endl;
