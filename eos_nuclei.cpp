@@ -11200,7 +11200,7 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
 
  // size_t n_point=5;
  // size_t n_point=7*7;
-  size_t n_point=26;
+  size_t n_point=1;
   if (sv.size()>=3) {
     n_point=stoszt(sv[2]);
   }
@@ -11381,13 +11381,13 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
   vector<double> Ye_list={0.0};
   vector<double> E1_list={0.0};
 // loop for small test table
-  if (false) {
+  if (true) {
     nB_list.clear();
     TMeV_list.clear();
     E1_list.clear();
     Ye_list.clear();
     for (size_t ee=5; ee<6;ee++) {
-        for (size_t tt=0; tt<1; tt++) {
+        for (size_t tt=1; tt<2; tt++) {
            for (size_t nn=2; nn<3;nn++) {
              for (size_t yee=1; yee<2; yee++) {
               nB_list.push_back(nB_testMenu[nn]);
@@ -11405,14 +11405,14 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
 
 // loop for big table
 
-    if (true) {
+    if (false) {
     nB_list.clear();
     TMeV_list.clear();
     E1_list.clear();
     Ye_list.clear();
     for (size_t ee=5; ee<6;ee++) {
         for (size_t tt=1; tt<2; tt++) {
-           for (size_t nn=0; nn<26;nn++) {
+           for (size_t nn=12; nn<13;nn++) {
              for (size_t yee=0; yee<1; yee++) {
               nB_list.push_back(nB_listMenu[nn]);
               TMeV_list.push_back(TMeV_listMenu[tt]);
@@ -12575,8 +12575,8 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
         pol_cc.flag=Polarization::flag_vector;
 	double cc_vec_mfp_dg0=0.0;
 	if (Ye>0.00001) {
-       // cc_vec_mfp_dg0=pol_cc.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
-       // cout << "charged current, vector part, no dgdn terms: "
+            cc_vec_mfp_dg0=pol_cc.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
+       //   cout << "charged current, vector part, no dgdn terms: "
        //      << cc_vec_mfp_dg0 <<" ratio of crx/crx_free (cc vec): "<<cc_vec_mfp_dg0/cc_vec_free<<endl;
        }
        // pol_cc.set_residual(fnn,fnp,fpp,gnn,gnp,gpp,vf,vgt,proton.n);
@@ -12588,7 +12588,7 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
         pol_cc.flag=Polarization::flag_axial;
         double cc_axvec_mfp=0.0;
 	if (Ye>0.00001) {
-       //  cc_axvec_mfp=pol_cc.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
+            cc_axvec_mfp=pol_cc.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
        //   cout << "charged current, axial part: " << cc_axvec_mfp <<" ratio of crx/crx_free (cc ax): "<<cc_axvec_mfp/cc_ax_free<<endl;
          }
         // -----------------------------------------------------------------
@@ -12695,7 +12695,7 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
         pol_cc_antinu.flag=Polarization::flag_vector;
         double cc_vec_mfp_antinu_dg0=0.0;
 	if (Ye>0.00001) {
-       // cc_vec_mfp_antinu_dg0=pol_cc_antinu.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
+          cc_vec_mfp_antinu_dg0=pol_cc_antinu.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
        // cout << "charged current, vector part, no dgdn terms: "
        //      << cc_vec_mfp_antinu_dg0 <<" ratio of crx/crx_free (cc vec antinu): "<<cc_vec_mfp_antinu_dg0/cc_vec_antinu_free<<endl;
         }
@@ -12708,7 +12708,7 @@ int eos_nuclei::mcarlo_neutron(std::vector<std::string> &sv,
         pol_cc_antinu.flag=Polarization::flag_axial;
         double cc_axvec_mfp_antinu=0.0;
 	if (Ye>0.00001) {
-       // cc_axvec_mfp_antinu=pol_cc_antinu.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
+          cc_axvec_mfp_antinu=pol_cc_antinu.CalculateInverseMFP(E1)/hc_mev_fm*1.e13;
        // cout << "charged current, axial part: " << cc_axvec_mfp_antinu <<" ratio of crx/crx_free (cc ax antinu): "<<cc_axvec_mfp_antinu/cc_ax_antinu_free<<endl;
        }
        // -----------------------------------------------------------------
