@@ -436,7 +436,7 @@ public:
   o2scl::table_units<> nstar_high;
   
   /// The table which stores the Skyrme fits
-  o2scl::table_units<> UNEDF_tab;
+  o2scl::table_units<> nucstruct_tab;
   
   /** \brief If true, a model has been selected (default false)
    */
@@ -564,6 +564,7 @@ public:
   o2scl::cli::parameter_string p_T_grid_spec;
   o2scl::cli::parameter_string p_S_grid_spec;
   o2scl::cli::parameter_string p_data_dir;
+  o2scl::cli::parameter_string p_nucstruct_file;
   //@}
 
   /// If true, then RMF fields are included
@@ -828,6 +829,9 @@ protected:
   
   /// Directory containing data files, default "data"
   std::string data_dir;
+  
+  /// File containing nuclear structure parameterizations
+  std::string nucstruct_file;
   //@}
 
   /// \name Command-line interface functions [public]

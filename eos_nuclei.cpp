@@ -202,7 +202,7 @@ void eos_nuclei::load_nuclei() {
 #endif
   
   // Load the nuclear masses
-  o2scl_hdf::ame_load(ame);
+  ame.load("20");
   o2scl_hdf::mnmsk_load(m95);
   o2scl_hdf::hfb_sp_load(hfb,27);
   pfuncs.load();
@@ -7742,6 +7742,10 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
 	cout << "  g: " << vdet["g"] << endl;
 	cout << "  dgdT: " << vdet["dgdT"] << " "
              << vdet_units.find("dgdT")->second << endl;
+	cout << "  mun_gas: " << vdet["mun_gas"] << " "
+             << vdet_units.find("mun_gas")->second << endl;
+	cout << "  mup_gas: " << vdet["mup_gas"] << " "
+             << vdet_units.find("mup_gas")->second << endl;
       }
     }      
 

@@ -805,6 +805,13 @@ void eos::read_data_files() {
   }
 #endif
 
+  if (nstar_tab.get_nlines()==0) {
+    o2scl_hdf::skyrme_load(sk_alt,"NRAPR");
+  }
+  
+  nstar_tab.clear();
+  nucstruct_tab.clear();
+
   // Open the neutron star data file
   std::string ns_file=data_dir+"/qmc_twop_10_0_out";
   o2scl_hdf::hdf_file hf;
@@ -813,13 +820,10 @@ void eos::read_data_files() {
   hf.close();
 
   // Open the Skyrme data file
-  std::string UNEDF_file=data_dir+"/thetaANL-1002x12.o2";
-  hf.open(UNEDF_file);
-  o2scl_hdf::hdf_input(hf,UNEDF_tab,name);
+  std::string nucstruct_file2=data_dir+"/"+nucstruct_file;
+  hf.open(nucstruct_file2);
+  o2scl_hdf::hdf_input(hf,nucstruct_tab,name);
   hf.close();
-
-  use_alt_eos=false;
-  o2scl_hdf::skyrme_load(sk_alt,"NRAPR");
 
 #ifdef O2SCL_MPI
   // Send a message to the next MPI rank
@@ -885,6 +889,7 @@ eos::eos() {
   qmc_n0=0.16;
   
   data_dir="data";
+  nucstruct_file="thetaANL-1002x12.o2";
 
   nB_grid_spec="301,10^(i*0.04-12)*2.0";
   Ye_grid_spec="70,0.01*(i+1)";
@@ -917,6 +922,8 @@ eos::eos() {
   strange_axis=false;
   alt_name="";
   rmf_fields=false;
+
+  use_alt_eos=false;
 }
 
 double eos::energy_density_qmc(double nn, double np) {
@@ -3645,6 +3652,8 @@ int eos::select_seven(int i_ns_loc, int i_skyrme_loc,
                       double qmc_alpha_loc, double qmc_a_loc,
                       double eos_L_loc, double eos_S_loc,
                       double phi_loc) {
+
+  model_selected=false;
   
   i_ns=i_ns_loc;
   i_skyrme=i_skyrme_loc;
@@ -3660,28 +3669,73 @@ int eos::select_seven(int i_ns_loc, int i_skyrme_loc,
 
   // Compute the Skyrme EOS from row i_skyrme_loc
   
-  if (UNEDF_tab.get_nlines()==0) read_data_files();
-  
-  double rho0=UNEDF_tab.get(((string)"rho0"),i_skyrme);
-  double K=UNEDF_tab.get(((string)"K"),i_skyrme);
-  double Ms_inv=UNEDF_tab.get(((string)"Ms_inv"),i_skyrme);
-  double EoA=UNEDF_tab.get(((string)"EoA"),i_skyrme);
-  double unedf_a=UNEDF_tab.get(((string)"a"),i_skyrme);
-  double unedf_L=UNEDF_tab.get(((string)"L"),i_skyrme);
-  
-  double Crdr0=UNEDF_tab.get(((string)"Crdr0"),i_skyrme);
-  double Crdr1=UNEDF_tab.get(((string)"Crdr1"),i_skyrme);
-  double CrdJ0=UNEDF_tab.get(((string)"CrdJ0"),i_skyrme);
-  double CrdJ1=UNEDF_tab.get(((string)"CrdJ1"),i_skyrme);
-  double Vp=UNEDF_tab.get(((string)"Vp"),i_skyrme);
-  double Vn=UNEDF_tab.get(((string)"Vn"),i_skyrme);
+  if (nucstruct_tab.get_nlines()==0) read_data_files();
 
-  double Ms_star=1/Ms_inv;
+  if (i_skyrme>((int)nucstruct_tab.get_nlines())) {
+    cerr << "eos::select_seven(): Value of i_skyrme is larger than "
+         << "the number of rows in the data file." << endl;
+    return -1;
+  }
 
-  sk.alt_params_saturation(rho0,EoA/hc_mev_fm,K/hc_mev_fm,Ms_star,
-			   eos_S/hc_mev_fm,eos_L/hc_mev_fm,1.0/1.249,
-			   Crdr0/hc_mev_fm,Crdr1/hc_mev_fm,
-			   CrdJ0/hc_mev_fm,CrdJ1/hc_mev_fm);
+  // Saturation density, binding energy (in MeV) and compressibility
+  // (in MeV)
+  double rho0, EoA, K;
+  
+  if (nucstruct_tab.is_column("rho0")) {
+    
+    rho0=nucstruct_tab.get(((string)"rho0"),i_skyrme);
+    K=nucstruct_tab.get(((string)"K"),i_skyrme);
+    double Ms_inv=nucstruct_tab.get(((string)"Ms_inv"),i_skyrme);
+    EoA=nucstruct_tab.get(((string)"EoA"),i_skyrme);
+    double unedf_a=nucstruct_tab.get(((string)"a"),i_skyrme);
+    double unedf_L=nucstruct_tab.get(((string)"L"),i_skyrme);
+    
+    double Crdr0=nucstruct_tab.get(((string)"Crdr0"),i_skyrme);
+    double Crdr1=nucstruct_tab.get(((string)"Crdr1"),i_skyrme);
+    double CrdJ0=nucstruct_tab.get(((string)"CrdJ0"),i_skyrme);
+    double CrdJ1=nucstruct_tab.get(((string)"CrdJ1"),i_skyrme);
+    double Vp=nucstruct_tab.get(((string)"Vp"),i_skyrme);
+    double Vn=nucstruct_tab.get(((string)"Vn"),i_skyrme);
+    
+    double Ms_star=1/Ms_inv;
+    
+    sk.alt_params_saturation(rho0,EoA/hc_mev_fm,K/hc_mev_fm,Ms_star,
+                             eos_S/hc_mev_fm,eos_L/hc_mev_fm,1.0/1.249,
+                             Crdr0/hc_mev_fm,Crdr1/hc_mev_fm,
+                             CrdJ0/hc_mev_fm,CrdJ1/hc_mev_fm);
+    
+  } else {
+
+    sk.a=0.0;
+    sk.b=1.0;
+    sk.t0=nucstruct_tab.get("t0hc",i_skyrme)/hc_mev_fm;
+    sk.t1=nucstruct_tab.get("t1hc",i_skyrme)/hc_mev_fm;
+    sk.t2=nucstruct_tab.get("t2hc",i_skyrme)/hc_mev_fm;
+    sk.t3=nucstruct_tab.get("t3hc",i_skyrme)/hc_mev_fm;
+    sk.x0=nucstruct_tab.get("x0",i_skyrme);
+    sk.x1=nucstruct_tab.get("x1",i_skyrme);
+    sk.x2=nucstruct_tab.get("x2",i_skyrme);
+    sk.x3=nucstruct_tab.get("x3",i_skyrme);
+    sk.alpha=nucstruct_tab.get("alpha",i_skyrme);
+
+    /*
+    cout << sk.t0 << " " << sk.t1 << " " << sk.t2 << " " << sk.t3 << " "
+         << sk.x0 << " " << sk.x1 << " " << sk.x2 << " " << sk.x3 << " "
+         << sk.alpha << endl;
+    skyrme_load(sk,"nuSkyI");
+    cout << sk.t0 << " " << sk.t1 << " " << sk.t2 << " " << sk.t3 << " "
+         << sk.x0 << " " << sk.x1 << " " << sk.x2 << " " << sk.x3 << " "
+         << sk.alpha << endl;
+    */
+    
+    sk.saturation();
+    rho0=sk.n0;
+    EoA=sk.eoa*hc_mev_fm;
+    K=sk.comp*hc_mev_fm;
+    cout << "n0: " << rho0 << " EoA: " << EoA << " K: "
+         << K << endl;
+    
+  }
 
   // Store some of the nuclear matter parameters
   
@@ -3689,7 +3743,7 @@ int eos::select_seven(int i_ns_loc, int i_skyrme_loc,
   eos_EoA=EoA;
   eos_K=K;
     
-  // Determine QMC coefficients based on the UNEDF Skyrme
+  // Determine QMC coefficients based on the nucstruct Skyrme
   
   qmc_b=eos_S+EoA-qmc_a;
   qmc_beta=(eos_L/3.0-qmc_a*qmc_alpha)/qmc_b;
@@ -3697,8 +3751,8 @@ int eos::select_seven(int i_ns_loc, int i_skyrme_loc,
   // Check that "b" and "beta" are physical
   
   if (qmc_b<0.0 || qmc_beta>5.0) {
-    cout << "eos::select_seven(): Value of b or beta unphysical."
-         << endl;
+    cout << "eos::select_seven(): Value of b (" << qmc_b 
+         << ") or beta (" << qmc_beta << ") unphysical." << endl;
     return 3;
   }
   
@@ -3773,6 +3827,8 @@ int eos::select_common() {
   if (n.ms<0.0 || p.ms<0.0) {
     cout << "eos::select_common(): "
          << "Effective masses negative in nuclear matter." << endl;
+    cout << "  nn,np,msn,msp: " << n.n << " " << p.n << " "
+         << n.ms << " " << p.ms << endl;
     return 5;
   }
   
@@ -3787,6 +3843,8 @@ int eos::select_common() {
   if (n.ms<0.0 || p.ms<0.0) {
     cout << "eos::select_common(): "
          << "Effective masses negative in neutron matter." << endl;
+    cout << "  nn,np,msn,msp: " << n.n << " " << p.n << " "
+         << n.ms << " " << p.ms << endl;
     return 6;
   }
   
@@ -3801,6 +3859,8 @@ int eos::select_common() {
   if (n.ms<0.0 || p.ms<0.0) {
     cout << "eos::select_common(): "
          << "Effective masses negative in proton matter." << endl;
+    cout << "  nn,np,msn,msp: " << n.n << " " << p.n << " "
+         << n.ms << " " << p.ms << endl;
     return 7;
   }
 
@@ -3835,6 +3895,9 @@ int eos::select_common() {
     mh.def_jac.err_nonconv=false;
     int ret=mh.msolve(1,Ye_trial,mf);
     if (ret!=0) {
+      cout << "eos::select_common(): Beta-equilibrium solver failed "
+           << "at nB: " << nbx << endl;
+      model_selected=false;
       return 8;
     }
     
@@ -3845,6 +3908,7 @@ int eos::select_common() {
     if (Ye<0.0 || Ye>1.0) {
       cout << "eos::select_common(): Beta-equilibrium unphysical."
            << endl;
+      cout << "  nB,Ye: " << nbx << " " << Ye << endl;
       model_selected=false;
       return 9;
     }
@@ -3942,6 +4006,7 @@ int eos::select_common() {
 int eos::select_full(std::vector<std::string> &sv, bool itive_com) {
 
   use_alt_eos=false;
+  model_selected=false;
   
   int ret;
   o2scl::rng<> r;
@@ -4031,7 +4096,7 @@ int eos::select_full(std::vector<std::string> &sv, bool itive_com) {
 
 int eos::random(std::vector<std::string> &sv, bool itive_com) {
 
-  if (UNEDF_tab.get_nlines()==0) read_data_files();
+  if (nucstruct_tab.get_nlines()==0) read_data_files();
   
   // This function never fails, and it requires a call to
   // free_energy_density(), so we set this to true
@@ -4062,7 +4127,7 @@ int eos::random(std::vector<std::string> &sv, bool itive_com) {
     eos_S=rng.random()*6.6+29.5;
 
     // Select a random Skyrme model
-    i_skyrme=rng.random_int(UNEDF_tab.get_nlines());
+    i_skyrme=rng.random_int(nucstruct_tab.get_nlines());
     
     if (true || verbose>1) {
       cout << "  Trying random model: " << endl;
@@ -4336,6 +4401,11 @@ int eos::comm_set(std::vector<std::string> &sv, bool itive_com) {
                        sv[1]=="T_grid_spec")) {
     process_grid_spec();
   }
+
+  vector_out(cout,sv,true);
+  if (sv.size()>=2 && sv[1]=="nucstruct_file") {
+    read_data_files();
+  }
   
   return 0;
 }
@@ -4478,6 +4548,13 @@ void eos::setup_cli(o2scl::cli &cl, bool read_docs) {
   p_data_dir.doc_name="data_dir";
   p_data_dir.doc_xml_file="doc/xml/classeos.xml";
   cl.par_list.insert(make_pair("data_dir",&p_data_dir));
+
+  p_nucstruct_file.str=&nucstruct_file;
+  p_nucstruct_file.help="";
+  p_nucstruct_file.doc_class="eos";
+  p_nucstruct_file.doc_name="nucstruct_file";
+  p_nucstruct_file.doc_xml_file="doc/xml/classeos.xml";
+  cl.par_list.insert(make_pair("nucstruct_file",&p_nucstruct_file));
   
   p_Ye_grid_spec.str=&Ye_grid_spec;
   p_Ye_grid_spec.help="";
