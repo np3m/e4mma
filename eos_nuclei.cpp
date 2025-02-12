@@ -202,7 +202,11 @@ void eos_nuclei::load_nuclei() {
 #endif
   
   // Load the nuclear masses
+#ifdef O2SCL_V0931
   ame.load("20");
+#else
+  o2scl_hdf::ame_load(ame);
+#endif
   o2scl_hdf::mnmsk_load(m95);
   o2scl_hdf::hfb_sp_load(hfb,27);
   pfuncs.load();
