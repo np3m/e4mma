@@ -4064,7 +4064,8 @@ int eos_nuclei::solve_hrg(size_t nv, const ubvector &x,
         
         // Generic fermion
         if (iferm>=((int)res_f.size())) {
-          cout << "iferm, res_f.size(): " << iferm << " " << res_f.size() << endl;
+          cout << "iferm, res_f.size(): " << iferm << " "
+               << res_f.size() << endl;
           cout << "part name: " << j << " " << part_db[j].name << endl;
           O2SCL_ERR("Indexing problem with fermions 2.",o2scl::exc_efailed);
         }
@@ -4268,6 +4269,8 @@ int eos_nuclei::eos_vary_dist
   
   int loc_verbose=function_verbose/1000%10;
 
+  std::cout << "evd start." << std::endl;
+  
   if (inc_hrg) {
     cout << "Setting no_nuclei to true while testing HRG." << endl;
     no_nuclei=true;
@@ -4317,6 +4320,7 @@ int eos_nuclei::eos_vary_dist
     }
 
     // Compute the EOS with the current nuclear distribution
+    std::cout << "evd 1." << std::endl;
     int ret=eos_fixed_dist
       (nB,Ye,T,log_xn,log_xp,thx,mun_full,mup_full,
        A_min,A_max,NmZ_min,NmZ_max,vdet,dist_changed,no_nuclei);
@@ -4487,6 +4491,7 @@ int eos_nuclei::eos_vary_dist
 
     // If nuclear matter was not preferred, then just go back
     // to the nuclei solution
+    std::cout << "evd 2." << std::endl;
     int ret=eos_fixed_dist
       (nB,Ye,T,log_xn,log_xp,thx,mun_full,mup_full,
        A_min,A_max,NmZ_min,NmZ_max,vdet,false,no_nuclei);
@@ -7851,7 +7856,7 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
              << "Du et al. (2022)]: " << xp*nB << endl;
         cout << "  n_{n,avg} [in 1/fm^3: equal to Xn*nB]: "
              << xn*nB*ξ << endl;
-        cout << "  n_{n,avg} [in 1/fm^3: equal to Xn*nB]: "
+        cout << "  n_{p,avg} [in 1/fm^3: equal to Xp*nB]: "
              << xp*nB*ξ << endl;
 
         cout << "  X_{alpha}: " << X[0] << endl;

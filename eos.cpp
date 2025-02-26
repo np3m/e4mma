@@ -1347,7 +1347,13 @@ double eos::free_energy_density_detail_s
  std::map<std::string,double> &vdet) {
 
   if (!strange_axis) {
-    return free_energy_density_detail(n,p,T,th,vdet);
+    int nos_ret=free_energy_density_detail(n,p,T,th,vdet);
+
+    // Store the chemical potentials for homogeneous matter
+    vdet["mun_gas"]=n.mu;
+    vdet["mup_gas"]=p.mu;
+
+    return nos_ret;
   }
   
   if (use_alt_eos) {
@@ -1357,6 +1363,11 @@ double eos::free_energy_density_detail_s
                                  rmf_hyp.def_sigma_m,
                                  rmf_hyp.def_cascade_z,
                                  rmf_hyp.def_cascade_m,th);
+    
+    // Store the chemical potentials for homogeneous matter
+    vdet["mun_gas"]=n.mu;
+    vdet["mup_gas"]=p.mu;
+
   } else {
     O2SCL_ERR("Strangness only supported for alternate EOSs.",
               o2scl::exc_eunimpl);
@@ -1416,6 +1427,8 @@ double eos::free_energy_density_detail
     vdet["msp"]=proton.ms*hc_mev_fm;
     vdet["Un"]=(neutron.mu-neutron.nu)*hc_mev_fm;
     vdet["Up"]=(proton.mu-proton.nu)*hc_mev_fm;
+    vdet["mun_gas"]=n.mu;
+    vdet["mup_gas"]=p.mu;
     if (rmf_fields) {
       double sigma, omega, rho;
       rmf.get_fields(sigma,omega,rho);
@@ -1901,6 +1914,8 @@ double eos::free_energy_density_detail
   vdet["msp"]=proton.ms*hc_mev_fm;
   vdet["Un"]=(neutron.mu-neutron.nu)*hc_mev_fm;
   vdet["Up"]=(proton.mu-proton.nu)*hc_mev_fm;
+  vdet["mun_gas"]=n.mu;
+  vdet["mup_gas"]=p.mu;
   
   return f_total;
 }

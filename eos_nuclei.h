@@ -677,6 +677,11 @@ public:
       density and electron fraction
 
       The temperature should be in 1/fm.
+
+      \todo This function is problematic because sometimes it uses
+      free_energy_density(), sometimes it uses free_energy_density_detail(),
+      but maybe it should be using free_energy_density_detail_s()?
+      This should be fixed. 
   */
   int solve_nuclei(size_t nv, const ubvector &x, ubvector &y, double nb,
 		   double ye, double T, 

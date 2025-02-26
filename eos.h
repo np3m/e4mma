@@ -1028,8 +1028,7 @@ protected:
    */
   double free_energy_density_detail_s
   (o2scl::fermion &n, o2scl::fermion &p, double Y_s, double T,
-   o2scl::thermo &th,
-   std::map<std::string,double> &vdet);
+   o2scl::thermo &th, std::map<std::string,double> &vdet);
   
   /// \name Miscellaneous functions [public]
   //@{
