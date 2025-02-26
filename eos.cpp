@@ -3293,6 +3293,8 @@ int eos::solve_Ye(size_t nv, const ubvector &x, ubvector &y,
   neutron.n=nb*(1.0-Ye);
   proton.n=nb*Ye;
 
+  if (Ye<0.0) return 3;
+
   if (use_alt_eos==false) {
     double t1, t2;
     sk.eff_mass(neutron,proton,t1,t2);

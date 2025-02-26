@@ -1,0 +1,8 @@
+../eos_nuclei -set data_dir "../data" -alt-model Skyrme nuSkyIII \
+-point 0.0741099 0.01 2.13241 \
+-set include_detail 1 \
+-point-nuclei 0.0741099 0.01 2.13241 \
+-set nucstruct_file nuSky.o2 \
+-random \
+-point-nuclei 0.0741099 0.01 2.13241 
+
