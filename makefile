@@ -149,60 +149,60 @@ eos: eos.o main_eos.o \
 # ----------------------------------------------------------------
 
 eos_mp.o: eos.cpp eos.h
-	$(LMPI_CXX) $(LMPI_CFLAGS) \
+	$(LMPI_CXX) $(LMPI_CFLAGS) -DE4MMA_MULTIP \
 		-o eos_mp.o -c eos.cpp
 
 eos_nuclei_mp.o: eos_nuclei.cpp eos_nuclei.h
-	$(LMPI_CXX) $(LMPI_CFLAGS) \
+	$(LMPI_CXX) $(LMPI_CFLAGS) -DE4MMA_MULTIP \
 		-o eos_nuclei_mp.o -c eos_nuclei.cpp
 
 eos_interp_mp.o: eos_interp.cpp
-	$(LMPI_CXX) $(LMPI_CFLAGS) \
+	$(LMPI_CXX) $(LMPI_CFLAGS) -DE4MMA_MULTIP \
 		-o eos_interp_mp.o -c eos_interp.cpp
 
 eos_neutrino_mp.o: eos_neutrino.cpp
-	$(LMPI_CXX) $(LMPI_CFLAGS) \
+	$(LMPI_CXX) $(LMPI_CFLAGS) -DE4MMA_MULTIP \
 		-o eos_neutrino_mp.o -c eos_neutrino.cpp
 
 eos_had_skyrme_ext_mp.o: eos_had_skyrme_ext.cpp \
 		eos_had_skyrme_ext.h
-	$(LMPI_CXX) $(LMPI_CFLAGS) -o eos_had_skyrme_ext_mp.o \
+	$(LMPI_CXX) $(LMPI_CFLAGS) -DE4MMA_MULTIP -o eos_had_skyrme_ext_mp.o \
 		-c eos_had_skyrme_ext.cpp
 
 main_mp.o: main.cpp eos.h 
-	$(LMPI_CXX) $(LMPI_CFLAGS) -o main_mp.o -c main.cpp 
+	$(LMPI_CXX) $(LMPI_CFLAGS) -DE4MMA_MULTIP -o main_mp.o -c main.cpp 
 
 neutrino/Couplings_mp.o: neutrino/Couplings.cpp neutrino/Couplings.hpp
-	$(LMPI_CXX) $(LMPI_CFLAGS) -DNUOPAC_HAS_GSL \
+	$(LMPI_CXX) $(LMPI_CFLAGS) -DE4MMA_MULTIP -DNUOPAC_HAS_GSL \
 		-o neutrino/Couplings_mp.o \
 		-c neutrino/Couplings.cpp
 
 neutrino/FluidState_mp.o: neutrino/FluidState.cpp neutrino/FluidState.hpp
-	$(LMPI_CXX) $(LMPI_CFLAGS) -DNUOPAC_HAS_GSL \
+	$(LMPI_CXX) $(LMPI_CFLAGS) -DE4MMA_MULTIP -DNUOPAC_HAS_GSL \
 		-o neutrino/FluidState_mp.o \
 		-c neutrino/FluidState.cpp
 
 neutrino/FunctionIntegrator_mp.o: neutrino/FunctionIntegrator.cpp \
 	neutrino/FunctionIntegrator.hpp
-	$(LMPI_CXX) $(LMPI_CFLAGS) -DNUOPAC_HAS_GSL -o \
+	$(LMPI_CXX) $(LMPI_CFLAGS) -DE4MMA_MULTIP -DNUOPAC_HAS_GSL -o \
 	neutrino/FunctionIntegrator_mp.o \
 	-c neutrino/FunctionIntegrator.cpp
 
 neutrino/Polarization_mp.o: neutrino/Polarization.cpp \
 		neutrino/Polarization.hpp
-	$(LMPI_CXX) $(LMPI_CFLAGS) -DNUOPAC_HAS_GSL -o \
+	$(LMPI_CXX) $(LMPI_CFLAGS) -DE4MMA_MULTIP -DNUOPAC_HAS_GSL -o \
 		neutrino/Polarization_mp.o \
 		-c neutrino/Polarization.cpp
 
 neutrino/PolarizationNonRelv2Apr8_mp.o: \
 		neutrino/PolarizationNonRelv2Apr8.cpp 
-	$(LMPI_CXX) $(LMPI_CFLAGS) -DNUOPAC_HAS_GSL \
+	$(LMPI_CXX) $(LMPI_CFLAGS) -DE4MMA_MULTIP -DNUOPAC_HAS_GSL \
 		-o neutrino/PolarizationNonRelv2Apr8_mp.o \
 		-c neutrino/PolarizationNonRelv2Apr8.cpp
 
 neutrino/jacobi_rule_mp.o: neutrino/jacobi_rule.cpp \
 		neutrino/jacobi_rule.hpp
-	$(LMPI_CXX) $(LMPI_CFLAGS) -DNUOPAC_HAS_GSL -o \
+	$(LMPI_CXX) $(LMPI_CFLAGS) -DE4MMA_MULTIP -DNUOPAC_HAS_GSL -o \
 		neutrino/jacobi_rule_mp.o \
 		-c neutrino/jacobi_rule.cpp
 
@@ -214,7 +214,8 @@ eos_nuclei_mp: eos_mp.o main_mp.o eos_nuclei_mp.o \
 		neutrino/PolarizationNonRelv2Apr8_mp.o \
 		neutrino/jacobi_rule_mp.o \
 		eos_neutrino_mp.o
-	$(LMPI_CXX) $(LMPI_CFLAGS) -o eos_nuclei_mp eos_mp.o main_mp.o \
+	$(LMPI_CXX) $(LMPI_CFLAGS) -DE4MMA_MULTIP -o eos_nuclei_mp \
+		eos_mp.o main_mp.o \
 		eos_nuclei_mp.o eos_had_skyrme_ext_mp.o eos_interp_mp.o \
 		neutrino/Couplings_mp.o neutrino/FluidState_mp.o \
 		eos_neutrino_mp.o neutrino/FunctionIntegrator_mp.o \

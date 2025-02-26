@@ -1433,8 +1433,8 @@ int eos_nuclei::eg_point(std::vector<std::string> &sv,
   // Process options and settings
   
   kwargs kwa;
-  
-  if (sv.size()>=3) {
+
+  if (sv.size()>=4) {
     kwa.set(sv[4]);
   }
   
@@ -1447,14 +1447,12 @@ int eos_nuclei::eg_point(std::vector<std::string> &sv,
   } else {
     elep.default_acc();
   }
-  
-  if (kwa.get_int("fr_verbose",0)!=0) {
-    elep.frel.verbose=kwa.get_int("fr_verbose",0);
-#ifndef O2SCL_NO_BOOST_MULTIPRECISION
-    elep.frel_ld.verbose=kwa.get_int("fr_verbose",0);
-    elep.frel_cdf25.verbose=kwa.get_int("fr_verbose",0);
+
+  elep.frel.verbose=kwa.get_int("fr_verbose1",0);
+#ifdef E4MMA_MULTIP
+  elep.frel_ld.verbose=kwa.get_int("fr_verbose2",0);
+  elep.frel_cdf25.verbose=kwa.get_int("fr_verbose3",0);
 #endif
-  }
 
   separate=kwa.get_bool("separate",false);
   
@@ -1486,7 +1484,7 @@ int eos_nuclei::eg_point(std::vector<std::string> &sv,
   // -----------------------------------------------------------
   // Convert arguments to nB, Ye, T in multiprecision
   
-#ifndef O2SCL_NO_BOOST_MULTIPRECISION
+#ifdef E4MMA_MULTIP
   
   long double nB_ld, Ye_ld, T_ld;
   cpp_dec_float_25 nB_25, Ye_25, T_25;
@@ -1590,25 +1588,169 @@ int eos_nuclei::eg_point(std::vector<std::string> &sv,
   
   if (sv.size()>=3 && kwa.get_string("mode","")=="comp") {
 
-    cout.precision(14);
-    cout << "tol_rel: " << elep.frel.density_root.tol_rel << endl;
-    cout << "tol_abs: " << elep.frel.density_root.tol_abs << endl;
-    
-#ifndef O2SCL_NO_BOOST_MULTIPRECISION
-    
-    cout << "tol_rel_ld: " << elep.frel_ld.density_root.tol_rel << endl;
-    cout << "tol_abs_ld: " << elep.frel_ld.density_root.tol_abs << endl;
-    cout << "tol_rel_25: " << elep.frel_cdf25.density_root.tol_rel << endl;
-    cout << "tol_abs_25: " << elep.frel_cdf25.density_root.tol_abs << endl;
-    
+#ifdef E4MMA_MULTIP
     
     elep.fp_25_acc();
+
+    cout.precision(4);
+
+    elep.frel_cdf25.multip=kwa.get_bool("mp3",elep.frel_cdf25.multip);
+    elep.frel.verbose=kwa.get_int("fr_verbose3",elep.frel.verbose);
+    elep.frel_cdf25.upper_limit_fac=
+      kwa.get_double("ulf3",static_cast<double>
+                     (elep.frel_cdf25.upper_limit_fac));
+    elep.frel_cdf25.tol_expan=
+      kwa.get_double("te3",static_cast<double>(elep.frel_cdf25.tol_expan));
+    elep.frel_cdf25.dit.tol_abs=
+      kwa.get_double("dta3",static_cast<double>(elep.frel_cdf25.dit.tol_abs));
+    elep.frel_cdf25.dit.tol_rel=
+      kwa.get_double("dtr3",static_cast<double>(elep.frel_cdf25.dit.tol_rel));
+    elep.frel_cdf25.nit.tol_abs=
+      kwa.get_double("dta3",static_cast<double>(elep.frel_cdf25.nit.tol_abs));
+    elep.frel_cdf25.nit.tol_rel=
+      kwa.get_double("rtr3",static_cast<double>(elep.frel_cdf25.nit.tol_rel));
+    elep.frel_cdf25.density_root.tol_abs=
+      kwa.get_double("rta3",static_cast<double>
+                     (elep.frel_cdf25.density_root.tol_abs));
+    elep.frel_cdf25.density_root.tol_rel=
+      kwa.get_double("dtr3",static_cast<double>
+                     (elep.frel_cdf25.density_root.tol_rel));
+
+    cout.width(20);
+    cout << "mp_25: " << elep.frel_cdf25.multip << endl;
+    cout.width(20);
+    cout << "verb_25: " << elep.frel_cdf25.verbose << endl;
+    cout.width(20);
+    cout << "ulf_25: " << elep.frel_cdf25.upper_limit_fac << endl;
+    cout.width(20);
+    cout << "te_25: " << elep.frel_cdf25.tol_expan << endl;
+    cout.width(20);
+    cout << "dit_tol_rel_25: " << elep.frel_cdf25.dit.tol_rel << endl;
+    cout.width(20);
+    cout << "dit_tol_rel_25: " << elep.frel_cdf25.dit.tol_rel << endl;
+    cout.width(20);
+    cout << "dit_tol_abs_25: " << elep.frel_cdf25.dit.tol_abs << endl;
+    cout.width(20);
+    cout << "nit_tol_rel_25: " << elep.frel_cdf25.nit.tol_rel << endl;
+    cout.width(20);
+    cout << "nit_tol_abs_25: " << elep.frel_cdf25.nit.tol_abs << endl;
+    cout.width(20);
+    cout << "root_tol_rel_25: " << elep.frel_cdf25.density_root.tol_rel
+         << endl;
+    cout.width(20);
+    cout << "root_tol_abs_25: " << elep.frel_cdf25.density_root.tol_abs
+         << endl;
+    
+    cout.precision(14);
+    
     elep.pair_density_eq_cdf25(nB_25*Ye_25,T_25/hc_mev_fm_25);
     
     elep.ld_acc();
+
+    cout.precision(4);
+    
+    elep.frel_ld.multip=kwa.get_bool("mp2",elep.frel_ld.multip);
+    elep.frel.verbose=kwa.get_int("fr_verbose2",elep.frel.verbose);
+    elep.frel_ld.upper_limit_fac=
+      kwa.get_double("ulf2",static_cast<double>(elep.frel_ld.upper_limit_fac));
+    elep.frel_ld.tol_expan=
+      kwa.get_double("te2",static_cast<double>(elep.frel_ld.tol_expan));
+    elep.frel_ld.dit.tol_abs=
+      kwa.get_double("dta2",static_cast<double>(elep.frel_ld.dit.tol_abs));
+    elep.frel_ld.dit.tol_rel=
+      kwa.get_double("dtr2",static_cast<double>(elep.frel_ld.dit.tol_rel));
+    elep.frel_ld.nit.tol_abs=
+      kwa.get_double("dta2",static_cast<double>(elep.frel_ld.nit.tol_abs));
+    elep.frel_ld.nit.tol_rel=
+      kwa.get_double("rtr2",static_cast<double>(elep.frel_ld.nit.tol_rel));
+    elep.frel_ld.density_root.tol_abs=
+      kwa.get_double("rta2",static_cast<double>
+                     (elep.frel_ld.density_root.tol_abs));
+    elep.frel_ld.density_root.tol_rel=
+      kwa.get_double("dtr2",static_cast<double>
+                     (elep.frel_ld.density_root.tol_rel));
+
+    cout.width(20);
+    cout << "mp_ld: " << elep.frel_ld.multip << endl;
+    cout.width(20);
+    cout << "verb_ld: " << elep.frel_ld.verbose << endl;
+    cout.width(20);
+    cout << "ulf_ld: " << elep.frel_ld.upper_limit_fac << endl;
+    cout.width(20);
+    cout << "te_ld: " << elep.frel_ld.tol_expan << endl;
+    cout.width(20);
+    cout << "dit_tol_rel_ld: " << elep.frel_ld.dit.tol_rel << endl;
+    cout.width(20);
+    cout << "dit_tol_rel_ld: " << elep.frel_ld.dit.tol_rel << endl;
+    cout.width(20);
+    cout << "dit_tol_abs_ld: " << elep.frel_ld.dit.tol_abs << endl;
+    cout.width(20);
+    cout << "nit_tol_rel_ld: " << elep.frel_ld.nit.tol_rel << endl;
+    cout.width(20);
+    cout << "nit_tol_abs_ld: " << elep.frel_ld.nit.tol_abs << endl;
+    cout.width(20);
+    cout << "root_tol_rel_ld: " << elep.frel_ld.density_root.tol_rel
+         << endl;
+    cout.width(20);
+    cout << "root_tol_abs_ld: " << elep.frel_ld.density_root.tol_abs
+         << endl;
+    
+    cout.precision(14);
+    
     elep.pair_density_eq_ld(nB_ld*Ye_ld,T_ld/hc_mev_fm_ld);
     
     elep.default_acc();
+
+    cout.precision(4);
+    
+    elep.frel.multip=kwa.get_bool("mp1",elep.frel.multip);
+    elep.frel.verbose=kwa.get_int("fr_verbose1",elep.frel.verbose);
+    elep.frel.upper_limit_fac=
+      kwa.get_double("ulf1",static_cast<double>(elep.frel.upper_limit_fac));
+    elep.frel.tol_expan=
+      kwa.get_double("te1",static_cast<double>(elep.frel.tol_expan));
+    elep.frel.dit.tol_abs=
+      kwa.get_double("dta1",static_cast<double>(elep.frel.dit.tol_abs));
+    elep.frel.dit.tol_rel=
+      kwa.get_double("dtr1",static_cast<double>(elep.frel.dit.tol_rel));
+    elep.frel.nit.tol_abs=
+      kwa.get_double("dta1",static_cast<double>(elep.frel.nit.tol_abs));
+    elep.frel.nit.tol_rel=
+      kwa.get_double("rtr1",static_cast<double>(elep.frel.nit.tol_rel));
+    elep.frel.density_root.tol_abs=
+      kwa.get_double("rta1",static_cast<double>
+                     (elep.frel.density_root.tol_abs));
+    elep.frel.density_root.tol_rel=
+      kwa.get_double("dtr1",static_cast<double>
+                     (elep.frel.density_root.tol_rel));
+    
+    cout.width(20);
+    cout << "mp: " << elep.frel.multip << endl;
+    cout.width(20);
+    cout << "verb: " << elep.frel.verbose << endl;
+    cout.width(20);
+    cout << "ulf: " << elep.frel.upper_limit_fac << endl;
+    cout.width(20);
+    cout << "te: " << elep.frel.tol_expan << endl;
+    cout.width(20);
+    cout << "dit_tol_rel: " << elep.frel.dit.tol_rel << endl;
+    cout.width(20);
+    cout << "dit_tol_rel: " << elep.frel.dit.tol_rel << endl;
+    cout.width(20);
+    cout << "dit_tol_abs: " << elep.frel.dit.tol_abs << endl;
+    cout.width(20);
+    cout << "nit_tol_rel: " << elep.frel.nit.tol_rel << endl;
+    cout.width(20);
+    cout << "nit_tol_abs: " << elep.frel.nit.tol_abs << endl;
+    cout.width(20);
+    cout << "root_tol_rel: " << elep.frel.density_root.tol_rel
+         << endl;
+    cout.width(20);
+    cout << "root_tol_abs: " << elep.frel.density_root.tol_abs
+         << endl;
+    
+    cout.precision(14);
+    
     elep.pair_density_eq(nB*Ye,T_MeV/hc_mev_fm);
     
     cout << "eos_nuclei::eg_point(): mu_e [MeV]: ";
@@ -1619,6 +1761,16 @@ int eos_nuclei::eg_point(std::vector<std::string> &sv,
     cout << "  " << dtos(elep.e.mu*hc_mev_fm,0) << endl;
     cout << "  " << dtos(elep.eld.mu*hc_mev_fm_ld,0) << endl;
     cout << "  " << dtos(mue_25,0) << endl;
+    
+    cout << "eos_nuclei::eg_point(): E_e [MeV]: ";
+    double Ee=elep.e.ed/nB*hc_mev_fm;
+    long double Ee_ld=elep.eld.ed/nB_ld*hc_mev_fm_ld;
+    cpp_dec_float_25 Ee_25=elep.ecdf25.ed/nB_25*hc_mev_fm_25;
+    cout << count_digits_same(Ee_ld,Ee) << " "
+         << count_digits_same(Ee_25,Ee_ld) << endl;
+    cout << "  " << dtos(Ee,0) << endl;
+    cout << "  " << dtos(Ee_ld,0) << endl;
+    cout << "  " << dtos(Ee_25,0) << endl;
     
     cout << "eos_nuclei::eg_point(): E_{eg} [MeV]: ";
     double E=elep.th.ed/nB*hc_mev_fm;
@@ -1680,14 +1832,14 @@ int eos_nuclei::eg_point(std::vector<std::string> &sv,
 #else    
 
     cerr << "Long double accuracy not available because "
-         << "O2SCL_NO_BOOST_MULTIPRECISION was defined." << endl;
+         << "E4MMA_MULTIP was not defined." << endl;
     exit(-1);
     
 #endif
     
   } else if (kwa.get_string("mode","")=="25") {
 
-#ifndef O2SCL_NO_BOOST_MULTIPRECISION
+#ifdef E4MMA_MULTIP
     
     // -----------------------------------------------------------
     // 25-digit precision mode
@@ -1744,14 +1896,14 @@ int eos_nuclei::eg_point(std::vector<std::string> &sv,
 #else    
 
     cerr << "25-digit accuracy not available because "
-         << "O2SCL_NO_BOOST_MULTIPRECISION was defined." << endl;
+         << "E4MMA_MULTIP was not defined." << endl;
     exit(-1);
     
 #endif
 
   } else if (kwa.get_string("mode","")=="ld") {
     
-#ifndef O2SCL_NO_BOOST_MULTIPRECISION
+#ifdef E4MMA_MULTIP
     
     // -----------------------------------------------------------
     // Long double precision mode
@@ -1787,7 +1939,7 @@ int eos_nuclei::eg_point(std::vector<std::string> &sv,
 #else
 
     cerr << "Long double accuracy not available because "
-         << "O2SCL_NO_BOOST_MULTIPRECISION was defined." << endl;
+         << "E4MMA_MULTIP was defined." << endl;
     exit(-1);
       
 #endif
