@@ -11627,12 +11627,22 @@ int eos_nuclei::save_compose(std::vector<std::string> &sv,
         
         fout << tg_P.get(ix)/nB_grid2[j] << " ";
         fout << tg_S.get(ix) << " ";
-        fout << tg_mun.get(ix)/(neutron.m*hc_mev_fm) << " ";
-        fout << tg_mup.get(ix)/(neutron.m*hc_mev_fm) << " ";
-        fout << tg_mue.get(ix)/(neutron.m*hc_mev_fm) << " ";
+        
+        double mun=tg_mun.get(ix);
+        double mup=tg_mup.get(ix);
+        double mue=tg_mue.get(ix);
+        
+        // Baryon chemical potential
+        fout << mun/(neutron.m*hc_mev_fm) << " ";
+        // Charge chemical potential
+        fout << (mup-mun)/(neutron.m*hc_mev_fm) << " ";
+        // Electron lepton number chemical potential
+        fout << (mue-mun+mup)/(neutron.m*hc_mev_fm) << " ";
         
         fout << tg_F.get(ix)/(neutron.m*hc_mev_fm)-1.0 << " ";
         fout << tg_E.get(ix)/(neutron.m*hc_mev_fm)-1.0 << " ";
+
+        // Number of additional quantites (currently 0)
         fout << 0 << endl;
       }
     }
