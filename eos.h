@@ -633,9 +633,6 @@ public:
   int solve_coeff_small(size_t nv, const ubvector &x, ubvector &y, 
 			double nb_last, double cs_ns_2, double cs_ns_last);
 
-  /// Experimental select function for all parameters
-  int select_full(std::vector<std::string> &sv, bool itive_com);
-  
   /** \brief Select a model based on the seven Du et al. (2019)
       parameters
    */
@@ -891,7 +888,7 @@ protected:
   /** \brief Construct the PNS EOS and the M-R curve
 
       <entropy per baryon> <lepton fraction> <output filename>
-
+      
       Use YL=0 for beta equilibrium. Currently always uses a cold
       crust.
    */
@@ -909,6 +906,14 @@ protected:
    */
   int table_full(std::vector<std::string> &sv, bool itive_com);
 
+  /** \brief More detailed delect function
+
+      <p1 p2 p3 ... >
+
+      Dec.
+  */
+  int select_full(std::vector<std::string> &sv, bool itive_com);
+  
   /** \brief Construct a full 3D EOS table without nuclei
 
       <filename>

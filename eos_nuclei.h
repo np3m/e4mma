@@ -805,7 +805,13 @@ public:
 
       <output file prefix>
 
-      Save an EOS table in the CompOSE format
+      Save an EOS table in the CompOSE format from the current
+      table. This command requires a table with leptons and
+      derivatives is currently in memory. It creates five
+      files, ``prefix.nb``, ``prefix.t``, ``prefix.yq``,
+      ``prefix.thermo``, and ``prefix.compo``. The composition
+      table is constructed with the five light nuclei and
+      the averaged nucleus, as stored in Z and A.
   */
   int save_compose(std::vector<std::string> &sv, bool itive_com);
   

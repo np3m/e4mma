@@ -1,6 +1,14 @@
 Tables to download
 ==================
 
+Mar. 14 2025, in-progress
+-------------------------
+
+- `Fiducial model, E4MMA format
+  <https://isospin.roam.utk.edu/public_data/eos_tables/du21/fid_3_14_25.o2>`_
+- `Fiducial model, Compose format
+  <https://isospin.roam.utk.edu/public_data/eos_tables/du21/fid_3_14_25_compose.zip>`_
+
 Feb. 6 2022, first release
 --------------------------
 
