@@ -1436,6 +1436,15 @@ double eos::free_energy_density_detail
       vdet["omega"]=omega;
       vdet["rho"]=rho;
     }
+
+    if (n.inc_rest_mass) {
+      th.ed+=n.n*n.m;
+      n.mu+=n.m;
+    }
+    if (p.inc_rest_mass) {
+      th.ed+=p.n*p.m;
+      p.mu+=p.m;
+    }
     return fr;
   }
   
@@ -1917,6 +1926,14 @@ double eos::free_energy_density_detail
   vdet["mun_gas"]=n.mu;
   vdet["mup_gas"]=p.mu;
   
+  if (n.inc_rest_mass) {
+    th.ed+=n.n*n.m;
+    n.mu+=n.m;
+  }
+  if (p.inc_rest_mass) {
+    th.ed+=p.n*p.m;
+    p.mu+=p.m;
+  }
   return f_total;
 }
   
@@ -3630,9 +3647,18 @@ int eos::mvsr(std::vector<std::string> &sv, bool itive_com) {
   nstar_cold ns;
   ns.set_eos(*this);
   ns.calc_eos();
-  ns.calc_nstar();
 
   shared_ptr<table_units<> > t1=ns.get_eos_results();
+
+  if (true) {
+    hdf_file hf;
+    hf.open_or_create(sv[1]);
+    hdf_output(hf,*t1,"eos");
+    hf.close();
+    exit(-1);
+  }    
+
+  ns.calc_nstar();
   shared_ptr<table_units<> > t2=ns.get_tov_results();
 
   hdf_file hf;
