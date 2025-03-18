@@ -1340,13 +1340,27 @@ int eos_nuclei::add_eg(std::vector<std::string> &sv,
         vector<size_t> ix={i,j,k};
 	tg_F.set(ix,tg_Fint.get(ix)+
                  (hc_mev_fm*elep.th.ed-T_MeV*elep.th.en)/nB);
-	tg_E.set(ix,tg_Eint.get(ix)+hc_mev_fm*elep.th.ed/nB);
-	tg_P.set(ix,tg_Pint.get(ix)+hc_mev_fm*elep.th.pr);
+	//tg_E.set(ix,tg_Eint.get(ix)+hc_mev_fm*elep.th.ed/nB);
+	//tg_P.set(ix,tg_Pint.get(ix)+hc_mev_fm*elep.th.pr);
 	tg_S.set(ix,tg_Sint.get(ix)+elep.th.en/nB);
 	tg_mue.set(ix,hc_mev_fm*vdet["mue"]);
 
         double np=nB*Ye;
         double nn=nB*(1.0-Ye);
+        
+        // Use the thermodynamic identities to compute E and P
+        /*
+        cout << tg_Eint.get(ix)+hc_mev_fm*elep.th.ed/nB << " "
+             << tg_F.get(ix)+T_MeV*tg_S.get(ix) << endl;
+        cout << tg_Pint.get(ix)+hc_mev_fm*elep.th.pr << " "
+             << -tg_F.get(ix)*nB+tg_mun.get(ix)*nn+
+          ((tg_mup.get(ix)+tg_mue.get(ix))*np) << endl;
+        exit(-1);
+        */
+        tg_E.set(ix,tg_F.get(ix)+T_MeV*tg_S.get(ix));
+        tg_P.set(ix,-tg_F.get(ix)*nB+tg_mun.get(ix)*nn+
+                 ((tg_mup.get(ix)+tg_mue.get(ix))*np));
+                  
         
         if (include_muons) {
           // Set muon density
@@ -11643,7 +11657,22 @@ int eos_nuclei::save_compose(std::vector<std::string> &sv,
         fout << tg_E.get(ix)/(neutron.m*hc_mev_fm)-1.0 << " ";
 
         // Number of additional quantites (currently 0)
-        fout << 0 << endl;
+        if (true) {
+          fout << 0 << endl;
+        } else {
+          fout << 1 << " ";
+          fout << abs(tg_F.get(ix)-tg_E.get(ix)+tg_S.get(ix)*T_grid2[m])/
+            abs(tg_F.get(ix)) << endl;
+          if (abs(tg_F.get(ix)-tg_E.get(ix)+tg_S.get(ix)*T_grid2[m])/
+              abs(tg_F.get(ix))>1.0e-11) {
+            std::cout << "Here: " << nB_grid2[j] << " "
+                      << Ye_grid2[k] << " " << T_grid2[m]
+                      << std::endl;
+            std::cout << tg_F.get(ix) << " "
+                      << tg_E.get(ix) << " "
+                      << tg_S.get(ix)*T_grid2[m] << std::endl;
+          }
+        }
       }
     }
   }
