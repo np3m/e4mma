@@ -749,6 +749,7 @@ void eos::ns_fit(int row) {
     }
   }
   if (nb_new>0.01) {
+    ns_nb_max*=cs2_extra;
     cout << "eos::ns_fit(): Adjusting ns_nb_max from " << ns_nb_max << " to "
          << nb_new << "." << endl;
     ns_nb_max=nb_new;
@@ -924,6 +925,7 @@ eos::eos() {
   rmf_fields=false;
 
   use_alt_eos=false;
+  cs2_extra=1.0;
 }
 
 double eos::energy_density_qmc(double nn, double np) {
@@ -1086,8 +1088,7 @@ int eos::solve_coeff_small(size_t nv, const ubvector &x,
   return 0;
 }
 
-int eos::new_nuc_eos(double nb, 
-                     double &e_nuc, double &denucdnn) {
+int eos::new_nuc_eos(double nb, double &e_nuc, double &denucdnn) {
   
   double a1l, a2l;
   double c1l, c2l;
@@ -1525,11 +1526,13 @@ double eos::free_energy_density_detail
   double P_skyrme_eqdenT0=-th.ed+mu_n_skyrme_eqdenT0*n.n+
     mu_p_skyrme_eqdenT0*p.n;
   double f_skyrme_eqdenT0=th.ed;
-
+  
   if (false) {
-    double x1, x2;
-    new_nuc_eos(nn+pn,x1,x2);
-    cout << th.ed << " " << (n.mu+p.mu)/2.0 << " " << x1 << " " << x2 << endl;
+    double e_nuc, denucdnn;
+    cout << th.ed << " " << n.mu << " " << p.mu << endl;
+    new_nuc_eos(nn+pn,e_nuc,denucdnn);
+    cout << e_nuc << " " << denucdnn+(neutron.m-proton.m)/2.0
+              << " " << denucdnn-(neutron.m-proton.m)/2.0 << endl;
     exit(-1);
   }
 
@@ -4710,6 +4713,13 @@ void eos::setup_cli(o2scl::cli &cl, bool read_docs) {
   p_b_virial.doc_name="b_virial";
   p_b_virial.doc_xml_file="doc/xml/classeos.xml";
   cl.par_list.insert(make_pair("b_virial",&p_b_virial));
+
+  p_cs2_extra.d=&cs2_extra;
+  p_cs2_extra.help="";
+  p_cs2_extra.doc_class="eos";
+  p_cs2_extra.doc_name="cs2_extra";
+  p_cs2_extra.doc_xml_file="doc/xml/classeos.xml";
+  cl.par_list.insert(make_pair("cs2_extra",&p_cs2_extra));
 
   cl.set_comm_option_vec(nopt,options);
   

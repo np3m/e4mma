@@ -421,17 +421,17 @@ public:
       This object is set in \ref ns_fit(), which is called by
       \ref select_seven().
 
-      The original posteriors are in columns "nb" and "EoA". The
-      column "Eerr" contains the uncertainties for the fit. The fit is
-      stored in the columns "EoA_fit", "ed_fit", "mu_fit", and
-      "cs2_fit". The columns "ed_fit" and "mu_fit" both include the
-      rest mass contribution. The columns "ed", "mu", "dmudn" and
-      "cs2" are computed directly from the original posteriors.
-      Again, the columns "ed" and "mu" both include the rest mass
-      contribution.
+      The original posteriors are in columns ``nb`` and ``EoA``. The
+      column ``Eerr`` contains the uncertainties for the fit. The fit
+      is stored in the columns ``EoA_fit``, ``ed_fit``, ``mu_fit``,
+      and ``cs2_fit``. The columns ``ed_fit`` and ``mu_fit`` both
+      include the rest mass contribution. The columns ``ed``, ``mu``,
+      ``dmudn`` and ``cs2`` are computed directly from the original
+      posteriors. Again, the columns ``ed`` and ``mu`` both include
+      the rest mass contribution.
 
-      The maximum baryon density in this table is the value "nb_max",
-      as obtained from the original posterior data value.
+      The maximum baryon density in this table is the value
+      ``nb_max``, as obtained from the original posterior data value.
   */
   o2scl::table_units<> nstar_high;
   
@@ -444,6 +444,12 @@ public:
   
   /// Random number generator
   o2scl::rng<> rng;
+
+  /// If true, then RMF fields are included
+  bool rmf_fields;
+
+  /// Name of the alternate EOS
+  std::string alt_name;
   //@}
   
   /// \name EOS outputs
@@ -491,7 +497,10 @@ public:
       as a function of baryon density (in \f$ \mathrm{fm}^{-3} \f$ )
 
       Note this function does not include the rest mass 
-      energy density for the nucleons. 
+      energy density for the nucleons.
+
+      \note Currently this function just returns the result of \ref
+      fit_fun(), using the parameters stored in \ref ns_fit_params.
   */
   double ed_fit_norest(double nb);
   
@@ -535,6 +544,8 @@ public:
   double mu_fit_norest(double nb);
   //@}
 
+  /// \name Modified nuclear matter EOS [protected]
+  //@{
   /** \brief The maximum baryon density at which the nuclear matter
       EOS is causal
 
@@ -547,6 +558,22 @@ public:
 
   /// The last pressure at which nuclear matter is causal
   double p_nuc_last;
+
+  /** \brief Construct a new nuclear matter EOS which ensures
+      causality at high densities
+
+      Given the input baryon density in \c nb in units of \f$
+      1/\mathrm{fm}^{3} \f$, this returns the energy density of
+      nuclear matter in units of \f$ 1/\mathrm{fm}^{4} \f$ in \c
+      e_nuc and the derivative with respect to the density in units of
+      \f$ 1/\mathrm{fm}^{3} \f$ in \c denucdnn.
+
+      \todo This function isn't yet implemented in the code because
+      I haven't yet disentangled how to get the neutron ahd
+      proton chemical potentials from denucdnb.
+  */
+  int new_nuc_eos(double nb, double &e_nuc, double &denucdnb);
+  //@}
   
   /// \name Parameter objects
   //@{
@@ -558,6 +585,7 @@ public:
   o2scl::cli::parameter_bool p_use_alt_eos;
   o2scl::cli::parameter_double p_a_virial;
   o2scl::cli::parameter_double p_b_virial;
+  o2scl::cli::parameter_double p_cs2_extra;
   o2scl::cli::parameter_int p_cs2_verbose;
   o2scl::cli::parameter_string p_nB_grid_spec;
   o2scl::cli::parameter_string p_Ye_grid_spec;
@@ -567,9 +595,6 @@ public:
   o2scl::cli::parameter_string p_nucstruct_file;
   //@}
 
-  /// If true, then RMF fields are included
-  bool rmf_fields;
-  
   /// \name Other EOS functions [protected]
   //@{
   /** \brief Compute the energy density (in \f$ \mathrm{fm}^{-4} \f$)
@@ -585,25 +610,17 @@ public:
       1/\mathrm{fm}^{3} \f$, this returns the energy density of
       neutron star matter in units of \f$ 1/\mathrm{fm}^{4} \f$ in \c
       e_ns and the derivative with respect to the density in units of
-      \f$ 1/\mathrm{fm}^{3} \f$ in \c densdnn. The rest mass
+      \f$ 1/\mathrm{fm}^{3} \f$ in \c densdnn. The nucleon rest mass
       contribution is not included in either \c e_ns or 
       \c densdnn.
+
+      This function performs a speed of sound correction on top of the
+      analytic fit to the neutron star data, as computed in fit_fun(),
+      energy_density_ns(), ed_fit_norest(), and mu_fit_norest().
   */
   int new_ns_eos(double nb, o2scl::fermion &n, double &e_ns,
 		 double &densdnn);
 
-  /** \brief Construct a new nuclear matter EOS which ensures
-      causality at high densities
-
-      Given the input baryon density in \c nb in units of \f$
-      1/\mathrm{fm}^{3} \f$, this returns the energy density of
-      neutron star matter in units of \f$ 1/\mathrm{fm}^{4} \f$ in \c
-      e_nuc and the derivative with respect to the density in units of
-      \f$ 1/\mathrm{fm}^{3} \f$ in \c denucdnn.
-  */
-  int new_nuc_eos(double nb, 
-                  double &e_nuc, double &denucdnn);
-  
   /** \brief Compute dfdnn including photons and electons
 
       This function is used in \ref cs2_func() .
@@ -647,13 +664,6 @@ public:
 
   /// \name Particle objects [protected]
   //@{
-  /// New lepton object
-#ifdef O2SCL_NO_BOOST_MULTIPRECISION
-  o2scl::eos_leptons elep;
-#else
-  o2scl::eos_leptons_multip elep;
-#endif
-  
   /** \brief Electron/positron
    */
   o2scl::fermion electron;
@@ -725,8 +735,12 @@ protected:
   /// Pointer to alternative model
   o2scl::eos_had_temp_base *eosp_alt;
 
-  /// Name of the alternate EOS
-  std::string alt_name;
+  /// New lepton object
+#ifdef O2SCL_NO_BOOST_MULTIPRECISION
+  o2scl::eos_leptons elep;
+#else
+  o2scl::eos_leptons_multip elep;
+#endif
   //@}
 
   /// \name The parameters for the QMC energy density [protected]
@@ -829,6 +843,9 @@ protected:
   
   /// File containing nuclear structure parameterizations
   std::string nucstruct_file;
+
+  /// Desc
+  double cs2_extra;
   //@}
 
   /// \name Command-line interface functions [public]
@@ -914,21 +931,17 @@ protected:
   */
   int select_full(std::vector<std::string> &sv, bool itive_com);
   
-  /** \brief Construct a full 3D EOS table without nuclei
+  /** \brief Desc
 
-      <filename>
-
-      This constructs a full 3D EOS table without nuclei using the
-      specified model. The resulting file has several tensor_grid
-      objects including Fint, Eint, Pint, Sint, mun, mup, cs2, mue, F,
-      E, P, and S. This function does not yet support muons or
-      strangeness.
+      (no arguments)
+      
+      The 'test-cs2' command ...
    */
   int test_cs2(std::vector<std::string> &sv, bool itive_com);
 
   /** \brief Test the first derivatives of the free energy (no nuclei)
 
-      (no parameters)
+      (no arguments)
 
       This function tests the first derivatives of the homogeneous
       matter EOS without nuclei. The model must be selected before

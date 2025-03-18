@@ -5352,7 +5352,7 @@ file&gt;, or &quot;point&quot; &lt;output file&gt; &lt;nB&gt; &lt;Ye&gt; &lt;T&g
       <member refid="classeos_1a60f53d36893b821e72e08aff3250ddd8" prot="protected" virt="non-virtual"><scope>eos_nuclei</scope><name>neutrino</name></member>
       <member refid="classeos_1a1d6a2e292171de1dc51960cc51c610f9" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>neutron</name></member>
       <member refid="classeos_1a1363b6b6d6cb43829b672e35a2434832" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>new_ns_eos</name></member>
-      <member refid="classeos_1ac642b8c2c20fd876dcf01bad301a7321" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>new_nuc_eos</name></member>
+      <member refid="classeos_1a015bb7509762fdd49a5be19104b80769" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>new_nuc_eos</name></member>
       <member refid="classeos__nuclei_1a4ed2d01020c376d09c7e80d4691a0002" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>new_table</name></member>
       <member refid="classeos__nuclei_1a617715389811945428a28aac994f2d4d" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>nm_fit</name></member>
       <member refid="classeos_1ae02ba6f3224e7ae56586f9aca94f5c87" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>ns_fit</name></member>
