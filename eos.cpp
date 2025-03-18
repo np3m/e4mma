@@ -749,7 +749,7 @@ void eos::ns_fit(int row) {
     }
   }
   if (nb_new>0.01) {
-    ns_new*=cs2_extra;
+    nb_new*=cs2_extra;
     cout << "eos::ns_fit(): Adjusting ns_nb_max from " << ns_nb_max << " to "
          << nb_new << "." << endl;
     ns_nb_max=nb_new;
