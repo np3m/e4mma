@@ -1437,14 +1437,6 @@ double eos::free_energy_density_detail
       vdet["rho"]=rho;
     }
 
-    if (n.inc_rest_mass) {
-      th.ed+=n.n*n.m;
-      n.mu+=n.m;
-    }
-    if (p.inc_rest_mass) {
-      th.ed+=p.n*p.m;
-      p.mu+=p.m;
-    }
     return fr;
   }
   
@@ -1453,6 +1445,12 @@ double eos::free_energy_density_detail
 	      o2scl::exc_einval);
   }
 
+  bool n_inc_rest_mass=n.inc_rest_mass;
+  bool p_inc_rest_mass=p.inc_rest_mass;
+  
+  n.inc_rest_mass=false;
+  p.inc_rest_mass=false;
+  
   double nn=n.n;
   double pn=p.n;
   double nb=nn+pn;
@@ -1926,13 +1924,15 @@ double eos::free_energy_density_detail
   vdet["mun_gas"]=n.mu;
   vdet["mup_gas"]=p.mu;
   
-  if (n.inc_rest_mass) {
+  if (n_inc_rest_mass) {
     th.ed+=n.n*n.m;
     n.mu+=n.m;
+    n.inc_rest_mass=true;
   }
-  if (p.inc_rest_mass) {
+  if (p_inc_rest_mass) {
     th.ed+=p.n*p.m;
     p.mu+=p.m;
+    p.inc_rest_mass=true;
   }
   return f_total;
 }
@@ -3644,13 +3644,83 @@ int eos::pns_eos(std::vector<std::string> &sv, bool itive_com) {
 
 int eos::mvsr(std::vector<std::string> &sv, bool itive_com) {
 
+  if (false) {
+    /*
+          virtual int beta_eq_T0(ubvector &nB_grid, ubvector &guess,
+                           eos_leptons &elep,
+                           std::shared_ptr<table_units<> > results);
+    */
+    uniform_grid<double> ugx=uniform_grid_end_width<double>(0.04,0.32,0.04);
+    ubvector nb_grid;
+    ugx.vector(nb_grid);
+    ubvector guess(1);
+    guess[0]=0.01;
+
+    std::shared_ptr<table_units<> > results(new table_units<>);
+    this->beta_eq_T0(nb_grid,guess,elep,results);
+
+    hdf_file hf;
+    hf.open_or_create(sv[1]);
+    hdf_output(hf,*results,"beta");
+    hf.close();
+
+    exit(-1);
+  }
+
+#ifdef O2SCL_NEVER_DEFINED
+  
+  if (true) {
+    tensor_grid3 tgx;
+    uniform_grid<double> ugx=uniform_grid_end_width<double>(0.04,0.32,0.04);
+    uniform_grid<double> ugy=uniform_grid_end_width<double>(0.0,0.5,0.02);
+    tgx.set_xy("nb",ugx,"x",ugy);
+    tgx.line_of_names("ed mun mup");
+    
+    for(size_t k=0;k<100;k++) {
+
+      if (k==0) {
+        sv={"Skyrme","SLy4"};
+        alt_model(sv,0);
+      } else if (k==1) {
+        sv={"Skyrme","NRAPR"};
+        alt_model(sv,0);
+      } else {
+        sv.clear();
+        random(sv,0);
+      }
+      
+      for(size_t i=0;i<tgx.get_nx();i++) {
+        for(size_t j=0;j<tgx.get_ny();j++) {
+          double nb=tgx.get_grid_x(i);
+          double xx=tgx.get_grid_y(j);
+          
+          neutron.n=nb*(1.0-xx);
+          proton.n=nb*xx;
+          thermo thx;
+          this->calc_e(neutron,proton,thx);
+          
+          tgx.set(i,j,"ed",thx.ed);
+          tgx.set(i,j,"mun",neutron.mu);
+          tgx.set(i,j,"mup",proton.mu);
+        }
+      }
+    }
+    hdf_file hf;
+    hf.open_or_create(sv[1]);
+    hdf_output(hf,t3d,"mc");
+    hf.close();
+    exit(-1);
+  }
+  
+#endif
+  
   nstar_cold ns;
   ns.set_eos(*this);
   ns.calc_eos();
 
   shared_ptr<table_units<> > t1=ns.get_eos_results();
 
-  if (true) {
+  if (false) {
     hdf_file hf;
     hf.open_or_create(sv[1]);
     hdf_output(hf,*t1,"eos");
@@ -4174,13 +4244,13 @@ int eos::random(std::vector<std::string> &sv, bool itive_com) {
     
     if (true || verbose>1) {
       cout << "  Trying random model: " << endl;
-      cout << "  i_ns= " << i_ns << endl;
-      cout << "  i_skyrme= " << i_skyrme << endl;
-      cout << "  alpha= " << qmc_alpha << endl;
-      cout << "  a= " << qmc_a << endl;
-      cout << "  eos_L= " << eos_L << endl;
-      cout << "  eos_S= " << eos_S << endl;
-      cout << "  phi= " << phi << endl;
+      cout << "  i_ns: " << i_ns << endl;
+      cout << "  i_skyrme: " << i_skyrme << endl;
+      cout << "  alpha: " << qmc_alpha << endl;
+      cout << "  a: " << qmc_a << endl;
+      cout << "  eos_L: " << eos_L << endl;
+      cout << "  eos_S: " << eos_S << endl;
+      cout << "  phi: " << phi << endl;
     }
 
     int ret=select_seven(i_ns,i_skyrme,qmc_alpha,qmc_a,
