@@ -32,12 +32,31 @@ using namespace o2scl_hdf;
 int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
                                  bool itive_com) {
 
+  int mpi_rank=0, mpi_size=1;
+
+#ifndef NO_MPI
+
+  // Get MPI rank, etc.
+  MPI_Comm_rank(MPI_COMM_WORLD,&mpi_rank);
+  MPI_Comm_size(MPI_COMM_WORLD,&mpi_size);
+  
+#endif
+  
   std::string st_in, st_out;
   std::string table_out;
   st_in=sv[1];
   table_out=sv[2];
   st_out=sv[3];
 
+  size_t pos=table_out.find("<rank>");
+  if (pos!=std::string::npos) {
+    table_out.replace(pos,6,o2scl::itos(mpi_rank));
+  }
+  pos=st_out.find("<rank>");
+  if (pos!=std::string::npos) {
+    st_out.replace(pos,6,o2scl::itos(mpi_rank));
+  }
+  
   kwargs kw;
   if (sv.size()>=5) kw.set(sv[4]);
   size_t window=kw.get_size_t("window",0);
@@ -53,6 +72,18 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
   ike.def_mmin.verbose=1;
   ike.enp=this;
   
+#ifndef NO_MPI
+
+  // Ensure that multiple MPI ranks aren't reading from the
+  // filesystem at the same time
+  int tag=0, buffer=0;
+  if (mpi_size>1 && mpi_rank>=1) {
+    MPI_Recv(&buffer,1,MPI_INT,mpi_rank-1,
+	     tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
+  }
+
+#endif
+  
   /// Load cs2 from a file
   cout << "eos_nuclei::interp_fix_table() reading stability file: "
        << st_in << endl;
@@ -62,6 +93,14 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
   hdf_input(hff,tg_sflag,"sflag");
   hff.close();
 
+#ifndef NO_MPI
+  // Send a message to the next MPI rank
+  if (mpi_size>1 && mpi_rank<mpi_size-1) {
+    MPI_Send(&buffer,1,MPI_INT,mpi_rank+1,
+	     tag,MPI_COMM_WORLD);
+  }
+#endif
+  
   std::string kernel=kw.get_string("kernel","rbf_noise");
   cout << "kernel: " << kernel << endl;
   int ilo=kw.get_int("ilo",0);
@@ -70,11 +109,38 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
   int jhi=kw.get_int("jhi",Ye_grid2.size()-1);
   int klo=kw.get_int("klo",0);
   int khi=kw.get_int("khi",T_grid2.size()-1);
+
+#ifndef NO_MPI
+
+  if (mpi_rank==0) {
+    ilo=0;
+    ihi=180;
+    jlo=0;
+    jhi=35;
+  } else if (mpi_rank==1) {
+    ilo=0;
+    ihi=180;
+    jlo=39;
+    jhi=69;
+  } else if (mpi_rank==2) {
+    ilo=200;
+    ihi=250;
+    jlo=0;
+    jhi=35;
+  } else if (mpi_rank==3) {
+    ilo=200;
+    ihi=250;
+    jlo=39;
+    jhi=69;
+  }
+  
+#endif
+  
   cout << "ilo,ihi,jlo,jhi,klo,khi: "
        << ilo << " " << ihi << " "
        << jlo << " " << jhi << " "
        << klo << " " << khi << endl;
-  
+
   int ipx_count=0;
 
   cout << "eos_nuclei::interp_fix_table(): "
