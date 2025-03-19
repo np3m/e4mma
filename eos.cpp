@@ -447,14 +447,15 @@ int eos::test_cs2(std::vector<std::string> &sv, bool itive_com) {
   tx2.line_of_units("1/fm^3 1/fm^4 1/fm 1/fm^4 1/fm");
   
   thermo thx;
-  double e_nuc, denucdnn;
+  double e_nuc, denucdnn, munx, mupx;
   for(double nb=0.08;nb<2.0;nb+=0.01) {
 
     neutron.n=nb/2.0;
     proton.n=nb/2.0;
     sk.calc_e(neutron,proton,thx);
     
-    new_nuc_eos(nb,e_nuc,denucdnn);
+    //new_nuc_eos(nb,e_nuc,denucdnn);
+    new_nuc_eos(nb,e_nuc,munx,mupx);
     
     vector<double> line={nb,thx.ed+(neutron.m+proton.m)/2.0*nb,
                          (neutron.mu+neutron.m+proton.mu+proton.m)/2.0,
@@ -1088,7 +1089,7 @@ int eos::solve_coeff_small(size_t nv, const ubvector &x,
   return 0;
 }
 
-int eos::new_nuc_eos(double nb, double &e_nuc, double &denucdnn) {
+int eos::new_nuc_eos(double nb, double &e_nuc, double &mun, double &mup) {
   
   double a1l, a2l;
   double c1l, c2l;
@@ -1103,13 +1104,20 @@ int eos::new_nuc_eos(double nb, double &e_nuc, double &denucdnn) {
   // Initial guess for a1l and a2l
   ubvector mx(2), my(2);
   thermo thx;
+  double denucdnn;
   
-  if (nb<(ns_nb_max-1.0e-6)) {
+  if (true || nb<(ns_nb_max-1.0e-6)) {
     
     neutron.n=nb/2.0;
     proton.n=nb/2.0;
     sk.calc_e(neutron,proton,thx);
-    e_nuc=thx.ed;
+    double ff=(-30.0*nb*nb/(1.0+exp(20.0*(1.6-nb))))/hc_mev_fm;
+    double dffdnb=(-60.0*nb/(1.0+exp(20.0*(1.6-nb)))-
+                   600.0*nb*nb*exp(20.0*(1.6-nb))/
+                   pow(1.0+exp(20.0*(1.6-nb)),2.0))/hc_mev_fm;
+    e_nuc=thx.ed+ff;
+    mun=neutron.mu+dffdnb;
+    mup=proton.mu+dffdnb;
     denucdnn=(neutron.mu+proton.mu)/2.0;
     
   } else {
@@ -1519,21 +1527,31 @@ double eos::free_energy_density_detail
   n.mu=n.m;
   p.mu=p.m;
   
-  sk.calc_e(n,p,th);
-  
-  double mu_n_skyrme_eqdenT0=n.mu;
-  double mu_p_skyrme_eqdenT0=p.mu;
-  double P_skyrme_eqdenT0=-th.ed+mu_n_skyrme_eqdenT0*n.n+
-    mu_p_skyrme_eqdenT0*p.n;
-  double f_skyrme_eqdenT0=th.ed;
-  
-  if (false) {
-    double e_nuc, denucdnn;
-    cout << th.ed << " " << n.mu << " " << p.mu << endl;
-    new_nuc_eos(nn+pn,e_nuc,denucdnn);
-    cout << e_nuc << " " << denucdnn+(neutron.m-proton.m)/2.0
-              << " " << denucdnn-(neutron.m-proton.m)/2.0 << endl;
-    exit(-1);
+  double mu_n_skyrme_eqdenT0;
+  double mu_p_skyrme_eqdenT0;
+  double P_skyrme_eqdenT0;
+  double f_skyrme_eqdenT0;
+
+  if (true) {
+    
+    sk.calc_e(n,p,th);
+    
+    mu_n_skyrme_eqdenT0=n.mu;
+    mu_p_skyrme_eqdenT0=p.mu;
+    P_skyrme_eqdenT0=-th.ed+mu_n_skyrme_eqdenT0*n.n+mu_p_skyrme_eqdenT0*p.n;
+    f_skyrme_eqdenT0=th.ed;
+    
+  } else {
+    
+    double e_nuc, munx, mupx;
+    //cout << th.ed << " " << n.mu << " " << p.mu << endl;
+    new_nuc_eos(nn+pn,e_nuc,munx,mupx);
+    //cout << e_nuc << " " << munx << " " << mupx << endl;
+
+    mu_n_skyrme_eqdenT0=munx;
+    mu_p_skyrme_eqdenT0=mupx;
+    P_skyrme_eqdenT0=-e_nuc+mu_n_skyrme_eqdenT0*n.n+mu_p_skyrme_eqdenT0*p.n;
+    f_skyrme_eqdenT0=e_nuc;
   }
 
   double f_skyrme_T=0.0, f_skyrme_T0=0.0;

@@ -572,7 +572,7 @@ public:
       I haven't yet disentangled how to get the neutron ahd
       proton chemical potentials from denucdnb.
   */
-  int new_nuc_eos(double nb, double &e_nuc, double &denucdnb);
+  int new_nuc_eos(double nb, double &e_nuc, double &mun, double &mup);
   //@}
   
   /// \name Parameter objects
