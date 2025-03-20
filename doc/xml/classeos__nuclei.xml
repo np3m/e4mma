@@ -609,7 +609,7 @@
         <name>vomega_prime</name>
         <qualifiedname>eos_nuclei::vomega_prime</qualifiedname>
         <briefdescription>
-<para>Derivative of partition function with respect to temperature, in units of <formula id="21">$ \mathrm{fm} $</formula>. </para>
+<para>Derivative of partition function with respect to temperature, in units of <formula id="22">$ \mathrm{fm} $</formula>. </para>
         </briefdescription>
         <detaileddescription>
         </detaileddescription>
@@ -687,7 +687,7 @@
         <name>max_ratio</name>
         <qualifiedname>eos_nuclei::max_ratio</qualifiedname>
         <briefdescription>
-<para>The maximum value of <formula id="22">$ N/Z $</formula> or <formula id="23">$ Z/N $</formula> (default 7) </para>
+<para>The maximum value of <formula id="23">$ N/Z $</formula> or <formula id="24">$ Z/N $</formula> (default 7) </para>
         </briefdescription>
         <detaileddescription>
         </detaileddescription>
@@ -702,7 +702,7 @@
         <name>mh_tol_rel</name>
         <qualifiedname>eos_nuclei::mh_tol_rel</qualifiedname>
         <briefdescription>
-<para>Relative tolerance for the solver in the <ref refid="classeos__nuclei_1affdd30692a9b5ab5de04dedc1292c127" kindref="member">eos_fixed_dist()</ref> function (default <formula id="24">$ 10^{-6} $</formula>) </para>
+<para>Relative tolerance for the solver in the <ref refid="classeos__nuclei_1affdd30692a9b5ab5de04dedc1292c127" kindref="member">eos_fixed_dist()</ref> function (default <formula id="25">$ 10^{-6} $</formula>) </para>
         </briefdescription>
         <detaileddescription>
         </detaileddescription>
@@ -1008,7 +1008,7 @@
         <name>Ec</name>
         <qualifiedname>eos_nuclei::Ec</qualifiedname>
         <briefdescription>
-<para>Coulomb energy (in <formula id="25">$ \mathrm{fm}^{-1} $</formula> ) </para>
+<para>Coulomb energy (in <formula id="26">$ \mathrm{fm}^{-1} $</formula> ) </para>
         </briefdescription>
         <detaileddescription>
 <para>This quantity is computed in <ref refid="classeos__nuclei_1a40aac5b607cd8c5d7f0b5ab22380c9b6" kindref="member">solve_nuclei()</ref> and then used later in <ref refid="classeos__nuclei_1affdd30692a9b5ab5de04dedc1292c127" kindref="member">eos_fixed_dist()</ref>. </para>
@@ -2507,7 +2507,7 @@
         </briefdescription>
         <detaileddescription>
 <para>The temperature should be in 1/fm.</para>
-<para><xrefsect id="todo_1_todo000001"><xreftitle>Todo</xreftitle><xrefdescription><para>This function is problematic because sometimes it uses <ref refid="classeos_1ac16f6a759590825144bea5e6944153a9" kindref="member">free_energy_density()</ref>, sometimes it uses <ref refid="classeos_1abda7474511cb007f9549a59c137fae84" kindref="member">free_energy_density_detail()</ref>, but maybe it should be using <ref refid="classeos_1a4c6a1d2ba60fbb06bd3b3eb40b3ef5c1" kindref="member">free_energy_density_detail_s()</ref>? This should be fixed. </para>
+<para><xrefsect id="todo_1_todo000002"><xreftitle>Todo</xreftitle><xrefdescription><para>This function is problematic because sometimes it uses <ref refid="classeos_1ac16f6a759590825144bea5e6944153a9" kindref="member">free_energy_density()</ref>, sometimes it uses <ref refid="classeos_1abda7474511cb007f9549a59c137fae84" kindref="member">free_energy_density_detail()</ref>, but maybe it should be using <ref refid="classeos_1a4c6a1d2ba60fbb06bd3b3eb40b3ef5c1" kindref="member">free_energy_density_detail_s()</ref>? This should be fixed. </para>
 </xrefdescription></xrefsect></para>
         </detaileddescription>
         <inbodydescription>
@@ -2791,7 +2791,7 @@
           <declname>no_nuclei</declname>
         </param>
         <briefdescription>
-<para>Determine the EOS presuming a distribution of nuclei with fixed limits in A and <formula id="26">$ N-Z $</formula>. </para>
+<para>Determine the EOS presuming a distribution of nuclei with fixed limits in A and <formula id="27">$ N-Z $</formula>. </para>
         </briefdescription>
         <detaileddescription>
         </detaileddescription>
@@ -2862,7 +2862,7 @@
           <declname>no_nuclei</declname>
         </param>
         <briefdescription>
-<para>Determine the EOS presuming a distribution of nuclei with fixed limits in A and <formula id="26">$ N-Z $</formula> but used to fix table only. </para>
+<para>Determine the EOS presuming a distribution of nuclei with fixed limits in A and <formula id="27">$ N-Z $</formula> but used to fix table only. </para>
         </briefdescription>
         <detaileddescription>
         </detaileddescription>
@@ -3020,7 +3020,7 @@
           <declname>no_nuclei</declname>
         </param>
         <briefdescription>
-<para>Determine the EOS presuming a distribution of nuclei and optimizing the limits in A and <formula id="26">$ N-Z $</formula>. </para>
+<para>Determine the EOS presuming a distribution of nuclei and optimizing the limits in A and <formula id="27">$ N-Z $</formula>. </para>
         </briefdescription>
         <detaileddescription>
         </detaileddescription>
@@ -4159,23 +4159,23 @@ file&gt;, or &quot;point&quot; &lt;output file&gt; &lt;nB&gt; &lt;Ye&gt; &lt;T&g
       </node>
     </inheritancegraph>
     <collaborationgraph>
-      <node id="47">
+      <node id="53">
         <label>o2scl::boson_tl&lt; double &gt;</label>
         <link refid="classo2scl_1_1boson__tl" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
-        <childnode refid="48" relation="public-inheritance">
+        <childnode refid="54" relation="public-inheritance">
         </childnode>
       </node>
-      <node id="53">
+      <node id="66">
         <label>o2scl::boson_tl&lt; long double &gt;</label>
         <link refid="classo2scl_1_1boson__tl" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
-        <childnode refid="48" relation="public-inheritance">
+        <childnode refid="54" relation="public-inheritance">
         </childnode>
       </node>
-      <node id="64">
+      <node id="45">
         <label>o2scl::classical_thermo_tl&lt; double &gt;</label>
         <link refid="classo2scl_1_1classical__thermo__tl" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
       </node>
-      <node id="56">
+      <node id="69">
         <label>o2scl::convert_units&lt; cpp_dec_float_25 &gt;</label>
         <link refid="classo2scl_1_1convert__units" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
         <childnode refid="37" relation="usage">
@@ -4189,7 +4189,7 @@ file&gt;, or &quot;point&quot; &lt;output file&gt; &lt;nB&gt; &lt;Ye&gt; &lt;T&g
           <edgelabel>fc</edgelabel>
         </childnode>
       </node>
-      <node id="55">
+      <node id="68">
         <label>o2scl::convert_units&lt; long double &gt;</label>
         <link refid="classo2scl_1_1convert__units" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
         <childnode refid="37" relation="usage">
@@ -4229,6 +4229,10 @@ file&gt;, or &quot;point&quot; &lt;output file&gt; &lt;nB&gt; &lt;Ye&gt; &lt;T&g
         <childnode refid="42" relation="usage">
           <edgelabel>p_a_virial</edgelabel>
           <edgelabel>p_b_virial</edgelabel>
+          <edgelabel>p_cs2_extra</edgelabel>
+          <edgelabel>p_nuc_c0</edgelabel>
+          <edgelabel>p_nuc_c1</edgelabel>
+          <edgelabel>p_nuc_c2</edgelabel>
         </childnode>
         <childnode refid="43" relation="usage">
           <edgelabel>p_S_grid_spec</edgelabel>
@@ -4239,38 +4243,38 @@ file&gt;, or &quot;point&quot; &lt;output file&gt; &lt;nB&gt; &lt;Ye&gt; &lt;T&g
           <edgelabel>p_nucstruct_file</edgelabel>
         </childnode>
         <childnode refid="44" relation="usage">
-          <edgelabel>elep</edgelabel>
-        </childnode>
-        <childnode refid="63" relation="usage">
           <edgelabel>vsd</edgelabel>
         </childnode>
-        <childnode refid="65" relation="usage">
+        <childnode refid="46" relation="usage">
           <edgelabel>sk</edgelabel>
           <edgelabel>sk_Tcorr</edgelabel>
           <edgelabel>sk_alt</edgelabel>
         </childnode>
-        <childnode refid="67" relation="usage">
+        <childnode refid="48" relation="usage">
           <edgelabel>rmf</edgelabel>
         </childnode>
-        <childnode refid="69" relation="usage">
+        <childnode refid="50" relation="usage">
           <edgelabel>rmf_hyp</edgelabel>
         </childnode>
         <childnode refid="3" relation="usage">
           <edgelabel>eos_Tcorr</edgelabel>
         </childnode>
-        <childnode refid="70" relation="usage">
+        <childnode refid="51" relation="usage">
           <edgelabel>ecv</edgelabel>
         </childnode>
         <childnode refid="4" relation="usage">
           <edgelabel>eosp_alt</edgelabel>
         </childnode>
+        <childnode refid="59" relation="usage">
+          <edgelabel>elep</edgelabel>
+        </childnode>
       </node>
-      <node id="70">
+      <node id="51">
         <label>eos_crust_virial_v2</label>
         <link refid="classeos__crust__virial__v2"/>
-        <childnode refid="71" relation="public-inheritance">
+        <childnode refid="52" relation="public-inheritance">
         </childnode>
-        <childnode refid="72" relation="usage">
+        <childnode refid="55" relation="usage">
           <edgelabel>iv_ba</edgelabel>
           <edgelabel>iv_bpna</edgelabel>
         </childnode>
@@ -4284,7 +4288,7 @@ file&gt;, or &quot;point&quot; &lt;output file&gt; &lt;nB&gt; &lt;Ye&gt; &lt;T&g
       <node id="103">
         <label>eos_had_skyrme_ext</label>
         <link refid="classeos__had__skyrme__ext"/>
-        <childnode refid="65" relation="public-inheritance">
+        <childnode refid="46" relation="public-inheritance">
         </childnode>
       </node>
       <node id="1">
@@ -4395,7 +4399,7 @@ file&gt;, or &quot;point&quot; &lt;output file&gt; &lt;nB&gt; &lt;Ye&gt; &lt;T&g
           <edgelabel>p_mh_tol_rel</edgelabel>
         </childnode>
       </node>
-      <node id="61">
+      <node id="74">
         <label>o2scl::fermion_rel_tl&lt; fermion_tl&lt; cpp_dec_float_25 &gt;, fermi_dirac_integ_direct&lt; cpp_dec_float_25, funct_cdf35, cpp_dec_float_35 &gt;, bessel_K_exp_integ_boost&lt; cpp_dec_float_25, cpp_dec_float_35 &gt;, inte_double_exp_boost&lt;&gt;, inte_double_exp_boost&lt;&gt;, root_cern&lt; funct_cdf25, cpp_dec_float_25 &gt;, funct_cdf25, cpp_dec_float_25 &gt;</label>
         <link refid="classo2scl_1_1fermion__rel__tl" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
         <childnode refid="18" relation="public-inheritance">
@@ -4409,7 +4413,7 @@ file&gt;, or &quot;point&quot; &lt;output file&gt; &lt;nB&gt; &lt;Ye&gt; &lt;T&g
           <edgelabel>alt_solver</edgelabel>
         </childnode>
       </node>
-      <node id="59">
+      <node id="72">
         <label>o2scl::fermion_rel_tl&lt; fermion_tl&lt; long double &gt;, fermi_dirac_integ_direct&lt; long double, funct_cdf25, cpp_dec_float_25 &gt;, bessel_K_exp_integ_boost&lt; long double, cpp_dec_float_25 &gt;, inte_double_exp_boost&lt;&gt;, inte_double_exp_boost&lt;&gt;, root_cern&lt; funct_ld, long double &gt;, funct_ld, long double &gt;</label>
         <link refid="classo2scl_1_1fermion__rel__tl" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
         <childnode refid="18" relation="public-inheritance">
@@ -4431,7 +4435,7 @@ file&gt;, or &quot;point&quot; &lt;output file&gt; &lt;nB&gt; &lt;Ye&gt; &lt;T&g
         <label>o2scl::inte&lt; func_t &gt;</label>
         <link refid="classo2scl_1_1inte" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
       </node>
-      <node id="74">
+      <node id="57">
         <label>o2scl::interp_base&lt; vec_t, vec2_t, fp_t &gt;</label>
         <link refid="classo2scl_1_1interp__base" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
         <childnode refid="29" relation="usage">
@@ -4445,15 +4449,15 @@ file&gt;, or &quot;point&quot; &lt;output file&gt; &lt;nB&gt; &lt;Ye&gt; &lt;T&g
           <edgelabel>svx</edgelabel>
         </childnode>
       </node>
-      <node id="72">
+      <node id="55">
         <label>o2scl::interp_vec&lt; std::vector&lt; double &gt; &gt;</label>
         <link refid="classo2scl_1_1interp__vec" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
-        <childnode refid="73" relation="public-inheritance">
+        <childnode refid="56" relation="public-inheritance">
         </childnode>
-        <childnode refid="74" relation="usage">
+        <childnode refid="57" relation="usage">
           <edgelabel>itp</edgelabel>
         </childnode>
-        <childnode refid="75" relation="usage">
+        <childnode refid="58" relation="usage">
           <edgelabel>cf</edgelabel>
         </childnode>
       </node>
@@ -4499,7 +4503,7 @@ file&gt;, or &quot;point&quot; &lt;output file&gt; &lt;nB&gt; &lt;Ye&gt; &lt;T&g
         <childnode refid="40" relation="public-inheritance">
         </childnode>
       </node>
-      <node id="75">
+      <node id="58">
         <label>o2scl::covar_funct</label>
         <link refid="classo2scl_1_1covar__funct" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
       </node>
@@ -4525,7 +4529,7 @@ file&gt;, or &quot;point&quot; &lt;output file&gt; &lt;nB&gt; &lt;Ye&gt; &lt;T&g
         <childnode refid="10" relation="public-inheritance">
         </childnode>
       </node>
-      <node id="51">
+      <node id="64">
         <label>o2scl::deriv_thermo_base_tl&lt; class fp_t &gt;</label>
         <link refid="classo2scl_1_1deriv__thermo__base__tl" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
       </node>
@@ -4539,12 +4543,12 @@ file&gt;, or &quot;point&quot; &lt;output file&gt; &lt;nB&gt; &lt;Ye&gt; &lt;T&g
           <edgelabel>eos_thermo</edgelabel>
         </childnode>
       </node>
-      <node id="71">
+      <node id="52">
         <label>o2scl::eos_crust_virial</label>
         <link refid="classo2scl_1_1eos__crust__virial" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
-        <childnode refid="68" relation="public-inheritance">
+        <childnode refid="49" relation="public-inheritance">
         </childnode>
-        <childnode refid="47" relation="usage">
+        <childnode refid="53" relation="usage">
           <edgelabel>alpha</edgelabel>
           <edgelabel>deuteron</edgelabel>
         </childnode>
@@ -4572,24 +4576,24 @@ file&gt;, or &quot;point&quot; &lt;output file&gt; &lt;nB&gt; &lt;Ye&gt; &lt;T&g
           <edgelabel>sat_deriv2</edgelabel>
         </childnode>
       </node>
-      <node id="67">
+      <node id="48">
         <label>o2scl::eos_had_rmf</label>
         <link refid="classo2scl_1_1eos__had__rmf" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
-        <childnode refid="68" relation="public-inheritance">
+        <childnode refid="49" relation="public-inheritance">
         </childnode>
       </node>
-      <node id="69">
+      <node id="50">
         <label>o2scl::eos_had_rmf_hyp</label>
         <link refid="classo2scl_1_1eos__had__rmf__hyp" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
-        <childnode refid="67" relation="public-inheritance">
+        <childnode refid="48" relation="public-inheritance">
         </childnode>
       </node>
-      <node id="65">
+      <node id="46">
         <label>o2scl::eos_had_skyrme</label>
         <link refid="classo2scl_1_1eos__had__skyrme" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
         <childnode refid="3" relation="public-inheritance">
         </childnode>
-        <childnode refid="66" relation="usage">
+        <childnode refid="47" relation="usage">
           <edgelabel>nrf</edgelabel>
         </childnode>
       </node>
@@ -4611,29 +4615,29 @@ file&gt;, or &quot;point&quot; &lt;output file&gt; &lt;nB&gt; &lt;Ye&gt; &lt;T&g
         <childnode refid="4" relation="public-inheritance">
         </childnode>
       </node>
-      <node id="68">
+      <node id="49">
         <label>o2scl::eos_had_temp_pres_base</label>
         <link refid="classo2scl_1_1eos__had__temp__pres__base" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
         <childnode refid="4" relation="public-inheritance">
         </childnode>
       </node>
-      <node id="63">
+      <node id="44">
         <label>o2scl::eos_had_virial</label>
         <link refid="classo2scl_1_1eos__had__virial" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
-        <childnode refid="64" relation="usage">
+        <childnode refid="45" relation="usage">
           <edgelabel>cl</edgelabel>
         </childnode>
       </node>
-      <node id="45">
+      <node id="60">
         <label>o2scl::eos_leptons</label>
         <link refid="classo2scl_1_1eos__leptons" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
-        <childnode refid="46" relation="usage">
+        <childnode refid="61" relation="usage">
           <edgelabel>ed</edgelabel>
           <edgelabel>mud</edgelabel>
           <edgelabel>phd</edgelabel>
           <edgelabel>thd</edgelabel>
         </childnode>
-        <childnode refid="47" relation="usage">
+        <childnode refid="53" relation="usage">
           <edgelabel>ph</edgelabel>
         </childnode>
         <childnode refid="7" relation="usage">
@@ -4645,84 +4649,84 @@ file&gt;, or &quot;point&quot; &lt;output file&gt; &lt;nB&gt; &lt;Ye&gt; &lt;T&g
         <childnode refid="30" relation="usage">
           <edgelabel>frel</edgelabel>
         </childnode>
-        <childnode refid="49" relation="usage">
+        <childnode refid="62" relation="usage">
           <edgelabel>fdrel</edgelabel>
         </childnode>
       </node>
-      <node id="44">
+      <node id="59">
         <label>o2scl::eos_leptons_multip</label>
         <link refid="classo2scl_1_1eos__leptons__multip" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
-        <childnode refid="45" relation="public-inheritance">
+        <childnode refid="60" relation="public-inheritance">
         </childnode>
-        <childnode refid="53" relation="usage">
+        <childnode refid="66" relation="usage">
           <edgelabel>ph_ld</edgelabel>
         </childnode>
-        <childnode refid="54" relation="usage">
+        <childnode refid="67" relation="usage">
           <edgelabel>ed_ld</edgelabel>
           <edgelabel>mud_ld</edgelabel>
           <edgelabel>phd_ld</edgelabel>
           <edgelabel>thd_ld</edgelabel>
         </childnode>
-        <childnode refid="55" relation="usage">
+        <childnode refid="68" relation="usage">
           <edgelabel>cu_ld</edgelabel>
         </childnode>
-        <childnode refid="56" relation="usage">
+        <childnode refid="69" relation="usage">
           <edgelabel>cu_cdf25</edgelabel>
         </childnode>
-        <childnode refid="57" relation="usage">
+        <childnode refid="70" relation="usage">
           <edgelabel>th_ld</edgelabel>
         </childnode>
-        <childnode refid="58" relation="usage">
+        <childnode refid="71" relation="usage">
           <edgelabel>frel_ld</edgelabel>
         </childnode>
-        <childnode refid="60" relation="usage">
+        <childnode refid="73" relation="usage">
           <edgelabel>frel_cdf25</edgelabel>
         </childnode>
-        <childnode refid="62" relation="usage">
+        <childnode refid="75" relation="usage">
           <edgelabel>rc</edgelabel>
         </childnode>
       </node>
-      <node id="52">
+      <node id="65">
         <label>o2scl::fermion_deriv_rel_integ&lt; class fp_t &gt;</label>
         <link refid="classo2scl_1_1fermion__deriv__rel__integ" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
       </node>
-      <node id="49">
+      <node id="62">
         <label>o2scl::fermion_deriv_rel_tl&lt; class fermion_deriv_t, class fermion_rel_t, class nit_t, class dit_t, class fp_t &gt;</label>
         <link refid="classo2scl_1_1fermion__deriv__rel__tl" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
-        <childnode refid="50" relation="public-inheritance">
+        <childnode refid="63" relation="public-inheritance">
         </childnode>
-        <childnode refid="52" relation="public-inheritance">
+        <childnode refid="65" relation="public-inheritance">
         </childnode>
         <childnode refid="32" relation="usage">
           <edgelabel>it_multip</edgelabel>
         </childnode>
       </node>
-      <node id="50">
+      <node id="63">
         <label>o2scl::fermion_deriv_thermo_tl&lt; class fermion_deriv_t, class fermion_rel_t, class fp_t &gt;</label>
         <link refid="classo2scl_1_1fermion__deriv__thermo__tl" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
-        <childnode refid="51" relation="public-inheritance">
+        <childnode refid="64" relation="public-inheritance">
         </childnode>
       </node>
-      <node id="66">
+      <node id="47">
         <label>o2scl::fermion_nonrel_tl&lt; class fermion_t, class fd_inte_t, class be_inte_t, class root_t, class func_t, class fp_t &gt;</label>
         <link refid="classo2scl_1_1fermion__nonrel__tl" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
         <childnode refid="18" relation="public-inheritance">
         </childnode>
       </node>
-      <node id="60">
+      <node id="73">
         <label>o2scl::fermion_rel_cdf25</label>
         <link refid="classo2scl_1_1fermion__rel__cdf25" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
-        <childnode refid="61" relation="public-inheritance">
+        <childnode refid="74" relation="public-inheritance">
         </childnode>
       </node>
       <node id="31">
         <label>o2scl::fermion_rel_integ</label>
         <link refid="classo2scl_1_1fermion__rel__integ" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
       </node>
-      <node id="58">
+      <node id="71">
         <label>o2scl::fermion_rel_ld</label>
         <link refid="classo2scl_1_1fermion__rel__ld" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
-        <childnode refid="59" relation="public-inheritance">
+        <childnode refid="72" relation="public-inheritance">
         </childnode>
       </node>
       <node id="30">
@@ -4781,7 +4785,7 @@ file&gt;, or &quot;point&quot; &lt;output file&gt; &lt;nB&gt; &lt;Ye&gt; &lt;T&g
         <label>o2scl::inte_workspace_gsl</label>
         <link refid="classo2scl_1_1inte__workspace__gsl" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
       </node>
-      <node id="73">
+      <node id="56">
         <label>o2scl::interp_base&lt; class vec_t, class vec2_t, class fp_t &gt;</label>
         <link refid="classo2scl_1_1interp__base" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
         <childnode refid="29" relation="usage">
@@ -4933,7 +4937,7 @@ file&gt;, or &quot;point&quot; &lt;output file&gt; &lt;nB&gt; &lt;Ye&gt; &lt;T&g
           <edgelabel>iqg</edgelabel>
         </childnode>
       </node>
-      <node id="48">
+      <node id="54">
         <label>o2scl::part_tl&lt; class fp_t &gt;</label>
         <link refid="classo2scl_1_1part__tl" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
       </node>
@@ -5011,11 +5015,11 @@ file&gt;, or &quot;point&quot; &lt;output file&gt; &lt;nB&gt; &lt;Ye&gt; &lt;T&g
         <label>o2scl::vec_index</label>
         <link refid="classo2scl_1_1vec__index" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
       </node>
-      <node id="46">
+      <node id="61">
         <label>o2scl::part_deriv_press_tl&lt; double &gt;</label>
         <link refid="classo2scl_1_1part__deriv__press__tl" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
       </node>
-      <node id="54">
+      <node id="67">
         <label>o2scl::part_deriv_press_tl&lt; long double &gt;</label>
         <link refid="classo2scl_1_1part__deriv__press__tl" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
       </node>
@@ -5045,7 +5049,7 @@ file&gt;, or &quot;point&quot; &lt;output file&gt; &lt;nB&gt; &lt;Ye&gt; &lt;T&g
           <edgelabel>tab</edgelabel>
         </childnode>
       </node>
-      <node id="62">
+      <node id="75">
         <label>o2scl::root_cern&lt; funct, double &gt;</label>
         <link refid="classo2scl_1_1root__cern" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
         <childnode refid="26" relation="public-inheritance">
@@ -5069,7 +5073,7 @@ file&gt;, or &quot;point&quot; &lt;output file&gt; &lt;nB&gt; &lt;Ye&gt; &lt;T&g
         <label>o2scl::thermo_tl&lt; double &gt;</label>
         <link refid="classo2scl_1_1thermo__tl" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
       </node>
-      <node id="57">
+      <node id="70">
         <label>o2scl::thermo_tl&lt; long double &gt;</label>
         <link refid="classo2scl_1_1thermo__tl" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
       </node>
@@ -5084,7 +5088,7 @@ file&gt;, or &quot;point&quot; &lt;output file&gt; &lt;nB&gt; &lt;Ye&gt; &lt;T&g
       <member refid="classeos__nuclei_1af76d052dfa9dd1b11245f66c74d0a4eb" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>add_eg</name></member>
       <member refid="classeos__nuclei_1af212462812d08ec8110d201c18d4a271" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>alg_mode</name></member>
       <member refid="classeos_1a5c3ca739dbccf7e530bc5bc660f575b7" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>alt_model</name></member>
-      <member refid="classeos_1a72b86f7d53fc7dd3947c556f7fa0d3b9" prot="protected" virt="non-virtual"><scope>eos_nuclei</scope><name>alt_name</name></member>
+      <member refid="classeos_1a72b86f7d53fc7dd3947c556f7fa0d3b9" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>alt_name</name></member>
       <member refid="classeos__nuclei_1a413ada2b57a752222ed73c5c5feb468f" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>ame</name></member>
       <member refid="classeos_1a828e85c817596153f6607355e42e5a85" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>b_virial</name></member>
       <member refid="classeos__nuclei_1af3884c83f3345c284e49d40cf4d74e02" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>baryons_only</name></member>
@@ -5159,6 +5163,7 @@ file&gt;, or &quot;point&quot; &lt;output file&gt; &lt;nB&gt; &lt;Ye&gt; &lt;T&g
       <member refid="classeos__nuclei_1abc6f1bc0f5b05dd7cc9cf6d1b6fd3f6d" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>compute_X</name></member>
       <member refid="classo2scl_1_1eos__had__base_1a75920e712225bc31f20400a988ef30b9" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>const_pf_derivs</name></member>
       <member refid="classo2scl_1_1eos__had__base_1a75920e712225bc31f20400a988ef30b9" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>const_pf_derivs</name></member>
+      <member refid="classeos_1a10edd9948520678922d4b3a5e7aaee83" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>cs2_extra</name></member>
       <member refid="classeos_1a337b4bb929454134ff7295409fdf8dfd" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>cs2_fit</name></member>
       <member refid="classeos_1ac61da4952bdae6a0dcdd1fa5a037fa36" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>cs2_func</name></member>
       <member refid="classeos_1a57bec9c238bb89a509738f329cdf93cd" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>cs2_verbose</name></member>
@@ -5192,7 +5197,7 @@ file&gt;, or &quot;point&quot; &lt;output file&gt; &lt;nB&gt; &lt;Ye&gt; &lt;T&g
       <member refid="classeos__nuclei_1a5f3e04dca895ed3694189561efc431c7" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>eg_table</name></member>
       <member refid="classeos__nuclei_1a3201e327ecf4be66bf0bac6e00976cea" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>egv</name></member>
       <member refid="classeos_1a7d08a8fedcc33b7789cd889f30aff342" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>electron</name></member>
-      <member refid="classeos_1aa8ce64f05ee56618f159946fd07b10d3" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>elep</name></member>
+      <member refid="classeos_1aa8ce64f05ee56618f159946fd07b10d3" prot="protected" virt="non-virtual"><scope>eos_nuclei</scope><name>elep</name></member>
       <member refid="classeos_1a56066be90d4464ee499c2ed326d5b6b5" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>energy_density_ns</name></member>
       <member refid="classeos_1a5f918881edf43f4a4a0797eea8e70c9a" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>energy_density_qmc</name></member>
       <member refid="classeos_1a105fb4842fa275a592d84df10b77b313" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>entropy</name></member>
@@ -5352,7 +5357,7 @@ file&gt;, or &quot;point&quot; &lt;output file&gt; &lt;nB&gt; &lt;Ye&gt; &lt;T&g
       <member refid="classeos_1a60f53d36893b821e72e08aff3250ddd8" prot="protected" virt="non-virtual"><scope>eos_nuclei</scope><name>neutrino</name></member>
       <member refid="classeos_1a1d6a2e292171de1dc51960cc51c610f9" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>neutron</name></member>
       <member refid="classeos_1a1363b6b6d6cb43829b672e35a2434832" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>new_ns_eos</name></member>
-      <member refid="classeos_1a015bb7509762fdd49a5be19104b80769" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>new_nuc_eos</name></member>
+      <member refid="classeos_1a78bf38c0a8debe0d1e02c8078db1a008" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>new_nuc_eos</name></member>
       <member refid="classeos__nuclei_1a4ed2d01020c376d09c7e80d4691a0002" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>new_table</name></member>
       <member refid="classeos__nuclei_1a617715389811945428a28aac994f2d4d" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>nm_fit</name></member>
       <member refid="classeos_1ae02ba6f3224e7ae56586f9aca94f5c87" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>ns_fit</name></member>
@@ -5362,6 +5367,9 @@ file&gt;, or &quot;point&quot; &lt;output file&gt; &lt;nB&gt; &lt;Ye&gt; &lt;T&g
       <member refid="classeos_1a1c01578a14c275ee7f32cd0cd069e9d9" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>nstar_high</name></member>
       <member refid="classeos_1ac62d7915bc25bbf00048aee31181e0ce" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>nstar_tab</name></member>
       <member refid="classeos__nuclei_1a4f4849d6d4b5181abf10851f80fe0e79" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>nuc_alpha</name></member>
+      <member refid="classeos_1aaa5deb74ab8deb6a9e3dfeb7b44b65c1" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>nuc_c0</name></member>
+      <member refid="classeos_1ac70462ff19c075af57ba6c0126298bcc" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>nuc_c1</name></member>
+      <member refid="classeos_1a9246c37cadad8ee00aadd973ca348105" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>nuc_c2</name></member>
       <member refid="classeos__nuclei_1ad96854c380c8a06cb7920a5a73efa06a" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>nuc_deut</name></member>
       <member refid="classeos__nuclei_1a52be68ebd33895f19d2bd8938d64f928" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>nuc_he3</name></member>
       <member refid="classeos__nuclei_1a5eeb7c88917d123776bae1b3117ab9ad" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>nuc_heavy</name></member>
@@ -5388,6 +5396,7 @@ file&gt;, or &quot;point&quot; &lt;output file&gt; &lt;nB&gt; &lt;Ye&gt; &lt;T&g
       <member refid="classeos__nuclei_1a61150726ea0811558024ed26d3d2367c" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>p_alg_mode</name></member>
       <member refid="classeos_1ad4c78d840172ba24b525f562efe4a3d7" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>p_b_virial</name></member>
       <member refid="classeos_1a1e9900aedd76d412c6471bb41793a18e" prot="protected" virt="non-virtual"><scope>eos_nuclei</scope><name>p_chiral</name></member>
+      <member refid="classeos_1a5ebfbf0cc7edd92e81d27b6f1b40704a" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>p_cs2_extra</name></member>
       <member refid="classeos_1acf1b28d38c2c6e41c9c88ccd0b3972d5" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>p_cs2_verbose</name></member>
       <member refid="classeos_1aeefe49c67084946d71f8bd29fbc011a3" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>p_data_dir</name></member>
       <member refid="classeos__nuclei_1ade3866fc48028463c7c835442d7d0363" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>p_edge_list</name></member>
@@ -5408,6 +5417,9 @@ file&gt;, or &quot;point&quot; &lt;output file&gt; &lt;nB&gt; &lt;Ye&gt; &lt;T&g
       <member refid="classeos__nuclei_1af05574b96e9f8433d350760b33ddbdc9" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>p_mh_tol_rel</name></member>
       <member refid="classeos_1a582a5f30ee1a27b7f1c3d2d20513cfe3" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>p_nB_grid_spec</name></member>
       <member refid="classeos_1ae04c7341212965d955c71cb688cebaa5" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>p_ns_record</name></member>
+      <member refid="classeos_1a5dd3134bf3d1c075a7a1d056157ff8d1" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>p_nuc_c0</name></member>
+      <member refid="classeos_1ad5193c777f7fe8e57bd84970398cf1d8" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>p_nuc_c1</name></member>
+      <member refid="classeos_1a63f2ccad8105fdb813477a73f01cb52f" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>p_nuc_c2</name></member>
       <member refid="classeos_1add78579a3ffb7fa11eb0c770fda7567c" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>p_nuc_last</name></member>
       <member refid="classeos__nuclei_1a5d8c1d46c698d9aa6e933c1b8e70a736" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>p_nucleon_func</name></member>
       <member refid="classeos_1a7d4745d5b6b94d66eaa64e50ab86e9e7" prot="public" virt="non-virtual"><scope>eos_nuclei</scope><name>p_nucstruct_file</name></member>

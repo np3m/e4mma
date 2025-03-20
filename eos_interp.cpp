@@ -112,26 +112,90 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
 
 #ifndef NO_MPI
 
-  if (mpi_rank==0) {
-    ilo=0;
-    ihi=180;
-    jlo=0;
-    jhi=35;
-  } else if (mpi_rank==1) {
-    ilo=0;
-    ihi=180;
-    jlo=39;
-    jhi=69;
-  } else if (mpi_rank==2) {
-    ilo=200;
-    ihi=250;
-    jlo=0;
-    jhi=35;
-  } else if (mpi_rank==3) {
-    ilo=200;
-    ihi=250;
-    jlo=39;
-    jhi=69;
+  if (true) {
+    if (mpi_rank==0) {
+      ilo=0;
+      ihi=180;
+      jlo=0;
+      jhi=35;
+    } else if (mpi_rank==1) {
+      ilo=0;
+      ihi=180;
+      jlo=39;
+      jhi=69;
+    } else if (mpi_rank==2) {
+      ilo=200;
+      ihi=250;
+      jlo=0;
+      jhi=35;
+    } else if (mpi_rank==3) {
+      ilo=200;
+      ihi=250;
+      jlo=39;
+      jhi=69;
+    }
+  } else {
+    if (mpi_rank==0) {
+      jlo=0;
+      jhi=10;
+      klo=0;
+      khi=50;
+    } else if (mpi_rank==1) {
+      jlo=15;
+      jhi=25;
+      klo=0;
+      khi=50;
+    } else if (mpi_rank==2) {
+      jlo=30;
+      jhi=40;
+      klo=0;
+      khi=50;
+    } else if (mpi_rank==3) {
+      jlo=45;
+      jhi=55;
+      klo=0;
+      khi=50;
+    } else if (mpi_rank==4) {
+      jlo=60;
+      jhi=69;
+      klo=0;
+      khi=50;
+    } else if (mpi_rank==5) {
+      jlo=0;
+      jhi=10;
+      klo=55;
+      khi=105;
+    } else if (mpi_rank==6) {
+      jlo=15;
+      jhi=25;
+      klo=55;
+      khi=105;
+    } else if (mpi_rank==7) {
+      jlo=30;
+      jhi=40;
+      klo=55;
+      khi=105;
+    } else if (mpi_rank==8) {
+      jlo=45;
+      jhi=55;
+      klo=55;
+      khi=105;
+    } else if (mpi_rank==9) {
+      jlo=60;
+      jhi=69;
+      klo=55;
+      khi=105;
+    } else if (mpi_rank==10) {
+      jlo=50;
+      jhi=69;
+      klo=110;
+      khi=145;
+    } else {
+      jlo=0;
+      jhi=69;
+      klo=150;
+      khi=159;
+    }
   }
   
 #endif
@@ -324,8 +388,6 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
     }
 
   }
-
-  
           
   return 0;
 }

@@ -927,6 +927,9 @@ eos::eos() {
 
   use_alt_eos=false;
   cs2_extra=1.0;
+  nuc_c0=-80.0;
+  nuc_c1=15.0;
+  nuc_c2=2.0;
 }
 
 double eos::energy_density_qmc(double nn, double np) {
@@ -1111,11 +1114,12 @@ int eos::new_nuc_eos(double nb, double &e_nuc, double &mun, double &mup) {
     neutron.n=nb/2.0;
     proton.n=nb/2.0;
     sk.calc_e(neutron,proton,thx);
-    double ff=(-30.0*nb*nb/(1.0+exp(20.0*(1.6-nb))))/hc_mev_fm;
-    double dffdnb=(-60.0*nb/(1.0+exp(20.0*(1.6-nb)))-
-                   600.0*nb*nb*exp(20.0*(1.6-nb))/
-                   pow(1.0+exp(20.0*(1.6-nb)),2.0))/hc_mev_fm;
-    e_nuc=thx.ed+ff;
+    double ff1=(nuc_c0*nb/
+                (1.0+exp(nuc_c1*(nuc_c2-nb))))/hc_mev_fm;
+    double ff2=(nuc_c0*(nb-1.0e-4)/
+                (1.0+exp(nuc_c1*(nuc_c2-(nb-1.0e-4)))))/hc_mev_fm;
+    double dffdnb=(ff1-ff2)/1.0e-4;
+    e_nuc=thx.ed+ff1;
     mun=neutron.mu+dffdnb;
     mup=proton.mu+dffdnb;
     denucdnn=(neutron.mu+proton.mu)/2.0;
@@ -1532,7 +1536,7 @@ double eos::free_energy_density_detail
   double P_skyrme_eqdenT0;
   double f_skyrme_eqdenT0;
 
-  if (true) {
+  if (false) {
     
     sk.calc_e(n,p,th);
     
@@ -4738,6 +4742,27 @@ void eos::setup_cli(o2scl::cli &cl, bool read_docs) {
   p_cs2_extra.doc_name="cs2_extra";
   p_cs2_extra.doc_xml_file="doc/xml/classeos.xml";
   cl.par_list.insert(make_pair("cs2_extra",&p_cs2_extra));
+
+  p_nuc_c0.d=&nuc_c0;
+  p_nuc_c0.help="";
+  p_nuc_c0.doc_class="eos";
+  p_nuc_c0.doc_name="nuc_c0";
+  p_nuc_c0.doc_xml_file="doc/xml/classeos.xml";
+  cl.par_list.insert(make_pair("nuc_c0",&p_nuc_c0));
+
+  p_nuc_c1.d=&nuc_c1;
+  p_nuc_c1.help="";
+  p_nuc_c1.doc_class="eos";
+  p_nuc_c1.doc_name="nuc_c1";
+  p_nuc_c1.doc_xml_file="doc/xml/classeos.xml";
+  cl.par_list.insert(make_pair("nuc_c1",&p_nuc_c1));
+
+  p_nuc_c2.d=&nuc_c2;
+  p_nuc_c2.help="";
+  p_nuc_c2.doc_class="eos";
+  p_nuc_c2.doc_name="nuc_c2";
+  p_nuc_c2.doc_xml_file="doc/xml/classeos.xml";
+  cl.par_list.insert(make_pair("nuc_c2",&p_nuc_c2));
 
   cl.set_comm_option_vec(nopt,options);
   

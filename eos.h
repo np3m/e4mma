@@ -586,6 +586,9 @@ public:
   o2scl::cli::parameter_double p_a_virial;
   o2scl::cli::parameter_double p_b_virial;
   o2scl::cli::parameter_double p_cs2_extra;
+  o2scl::cli::parameter_double p_nuc_c0;
+  o2scl::cli::parameter_double p_nuc_c1;
+  o2scl::cli::parameter_double p_nuc_c2;
   o2scl::cli::parameter_int p_cs2_verbose;
   o2scl::cli::parameter_string p_nB_grid_spec;
   o2scl::cli::parameter_string p_Ye_grid_spec;
@@ -844,8 +847,22 @@ protected:
   /// File containing nuclear structure parameterizations
   std::string nucstruct_file;
 
-  /// Desc
+  /// Extra factor in density for the sound speed correction in neutron matter
   double cs2_extra;
+
+  /** \brief Coefficient for correction for sound speed in nuclear matter
+      (in \f$ \mathrm{MeV}/\mathrm{fm}^3 \f$)
+  */
+  double nuc_c0;
+  
+  /** \brief Width factor for correction for sound speed in nuclear matter
+   */
+  double nuc_c1;
+  
+  /** \brief Baryon density for correction for sound speed in nuclear matter
+      (in \f$ \mathrm{fm}^{-3} \f$)
+   */
+  double nuc_c2;
   //@}
 
   /// \name Command-line interface functions [public]
