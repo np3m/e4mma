@@ -112,7 +112,7 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
 
 #ifndef NO_MPI
 
-  if (true) {
+  if (false) {
     if (mpi_rank==0) {
       ilo=0;
       ihi=180;
@@ -196,6 +196,8 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
       klo=150;
       khi=159;
     }
+    std::cout << "ranklimits: " << mpi_rank << " "
+              << jlo << " " << jhi << " " << klo << " " << khi << std::endl;
   }
   
 #endif
