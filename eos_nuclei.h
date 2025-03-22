@@ -848,7 +848,8 @@ public:
       interpolation object \c ike. 
    */
   int interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
-                      interpm_krige_eos &ike, o2scl::kwargs &kw);
+                      interpm_krige_eos &ike, o2scl::kwargs &kw,
+                      int mpi_rank);
 
   /** \brief Use interpolation to fix an entire table
 

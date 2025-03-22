@@ -257,7 +257,7 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
           tg_Fint_old=tg_Fint;
           tg_F_old=tg_F;
           
-          int ii_ret=interp_internal(i_fix,j_fix,k_fix,ike,kw);
+          int ii_ret=interp_internal(i_fix,j_fix,k_fix,ike,kw,mpi_rank);
 	  
           if (ii_ret!=0) {
             cout << "Interpolation failed, returning F and Fint to "
@@ -375,7 +375,8 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
 	  
           j++;
           
-          cout << "ipx_count: " << ipx_count << endl;
+          cout << "mpi_rank,ipx_count: " << mpi_rank << " "
+               << ipx_count << endl;
           
           if (one_point && ipx_count==1) {
             i=nB_grid2.size();
@@ -395,7 +396,8 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
 }
 
 int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
-                                interpm_krige_eos &ike, kwargs &kwa) {
+                                interpm_krige_eos &ike, kwargs &kwa,
+                                int mpi_rank) {
                                 
   size_t window=kwa.get_size_t("window",0);
   cout << "Using window size: " << window << endl;
@@ -614,6 +616,10 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
     mms.ntrial=kwa.get_int("mmin_ntrial",100);
     dea.ntrial=kwa.get_int("mmin_ntrial",100);
     int min_ret;
+
+    double y1=fmf(ike.fix_list.size()/3,x);
+    std::cout << "mpi_rank,y1: " << y1 << std::endl;
+    
     if (method=="min") {
       min_ret=mms.mmin(ike.fix_list.size()/3,x,fmin,fmf);
     } else {
@@ -622,7 +628,8 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
     if (min_ret==0) min_qual=fmin;
 
     // Evaluate the function at the optimal point
-    fmf(ike.fix_list.size()/3,x);
+    double y2=fmf(ike.fix_list.size()/3,x);
+    std::cout << "mpi_rank,y2: " << y2 << std::endl;
     
   } else if (method=="gp") {
   
@@ -967,7 +974,7 @@ int eos_nuclei::interp_point(std::vector<std::string> &sv,
   hdf_input(hff,tg_cs2);
   hff.close();
 
-  interp_internal(inB,iYe,iT,ike,kwa);
+  interp_internal(inB,iYe,iT,ike,kwa,0);
 
   return 0;
 }
