@@ -618,7 +618,7 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
     int min_ret;
 
     double y1=fmf(ike.fix_list.size()/3,x);
-    std::cout << "mpi_rank,y1: " << y1 << std::endl;
+    std::cout << "mpi_rank,y1: " << mpi_rank << " " << y1 << std::endl;
     
     if (method=="min") {
       min_ret=mms.mmin(ike.fix_list.size()/3,x,fmin,fmf);
@@ -629,7 +629,7 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
 
     // Evaluate the function at the optimal point
     double y2=fmf(ike.fix_list.size()/3,x);
-    std::cout << "mpi_rank,y2: " << y2 << std::endl;
+    std::cout << "mpi_rank,y2: " << mpi_rank << " " << y2 << std::endl;
     
   } else if (method=="gp") {
   
