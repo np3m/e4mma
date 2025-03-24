@@ -42,7 +42,15 @@ int main(int argc, char *argv[]) {
     if (i+2<argc && ((std::string)argv[i])=="-set" &&
         ((std::string)argv[i+1])=="data_dir") {
       e.data_dir=(std::string)argv[i+2];
-      cout << "Setting data_dir to \"" << e.data_dir << "\"." << endl;
+      cout << "main(): Setting data_dir to \"" << e.data_dir << "\"."
+           << endl;
+    }
+
+    if (i+2<argc && ((std::string)argv[i])=="-set" &&
+        ((std::string)argv[i+1])=="std_out") {
+      e.std_out=(std::string)argv[i+2];
+      cout << "main(): Setting std_out to \"" << e.std_out << "\"."
+           << endl;
     }
 
   }
@@ -50,6 +58,7 @@ int main(int argc, char *argv[]) {
   cli cl;
   
   e.setup_cli(cl);
+  e.setup_output();
 
   cl.run_auto(argc,argv);
 

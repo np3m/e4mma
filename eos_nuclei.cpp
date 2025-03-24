@@ -4283,8 +4283,6 @@ int eos_nuclei::eos_vary_dist
   
   int loc_verbose=function_verbose/1000%10;
 
-  std::cout << "evd start." << std::endl;
-  
   if (inc_hrg) {
     cout << "Setting no_nuclei to true while testing HRG." << endl;
     no_nuclei=true;
@@ -4334,7 +4332,6 @@ int eos_nuclei::eos_vary_dist
     }
 
     // Compute the EOS with the current nuclear distribution
-    std::cout << "evd 1." << std::endl;
     int ret=eos_fixed_dist
       (nB,Ye,T,log_xn,log_xp,thx,mun_full,mup_full,
        A_min,A_max,NmZ_min,NmZ_max,vdet,dist_changed,no_nuclei);
@@ -4505,7 +4502,6 @@ int eos_nuclei::eos_vary_dist
 
     // If nuclear matter was not preferred, then just go back
     // to the nuclei solution
-    std::cout << "evd 2." << std::endl;
     int ret=eos_fixed_dist
       (nB,Ye,T,log_xn,log_xp,thx,mun_full,mup_full,
        A_min,A_max,NmZ_min,NmZ_max,vdet,false,no_nuclei);

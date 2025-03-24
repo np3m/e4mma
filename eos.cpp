@@ -786,6 +786,20 @@ void eos::ns_fit(int row) {
   return;
 }
 
+void eos::setup_output() {
+
+  std::string out_filename=std_out;
+  size_t pos=out_filename.find("<rank>");
+  if (pos!=std::string::npos) {
+    out_filename.replace(pos,6,o2scl::itos(mpi_rankx));
+  }
+  foutx.open(out_filename);
+
+  af.attach(foutx);
+  
+  return;
+}
+
 void eos::read_data_files() {
 
   // Temporary string for object names
@@ -930,6 +944,22 @@ eos::eos() {
   nuc_c0=-80.0;
   nuc_c1=15.0;
   nuc_c2=2.0;
+  
+#ifndef NO_MPI
+  // Get MPI rank, etc.
+  MPI_Comm_rank(MPI_COMM_WORLD,&mpi_rankx);
+  MPI_Comm_size(MPI_COMM_WORLD,&mpi_sizex);
+#else
+  mpi_rankx=0;
+  mpi_sizex=1;
+#endif
+  
+  std_out="eos_<rank>.out";
+  
+}
+
+eos::~eos() {
+  foutx.close();
 }
 
 double eos::energy_density_qmc(double nn, double np) {

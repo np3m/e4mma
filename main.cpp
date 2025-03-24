@@ -42,7 +42,15 @@ int main(int argc, char *argv[]) {
     if (i+2<argc && ((std::string)argv[i])=="-set" &&
         ((std::string)argv[i+1])=="data_dir") {
       eph.data_dir=(std::string)argv[i+2];
-      cout << "Setting data_dir to \"" << eph.data_dir << "\"." << endl;
+      cout << "main(): Setting data_dir to \"" << eph.data_dir
+           << "\"." << endl;
+    }
+
+    if (i+2<argc && ((std::string)argv[i])=="-set" &&
+        ((std::string)argv[i+1])=="std_out") {
+      eph.std_out=(std::string)argv[i+2];
+      cout << "main(): Setting std_out to \"" << eph.std_out
+           << "\"." << endl;
     }
 
   }
@@ -52,6 +60,7 @@ int main(int argc, char *argv[]) {
   eph.setup_cli_nuclei(cl);
 
   eph.load_nuclei();
+  eph.setup_output();
   
   cl.run_auto(argc,argv);
 

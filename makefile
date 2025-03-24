@@ -310,17 +310,19 @@ eos_nuclei_nompi: eos_nompi.o main_nompi.o eos_nuclei_nompi.o \
 # A shorthand alias for eos_nuclei_nompi
 enn: eos_nompi.o main_nompi.o eos_nuclei_nompi.o eos_interp_nompi.o \
 		eos_had_skyrme_ext_nompi.o eos_nompi.o \
-		neutrino/Couplings.o neutrino/FluidState.o \
-		neutrino/FunctionIntegrator.o neutrino/Polarization.o \
-		neutrino/PolarizationNonRelv2Apr8.o neutrino/jacobi_rule.o \
-		eos_neutrino_nompi.o
+		neutrino/Couplings_nompi.o neutrino/FluidState_nompi.o \
+		neutrino/FunctionIntegrator_nompi.o \
+		neutrino/Polarization_nompi.o \
+		neutrino/PolarizationNonRelv2Apr8_nompi.o \
+		neutrino/jacobi_rule_nompi.o eos_neutrino_nompi.o
 	$(LCXX) $(LCFLAGS) -DO2SCL_NO_BOOST_MULTIPRECISION -o enn \
 		eos_nompi.o main_nompi.o \
-		eos_interp_nompi.o neutrino/Couplings.o \
-		neutrino/FluidState.o neutrino/FunctionIntegrator.o \
-		neutrino/Polarization.o eos_neutrino_nompi.o \
-		neutrino/PolarizationNonRelv2Apr8.o \
-		neutrino/jacobi_rule.o eos_nuclei_nompi.o \
+		eos_interp_nompi.o neutrino/Couplings_nompi.o \
+		neutrino/FluidState_nompi.o \
+		neutrino/FunctionIntegrator_nompi.o \
+		neutrino/Polarization_nompi.o eos_neutrino_nompi.o \
+		neutrino/PolarizationNonRelv2Apr8_nompi.o \
+		neutrino/jacobi_rule_nompi.o eos_nuclei_nompi.o \
 		eos_had_skyrme_ext_nompi.o $(LIBS)
 
 eos_nompi: eos_nompi.o main_eos_nompi.o \

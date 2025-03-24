@@ -36,6 +36,7 @@
 #include <o2scl/eos_had_rmf_hyp.h>
 #include <o2scl/eos_had_virial.h>
 #include <o2scl/part_pdg.h>
+#include <o2scl/auto_format.h>
 
 typedef boost::numeric::ublas::vector<double> ubvector;
 typedef boost::numeric::ublas::matrix<double> ubmatrix;
@@ -252,6 +253,18 @@ public:
   }
   
  protected:
+
+  /// For output
+  o2scl_auto_format::auto_format af;
+  
+  /// For output
+  std::ofstream foutx;
+
+  /// MPI rank
+  int mpi_rankx;
+  
+  /// MPI size
+  int mpi_sizex;
 
   /** \brief Read the data files required to construct the EOS
       
@@ -663,6 +676,9 @@ public:
   /** \brief Common select function
    */
   int select_common();
+
+  /// Desc
+  void setup_output();
   //@}
 
   /// \name Particle objects [protected]
@@ -781,8 +797,7 @@ protected:
   //@{
   eos();
 
-  virtual ~eos() {
-  }
+  virtual ~eos();
   //@}
 
   /// \name Settings [public]
@@ -843,6 +858,9 @@ protected:
   
   /// Directory containing data files, default "data"
   std::string data_dir;
+  
+  /// Output file
+  std::string std_out;
   
   /// File containing nuclear structure parameterizations
   std::string nucstruct_file;

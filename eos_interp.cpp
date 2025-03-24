@@ -28,20 +28,11 @@ using namespace std;
 using namespace o2scl;
 using namespace o2scl_const;
 using namespace o2scl_hdf;
+using namespace o2scl_auto_format;
 
 int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
                                  bool itive_com) {
 
-  int mpi_rank=0, mpi_size=1;
-
-#ifndef NO_MPI
-
-  // Get MPI rank, etc.
-  MPI_Comm_rank(MPI_COMM_WORLD,&mpi_rank);
-  MPI_Comm_size(MPI_COMM_WORLD,&mpi_size);
-  
-#endif
-  
   std::string st_in, st_out;
   std::string table_out;
   st_in=sv[1];
@@ -50,11 +41,11 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
 
   size_t pos=table_out.find("<rank>");
   if (pos!=std::string::npos) {
-    table_out.replace(pos,6,o2scl::itos(mpi_rank));
+    table_out.replace(pos,6,o2scl::itos(mpi_rankx));
   }
   pos=st_out.find("<rank>");
   if (pos!=std::string::npos) {
-    st_out.replace(pos,6,o2scl::itos(mpi_rank));
+    st_out.replace(pos,6,o2scl::itos(mpi_rankx));
   }
   
   kwargs kw;
@@ -77,8 +68,8 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
   // Ensure that multiple MPI ranks aren't reading from the
   // filesystem at the same time
   int tag=0, buffer=0;
-  if (mpi_size>1 && mpi_rank>=1) {
-    MPI_Recv(&buffer,1,MPI_INT,mpi_rank-1,
+  if (mpi_sizex>1 && mpi_rankx>=1) {
+    MPI_Recv(&buffer,1,MPI_INT,mpi_rankx-1,
 	     tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
   }
 
@@ -95,14 +86,14 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
 
 #ifndef NO_MPI
   // Send a message to the next MPI rank
-  if (mpi_size>1 && mpi_rank<mpi_size-1) {
-    MPI_Send(&buffer,1,MPI_INT,mpi_rank+1,
+  if (mpi_sizex>1 && mpi_rankx<mpi_sizex-1) {
+    MPI_Send(&buffer,1,MPI_INT,mpi_rankx+1,
 	     tag,MPI_COMM_WORLD);
   }
 #endif
   
   std::string kernel=kw.get_string("kernel","rbf_noise");
-  cout << "kernel: " << kernel << endl;
+  af << "kernel: " << kernel << endo;
   int ilo=kw.get_int("ilo",0);
   int ihi=kw.get_int("ihi",nB_grid2.size()-1);
   int jlo=kw.get_int("jlo",0);
@@ -113,79 +104,79 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
 #ifndef NO_MPI
 
   if (false) {
-    if (mpi_rank==0) {
+    if (mpi_rankx==0) {
       ilo=0;
       ihi=180;
       jlo=0;
       jhi=35;
-    } else if (mpi_rank==1) {
+    } else if (mpi_rankx==1) {
       ilo=0;
       ihi=180;
       jlo=39;
       jhi=69;
-    } else if (mpi_rank==2) {
+    } else if (mpi_rankx==2) {
       ilo=200;
       ihi=250;
       jlo=0;
       jhi=35;
-    } else if (mpi_rank==3) {
+    } else if (mpi_rankx==3) {
       ilo=200;
       ihi=250;
       jlo=39;
       jhi=69;
     }
-  } else {
-    if (mpi_rank==0) {
+  } else if (false) {
+    if (mpi_rankx==0) {
       jlo=0;
       jhi=10;
       klo=0;
       khi=50;
-    } else if (mpi_rank==1) {
+    } else if (mpi_rankx==1) {
       jlo=15;
       jhi=25;
       klo=0;
       khi=50;
-    } else if (mpi_rank==2) {
+    } else if (mpi_rankx==2) {
       jlo=30;
       jhi=40;
       klo=0;
       khi=50;
-    } else if (mpi_rank==3) {
+    } else if (mpi_rankx==3) {
       jlo=45;
       jhi=55;
       klo=0;
       khi=50;
-    } else if (mpi_rank==4) {
+    } else if (mpi_rankx==4) {
       jlo=60;
       jhi=69;
       klo=0;
       khi=50;
-    } else if (mpi_rank==5) {
+    } else if (mpi_rankx==5) {
       jlo=0;
       jhi=10;
       klo=55;
       khi=105;
-    } else if (mpi_rank==6) {
+    } else if (mpi_rankx==6) {
       jlo=15;
       jhi=25;
       klo=55;
       khi=105;
-    } else if (mpi_rank==7) {
+    } else if (mpi_rankx==7) {
       jlo=30;
       jhi=40;
       klo=55;
       khi=105;
-    } else if (mpi_rank==8) {
+    } else if (mpi_rankx==8) {
       jlo=45;
       jhi=55;
       klo=55;
       khi=105;
-    } else if (mpi_rank==9) {
+    } else if (mpi_rankx==9) {
       jlo=60;
       jhi=69;
       klo=55;
       khi=105;
-    } else if (mpi_rank==10) {
+    } else if (mpi_rankx==10) {
       jlo=50;
       jhi=69;
       klo=110;
@@ -196,24 +187,22 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
       klo=150;
       khi=159;
     }
-    std::cout << "ranklimits: " << mpi_rank << " "
-              << jlo << " " << jhi << " " << klo << " " << khi << std::endl;
+    af << "ranklimits: " << mpi_rankx << " "
+              << jlo << " " << jhi << " " << klo << " " << khi << endo;
   }
   
 #endif
   
-  cout << "ilo,ihi,jlo,jhi,klo,khi: "
-       << ilo << " " << ihi << " "
-       << jlo << " " << jhi << " "
-       << klo << " " << khi << endl;
+  af << "ilo,ihi,jlo,jhi,klo,khi:" << ilo << ihi << jlo << jhi 
+     << klo << khi << endo;
 
   int ipx_count=0;
 
-  cout << "eos_nuclei::interp_fix_table(): "
-       << "Starting loop over entire grid." << endl;
+  af << "eos_nuclei::interp_fix_table(): "
+       << "Starting loop over entire grid." << endo;
 
   for(int k=khi;k>=klo;k--) {
-    std::cout << "k: " << k << std::endl;
+    af << "k: " << k << endo;
     for(int i=ilo;i<=ihi;i++) {
       for(int j=jlo;j<=jhi;j++) {
         
@@ -248,25 +237,25 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
             dPdnB<=0.0 || !std::isfinite(dPdnB)) {
           
           size_t i_fix=i, j_fix=j, k_fix=k;
-          cout << "Found point to fix at (" << i << "," << j << ","
+          af << "Found point to fix at (" << i << "," << j << ","
                << k << ") = (" << nB_grid2[i] << ","
                << Ye_grid2[j] << "," << T_grid2[k] << ")\n  cs2: "
-               << tg_cs2.get(ix) << " dPdnB: " << dPdnB << endl;
+               << tg_cs2.get(ix) << " dPdnB: " << dPdnB << endo;
           
           // Create a copy of the free energy for temporary storage
           tg_Fint_old=tg_Fint;
           tg_F_old=tg_F;
           
-          int ii_ret=interp_internal(i_fix,j_fix,k_fix,ike,kw,mpi_rank);
+          int ii_ret=interp_internal(i_fix,j_fix,k_fix,ike,kw,mpi_rankx);
 	  
           if (ii_ret!=0) {
-            cout << "Interpolation failed, returning F and Fint to "
-                 << "original." << endl;
+            af << "Interpolation failed, returning F and Fint to "
+                 << "original." << endo;
             //O2SCL_ERR("Interpolation failed.",o2scl::exc_efailed);
             tg_Fint=tg_Fint_old;
             tg_F=tg_F_old;
           } else {
-            cout << "Interpolation succeeded." << endl;
+            af << "Interpolation succeeded." << endo;
             std::vector<std::string> sv2;
             eos_deriv(sv2,itive_com);
             add_eg(sv2,itive_com);
@@ -330,12 +319,12 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
               if (k_max<T_grid2.size()-1) k_max++;
             }
 	    
-            cout << "Computed i_min, i_max: " << i_min << " "
-                 << i_max << endl;
-            cout << "Computed j_min, j_max: " << j_min << " "
-                 << j_max << endl;
-            cout << "Computed k_min, k_max: " << k_min << " "
-                 << k_max << endl;
+            af << "Computed i_min, i_max: " << i_min << " "
+                 << i_max << endo;
+            af << "Computed j_min, j_max: " << j_min << " "
+                 << j_max << endo;
+            af << "Computed k_min, k_max: " << k_min << " "
+                 << k_max << endo;
             
             std::vector<std::string> sv3;
             /*
@@ -375,8 +364,8 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
 	  
           j++;
           
-          cout << "mpi_rank,ipx_count: " << mpi_rank << " "
-               << ipx_count << endl;
+          af << "mpi_rank,ipx_count: " << mpi_rankx << " "
+               << ipx_count << endo;
           
           if (one_point && ipx_count==1) {
             i=nB_grid2.size();
