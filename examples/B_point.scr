@@ -6,7 +6,8 @@
 
 # This is the "fiducial" model from Du et al. (2022)
 
-../eos -set data_dir "../data" \
+../eos -set data_dir "../data" -set nuc_c0 "(-44)" \
+-set nuc_c1 7.4 -set nuc_c2 2.06 \
 -select-model 470 738 0.5 13.0 62.4 32.8 0.9 -point 0.08 0.5 5.0
 
 # Pure Skyrme model

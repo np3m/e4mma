@@ -1,7 +1,7 @@
 /*
   -------------------------------------------------------------------
   
-  Copyright (C) 2018-2024, Xingfu Du, Zidu Lin, and Andrew W. Steiner
+  Copyright (C) 2018-2025, Xingfu Du, Zidu Lin, and Andrew W. Steiner
   
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -477,7 +477,8 @@ int eos_nuclei::maxwell(std::vector<std::string> &sv,
   if (method==4) {
     
     if (with_leptons==false || derivs_computed==false) {
-      cout << "maxwell_test only works with leptons and derivatives." << endl;
+      cout << "maxwell_test only works with leptons and derivatives."
+           << endl;
       return 0;
     }
   
@@ -659,7 +660,8 @@ int eos_nuclei::maxwell(std::vector<std::string> &sv,
   } else if (method==0) {
     
     if (with_leptons==false || derivs_computed==false) {
-      cout << "maxwell_test only works with leptons and derivatives." << endl;
+      cout << "maxwell_test only works with leptons and derivatives."
+           << endl;
       return 0;
     }
   
@@ -761,7 +763,8 @@ int eos_nuclei::maxwell(std::vector<std::string> &sv,
   } else if (method==1) {
   
     if (with_leptons==false || derivs_computed==false) {
-      cout << "maxwell_test only works with leptons and derivatives." << endl;
+      cout << "maxwell_test only works with leptons and derivatives."
+           << endl;
       return 0;
     }
   
@@ -848,7 +851,8 @@ int eos_nuclei::maxwell(std::vector<std::string> &sv,
           interp_vec<vector<double>,ubvector>
             itp_mue(n_nB2,nB_grid2,mue,itp_linear);
 
-          cout << li << " " << ui << " " << nb_low << " " << nb_high << endl;
+          cout << li << " " << ui << " " << nb_low << " " << nb_high
+               << endl;
           ofstream fout;
           fout.open("max2.out");
           fout << "nb P mu" << endl;
@@ -900,7 +904,8 @@ int eos_nuclei::maxwell(std::vector<std::string> &sv,
   } else if (method==2) {
   
     if (with_leptons==false || derivs_computed==false) {
-      cout << "maxwell_test only works with leptons and derivatives." << endl;
+      cout << "maxwell_test only works with leptons and derivatives."
+           << endl;
       return 0;
     }
   
@@ -9808,13 +9813,13 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 			       bool itive_com) {
 
   if (derivs_computed) {
-    cout << "eos_nuclei::generate_table(): Setting derivs_computed to false."
-	 << endl;
+    af << "eos_nuclei::generate_table(): Setting derivs_computed to false."
+	 << endo;
     derivs_computed=false;
   }
   if (with_leptons) {
-    cout << "eos_nuclei::generate_table(): setting with_leptons to false."
-	 << endl;
+    af << "eos_nuclei::generate_table(): setting with_leptons to false."
+	 << endo;
     with_leptons=false;
   }
 
@@ -9913,8 +9918,8 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
     
     if (loaded==false) {
 
-      cout << "eos_nuclei::generate_table(): "
-           << "No data. Creating new table." << endl;
+      af << "eos_nuclei::generate_table(): "
+         << "No data. Creating new table." << endo;
 
       new_table();
 
@@ -10152,7 +10157,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
       vector<string> sv2;
       rewrap(sout,sv2);
       for(size_t jk=0;jk<sv2.size();jk++) {
-	cout << sv2[jk] << endl;
+	af << sv2[jk] << endo;
       }
 
       // Loop over all points to compute task list
@@ -10717,16 +10722,16 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
       size_t ntasks=tasks.size()/6;
       if (gt_verbose>1) {
 	if (ntasks>0) {
-	  cout << "eos_nuclei::generate_table(): Rank " << mpi_rank 
-	       << " tasks " << ntasks << endl;
+	  af << "eos_nuclei::generate_table(): Rank " << mpi_rank 
+             << " tasks " << ntasks << endo;
 	} else {
-	  cout << "eos_nuclei::generate_table(): Rank " << mpi_rank
-               << " tasks " << ntasks << endl;
+	  af << "eos_nuclei::generate_table(): Rank " << mpi_rank
+             << " tasks " << ntasks << endo;
 	}
       }
       if (ntasks==0) {
-	cout << "eos_nuclei::generate_table(): "
-             << "Found no tasks to complete." << endl;
+	af << "eos_nuclei::generate_table(): "
+             << "Found no tasks to complete." << endo;
       }
 
 #ifndef NO_MPI
@@ -10786,10 +10791,10 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	      if (false && gt_verbose>1) {
 		double nBt=input_buffers[proc_index][vi["nB"]];
 		double Tt=input_buffers[proc_index][vi["T"]]/hc_mev_fm;
-		cout << mpi_rank << " storing point "
+		af<< mpi_rank << " storing point "
 		     << tasks[i2] << " " << tasks[j2] << " "
 		     << tasks[k2] << " with fr=" << thy.ed-Tt*thy.en
-		     << " F=" << (thy.ed-Tt*thy.en)/nBt*hc_mev_fm << endl;
+		     << " F=" << (thy.ed-Tt*thy.en)/nBt*hc_mev_fm << endo;
 	      }
 	      ubvector X(6);
 	      map<string,double> vdet;
@@ -10825,15 +10830,15 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 			  input_buffers[proc_index][vi["flag"]],vdet);
 	    } else {
 	      if (gt_verbose>1) {
-		cout << "Rank " << mpi_rank
+		af << "Rank " << mpi_rank
 		     << " point at (" << tasks[i2] << "," << tasks[j2]
 		     << "," << tasks[k2] << ") (nB,Ye,T)=(";
-		cout.precision(4);
-		cout << input_buffers[proc_index][vi["nB"]] << ","
+                af.precision(4);
+		af << input_buffers[proc_index][vi["nB"]] << ","
 		     << input_buffers[proc_index][vi["Ye"]] << ","
 		     << input_buffers[proc_index][vi["T"]] 
-		     << ") failed." << endl;
-		cout.precision(6);
+		     << ") failed." << endo;
+                af.precision(6);
 	      }
 	    }
 	    
@@ -10847,13 +10852,13 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	    size_t i2=i*6, j2=i*6+1, k2=i*6+2;
 	    
 	    if (gt_verbose>1) {
-	      cout << "Rank " << mpi_rank << " sending " 
+	      af << "Rank " << mpi_rank << " sending " 
 		   << i << "/" << ntasks << " (" << tasks[i*6] << ","
 		   << tasks[i*6+1] << "," 
 		   << tasks[i*6+2] << ") -> ("
 		   << tasks[i*6+3] << "," 
 		   << tasks[i*6+4] << ","
-		   << tasks[i*6+5] << ") to " << proc_index+1 << endl;
+		   << tasks[i*6+5] << ") to " << proc_index+1 << endo;
 	    }
 
 	    output_buffers[proc_index][vi["msg"]]=((double)message_continue);
@@ -10907,9 +10912,9 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 		  X_all_nuclei+=tg_XHe3.get(ix_dest_m3);
 		  X_all_nuclei+=tg_XLi4.get(ix_dest_m3);
 		  if (X_all_nuclei<1.0e-20 && nB_grid2[tasks[i*6+3]]<0.02) {
-		    cout << "X_all_nuclei small (1): " << X_all_nuclei << " "
+		    af << "X_all_nuclei small (1): " << X_all_nuclei << " "
 			 << T_grid2[iT_dest] << " "
-                         << nB_grid2[tasks[i*6+3]] << endl;
+                         << nB_grid2[tasks[i*6+3]] << endo;
 		    output_buffers[proc_index][vi["no_nuclei"]]=1.0;
 		  }
 		}
@@ -10930,7 +10935,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	      MPI_Wtime()-last_file_time>file_update_time) {
 
             if (out_file.length()>0) {
-              cout << "Updating file." << endl;
+              af << "Updating file." << endo;
               write_results(out_file);
               last_file_time=MPI_Wtime();
             }
@@ -10951,7 +10956,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	      " percent completed.";
 	    int slack_ret=slack.send(msg,false);
             if (slack_ret!=0 && verbose>0) {
-              cout << "Sending slack message failed." << endl;
+              af << "Sending slack message failed." << endo;
             }
 	    
 	  }
@@ -10977,19 +10982,19 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	  size_t inB=tasks[i*6+3];
 	  size_t iYe=tasks[i*6+4];
 	  size_t iT=tasks[i*6+5];
-	  cout << "eos_nuclei::generate_table(): Computing " 
+	  af << "eos_nuclei::generate_table(): Computing " 
 	       << i << "/" << ntasks << " (" << tasks[i*6] << ","
 	       << tasks[i*6+1] << "," 
 	       << tasks[i*6+2] << ") -> ("
 	       << tasks[i*6+3] << "," 
 	       << tasks[i*6+4] << ","
-	       << tasks[i*6+5] << ")" << endl;
+	       << tasks[i*6+5] << ")" << endo;
 
 	  double nB=nB_grid2[inB];
 	  double Ye=Ye_grid2[iYe];
 	  double T=T_grid2[iT]/hc_mev_fm;
-	  cout << "  nB,Ye,T[MeV]: " << nB << " " << Ye << " " << T*hc_mev_fm
-	       << endl;
+	  af << "  nB,Ye,T[MeV]: " << nB << " " << Ye << " " << T*hc_mev_fm
+	       << endo;
 	  double log_xn=gtab.get("log_xn",i);
 	  double log_xp=gtab.get("log_xp",i);
 	  size_t nuc_Z1=((size_t)(gtab.get("Z",i)+1.0e-12));
@@ -11010,8 +11015,8 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 		X_all_nuclei+=tg_XHe3.get(ixm3);
 		X_all_nuclei+=tg_XLi4.get(ixm3);
 		if (X_all_nuclei<1.0e-20) {
-		  cout << "X_all_nuclei small (2): " << X_all_nuclei << " "
-		       << T_grid2[iT] << endl;
+		  af << "X_all_nuclei small (2): " << X_all_nuclei << " "
+		       << T_grid2[iT] << endo;
 		  no_nuclei=true;
 		}
 	      }
@@ -11055,11 +11060,11 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
             }
 	  }
 	  if (gt_verbose>1) {
-            cout.precision(5);
-	    cout << "eos_nuclei::generate_table(): Point at (nB,Ye,T[MeV])=("
+            af.precision(5);
+	    af << "eos_nuclei::generate_table(): Point at (nB,Ye,T[MeV])=("
 		 << nB << "," << Ye << "," << T*hc_mev_fm << "), ret="
-		 << ret << ", " << i << "/" << ntasks << endl;
-            cout.precision(6);
+		 << ret << ", " << i << "/" << ntasks << endo;
+            af.precision(6);
 	  }
 	  if (ret==0) {
 	    
@@ -11081,7 +11086,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	  if (((int)i)%(file_update_iters)==file_update_iters-1 ||
 	      curr_time-last_file_time>file_update_time) {
 	    
-	    cout << "Updating file." << endl;
+	    af << "Updating file." << endo;
             if (out_file.length()>0) {
               write_results(out_file);
 #ifdef NO_MPI
@@ -11121,19 +11126,19 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
       
       current_tasks+=ntasks;
       if (gt_verbose>0) {
-	cout << "eos_nuclei::generate_table(): "
+	af << "eos_nuclei::generate_table(): "
              << "Rank " << mpi_rank << " computed " << current_tasks
 	     << " out of " << total_tasks << ".\n  "
 	     << ((int)(((double)current_tasks)/
 		       ((double)total_tasks)*100.0))
-	     << " percent done." << endl;
+	     << " percent done." << endo;
       }
       
       if (one_success==false) {
         if (gt_verbose>0) {
-          cout << "eos_nuclei::generate_table(): Rank "
+          af << "eos_nuclei::generate_table(): Rank "
                << mpi_rank << " found no successes. Stopping."
-               << endl;
+               << endo;
         }
         done=true;
       }
@@ -11149,15 +11154,15 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
       
       if (ntasks==0 || (max_time>0.0 && elapsed>max_time)) {
 	
-	cout << "eos_nuclei::generate_table(): Finished. "
+	af << "eos_nuclei::generate_table(): Finished. "
              << ntasks << " " << max_time << " "
-	     << elapsed << endl;
+	     << elapsed << endo;
 	done=true;
         
       } else if (write_elapsed>file_update_time) {
 	
-	cout << "eos_nuclei::generate_table(): ";
-	cout << "Updating file." << endl;
+	af << "eos_nuclei::generate_table(): ";
+	af << "Updating file." << endo;
         if (out_file.length()>0) {
           write_results(out_file);
 #ifdef NO_MPI	
@@ -11220,9 +11225,9 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	}
       }
     }
-    cout << "eos_nuclei::generate_table(): There are "
+    af << "eos_nuclei::generate_table(): There are "
          << conv2_count << " total points finished "
-	 << "out of " << total_tasks << endl;
+	 << "out of " << total_tasks << endo;
 
     // -----------------------------------------------------
     // Output file
@@ -11232,8 +11237,8 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
     }
     
     if (gt_verbose>0) {
-      cout << "eos_nuclei::generate_table(): Rank "
-           << mpi_rank << " sending exit to children." << endl;
+      af << "eos_nuclei::generate_table(): Rank "
+           << mpi_rank << " sending exit to children." << endo;
     }
       
     string msg="eos_nuclei::generate_table(): Done. There are "+
@@ -11257,8 +11262,8 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
     int message=((int)(input_buffer[vi["msg"]]+1.0e-6));
 
     if (false && gt_verbose>1) {
-      cout << "Rank " << mpi_rank << " got message "
-	   << message << endl;
+      af << "Rank " << mpi_rank << " got message "
+	   << message << endo;
     }
     
     thermo thx;
@@ -11295,9 +11300,9 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
       if (max_time==0.0 || elapsed<max_time) {
 
 	if (gt_verbose>1) {
-	  cout << "Rank " << mpi_rank
+	  af << "Rank " << mpi_rank
 	       << " computing point at nB,Ye,T[MeV]: " << nB << " " 
-	       << Ye << " " << T*hc_mev_fm << endl;
+	       << Ye << " " << T*hc_mev_fm << endo;
 	}
 	
         if (include_muons) {
@@ -11332,31 +11337,31 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	}
 
 	if (gt_verbose>1) {
-	  cout.precision(4);
+	  af.precision(4);
 	  if (ret==0) {
-	    cout << "Rank " << mpi_rank
+	    af << "Rank " << mpi_rank
 		 << " done. nB,Ye,T[MeV],F[MeV]: " << nB << " " 
 		 << Ye << " " << T*hc_mev_fm << " "
-		 << (thx.ed-thx.en*T)/nB*hc_mev_fm << endl;
-	    cout << "Rank " << mpi_rank
+		 << (thx.ed-thx.en*T)/nB*hc_mev_fm << endo;
+	    af << "Rank " << mpi_rank
 		 << " done. (inB,iYe,iT), Z,A: ("
 		 << ((size_t)(input_buffer[vi["inB"]]*1.0+1.0e-12)) << ","
 		 << ((size_t)(input_buffer[vi["iYe"]]*1.0+1.0e-12)) << ","
 		 << ((size_t)(input_buffer[vi["iT"]]*1.0+1.0e-12)) << "), ";
 	    if (alg_mode<2) {
-	      cout << nuc_Z1 << " "
-		   << nuc_Z1+nuc_N1 << endl;
+	      af << nuc_Z1 << " "
+		   << nuc_Z1+nuc_N1 << endo;
 	    } else {
-	      cout << Zbar << " "
-		   << Zbar+Nbar << endl;
+	      af << Zbar << " "
+		   << Zbar+Nbar << endo;
 	    }
 	  } else {
-	    cout << "Rank " << mpi_rank
+	    af << "Rank " << mpi_rank
 		 << " failed. nB,Ye,T[MeV],ret: " << nB << " " 
 		 << Ye << " " << T*hc_mev_fm << " "
-		 << ret << endl;
+		 << ret << endo;
 	  }
-	  cout.precision(6);
+	  af.precision(6);
 	}
 	
 	// End of 'if (max_time==0.0 || elapsed<max_time)'
@@ -11429,7 +11434,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
     }
 
     if (gt_verbose>0) {
-      cout << "Rank " << mpi_rank << " received done message." << endl;
+      af << "Rank " << mpi_rank << " received done message." << endo;
     }
     
 #endif

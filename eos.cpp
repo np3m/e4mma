@@ -1,7 +1,7 @@
 /*
   -------------------------------------------------------------------
   
-  Copyright (C) 2018-2024, Xingfu Du, Zidu Lin, and Andrew W. Steiner
+  Copyright (C) 2018-2025, Xingfu Du, Zidu Lin, and Andrew W. Steiner
   
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -789,13 +789,17 @@ void eos::ns_fit(int row) {
 void eos::setup_output() {
 
   std::string out_filename=std_out;
-  size_t pos=out_filename.find("<rank>");
-  if (pos!=std::string::npos) {
-    out_filename.replace(pos,6,o2scl::itos(mpi_rankx));
+  if (std_out.length()==0) {
+    af.attach(cout);
+  } else {
+    size_t pos=out_filename.find("<rank>");
+    if (pos!=std::string::npos) {
+      out_filename.replace(pos,6,o2scl::itos(mpi_rankx));
+    }
+    foutx.open(out_filename);
+    
+    af.attach(foutx);
   }
-  foutx.open(out_filename);
-
-  af.attach(foutx);
   
   return;
 }
@@ -941,9 +945,9 @@ eos::eos() {
 
   use_alt_eos=false;
   cs2_extra=1.0;
-  nuc_c0=-80.0;
-  nuc_c1=15.0;
-  nuc_c2=2.0;
+  nuc_c0=0.0;
+  nuc_c1=1.0;
+  nuc_c2=10.0;
   
 #ifndef NO_MPI
   // Get MPI rank, etc.
@@ -954,7 +958,7 @@ eos::eos() {
   mpi_sizex=1;
 #endif
   
-  std_out="eos_<rank>.out";
+  std_out="";
   
 }
 
@@ -4146,26 +4150,39 @@ int eos::select_common() {
   // (partially) handled separately elsewhere.
   
   if (select_cs2_test) {
-    cout << "eos::select_common(): Going to cs2 test." << endl;
+    
+    double min_cs2x=10.0, max_cs2x=0.0;
+    
+    //cout << "eos::select_common(): Going to cs2 test." << endl;
     for(double nbx=0.1;nbx<2.00001;nbx+=0.05) {
-      for(double yex=0.05;yex<0.4501;yex+=0.1) {
-	for(double Tx=1.0/hc_mev_fm;Tx<10.01/hc_mev_fm;Tx+=9.0/hc_mev_fm) {
-	  neutron.n=nbx*(1.0-yex);
-	  proton.n=nbx*yex;
-	  double cs2x=cs2_func(neutron,proton,Tx,th2);
-	  if (cs2x<0.0) {
-	    if (true) {
-	      cout << "eos::select_common(): Negative speed of sound." << endl;
-	      cout << "  nB,Ye,T[MeV],cs2: "
+      for(double yex=0.05;yex<0.5501;yex+=0.1) {
+        for(double Tx=1.0/hc_mev_fm;Tx<10.01/hc_mev_fm;
+            Tx+=9.0/hc_mev_fm) {
+          
+          neutron.n=nbx*(1.0-yex);
+          proton.n=nbx*yex;
+          double cs2x=cs2_func(neutron,proton,Tx,th2);
+          if (cs2x<min_cs2x) min_cs2x=cs2x;
+          if (cs2x>max_cs2x) max_cs2x=cs2x;
+          if (cs2x<0.0) {
+            if (true) {
+              cout << "eos::select_common(): Negative speed of sound."
+                   << endl;
+              cout << "  nB,Ye,T[MeV],cs2: "
                    << nbx << " " << yex << " " << Tx*hc_mev_fm << " "
-		   << cs2x << endl;
-	    }	    
+                   << cs2x << endl;
+            }	    
             model_selected=false;
-	    return 10;
-	  }
-	}
+            return 10;
+          }
+        }
       }
     }
+    cout << "eos::select_common(): c0,c1,c2,min_cs2,max_cs2\n  "
+         << nuc_c0 << " " << nuc_c1 << " " << nuc_c2 << " "
+         << min_cs2x << " " << max_cs2x << endl;
+    
+    return 0;
   }
 
   return 0;

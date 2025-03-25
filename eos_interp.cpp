@@ -1,7 +1,7 @@
 /*
   -------------------------------------------------------------------
   
-  Copyright (C) 2022-2024, Andrew W. Steiner
+  Copyright (C) 2022-2025, Andrew W. Steiner
   
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -76,8 +76,8 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
 #endif
   
   /// Load cs2 from a file
-  cout << "eos_nuclei::interp_fix_table() reading stability file: "
-       << st_in << endl;
+  af << "eos_nuclei::interp_fix_table() reading stability file:"
+       << st_in << endo;
   hdf_file hff;
   hff.open(st_in);
   hdf_input(hff,tg_cs2,"cs2");
@@ -93,7 +93,7 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
 #endif
   
   std::string kernel=kw.get_string("kernel","rbf_noise");
-  af << "kernel: " << kernel << endo;
+  af << "kernel:" << kernel << endo;
   int ilo=kw.get_int("ilo",0);
   int ihi=kw.get_int("ihi",nB_grid2.size()-1);
   int jlo=kw.get_int("jlo",0);
@@ -187,8 +187,8 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
       klo=150;
       khi=159;
     }
-    af << "ranklimits: " << mpi_rankx << " "
-              << jlo << " " << jhi << " " << klo << " " << khi << endo;
+    af << "ranklimits:" << mpi_rankx
+       << jlo << jhi << klo << khi << endo;
   }
   
 #endif
@@ -198,11 +198,11 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
 
   int ipx_count=0;
 
-  af << "eos_nuclei::interp_fix_table(): "
-       << "Starting loop over entire grid." << endo;
+  af << "eos_nuclei::interp_fix_table():"
+     << "Starting loop over entire grid." << endo;
 
   for(int k=khi;k>=klo;k--) {
-    af << "k: " << k << endo;
+    af << "k:" << k << endo;
     for(int i=ilo;i<=ihi;i++) {
       for(int j=jlo;j<=jhi;j++) {
         
@@ -225,10 +225,10 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
         }
 
 	/*
-	if (tg_sflag.get(ix)>0.5) {
+          if (tg_sflag.get(ix)>0.5) {
           cout << "Value of sflag>0 at (" << i << "," << j << ","
-               << k << ")." << endl;
-	}
+          << k << ")." << endl;
+          }
 	*/
         
         if (tg_cs2.get(ix)>1.0 ||
@@ -238,9 +238,9 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
           
           size_t i_fix=i, j_fix=j, k_fix=k;
           af << "Found point to fix at (" << i << "," << j << ","
-               << k << ") = (" << nB_grid2[i] << ","
-               << Ye_grid2[j] << "," << T_grid2[k] << ")\n  cs2: "
-               << tg_cs2.get(ix) << " dPdnB: " << dPdnB << endo;
+             << k << ") = (" << nB_grid2[i] << ","
+             << Ye_grid2[j] << "," << T_grid2[k] << ")\n  cs2:"
+             << tg_cs2.get(ix) << "dPdnB:" << dPdnB << endo;
           
           // Create a copy of the free energy for temporary storage
           tg_Fint_old=tg_Fint;
@@ -249,8 +249,8 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
           int ii_ret=interp_internal(i_fix,j_fix,k_fix,ike,kw,mpi_rankx);
 	  
           if (ii_ret!=0) {
-            af << "Interpolation failed, returning F and Fint to "
-                 << "original." << endo;
+            af << "Interpolation failed, returning F and Fint to"
+               << "original." << endo;
             //O2SCL_ERR("Interpolation failed.",o2scl::exc_efailed);
             tg_Fint=tg_Fint_old;
             tg_F=tg_F_old;
@@ -319,12 +319,9 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
               if (k_max<T_grid2.size()-1) k_max++;
             }
 	    
-            af << "Computed i_min, i_max: " << i_min << " "
-                 << i_max << endo;
-            af << "Computed j_min, j_max: " << j_min << " "
-                 << j_max << endo;
-            af << "Computed k_min, k_max: " << k_min << " "
-                 << k_max << endo;
+            af << "Computed i_min, i_max:" << i_min << i_max << endo;
+            af << "Computed j_min, j_max:" << j_min << j_max << endo;
+            af << "Computed k_min, k_max:" << k_min << k_max << endo;
             
             std::vector<std::string> sv3;
             /*
@@ -337,8 +334,9 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
 	    
             ipx_count++;
             
-            if (false) {
+            if (true) {
               hdf_file hf;
+              af << "st_out:" << st_out << endo;
               hf.open_or_create(st_out);
               hdf_output(hf,dmundnB,"dmundnB");
               hdf_output(hf,dmundYe,"dmundYe");
@@ -357,6 +355,7 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
             }
 	    
             if (true) {
+              af << "table_out:" << table_out << endo;
               write_results(table_out);
             }            
             
@@ -364,13 +363,13 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
 	  
           j++;
           
-          af << "mpi_rank,ipx_count: " << mpi_rankx << " "
-               << ipx_count << endo;
+          af << "mpi_rank,ipx_count:" << mpi_rankx << " "
+             << ipx_count << endo;
           
           if (one_point && ipx_count==1) {
             i=nB_grid2.size();
             j=Ye_grid2.size();
-            k=T_grid2.size();
+            k=-1;
           }
           
 	}
@@ -389,7 +388,7 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
                                 int mpi_rank) {
                                 
   size_t window=kwa.get_size_t("window",0);
-  cout << "Using window size: " << window << endl;
+  af << "Using window size:" << window << endo;
   std::string kernel=kwa.get_string("kernel","rbf_noise");
   std::string method=kwa.get_string("method","gp");
   
@@ -423,8 +422,8 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
     //int kwindow=15;
     int kwindow=0;
   */
-  cout << "Using iwindow,jwindow,kwindow: "
-       << iwindow << " " << jwindow << " " << kwindow << endl;
+  af << "Using iwindow,jwindow,kwindow:"
+     << iwindow << jwindow << kwindow << endo;
 
   // First pass, determine all the points to fix and
   // calibrate in the neighborhood of the user-specified point
@@ -476,9 +475,9 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
     }
   }
 
-  cout << "eos_nuclei:interp_internal(): After first pass, fix list has "
+  af << "eos_nuclei:interp_internal(): After first pass, fix list has "
        << ike.fix_list.size()/3 << " points."
-       << endl;
+       << endo;
 
   // Second pass, find points to calibrate and fix near fix_list
 
@@ -537,11 +536,11 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
                     ifl=ike.fix_list.size()/3;
                   }
                   if (false) {
-                    cout << index[0] << " " << index[1] << " "
-                         << index[2] << " " << ifl << " "
-                         << ike.fix_list[ifl*3] << " "
-                         << ike.fix_list[ifl*3+1] << " "
-                         << ike.fix_list[ifl*3+2] << endl;
+                    af << index[0] << " " << index[1] << " "
+                       << index[2] << " " << ifl << " "
+                       << ike.fix_list[ifl*3] << " "
+                       << ike.fix_list[ifl*3+1] << " "
+                       << ike.fix_list[ifl*3+2] << endo;
                     //char ch;
                     //cin >> ch;
                   }
@@ -558,13 +557,13 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
     }
   }
   
-  cout << "eos_nuclei:interp_internal(): After second pass, "
-       << "calibrate list has "
-       << ike.calib_list.size()/3 << " points and fix list has "
-       << ike.fix_list.size()/3 << " points." << endl;
-
+  af << "eos_nuclei::interp_internal(): After second pass, "
+     << "calibrate list has "
+     << ike.calib_list.size()/3 << " points and fix list has "
+     << ike.fix_list.size()/3 << " points." << endo;
+  
   if (ike.fix_list.size()==0) {
-    cerr << "No points to fix." << endl;
+    cerr << "eos_nuclei::interp_internal(): No points to fix." << endl;
     return 1;
   }
 
@@ -607,7 +606,7 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
     int min_ret;
 
     double y1=fmf(ike.fix_list.size()/3,x);
-    std::cout << "mpi_rank,y1: " << mpi_rank << " " << y1 << std::endl;
+    af << "mpi_rank,y1: " << mpi_rank << " " << y1 << endo;
     
     if (method=="min") {
       min_ret=mms.mmin(ike.fix_list.size()/3,x,fmin,fmf);
@@ -618,7 +617,7 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
 
     // Evaluate the function at the optimal point
     double y2=fmf(ike.fix_list.size()/3,x);
-    std::cout << "mpi_rank,y2: " << mpi_rank << " " << y2 << std::endl;
+    af << "mpi_rank,y2: " << mpi_rank << " " << y2 << endo;
     
   } else if (method=="gp") {
   
@@ -634,7 +633,7 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
       ptemp.push_back(l10_list);
       std::vector<std::vector<std::vector<double>>> param_lists;
       param_lists.push_back(ptemp);
-      std::cout << "Going to set_covar() for rbf_noise." << std::endl;
+      af << "Going to set_covar() for rbf_noise." << endo;
       std::vector<std::shared_ptr<mcovar_funct_rbf_noise<ubvector,
                                                          mat_x_row_t>>>
 	mfr(1);
@@ -662,7 +661,7 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
       ptemp.push_back(l10_list);
       std::vector<std::vector<std::vector<double>>> param_lists;
       param_lists.push_back(ptemp);
-      std::cout << "Going to set_covar() for quad_correl." << std::endl;
+      af << "Going to set_covar() for quad_correl." << endo;
       vector<std::shared_ptr<mcovar_funct_quad_correl<ubvector,
                                                       mat_x_row_t>>>
 	mfr(1);
@@ -685,16 +684,16 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
     ike.addl_verbose=1;
 
     ike.skip_optim=true;
-    cout << "Going to ike set." << endl;
+    af << "Going to ike set." << endo;
     ike.set();
-    cout << "H0" << endl;
+    af << "H0" << endo;
 
     // Manually optimize the Gaussian process interpolation by
     // exhaustively searching
   
     ubvector min_p;
   
-    cout << "H1." << kernel << endl;
+    af << "H1." << kernel << endo;
     if (kernel!="rbf_noise") {
 
       ubvector p(10);
@@ -712,19 +711,19 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
       min_p=p;
 
       if (ike.addl_verbose>=1) {
-	cout << "Covariance parameters: ";
-	vector_out(cout,p,true);
+	af << "Covariance parameters: " << p << endo;
+	//vector_out(cout,p,true);
       }
     
-      cout << "H3." << endl;
+      af << "H3." << endo;
       ike.cf[0]->set_params(p);
       int success;
-      cout << "H2." << endl;
+      af << "H2." << endo;
       ike.verbose=3;
       double q=ike.qual_fun(0,success);
-      cout << "q,min_qual,success: "
-	   << q << " " << min_qual << " " << success << endl;
-      cout << endl;
+      af << "q,min_qual,success: "
+	   << q << " " << min_qual << " " << success << endo;
+      af << endo;
 
       exit(-1);
     
@@ -745,25 +744,25 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
 	//for(p[1]=80.0;p[1]>8.0;p[1]/=1.4) {
 	//for(p[2]=80.0;p[2]>8.0;p[2]/=1.4) {
 	//for(p[3]=-15.0;p[3]<-2.99;p[3]+=1.0) {
-	std::cout << "In eos_nuclei::interp_internal(), loop over "
-		  << "hyperparameters." << std::endl;
+	af << "In eos_nuclei::interp_internal(), loop over "
+           << "hyperparameters." << endo;
 	for(p[0]=10.0;p[0]>1.99;p[0]/=1.4) {
 	  for(p[1]=10.0;p[1]>1.99;p[1]/=1.4) {
 	    for(p[2]=10.0;p[2]>1.99;p[2]/=1.4) {
 	      for(p[3]=-15.0;p[3]<-14.99;p[3]+=1.0) {
               
 		if (ike.addl_verbose>=1) {
-		  cout << "Covariance parameters: ";
-		  vector_out(cout,p,true);
+		  af << "Covariance parameters: " << p << endo;
+		  //vector_out(cout,p,true);
 		}
               
 		ike.cf[0]->set_params(p);
 		int success;
 		double q=ike.qual_fun(0,success);
 		if (ike.addl_verbose>=1) {
-		  cout << "q,min_qual,success: "
-		       << q << " " << min_qual << " " << success << endl;
-		  cout << endl;
+		  af << "q,min_qual,success: "
+                     << q << " " << min_qual << " " << success << endo;
+		  af << endo;
 		}
 		exit(-1);
               
@@ -779,19 +778,17 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
       } else {
       
 	if (ike.addl_verbose>=1) {
-	  cout << "Covariance parameters: ";
-	  vector_out(cout,p,true);
+	  af << "Covariance parameters: " << p << endo;
+	  //vector_out(cout,p,true);
 	}
       
-	cout << "H3." << endl;
 	ike.cf[0]->set_params(p);
 	int success;
-	cout << "H2." << endl;
 	ike.verbose=3;
 	double q=ike.qual_fun(0,success);
-	cout << "q,min_qual,success: "
-	     << q << " " << min_qual << " " << success << endl;
-	cout << endl;
+	af << "q,min_qual,success: "
+	     << q << " " << min_qual << " " << success << endo;
+	af << endo;
       
 	exit(-1);
       }      
@@ -806,13 +803,14 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
     } else {
       ike.cf[0]->set_params(min_p);
       int st;
-      cout << "Last run:\n" << endl;
+      af << "Last run:\n" << endo;
       vector_out(cout,min_p,true);
       double qt=ike.qual_fun(0,st);
-      cout << "min_qual,qt,st,min_p: "
+      af << "min_qual,qt,st,min_p: "
 	   << min_qual << " " << qt << " " << st << " ";
-      vector_out(cout,min_p,true);
-      cout << "Success." << endl;
+      af << min_p << endo;
+      //vector_out(cout,min_p,true);
+      af << "Success." << endo;
     }
 
     // Use the interpolation results to modify the points to be fixed
@@ -838,15 +836,15 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
     
       ike.eval(index2,out);
       if (ike.interp_Fint==false) {
-	cout << "Change (5) from " << tg_F.get(index) << " to "
-	     << out[0] << endl;
-	cout << "Change (5b) from " << tg_Fint.get(index) << " to "
-	     << out[0]-F_eg << endl;
+	af << "Change (5) from " << tg_F.get(index) << " to "
+	     << out[0] << endo;
+	af << "Change (5b) from " << tg_Fint.get(index) << " to "
+	     << out[0]-F_eg << endo;
 	tg_F.get(index)=out[0];
 	tg_Fint.get(index)=out[0]-F_eg;
       } else {
-	cout << "Change (6) from " << tg_Fint.get(index) << " to "
-	     << out[0] << endl;
+	af << "Change (6) from " << tg_Fint.get(index) << " to "
+	     << out[0] << endo;
 	tg_Fint.get(index)=out[0];
 	tg_F.get(index)=out[0]+F_eg;
       }
@@ -878,19 +876,19 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
     
       if (ike.interp_Fint==false) {
 	double corr=out[0]-tg_F.get(index);
-	cout << "Change (7) from " << tg_F.get(index) << " to "
+	af << "Change (7) from " << tg_F.get(index) << " to "
 	     << tg_F.get(index)+fact*corr << " at dist: "
-	     << ike.calib_dists[j/3] << endl;
-	cout << "Change (7b) from " << tg_Fint.get(index) << " to "
+	     << ike.calib_dists[j/3] << endo;
+	af << "Change (7b) from " << tg_Fint.get(index) << " to "
 	     << tg_F.get(index)-F_eg << " at dist: "
-	     << ike.calib_dists[j/3] << endl;
+	     << ike.calib_dists[j/3] << endo;
 	tg_F.get(index)+=fact*corr;
 	tg_Fint.get(index)=tg_F.get(index)-F_eg;
       } else {
 	double corr=out[0]-tg_Fint.get(index);
-	cout << "Change (8) from " << tg_Fint.get(index) << " to "
+	af << "Change (8) from " << tg_Fint.get(index) << " to "
 	     << tg_Fint.get(index)+fact*corr << " at dist: "
-	     << ike.calib_dists[j/3] << endl;
+	     << ike.calib_dists[j/3] << endo;
 	tg_Fint.get(index)+=fact*corr;
 	tg_F.get(index)=out[0]+F_eg;
       }
@@ -1176,16 +1174,16 @@ void interpm_krige_eos::set() {
           
           if (true) {
             ipy.set_function("interpm_sklearn_gp",
-                              ((std::string)"verbose=0,transform_in=none,")+
-                              "alpha=1.0e-7,kernel=RBF("+
-                              "length_scale="+o2scl::dtos(len)+
-                              ",length_scale_bounds=\"fixed\")",0);
+                             ((std::string)"verbose=0,transform_in=none,")+
+                             "alpha=1.0e-7,kernel=RBF("+
+                             "length_scale="+o2scl::dtos(len)+
+                             ",length_scale_bounds=\"fixed\")",0);
           } else {
             ipy.set_function("interpm_tf_dnn",
-                              ((std::string)"verbose=1,")+
-                              "transform_in=quant,"+
-                              "transform_out=quant,"+
-                              "hlayers=[200,400,400,200]",1);
+                             ((std::string)"verbose=1,")+
+                             "transform_in=quant,"+
+                             "transform_out=quant,"+
+                             "hlayers=[200,400,400,200]",1);
           }
           
           ubmatrix ix3=ix2;
