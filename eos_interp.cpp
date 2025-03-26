@@ -93,7 +93,7 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
 #endif
   
   std::string kernel=kw.get_string("kernel","rbf_noise");
-  af << "kernel:" << kernel << endo;
+  af << "eos_nuclei::interp_fix_table(): kernel:" << kernel << endo;
   int ilo=kw.get_int("ilo",0);
   int ihi=kw.get_int("ihi",nB_grid2.size()-1);
   int jlo=kw.get_int("jlo",0);
@@ -187,13 +187,14 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
       klo=150;
       khi=159;
     }
-    af << "ranklimits:" << mpi_rankx
+    af << "eos_nuclei::interp_fix_table(): ranklimits:" << mpi_rankx
        << jlo << jhi << klo << khi << endo;
   }
   
 #endif
   
-  af << "ilo,ihi,jlo,jhi,klo,khi:" << ilo << ihi << jlo << jhi 
+  af << "eos_nuclei::interp_fix_table():"
+     << "ilo,ihi,jlo,jhi,klo,khi:" << ilo << ihi << jlo << jhi 
      << klo << khi << endo;
 
   int ipx_count=0;
@@ -237,7 +238,8 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
             dPdnB<=0.0 || !std::isfinite(dPdnB)) {
           
           size_t i_fix=i, j_fix=j, k_fix=k;
-          af << "Found point to fix at (" << i << "," << j << ","
+          af << "eos_nuclei::interp_fix_table():"
+             << "Found point to fix at (" << i << "," << j << ","
              << k << ") = (" << nB_grid2[i] << ","
              << Ye_grid2[j] << "," << T_grid2[k] << ")\n  cs2:"
              << tg_cs2.get(ix) << "dPdnB:" << dPdnB << endo;
@@ -249,13 +251,15 @@ int eos_nuclei::interp_fix_table(std::vector<std::string> &sv,
           int ii_ret=interp_internal(i_fix,j_fix,k_fix,ike,kw,mpi_rankx);
 	  
           if (ii_ret!=0) {
-            af << "Interpolation failed, returning F and Fint to"
+            af << "eos_nuclei::interp_fix_table():"
+               << "Interpolation failed, returning F and Fint to"
                << "original." << endo;
             //O2SCL_ERR("Interpolation failed.",o2scl::exc_efailed);
             tg_Fint=tg_Fint_old;
             tg_F=tg_F_old;
           } else {
-            af << "Interpolation succeeded." << endo;
+            af << "eos_nuclei::interp_fix_table():"
+               << "Interpolation succeeded." << endo;
             std::vector<std::string> sv2;
             eos_deriv(sv2,itive_com);
             add_eg(sv2,itive_com);
@@ -388,7 +392,8 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
                                 int mpi_rank) {
                                 
   size_t window=kwa.get_size_t("window",0);
-  af << "Using window size:" << window << endo;
+  af << "eos_nuclei::interp_internal():"
+     << "Using window size:" << window << endo;
   std::string kernel=kwa.get_string("kernel","rbf_noise");
   std::string method=kwa.get_string("method","gp");
   
@@ -422,7 +427,8 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
     //int kwindow=15;
     int kwindow=0;
   */
-  af << "Using iwindow,jwindow,kwindow:"
+  af << "eos_nuclei::interp_internal():"
+     << "Using iwindow,jwindow,kwindow:"
      << iwindow << jwindow << kwindow << endo;
 
   // First pass, determine all the points to fix and
@@ -836,15 +842,18 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
     
       ike.eval(index2,out);
       if (ike.interp_Fint==false) {
-	af << "Change (5) from " << tg_F.get(index) << " to "
-	     << out[0] << endo;
-	af << "Change (5b) from " << tg_Fint.get(index) << " to "
-	     << out[0]-F_eg << endo;
+	af << "eos_nuclei::interp_internal():"
+           << "Change (5) from " << tg_F.get(index) << " to "
+           << out[0] << endo;
+	af << "eos_nuclei::interp_internal():"
+           << "Change (5b) from " << tg_Fint.get(index) << " to "
+           << out[0]-F_eg << endo;
 	tg_F.get(index)=out[0];
 	tg_Fint.get(index)=out[0]-F_eg;
       } else {
-	af << "Change (6) from " << tg_Fint.get(index) << " to "
-	     << out[0] << endo;
+	af << "eos_nuclei::interp_internal():"
+           << "Change (6) from " << tg_Fint.get(index) << " to "
+           << out[0] << endo;
 	tg_Fint.get(index)=out[0];
 	tg_F.get(index)=out[0]+F_eg;
       }
@@ -876,19 +885,22 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
     
       if (ike.interp_Fint==false) {
 	double corr=out[0]-tg_F.get(index);
-	af << "Change (7) from " << tg_F.get(index) << " to "
-	     << tg_F.get(index)+fact*corr << " at dist: "
-	     << ike.calib_dists[j/3] << endo;
-	af << "Change (7b) from " << tg_Fint.get(index) << " to "
-	     << tg_F.get(index)-F_eg << " at dist: "
-	     << ike.calib_dists[j/3] << endo;
+	af << "eos_nuclei::interp_internal():"
+           << "Change (7) from " << tg_F.get(index) << " to "
+           << tg_F.get(index)+fact*corr << " at dist: "
+           << ike.calib_dists[j/3] << endo;
+	af << "eos_nuclei::interp_internal():"
+           << "Change (7b) from " << tg_Fint.get(index) << " to "
+           << tg_F.get(index)-F_eg << " at dist: "
+           << ike.calib_dists[j/3] << endo;
 	tg_F.get(index)+=fact*corr;
 	tg_Fint.get(index)=tg_F.get(index)-F_eg;
       } else {
 	double corr=out[0]-tg_Fint.get(index);
-	af << "Change (8) from " << tg_Fint.get(index) << " to "
-	     << tg_Fint.get(index)+fact*corr << " at dist: "
-	     << ike.calib_dists[j/3] << endo;
+	af << "eos_nuclei::interp_internal():"
+           << "Change (8) from " << tg_Fint.get(index) << " to "
+           << tg_Fint.get(index)+fact*corr << " at dist: "
+           << ike.calib_dists[j/3] << endo;
 	tg_Fint.get(index)+=fact*corr;
 	tg_F.get(index)=out[0]+F_eg;
       }
@@ -934,7 +946,8 @@ int eos_nuclei::interp_point(std::vector<std::string> &sv,
   Ye_cent=Ye_grid2[iYe];
   iT=vector_lookup(n_T2,T_grid2,T_cent*hc_mev_fm);
   T_cent=T_grid2[iT]/hc_mev_fm;
-  cout << "Adjusted to grid, nB, Ye, T[MeV]: " << nB_cent << " "
+  cout << "eos_nuclei::interp_point(): "
+       << "Adjusted to grid, nB, Ye, T[MeV]: " << nB_cent << " "
        << Ye_cent << " " << T_cent*hc_mev_fm << endl;
   cout << "At grid point: " << inB << " " << iYe << " " << iT << endl;
 
@@ -1239,14 +1252,17 @@ double interpm_krige_eos::min(size_t nv, const ubvector &v) {
     double out=tgp_F_old->get(index)*v[j/3];
     
     if (true) {
-      cout << "At " << nB << " " << Ye << " " << T_MeV << endl;
-      cout << "Change F (fix) at "
+      cout << "interpm_krige_eos::min(): "
+           << "At " << nB << " " << Ye << " " << T_MeV << endl;
+      cout << "interpm_krige_eos::min(): "
+           << "Change F (fix) at "
            << index[0] << " " << index[1] << " "
            << index[2] << " from " << tgp_F_old->get(index) << " "
         //<< tgp_F->get(index)
            << " to "
            << out << endl;
-      cout << "Change Fint (fix) from "
+      cout << "interpm_krige_eos::min(): "
+           << "Change Fint (fix) from "
            << tgp_Fint_old->get(index) << " "
         //<< tgp_Fint->get(index)
            << " to "
@@ -1335,6 +1351,7 @@ double interpm_krige_eos::min(size_t nv, const ubvector &v) {
   //cout << "Stability failures: " << enp2->n_stability_fail << endl;
   ret+=enp2->stability_diff*1000.0+enp2->n_stability_fail/10.0;
   //cout << "ret: " << ret << endl;
+  cout << "interpm_krige_eos::min(): ";
   vector_out(cout,v,false);
   cout << " " << ret << endl;
   

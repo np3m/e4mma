@@ -271,9 +271,9 @@ double partition_func::delta_small_iand(double E) {
   double ret=sqrt(pi)/12.0*exp(2.0*sqrt(a*(E-delta)))/
     pow(a,1.0/4.0)/pow((E-delta),5.0/4.0)*exp(-E/T_MeV);
   if (!std::isfinite(ret)) {
-    cout << "a,delta,T_MeV,E: "
+    cout << "partition_func::delta_small_iand(): a,delta,T_MeV,E: "
 	 << a << " " << delta << " " << T_MeV << " " << E << endl;
-    cout << exp(2.0*sqrt(a*(E-delta))) << " " << exp(-E/T_MeV) << " " 
+    cout << "  " << exp(2.0*sqrt(a*(E-delta))) << " " << exp(-E/T_MeV) << " " 
 	 << pow((E-delta),5.0/4.0) << " " << ret << endl;
     O2SCL_ERR2("Value of delta_small_iand is not finite ",
 	       "in partition_func::delta_small_iand().",o2scl::exc_efailed);
@@ -286,7 +286,7 @@ double partition_func::delta_small_iand_prime(double E) {
   double ret=E/T_MeV*sqrt(pi)/12.0*exp(2.0*sqrt(a*(E-delta)))/
     pow(a,1.0/4.0)/pow((E-delta),5.0/4.0)*exp(-E/T_MeV);
   if (!std::isfinite(ret)) {
-    cout << "a,delta,T_MeV,E: "
+    cout << "partition_func::delta_small_iand_prime(): a,delta,T_MeV,E: "
 	 << a << " " << delta << " " << T_MeV << " " << E << endl;
     O2SCL_ERR2("Value of delta_small_iand_prime is not finite ",
 	       "in partition_func::delta_small_iand_prime().",
@@ -299,7 +299,7 @@ double partition_func::delta_large_iand(double E) {
   if (E<1.0e-200) return 0.0;
   double ret=C*exp((E-delta)/Tc)*exp(-E/T_MeV); 
   if (!std::isfinite(ret)) {
-    cout << "a,delta,T_MeV,E: "
+    cout << "partition_func::delta_large_iand(): a,delta,T_MeV,E: "
 	 << a << " " << delta << " " << T_MeV << " " << E << endl;
     O2SCL_ERR2("Value of delta_large_iand is not finite ",
 	       "in partition_func::delta_large_iand().",o2scl::exc_efailed);
@@ -311,7 +311,7 @@ double partition_func::delta_large_iand_prime(double E) {
   if (E<1.0e-200) return 0.0;
   double ret=E/T_MeV*C*exp((E-delta)/Tc)*exp(-E/T_MeV); 
   if (!std::isfinite(ret)) {
-    cout << "a,delta,T_MeV,E: "
+    cout << "partition_func::delta_large_iand_prime(): a,delta,T_MeV,E: "
 	 << a << " " << delta << " " << T_MeV << " " << E << endl;
     O2SCL_ERR2("Value of delta_large_iand_prime is not finite ",
 	       "in partition_func::delta_large_iand_prime().",
@@ -1192,7 +1192,7 @@ int eos_nuclei::add_eg(std::vector<std::string> &sv,
     jhi=o2scl::stoszt(sv[4]);
     klo=o2scl::stoszt(sv[5]);
     khi=o2scl::stoszt(sv[6]);
-    cout << "Function add_eg in range mode, from ("
+    cout << "eos_nuclei::add_eg(): Range mode, from ("
          << ilo << "," << jlo << "," << klo << ") to ("
          << ihi << "," << jhi << "," << khi << ")." << endl;
   }
@@ -1318,11 +1318,13 @@ int eos_nuclei::add_eg(std::vector<std::string> &sv,
 
         if (include_muons) {
           
-          cout << nB << " " << Ye << " " << T_MeV << endl;
+          cout << "eos_nuclei::add_eg(): "
+               << nB << " " << Ye << " " << T_MeV << endl;
 
           elep.pair_density_eq(nB*Ye,T_MeV/hc_mev_fm);
           if (verbose>1) {
-            cout << nB << " " << Ye << " " << T_MeV << " "
+            cout << "eos_nuclei::add_eg():"
+                 << nB << " " << Ye << " " << T_MeV << " "
                  << elep.e.n << " " << elep.mu.n << " "
                  << elep.e.n+elep.mu.n << endl;
           }
@@ -1331,7 +1333,7 @@ int eos_nuclei::add_eg(std::vector<std::string> &sv,
         
           elep.pair_density_eq(nB*Ye,T_MeV/hc_mev_fm);
           if (verbose>1) {
-            cout << "ed+pr: " << elep.th.ed+elep.th.pr 
+            cout << "eos_nuclei::add_eg(): ed+pr: " << elep.th.ed+elep.th.pr 
                  << "en*T+n*mu: "
                  << elep.th.en*T_MeV/hc_mev_fm+elep.e.mu*elep.e.n
                  << endl;
@@ -1398,7 +1400,7 @@ int eos_nuclei::add_eg(std::vector<std::string> &sv,
                                  nn*tg_mun.get(ix)-
                                  np*tg_mup.get(ix))/scale/nB;
             
-            cout << "ti check failed." << endl;
+            cout << "eos_nuclei::add_eg(): ti check failed." << endl;
             cout << "nB,Ye,T_MeV,ti_check,scale: " << nB << " " << Ye << " "
                  << T_MeV << " " << ti_check << " " << scale << endl;
             cout << "ti_int_check, ti_check2, Ye*nB: "
@@ -1432,7 +1434,7 @@ int eos_nuclei::add_eg(std::vector<std::string> &sv,
       
     }
     if (verbose>0) {
-      cout << "add_eg(): " << i+1 << "/" << n_nB2 << endl;
+      cout << "eos_nuclei::add_eg(): " << i+1 << "/" << n_nB2 << endl;
     }
   }
 
@@ -2108,7 +2110,7 @@ int eos_nuclei::eg_table(std::vector<std::string> &sv,
 	}
       }
     }
-    cout << "eg_table(): " << i+1 << "/" << n_nB2 << endl;
+    cout << "eos_nuclei::eg_table(): " << i+1 << "/" << n_nB2 << endl;
   }
 
   hdf_file hf;
@@ -2319,11 +2321,11 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
     kwa.set(sv[1]);
   }
   bool eigenvalues=kwa.get_bool("eigenvals",false);
-  cout << "eigenvals: " << eigenvalues << endl;
+  cout << "eos_nuclei::stability(): eigenvals: " << eigenvalues << endl;
   bool comp_cs2_hom=kwa.get_bool("cs2_hom",false);
-  cout << "cs2_hom: " << comp_cs2_hom << endl;
+  cout << "eos_nuclei::stability(): " << comp_cs2_hom << endl;
   std::string output_file=kwa.get_string("output","");
-  cout << "output file: " << output_file << endl;
+  cout << "eos_nuclei::stability(): " << output_file << endl;
   std::string interp_type=kwa.get_string("interp_type","steffen");
   int itype=itp_steffen;
   if (interp_type=="cspline") itype=itp_cspline;
@@ -2466,7 +2468,7 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
     jhi=o2scl::stoszt(sv[4]);
     klo=o2scl::stoszt(sv[5]);
     khi=o2scl::stoszt(sv[6]);
-    cout << "Stability function in range mode, from ("
+    cout << "eos_nuclei::stability(): range mode, from ("
          << ilo << "," << jlo << "," << klo << ") to ("
          << ihi << "," << jhi << "," << khi << ")." << endl;
   } else if (sv.size()>=4) {
@@ -2479,18 +2481,18 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
     jhi=jlo+1;
     klo=vector_lookup(n_T2,T_grid2,Tx);
     khi=klo+1;
-    cout << "Stability function in point mode." << endl;
+    cout << "eos_nuclei::stability(): point mode." << endl;
     cout << "Density " << nBx << " index " << ilo << endl;
     cout << "Electron fraction " << Yex << " index " << jlo << endl;
     cout << "Temperature " << Tx << " index " << klo << endl;
   } else {
-    cout << "Stability function computing full table." << endl;
+    cout << "eos_nuclei::stability(): full table." << endl;
   }
   
   /// Compute the stability matrix and its eigenvalues at each point
   for(size_t i=ilo;i<ihi;i++) {
     double nB=nB_grid2[i];
-    cout << "nB at " << i << " is " << nB << endl;
+    cout << "eos_nuclei::stability(): nB at " << i << " is " << nB << endl;
     for(size_t j=jlo;j<jhi;j++) {
       double Ye=Ye_grid2[j];
       for(size_t k=klo;k<khi;k++) {
@@ -2640,7 +2642,8 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
         
         if (sing[0]<0.0 || sing[1]<0.0 || sing[2]<0.0 ||
             sing[3]<0.0) {
-          cout << "Unstable: " << nB << " " << Ye << " " << T_MeV << " "
+          cout << "eos_nuclei::stability(): Unstable: "
+               << nB << " " << Ye << " " << T_MeV << " "
                << sing[0] << " " << sing[1] << " " << sing[2]
                << " " << sing[3] << endl;
           unstable_count++;
@@ -2670,22 +2673,27 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
         
         if (cs2_verbose>0) {
           cout << endl;
-          cout << "nB,Ye,T[MeV],fr,en: " << nB << " " << Ye << " "
+          cout << "eos_nuclei::stability(): "
+               << "nB,Ye,T[MeV],fr,en: " << nB << " " << Ye << " "
                << T_MeV << " "
                << tg_F.get(ix)/hc_mev_fm*nB << " ";
           cout << tg_S.get(ix)*nB << endl;
-          cout << "mun[1/fm],mup[1/fm],mue[1/fm]: "
+          cout << "eos_nuclei::stability(): "
+               << "mun[1/fm],mup[1/fm],mue[1/fm]: "
                << tg_mun.get(ix)/hc_mev_fm << " "
                << tg_mup.get(ix)/hc_mev_fm << " "
                << tg_mue.get(ix)/hc_mev_fm
                << endl;
-          cout << "den: en*T,nn*mun,np*mup,ne*mue: (all [1/fm^3]):\n  "
+          cout << "eos_nuclei::stability(): "
+               << "den: en*T,nn*mun,np*mup,ne*mue: (all [1/fm^3]):\n  "
                << en*T_MeV/hc_mev_fm << " " 
                << (tg_mun.get(ix)/hc_mev_fm+neutron.m)*nn2 << " " 
                << (tg_mup.get(ix)/hc_mev_fm+proton.m)*np2 << " "
                << tg_mue.get(ix)/hc_mev_fm*np2 << endl;
-          cout << "nn,np,en: " << nn2 << " " << np2 << " " << en << endl;
-          cout << "f_nnnn, f_nnnp, f_npnp, f_nnT, f_npT, f_TT, den:\n  "
+          cout << "eos_nuclei::stability(): "
+               << "nn,np,en: " << nn2 << " " << np2 << " " << en << endl;
+          cout << "eos_nuclei::stability(): "
+               << "f_nnnn, f_nnnp, f_npnp, f_nnT, f_npT, f_TT, den:\n  "
                << f_nnnn << " " << f_nnnp << " " << f_npnp << " "
                << f_nnT << "\n  " << f_npT << " " << f_TT << " "
                << den << endl;
@@ -2697,8 +2705,10 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
 
         tg_cs2.get(ix)=cs_sq;
         if (cs2_verbose>0) {
-          cout << "en,f_TT,den: " << en << " " << f_TT << " " << den << endl;
-          cout << "t1,t2,t3,t4,t5,t6,cs2: "
+          cout << "eos_nuclei::stability(): "
+               << "en,f_TT,den: " << en << " " << f_TT << " " << den << endl;
+          cout << "eos_nuclei::stability(): "
+               << "t1,t2,t3,t4,t5,t6,cs2: "
                << nn2*nn2*(f_nnnn-f_nnT*f_nnT/f_TT)/den << " "
                << 2.0*nn2*np2*(f_nnnp-f_nnT*f_npT/f_TT)/den << " "
                << np2*np2*(f_npnp-f_npT*f_npT/f_TT)/den << " "
@@ -2715,7 +2725,8 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
           tg_cs2_hom.get(ix)=cs2_func(neutron,proton,T_MeV/hc_mev_fm,th);
           
           if (cs2_verbose>0 || (sv.size()>=4 && range_mode==false)) {
-            cout << "cs2 (het,hom): " << cs_sq << " "
+            cout << "eos_nuclei::stability(): "
+               << "cs2 (het,hom): " << cs_sq << " "
                  << tg_cs2_hom.get(ix) << endl;
           }
         } else {
@@ -2750,11 +2761,12 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
     }
   }
   
-  cout << "Unstable count (type 3): " << unstable_count << endl;
-  cout << "Unphysical cs2 count (type 4): " << cs2_count << endl;
-  cout << "dPdnB<0 count (type 2): " << dPdnB_negative_count << endl;
-  cout << "P|S<0 count (type 1): " << PS_negative_count << endl;
-  cout << "Total count: " << total_count << " " << stability_diff << endl;
+  cout << "eos_nuclei::stability(): "
+       << "\n  Unstable count (type 3): " << unstable_count << endl;
+  cout << "  Unphysical cs2 count (type 4): " << cs2_count << endl;
+  cout << "  dPdnB<0 count (type 2): " << dPdnB_negative_count << endl;
+  cout << "  P|S<0 count (type 1): " << PS_negative_count << endl;
+  cout << "  Total count: " << total_count << " " << stability_diff << endl;
   n_stability_fail=unstable_count+cs2_count+dPdnB_negative_count+
     PS_negative_count;
   
@@ -3476,7 +3488,8 @@ int eos_nuclei::solve_nuclei(size_t nv, const ubvector &x, ubvector &y,
 	cout << "xn, xp " << xn << " " << xp << endl;
 	cout << "f_gas " << neutron.mu*nn_prime+proton.mu*np_prime
 	  -th_gas.pr << endl;
-        cout << mun_gas*n0_loc-th_gas.pr << " " << mup_gas*n0_loc-th_gas.pr << endl;
+        cout << mun_gas*n0_loc-th_gas.pr << " "
+             << mup_gas*n0_loc-th_gas.pr << endl;
       }
     }
 
