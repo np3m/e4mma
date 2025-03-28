@@ -1093,9 +1093,9 @@ int eos_nuclei::beta_table(std::vector<std::string> &sv,
   // Construct a list of pointers to all of the tensor objects,
   // except for tg_Ye, which doesn't need to be rearranged.
   tensor_grid<> *arr[n_arr]={&tg_A,&tg_E,&tg_Eint,&tg_F,&tg_Fint,
-      &tg_P,&tg_Pint,&tg_S,&tg_Sint,&tg_XHe3,&tg_XLi4,&tg_Xalpha,
-      &tg_Xd,&tg_Xn,&tg_Xnuclei,&tg_Xp,&tg_Xt,&tg_Z,&tg_log_xn,
-      &tg_log_xp,&tg_mue,&tg_mun,&tg_mup};
+                             &tg_P,&tg_Pint,&tg_S,&tg_Sint,&tg_XHe3,&tg_XLi4,&tg_Xalpha,
+                             &tg_Xd,&tg_Xn,&tg_Xnuclei,&tg_Xp,&tg_Xt,&tg_Z,&tg_log_xn,
+                             &tg_log_xp,&tg_mue,&tg_mun,&tg_mup};
   std::string name_arr[n_arr]=
     {"A","E","Eint","F","Fint",
      "P","Pint","S","Sint","XHe3","XLi4","Xalpha",
@@ -1357,12 +1357,12 @@ int eos_nuclei::add_eg(std::vector<std::string> &sv,
         
         // Use the thermodynamic identities to compute E and P
         /*
-        cout << tg_Eint.get(ix)+hc_mev_fm*elep.th.ed/nB << " "
-             << tg_F.get(ix)+T_MeV*tg_S.get(ix) << endl;
-        cout << tg_Pint.get(ix)+hc_mev_fm*elep.th.pr << " "
-             << -tg_F.get(ix)*nB+tg_mun.get(ix)*nn+
+          cout << tg_Eint.get(ix)+hc_mev_fm*elep.th.ed/nB << " "
+          << tg_F.get(ix)+T_MeV*tg_S.get(ix) << endl;
+          cout << tg_Pint.get(ix)+hc_mev_fm*elep.th.pr << " "
+          << -tg_F.get(ix)*nB+tg_mun.get(ix)*nn+
           ((tg_mup.get(ix)+tg_mue.get(ix))*np) << endl;
-        exit(-1);
+          exit(-1);
         */
         tg_E.set(ix,tg_F.get(ix)+T_MeV*tg_S.get(ix));
         tg_P.set(ix,-tg_F.get(ix)*nB+tg_mun.get(ix)*nn+
@@ -1997,26 +1997,26 @@ int eos_nuclei::eg_point(std::vector<std::string> &sv,
     cout << "  " << dtos(elep.thd.dsdT,0) << endl;
     
     /*
-    electron.mu=elep.e.mu;
-    relf.calc_mu(electron,T_MeV/hc_mev_fm);
-    double eminus=electron.n;
-    double eplus=eminus-elep.e.n;
-    cout << "  n_{e-} [1/fm^3]: " << dtos(eminus,0) << endl;
-    cout << "  n_{e+} [1/fm^3]: "
-         << dtos(eplus,0) << " difference: " << dtos(eminus-eplus,0) << endl;
-    double ti=(elep.th.ed+elep.th.pr-elep.e.n*elep.e.mu-
-               T_MeV/hc_mev_fm*elep.th.en)/elep.th.ed;
-    cout << "TI []: " << ti << endl;
-    }
+      electron.mu=elep.e.mu;
+      relf.calc_mu(electron,T_MeV/hc_mev_fm);
+      double eminus=electron.n;
+      double eplus=eminus-elep.e.n;
+      cout << "  n_{e-} [1/fm^3]: " << dtos(eminus,0) << endl;
+      cout << "  n_{e+} [1/fm^3]: "
+      << dtos(eplus,0) << " difference: " << dtos(eminus-eplus,0) << endl;
+      double ti=(elep.th.ed+elep.th.pr-elep.e.n*elep.e.mu-
+      T_MeV/hc_mev_fm*elep.th.en)/elep.th.ed;
+      cout << "TI []: " << ti << endl;
+      }
     */
 
     /*
-    cout << "E [MeV]: " << dtos(elep.th.ed/nB*hc_mev_fm,0) << endl;
-    cout << "P [MeV/fm^3]: " << dtos(elep.th.pr*hc_mev_fm,0) << endl;
-    cout << "S: " << dtos(elep.th.en/nB,0) << endl;
-    cout << "F [MeV]: "
-         << dtos((elep.th.ed*hc_mev_fm-T_MeV*elep.th.en)/nB,0) << endl;
-    if (include_muons) {
+      cout << "E [MeV]: " << dtos(elep.th.ed/nB*hc_mev_fm,0) << endl;
+      cout << "P [MeV/fm^3]: " << dtos(elep.th.pr*hc_mev_fm,0) << endl;
+      cout << "S: " << dtos(elep.th.en/nB,0) << endl;
+      cout << "F [MeV]: "
+      << dtos((elep.th.ed*hc_mev_fm-T_MeV*elep.th.en)/nB,0) << endl;
+      if (include_muons) {
       cout << "Y_mu: " << dtos(elep.mu.n/nB,0) << endl;
       cout << "n_mu [1/fm^3]: " << dtos(elep.mu.n,0) << endl;
       muon.mu=elep.mu.mu;
@@ -2024,15 +2024,15 @@ int eos_nuclei::eg_point(std::vector<std::string> &sv,
       double muminus=muon.n;
       double muplus=muminus-elep.mu.n;
       cout << "  n_{mu-} [1/fm^3]: " << dtos(muminus,0) << endl;
-        cout << "  n_{mu+} [1/fm^3]: " << dtos(muplus,0)
-             << " difference: " << dtos(muminus-muplus,0) << endl;
+      cout << "  n_{mu+} [1/fm^3]: " << dtos(muplus,0)
+      << " difference: " << dtos(muminus-muplus,0) << endl;
       }
-    }
-    cout << "E_e [MeV]: " << dtos(elep.e.ed/nB*hc_mev_fm,0) << endl;
-    if (include_muons) {
+      }
+      cout << "E_e [MeV]: " << dtos(elep.e.ed/nB*hc_mev_fm,0) << endl;
+      if (include_muons) {
       cout << "E_mu [MeV]: " << dtos(elep.mu.ed/nB*hc_mev_fm,0) << endl;
-    }
-    cout << "E_g [MeV]: " << dtos(elep.ph.ed/nB*hc_mev_fm,0) << endl;
+      }
+      cout << "E_g [MeV]: " << dtos(elep.ph.ed/nB*hc_mev_fm,0) << endl;
     */
     
   }
@@ -2376,69 +2376,94 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
     
   }
   
-  interp_vec<vector<double> > itp_sta_a, itp_sta_b, itp_sta_c;
-  
   // The baryon density derivatives
-  for(size_t j=0;j<n_Ye2;j++) {
-    for(size_t k=0;k<n_T2;k++) {
-      vector<double> mun_of_nB, s_of_nB;
-      for(size_t i=0;i<n_nB2;i++) {
-        vector<size_t> ix={i,j,k};
-        mun_of_nB.push_back(tg_mun.get(ix)/hc_mev_fm+
-                            neutron.m);
-        s_of_nB.push_back(tg_S.get(ix)*nB_grid2[i]);
-      }
-      itp_sta_a.set(n_nB2,nB_grid2,mun_of_nB,itype);
-      itp_sta_b.set(n_nB2,nB_grid2,s_of_nB,itype);
-      for(size_t i=0;i<n_nB2;i++) {
-        vector<size_t> ix={i,j,k};
-        dmundnB.get(ix)=itp_sta_a.deriv(nB_grid2[i]);
-        dsdnB.get(ix)=itp_sta_b.deriv(nB_grid2[i]);
+#ifdef E4MMA_OPENMP
+#pragma omp parallel default(shared)
+  {
+#pragma omp for
+#endif
+    for(size_t j=0;j<n_Ye2;j++) {
+      for(size_t k=0;k<n_T2;k++) {
+        vector<double> mun_of_nB, s_of_nB;
+        for(size_t i=0;i<n_nB2;i++) {
+          vector<size_t> ix={i,j,k};
+          mun_of_nB.push_back(tg_mun.get(ix)/hc_mev_fm+
+                              neutron.m);
+          s_of_nB.push_back(tg_S.get(ix)*nB_grid2[i]);
+        }
+        interp_vec<vector<double> > itp_sta_a, itp_sta_b;
+        itp_sta_a.set(n_nB2,nB_grid2,mun_of_nB,itype);
+        itp_sta_b.set(n_nB2,nB_grid2,s_of_nB,itype);
+        for(size_t i=0;i<n_nB2;i++) {
+          vector<size_t> ix={i,j,k};
+          dmundnB.get(ix)=itp_sta_a.deriv(nB_grid2[i]);
+          dsdnB.get(ix)=itp_sta_b.deriv(nB_grid2[i]);
+        }
       }
     }
+#ifdef E4MMA_OPENMP
   }
+#endif
   
   // The electron fraction derivatives
-  for(size_t i=0;i<n_nB2;i++) {
-    double nB=nB_grid2[i];
-    for(size_t k=0;k<n_T2;k++) {
-      vector<double> mun_of_Ye, mup_of_Ye, s_of_Ye;
-      for(size_t j=0;j<n_Ye2;j++) {
-        vector<size_t> ix={i,j,k};
-        mun_of_Ye.push_back(tg_mun.get(ix)/hc_mev_fm+
-                            neutron.m);
-        mup_of_Ye.push_back(tg_mup.get(ix)/hc_mev_fm+
-                            proton.m+tg_mue.get(ix)/hc_mev_fm);
-        s_of_Ye.push_back(tg_S.get(ix)*nB);
-      }
-      itp_sta_a.set(n_Ye2,Ye_grid2,mun_of_Ye,itype);
-      itp_sta_b.set(n_Ye2,Ye_grid2,mup_of_Ye,itype);
-      itp_sta_c.set(n_Ye2,Ye_grid2,s_of_Ye,itype);
-      for(size_t j=0;j<n_Ye2;j++) {
-        vector<size_t> ix={i,j,k};
-        dmundYe.get(ix)=itp_sta_a.deriv(Ye_grid2[j]);
-        dmupdYe.get(ix)=itp_sta_b.deriv(Ye_grid2[j]);
-        dsdYe.get(ix)=itp_sta_b.deriv(Ye_grid2[j]);
+#ifdef E4MMA_OPENMP
+#pragma omp parallel default(shared)
+  {
+#pragma omp for
+#endif
+    for(size_t i=0;i<n_nB2;i++) {
+      double nB=nB_grid2[i];
+      for(size_t k=0;k<n_T2;k++) {
+        vector<double> mun_of_Ye, mup_of_Ye, s_of_Ye;
+        for(size_t j=0;j<n_Ye2;j++) {
+          vector<size_t> ix={i,j,k};
+          mun_of_Ye.push_back(tg_mun.get(ix)/hc_mev_fm+
+                              neutron.m);
+          mup_of_Ye.push_back(tg_mup.get(ix)/hc_mev_fm+
+                              proton.m+tg_mue.get(ix)/hc_mev_fm);
+          s_of_Ye.push_back(tg_S.get(ix)*nB);
+        }
+        interp_vec<vector<double> > itp_sta_a, itp_sta_b, itp_sta_c;
+        itp_sta_a.set(n_Ye2,Ye_grid2,mun_of_Ye,itype);
+        itp_sta_b.set(n_Ye2,Ye_grid2,mup_of_Ye,itype);
+        itp_sta_c.set(n_Ye2,Ye_grid2,s_of_Ye,itype);
+        for(size_t j=0;j<n_Ye2;j++) {
+          vector<size_t> ix={i,j,k};
+          dmundYe.get(ix)=itp_sta_a.deriv(Ye_grid2[j]);
+          dmupdYe.get(ix)=itp_sta_b.deriv(Ye_grid2[j]);
+          dsdYe.get(ix)=itp_sta_b.deriv(Ye_grid2[j]);
+        }
       }
     }
+#ifdef E4MMA_OPENMP
   }
+#endif
   
   // The temperature derivative
-  for(size_t i=0;i<n_nB2;i++) {
-    double nB=nB_grid2[i];
-    for(size_t j=0;j<n_Ye2;j++) {
-      vector<double> s_of_T;
-      for(size_t k=0;k<n_T2;k++) {
-        vector<size_t> ix={i,j,k};
-        s_of_T.push_back(tg_S.get(ix)*nB);
-      }
-      itp_sta_a.set(n_T2,T_grid2,s_of_T,itype);
-      for(size_t k=0;k<n_T2;k++) {
-        vector<size_t> ix={i,j,k};
-        dsdT.get(ix)=itp_sta_a.deriv(T_grid2[k])*hc_mev_fm;
+#ifdef E4MMA_OPENMP
+#pragma omp parallel default(shared)
+  {
+#pragma omp for
+#endif
+    for(size_t i=0;i<n_nB2;i++) {
+      double nB=nB_grid2[i];
+      for(size_t j=0;j<n_Ye2;j++) {
+        vector<double> s_of_T;
+        for(size_t k=0;k<n_T2;k++) {
+          vector<size_t> ix={i,j,k};
+          s_of_T.push_back(tg_S.get(ix)*nB);
+        }
+        interp_vec<vector<double> > itp_sta_a;
+        itp_sta_a.set(n_T2,T_grid2,s_of_T,itype);
+        for(size_t k=0;k<n_T2;k++) {
+          vector<size_t> ix={i,j,k};
+          dsdT.get(ix)=itp_sta_a.deriv(T_grid2[k])*hc_mev_fm;
+        }
       }
     }
+#ifdef E4MMA_OPENMP
   }
+#endif
   
   // Storage for the matrix and SVD
   ubmatrix mat(4,4), V(4,4);
@@ -2489,277 +2514,330 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
     cout << "eos_nuclei::stability(): full table." << endl;
   }
   
-  /// Compute the stability matrix and its eigenvalues at each point
-  for(size_t i=ilo;i<ihi;i++) {
-    double nB=nB_grid2[i];
-    cout << "eos_nuclei::stability(): nB at " << i << " is " << nB << endl;
-    for(size_t j=jlo;j<jhi;j++) {
-      double Ye=Ye_grid2[j];
-      for(size_t k=klo;k<khi;k++) {
-        
-        total_count++;
-        
-        double T_MeV=T_grid2[k];
-        vector<size_t> ix={i,j,k};
-        tg_sflag.get(ix)=0;
-        
-        // Check entropy and pressure are positive
-        if (tg_P.get(ix)<0.0 || tg_S.get(ix)<0.0) {
-          if (false) {
-            cout << "P or S <0: nB,Ye,T[MeV]:\n  "
-                 << nB << " " << Ye << " " << T_MeV << " "
-                 << tg_P.get(ix) << " " << tg_S.get(ix) << endl;
-          }
-          PS_negative_count++;
-          i_nB_fix.push_back(i);
-          i_Ye_fix.push_back(j);
-          i_T_fix.push_back(k);
-          type_fix.push_back(1);
-          tg_sflag.get(ix)=1;
-          if (tg_P.get(ix)<0.0) {
-            stability_diff+=fabs(tg_P.get(ix));
-          }
-          if (tg_S.get(ix)<0.0) {
-            stability_diff+=fabs(tg_S.get(ix));
-          }
-        }
-        
-        // Check dPdnB
-        if (i<n_nB2-1) {
-          vector<size_t> ixp1={i+1,j,k};
-          double dP=tg_P.get(ixp1)-tg_P.get(ix);
-          if (dP<0.0) {
-            if (false) {
-              cout << "dPdnB<0: nB,Ye,T[MeV]:\n  "
-                   << nB << " " << Ye << " " << T_MeV << endl;
-            }
-            if (false) {
-              cout << "ix  ,P: ";
-              vector_out(cout,ix,false);
-              cout << " " << tg_P.get(ix) << endl;
-              cout << "ix+1,P: ";
-              vector_out(cout,ixp1,false);
-              cout << " " << tg_P.get(ixp1) << endl;
-              exit(-1);
-            }
-            dPdnB_negative_count++;
-            i_nB_fix.push_back(i);
-            i_Ye_fix.push_back(j);
-            i_T_fix.push_back(k);
-            type_fix.push_back(2);
-            i_nB_fix.push_back(i+1);
-            i_Ye_fix.push_back(j);
-            i_T_fix.push_back(k);
-            type_fix.push_back(2);
-            tg_sflag.get(ix)+=10;
-            stability_diff+=fabs(dP);
-          }
-        }
-        
-        // Entropy and densities
-        double en=tg_S.get(ix)*nB;
-        double nn2=(1.0-Ye)*nB;
-        double np2=Ye*nB;
-	
-        // Temporarily store the six derivatives
-        double dmundnBv=dmundnB.get(ix);
-        double dmundYev=dmundYe.get(ix);
-        double dmupdYev=dmupdYe.get(ix);
-        double dsdnBv=dsdnB.get(ix);
-        double dsdYev=dsdYe.get(ix);
-        double dsdTv=dsdT.get(ix);
-        
-        // Compute dmupdnB, which is related to the other three
-        // by a Maxwell relation
-        double dmupdnBv=Ye/nB*dmupdYev+dmundnBv+(1.0-Ye)/nB*dmundYev;
-        
-        // Transform from (Ye,nB) to (nn,np)
-        double dmundnn=dmundnBv-Ye/nB*dmundYev;
-        double dmundnp=dmundnBv+(1.0-Ye)/nB*dmundYev;
-        double dmupdnn=dmundnp;
-        double dmupdnp=dmupdnBv+(1.0-Ye)/nB*dmupdYev;
-        
-        // Use dmundT = -dsdnn and dmupdT = -dsdnp
-        double dmundT=-dsdnBv+Ye/nB*dsdYev;
-        double dmupdT=-dsdnBv-(1.0-Ye)/nB*dsdYev;
-        
-        // For the matrix, we need some additional derivatives
-        // at fixed entropy
-        double dTdnn_s=dmundT/dsdTv;
-        double dTdnp_s=dmupdT/dsdTv;
-        double dmundnn_s=dmundT*dTdnn_s+dmundnn;
-        double dmundnp_s=dmundT*dTdnp_s+dmundnp;
-        double dmupdnn_s=dmupdT*dTdnn_s+dmupdnn;
-        double dmupdnp_s=dmupdT*dTdnp_s+dmupdnp;
-        double dPdnn_s=en*dTdnn_s+nn2*dmundnn_s+np2*dmupdnn_s;
-        double dPdnp_s=en*dTdnp_s+nn2*dmundnp_s+np2*dmupdnp_s;
-        
-        // And one derivative of the pressure with respect
-        // to entropy
-        double dPds=(en+nn2*dmundT+np2*dmupdT)/dsdTv;
-	
-        // Now, construct the matrix
-        mat(0,0)=nn2*dPdnn_s+np2*dPdnp_s+en*dPds;
-        mat(0,1)=-en*dPds;
-        mat(0,2)=-nn2*dPdnn_s;
-        mat(0,3)=-np2*dPdnp_s;
-        mat(1,0)=mat(0,1);
-        mat(1,1)=en*en/dsdTv;
-        mat(1,2)=nn2*en*dTdnn_s;
-        mat(1,3)=np2*en*dTdnp_s;
-        mat(2,0)=mat(0,2);
-        mat(2,1)=mat(1,2);
-        mat(2,2)=nn2*nn2*dmundnn_s;
-        mat(2,3)=nn2*np2*dmundnp_s;
-        mat(3,0)=mat(0,3);
-        mat(3,1)=mat(1,3);
-        mat(3,2)=mat(2,3);
-        mat(3,3)=np2*np2*dmupdnp_s;
-        
-#ifdef NEVER_DEFINED
-        Eigen::MatrixXd mat2=Eigen::MatrixXd::Ones(4,4);
-        for(size_t jj=0;jj<4;jj++) {
-          for(size_t kk=0;kk<4;kk++) {
-            mat2(jj,kk)=mat(jj,kk);
-          }
-        }
-        Eigen::VectorXcd eivals=mat2.eigenvalues();
+  /// Analyze the stability at each point
+#ifdef E4MMA_OPENMP
+#pragma omp parallel default(shared)
+  {
+#pragma omp for
 #endif
+    for(size_t i=ilo;i<ihi;i++) {
+      double nB=nB_grid2[i];
+      cout << "eos_nuclei::stability(): nB at " << i << " is " << nB << endl;
+      for(size_t j=jlo;j<jhi;j++) {
+        double Ye=Ye_grid2[j];
+        for(size_t k=klo;k<khi;k++) {
         
-        if (kwa.get_bool("eigenvals",false)) {
-          // Compute eigenvalues using SVD
-          o2scl_linalg::SV_decomp(4,4,mat,V,sing,work);
-          
-          for(size_t ij=0;ij<4;ij++) {
-            egv[ij].get(ix)=sing[ij];
-          }
-        } else {
-          sing[0]=1.0;
-          sing[1]=1.0;
-          sing[2]=1.0;
-          sing[3]=1.0;
-        }
+          total_count++;
         
-        if (sing[0]<0.0 || sing[1]<0.0 || sing[2]<0.0 ||
-            sing[3]<0.0) {
-          cout << "eos_nuclei::stability(): Unstable: "
-               << nB << " " << Ye << " " << T_MeV << " "
-               << sing[0] << " " << sing[1] << " " << sing[2]
-               << " " << sing[3] << endl;
-          unstable_count++;
-          i_nB_fix.push_back(i);
-          i_Ye_fix.push_back(j);
-          i_T_fix.push_back(k);
-          type_fix.push_back(3);
-          tg_sflag.get(ix)+=100;
-          for(size_t kik=0;kik<4;kik++) {
-            if (sing[kik]<0.0) {
-              stability_diff+=fabs(sing[kik]);
+          double T_MeV=T_grid2[k];
+          vector<size_t> ix={i,j,k};
+          tg_sflag.get(ix)=0;
+        
+          // Check entropy and pressure are positive
+          if (tg_P.get(ix)<0.0 || tg_S.get(ix)<0.0) {
+#ifdef E4MMA_OPENMP
+#pragma omp critical (e4mma_eos_nuclei_stability_1)
+#endif
+            {
+              if (false) {
+                cout << "P or S <0: nB,Ye,T[MeV]:\n  "
+                     << nB << " " << Ye << " " << T_MeV << " "
+                     << tg_P.get(ix) << " " << tg_S.get(ix) << endl;
+              }
+              PS_negative_count++;
+              i_nB_fix.push_back(i);
+              i_Ye_fix.push_back(j);
+              i_T_fix.push_back(k);
+              type_fix.push_back(1);
+              tg_sflag.get(ix)=1;
+              if (tg_P.get(ix)<0.0) {
+                stability_diff+=fabs(tg_P.get(ix));
+              }
+              if (tg_S.get(ix)<0.0) {
+                stability_diff+=fabs(tg_S.get(ix));
+              }
+              // End of critical region
             }
           }
-        }
         
-        // Compute squared speed of sound
-        double f_nnnn=dmundnn;
-        double f_nnnp=dmundnp;
-        double f_npnp=dmupdnp;
-        double f_nnT=dmundT;
-        double f_npT=dmupdT;
-        double f_TT=-dsdTv;
-        double den=en*T_MeV/hc_mev_fm+
-          (tg_mun.get(ix)/hc_mev_fm+neutron.m)*nn2+
-          (tg_mup.get(ix)/hc_mev_fm+proton.m)*np2+
-          tg_mue.get(ix)*np2/hc_mev_fm;
+          // Check dPdnB
+          if (i<n_nB2-1) {
+            vector<size_t> ixp1={i+1,j,k};
+            double dP=tg_P.get(ixp1)-tg_P.get(ix);
+            if (dP<0.0) {
+#ifdef E4MMA_OPENMP
+#pragma omp critical (e4mma_eos_nuclei_stability_2)
+#endif
+              {
+                if (false) {
+                  cout << "dPdnB<0: nB,Ye,T[MeV]:\n  "
+                       << nB << " " << Ye << " " << T_MeV << endl;
+                }
+                if (false) {
+                  cout << "ix  ,P: ";
+                  vector_out(cout,ix,false);
+                  cout << " " << tg_P.get(ix) << endl;
+                  cout << "ix+1,P: ";
+                  vector_out(cout,ixp1,false);
+                  cout << " " << tg_P.get(ixp1) << endl;
+                  exit(-1);
+                }
+                dPdnB_negative_count++;
+                i_nB_fix.push_back(i);
+                i_Ye_fix.push_back(j);
+                i_T_fix.push_back(k);
+                type_fix.push_back(2);
+                i_nB_fix.push_back(i+1);
+                i_Ye_fix.push_back(j);
+                i_T_fix.push_back(k);
+                type_fix.push_back(2);
+                tg_sflag.get(ix)+=10;
+                stability_diff+=fabs(dP);
+                // End of critical region
+              }
+            }
+          }
         
-        if (cs2_verbose>0) {
-          cout << endl;
-          cout << "eos_nuclei::stability(): "
-               << "nB,Ye,T[MeV],fr,en: " << nB << " " << Ye << " "
-               << T_MeV << " "
-               << tg_F.get(ix)/hc_mev_fm*nB << " ";
-          cout << tg_S.get(ix)*nB << endl;
-          cout << "eos_nuclei::stability(): "
-               << "mun[1/fm],mup[1/fm],mue[1/fm]: "
-               << tg_mun.get(ix)/hc_mev_fm << " "
-               << tg_mup.get(ix)/hc_mev_fm << " "
-               << tg_mue.get(ix)/hc_mev_fm
-               << endl;
-          cout << "eos_nuclei::stability(): "
-               << "den: en*T,nn*mun,np*mup,ne*mue: (all [1/fm^3]):\n  "
-               << en*T_MeV/hc_mev_fm << " " 
-               << (tg_mun.get(ix)/hc_mev_fm+neutron.m)*nn2 << " " 
-               << (tg_mup.get(ix)/hc_mev_fm+proton.m)*np2 << " "
-               << tg_mue.get(ix)/hc_mev_fm*np2 << endl;
-          cout << "eos_nuclei::stability(): "
-               << "nn,np,en: " << nn2 << " " << np2 << " " << en << endl;
-          cout << "eos_nuclei::stability(): "
-               << "f_nnnn, f_nnnp, f_npnp, f_nnT, f_npT, f_TT, den:\n  "
-               << f_nnnn << " " << f_nnnp << " " << f_npnp << " "
-               << f_nnT << "\n  " << f_npT << " " << f_TT << " "
-               << den << endl;
-        }
-        double expr1=dmundnBv*nB*nB+dsdnBv*dsdnBv*nB*nB/dsdTv+
-          dmundYev*nB*Ye-dmundYev*nB*Ye*Ye+dmupdYev*nB*Ye*Ye;
-        double expr2=dsdnBv*nB/dsdTv;
-        double cs_sq=(expr1-2.0*en*expr2-en*en/f_TT)/den;
-
-        tg_cs2.get(ix)=cs_sq;
-        if (cs2_verbose>0) {
-          cout << "eos_nuclei::stability(): "
-               << "en,f_TT,den: " << en << " " << f_TT << " " << den << endl;
-          cout << "eos_nuclei::stability(): "
-               << "t1,t2,t3,t4,t5,t6,cs2: "
-               << nn2*nn2*(f_nnnn-f_nnT*f_nnT/f_TT)/den << " "
-               << 2.0*nn2*np2*(f_nnnp-f_nnT*f_npT/f_TT)/den << " "
-               << np2*np2*(f_npnp-f_npT*f_npT/f_TT)/den << " "
-               << -2.0*en*nn2*f_nnT/f_TT/den << " "
-               << -2.0*en*np2*f_npT/f_TT/den << " "
-               << -en*en/f_TT/den << " " << cs_sq << endl;
-        }
-
-        // This code requires a model to compute the homogeneous cs2
-        if (comp_cs2_hom) {
-          neutron.n=nB*(1.0-Ye);
-          proton.n=nB*Ye;
-          thermo th;
-          tg_cs2_hom.get(ix)=cs2_func(neutron,proton,T_MeV/hc_mev_fm,th);
+          // Entropy and densities
+          double en=tg_S.get(ix)*nB;
+          double nn2=(1.0-Ye)*nB;
+          double np2=Ye*nB;
+	
+          // Temporarily store the six derivatives
+          double dmundnBv=dmundnB.get(ix);
+          double dmundYev=dmundYe.get(ix);
+          double dmupdYev=dmupdYe.get(ix);
+          double dsdnBv=dsdnB.get(ix);
+          double dsdYev=dsdYe.get(ix);
+          double dsdTv=dsdT.get(ix);
+        
+          // Compute dmupdnB, which is related to the other three
+          // by a Maxwell relation
+          double dmupdnBv=Ye/nB*dmupdYev+dmundnBv+(1.0-Ye)/nB*dmundYev;
+        
+          // Transform from (Ye,nB) to (nn,np)
+          double dmundnn=dmundnBv-Ye/nB*dmundYev;
+          double dmundnp=dmundnBv+(1.0-Ye)/nB*dmundYev;
+          double dmupdnn=dmundnp;
+          double dmupdnp=dmupdnBv+(1.0-Ye)/nB*dmupdYev;
+        
+          // Use dmundT = -dsdnn and dmupdT = -dsdnp
+          double dmundT=-dsdnBv+Ye/nB*dsdYev;
+          double dmupdT=-dsdnBv-(1.0-Ye)/nB*dsdYev;
+        
+          if (kwa.get_bool("eigenvals",false)) {
+            // For the matrix, we need some additional derivatives
+            // at fixed entropy
+            double dTdnn_s=dmundT/dsdTv;
+            double dTdnp_s=dmupdT/dsdTv;
+            double dmundnn_s=dmundT*dTdnn_s+dmundnn;
+            double dmundnp_s=dmundT*dTdnp_s+dmundnp;
+            double dmupdnn_s=dmupdT*dTdnn_s+dmupdnn;
+            double dmupdnp_s=dmupdT*dTdnp_s+dmupdnp;
+            double dPdnn_s=en*dTdnn_s+nn2*dmundnn_s+np2*dmupdnn_s;
+            double dPdnp_s=en*dTdnp_s+nn2*dmundnp_s+np2*dmupdnp_s;
           
-          if (cs2_verbose>0 || (sv.size()>=4 && range_mode==false)) {
-            cout << "eos_nuclei::stability(): "
-               << "cs2 (het,hom): " << cs_sq << " "
-                 << tg_cs2_hom.get(ix) << endl;
-          }
-        } else {
-          tg_cs2_hom.get(ix)=0.5;
-        }
+            // And one derivative of the pressure with respect
+            // to entropy
+            double dPds=(en+nn2*dmundT+np2*dmupdT)/dsdTv;
+          
+            // Now, construct the matrix
+            mat(0,0)=nn2*dPdnn_s+np2*dPdnp_s+en*dPds;
+            mat(0,1)=-en*dPds;
+            mat(0,2)=-nn2*dPdnn_s;
+            mat(0,3)=-np2*dPdnp_s;
+            mat(1,0)=mat(0,1);
+            mat(1,1)=en*en/dsdTv;
+            mat(1,2)=nn2*en*dTdnn_s;
+            mat(1,3)=np2*en*dTdnp_s;
+            mat(2,0)=mat(0,2);
+            mat(2,1)=mat(1,2);
+            mat(2,2)=nn2*nn2*dmundnn_s;
+            mat(2,3)=nn2*np2*dmundnp_s;
+            mat(3,0)=mat(0,3);
+            mat(3,1)=mat(1,3);
+            mat(3,2)=mat(2,3);
+            mat(3,3)=np2*np2*dmupdnp_s;
+          
+#ifdef NEVER_DEFINED
+            Eigen::MatrixXd mat2=Eigen::MatrixXd::Ones(4,4);
+            for(size_t jj=0;jj<4;jj++) {
+              for(size_t kk=0;kk<4;kk++) {
+                mat2(jj,kk)=mat(jj,kk);
+              }
+            }
+            Eigen::VectorXcd eivals=mat2.eigenvalues();
+#endif
+          
+            // Compute eigenvalues using SVD
+            o2scl_linalg::SV_decomp(4,4,mat,V,sing,work);
+          
+            for(size_t ij=0;ij<4;ij++) {
+              egv[ij].get(ix)=sing[ij];
+            }
+          
+            if (sing[0]<0.0 || sing[1]<0.0 || sing[2]<0.0 ||
+                sing[3]<0.0) {
+#ifdef E4MMA_OPENMP
+#pragma omp critical (e4mma_eos_nuclei_stability_3)
+#endif
+              {
+                cout << "eos_nuclei::stability(): Unstable: "
+                     << nB << " " << Ye << " " << T_MeV << " "
+                     << sing[0] << " " << sing[1] << " " << sing[2]
+                     << " " << sing[3] << endl;
+                unstable_count++;
+                i_nB_fix.push_back(i);
+                i_Ye_fix.push_back(j);
+                i_T_fix.push_back(k);
+                type_fix.push_back(3);
+                tg_sflag.get(ix)+=100;
+                for(size_t kik=0;kik<4;kik++) {
+                  if (sing[kik]<0.0) {
+                    stability_diff+=fabs(sing[kik]);
+                  }
+                }
+                // End of critical region
+              }
+            }
         
-        if (cs_sq<0.0 || cs_sq>1.0 || !std::isfinite(cs_sq)) {
-          if (false) {
-            cout << "Unphysical cs2: nB,Ye,T[MeV],cs2,cs2_hom:\n  "
-                 << nB << " " << Ye << " " << T_MeV << " "
-                 << cs_sq << " " << tg_cs2_hom.get(ix) << endl;
-            cout << "  A,Z,Fint: " << tg_A.get(ix) << " "
-                 << tg_Z.get(ix) << " " << tg_Fint.get(ix) << endl;
+          } else {
+            sing[0]=1.0;
+            sing[1]=1.0;
+            sing[2]=1.0;
+            sing[3]=1.0;
           }
-          cs2_count++;
-          i_nB_fix.push_back(i);
-          i_Ye_fix.push_back(j);
-          i_T_fix.push_back(k);
-          type_fix.push_back(4);
-          tg_sflag.get(ix)+=1000;
-          if (std::isfinite(cs_sq)) {
-            if (cs_sq<0.0) {
-              stability_diff+=fabs(cs_sq);
-            } else {
-              stability_diff+=fabs(1.0-cs_sq);
+        
+          // Compute squared speed of sound
+          double f_nnnn=dmundnn;
+          double f_nnnp=dmundnp;
+          double f_npnp=dmupdnp;
+          double f_nnT=dmundT;
+          double f_npT=dmupdT;
+          double f_TT=-dsdTv;
+          double den=en*T_MeV/hc_mev_fm+
+            (tg_mun.get(ix)/hc_mev_fm+neutron.m)*nn2+
+            (tg_mup.get(ix)/hc_mev_fm+proton.m)*np2+
+            tg_mue.get(ix)*np2/hc_mev_fm;
+        
+          if (cs2_verbose>0) {
+#ifdef E4MMA_OPENMP
+#pragma omp critical (e4mma_eos_nuclei_stability_4)
+#endif
+            {
+              cout << endl;
+              cout << "eos_nuclei::stability(): "
+                   << "nB,Ye,T[MeV],fr,en: " << nB << " " << Ye << " "
+                   << T_MeV << " "
+                   << tg_F.get(ix)/hc_mev_fm*nB << " ";
+              cout << tg_S.get(ix)*nB << endl;
+              cout << "eos_nuclei::stability(): "
+                   << "mun[1/fm],mup[1/fm],mue[1/fm]: "
+                   << tg_mun.get(ix)/hc_mev_fm << " "
+                   << tg_mup.get(ix)/hc_mev_fm << " "
+                   << tg_mue.get(ix)/hc_mev_fm
+                   << endl;
+              cout << "eos_nuclei::stability(): "
+                   << "den: en*T,nn*mun,np*mup,ne*mue: (all [1/fm^3]):\n  "
+                   << en*T_MeV/hc_mev_fm << " " 
+                   << (tg_mun.get(ix)/hc_mev_fm+neutron.m)*nn2 << " " 
+                   << (tg_mup.get(ix)/hc_mev_fm+proton.m)*np2 << " "
+                   << tg_mue.get(ix)/hc_mev_fm*np2 << endl;
+              cout << "eos_nuclei::stability(): "
+                   << "nn,np,en: " << nn2 << " " << np2 << " " << en << endl;
+              cout << "eos_nuclei::stability(): "
+                   << "f_nnnn, f_nnnp, f_npnp, f_nnT, f_npT, f_TT, den:\n  "
+                   << f_nnnn << " " << f_nnnp << " " << f_npnp << " "
+                   << f_nnT << "\n  " << f_npT << " " << f_TT << " "
+                   << den << endl;
+              // End of critical region
+            }
+          }
+          double expr1=dmundnBv*nB*nB+dsdnBv*dsdnBv*nB*nB/dsdTv+
+            dmundYev*nB*Ye-dmundYev*nB*Ye*Ye+dmupdYev*nB*Ye*Ye;
+          double expr2=dsdnBv*nB/dsdTv;
+          double cs_sq=(expr1-2.0*en*expr2-en*en/f_TT)/den;
+
+          tg_cs2.get(ix)=cs_sq;
+          if (cs2_verbose>0) {
+#ifdef E4MMA_OPENMP
+#pragma omp critical (e4mma_eos_nuclei_stability_5)
+#endif
+            {
+              cout << "eos_nuclei::stability(): "
+                   << "en,f_TT,den: " << en << " " << f_TT << " "
+                   << den << endl;
+              cout << "eos_nuclei::stability(): "
+                   << "t1,t2,t3,t4,t5,t6,cs2: "
+                   << nn2*nn2*(f_nnnn-f_nnT*f_nnT/f_TT)/den << " "
+                   << 2.0*nn2*np2*(f_nnnp-f_nnT*f_npT/f_TT)/den << " "
+                   << np2*np2*(f_npnp-f_npT*f_npT/f_TT)/den << " "
+                   << -2.0*en*nn2*f_nnT/f_TT/den << " "
+                   << -2.0*en*np2*f_npT/f_TT/den << " "
+                   << -en*en/f_TT/den << " " << cs_sq << endl;
+              // End of critical region
+            }
+          }
+
+          // This code requires a model to compute the homogeneous cs2
+          if (comp_cs2_hom) {
+            neutron.n=nB*(1.0-Ye);
+            proton.n=nB*Ye;
+            thermo th;
+            tg_cs2_hom.get(ix)=cs2_func(neutron,proton,T_MeV/hc_mev_fm,th);
+          
+            if (cs2_verbose>0 || (sv.size()>=4 && range_mode==false)) {
+#ifdef E4MMA_OPENMP
+#pragma omp critical (e4mma_eos_nuclei_stability_6)
+#endif
+              {
+                cout << "eos_nuclei::stability(): "
+                     << "cs2 (het,hom): " << cs_sq << " "
+                     << tg_cs2_hom.get(ix) << endl;
+                // End of critical region
+              }
             }
           } else {
-            stability_diff+=1.0;
+            tg_cs2_hom.get(ix)=0.5;
+          }
+        
+          if (cs_sq<0.0 || cs_sq>1.0 || !std::isfinite(cs_sq)) {
+#ifdef E4MMA_OPENMP
+#pragma omp critical (e4mma_eos_nuclei_stability_7)
+#endif
+            {
+              if (false) {
+                cout << "Unphysical cs2: nB,Ye,T[MeV],cs2,cs2_hom:\n  "
+                     << nB << " " << Ye << " " << T_MeV << " "
+                     << cs_sq << " " << tg_cs2_hom.get(ix) << endl;
+                cout << "  A,Z,Fint: " << tg_A.get(ix) << " "
+                     << tg_Z.get(ix) << " " << tg_Fint.get(ix) << endl;
+              }
+              cs2_count++;
+              i_nB_fix.push_back(i);
+              i_Ye_fix.push_back(j);
+              i_T_fix.push_back(k);
+              type_fix.push_back(4);
+              tg_sflag.get(ix)+=1000;
+              if (std::isfinite(cs_sq)) {
+                if (cs_sq<0.0) {
+                  stability_diff+=fabs(cs_sq);
+                } else {
+                  stability_diff+=fabs(1.0-cs_sq);
+                }
+              } else {
+                stability_diff+=1.0;
+              }
+              // End of critical region
+            }
+          
           }
         }
       }
     }
+#ifdef E4MMA_OPENMP
   }
+#endif
   
   cout << "eos_nuclei::stability(): "
        << "\n  Unstable count (type 3): " << unstable_count << endl;
@@ -4979,8 +5057,8 @@ int eos_nuclei::eos_fixed_dist
     }
     if (nB<0.08 && nB>0.01 && T*197.33<10.0) {
       while ((mh_ret!=0||((x1[0]>log_xn*0.9||x1[1]>log_xp*0.9)&& 
-			 pow(10.0,x1[0])+pow(10.0,x1[1])>0.50))
-	    && count<count_total) {
+                          pow(10.0,x1[0])+pow(10.0,x1[1])>0.50))
+             && count<count_total) {
         mh.tol_abs=mh.tol_rel/1.0e4;
         x1[0]=log_xn*(1.0+1.0*rng.random_int(100)*0.01);
         x1[1]=log_xp*(1.0+1.0*rng.random_int(100)*0.01);
@@ -9827,12 +9905,12 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 
   if (derivs_computed) {
     af << "eos_nuclei::generate_table(): Setting derivs_computed to false."
-	 << endo;
+       << endo;
     derivs_computed=false;
   }
   if (with_leptons) {
     af << "eos_nuclei::generate_table(): setting with_leptons to false."
-	 << endo;
+       << endo;
     with_leptons=false;
   }
 
@@ -10704,7 +10782,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
                                                  tg_log_xp.get(jx),
                                                  tg_Z.get(jx),
                                                  tg_A.get(jx),
-                                               0.0,0.0,0.0,0.0,mue};
+                                                 0.0,0.0,0.0,0.0,mue};
                             gtab.line_of_data(line.size(),line);
                           }
 			}	
@@ -10744,7 +10822,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
       }
       if (ntasks==0) {
 	af << "eos_nuclei::generate_table(): "
-             << "Found no tasks to complete." << endo;
+           << "Found no tasks to complete." << endo;
       }
 
 #ifndef NO_MPI
@@ -10805,9 +10883,9 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 		double nBt=input_buffers[proc_index][vi["nB"]];
 		double Tt=input_buffers[proc_index][vi["T"]]/hc_mev_fm;
 		af<< mpi_rank << " storing point "
-		     << tasks[i2] << " " << tasks[j2] << " "
-		     << tasks[k2] << " with fr=" << thy.ed-Tt*thy.en
-		     << " F=" << (thy.ed-Tt*thy.en)/nBt*hc_mev_fm << endo;
+                  << tasks[i2] << " " << tasks[j2] << " "
+                  << tasks[k2] << " with fr=" << thy.ed-Tt*thy.en
+                  << " F=" << (thy.ed-Tt*thy.en)/nBt*hc_mev_fm << endo;
 	      }
 	      ubvector X(6);
 	      map<string,double> vdet;
@@ -10844,13 +10922,13 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	    } else {
 	      if (gt_verbose>1) {
 		af << "Rank " << mpi_rank
-		     << " point at (" << tasks[i2] << "," << tasks[j2]
-		     << "," << tasks[k2] << ") (nB,Ye,T)=(";
+                   << " point at (" << tasks[i2] << "," << tasks[j2]
+                   << "," << tasks[k2] << ") (nB,Ye,T)=(";
                 af.precision(4);
 		af << input_buffers[proc_index][vi["nB"]] << ","
-		     << input_buffers[proc_index][vi["Ye"]] << ","
-		     << input_buffers[proc_index][vi["T"]] 
-		     << ") failed." << endo;
+                   << input_buffers[proc_index][vi["Ye"]] << ","
+                   << input_buffers[proc_index][vi["T"]] 
+                   << ") failed." << endo;
                 af.precision(6);
 	      }
 	    }
@@ -10866,12 +10944,12 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	    
 	    if (gt_verbose>1) {
 	      af << "Rank " << mpi_rank << " sending " 
-		   << i << "/" << ntasks << " (" << tasks[i*6] << ","
-		   << tasks[i*6+1] << "," 
-		   << tasks[i*6+2] << ") -> ("
-		   << tasks[i*6+3] << "," 
-		   << tasks[i*6+4] << ","
-		   << tasks[i*6+5] << ") to " << proc_index+1 << endo;
+                 << i << "/" << ntasks << " (" << tasks[i*6] << ","
+                 << tasks[i*6+1] << "," 
+                 << tasks[i*6+2] << ") -> ("
+                 << tasks[i*6+3] << "," 
+                 << tasks[i*6+4] << ","
+                 << tasks[i*6+5] << ") to " << proc_index+1 << endo;
 	    }
 
 	    output_buffers[proc_index][vi["msg"]]=((double)message_continue);
@@ -10926,8 +11004,8 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 		  X_all_nuclei+=tg_XLi4.get(ix_dest_m3);
 		  if (X_all_nuclei<1.0e-20 && nB_grid2[tasks[i*6+3]]<0.02) {
 		    af << "X_all_nuclei small (1): " << X_all_nuclei << " "
-			 << T_grid2[iT_dest] << " "
-                         << nB_grid2[tasks[i*6+3]] << endo;
+                       << T_grid2[iT_dest] << " "
+                       << nB_grid2[tasks[i*6+3]] << endo;
 		    output_buffers[proc_index][vi["no_nuclei"]]=1.0;
 		  }
 		}
@@ -10996,18 +11074,18 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	  size_t iYe=tasks[i*6+4];
 	  size_t iT=tasks[i*6+5];
 	  af << "eos_nuclei::generate_table(): Computing " 
-	       << i << "/" << ntasks << " (" << tasks[i*6] << ","
-	       << tasks[i*6+1] << "," 
-	       << tasks[i*6+2] << ") -> ("
-	       << tasks[i*6+3] << "," 
-	       << tasks[i*6+4] << ","
-	       << tasks[i*6+5] << ")" << endo;
+             << i << "/" << ntasks << " (" << tasks[i*6] << ","
+             << tasks[i*6+1] << "," 
+             << tasks[i*6+2] << ") -> ("
+             << tasks[i*6+3] << "," 
+             << tasks[i*6+4] << ","
+             << tasks[i*6+5] << ")" << endo;
 
 	  double nB=nB_grid2[inB];
 	  double Ye=Ye_grid2[iYe];
 	  double T=T_grid2[iT]/hc_mev_fm;
 	  af << "  nB,Ye,T[MeV]: " << nB << " " << Ye << " " << T*hc_mev_fm
-	       << endo;
+             << endo;
 	  double log_xn=gtab.get("log_xn",i);
 	  double log_xp=gtab.get("log_xp",i);
 	  size_t nuc_Z1=((size_t)(gtab.get("Z",i)+1.0e-12));
@@ -11029,7 +11107,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 		X_all_nuclei+=tg_XLi4.get(ixm3);
 		if (X_all_nuclei<1.0e-20) {
 		  af << "X_all_nuclei small (2): " << X_all_nuclei << " "
-		       << T_grid2[iT] << endo;
+                     << T_grid2[iT] << endo;
 		  no_nuclei=true;
 		}
 	      }
@@ -11075,8 +11153,8 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	  if (gt_verbose>1) {
             af.precision(5);
 	    af << "eos_nuclei::generate_table(): Point at (nB,Ye,T[MeV])=("
-		 << nB << "," << Ye << "," << T*hc_mev_fm << "), ret="
-		 << ret << ", " << i << "/" << ntasks << endo;
+               << nB << "," << Ye << "," << T*hc_mev_fm << "), ret="
+               << ret << ", " << i << "/" << ntasks << endo;
             af.precision(6);
 	  }
 	  if (ret==0) {
@@ -11140,18 +11218,18 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
       current_tasks+=ntasks;
       if (gt_verbose>0) {
 	af << "eos_nuclei::generate_table(): "
-             << "Rank " << mpi_rank << " computed " << current_tasks
-	     << " out of " << total_tasks << ".\n  "
-	     << ((int)(((double)current_tasks)/
-		       ((double)total_tasks)*100.0))
-	     << " percent done." << endo;
+           << "Rank " << mpi_rank << " computed " << current_tasks
+           << " out of " << total_tasks << ".\n  "
+           << ((int)(((double)current_tasks)/
+                     ((double)total_tasks)*100.0))
+           << " percent done." << endo;
       }
       
       if (one_success==false) {
         if (gt_verbose>0) {
           af << "eos_nuclei::generate_table(): Rank "
-               << mpi_rank << " found no successes. Stopping."
-               << endo;
+             << mpi_rank << " found no successes. Stopping."
+             << endo;
         }
         done=true;
       }
@@ -11168,8 +11246,8 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
       if (ntasks==0 || (max_time>0.0 && elapsed>max_time)) {
 	
 	af << "eos_nuclei::generate_table(): Finished. "
-             << ntasks << " " << max_time << " "
-	     << elapsed << endo;
+           << ntasks << " " << max_time << " "
+           << elapsed << endo;
 	done=true;
         
       } else if (write_elapsed>file_update_time) {
@@ -11239,8 +11317,8 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
       }
     }
     af << "eos_nuclei::generate_table(): There are "
-         << conv2_count << " total points finished "
-	 << "out of " << total_tasks << endo;
+       << conv2_count << " total points finished "
+       << "out of " << total_tasks << endo;
 
     // -----------------------------------------------------
     // Output file
@@ -11251,7 +11329,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
     
     if (gt_verbose>0) {
       af << "eos_nuclei::generate_table(): Rank "
-           << mpi_rank << " sending exit to children." << endo;
+         << mpi_rank << " sending exit to children." << endo;
     }
       
     string msg="eos_nuclei::generate_table(): Done. There are "+
@@ -11276,7 +11354,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 
     if (false && gt_verbose>1) {
       af << "Rank " << mpi_rank << " got message "
-	   << message << endo;
+         << message << endo;
     }
     
     thermo thx;
@@ -11314,8 +11392,8 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 
 	if (gt_verbose>1) {
 	  af << "Rank " << mpi_rank
-	       << " computing point at nB,Ye,T[MeV]: " << nB << " " 
-	       << Ye << " " << T*hc_mev_fm << endo;
+             << " computing point at nB,Ye,T[MeV]: " << nB << " " 
+             << Ye << " " << T*hc_mev_fm << endo;
 	}
 	
         if (include_muons) {
@@ -11353,26 +11431,26 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	  af.precision(4);
 	  if (ret==0) {
 	    af << "Rank " << mpi_rank
-		 << " done. nB,Ye,T[MeV],F[MeV]: " << nB << " " 
-		 << Ye << " " << T*hc_mev_fm << " "
-		 << (thx.ed-thx.en*T)/nB*hc_mev_fm << endo;
+               << " done. nB,Ye,T[MeV],F[MeV]: " << nB << " " 
+               << Ye << " " << T*hc_mev_fm << " "
+               << (thx.ed-thx.en*T)/nB*hc_mev_fm << endo;
 	    af << "Rank " << mpi_rank
-		 << " done. (inB,iYe,iT), Z,A: ("
-		 << ((size_t)(input_buffer[vi["inB"]]*1.0+1.0e-12)) << ","
-		 << ((size_t)(input_buffer[vi["iYe"]]*1.0+1.0e-12)) << ","
-		 << ((size_t)(input_buffer[vi["iT"]]*1.0+1.0e-12)) << "), ";
+               << " done. (inB,iYe,iT), Z,A: ("
+               << ((size_t)(input_buffer[vi["inB"]]*1.0+1.0e-12)) << ","
+               << ((size_t)(input_buffer[vi["iYe"]]*1.0+1.0e-12)) << ","
+               << ((size_t)(input_buffer[vi["iT"]]*1.0+1.0e-12)) << "), ";
 	    if (alg_mode<2) {
 	      af << nuc_Z1 << " "
-		   << nuc_Z1+nuc_N1 << endo;
+                 << nuc_Z1+nuc_N1 << endo;
 	    } else {
 	      af << Zbar << " "
-		   << Zbar+Nbar << endo;
+                 << Zbar+Nbar << endo;
 	    }
 	  } else {
 	    af << "Rank " << mpi_rank
-		 << " failed. nB,Ye,T[MeV],ret: " << nB << " " 
-		 << Ye << " " << T*hc_mev_fm << " "
-		 << ret << endo;
+               << " failed. nB,Ye,T[MeV],ret: " << nB << " " 
+               << Ye << " " << T*hc_mev_fm << " "
+               << ret << endo;
 	  }
 	  af.precision(6);
 	}
