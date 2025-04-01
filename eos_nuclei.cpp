@@ -2514,29 +2514,34 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
     cout << "eos_nuclei::stability(): full table." << endl;
   }
   
-  /// Analyze the stability at each point
+  // Analyze the stability at each point. OpenMP doesn't work for
+  // this loop, possibly because of issues of thread safety in
+  // the interpolation objects.
 #ifdef E4MMA_OPENMP
-#pragma omp parallel default(shared)
+#pragma omp parallel
   {
 #pragma omp for
 #endif
     for(size_t i=ilo;i<ihi;i++) {
       double nB=nB_grid2[i];
-      cout << "eos_nuclei::stability(): nB at " << i << " is " << nB << endl;
+#ifndef E4MMA_OPENMP
+      cout << "eos_nuclei::stability(): nB at "
+           << i << " is " << nB << endl;
+#endif
       for(size_t j=jlo;j<jhi;j++) {
         double Ye=Ye_grid2[j];
         for(size_t k=klo;k<khi;k++) {
-        
+          
           total_count++;
-        
+          
           double T_MeV=T_grid2[k];
           vector<size_t> ix={i,j,k};
           tg_sflag.get(ix)=0;
-        
+          
           // Check entropy and pressure are positive
           if (tg_P.get(ix)<0.0 || tg_S.get(ix)<0.0) {
 #ifdef E4MMA_OPENMP
-#pragma omp critical (e4mma_eos_nuclei_stability_1)
+#pragma omp critical (e4mma_eos_nuclei_stability)
 #endif
             {
               if (false) {
@@ -2566,7 +2571,7 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
             double dP=tg_P.get(ixp1)-tg_P.get(ix);
             if (dP<0.0) {
 #ifdef E4MMA_OPENMP
-#pragma omp critical (e4mma_eos_nuclei_stability_2)
+#pragma omp critical (e4mma_eos_nuclei_stability)
 #endif
               {
                 if (false) {
@@ -2679,7 +2684,7 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
             if (sing[0]<0.0 || sing[1]<0.0 || sing[2]<0.0 ||
                 sing[3]<0.0) {
 #ifdef E4MMA_OPENMP
-#pragma omp critical (e4mma_eos_nuclei_stability_3)
+#pragma omp critical (e4mma_eos_nuclei_stability)
 #endif
               {
                 cout << "eos_nuclei::stability(): Unstable: "
@@ -2720,64 +2725,56 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
             (tg_mup.get(ix)/hc_mev_fm+proton.m)*np2+
             tg_mue.get(ix)*np2/hc_mev_fm;
         
+#ifndef E4MMA_OPENMP
           if (cs2_verbose>0) {
-#ifdef E4MMA_OPENMP
-#pragma omp critical (e4mma_eos_nuclei_stability_4)
-#endif
-            {
-              cout << endl;
-              cout << "eos_nuclei::stability(): "
-                   << "nB,Ye,T[MeV],fr,en: " << nB << " " << Ye << " "
-                   << T_MeV << " "
-                   << tg_F.get(ix)/hc_mev_fm*nB << " ";
-              cout << tg_S.get(ix)*nB << endl;
-              cout << "eos_nuclei::stability(): "
-                   << "mun[1/fm],mup[1/fm],mue[1/fm]: "
-                   << tg_mun.get(ix)/hc_mev_fm << " "
-                   << tg_mup.get(ix)/hc_mev_fm << " "
-                   << tg_mue.get(ix)/hc_mev_fm
-                   << endl;
-              cout << "eos_nuclei::stability(): "
-                   << "den: en*T,nn*mun,np*mup,ne*mue: (all [1/fm^3]):\n  "
-                   << en*T_MeV/hc_mev_fm << " " 
-                   << (tg_mun.get(ix)/hc_mev_fm+neutron.m)*nn2 << " " 
-                   << (tg_mup.get(ix)/hc_mev_fm+proton.m)*np2 << " "
-                   << tg_mue.get(ix)/hc_mev_fm*np2 << endl;
-              cout << "eos_nuclei::stability(): "
-                   << "nn,np,en: " << nn2 << " " << np2 << " " << en << endl;
-              cout << "eos_nuclei::stability(): "
-                   << "f_nnnn, f_nnnp, f_npnp, f_nnT, f_npT, f_TT, den:\n  "
-                   << f_nnnn << " " << f_nnnp << " " << f_npnp << " "
-                   << f_nnT << "\n  " << f_npT << " " << f_TT << " "
-                   << den << endl;
-              // End of critical region
-            }
+            cout << endl;
+            cout << "eos_nuclei::stability(): "
+                 << "nB,Ye,T[MeV],fr,en: " << nB << " " << Ye << " "
+                 << T_MeV << " "
+                 << tg_F.get(ix)/hc_mev_fm*nB << " ";
+            cout << tg_S.get(ix)*nB << endl;
+            cout << "eos_nuclei::stability(): "
+                 << "mun[1/fm],mup[1/fm],mue[1/fm]: "
+                 << tg_mun.get(ix)/hc_mev_fm << " "
+                 << tg_mup.get(ix)/hc_mev_fm << " "
+                 << tg_mue.get(ix)/hc_mev_fm
+                 << endl;
+            cout << "eos_nuclei::stability(): "
+                 << "den: en*T,nn*mun,np*mup,ne*mue: (all [1/fm^3]):\n  "
+                 << en*T_MeV/hc_mev_fm << " " 
+                 << (tg_mun.get(ix)/hc_mev_fm+neutron.m)*nn2 << " " 
+                 << (tg_mup.get(ix)/hc_mev_fm+proton.m)*np2 << " "
+                 << tg_mue.get(ix)/hc_mev_fm*np2 << endl;
+            cout << "eos_nuclei::stability(): "
+                 << "nn,np,en: " << nn2 << " " << np2 << " " << en << endl;
+            cout << "eos_nuclei::stability(): "
+                 << "f_nnnn, f_nnnp, f_npnp, f_nnT, f_npT, f_TT, den:\n  "
+                 << f_nnnn << " " << f_nnnp << " " << f_npnp << " "
+                 << f_nnT << "\n  " << f_npT << " " << f_TT << " "
+                 << den << endl;
           }
+#endif
           double expr1=dmundnBv*nB*nB+dsdnBv*dsdnBv*nB*nB/dsdTv+
             dmundYev*nB*Ye-dmundYev*nB*Ye*Ye+dmupdYev*nB*Ye*Ye;
           double expr2=dsdnBv*nB/dsdTv;
           double cs_sq=(expr1-2.0*en*expr2-en*en/f_TT)/den;
 
           tg_cs2.get(ix)=cs_sq;
+#ifndef E4MMA_OPENMP
           if (cs2_verbose>0) {
-#ifdef E4MMA_OPENMP
-#pragma omp critical (e4mma_eos_nuclei_stability_5)
-#endif
-            {
-              cout << "eos_nuclei::stability(): "
-                   << "en,f_TT,den: " << en << " " << f_TT << " "
-                   << den << endl;
-              cout << "eos_nuclei::stability(): "
-                   << "t1,t2,t3,t4,t5,t6,cs2: "
-                   << nn2*nn2*(f_nnnn-f_nnT*f_nnT/f_TT)/den << " "
-                   << 2.0*nn2*np2*(f_nnnp-f_nnT*f_npT/f_TT)/den << " "
-                   << np2*np2*(f_npnp-f_npT*f_npT/f_TT)/den << " "
-                   << -2.0*en*nn2*f_nnT/f_TT/den << " "
-                   << -2.0*en*np2*f_npT/f_TT/den << " "
-                   << -en*en/f_TT/den << " " << cs_sq << endl;
-              // End of critical region
-            }
+            cout << "eos_nuclei::stability(): "
+                 << "en,f_TT,den: " << en << " " << f_TT << " "
+                 << den << endl;
+            cout << "eos_nuclei::stability(): "
+                 << "t1,t2,t3,t4,t5,t6,cs2: "
+                 << nn2*nn2*(f_nnnn-f_nnT*f_nnT/f_TT)/den << " "
+                 << 2.0*nn2*np2*(f_nnnp-f_nnT*f_npT/f_TT)/den << " "
+                 << np2*np2*(f_npnp-f_npT*f_npT/f_TT)/den << " "
+                 << -2.0*en*nn2*f_nnT/f_TT/den << " "
+                 << -2.0*en*np2*f_npT/f_TT/den << " "
+                 << -en*en/f_TT/den << " " << cs_sq << endl;
           }
+#endif
 
           // This code requires a model to compute the homogeneous cs2
           if (comp_cs2_hom) {
@@ -2786,24 +2783,20 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
             thermo th;
             tg_cs2_hom.get(ix)=cs2_func(neutron,proton,T_MeV/hc_mev_fm,th);
           
+#ifndef E4MMA_OPENMP
             if (cs2_verbose>0 || (sv.size()>=4 && range_mode==false)) {
-#ifdef E4MMA_OPENMP
-#pragma omp critical (e4mma_eos_nuclei_stability_6)
-#endif
-              {
-                cout << "eos_nuclei::stability(): "
-                     << "cs2 (het,hom): " << cs_sq << " "
-                     << tg_cs2_hom.get(ix) << endl;
-                // End of critical region
-              }
+              cout << "eos_nuclei::stability(): "
+                   << "cs2 (het,hom): " << cs_sq << " "
+                   << tg_cs2_hom.get(ix) << endl;
             }
+#endif
           } else {
             tg_cs2_hom.get(ix)=0.5;
           }
         
           if (cs_sq<0.0 || cs_sq>1.0 || !std::isfinite(cs_sq)) {
 #ifdef E4MMA_OPENMP
-#pragma omp critical (e4mma_eos_nuclei_stability_7)
+#pragma omp critical (e4mma_eos_nuclei_stability)
 #endif
             {
               if (false) {
@@ -8943,6 +8936,8 @@ int eos_nuclei::stats(std::vector<std::string> &sv,
       
     }
   }
+
+  
   cout << "nb_frac_count: " << nb_frac_count << endl;
   //cout << "Sint_neg_count: " << S_neg_count << endl;
   if (tg_Eint.total_size()>0) {

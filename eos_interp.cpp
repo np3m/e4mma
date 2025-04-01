@@ -617,6 +617,11 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
     if (method=="min") {
       min_ret=mms.mmin(ike.fix_list.size()/3,x,fmin,fmf);
     } else {
+      dea.pop_size=40;
+      vector<double> step={5.0e-6};
+      dea.set_step(1,step);
+      dea.ntrial=200;
+      dea.nconv=200;
       min_ret=dea.mmin(ike.fix_list.size()/3,x,fmin,fmf);
     }
     if (min_ret==0) min_qual=fmin;
@@ -1252,21 +1257,23 @@ double interpm_krige_eos::min(size_t nv, const ubvector &v) {
     double out=tgp_F_old->get(index)*v[j/3];
     
     if (true) {
-      cout << "interpm_krige_eos::min(): "
-           << "At " << nB << " " << Ye << " " << T_MeV << endl;
-      cout << "interpm_krige_eos::min(): "
-           << "Change F (fix) at "
-           << index[0] << " " << index[1] << " "
-           << index[2] << " from " << tgp_F_old->get(index) << " "
-        //<< tgp_F->get(index)
-           << " to "
-           << out << endl;
-      cout << "interpm_krige_eos::min(): "
-           << "Change Fint (fix) from "
-           << tgp_Fint_old->get(index) << " "
-        //<< tgp_Fint->get(index)
-           << " to "
-           << out-F_eg << endl;
+      if (false) {
+        cout << "interpm_krige_eos::min(): "
+             << "At " << nB << " " << Ye << " " << T_MeV << endl;
+        cout << "interpm_krige_eos::min(): "
+             << "Change F (fix) at "
+             << index[0] << " " << index[1] << " "
+             << index[2] << " from " << tgp_F_old->get(index) << " "
+          //<< tgp_F->get(index)
+             << " to "
+             << out << endl;
+        cout << "interpm_krige_eos::min(): "
+             << "Change Fint (fix) from "
+             << tgp_Fint_old->get(index) << " "
+          //<< tgp_Fint->get(index)
+             << " to "
+             << out-F_eg << endl;
+      }
     } else if (j>=jout) {
       cout.width(3);
       cout << index[0] << " ";
