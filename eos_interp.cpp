@@ -617,11 +617,10 @@ int eos_nuclei::interp_internal(size_t i_fix, size_t j_fix, size_t k_fix,
     if (method=="min") {
       min_ret=mms.mmin(ike.fix_list.size()/3,x,fmin,fmf);
     } else {
-      dea.pop_size=40;
-      vector<double> step={5.0e-6};
+      dea.pop_size=kwa.get_int("dea_pop",40);
+      vector<double> step={kwa.get_double("dea_step",5.0e-6)};
       dea.set_step(1,step);
-      dea.ntrial=200;
-      dea.nconv=200;
+      dea.nconv=kwa.get_int("dea_nconv",100);
       min_ret=dea.mmin(ike.fix_list.size()/3,x,fmin,fmf);
     }
     if (min_ret==0) min_qual=fmin;
