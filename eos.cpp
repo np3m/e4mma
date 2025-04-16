@@ -1440,7 +1440,12 @@ double eos::free_energy_density_detail
   
   if (use_alt_eos) {
 
+    cout << "checkpoint alt_eos" << endl;	  
+
     if (eosp_alt==&rmf_hyp) {
+
+      cout << "Entering rmf_hyp.calc_temp_hyp_e" << endl; 
+
       rmf_hyp.calc_temp_hyp_e(n.n+p.n,p.n,n,p,rmf_hyp.def_lambda,
                               rmf_hyp.def_sigma_p,
                               rmf_hyp.def_sigma_z,
@@ -1448,8 +1453,28 @@ double eos::free_energy_density_detail
                               rmf_hyp.def_cascade_z,
                               rmf_hyp.def_cascade_m,
                               T,th);
+
+      cout << "Returned from rmf_hyp.calc_temp_hyp_e" << endl;
+
     } else {
+
+      cout << "Entering calc_temp_e" << endl;	 
+      int status;
+      std::cout << "eosp_alt points to type: "
+      << abi::__cxa_demangle(typeid(*eosp_alt).name(), 0, 0, &status)
+      << std::endl;
+      double sig, ome, rho;
+      rmf.get_fields(sig,ome,rho);
+      cout << sig << " " << ome << " " << rho << endl;
+      rmf.def_mroot.ntrial=5000;
+      rmf.def_mroot.verbose=2; 
+
       eosp_alt->calc_temp_e(n,p,T,th);
+
+      cout << "Returned from calc_temp_e" << endl;
+
+      rmf.get_fields(sig,ome,rho);
+      cout << sig << " " << ome << " " << rho << endl;
     }
     zn=0.0;
     zp=0.0;

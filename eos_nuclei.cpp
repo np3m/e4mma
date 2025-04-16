@@ -3441,7 +3441,19 @@ int eos_nuclei::solve_nuclei(size_t nv, const ubvector &x, ubvector &y,
     // Compute chemical potential shift at a fiducial proton density
     proton.n=1.0e-100;
 
+    std::cout << "solve_nuclei: Before free_energy_density - "
+         << "nn_prime=" << nn_prime << ", np_prime=" << np_prime
+         << ", neutron.n=" << neutron.n << ", proton.n=" << proton.n
+         << ", T=" << T << std::endl;
+
     free_energy_density(neutron,proton,T,th2);
+
+    std::cout << "solve_nuclei: After free_energy_density - "
+          << "mun_gas=" << mun_gas << ", mup_gas=" << mup_gas
+          << ", neutron.mu=" << neutron.mu << ", proton.mu=" << proton.mu
+          << std::endl;
+
+
     double mup_shift=proton.mu-
       T*log(1.0/proton.g*pow(2.0*pi/proton.ms/T,1.5))+100.0*T*log(10.0);
 
@@ -3453,8 +3465,19 @@ int eos_nuclei::solve_nuclei(size_t nv, const ubvector &x, ubvector &y,
 
     // Compute chemical potential shift at a fiducial neutron density
     neutron.n=1.0e-100;
+    
+    std::cout << "solve_nuclei: Before free_energy_density - "
+       << "nn_prime=" << nn_prime << ", np_prime=" << np_prime
+       << ", neutron.n=" << neutron.n << ", proton.n=" << proton.n
+       << ", T=" << T << std::endl;
 
     free_energy_density(neutron,proton,T,th2);
+
+    std::cout << "solve_nuclei: After free_energy_density - "
+          << "mun_gas=" << mun_gas << ", mup_gas=" << mup_gas
+          << ", neutron.mu=" << neutron.mu << ", proton.mu=" << proton.mu
+          << std::endl;
+
     double mun_shift=neutron.mu-
       T*log(1.0/neutron.g*pow(2.0*pi/neutron.ms/T,1.5))+100.0*T*log(10.0);
 
@@ -4421,6 +4444,14 @@ int eos_nuclei::eos_vary_dist
     }
 
     // Compute the EOS with the current nuclear distribution
+    
+    std::cout << "DEBUG: Calling eos_fixed_dist with nB=" << nB
+          << " Ye=" << Ye << " T=" << T
+          << " A_min=" << A_min << " A_max=" << A_max
+          << " NmZ_min=" << NmZ_min << " NmZ_max=" << NmZ_max
+          << " log_xn=" << log_xn << " log_xp=" << log_xp
+          << std::endl;
+
     int ret=eos_fixed_dist
       (nB,Ye,T,log_xn,log_xp,thx,mun_full,mup_full,
        A_min,A_max,NmZ_min,NmZ_max,vdet,dist_changed,no_nuclei);
@@ -5009,7 +5040,23 @@ int eos_nuclei::eos_fixed_dist
   double qual_best=1.0e100;
 
   if (mh_ret!=0) {
+    
+    std::cout << "DEBUG: Before calling msolve(), "
+          << "nB=" << nB << ", Ye=" << Ye << ", T=" << T
+          << ", log_xn=" << log_xn << ", log_xp=" << log_xp
+          << ", A_min=" << A_min << ", A_max=" << A_max
+          << ", NmZ_min=" << NmZ_min << ", NmZ_max=" << NmZ_max
+          << std::endl;	
+
     mh_ret=mh.msolve(2,x1,sn_func);
+
+    std::cout << "DEBUG: After calling msolve(), "
+          << "nB=" << nB << ", Ye=" << Ye << ", T=" << T
+          << ", log_xn=" << log_xn << ", log_xp=" << log_xp
+          << ", A_min=" << A_min << ", A_max=" << A_max
+          << ", NmZ_min=" << NmZ_min << ", NmZ_max=" << NmZ_max
+          << std::endl;	
+
     if (mh_ret==0 && mpi_size==1) {
       if (loc_verbose>1) {
         cout << "eos_nuclei::eos_fixed_dist(): Rank " << mpi_rank
@@ -10058,13 +10105,26 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	Nbar=nuc_N1;
       } else if (alg_mode==2 || alg_mode==3 || alg_mode==4) {
         if (no_nuclei_gt) {
+          cout << "DEBUG: Calling eos_vary_dist() for nB=" << nB 
+          << ", Ye=" << Ye << ", T=" << T << " MeV" << endl;
+
           first_ret=eos_vary_dist(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,thx,
                                   mun_full,mup_full,A_min,A_max,
                                   NmZ_min,NmZ_max,vdet,true,true);
+          cout << "DEBUG: Return eos_vary_dist() for nB=" << nB 
+          << ", Ye=" << Ye << ", T=" << T << " MeV" << endl;
+
         } else {
+          
+          cout << "DEBUG: Calling eos_vary_dist() for nB=" << nB 
+          << ", Ye=" << Ye << ", T=" << T << " MeV" << endl;
+
           first_ret=eos_vary_dist(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,thx,
                                   mun_full,mup_full,A_min,A_max,
                                   NmZ_min,NmZ_max,vdet,true,false);
+
+	  cout << "DEBUG: Return eos_vary_dist() for nB=" << nB
+          << ", Ye=" << Ye << ", T=" << T << " MeV" << endl;
         }
       }
       if (first_ret!=0) {
