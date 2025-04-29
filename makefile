@@ -30,9 +30,13 @@ help:
 # Default settings
 LCXX = $(CXX)
 LMPI_CXX = $(MPI_CXX)
-LIBS = -L/usr/local/lib -lo2scl -lhdf5 -lgsl -lreadline $(LDFLAGS) 
-LMPI_CFLAGS = -O3 -std=c++11 -DO2SCL_MPI -fopenmp $(CFLAGS) $(MPI_CFLAGS)
-LCFLAGS = -O3 -std=c++11 -DNO_MPI -fopenmp $(CFLAGS)
+#LIBS = -L/usr/local/lib -lo2scl -lhdf5 -lgsl -lreadline $(LDFLAGS) 
+#LMPI_CFLAGS = -O3 -std=c++11 -DO2SCL_MPI -fopenmp $(CFLAGS) $(MPI_CFLAGS)
+#LCFLAGS = -O3 -std=c++11 -DNO_MPI -fopenmp $(CFLAGS)
+LIBS = -L/home/dkundu/o2scl/lib -lo2scl -lhdf5 -lgsl -lreadline $(LDFLAGS) 
+LMPI_CFLAGS = -O3 -std=c++11 -DO2SCL_MPI -fopenmp -I/home/dkundu/o2scl/include/o2scl $(CFLAGS) $(MPI_CFLAGS)
+LCFLAGS = -O3 -std=c++11 -DNO_MPI -fopenmp -I/home/dkundu/o2scl/include/o2scl $(CFLAGS)
+
 
 # ----------------------------------------------------------------
 # UTK-specific settings

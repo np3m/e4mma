@@ -1463,18 +1463,18 @@ double eos::free_energy_density_detail
       std::cout << "eosp_alt points to type: "
       << abi::__cxa_demangle(typeid(*eosp_alt).name(), 0, 0, &status)
       << std::endl;
-      double sig, ome, rho;
-      rmf.get_fields(sig,ome,rho);
-      cout << sig << " " << ome << " " << rho << endl;
+//      double sig, ome, rho;
+//      rmf.get_fields(sig,ome,rho);
+//      cout << sig << " " << ome << " " << rho << endl;
       rmf.def_mroot.ntrial=5000;
-      rmf.def_mroot.verbose=2; 
+//      rmf.def_mroot.verbose=2; 
 
       eosp_alt->calc_temp_e(n,p,T,th);
 
       cout << "Returned from calc_temp_e" << endl;
 
-      rmf.get_fields(sig,ome,rho);
-      cout << sig << " " << ome << " " << rho << endl;
+//      rmf.get_fields(sig,ome,rho);
+//      cout << sig << " " << ome << " " << rho << endl;
     }
     zn=0.0;
     zp=0.0;
