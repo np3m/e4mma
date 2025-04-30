@@ -1466,7 +1466,7 @@ double eos::free_energy_density_detail
 //      double sig, ome, rho;
 //      rmf.get_fields(sig,ome,rho);
 //      cout << sig << " " << ome << " " << rho << endl;
-      rmf.def_mroot.ntrial=5000;
+      rmf.def_mroot.ntrial=2000;
 //      rmf.def_mroot.verbose=2; 
 
       eosp_alt->calc_temp_e(n,p,T,th);
