@@ -1440,7 +1440,7 @@ double eos::free_energy_density_detail
   
   if (use_alt_eos) {
 
-    cout << "checkpoint alt_eos" << endl;	  
+    //cout << "checkpoint alt_eos" << endl;	  
 
     if (eosp_alt==&rmf_hyp) {
 
@@ -1458,20 +1458,23 @@ double eos::free_energy_density_detail
 
     } else {
 
-      cout << "Entering calc_temp_e" << endl;	 
-      int status;
-      std::cout << "eosp_alt points to type: "
-      << abi::__cxa_demangle(typeid(*eosp_alt).name(), 0, 0, &status)
-      << std::endl;
-//      double sig, ome, rho;
-//      rmf.get_fields(sig,ome,rho);
-//      cout << sig << " " << ome << " " << rho << endl;
-      rmf.def_mroot.ntrial=2000;
-//      rmf.def_mroot.verbose=2; 
+      //cout << "Entering calc_temp_e" << endl;	 
+      //int status;
+     // std::cout << "eosp_alt points to type: "
+     // << abi::__cxa_demangle(typeid(*eosp_alt).name(), 0, 0, &status)
+      //<< std::endl;
+
+     // double sig, ome, rho;
+     // rmf.get_fields(sig,ome,rho);
+     // cout <<"fields"<< sig << " " << ome << " " << rho << endl;
+      rmf.def_mroot.ntrial=2000
+	      ;
+//      rmf.def_mroot.verbose=2;
+//      cout<<"guess_set"<<rmf.guess_set;  
 
       eosp_alt->calc_temp_e(n,p,T,th);
 
-      cout << "Returned from calc_temp_e" << endl;
+      //cout << "Returned from calc_temp_e" << endl;
 
 //      rmf.get_fields(sig,ome,rho);
 //      cout << sig << " " << ome << " " << rho << endl;

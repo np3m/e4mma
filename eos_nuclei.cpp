@@ -3427,6 +3427,11 @@ int eos_nuclei::solve_nuclei(size_t nv, const ubvector &x, ubvector &y,
   // Ensure that this function is deterministic
   neutron.mu=neutron.m;
   proton.mu=proton.m;
+  
+  //double sig, ome, rho;
+  //rmf.get_fields(sig,ome,rho);
+  //cout <<"fields___"<< sig << " " << ome << " " << rho << endl;
+  //rmf.set_fields(sig,ome,rho);
 
   if (np_small && nn_small) {
 
@@ -3441,17 +3446,17 @@ int eos_nuclei::solve_nuclei(size_t nv, const ubvector &x, ubvector &y,
     // Compute chemical potential shift at a fiducial proton density
     proton.n=1.0e-100;
 
-    std::cout << "solve_nuclei: Before free_energy_density - "
-         << "nn_prime=" << nn_prime << ", np_prime=" << np_prime
-         << ", neutron.n=" << neutron.n << ", proton.n=" << proton.n
-         << ", T=" << T << std::endl;
+    //std::cout << "solve_nuclei: Before free_energy_density - "
+    //     << "nn_prime=" << nn_prime << ", np_prime=" << np_prime
+    //     << ", neutron.n=" << neutron.n << ", proton.n=" << proton.n
+    //     << ", T=" << T << std::endl;
 
     free_energy_density(neutron,proton,T,th2);
 
-    std::cout << "solve_nuclei: After free_energy_density - "
-          << "mun_gas=" << mun_gas << ", mup_gas=" << mup_gas
-          << ", neutron.mu=" << neutron.mu << ", proton.mu=" << proton.mu
-          << std::endl;
+    //std::cout << "solve_nuclei: After free_energy_density - "
+    //      << "mun_gas=" << mun_gas << ", mup_gas=" << mup_gas
+    //      << ", neutron.mu=" << neutron.mu << ", proton.mu=" << proton.mu
+    //      << std::endl;
 
 
     double mup_shift=proton.mu-
@@ -3466,17 +3471,17 @@ int eos_nuclei::solve_nuclei(size_t nv, const ubvector &x, ubvector &y,
     // Compute chemical potential shift at a fiducial neutron density
     neutron.n=1.0e-100;
     
-    std::cout << "solve_nuclei: Before free_energy_density - "
-       << "nn_prime=" << nn_prime << ", np_prime=" << np_prime
-       << ", neutron.n=" << neutron.n << ", proton.n=" << proton.n
-       << ", T=" << T << std::endl;
+    //std::cout << "solve_nuclei: Before free_energy_density - "
+    //   << "nn_prime=" << nn_prime << ", np_prime=" << np_prime
+    //   << ", neutron.n=" << neutron.n << ", proton.n=" << proton.n
+    //   << ", T=" << T << std::endl;
 
     free_energy_density(neutron,proton,T,th2);
 
-    std::cout << "solve_nuclei: After free_energy_density - "
-          << "mun_gas=" << mun_gas << ", mup_gas=" << mup_gas
-          << ", neutron.mu=" << neutron.mu << ", proton.mu=" << proton.mu
-          << std::endl;
+    //std::cout << "solve_nuclei: After free_energy_density - "
+    //      << "mun_gas=" << mun_gas << ", mup_gas=" << mup_gas
+    //      << ", neutron.mu=" << neutron.mu << ", proton.mu=" << proton.mu
+    //      << std::endl;
 
     double mun_shift=neutron.mu-
       T*log(1.0/neutron.g*pow(2.0*pi/neutron.ms/T,1.5))+100.0*T*log(10.0);
@@ -3486,7 +3491,18 @@ int eos_nuclei::solve_nuclei(size_t nv, const ubvector &x, ubvector &y,
       log_xp*T*log(10.0);
     
   } else {
+
+    //std::cout << "solve_nuclei: Before free_energy_density - "
+    //   << "nn_prime=" << nn_prime << ", np_prime=" << np_prime
+    //   << ", neutron.n=" << neutron.n << ", proton.n=" << proton.n
+    //   << ", T=" << T << std::endl;  
+
     free_energy_density_detail(neutron,proton,T,th_gas,vdet);
+
+    //std::cout << "solve_nuclei: After free_energy_density - "
+    //   << "nn_prime=" << nn_prime << ", np_prime=" << np_prime
+    //   << ", neutron.n=" << neutron.n << ", proton.n=" << proton.n
+    //   << ", T=" << T << std::endl;
   }
 
   mun_gas=neutron.mu;
@@ -4998,6 +5014,9 @@ int eos_nuclei::eos_fixed_dist
      std::ref(mun_gas),std::ref(mup_gas),std::ref(th_gas),
      std::ref(vdet));
 
+//  log_xn=-2.5;
+//  log_xp=-1.64;
+
   x1[0]=log_xn;
   x1[1]=log_xp;
 
@@ -5038,6 +5057,14 @@ int eos_nuclei::eos_fixed_dist
   if (loc_verbose>2) mh.verbose=1;
 
   double qual_best=1.0e100;
+   
+  double sig, ome, rho;
+  //rmf.get_fields(sig,ome,rho);
+  sig=1.000000e+00;
+  ome=1.000000e+00;
+  rho=1.000000e+00;  
+  cout <<"fields_"<< sig << " " << ome << " " << rho << endl;
+  //rmf.set_fields(sig,ome,rho);
 
   if (mh_ret!=0) {
     
@@ -10095,36 +10122,52 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	return 1;
       } else if (alg_mode==0) {
         if (no_nuclei_gt) {
+          cout << "DEBUG0: Calling eos_vary_ZN() for nB=" << nB
+          << ", Ye=" << Ye << ", T=" << T << " MeV" << endl;
+
           first_ret=eos_vary_ZN(nB,Ye,T,log_xn,log_xp,nuc_Z1,nuc_N1,
                                 thx,mun_full,mup_full,true);
+
+	  cout << "DEBUG0: Return eos_vary_ZN() for nB=" << nB
+          << ", Ye=" << Ye << ", T=" << T << " MeV" << endl;
+
         } else {
+          cout << "DEBUG1: Return eos_vary_ZN() for nB=" << nB
+          << ", Ye=" << Ye << ", T=" << T << " MeV" << endl;
+
           first_ret=eos_vary_ZN(nB,Ye,T,log_xn,log_xp,nuc_Z1,nuc_N1,
                                 thx,mun_full,mup_full,false);
-        }
+          cout << "DEBUG1: Return eos_vary_ZN() for nB=" << nB
+          << ", Ye=" << Ye << ", T=" << T << " MeV" << endl;
+	
+	}
 	Zbar=nuc_Z1;
 	Nbar=nuc_N1;
       } else if (alg_mode==2 || alg_mode==3 || alg_mode==4) {
         if (no_nuclei_gt) {
-          cout << "DEBUG: Calling eos_vary_dist() for nB=" << nB 
+
+          cout<<"DEBUG2: Calling eos_vary_dist() for nB=" << nB 
           << ", Ye=" << Ye << ", T=" << T << " MeV" << endl;
 
           first_ret=eos_vary_dist(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,thx,
                                   mun_full,mup_full,A_min,A_max,
                                   NmZ_min,NmZ_max,vdet,true,true);
-          cout << "DEBUG: Return eos_vary_dist() for nB=" << nB 
+          cout << "DEBUG2: Return eos_vary_dist() for nB=" << nB 
           << ", Ye=" << Ye << ", T=" << T << " MeV" << endl;
 
         } else {
           
-          cout << "DEBUG: Calling eos_vary_dist() for nB=" << nB 
-          << ", Ye=" << Ye << ", T=" << T << " MeV" << endl;
+          cout << "DEBUG3: Calling eos_vary_dist() for nB = " << nB
+              << ", Ye = " << Ye << ", T = " << T  << " MeV, log_xn = "
+              << log_xn << ", log_xp = " << log_xp << endl;
 
           first_ret=eos_vary_dist(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,thx,
                                   mun_full,mup_full,A_min,A_max,
                                   NmZ_min,NmZ_max,vdet,true,false);
 
-	  cout << "DEBUG: Return eos_vary_dist() for nB=" << nB
-          << ", Ye=" << Ye << ", T=" << T << " MeV" << endl;
+	  cout << "DEBUG3: Return eos_vary_dist() for nB = " << nB
+              << ", Ye = " << Ye << ", T = " << T  << " MeV, log_xn = "
+              << log_xn << ", log_xp = " << log_xp << endl;
         }
       }
       if (first_ret!=0) {
@@ -10385,7 +10428,17 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	    if (ext_guess.length()>0 &&
 		external.tg_flag.get(ix)>9.9 &&
 		(iflag==iflag_guess || iflag==iflag_empty)) {
-              
+                           
+              double log_xn_external = external.tg_log_xn.get(ix);
+              double log_xp_external = external.tg_log_xp.get(ix);
+              //cout << "External guess log_xn: " << log_xn_external << endl;
+              //cout << "External guess log_xp: " << log_xp_external << endl;
+	      
+              //cout<<"include_muon:"<<" "<<include_muons;
+            
+              log_xn_external = -1.26;
+	      log_xp_external = -2.30;	      
+
 	      tasks.push_back(inB);
 	      tasks.push_back(iYe);
 	      tasks.push_back(iT);
@@ -10397,16 +10450,31 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
                 if (include_muons) {
                   mue=tg_mue.get(ix)/hc_mev_fm;
                 }
-		vector<double> line={external.tg_log_xn.get(ix),
-                                     external.tg_log_xp.get(ix),
+
+		   //   cout<<"YES!!:)";
+	       	//vector<double> line={external.tg_log_xn.get(ix),
+                //                     external.tg_log_xp.get(ix),
+                //                     0.0,0.0,
+                //                     external.tg_A_min.get(ix),
+                //                     external.tg_A_max.get(ix),
+                //                     external.tg_NmZ_min.get(ix),
+                //                     external.tg_NmZ_max.get(ix),mue};
+	        //gtab.line_of_data(line.size(),line);
+	       
+		      vector<double> line={log_xn_external,
+                                     log_xp_external,
                                      0.0,0.0,
                                      external.tg_A_min.get(ix),
                                      external.tg_A_max.get(ix),
                                      external.tg_NmZ_min.get(ix),
                                      external.tg_NmZ_max.get(ix),mue};
-		gtab.line_of_data(line.size(),line);
+                   gtab.line_of_data(line.size(),line);
+	       
+
 	      } else {
                 if (ext_grid_matches) {
+
+	  	 // cout<<"NO!!:(";	
                   vector<double> line={external.tg_log_xn.get(ix),
                                        external.tg_log_xp.get(ix),
                                        external.tg_Z.get(ix),
@@ -10428,7 +10496,14 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	      }
 	      guess_found=true;
 	    }
-	    
+           // if(guess_found==true){
+              
+	   //   double log_xn = gtab.get("log_xn", i);
+           //   double log_xp = gtab.get("log_xp", i);	    
+	     	    
+	   //   cout<<"external guess log_xn:"<<" "<<log_xn;
+           //   cout<<"external guess log_xp:"<<" "<<log_xp;
+           // }	    
 	    // If six_neighbors is true, set up six additional tasks
 	    // for neighbors with useful initial guesses
 	    if (six_neighbors>0 &&
@@ -11200,9 +11275,18 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
                 (nB,Ye,T,log_xn,log_xp,Zbar,Nbar,thx,mun_full,mup_full,
                  A_min,A_max,NmZ_min,NmZ_max,vdet,true,no_nuclei_gt);
             } else {
+
+              cout << "DEBUG9: Calling eos_vary_dist() for nB = " << nB
+              << ", Ye = " << Ye << ", T = " << T  << " MeV, log_xn = "
+              << log_xn << ", log_xp = " << log_xp << endl;  
+ 		    
               ret=eos_vary_dist
                 (nB,Ye,T,log_xn,log_xp,Zbar,Nbar,thx,mun_full,mup_full,
                  A_min,A_max,NmZ_min,NmZ_max,vdet,true,no_nuclei);
+
+	      cout << "DEBUG9: Return eos_vary_dist() for nB = " << nB
+              << ", Ye = " << Ye << ", T = " << T  << " MeV, log_xn = "
+              << log_xn << ", log_xp = " << log_xp << endl;
             }
 	  }
 	  if (gt_verbose>1) {
@@ -11462,23 +11546,58 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	  return 1;
 	} else if (alg_mode==0) {
           if (no_nuclei_gt) {
+
+            cout << "DEBUG7: Calling eos_vary_ZN() for nB = " << nB
+            << ", Ye = " << Ye << ", T = " << T  << " MeV, log_xn = "
+            << log_xn << ", log_xp = " << log_xp << endl;
+
             ret=eos_vary_ZN(nB,Ye,T,log_xn,log_xp,nuc_Z1,nuc_N1,
                             thx,mun_full,mup_full,no_nuclei_gt);
+            cout << "DEBUG7: Return eos_vary_ZN() for nB = " << nB
+            << ", Ye = " << Ye << ", T = " << T  << " MeV, log_xn = "
+            << log_xn << ", log_xp = " << log_xp << endl;
+
           } else {
+
+            cout << "DEBUG6: Calling eos_vary_ZN() for nB = " << nB
+            << ", Ye = " << Ye << ", T = " << T  << " MeV, log_xn = "
+            << log_xn << ", log_xp = " << log_xp << endl;
+
             ret=eos_vary_ZN(nB,Ye,T,log_xn,log_xp,nuc_Z1,nuc_N1,
                             thx,mun_full,mup_full,no_nuclei);
+
+	    cout << "DEBUG6: Return eos_vary_ZN() for nB = " << nB
+            << ", Ye = " << Ye << ", T = " << T  << " MeV, log_xn = "
+            << log_xn << ", log_xp = " << log_xp << endl;
           }
 	} else if (alg_mode==2 || alg_mode==3 || alg_mode==4) {
           if (no_nuclei_gt) {
+
+            cout << "DEBUG5: Calling eos_vary_dist() for nB = " << nB
+            << ", Ye = " << Ye << ", T = " << T  << " MeV, log_xn = "
+            << log_xn << ", log_xp = " << log_xp << endl;
+
             ret=eos_vary_dist(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,
                               thx,mun_full,mup_full,
                               A_min,A_max,NmZ_min,NmZ_max,vdet,true,
                               no_nuclei_gt);
+            cout << "DEBUG5: Return eos_vary_dist() for nB = " << nB
+            << ", Ye = " << Ye << ", T = " << T  << " MeV, log_xn = "
+            << log_xn << ", log_xp = " << log_xp << endl;
+
           } else {
+            
+            cout << "DEBUG4: Calling eos_vary_dist() for nB = " << nB 
+            << ", Ye = " << Ye << ", T = " << T  << " MeV, log_xn = "
+	    << log_xn << ", log_xp = " << log_xp << endl;		  
             ret=eos_vary_dist(nB,Ye,T,log_xn,log_xp,Zbar,Nbar,
                               thx,mun_full,mup_full,
                               A_min,A_max,NmZ_min,NmZ_max,vdet,true,
                               no_nuclei);
+
+	    cout << "DEBUG4: Return from eos_vary_dist() for nB = " << nB
+            << ", Ye = " << Ye << ", T = " << T  << " MeV, log_xn = "
+	    << log_xn << ", log_xp = " << log_xp << endl;
           }
 	}
 
