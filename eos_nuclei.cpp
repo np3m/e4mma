@@ -10049,7 +10049,36 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
       ext_grid_matches=true;
     }
   }
-  
+  // Find the indices for the desired nB, Ye, and T
+  size_t inB = vector_lookup(n_nB2, nB_grid2, 0.06);
+  size_t iYe = vector_lookup(n_Ye2, Ye_grid2, 0.4);
+  size_t iT = vector_lookup(n_T2, T_grid2, 5);
+
+  // Ensure the indices are valid
+  if (inB < n_nB2 && iYe < n_Ye2 && iT < n_T2) {
+    // Create a vector of indices
+    vector<size_t> ix = {inB, iYe, iT};
+    
+    // Access the log_xn and log_xp values from the external tg
+    double log_xn_value = external.tg_log_xn.get(ix);
+    double log_xp_value = external.tg_log_xp.get(ix);
+    
+    // Print the values
+    std::cout << "log_xn at (nB = " << nB_grid2[inB] 
+              << ", Ye = " << Ye_grid2[iYe] 
+              << ", T = " << T_grid2[iT] << ") is: " 
+              << log_xn_value << std::endl;
+    
+    std::cout << "log_xp at (nB = " << nB_grid2[inB] 
+              << ", Ye = " << Ye_grid2[iYe] 
+              << ", T = " << T_grid2[iT] << ") is: " 
+              << log_xp_value << std::endl;
+  }
+  else {
+    std::cerr << "Invalid indices or out-of-bounds values." << std::endl;
+  } 
+
+
 #ifndef NO_MPI
   // Send a message to the next MPI rank
   if (mpi_size>1 && mpi_rank<mpi_size-1) {
@@ -10177,6 +10206,9 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
       
       ubvector X;
       compute_X(nB,X);
+      
+          
+      cout<<"LOG_XP!!!"<<" "<<log_xp;
       
       store_point(inB,iYe,iT,nB,Ye,T,thx,log_xn,log_xp,
 		  Zbar,Nbar,mun_full,mup_full,X,A_min,A_max,
@@ -10376,8 +10408,20 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
             //<< nB_grid2[inB] << " " << Ye_grid2[iYe] << " "
             //<< T_grid2[iT] << " " << iflag << endl;
             
+            double log_xp = tg_log_xp.get(ix);
+              cout << "Initial log_xp at (inB, iYe, iT): ("
+              << inB << ", " << iYe << ", " << iT
+              << ") is: " << log_xp << endl;
+
 	    if (iflag==iflag_guess) {
 	      
+	      
+              double log_xp = tg_log_xp.get(ix);
+              cout << "Initial log_xnp at (inB, iYe, iT): (" 
+              << inB << ", " << iYe << ", " << iT 
+              << ") is: " << log_xp << endl;
+
+
 	      // A point which is not finished, is not yet being
 	      // computed, but has an initial guess
 	      tasks.push_back(inB);
@@ -10393,11 +10437,13 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
                   mue=tg_mue.get(ix)/hc_mev_fm;
                 }
                 if (no_nuclei_gt) {
+	          cout<<"1"<<endl;		
                   vector<double> line=
                     {tg_log_xn.get(ix),tg_log_xp.get(ix),0.0,0.0,
                      0.0,0.0,0.0,0.0,mue};
                   gtab.line_of_data(line.size(),line);
                 } else {
+	          cout<<"2"<<endl;		
                   vector<double> line=
                     {tg_log_xn.get(ix),tg_log_xp.get(ix),0.0,0.0,
                      tg_A_min.get(ix),tg_A_max.get(ix),tg_NmZ_min.get(ix),
@@ -10406,11 +10452,13 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
                 }
 	      } else {
                 if (no_nuclei_gt) {
+	          cout<<"3"<<endl;		
                   vector<double> line=
                     {tg_log_xn.get(ix),tg_log_xp.get(ix),0.0,0.0,
                      0.0,0.0,0.0,0.0,0.0};
                   gtab.line_of_data(line.size(),line);
                 } else {
+	          cout<<"4"<<endl;		
                   vector<double> line=
                     {tg_log_xn.get(ix),
                      tg_log_xp.get(ix),tg_Z.get(ix),tg_A.get(ix),
@@ -10422,7 +10470,10 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	      tg_flag.get(ix)=(double)iflag_in_progress_with_guess;
 	      guess_found=true;
 	    }
-
+            double log_xn_external1 = external.tg_log_xn.get(ix);
+            double log_xp_external1 = external.tg_log_xp.get(ix);
+            cout << "External guess log_xn: " << log_xn_external1 << endl;
+            cout << "External guess log_xp: " << log_xp_external1 << endl;
             // A point which has a guess in the external table
             // and is not already complete
 	    if (ext_guess.length()>0 &&
@@ -10431,13 +10482,13 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
                            
               double log_xn_external = external.tg_log_xn.get(ix);
               double log_xp_external = external.tg_log_xp.get(ix);
-              //cout << "External guess log_xn: " << log_xn_external << endl;
-              //cout << "External guess log_xp: " << log_xp_external << endl;
+              cout << "External guess log_xn: " << log_xn_external << endl;
+              cout << "External guess log_xp: " << log_xp_external << endl;
 	      
               //cout<<"include_muon:"<<" "<<include_muons;
             
-              log_xn_external = -1.26;
-	      log_xp_external = -2.30;	      
+              //log_xn_external = -1.26;
+	      //log_xp_external = -2.30;	      
 
 	      tasks.push_back(inB);
 	      tasks.push_back(iYe);
@@ -10452,23 +10503,23 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
                 }
 
 		   //   cout<<"YES!!:)";
-	       	//vector<double> line={external.tg_log_xn.get(ix),
-                //                     external.tg_log_xp.get(ix),
-                //                     0.0,0.0,
-                //                     external.tg_A_min.get(ix),
-                //                     external.tg_A_max.get(ix),
-                //                     external.tg_NmZ_min.get(ix),
-                //                     external.tg_NmZ_max.get(ix),mue};
-	        //gtab.line_of_data(line.size(),line);
-	       
-		      vector<double> line={log_xn_external,
-                                     log_xp_external,
+	       	vector<double> line={external.tg_log_xn.get(ix),
+                                     external.tg_log_xp.get(ix),
                                      0.0,0.0,
                                      external.tg_A_min.get(ix),
                                      external.tg_A_max.get(ix),
                                      external.tg_NmZ_min.get(ix),
                                      external.tg_NmZ_max.get(ix),mue};
-                   gtab.line_of_data(line.size(),line);
+	        gtab.line_of_data(line.size(),line);
+	       
+		//      vector<double> line={log_xn_external,
+                //                     log_xp_external,
+                //                     0.0,0.0,
+                //                     external.tg_A_min.get(ix),
+                //                     external.tg_A_max.get(ix),
+                //                     external.tg_NmZ_min.get(ix),
+                //                     external.tg_NmZ_max.get(ix),mue};
+                //   gtab.line_of_data(line.size(),line);
 	       
 
 	      } else {
@@ -10498,11 +10549,17 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	    }
            // if(guess_found==true){
               
-	   //   double log_xn = gtab.get("log_xn", i);
-           //   double log_xp = gtab.get("log_xp", i);	    
+
+	    if(gtab.get_nlines()>0){ 
+
+	      size_t a = gtab.get_nlines() -1;
+	         
+	      double log_xn_ = gtab.get("log_xn", a);
+              double log_xp_ = gtab.get("log_xp", a);	    
 	     	    
-	   //   cout<<"external guess log_xn:"<<" "<<log_xn;
-           //   cout<<"external guess log_xp:"<<" "<<log_xp;
+	      cout<<"external guess log_xn:"<<" "<<log_xn_;
+              cout<<"external guess log_xp:"<<" "<<log_xp_;
+	      }
            // }	    
 	    // If six_neighbors is true, set up six additional tasks
 	    // for neighbors with useful initial guesses
@@ -10839,6 +10896,12 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 		}
 	      }
 	    }
+           
+           // size_t j = gtab.get_nlines() -1;
+
+	   // double log_xp__ = gtab.get("log_xp", j);
+
+            //cout<<"After six_neighbours log_xp:"<<" "<<log_xp__;
 	    
 	    if (propagate_points==true && guess_found==false && 
 		iflag!=iflag_done &&
@@ -10934,7 +10997,13 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 
 	      // End over conditional for propagate points
 	    }
-	      
+
+	   //size_t ij = gtab.get_nlines() -1; 
+	   //double propagated_log_xp = gtab.get("log_xp", ij); 
+	
+	   //cout << "Propagated log_xp at (inB, iYe, iT): (" 
+           //     << inB << ", " << iYe << ", " << iT 
+           //     << ") is: " << propagated_log_xp << endl;   
 	    // End of three loops over i indices
 	  }
 	}
@@ -11257,9 +11326,13 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	    return 1;
 	  } else if (alg_mode==0) {
             if (no_nuclei_gt) {
+
+              cout<<"GETTING THERE";		    
               ret=eos_vary_ZN(nB,Ye,T,log_xn,log_xp,nuc_Z1,nuc_N1,
                               thx,mun_full,mup_full,no_nuclei_gt);
             } else {
+	      
+	      cout<<"GETTING THERE 2";	    
               ret=eos_vary_ZN(nB,Ye,T,log_xn,log_xp,nuc_Z1,nuc_N1,
                               thx,mun_full,mup_full,no_nuclei);
             }
@@ -11271,6 +11344,8 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	    NmZ_min=gtab.get("NmZ_min",i);
 	    NmZ_max=gtab.get("NmZ_max",i);
             if (no_nuclei_gt) {
+
+	      cout<<"GETTING THERE 3";	    
               ret=eos_vary_dist
                 (nB,Ye,T,log_xn,log_xp,Zbar,Nbar,thx,mun_full,mup_full,
                  A_min,A_max,NmZ_min,NmZ_max,vdet,true,no_nuclei_gt);
