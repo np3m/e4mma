@@ -5068,7 +5068,7 @@ int eos_nuclei::eos_fixed_dist
 
   if (mh_ret!=0) {
     
-    std::cout << "DEBUG: Before calling msolve(), "
+    std::cout << "debug1: Before calling msolve(), "
           << "nB=" << nB << ", Ye=" << Ye << ", T=" << T
           << ", log_xn=" << log_xn << ", log_xp=" << log_xp
           << ", A_min=" << A_min << ", A_max=" << A_max
@@ -5077,7 +5077,7 @@ int eos_nuclei::eos_fixed_dist
 
     mh_ret=mh.msolve(2,x1,sn_func);
 
-    std::cout << "DEBUG: After calling msolve(), "
+    std::cout << "debug1: After calling msolve(), "
           << "nB=" << nB << ", Ye=" << Ye << ", T=" << T
           << ", log_xn=" << log_xn << ", log_xp=" << log_xp
           << ", A_min=" << A_min << ", A_max=" << A_max
@@ -5095,7 +5095,23 @@ int eos_nuclei::eos_fixed_dist
   if (alg_mode==2 || alg_mode==4) {
 
     for(int k=0;k<n_solves && mh_ret!=0;k++) {
+
+      std::cout << "debug2: Before calling msolve(), "
+          << "nB=" << nB << ", Ye=" << Ye << ", T=" << T
+          << ", log_xn=" << log_xn << ", log_xp=" << log_xp
+          << ", A_min=" << A_min << ", A_max=" << A_max
+          << ", NmZ_min=" << NmZ_min << ", NmZ_max=" << NmZ_max
+          << std::endl;
+
       mh_ret=mh.msolve(2,x1,sn_func);
+      
+      std::cout << "debug2: After calling msolve(), "
+          << "nB=" << nB << ", Ye=" << Ye << ", T=" << T
+          << ", log_xn=" << log_xn << ", log_xp=" << log_xp
+          << ", A_min=" << A_min << ", A_max=" << A_max
+          << ", NmZ_min=" << NmZ_min << ", NmZ_max=" << NmZ_max
+          << std::endl;
+
       int iret=sn_func(2,x1,y1);
       if (iret==0 && fabs(y1[0])+fabs(y1[1])<qual_best) {
 	qual_best=fabs(y1[0])+fabs(y1[1]);
@@ -5129,7 +5145,23 @@ int eos_nuclei::eos_fixed_dist
         mh.tol_abs=mh.tol_rel/1.0e4;
         x1[0]=log_xn*(1.0+1.0*rng.random_int(100)*0.01);
         x1[1]=log_xp*(1.0+1.0*rng.random_int(100)*0.01);
+
+        std::cout << "debug3: Before calling msolve(), "
+          << "nB=" << nB << ", Ye=" << Ye << ", T=" << T
+          << ", log_xn=" << log_xn << ", log_xp=" << log_xp
+          << ", A_min=" << A_min << ", A_max=" << A_max
+          << ", NmZ_min=" << NmZ_min << ", NmZ_max=" << NmZ_max
+          << std::endl;
+
         mh_ret=mh.msolve(2,x1,sn_func);
+
+        std::cout << "debug3: After calling msolve(), "
+          << "nB=" << nB << ", Ye=" << Ye << ", T=" << T
+          << ", log_xn=" << log_xn << ", log_xp=" << log_xp
+          << ", A_min=" << A_min << ", A_max=" << A_max
+          << ", NmZ_min=" << NmZ_min << ", NmZ_max=" << NmZ_max
+          << std::endl;
+
         count++;
       }
     } else {
@@ -5138,7 +5170,23 @@ int eos_nuclei::eos_fixed_dist
         mh.tol_abs=mh.tol_rel/1.0e4;
         x1[0]=log_xn*(1.0+0.5*rng.random_int(100)*0.01);
         x1[1]=log_xp*(1.0+0.5*rng.random_int(100)*0.01);
+
+        std::cout << "debug4: Before calling msolve(), "
+          << "nB=" << nB << ", Ye=" << Ye << ", T=" << T
+          << ", log_xn=" << log_xn << ", log_xp=" << log_xp
+          << ", A_min=" << A_min << ", A_max=" << A_max
+          << ", NmZ_min=" << NmZ_min << ", NmZ_max=" << NmZ_max
+          << std::endl;
+
         mh_ret=mh.msolve(2,x1,sn_func);
+
+        std::cout << "debug4: After calling msolve(), "
+          << "nB=" << nB << ", Ye=" << Ye << ", T=" << T
+          << ", log_xn=" << log_xn << ", log_xp=" << log_xp
+          << ", A_min=" << A_min << ", A_max=" << A_max
+          << ", NmZ_min=" << NmZ_min << ", NmZ_max=" << NmZ_max
+          << std::endl;
+
         count++;
       }
     }
@@ -5357,7 +5405,22 @@ int eos_nuclei::eos_fixed_dist
 
 	// AWS 9/18/2020: This doesn't seem to help
 	if (false) {
+
+          std::cout << "debug5: Before calling msolve(), "
+          << "nB=" << nB << ", Ye=" << Ye << ", T=" << T
+          << ", log_xn=" << log_xn << ", log_xp=" << log_xp
+          << ", A_min=" << A_min << ", A_max=" << A_max
+          << ", NmZ_min=" << NmZ_min << ", NmZ_max=" << NmZ_max
+          << std::endl;         
+
 	  mh_ret=mh.msolve(2,x1,sn_func);
+
+	  std::cout << "debug5: After calling msolve(), "
+          << "nB=" << nB << ", Ye=" << Ye << ", T=" << T
+          << ", log_xn=" << log_xn << ", log_xp=" << log_xp
+          << ", A_min=" << A_min << ", A_max=" << A_max
+          << ", NmZ_min=" << NmZ_min << ", NmZ_max=" << NmZ_max
+          << std::endl;
 	}
 	
 	int iret=sn_func(2,x1,y1);
@@ -5438,7 +5501,23 @@ int eos_nuclei::eos_fixed_dist
       for(int kk=0;kk<n_randoms && mh_ret!=0;kk++) {
 	x1[0]=ranges[0]+rng.random()*(ranges[1]-ranges[0]);
 	x1[1]=ranges[2]+rng.random()*(ranges[3]-ranges[2]);
+
+        std::cout << "debug6: Before calling msolve(), "
+          << "nB=" << nB << ", Ye=" << Ye << ", T=" << T
+          << ", log_xn=" << log_xn << ", log_xp=" << log_xp
+          << ", A_min=" << A_min << ", A_max=" << A_max
+          << ", NmZ_min=" << NmZ_min << ", NmZ_max=" << NmZ_max
+          << std::endl;
+
 	mh_ret=mh.msolve(2,x1,sn_func);
+
+        std::cout << "debug6: After calling msolve(), "
+          << "nB=" << nB << ", Ye=" << Ye << ", T=" << T
+          << ", log_xn=" << log_xn << ", log_xp=" << log_xp
+          << ", A_min=" << A_min << ", A_max=" << A_max
+          << ", NmZ_min=" << NmZ_min << ", NmZ_max=" << NmZ_max
+          << std::endl;
+
 	if (loc_verbose>2) {
 	  cout << kk << " " << x1[0] << " " << x1[1] << " "
 	       << mh_ret << endl;
@@ -10043,41 +10122,44 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
   external.data_dir=data_dir;
   if (ext_guess.length()>0) {
     external.read_results(ext_guess);
-    if (nB_grid2==external.nB_grid2 ||
-	Ye_grid2==external.Ye_grid2 ||
+    if (nB_grid2==external.nB_grid2 &&
+	Ye_grid2==external.Ye_grid2 &&
 	T_grid2==external.T_grid2) {
       ext_grid_matches=true;
     }
   }
+  cout<<"ext_grid_matches:"<<" "<<ext_grid_matches<<endl;
+  
+  if (ext_guess.length()>0) {
   // Find the indices for the desired nB, Ye, and T
-  size_t inB = vector_lookup(n_nB2, nB_grid2, 0.06);
-  size_t iYe = vector_lookup(n_Ye2, Ye_grid2, 0.4);
-  size_t iT = vector_lookup(n_T2, T_grid2, 5);
+  size_t enB = vector_lookup(n_nB2, external.nB_grid2, 0.06);
+  size_t eYe = vector_lookup(n_Ye2, external.Ye_grid2, 0.4);
+  size_t eT = vector_lookup(n_T2, external.T_grid2, 5);
 
   // Ensure the indices are valid
-  if (inB < n_nB2 && iYe < n_Ye2 && iT < n_T2) {
+  if (enB < n_nB2 && eYe < n_Ye2 && eT < n_T2) {
     // Create a vector of indices
-    vector<size_t> ix = {inB, iYe, iT};
+    vector<size_t> ex = {enB, eYe, eT};
     
     // Access the log_xn and log_xp values from the external tg
-    double log_xn_value = external.tg_log_xn.get(ix);
-    double log_xp_value = external.tg_log_xp.get(ix);
+    double log_xn_value = external.tg_log_xn.get(ex);
+    double log_xp_value = external.tg_log_xp.get(ex);
     
     // Print the values
-    std::cout << "log_xn at (nB = " << nB_grid2[inB] 
-              << ", Ye = " << Ye_grid2[iYe] 
-              << ", T = " << T_grid2[iT] << ") is: " 
+    std::cout << "log_xn at (nB = " << external.nB_grid2[enB] 
+              << ", Ye = " << external.Ye_grid2[eYe] 
+              << ", T = " << external.T_grid2[eT] << ") is: " 
               << log_xn_value << std::endl;
     
-    std::cout << "log_xp at (nB = " << nB_grid2[inB] 
-              << ", Ye = " << Ye_grid2[iYe] 
-              << ", T = " << T_grid2[iT] << ") is: " 
+    std::cout << "log_xp at (nB = " << external.nB_grid2[enB] 
+              << ", Ye = " << external.Ye_grid2[eYe] 
+              << ", T = " << external.T_grid2[eT] << ") is: " 
               << log_xp_value << std::endl;
   }
   else {
     std::cerr << "Invalid indices or out-of-bounds values." << std::endl;
   } 
-
+  }
 
 #ifndef NO_MPI
   // Send a message to the next MPI rank
@@ -10113,6 +10195,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
       new_table();
 
       double nB=2.0e-2, Ye=0.51, T=3.65/hc_mev_fm;
+
       size_t inB=vector_lookup(n_nB2,nB_grid2,nB);
       nB=nB_grid2[inB];
       size_t iYe=vector_lookup(n_Ye2,Ye_grid2,Ye);
@@ -10120,6 +10203,8 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
       size_t iT=vector_lookup(n_T2,T_grid2,T*hc_mev_fm);
       T=T_grid2[iT]/hc_mev_fm;
       
+      cout<<"nB="<<" "<<nB<<endl;
+
       double log_xn=-2.46;
       double log_xp=-1.64;
       if (alg_mode==2 || alg_mode==4) {
@@ -10208,7 +10293,7 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
       compute_X(nB,X);
       
           
-      cout<<"LOG_XP!!!"<<" "<<log_xp;
+      //cout<<"LOG_XP!!!"<<" "<<log_xp;
       
       store_point(inB,iYe,iT,nB,Ye,T,thx,log_xn,log_xp,
 		  Zbar,Nbar,mun_full,mup_full,X,A_min,A_max,
@@ -10408,18 +10493,18 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
             //<< nB_grid2[inB] << " " << Ye_grid2[iYe] << " "
             //<< T_grid2[iT] << " " << iflag << endl;
             
-            double log_xp = tg_log_xp.get(ix);
-              cout << "Initial log_xp at (inB, iYe, iT): ("
-              << inB << ", " << iYe << ", " << iT
-              << ") is: " << log_xp << endl;
+            //double log_xp = tg_log_xp.get(ix);
+            //  cout << "Initial log_xp at (inB, iYe, iT): ("
+            //  << inB << ", " << iYe << ", " << iT
+            //  << ") is: " << log_xp << endl;
 
 	    if (iflag==iflag_guess) {
 	      
 	      
-              double log_xp = tg_log_xp.get(ix);
-              cout << "Initial log_xnp at (inB, iYe, iT): (" 
-              << inB << ", " << iYe << ", " << iT 
-              << ") is: " << log_xp << endl;
+             // double log_xp = tg_log_xp.get(ix);
+             // cout << "Initial log_xnp at (inB, iYe, iT): (" 
+             // << inB << ", " << iYe << ", " << iT 
+             // << ") is: " << log_xp << endl;
 
 
 	      // A point which is not finished, is not yet being
@@ -10470,20 +10555,21 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	      tg_flag.get(ix)=(double)iflag_in_progress_with_guess;
 	      guess_found=true;
 	    }
-            double log_xn_external1 = external.tg_log_xn.get(ix);
-            double log_xp_external1 = external.tg_log_xp.get(ix);
-            cout << "External guess log_xn: " << log_xn_external1 << endl;
-            cout << "External guess log_xp: " << log_xp_external1 << endl;
+            //double log_xn_external1 = external.tg_log_xn.get(ix);
+            //double log_xp_external1 = external.tg_log_xp.get(ix);
+            //cout << "External guess log_xn: " << log_xn_external1 << endl;
+            //cout << "External guess log_xp: " << log_xp_external1 << endl;
+
             // A point which has a guess in the external table
             // and is not already complete
 	    if (ext_guess.length()>0 &&
 		external.tg_flag.get(ix)>9.9 &&
 		(iflag==iflag_guess || iflag==iflag_empty)) {
                            
-              double log_xn_external = external.tg_log_xn.get(ix);
-              double log_xp_external = external.tg_log_xp.get(ix);
-              cout << "External guess log_xn: " << log_xn_external << endl;
-              cout << "External guess log_xp: " << log_xp_external << endl;
+             // double log_xn_external = external.tg_log_xn.get(ix);
+             // double log_xp_external = external.tg_log_xp.get(ix);
+             // cout << "External guess log_xn: " << log_xn_external << endl;
+             // cout << "External guess log_xp: " << log_xp_external << endl;
 	      
               //cout<<"include_muon:"<<" "<<include_muons;
             
@@ -10502,16 +10588,29 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
                   mue=tg_mue.get(ix)/hc_mev_fm;
                 }
 
-		   //   cout<<"YES!!:)";
-	       	vector<double> line={external.tg_log_xn.get(ix),
-                                     external.tg_log_xp.get(ix),
-                                     0.0,0.0,
-                                     external.tg_A_min.get(ix),
-                                     external.tg_A_max.get(ix),
-                                     external.tg_NmZ_min.get(ix),
-                                     external.tg_NmZ_max.get(ix),mue};
-	        gtab.line_of_data(line.size(),line);
-	       
+		if (ext_grid_matches) {   //   cout<<"YES!!:)";
+	       	  vector<double> line={external.tg_log_xn.get(ix),
+                                       external.tg_log_xp.get(ix),
+                                       0.0,0.0,
+                                       external.tg_A_min.get(ix),
+                                       external.tg_A_max.get(ix),
+                                       external.tg_NmZ_min.get(ix),
+                                       external.tg_NmZ_max.get(ix),mue};
+	          gtab.line_of_data(line.size(),line);
+	        }
+
+		else {		
+	          vector<double> pointx={nB_grid2[inB],Ye_grid2[iYe],
+                                         T_grid2[iT]};
+
+                  vector<double> line=
+                    {external.tg_log_xn.interp_linear(pointx),
+                     external.tg_log_xp.interp_linear(pointx),
+                     external.tg_Z.interp_linear(pointx),
+                     external.tg_A.interp_linear(pointx),
+                     0.0,0.0,0.0,0.0,0.0};
+                  gtab.line_of_data(line.size(),line);
+		}  
 		//      vector<double> line={log_xn_external,
                 //                     log_xp_external,
                 //                     0.0,0.0,
@@ -10550,16 +10649,16 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
            // if(guess_found==true){
               
 
-	    if(gtab.get_nlines()>0){ 
+	    //if(gtab.get_nlines()>0){ 
 
-	      size_t a = gtab.get_nlines() -1;
+	    //  size_t a = gtab.get_nlines() -1;
 	         
-	      double log_xn_ = gtab.get("log_xn", a);
-              double log_xp_ = gtab.get("log_xp", a);	    
+	    //  double log_xn_ = gtab.get("log_xn", a);
+            //  double log_xp_ = gtab.get("log_xp", a);	    
 	     	    
-	      cout<<"external guess log_xn:"<<" "<<log_xn_;
-              cout<<"external guess log_xp:"<<" "<<log_xp_;
-	      }
+	    //  cout<<"external guess log_xn:"<<" "<<log_xn_;
+            //  cout<<"external guess log_xp:"<<" "<<log_xp_;
+	    //  }
            // }	    
 	    // If six_neighbors is true, set up six additional tasks
 	    // for neighbors with useful initial guesses
