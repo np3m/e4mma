@@ -9969,12 +9969,13 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
   external.data_dir=data_dir;
   if (ext_guess.length()>0) {
     external.read_results(ext_guess);
-    if (nB_grid2==external.nB_grid2 ||
-	Ye_grid2==external.Ye_grid2 ||
+    if (nB_grid2==external.nB_grid2 &&
+	Ye_grid2==external.Ye_grid2 &&
 	T_grid2==external.T_grid2) {
       ext_grid_matches=true;
     }
   }
+  cout << "ext_grid_matches: " << ext_grid_matches << endl;
   
 #ifndef NO_MPI
   // Send a message to the next MPI rank
@@ -10334,18 +10335,35 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	      tasks.push_back(iT);
 	      if (alg_mode>=2) {
                 double mue=0.0;
-                if (include_muons) {
-                  mue=tg_mue.get(ix)/hc_mev_fm;
+                if (ext_grid_matches) {
+                  if (include_muons) {
+                    mue=tg_mue.get(ix)/hc_mev_fm;
+                  }
+                  vector<double> line={external.tg_log_xn.get(ix),
+                                       external.tg_log_xp.get(ix),
+                                       0.0,0.0,
+                                       external.tg_A_min.get(ix),
+                                       external.tg_A_max.get(ix),
+                                       external.tg_NmZ_min.get(ix),
+                                       external.tg_NmZ_max.get(ix),mue};
+                  gtab.line_of_data(line.size(),line);
+                } else {
+                  if (include_muons) {
+                    mue=tg_mue.interp_linear(pointx)/hc_mev_fm;
+                  }
+                  vector<double> pointx={nB_grid2[inB],Ye_grid2[iYe],
+                                         T_grid2[iT]};
+                  vector<double> line=
+                    {external.tg_log_xn.interp_linear(pointx),
+                     external.tg_log_xp.interp_linear(pointx),
+                     0.0,0.0,
+                     external.tg_A_min.interp_linear(pointx),
+                     external.tg_A_max.interp_linear(pointx),
+                     external.tg_NmZ_min.interp_linear(pointx),
+                     external.tg_NmZ_max.interp_linear(pointx),mue};
+                  gtab.line_of_data(line.size(),line);
                 }
-		vector<double> line={external.tg_log_xn.get(ix),
-                                     external.tg_log_xp.get(ix),
-                                     0.0,0.0,
-                                     external.tg_A_min.get(ix),
-                                     external.tg_A_max.get(ix),
-                                     external.tg_NmZ_min.get(ix),
-                                     external.tg_NmZ_max.get(ix),mue};
-		gtab.line_of_data(line.size(),line);
-	      } else {
+              } else {
                 if (ext_grid_matches) {
                   vector<double> line={external.tg_log_xn.get(ix),
                                        external.tg_log_xp.get(ix),
@@ -10356,7 +10374,6 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
                 } else {
                   vector<double> pointx={nB_grid2[inB],Ye_grid2[iYe],
                                          T_grid2[iT]};
-
                   vector<double> line=
                     {external.tg_log_xn.interp_linear(pointx),
                      external.tg_log_xp.interp_linear(pointx),
