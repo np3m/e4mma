@@ -773,7 +773,7 @@ public:
 		    std::map<std::string,double> &vdet, bool dist_changed,
 		    bool no_nuclei);
    
-  /** \brief Generate an EOS table
+  /** \brief Generate an EOS table (with nuclei)
 
       [kwargs]
 

@@ -10348,11 +10348,11 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
                                        external.tg_NmZ_max.get(ix),mue};
                   gtab.line_of_data(line.size(),line);
                 } else {
+                  vector<double> pointx={nB_grid2[inB],Ye_grid2[iYe],
+                                         T_grid2[iT]};
                   if (include_muons) {
                     mue=tg_mue.interp_linear(pointx)/hc_mev_fm;
                   }
-                  vector<double> pointx={nB_grid2[inB],Ye_grid2[iYe],
-                                         T_grid2[iT]};
                   vector<double> line=
                     {external.tg_log_xn.interp_linear(pointx),
                      external.tg_log_xp.interp_linear(pointx),

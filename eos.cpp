@@ -2388,6 +2388,9 @@ int eos::process_grid_spec() {
 
 int eos::table_full(std::vector<std::string> &sv, bool itive_com) {
 
+  //rmf.def_mroot.ntrial=1000;
+  //rmf.calc_e_steps=100;
+  
   std::string fname=sv[1];
 
   process_grid_spec();
@@ -2424,8 +2427,16 @@ int eos::table_full(std::vector<std::string> &sv, bool itive_com) {
     cout << "i_nB,n_nB,nB[i]: " << n_nB2-1-i << " " << n_nB2 << " "
 	 << nB_grid2[i] << endl;
     for(size_t j=0;j<n_Ye2;j++) {
+      if (verbose>=1) {
+        cout << "j_Ye,n_Ye,Ye[j]: " << n_Ye2-1-j << " " << n_Ye2 << " "
+             << Ye_grid2[j] << endl;
+      }
       for(size_t k=0;k<n_T2;k++) {
-
+        if (verbose>=2) {
+          cout << "k_T,n_T,T[k]: " << n_T2-1-k << " " << n_T2 << " "
+               << T_grid2[k] << endl;
+        }
+          
 	// Hadronic part
 	neutron.n=nB_grid2[i]*(1.0-Ye_grid2[j]);
 	proton.n=nB_grid2[i]*Ye_grid2[j];
@@ -4383,6 +4394,20 @@ int eos::point(std::vector<std::string> &sv, bool itive_com) {
   cout << "  entropy per baryon: " << th2.en/nB << endl;
   cout << "  mu_n: " << neutron.mu*hc_mev_fm << " MeV" << endl;
   cout << "  mu_p: " << proton.mu*hc_mev_fm << " MeV" << endl;
+  if (eosp_alt==&rmf) {
+    double f1, f2, f3;
+    rmf.get_fields(f1,f2,f3);
+    cout << "  sigma: " << f1*hc_mev_fm << " MeV" << endl;
+    cout << "  omega: " << f2*hc_mev_fm << " MeV" << endl;
+    cout << "  rho: " << f3*hc_mev_fm << " MeV" << endl;
+  } else if (eosp_alt==&rmf_hyp) {
+    double f1, f2, f3;
+    rmf_hyp.get_fields(f1,f2,f3);
+    cout << "  sigma: " << f1*hc_mev_fm << " MeV" << endl;
+    cout << "  omega: " << f2*hc_mev_fm << " MeV" << endl;
+    cout << "  rho: " << f3*hc_mev_fm << " MeV" << endl;
+  }
+  
   cout << endl;
   
   return 0;
