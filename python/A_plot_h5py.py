@@ -19,7 +19,7 @@ if 'pytest' in sys.modules:
 # and 'openssl dgst -sha256' to obtain the hash.
 
 os.system(('acol -download ../output/fid_3_5_22.o2 '+
-           'https://isospin.roam.utk.edu/public_data/'+
+           'https://awsteiner.org/public_data/'+
            'eos_tables/du21/fid_3_5_22.o2 840f6f171f05081d'+
            'eed53fd8bf50bad1b16a865418c37b1b630817ae10ad6736'))
 

@@ -3110,7 +3110,7 @@ int eos::eos_sn(std::vector<std::string> &sv, bool itive_com) {
     "87f283e0ed552c8141d1ddba34c19";
   cf.hash_type=cloud_file::sha256;
   cf.hdf5_open_hash(hf,"LS220_234r_136t_50y_analmu_20091212_SVNr26.h5",
-		    ((string)"https://isospin.roam.utk.edu/")+
+		    ((string)"https://awsteiner.org/")+
 		    "public/eos_tables/scollapse/LS220_234r_136t_50y_"+
 		    "analmu_20091212_SVNr26.h5",sha,"data");
   
