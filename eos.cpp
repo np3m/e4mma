@@ -447,7 +447,7 @@ int eos::test_cs2(std::vector<std::string> &sv, bool itive_com) {
   tx2.line_of_units("1/fm^3 1/fm^4 1/fm 1/fm^4 1/fm");
   
   thermo thx;
-  double e_nuc, denucdnn, munx, mupx;
+  double e_nuc, denucdnn=0.0, munx, mupx;
   for(double nb=0.08;nb<2.0;nb+=0.01) {
 
     neutron.n=nb/2.0;

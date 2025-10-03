@@ -113,8 +113,13 @@ eos_nuclei::eos_nuclei() {
   
   // These function calls do nothing if these environment variables
   // are not defined
-  slack.set_channel_from_env("O2SCL_SLACK_CHANNEL");
-  slack.set_username_from_env("O2SCL_SLACK_USERNAME");
+  use_slack=true;
+  if (slack.set_channel_from_env("O2SCL_SLACK_CHANNEL")==false) {
+    use_slack=false;
+  }
+  if (slack.set_username_from_env("O2SCL_SLACK_USERNAME")==false) {
+    use_slack=false;
+  }
 
   baryons_only=true;
 
@@ -11057,9 +11062,11 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	    string msg="Table is "+
 	      o2scl::dtos(((double)conv2_count)/((double)tc)*100.0)+
 	      " percent completed.";
-	    int slack_ret=slack.send(msg,false);
-            if (slack_ret!=0 && verbose>0) {
-              af << "Sending slack message failed." << endo;
+            if (use_slack) {
+              int slack_ret=slack.send(msg,false);
+              if (slack_ret!=0 && verbose>0) {
+                af << "Sending slack message failed." << endo;
+              }
             }
 	    
 	  }

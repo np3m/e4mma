@@ -529,6 +529,8 @@ public:
    */
   o2scl::slack_messenger slack;
 
+  bool use_slack;
+
   /** \brief The list of electron fractions to consider
       for the \c generate-table command. 
 
@@ -776,6 +778,11 @@ public:
   /** \brief Generate an EOS table (with nuclei)
 
       [kwargs]
+
+      std::vector<std::string> vs(2);
+      vs[0]="";
+      vs[1]="ext_guess=file.o2";
+      generate_table(vs,false);
 
       This command is the full MPI calculation of the EOS table,
       given a model and using the current grid. If no output
