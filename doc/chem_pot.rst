@@ -71,12 +71,72 @@ literature, it has become standard to store :math:`\mu_{n,2}` and
 refer to it as the "neutron chemical potential" and refer to
 :math:`\mu_{p,2}` as the "proton chemical potential" even though
 charge neutrality has been assumed so the electron density is not
-independent. The tables generated at this website use the same
-notation.
+independent of the proton density. The tables generated at this
+website use the same notation.
 
 The distinction between :math:`\mu_{n,1}` and :math:`\mu_{n,3}` is
 more complicated, see Eq. 36 of Du et al. (2022).
 
-The neutron fraction ``Xn`` stored in the
-table refers only to neutrons *outside* of nuclei, i.e. :math:`X_n
-\equiv n_n/n_B \neq \bar{n}_n/n_B`.
+Note also that the neutron fraction ``Xn`` stored in the table refers
+only to neutrons *outside* of nuclei, i.e. :math:`X_n \equiv n_n/n_B
+\neq \bar{n}_n/n_B`.
+
+Beta equilibrium
+----------------
+
+The equations which represent beta equilibrium also depend on which
+form the free energy is given in. In terms of :math:`f_1(n_B,Y_e,T)`,
+beta equilibrium (at a fixed baryon density and temperature) is given
+by
+
+.. math::
+
+   \left(\frac{\partial f_1}{\partial Y_e}\right)_{n_B,T} = 0 \, .
+
+Using the operator relation from :ref:`Variable transformations`,
+
+.. math::
+
+   \left(\frac{\partial }{\partial Y_e}\right)_{n_B} =
+   n_B \left[\left(\frac{\partial }
+   {\partial {\bar{n}}_p}\right)_{{\bar{n}}_n} -
+   \left(\frac{\partial }
+   {\partial {\bar{n}}_n}\right)_{{\bar{n}}_p} \right]
+   
+this can be rewritten in terms of :math:`\bar{n}_n` and :math:`\bar{n}_p`
+
+.. math::
+
+   \left(\frac{\partial f_1}{\partial \bar{n}_n}\right)_{\bar{n}_p,T} -
+   \left(\frac{\partial f_1}{\partial \bar{n}_p}\right)_{\bar{n}_n,T} = 0
+
+In terms of :math:`f_2(\bar{n}_n,\bar{n}_p,n_e,T)`,
+beta equilibrium is given by the derivative with respect to one of the
+densities, e.g. 
+
+.. math::
+
+   \left(\frac{\partial f_2}{\partial \bar{n}_n}\right)_{n_B,n_Q,T} = 0
+
+where :math:`n_B \equiv \bar{n}_n + \bar{n}_p` and the charge density
+:math:`n_Q \equiv \bar{n}_p - n_e`. A similar set of variable
+transformations results in 
+
+.. math::
+   
+   \left(\frac{\partial f_2}{\partial \bar{n}_n}\right)_{\bar{n}_p,n_e,T} -
+   \left(\frac{\partial f_2}{\partial
+   \bar{n}_p}\right)_{\bar{n}_n,n_e,T} -
+   \left(\frac{\partial f_2}{\partial
+   n_e}\right)_{\bar{n}_n,\bar{n}_p,T} = 0
+
+which is traditionally written as :math:`\mu_n = \mu_p + \mu_e`. This
+is the form often used to describe infinite homogeneous neutron star
+matter without nuclei.
+
+
+   
+   
+
+
+

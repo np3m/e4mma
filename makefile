@@ -405,3 +405,7 @@ check: eos eos_nuclei
 # This optional file, makefile.user, is an alternate place to store
 # the user's makefile targets.
 -include makefile.user
+
+test:
+	enn -select-model $(P_FIDUCIAL) -point 0.005 0.08 0.0
+	enn -select-model $(P_FIDUCIAL) -point 0.005 0.08 10.0

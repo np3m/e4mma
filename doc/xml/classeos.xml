@@ -19,7 +19,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="271" column="10" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="271" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="284" column="10" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="284" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1aa3bd155657f17e3fd0206706fa3284e6" prot="public" static="no" mutable="no">
         <type>size_t</type>
@@ -33,7 +33,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="272" column="10" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="272" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="285" column="10" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="285" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a804817d12b4dfef2be66a6b59f70ca04" prot="public" static="no" mutable="no">
         <type>size_t</type>
@@ -47,7 +47,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="273" column="10" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="273" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="286" column="10" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="286" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1afb19e0f942233401596e5d299c29454c" prot="public" static="no" mutable="no">
         <type>size_t</type>
@@ -61,7 +61,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="274" column="10" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="274" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="287" column="10" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="287" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1aaab0c801cedca0c3e4298cc66556fb9e" prot="public" static="no" mutable="no">
         <type>std::vector&lt; double &gt;</type>
@@ -75,7 +75,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="275" column="15" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="275" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="288" column="15" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="288" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1af99b6647ab05a986498370519dbbcaa8" prot="public" static="no" mutable="no">
         <type>std::vector&lt; double &gt;</type>
@@ -89,7 +89,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="276" column="15" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="276" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="289" column="15" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="289" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a89770be1fd71f8b6b45dfdd632c3be59" prot="public" static="no" mutable="no">
         <type>std::vector&lt; double &gt;</type>
@@ -103,7 +103,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="277" column="15" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="277" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="290" column="15" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="290" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a8f048902481536fd250e10d04983e9a3" prot="public" static="no" mutable="no">
         <type>std::vector&lt; double &gt;</type>
@@ -117,7 +117,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="278" column="15" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="278" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="291" column="15" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="291" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1ab7e61ceb30e7b1799ba5185848eb085e" prot="public" static="no" mutable="no">
         <type>std::string</type>
@@ -133,7 +133,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="285" column="15" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="285" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="298" column="15" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="298" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a6a996e08c50345d1ce3d1b911c9cda64" prot="public" static="no" mutable="no">
         <type>std::string</type>
@@ -149,7 +149,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="292" column="15" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="292" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="305" column="15" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="305" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1ad61a5e574dd7140ad8e3727cc564bec7" prot="public" static="no" mutable="no">
         <type>std::string</type>
@@ -165,7 +165,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="299" column="15" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="299" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="312" column="15" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="312" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a6006231a3f5ba23c7a186e0662aff7b3" prot="public" static="no" mutable="no">
         <type>std::string</type>
@@ -181,7 +181,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="306" column="15" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="306" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="319" column="15" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="319" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="user-defined">
@@ -199,7 +199,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="312" column="10" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="312" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="325" column="10" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="325" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a6ddc966f3bb9ccf15585fb3a33dade7c" prot="public" static="no" mutable="no">
         <type>double</type>
@@ -214,7 +214,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="315" column="10" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="315" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="328" column="10" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="328" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1add88b86b2418c74c0f8140b959427f09" prot="public" static="no" mutable="no">
         <type>double</type>
@@ -229,7 +229,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="320" column="10" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="320" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="333" column="10" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="333" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1af00734826d37d4e2b40de82cffebc842" prot="public" static="no" mutable="no">
         <type>double</type>
@@ -244,7 +244,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="323" column="10" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="323" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="336" column="10" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="336" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a4189930e80f2c9c6400fe4c35faa4646" prot="public" static="no" mutable="no">
         <type>double</type>
@@ -259,7 +259,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="326" column="10" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="326" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="339" column="10" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="339" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a8cd68a65afed99d0baf75edd407f598a" prot="public" static="no" mutable="no">
         <type>int</type>
@@ -274,7 +274,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="329" column="7" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="329" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="342" column="7" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="342" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a07f7d8c8b08ead664234f8c0a1a34e93" prot="public" static="no" mutable="no">
         <type>int</type>
@@ -289,7 +289,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="332" column="7" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="332" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="345" column="7" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="345" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="user-defined">
@@ -307,7 +307,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="416" column="4" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="416" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="429" column="4" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="429" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a1c01578a14c275ee7f32cd0cd069e9d9" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1table__units" kindref="compound" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag">o2scl::table_units</ref></type>
@@ -325,7 +325,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="436" column="4" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="436" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="449" column="4" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="449" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1aac955d655849f3ba3fa8050c398706b9" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1table__units" kindref="compound" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag">o2scl::table_units</ref></type>
@@ -340,7 +340,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="439" column="4" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="439" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="452" column="4" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="452" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1af54fbf548389aaf2cdcc10bd3318c7aa" prot="public" static="no" mutable="no">
         <type>bool</type>
@@ -355,7 +355,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="443" column="8" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="443" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="456" column="8" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="456" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a0b14a8f3c4f4675cc67626a5db20ec14" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1rng" kindref="compound" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag">o2scl::rng</ref></type>
@@ -370,7 +370,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="446" column="4" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="446" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="459" column="4" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="459" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a06ea10ebf76e95b729bc34d5edb59427" prot="public" static="no" mutable="no">
         <type>bool</type>
@@ -385,7 +385,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="449" column="8" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="449" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="462" column="8" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="462" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a72b86f7d53fc7dd3947c556f7fa0d3b9" prot="public" static="no" mutable="no">
         <type>std::string</type>
@@ -400,7 +400,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="452" column="15" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="452" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="465" column="15" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="465" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="user-defined">
@@ -418,7 +418,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="458" column="10" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="458" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="471" column="10" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="471" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a903b4089d53c001c24a5a5608882a9cb" prot="public" static="no" mutable="no">
         <type>double</type>
@@ -433,7 +433,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="461" column="10" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="461" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="474" column="10" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="474" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a2e1699b00bfc1d3d65d33c2ecea127cd" prot="public" static="no" mutable="no">
         <type>double</type>
@@ -448,7 +448,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="464" column="10" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="464" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="477" column="10" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="477" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a123f00b92ba314ddcb470a2b1f7ef59c" prot="public" static="no" mutable="no">
         <type>double</type>
@@ -463,7 +463,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="469" column="10" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="469" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="482" column="10" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="482" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="user-defined">
@@ -481,7 +481,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="484" column="15" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="484" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="497" column="15" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="497" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1ad75fc91b44b7c8a44c0820191d2e5ee3" prot="public" static="no" mutable="no">
         <type>double</type>
@@ -496,7 +496,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="528" column="10" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="528" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="541" column="10" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="541" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a03553fcb0bf2589de3324ad40d9543a9" prot="public" static="no" mutable="no">
         <type>double</type>
@@ -512,7 +512,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="535" column="10" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="535" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="548" column="10" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="548" bodyend="-1"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1a56066be90d4464ee499c2ed326d5b6b5" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>double</type>
@@ -534,7 +534,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="481" column="10"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="494" column="10"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1a7ea14982214528c766ec361401684e24" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>double</type>
@@ -562,7 +562,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="493" column="10"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="506" column="10"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1a89aed0d4d03f5090650fda6d3072b41d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>double</type>
@@ -585,7 +585,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="505" column="10"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="518" column="10"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1a7b77c6340798d21d2115deece7efd8ca" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>double</type>
@@ -604,7 +604,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="510" column="10"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="523" column="10"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1a337b4bb929454134ff7295409fdf8dfd" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>double</type>
@@ -623,7 +623,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="515" column="10"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="528" column="10"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1aa6e39d3d5519ba1b07a58bc84c8ba91b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>void</type>
@@ -646,7 +646,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="520" column="8"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="533" column="8"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1ae02ba6f3224e7ae56586f9aca94f5c87" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>void</type>
@@ -665,7 +665,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="525" column="8"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="538" column="8"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1a9dda15dcabaa9a6206c6f2a3d0ebbb20" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>double</type>
@@ -687,7 +687,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="544" column="10"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="557" column="10"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="user-defined">
@@ -706,7 +706,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="554" column="10" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="554" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="567" column="10" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="567" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a0ccce21bf0639b074002c0f05a1f3023" prot="public" static="no" mutable="no">
         <type>double</type>
@@ -721,7 +721,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="557" column="10" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="557" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="570" column="10" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="570" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1add78579a3ffb7fa11eb0c770fda7567c" prot="public" static="no" mutable="no">
         <type>double</type>
@@ -736,7 +736,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="560" column="10" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="560" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="573" column="10" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="573" bodyend="-1"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1a78bf38c0a8debe0d1e02c8078db1a008" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -771,7 +771,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="575" column="7"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="588" column="7"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="user-defined">
@@ -788,7 +788,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="580" column="29" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="580" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="593" column="29" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="593" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1ab5cef53d24699c484d538a856ca03bd0" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1cli_1_1parameter__bool" kindref="compound" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag">o2scl::cli::parameter_bool</ref></type>
@@ -802,7 +802,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="581" column="30" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="581" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="594" column="30" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="594" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1ae04c7341212965d955c71cb688cebaa5" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1cli_1_1parameter__bool" kindref="compound" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag">o2scl::cli::parameter_bool</ref></type>
@@ -816,7 +816,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="582" column="30" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="582" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="595" column="30" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="595" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a368119648c8709b9d53ad13d375073f5" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1cli_1_1parameter__bool" kindref="compound" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag">o2scl::cli::parameter_bool</ref></type>
@@ -830,7 +830,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="583" column="30" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="583" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="596" column="30" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="596" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a5ff4775cbc9def7bcb9c123744397048" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1cli_1_1parameter__bool" kindref="compound" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag">o2scl::cli::parameter_bool</ref></type>
@@ -844,7 +844,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="584" column="30" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="584" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="597" column="30" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="597" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a1f7f15f61f329ddf72a0733d77a36bac" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1cli_1_1parameter__bool" kindref="compound" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag">o2scl::cli::parameter_bool</ref></type>
@@ -858,7 +858,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="585" column="30" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="585" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="598" column="30" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="598" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1af18bdac8e8845a31672bcc5e89a2e103" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1cli_1_1parameter__double" kindref="compound" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag">o2scl::cli::parameter_double</ref></type>
@@ -872,7 +872,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="586" column="32" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="586" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="599" column="32" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="599" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1ad4c78d840172ba24b525f562efe4a3d7" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1cli_1_1parameter__double" kindref="compound" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag">o2scl::cli::parameter_double</ref></type>
@@ -886,7 +886,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="587" column="32" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="587" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="600" column="32" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="600" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a5ebfbf0cc7edd92e81d27b6f1b40704a" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1cli_1_1parameter__double" kindref="compound" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag">o2scl::cli::parameter_double</ref></type>
@@ -900,7 +900,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="588" column="32" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="588" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="601" column="32" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="601" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a5dd3134bf3d1c075a7a1d056157ff8d1" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1cli_1_1parameter__double" kindref="compound" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag">o2scl::cli::parameter_double</ref></type>
@@ -914,7 +914,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="589" column="32" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="589" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="602" column="32" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="602" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1ad5193c777f7fe8e57bd84970398cf1d8" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1cli_1_1parameter__double" kindref="compound" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag">o2scl::cli::parameter_double</ref></type>
@@ -928,7 +928,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="590" column="32" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="590" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="603" column="32" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="603" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a63f2ccad8105fdb813477a73f01cb52f" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1cli_1_1parameter__double" kindref="compound" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag">o2scl::cli::parameter_double</ref></type>
@@ -942,7 +942,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="591" column="32" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="591" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="604" column="32" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="604" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1acf1b28d38c2c6e41c9c88ccd0b3972d5" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1cli_1_1parameter__int" kindref="compound" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag">o2scl::cli::parameter_int</ref></type>
@@ -956,7 +956,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="592" column="29" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="592" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="605" column="29" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="605" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a582a5f30ee1a27b7f1c3d2d20513cfe3" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1cli_1_1parameter__string" kindref="compound" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag">o2scl::cli::parameter_string</ref></type>
@@ -970,7 +970,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="593" column="32" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="593" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="606" column="32" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="606" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a56632f30d417013c6c448c6ef62d8dae" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1cli_1_1parameter__string" kindref="compound" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag">o2scl::cli::parameter_string</ref></type>
@@ -984,7 +984,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="594" column="32" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="594" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="607" column="32" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="607" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1af763a9401517f3f2e6c910cdcc247aaf" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1cli_1_1parameter__string" kindref="compound" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag">o2scl::cli::parameter_string</ref></type>
@@ -998,7 +998,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="595" column="32" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="595" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="608" column="32" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="608" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1ac0d019fb0769a11ddae41232058d2140" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1cli_1_1parameter__string" kindref="compound" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag">o2scl::cli::parameter_string</ref></type>
@@ -1012,7 +1012,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="596" column="32" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="596" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="609" column="32" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="609" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1aeefe49c67084946d71f8bd29fbc011a3" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1cli_1_1parameter__string" kindref="compound" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag">o2scl::cli::parameter_string</ref></type>
@@ -1026,7 +1026,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="597" column="32" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="597" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="610" column="32" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="610" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a7d4745d5b6b94d66eaa64e50ab86e9e7" prot="public" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1cli_1_1parameter__string" kindref="compound" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag">o2scl::cli::parameter_string</ref></type>
@@ -1040,7 +1040,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="598" column="32" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="598" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="611" column="32" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="611" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="user-defined">
@@ -1058,7 +1058,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="672" column="18" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="672" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="688" column="18" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="688" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a9163e34ddcb615af9ec561fb44f1655f" prot="public" static="no" mutable="no">
         <type>o2scl::fermion</type>
@@ -1073,7 +1073,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="676" column="18" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="676" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="692" column="18" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="692" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a5ff2fbd5f7622bf05e31bb03a63c900e" prot="public" static="no" mutable="no">
         <type><ref refid="namespaceo2scl_1a3de9476453a19adb5c1b6e28b84f27a4" kindref="member" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag">o2scl::boson</ref></type>
@@ -1088,7 +1088,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="680" column="16" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="680" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="696" column="16" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="696" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a1d6a2e292171de1dc51960cc51c610f9" prot="public" static="no" mutable="no">
         <type>o2scl::fermion</type>
@@ -1103,7 +1103,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="685" column="18" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="685" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="701" column="18" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="701" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a4644e7862f3fecbaa246beb554da8847" prot="public" static="no" mutable="no">
         <type>o2scl::fermion</type>
@@ -1118,7 +1118,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="688" column="18" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="688" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="704" column="18" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="704" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a59936e5b4616951e3cb4b2a605b26698" prot="protected" static="no" mutable="no">
         <type>o2scl::fermion</type>
@@ -1133,7 +1133,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="693" column="18" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="693" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="709" column="18" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="709" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a1e9900aedd76d412c6471bb41793a18e" prot="protected" static="no" mutable="no">
         <type>o2scl::fermion</type>
@@ -1148,7 +1148,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="696" column="18" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="696" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="712" column="18" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="712" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a60f53d36893b821e72e08aff3250ddd8" prot="protected" static="no" mutable="no">
         <type>o2scl::fermion</type>
@@ -1163,7 +1163,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="699" column="18" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="699" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="715" column="18" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="715" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="user-defined">
@@ -1181,7 +1181,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="793" column="8" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="793" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="808" column="8" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="808" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a9fac0f5d859f20444f09bd04453587a5" prot="public" static="no" mutable="no">
         <type>bool</type>
@@ -1196,7 +1196,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="798" column="8" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="798" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="813" column="8" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="813" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1ac7d5a5cfdb371e944d4d830717edf87c" prot="public" static="no" mutable="no">
         <type>bool</type>
@@ -1211,7 +1211,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="803" column="8" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="803" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="818" column="8" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="818" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1aef3af455de493d339ea33c47747e018d" prot="public" static="no" mutable="no">
         <type>bool</type>
@@ -1226,7 +1226,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="808" column="8" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="808" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="823" column="8" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="823" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1afa72659710add3dd0b7139b7da0a07dd" prot="public" static="no" mutable="no">
         <type>bool</type>
@@ -1242,7 +1242,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="816" column="8" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="816" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="831" column="8" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="831" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1ad517930f035d4b54ca6a688fb5494bfe" prot="public" static="no" mutable="no">
         <type>int</type>
@@ -1258,7 +1258,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="822" column="7" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="822" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="837" column="7" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="837" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1ad1c7d55cb03ff0f19ecc4b6195ffabf9" prot="public" static="no" mutable="no">
         <type>bool</type>
@@ -1273,7 +1273,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="825" column="8" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="825" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="840" column="8" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="840" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a5a1b813d87a973d3552ddcbcaae4c2eb" prot="public" static="no" mutable="no">
         <type>double</type>
@@ -1288,7 +1288,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="829" column="10" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="829" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="844" column="10" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="844" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a828e85c817596153f6607355e42e5a85" prot="public" static="no" mutable="no">
         <type>double</type>
@@ -1303,7 +1303,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="833" column="10" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="833" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="848" column="10" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="848" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1adcd6aa9ad3fbe21200c70c877374aba9" prot="public" static="no" mutable="no">
         <type>bool</type>
@@ -1318,7 +1318,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="837" column="8" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="837" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="852" column="8" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="852" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a2d54b943239f6dc81e07efdfd8b3e945" prot="public" static="no" mutable="no">
         <type>bool</type>
@@ -1333,7 +1333,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="842" column="8" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="842" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="857" column="8" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="857" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1ac4bc9f9d0f247b773f329b083d427765" prot="public" static="no" mutable="no">
         <type>std::string</type>
@@ -1348,7 +1348,22 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="845" column="15" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="845" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="860" column="15" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="860" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classeos_1a0d9cfc8552bb9024c02a1b97249f3f6d" prot="public" static="no" mutable="no">
+        <type>std::string</type>
+        <definition>std::string eos::std_out</definition>
+        <argsstring></argsstring>
+        <name>std_out</name>
+        <qualifiedname>eos::std_out</qualifiedname>
+        <briefdescription>
+<para>Output file. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="863" column="15" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="863" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a9de5a7186cab8d47c40d78e0b905eb45" prot="public" static="no" mutable="no">
         <type>std::string</type>
@@ -1363,7 +1378,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="848" column="15" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="848" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="866" column="15" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="866" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a10edd9948520678922d4b3a5e7aaee83" prot="public" static="no" mutable="no">
         <type>double</type>
@@ -1378,7 +1393,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="851" column="10" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="851" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="869" column="10" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="869" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1aaa5deb74ab8deb6a9e3dfeb7b44b65c1" prot="public" static="no" mutable="no">
         <type>double</type>
@@ -1393,7 +1408,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="856" column="10" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="856" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="874" column="10" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="874" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1ac70462ff19c075af57ba6c0126298bcc" prot="public" static="no" mutable="no">
         <type>double</type>
@@ -1408,7 +1423,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="860" column="10" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="860" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="878" column="10" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="878" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a9246c37cadad8ee00aadd973ca348105" prot="public" static="no" mutable="no">
         <type>double</type>
@@ -1423,7 +1438,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="865" column="10" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="865" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="883" column="10" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="883" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="user-defined">
@@ -1441,7 +1456,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="705" column="25" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="705" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="721" column="25" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="721" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1afead2a3442d9ad320bcce5043a6a801e" prot="protected" static="no" mutable="no">
         <type><ref refid="namespaceo2scl_1abe7ceb41876bd41c87b259f6defe3e4a" kindref="member" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag">o2scl::fermion_rel</ref></type>
@@ -1456,7 +1471,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="709" column="22" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="709" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="725" column="22" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="725" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a8c5a293eb5e1a6800eadb5d345ba9967" prot="protected" static="no" mutable="no">
         <type><ref refid="namespaceo2scl_1a460e43ee0206e03188c364087815398f" kindref="member" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag">o2scl::thermo</ref></type>
@@ -1471,7 +1486,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="712" column="17" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="712" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="728" column="17" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="728" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a5c9585cd6a83c158489d45c39025aaa9" prot="protected" static="no" mutable="no">
         <type><ref refid="namespaceo2scl_1a460e43ee0206e03188c364087815398f" kindref="member" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag">o2scl::thermo</ref></type>
@@ -1486,7 +1501,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="715" column="17" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="715" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="731" column="17" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="731" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a1ce709670f5e43caba65e040b9cc02f9" prot="protected" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1eos__had__skyrme" kindref="compound" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag">o2scl::eos_had_skyrme</ref></type>
@@ -1501,7 +1516,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="718" column="25" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="718" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="734" column="25" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="734" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a672a26f8553d520dc941519e63e86fcc" prot="protected" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1eos__had__rmf" kindref="compound" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag">o2scl::eos_had_rmf</ref></type>
@@ -1516,7 +1531,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="721" column="22" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="721" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="737" column="22" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="737" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a0373c607528d50a208fbe0bff038380f" prot="protected" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1eos__had__rmf__hyp" kindref="compound" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag">o2scl::eos_had_rmf_hyp</ref></type>
@@ -1531,7 +1546,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="724" column="26" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="724" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="740" column="26" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="740" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1ae08253e92e8f4dec1d3e41ce2d5d0279" prot="protected" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1eos__had__skyrme" kindref="compound" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag">o2scl::eos_had_skyrme</ref></type>
@@ -1546,7 +1561,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="727" column="25" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="727" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="743" column="25" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="743" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a0e84093516ee705a0f759d12be6152f5" prot="protected" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1eos__had__temp__eden__base" kindref="compound" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag">o2scl::eos_had_temp_eden_base</ref> *</type>
@@ -1561,7 +1576,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="730" column="33" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="730" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="746" column="33" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="746" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a48c44c24584afa24b514959434cda651" prot="protected" static="no" mutable="no">
         <type><ref refid="classeos__crust__virial__v2" kindref="compound">eos_crust_virial_v2</ref></type>
@@ -1576,7 +1591,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="733" column="23" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="733" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="749" column="23" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="749" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a48d645e17b016ffef047b73d2f517d11" prot="protected" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1eos__had__skyrme" kindref="compound" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag">o2scl::eos_had_skyrme</ref></type>
@@ -1591,7 +1606,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="736" column="25" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="736" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="752" column="25" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="752" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a2f327f60301c5def791ed3e2e31a505e" prot="protected" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1eos__had__temp__base" kindref="compound" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag">o2scl::eos_had_temp_base</ref> *</type>
@@ -1606,7 +1621,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="739" column="28" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="739" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="755" column="28" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="755" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1aa8ce64f05ee56618f159946fd07b10d3" prot="protected" static="no" mutable="no">
         <type><ref refid="classo2scl_1_1eos__leptons__multip" kindref="compound" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag">o2scl::eos_leptons_multip</ref></type>
@@ -1621,7 +1636,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="745" column="29" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="745" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="761" column="29" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="761" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="user-defined">
@@ -1639,7 +1654,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="752" column="10" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="752" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="768" column="10" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="768" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1aa1d4bd74068377744160c5aa5b6c46a3" prot="protected" static="no" mutable="no">
         <type>double</type>
@@ -1654,7 +1669,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="754" column="10" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="754" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="770" column="10" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="770" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1ad656a3078814fbeceb967e6d43f08bfa" prot="protected" static="no" mutable="no">
         <type>double</type>
@@ -1669,7 +1684,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="758" column="10" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="758" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="774" column="10" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="774" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="user-defined">
@@ -1687,7 +1702,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="766" column="10" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="766" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="782" column="10" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="782" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1aa5d6c808833673220aed207a40dfe5fd" prot="protected" static="no" mutable="no">
         <type>double</type>
@@ -1702,7 +1717,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="769" column="10" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="769" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="785" column="10" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="785" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a7b0ce0f801d0318e5804d2b2daaab6cb" prot="protected" static="no" mutable="no">
         <type>double</type>
@@ -1718,7 +1733,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="775" column="10" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="775" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="791" column="10" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="791" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="user-defined">
@@ -1752,7 +1767,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="340" column="10"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="353" column="10"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1abda7474511cb007f9549a59c137fae84" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>double</type>
@@ -1789,7 +1804,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="354" column="10"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="367" column="10"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1a4144f3aff52bde7d7e2b00099061ae60" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
         <type>double</type>
@@ -1844,7 +1859,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="361" column="18"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="374" column="18"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1ab3ce280e28cbe6afedd9a74815592090" prot="public" static="no" const="no" explicit="no" inline="yes" virt="virtual">
         <type>double</type>
@@ -1875,7 +1890,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="370" column="18" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="371" bodyend="375"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="383" column="18" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="384" bodyend="388"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1a9d4b034dd1e222ce248e478a89d9004b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>double</type>
@@ -1915,7 +1930,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="382" column="10"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="395" column="10"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1aac2d380b4481aec1f81bef711df6ce01" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>double</type>
@@ -1942,7 +1957,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="389" column="10"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="402" column="10"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1a105fb4842fa275a592d84df10b77b313" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>double</type>
@@ -1982,7 +1997,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="396" column="10"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="409" column="10"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1a3289d875b0f100e291d26fe2391840ab" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>double</type>
@@ -2021,7 +2036,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="402" column="10"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="415" column="10"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1ac61da4952bdae6a0dcdd1fa5a037fa36" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>double</type>
@@ -2053,7 +2068,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="409" column="10"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="422" column="10"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="user-defined">
@@ -2079,7 +2094,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="607" column="10"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="620" column="10"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1a1363b6b6d6cb43829b672e35a2434832" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -2113,7 +2128,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="624" column="7"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="637" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1a0450e91436baddef1b53ec21791373e4" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>double</type>
@@ -2153,7 +2168,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="631" column="10"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="644" column="10"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1a1d556879c5caf09532ca7398dce99a61" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>double</type>
@@ -2193,7 +2208,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="638" column="10"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="651" column="10"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1a1f8ac29273e5e0f1fc6bb1da9c2c578f" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -2232,7 +2247,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="643" column="7"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="656" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1a76f06b1b3ab9e0fc55f6ff024a38db2f" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -2271,7 +2286,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="648" column="7"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="661" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1a11c54a35b13fa5c9eb3229a019d1d164" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -2310,7 +2325,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="653" column="7"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="666" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1ad04fd554e7b636c75c0804cb775130c6" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -2353,7 +2368,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="659" column="7"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="672" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1ab7a1f37b41c15d9c9f6e42ab289f7280" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -2368,7 +2383,22 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="665" column="7"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="678" column="7"/>
+      </memberdef>
+      <memberdef kind="function" id="classeos_1a6fb7ace0517dd33e043c7cc0e9646356" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void eos::setup_output</definition>
+        <argsstring>()</argsstring>
+        <name>setup_output</name>
+        <qualifiedname>eos::setup_output</qualifiedname>
+        <briefdescription>
+<para>Desc. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="681" column="8"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="user-defined">
@@ -2385,9 +2415,9 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="782" column="3"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="798" column="3"/>
       </memberdef>
-      <memberdef kind="function" id="classeos_1a25db96648576a8517d3b0dc93505b708" prot="public" static="no" const="no" explicit="no" inline="yes" virt="virtual">
+      <memberdef kind="function" id="classeos_1a25db96648576a8517d3b0dc93505b708" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
         <type></type>
         <definition>virtual eos::~eos</definition>
         <argsstring>()</argsstring>
@@ -2399,7 +2429,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="784" column="11" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="784" bodyend="785"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="800" column="11"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="user-defined">
@@ -2427,7 +2457,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="878" column="7"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="896" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1aa295268eede25d82a2b192aa7b627083" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -2452,7 +2482,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="887" column="7"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="905" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1a5c3ca739dbccf7e530bc5bc660f575b7" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -2477,7 +2507,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="899" column="7"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="917" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1a9037d1e643beb2a46975c2d6ee0f7701" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -2502,7 +2532,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="910" column="7"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="928" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1ae642fc617fe1b1b5af6c347a45ac59eb" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -2527,7 +2557,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="920" column="7"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="938" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1ad07e7a7c1fcd6298b5a85877d32b1b8c" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -2552,7 +2582,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="929" column="7"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="947" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1a8747580da79f5b7a67c2d398fc92da9a" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -2577,7 +2607,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="941" column="7"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="959" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1a76627b764f1a9b5c1b443efb62d6cab8" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -2602,7 +2632,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="949" column="7"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="967" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1ad584d517fd7a8a636a73fbb4fc981ff9" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -2627,7 +2657,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="957" column="7"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="975" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1a2c05bd84679793e7df3b7f23a92b89fb" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -2652,7 +2682,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="968" column="7"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="986" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1aa3bc65fa01f0eb33e795b5f2fe0c7d21" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -2677,7 +2707,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="976" column="7"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="994" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1aca0e9051a7e04930041783302730ae15" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -2702,7 +2732,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="984" column="7"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="1002" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1a9155f6ba7680bfc4c0abaf7fa7001a9d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -2727,7 +2757,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="993" column="7"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="1011" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1a73f6d595ccaf7a58edd90f90e6d8e27b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -2752,7 +2782,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="1003" column="7"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="1021" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1a572d844aa0cbd2fa62446886ca7c5f1e" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -2777,7 +2807,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="1011" column="7"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="1029" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1a0704d6eea1ea797affeb42a358b7971f" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -2802,7 +2832,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="1019" column="7"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="1037" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1a2dafcf25ad75a9a2b640bc845bf71d05" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -2827,7 +2857,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="1028" column="7"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="1046" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1aea1bd679e9f8b33ea8079b7cfd85ab0a" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -2853,7 +2883,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="1043" column="7"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="1061" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1a2763ba531a632f0924afaf81c6bd478d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -2878,7 +2908,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="1051" column="7"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="1069" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1a0b672fd7170daab632111f4e26cc0c68" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>double</type>
@@ -2913,7 +2943,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="1057" column="10"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="1075" column="10"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1a4c6a1d2ba60fbb06bd3b3eb40b3ef5c1" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>double</type>
@@ -2952,7 +2982,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="1064" column="10"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="1082" column="10"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="user-defined">
@@ -2994,7 +3024,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="1073" column="7"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="1091" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1a8d1df2f651c5278f9c0b1e6a31d4e264" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -3033,7 +3063,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="1078" column="7"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="1096" column="7"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1a95f4ca5114228035d40de725eefc521a" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
         <type>void</type>
@@ -3057,7 +3087,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="1085" column="16"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="1103" column="16"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1af47b4ee83e3ef0f473634a7fd7e74358" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -3080,7 +3110,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="1090" column="7"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="1108" column="7"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="public-attrib">
@@ -3097,7 +3127,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="232" column="7" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="232" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="233" column="7" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="233" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a15e16e70ada929ed33667a05842a3553" prot="public" static="no" mutable="no">
         <type>std::vector&lt; o2scl::part_pdg_db::pdg_entry &gt;</type>
@@ -3112,7 +3142,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="236" column="15" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="236" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="237" column="15" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="237" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a26747a345bdc51dd4b21f4dfe531464a" prot="public" static="no" mutable="no">
         <type>std::vector&lt; o2scl::fermion &gt;</type>
@@ -3127,7 +3157,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="240" column="15" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="240" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="241" column="15" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="241" bodyend="-1"/>
       </memberdef>
       <memberdef kind="variable" id="classeos_1a26a9aa2bd8891eddc06dbae463307896" prot="public" static="no" mutable="no">
         <type>std::vector&lt; <ref refid="namespaceo2scl_1a3de9476453a19adb5c1b6e28b84f27a4" kindref="member" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag">o2scl::boson</ref> &gt;</type>
@@ -3142,7 +3172,69 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="244" column="15" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="244" bodyend="-1"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="245" column="15" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="245" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="protected-attrib">
+      <memberdef kind="variable" id="classeos_1a49576e80c8bc902bc756223a38aa369d" prot="protected" static="no" mutable="no">
+        <type><ref refid="classo2scl__auto__format_1_1auto__format" kindref="compound" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag">o2scl_auto_format::auto_format</ref></type>
+        <definition>o2scl_auto_format::auto_format eos::af</definition>
+        <argsstring></argsstring>
+        <name>af</name>
+        <qualifiedname>eos::af</qualifiedname>
+        <briefdescription>
+<para>For output. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="258" column="34" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="258" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classeos_1a39795a466cbbde3b56fad22dc0a7dbe8" prot="protected" static="no" mutable="no">
+        <type>std::ofstream</type>
+        <definition>std::ofstream eos::foutx</definition>
+        <argsstring></argsstring>
+        <name>foutx</name>
+        <qualifiedname>eos::foutx</qualifiedname>
+        <briefdescription>
+<para>For output. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="261" column="17" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="261" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classeos_1ab8f305b7177685ec90b07860ee8ddba7" prot="protected" static="no" mutable="no">
+        <type>int</type>
+        <definition>int eos::mpi_rankx</definition>
+        <argsstring></argsstring>
+        <name>mpi_rankx</name>
+        <qualifiedname>eos::mpi_rankx</qualifiedname>
+        <briefdescription>
+<para>MPI rank. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="264" column="7" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="264" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classeos_1a512980ca666de9ed1982b7b908e2b771" prot="protected" static="no" mutable="no">
+        <type>int</type>
+        <definition>int eos::mpi_sizex</definition>
+        <argsstring></argsstring>
+        <name>mpi_sizex</name>
+        <qualifiedname>eos::mpi_sizex</qualifiedname>
+        <briefdescription>
+<para>MPI size. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="267" column="7" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="267" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="public-func">
@@ -3175,7 +3267,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="248" column="15" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="248" bodyend="252"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="249" column="15" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="249" bodyend="253"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="protected-func">
@@ -3193,7 +3285,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="260" column="8"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="273" column="8"/>
       </memberdef>
       <memberdef kind="function" id="classeos_1a7ec8bc282319b97a1f6fd35cb60607f9" prot="protected" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -3208,7 +3300,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="265" column="7"/>
+        <location file="/home/awsteiner/wcs/e4mma/eos.h" line="278" column="7"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
@@ -3253,40 +3345,40 @@
       </node>
     </inheritancegraph>
     <collaborationgraph>
-      <node id="52">
+      <node id="54">
         <label>o2scl::boson_tl&lt; double &gt;</label>
         <link refid="classo2scl_1_1boson__tl" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
-        <childnode refid="53" relation="public-inheritance">
-        </childnode>
-      </node>
-      <node id="65">
-        <label>o2scl::boson_tl&lt; long double &gt;</label>
-        <link refid="classo2scl_1_1boson__tl" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
-        <childnode refid="53" relation="public-inheritance">
-        </childnode>
-      </node>
-      <node id="44">
-        <label>o2scl::classical_thermo_tl&lt; double &gt;</label>
-        <link refid="classo2scl_1_1classical__thermo__tl" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
-      </node>
-      <node id="68">
-        <label>o2scl::convert_units&lt; cpp_dec_float_25 &gt;</label>
-        <link refid="classo2scl_1_1convert__units" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
-        <childnode refid="36" relation="usage">
-          <edgelabel>fc</edgelabel>
-        </childnode>
-      </node>
-      <node id="35">
-        <label>o2scl::convert_units&lt; double &gt;</label>
-        <link refid="classo2scl_1_1convert__units" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
-        <childnode refid="36" relation="usage">
-          <edgelabel>fc</edgelabel>
+        <childnode refid="55" relation="public-inheritance">
         </childnode>
       </node>
       <node id="67">
+        <label>o2scl::boson_tl&lt; long double &gt;</label>
+        <link refid="classo2scl_1_1boson__tl" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
+        <childnode refid="55" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="46">
+        <label>o2scl::classical_thermo_tl&lt; double &gt;</label>
+        <link refid="classo2scl_1_1classical__thermo__tl" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
+      </node>
+      <node id="70">
+        <label>o2scl::convert_units&lt; cpp_dec_float_25 &gt;</label>
+        <link refid="classo2scl_1_1convert__units" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
+        <childnode refid="38" relation="usage">
+          <edgelabel>fc</edgelabel>
+        </childnode>
+      </node>
+      <node id="37">
+        <label>o2scl::convert_units&lt; double &gt;</label>
+        <link refid="classo2scl_1_1convert__units" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
+        <childnode refid="38" relation="usage">
+          <edgelabel>fc</edgelabel>
+        </childnode>
+      </node>
+      <node id="69">
         <label>o2scl::convert_units&lt; long double &gt;</label>
         <link refid="classo2scl_1_1convert__units" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
-        <childnode refid="36" relation="usage">
+        <childnode refid="38" relation="usage">
           <edgelabel>fc</edgelabel>
         </childnode>
       </node>
@@ -3302,25 +3394,28 @@
         <childnode refid="2" relation="public-inheritance">
         </childnode>
         <childnode refid="33" relation="usage">
+          <edgelabel>af</edgelabel>
+        </childnode>
+        <childnode refid="35" relation="usage">
           <edgelabel>nstar_high</edgelabel>
           <edgelabel>nstar_tab</edgelabel>
           <edgelabel>nucstruct_tab</edgelabel>
         </childnode>
-        <childnode refid="37" relation="usage">
+        <childnode refid="39" relation="usage">
           <edgelabel>rng</edgelabel>
         </childnode>
-        <childnode refid="38" relation="usage">
+        <childnode refid="40" relation="usage">
           <edgelabel>p_cs2_verbose</edgelabel>
           <edgelabel>p_verbose</edgelabel>
         </childnode>
-        <childnode refid="40" relation="usage">
+        <childnode refid="42" relation="usage">
           <edgelabel>p_include_muons</edgelabel>
           <edgelabel>p_ns_record</edgelabel>
           <edgelabel>p_old_ns_fit</edgelabel>
           <edgelabel>p_select_cs2_test</edgelabel>
           <edgelabel>p_use_alt_eos</edgelabel>
         </childnode>
-        <childnode refid="41" relation="usage">
+        <childnode refid="43" relation="usage">
           <edgelabel>p_a_virial</edgelabel>
           <edgelabel>p_b_virial</edgelabel>
           <edgelabel>p_cs2_extra</edgelabel>
@@ -3328,7 +3423,7 @@
           <edgelabel>p_nuc_c1</edgelabel>
           <edgelabel>p_nuc_c2</edgelabel>
         </childnode>
-        <childnode refid="42" relation="usage">
+        <childnode refid="44" relation="usage">
           <edgelabel>p_S_grid_spec</edgelabel>
           <edgelabel>p_T_grid_spec</edgelabel>
           <edgelabel>p_Ye_grid_spec</edgelabel>
@@ -3336,44 +3431,44 @@
           <edgelabel>p_nB_grid_spec</edgelabel>
           <edgelabel>p_nucstruct_file</edgelabel>
         </childnode>
-        <childnode refid="43" relation="usage">
+        <childnode refid="45" relation="usage">
           <edgelabel>vsd</edgelabel>
         </childnode>
-        <childnode refid="45" relation="usage">
+        <childnode refid="47" relation="usage">
           <edgelabel>sk</edgelabel>
           <edgelabel>sk_Tcorr</edgelabel>
           <edgelabel>sk_alt</edgelabel>
         </childnode>
-        <childnode refid="47" relation="usage">
+        <childnode refid="49" relation="usage">
           <edgelabel>rmf</edgelabel>
         </childnode>
-        <childnode refid="49" relation="usage">
+        <childnode refid="51" relation="usage">
           <edgelabel>rmf_hyp</edgelabel>
         </childnode>
         <childnode refid="2" relation="usage">
           <edgelabel>eos_Tcorr</edgelabel>
         </childnode>
-        <childnode refid="50" relation="usage">
+        <childnode refid="52" relation="usage">
           <edgelabel>ecv</edgelabel>
         </childnode>
         <childnode refid="3" relation="usage">
           <edgelabel>eosp_alt</edgelabel>
         </childnode>
-        <childnode refid="58" relation="usage">
+        <childnode refid="60" relation="usage">
           <edgelabel>elep</edgelabel>
         </childnode>
       </node>
-      <node id="50">
+      <node id="52">
         <label>eos_crust_virial_v2</label>
         <link refid="classeos__crust__virial__v2"/>
-        <childnode refid="51" relation="public-inheritance">
+        <childnode refid="53" relation="public-inheritance">
         </childnode>
-        <childnode refid="54" relation="usage">
+        <childnode refid="56" relation="usage">
           <edgelabel>iv_ba</edgelabel>
           <edgelabel>iv_bpna</edgelabel>
         </childnode>
       </node>
-      <node id="73">
+      <node id="75">
         <label>o2scl::fermion_rel_tl&lt; fermion_tl&lt; cpp_dec_float_25 &gt;, fermi_dirac_integ_direct&lt; cpp_dec_float_25, funct_cdf35, cpp_dec_float_35 &gt;, bessel_K_exp_integ_boost&lt; cpp_dec_float_25, cpp_dec_float_35 &gt;, inte_double_exp_boost&lt;&gt;, inte_double_exp_boost&lt;&gt;, root_cern&lt; funct_cdf25, cpp_dec_float_25 &gt;, funct_cdf25, cpp_dec_float_25 &gt;</label>
         <link refid="classo2scl_1_1fermion__rel__tl" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
         <childnode refid="17" relation="public-inheritance">
@@ -3387,7 +3482,7 @@
           <edgelabel>alt_solver</edgelabel>
         </childnode>
       </node>
-      <node id="71">
+      <node id="73">
         <label>o2scl::fermion_rel_tl&lt; fermion_tl&lt; long double &gt;, fermi_dirac_integ_direct&lt; long double, funct_cdf25, cpp_dec_float_25 &gt;, bessel_K_exp_integ_boost&lt; long double, cpp_dec_float_25 &gt;, inte_double_exp_boost&lt;&gt;, inte_double_exp_boost&lt;&gt;, root_cern&lt; funct_ld, long double &gt;, funct_ld, long double &gt;</label>
         <link refid="classo2scl_1_1fermion__rel__tl" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
         <childnode refid="17" relation="public-inheritance">
@@ -3401,11 +3496,11 @@
           <edgelabel>alt_solver</edgelabel>
         </childnode>
       </node>
-      <node id="36">
+      <node id="38">
         <label>o2scl::find_constants&lt; fp_t &gt;</label>
         <link refid="classo2scl_1_1find__constants" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
       </node>
-      <node id="56">
+      <node id="58">
         <label>o2scl::interp_base&lt; vec_t, vec2_t, fp_t &gt;</label>
         <link refid="classo2scl_1_1interp__base" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
         <childnode refid="28" relation="usage">
@@ -3419,15 +3514,15 @@
           <edgelabel>svx</edgelabel>
         </childnode>
       </node>
-      <node id="54">
+      <node id="56">
         <label>o2scl::interp_vec&lt; std::vector&lt; double &gt; &gt;</label>
         <link refid="classo2scl_1_1interp__vec" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
-        <childnode refid="55" relation="public-inheritance">
+        <childnode refid="57" relation="public-inheritance">
         </childnode>
-        <childnode refid="56" relation="usage">
+        <childnode refid="58" relation="usage">
           <edgelabel>itp</edgelabel>
         </childnode>
-        <childnode refid="57" relation="usage">
+        <childnode refid="59" relation="usage">
           <edgelabel>cf</edgelabel>
         </childnode>
       </node>
@@ -3445,35 +3540,39 @@
         <label>o2scl::mroot_hybrids_base&lt; double &gt;</label>
         <link refid="classo2scl_1_1mroot__hybrids__base" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
       </node>
-      <node id="39">
+      <node id="41">
         <label>o2scl::cli::parameter</label>
         <link refid="classo2scl_1_1cli_1_1parameter" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
       </node>
-      <node id="40">
+      <node id="42">
         <label>o2scl::cli::parameter_bool</label>
         <link refid="classo2scl_1_1cli_1_1parameter__bool" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
-        <childnode refid="39" relation="public-inheritance">
+        <childnode refid="41" relation="public-inheritance">
         </childnode>
       </node>
-      <node id="41">
+      <node id="43">
         <label>o2scl::cli::parameter_double</label>
         <link refid="classo2scl_1_1cli_1_1parameter__double" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
-        <childnode refid="39" relation="public-inheritance">
+        <childnode refid="41" relation="public-inheritance">
         </childnode>
       </node>
-      <node id="38">
+      <node id="40">
         <label>o2scl::cli::parameter_int</label>
         <link refid="classo2scl_1_1cli_1_1parameter__int" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
-        <childnode refid="39" relation="public-inheritance">
+        <childnode refid="41" relation="public-inheritance">
         </childnode>
       </node>
-      <node id="42">
+      <node id="44">
         <label>o2scl::cli::parameter_string</label>
         <link refid="classo2scl_1_1cli_1_1parameter__string" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
-        <childnode refid="39" relation="public-inheritance">
+        <childnode refid="41" relation="public-inheritance">
         </childnode>
       </node>
-      <node id="57">
+      <node id="34">
+        <label>o2scl::columnify</label>
+        <link refid="classo2scl_1_1columnify" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
+      </node>
+      <node id="59">
         <label>o2scl::covar_funct</label>
         <link refid="classo2scl_1_1covar__funct" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
       </node>
@@ -3499,7 +3598,7 @@
         <childnode refid="9" relation="public-inheritance">
         </childnode>
       </node>
-      <node id="63">
+      <node id="65">
         <label>o2scl::deriv_thermo_base_tl&lt; class fp_t &gt;</label>
         <link refid="classo2scl_1_1deriv__thermo__base__tl" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
       </node>
@@ -3513,12 +3612,12 @@
           <edgelabel>eos_thermo</edgelabel>
         </childnode>
       </node>
-      <node id="51">
+      <node id="53">
         <label>o2scl::eos_crust_virial</label>
         <link refid="classo2scl_1_1eos__crust__virial" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
-        <childnode refid="48" relation="public-inheritance">
+        <childnode refid="50" relation="public-inheritance">
         </childnode>
-        <childnode refid="52" relation="usage">
+        <childnode refid="54" relation="usage">
           <edgelabel>alpha</edgelabel>
           <edgelabel>deuteron</edgelabel>
         </childnode>
@@ -3546,24 +3645,24 @@
           <edgelabel>sat_deriv2</edgelabel>
         </childnode>
       </node>
-      <node id="47">
+      <node id="49">
         <label>o2scl::eos_had_rmf</label>
         <link refid="classo2scl_1_1eos__had__rmf" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
-        <childnode refid="48" relation="public-inheritance">
+        <childnode refid="50" relation="public-inheritance">
         </childnode>
       </node>
-      <node id="49">
+      <node id="51">
         <label>o2scl::eos_had_rmf_hyp</label>
         <link refid="classo2scl_1_1eos__had__rmf__hyp" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
-        <childnode refid="47" relation="public-inheritance">
+        <childnode refid="49" relation="public-inheritance">
         </childnode>
       </node>
-      <node id="45">
+      <node id="47">
         <label>o2scl::eos_had_skyrme</label>
         <link refid="classo2scl_1_1eos__had__skyrme" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
         <childnode refid="2" relation="public-inheritance">
         </childnode>
-        <childnode refid="46" relation="usage">
+        <childnode refid="48" relation="usage">
           <edgelabel>nrf</edgelabel>
         </childnode>
       </node>
@@ -3585,29 +3684,29 @@
         <childnode refid="3" relation="public-inheritance">
         </childnode>
       </node>
-      <node id="48">
+      <node id="50">
         <label>o2scl::eos_had_temp_pres_base</label>
         <link refid="classo2scl_1_1eos__had__temp__pres__base" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
         <childnode refid="3" relation="public-inheritance">
         </childnode>
       </node>
-      <node id="43">
+      <node id="45">
         <label>o2scl::eos_had_virial</label>
         <link refid="classo2scl_1_1eos__had__virial" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
-        <childnode refid="44" relation="usage">
+        <childnode refid="46" relation="usage">
           <edgelabel>cl</edgelabel>
         </childnode>
       </node>
-      <node id="59">
+      <node id="61">
         <label>o2scl::eos_leptons</label>
         <link refid="classo2scl_1_1eos__leptons" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
-        <childnode refid="60" relation="usage">
+        <childnode refid="62" relation="usage">
           <edgelabel>ed</edgelabel>
           <edgelabel>mud</edgelabel>
           <edgelabel>phd</edgelabel>
           <edgelabel>thd</edgelabel>
         </childnode>
-        <childnode refid="52" relation="usage">
+        <childnode refid="54" relation="usage">
           <edgelabel>ph</edgelabel>
         </childnode>
         <childnode refid="6" relation="usage">
@@ -3619,84 +3718,84 @@
         <childnode refid="29" relation="usage">
           <edgelabel>frel</edgelabel>
         </childnode>
-        <childnode refid="61" relation="usage">
+        <childnode refid="63" relation="usage">
           <edgelabel>fdrel</edgelabel>
         </childnode>
       </node>
-      <node id="58">
+      <node id="60">
         <label>o2scl::eos_leptons_multip</label>
         <link refid="classo2scl_1_1eos__leptons__multip" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
-        <childnode refid="59" relation="public-inheritance">
+        <childnode refid="61" relation="public-inheritance">
         </childnode>
-        <childnode refid="65" relation="usage">
+        <childnode refid="67" relation="usage">
           <edgelabel>ph_ld</edgelabel>
         </childnode>
-        <childnode refid="66" relation="usage">
+        <childnode refid="68" relation="usage">
           <edgelabel>ed_ld</edgelabel>
           <edgelabel>mud_ld</edgelabel>
           <edgelabel>phd_ld</edgelabel>
           <edgelabel>thd_ld</edgelabel>
         </childnode>
-        <childnode refid="67" relation="usage">
+        <childnode refid="69" relation="usage">
           <edgelabel>cu_ld</edgelabel>
         </childnode>
-        <childnode refid="68" relation="usage">
+        <childnode refid="70" relation="usage">
           <edgelabel>cu_cdf25</edgelabel>
         </childnode>
-        <childnode refid="69" relation="usage">
+        <childnode refid="71" relation="usage">
           <edgelabel>th_ld</edgelabel>
         </childnode>
-        <childnode refid="70" relation="usage">
+        <childnode refid="72" relation="usage">
           <edgelabel>frel_ld</edgelabel>
         </childnode>
-        <childnode refid="72" relation="usage">
+        <childnode refid="74" relation="usage">
           <edgelabel>frel_cdf25</edgelabel>
         </childnode>
-        <childnode refid="74" relation="usage">
+        <childnode refid="76" relation="usage">
           <edgelabel>rc</edgelabel>
         </childnode>
       </node>
-      <node id="64">
+      <node id="66">
         <label>o2scl::fermion_deriv_rel_integ&lt; class fp_t &gt;</label>
         <link refid="classo2scl_1_1fermion__deriv__rel__integ" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
       </node>
-      <node id="61">
+      <node id="63">
         <label>o2scl::fermion_deriv_rel_tl&lt; class fermion_deriv_t, class fermion_rel_t, class nit_t, class dit_t, class fp_t &gt;</label>
         <link refid="classo2scl_1_1fermion__deriv__rel__tl" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
-        <childnode refid="62" relation="public-inheritance">
-        </childnode>
         <childnode refid="64" relation="public-inheritance">
+        </childnode>
+        <childnode refid="66" relation="public-inheritance">
         </childnode>
         <childnode refid="31" relation="usage">
           <edgelabel>it_multip</edgelabel>
         </childnode>
       </node>
-      <node id="62">
+      <node id="64">
         <label>o2scl::fermion_deriv_thermo_tl&lt; class fermion_deriv_t, class fermion_rel_t, class fp_t &gt;</label>
         <link refid="classo2scl_1_1fermion__deriv__thermo__tl" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
-        <childnode refid="63" relation="public-inheritance">
+        <childnode refid="65" relation="public-inheritance">
         </childnode>
       </node>
-      <node id="46">
+      <node id="48">
         <label>o2scl::fermion_nonrel_tl&lt; class fermion_t, class fd_inte_t, class be_inte_t, class root_t, class func_t, class fp_t &gt;</label>
         <link refid="classo2scl_1_1fermion__nonrel__tl" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
         <childnode refid="17" relation="public-inheritance">
         </childnode>
       </node>
-      <node id="72">
+      <node id="74">
         <label>o2scl::fermion_rel_cdf25</label>
         <link refid="classo2scl_1_1fermion__rel__cdf25" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
-        <childnode refid="73" relation="public-inheritance">
+        <childnode refid="75" relation="public-inheritance">
         </childnode>
       </node>
       <node id="30">
         <label>o2scl::fermion_rel_integ</label>
         <link refid="classo2scl_1_1fermion__rel__integ" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
       </node>
-      <node id="70">
+      <node id="72">
         <label>o2scl::fermion_rel_ld</label>
         <link refid="classo2scl_1_1fermion__rel__ld" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
-        <childnode refid="71" relation="public-inheritance">
+        <childnode refid="73" relation="public-inheritance">
         </childnode>
       </node>
       <node id="29">
@@ -3730,7 +3829,7 @@
         <label>o2scl::inte_double_exp_boost&lt; class fp_25_t, class fp_35_t, class fp_50_t, class fp_100_t &gt;</label>
         <link refid="classo2scl_1_1inte__double__exp__boost" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
       </node>
-      <node id="55">
+      <node id="57">
         <label>o2scl::interp_base&lt; class vec_t, class vec2_t, class fp_t &gt;</label>
         <link refid="classo2scl_1_1interp__base" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
         <childnode refid="28" relation="usage">
@@ -3770,7 +3869,7 @@
           <edgelabel>ajac</edgelabel>
         </childnode>
       </node>
-      <node id="53">
+      <node id="55">
         <label>o2scl::part_tl&lt; class fp_t &gt;</label>
         <link refid="classo2scl_1_1part__tl" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
       </node>
@@ -3781,7 +3880,7 @@
           <edgelabel>rbg</edgelabel>
         </childnode>
       </node>
-      <node id="37">
+      <node id="39">
         <label>o2scl::rng&lt; class fp_t &gt;</label>
         <link refid="classo2scl_1_1rng" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
       </node>
@@ -3795,19 +3894,19 @@
         <childnode refid="25" relation="public-inheritance">
         </childnode>
       </node>
-      <node id="34">
+      <node id="36">
         <label>o2scl::table&lt; class vec_t, class fp_t &gt;</label>
         <link refid="classo2scl_1_1table" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
         <childnode refid="27" relation="usage">
           <edgelabel>si</edgelabel>
         </childnode>
       </node>
-      <node id="33">
+      <node id="35">
         <label>o2scl::table_units&lt; class vec_t &gt;</label>
         <link refid="classo2scl_1_1table__units" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
-        <childnode refid="34" relation="public-inheritance">
+        <childnode refid="36" relation="public-inheritance">
         </childnode>
-        <childnode refid="35" relation="usage">
+        <childnode refid="37" relation="usage">
           <edgelabel>cup</edgelabel>
         </childnode>
       </node>
@@ -3815,11 +3914,18 @@
         <label>o2scl::thermo_tl&lt; class fp_t &gt;</label>
         <link refid="classo2scl_1_1thermo__tl" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
       </node>
-      <node id="60">
+      <node id="33">
+        <label>o2scl_auto_format::auto_format</label>
+        <link refid="classo2scl__auto__format_1_1auto__format" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
+        <childnode refid="34" relation="usage">
+          <edgelabel>col</edgelabel>
+        </childnode>
+      </node>
+      <node id="62">
         <label>o2scl::part_deriv_press_tl&lt; double &gt;</label>
         <link refid="classo2scl_1_1part__deriv__press__tl" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
       </node>
-      <node id="66">
+      <node id="68">
         <label>o2scl::part_deriv_press_tl&lt; long double &gt;</label>
         <link refid="classo2scl_1_1part__deriv__press__tl" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
       </node>
@@ -3841,7 +3947,7 @@
           <edgelabel>tab</edgelabel>
         </childnode>
       </node>
-      <node id="74">
+      <node id="76">
         <label>o2scl::root_cern&lt; funct, double &gt;</label>
         <link refid="classo2scl_1_1root__cern" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
         <childnode refid="25" relation="public-inheritance">
@@ -3865,7 +3971,7 @@
         <label>o2scl::thermo_tl&lt; double &gt;</label>
         <link refid="classo2scl_1_1thermo__tl" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
       </node>
-      <node id="69">
+      <node id="71">
         <label>o2scl::thermo_tl&lt; long double &gt;</label>
         <link refid="classo2scl_1_1thermo__tl" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
       </node>
@@ -3874,9 +3980,10 @@
         <link refid="classboost_1_1numeric_1_1ublas_1_1vector" external="/home/awsteiner/wcs/e4mma/doc/o2scl.tag"/>
       </node>
     </collaborationgraph>
-    <location file="/home/awsteiner/wcs/e4mma/eos.h" line="226" column="1" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="226" bodyend="1094"/>
+    <location file="/home/awsteiner/wcs/e4mma/eos.h" line="227" column="1" bodyfile="/home/awsteiner/wcs/e4mma/eos.h" bodystart="227" bodyend="1112"/>
     <listofallmembers>
       <member refid="classeos_1a5a1b813d87a973d3552ddcbcaae4c2eb" prot="public" virt="non-virtual"><scope>eos</scope><name>a_virial</name></member>
+      <member refid="classeos_1a49576e80c8bc902bc756223a38aa369d" prot="protected" virt="non-virtual"><scope>eos</scope><name>af</name></member>
       <member refid="classeos_1a5c3ca739dbccf7e530bc5bc660f575b7" prot="public" virt="non-virtual"><scope>eos</scope><name>alt_model</name></member>
       <member refid="classeos_1a72b86f7d53fc7dd3947c556f7fa0d3b9" prot="public" virt="non-virtual"><scope>eos</scope><name>alt_name</name></member>
       <member refid="classeos_1a828e85c817596153f6607355e42e5a85" prot="public" virt="non-virtual"><scope>eos</scope><name>b_virial</name></member>
@@ -4036,6 +4143,7 @@
       <member refid="classo2scl_1_1eos__had__base_1ab515a4a2f49dea0ba10da865a2ee3cb6" prot="public" virt="virtual"><scope>eos</scope><name>fmsom</name></member>
       <member refid="classo2scl_1_1eos__had__base_1af04fb6df66475d957f88f88629a2af79" prot="public" virt="virtual"><scope>eos</scope><name>fn0</name></member>
       <member refid="classo2scl_1_1eos__had__base_1af04fb6df66475d957f88f88629a2af79" prot="public" virt="virtual"><scope>eos</scope><name>fn0</name></member>
+      <member refid="classeos_1a39795a466cbbde3b56fad22dc0a7dbe8" prot="protected" virt="non-virtual"><scope>eos</scope><name>foutx</name></member>
       <member refid="classeos_1ac16f6a759590825144bea5e6944153a9" prot="public" virt="non-virtual"><scope>eos</scope><name>free_energy_density</name></member>
       <member refid="classeos_1a9d4b034dd1e222ce248e478a89d9004b" prot="public" virt="non-virtual"><scope>eos</scope><name>free_energy_density_alt</name></member>
       <member refid="classeos_1abda7474511cb007f9549a59c137fae84" prot="public" virt="non-virtual"><scope>eos</scope><name>free_energy_density_detail</name></member>
@@ -4060,6 +4168,8 @@
       <member refid="classeos_1a0704d6eea1ea797affeb42a358b7971f" prot="public" virt="non-virtual"><scope>eos</scope><name>mcarlo_data</name></member>
       <member refid="classeos_1aa6e39d3d5519ba1b07a58bc84c8ba91b" prot="public" virt="non-virtual"><scope>eos</scope><name>min_max_cs2</name></member>
       <member refid="classeos_1af54fbf548389aaf2cdcc10bd3318c7aa" prot="public" virt="non-virtual"><scope>eos</scope><name>model_selected</name></member>
+      <member refid="classeos_1ab8f305b7177685ec90b07860ee8ddba7" prot="protected" virt="non-virtual"><scope>eos</scope><name>mpi_rankx</name></member>
+      <member refid="classeos_1a512980ca666de9ed1982b7b908e2b771" prot="protected" virt="non-virtual"><scope>eos</scope><name>mpi_sizex</name></member>
       <member refid="classo2scl_1_1eos__had__base_1a97c3946548dc3645d2e68470acbc0f92" prot="public" virt="non-virtual"><scope>eos</scope><name>msom</name></member>
       <member refid="classeos_1a9dda15dcabaa9a6206c6f2a3d0ebbb20" prot="public" virt="non-virtual"><scope>eos</scope><name>mu_fit_norest</name></member>
       <member refid="classeos_1a9163e34ddcb615af9ec561fb44f1655f" prot="public" virt="non-virtual"><scope>eos</scope><name>muon</name></member>
@@ -4166,6 +4276,7 @@
       <member refid="classo2scl_1_1eos__had__base_1aa53384deba13ada405733cf76e0c284a" prot="public" virt="virtual"><scope>eos</scope><name>set_sat_mroot</name></member>
       <member refid="classo2scl_1_1eos__base_1a5fb858e83e5cb3be3848a1b3cdfd9d0d" prot="public" virt="virtual"><scope>eos</scope><name>set_thermo</name></member>
       <member refid="classeos_1a95f4ca5114228035d40de725eefc521a" prot="public" virt="virtual"><scope>eos</scope><name>setup_cli</name></member>
+      <member refid="classeos_1a6fb7ace0517dd33e043c7cc0e9646356" prot="public" virt="non-virtual"><scope>eos</scope><name>setup_output</name></member>
       <member refid="classeos_1a1ce709670f5e43caba65e040b9cc02f9" prot="protected" virt="non-virtual"><scope>eos</scope><name>sk</name></member>
       <member refid="classeos_1a48d645e17b016ffef047b73d2f517d11" prot="protected" virt="non-virtual"><scope>eos</scope><name>sk_alt</name></member>
       <member refid="classeos_1ae08253e92e8f4dec1d3e41ce2d5d0279" prot="protected" virt="non-virtual"><scope>eos</scope><name>sk_Tcorr</name></member>
@@ -4175,6 +4286,7 @@
       <member refid="classeos_1a4480600e93a338f8a2618b03b69efd13" prot="public" virt="non-virtual"><scope>eos</scope><name>solve_fixed_sonb_YL</name></member>
       <member refid="classeos_1a8d1df2f651c5278f9c0b1e6a31d4e264" prot="public" virt="non-virtual"><scope>eos</scope><name>solve_T</name></member>
       <member refid="classeos_1a1f8ac29273e5e0f1fc6bb1da9c2c578f" prot="public" virt="non-virtual"><scope>eos</scope><name>solve_Ye</name></member>
+      <member refid="classeos_1a0d9cfc8552bb9024c02a1b97249f3f6d" prot="public" virt="non-virtual"><scope>eos</scope><name>std_out</name></member>
       <member refid="classeos_1ac7d5a5cfdb371e944d4d830717edf87c" prot="public" virt="non-virtual"><scope>eos</scope><name>strange_axis</name></member>
       <member refid="classo2scl_1_1eos__had__base_1a468a9dc0bae7e6e2a3079481924753a9" prot="protected" virt="non-virtual"><scope>eos</scope><name>t1_fun</name></member>
       <member refid="classo2scl_1_1eos__had__base_1a0fbec74cc4126447cf327cd6847983a1" prot="protected" virt="non-virtual"><scope>eos</scope><name>t2_fun</name></member>
