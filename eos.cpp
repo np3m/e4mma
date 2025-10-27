@@ -4407,6 +4407,23 @@ int eos::point(std::vector<std::string> &sv, bool itive_com) {
     cout << "  omega: " << f2*hc_mev_fm << " MeV" << endl;
     cout << "  rho: " << f3*hc_mev_fm << " MeV" << endl;
   }
+
+  // Here I temporarily include electrons. I was doing this for
+  // testing, but I should modify this to make this additional
+  // calculation permanent (but probably use eos_leptons instead
+  // of compute_eg_point(), which uses eos_leptons internally).
+  if (true) {
+    double mue2=0.0;
+    eos_sn_oo eso;
+    eso.include_muons=false;
+    eso.verbose=0;
+    thermo lep;
+    eso.compute_eg_point(nB,Ye,T,lep,mue2);
+    double fr_eg=lep.ed-lep.en*T;
+    cout << "free energy density with electrons: "
+         << f_total << " " << f_total+fr_eg << " " << f_total+fr_eg+
+      neutron.m*nB*(1.0-Ye)+proton.m*nB*Ye << endl;
+  }
   
   cout << endl;
   
