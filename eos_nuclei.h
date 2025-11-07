@@ -22,6 +22,7 @@
 #include "eos_had_skyrme_ext.h"
 
 #include <o2scl/nucmass_fit.h>
+#include <o2scl/nucmass_dz.h>
 #include <o2scl/slack_messenger.h>
 #include <o2scl/part_funcs.h>
 #include <o2scl/interpm_krige.h>
@@ -295,7 +296,11 @@ public:
   
   /** \brief Theoretical nuclear masses
    */
-  o2scl::nucmass_mnmsk m95;
+  o2scl::nucmass_mnmsk m16;
+
+  /** \brief Theoretical nuclear masses
+   */
+  o2scl::nucmass_dz_fit_33 dz33;
 
   /** \brief HFB masses for spin predictions
    */
@@ -418,6 +423,10 @@ public:
   */
   bool show_all_nuclei;
 
+  /** \brief If true, use DZ for nuclear masses instead of MSIS16
+  */
+  bool use_dz;
+  
   /** \brief If true, ensure that the nuclear radius is less than the
       Wigner-Seitz radius (default true)
   */
@@ -625,6 +634,7 @@ public:
   o2scl::cli::parameter_bool p_survey_eqs;
   o2scl::cli::parameter_bool p_extend_frdm;
   o2scl::cli::parameter_bool p_show_all_nuclei;
+  o2scl::cli::parameter_bool p_use_dz;
   o2scl::cli::parameter_int p_fd_A_max;
   o2scl::cli::parameter_bool p_recompute;
   o2scl::cli::parameter_bool p_verify_only;

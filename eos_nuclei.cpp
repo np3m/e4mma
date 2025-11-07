@@ -152,6 +152,8 @@ eos_nuclei::eos_nuclei() {
 
   pfuncs.spin_deg_mode=1;
   table_no_nuclei=false;
+
+  use_dz=false;
 }
 
 eos_nuclei::~eos_nuclei() {
@@ -207,14 +209,47 @@ void eos_nuclei::load_nuclei() {
 #endif
   
   // Load the nuclear masses
-#ifdef O2SCL_V0931
   ame.load("20");
-#else
-  o2scl_hdf::ame_load(ame);
-#endif
-  o2scl_hdf::mnmsk_load(m95);
+  o2scl_hdf::mnmsk_load(m16);
   o2scl_hdf::hfb_sp_load(hfb,27);
   pfuncs.load();
+
+  ubvector p;
+  p.resize(33);
+  p[0]=9.089056134746128e+00;
+  p[1]=6.503243633083565e+00;
+  p[2]=4.508165895514288e+00;
+  p[3]=2.078535386636489e+01;
+  p[4]=1.725739163595326e+00;
+  p[5]=7.535149383516492e+00;
+  p[6]=-4.506924382606631e+00;
+  p[7]=-3.412765813834761e+01;
+  p[8]=-3.585539147281765e-01;
+  p[9]=7.344223304154160e-01;
+  p[10]=-7.511052798991504e-01;
+  p[11]=-3.761406531766877e+00;
+  p[12]=-1.776599459045521e-01;
+  p[13]=-8.995089717699093e-01;
+  p[14]=3.973338204326113e-01;
+  p[15]=1.807250910019584e+00;
+  p[16]=2.413813645058122e-01;
+  p[17]=1.066620521567073e+00;
+  p[18]=8.518733677001322e+00;
+  p[19]=5.373696129291158e+01;
+  p[20]=1.824339588062157e+01;
+  p[21]=7.270593853877729e+01;
+  p[22]=-2.714335458881215e+01;
+  p[23]=-1.284192451766697e+02;
+  p[24]=-5.001066637985519e+00;
+  p[25]=-3.299700362463194e+01;
+  p[26]=-3.794286672329046e+01;
+  p[27]=-5.392723600204433e+01;
+  p[28]=1.559715229007208e+00;
+  p[29]=5.448044100904870e+00;
+  p[30]=7.054620573104972e-01;
+  p[31]=6.182687849301996e+00;
+  p[32]=2.076508980189957e+01;
+  dz33.fit_fun(33,p);
   
 #ifndef NO_MPI
   // Send a message to the next MPI rank
@@ -1098,8 +1133,10 @@ int eos_nuclei::beta_table(std::vector<std::string> &sv,
   // Construct a list of pointers to all of the tensor objects,
   // except for tg_Ye, which doesn't need to be rearranged.
   tensor_grid<> *arr[n_arr]={&tg_A,&tg_E,&tg_Eint,&tg_F,&tg_Fint,
-                             &tg_P,&tg_Pint,&tg_S,&tg_Sint,&tg_XHe3,&tg_XLi4,&tg_Xalpha,
-                             &tg_Xd,&tg_Xn,&tg_Xnuclei,&tg_Xp,&tg_Xt,&tg_Z,&tg_log_xn,
+                             &tg_P,&tg_Pint,&tg_S,&tg_Sint,
+                             &tg_XHe3,&tg_XLi4,&tg_Xalpha,
+                             &tg_Xd,&tg_Xn,&tg_Xnuclei,&tg_Xp,
+                             &tg_Xt,&tg_Z,&tg_log_xn,
                              &tg_log_xp,&tg_mue,&tg_mun,&tg_mup};
   std::string name_arr[n_arr]=
     {"A","E","Eint","F","Fint",
@@ -2328,9 +2365,10 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
   bool eigenvalues=kwa.get_bool("eigenvals",false);
   cout << "eos_nuclei::stability(): eigenvals: " << eigenvalues << endl;
   bool comp_cs2_hom=kwa.get_bool("cs2_hom",false);
-  cout << "eos_nuclei::stability(): " << comp_cs2_hom << endl;
+  cout << "eos_nuclei::stability(): comp_cs2_hom: " << comp_cs2_hom << endl;
   std::string output_file=kwa.get_string("output","");
-  cout << "eos_nuclei::stability(): " << output_file << endl;
+  cout << "eos_nuclei::stability(): " << "output_file:"
+       << output_file << endl;
   std::string interp_type=kwa.get_string("interp_type","steffen");
   int itype=itp_steffen;
   if (interp_type=="cspline") itype=itp_cspline;
@@ -3004,6 +3042,7 @@ int eos_nuclei::stability(std::vector<std::string> &sv,
   if (output_file.length()>0) {
     
     hdf_file hf;
+    wordexp_single_file(output_file);
     hf.open_or_create(output_file);
     hdf_output(hf,dmundnB,"dmundnB");
     hdf_output(hf,dmundYe,"dmundYe");
@@ -3680,7 +3719,8 @@ int eos_nuclei::solve_nuclei(size_t nv, const ubvector &x, ubvector &y,
     }
     //char ch;
     //cin >> ch;
-    
+
+    // End of if (inc_hrg)
   }
   
   double Ymu=0.0;
@@ -3788,14 +3828,14 @@ int eos_nuclei::eos_fixed_ZN(double nB, double Ye, double T,
     ame.get_nucleus(nucZ1-1,nucN1,nuc_temp);
     Sprot[5]=-(nuclei[5].be-nuc_temp.be)*hc_mev_fm;
     
-  } else if (m95.is_included(nucZ1,nucN1) &&
-	     m95.is_included(nucZ1-1,nucN1) &&
-	     m95.is_included(nucZ1,nucN1-1)) {
+  } else if (m16.is_included(nucZ1,nucN1) &&
+	     m16.is_included(nucZ1-1,nucN1) &&
+	     m16.is_included(nucZ1,nucN1-1)) {
 
-    m95.get_nucleus(nucZ1,nucN1,*nuc_heavy);
-    m95.get_nucleus(nucZ1,nucN1-1,nuc_temp);
+    m16.get_nucleus(nucZ1,nucN1,*nuc_heavy);
+    m16.get_nucleus(nucZ1,nucN1-1,nuc_temp);
     Sneut[5]=-(nuclei[5].be-nuc_temp.be)*hc_mev_fm;
-    m95.get_nucleus(nucZ1-1,nucN1,nuc_temp);
+    m16.get_nucleus(nucZ1-1,nucN1,nuc_temp);
     Sprot[5]=-(nuclei[5].be-nuc_temp.be)*hc_mev_fm;
     
   } else if (extend_frdm) {
@@ -4671,9 +4711,9 @@ int eos_nuclei::eos_fixed_dist
 	      ame.is_included(Z-1,N) &&
 	      ame.is_included(Z,N-1)) {
             count++;
-	  } else if (m95.is_included(Z,N) &&
-		     m95.is_included(Z-1,N) &&
-		     m95.is_included(Z,N-1)) {
+	  } else if (m16.is_included(Z,N) &&
+		     m16.is_included(Z-1,N) &&
+		     m16.is_included(Z,N-1)) {
             count++;
 	  } else if (extend_frdm) {
             count++;
@@ -4762,15 +4802,23 @@ int eos_nuclei::eos_fixed_dist
 	    ame.get_nucleus(Z-1,N,nuc_temp);
 	    Sprot[index]=-(nuclei[index].be-nuc_temp.be)*hc_mev_fm;
 	    
-	  } else if (m95.is_included(Z,N) &&
-		     m95.is_included(Z-1,N) &&
-		     m95.is_included(Z,N-1)) {
-	    
-	    m95.get_nucleus(Z,N,nuclei[index]);
-	    m95.get_nucleus(Z,N-1,nuc_temp);
-	    Sneut[index]=-(nuclei[index].be-nuc_temp.be)*hc_mev_fm;
-	    m95.get_nucleus(Z-1,N,nuc_temp);
-	    Sprot[index]=-(nuclei[index].be-nuc_temp.be)*hc_mev_fm;
+	  } else if (m16.is_included(Z,N) &&
+		     m16.is_included(Z-1,N) &&
+		     m16.is_included(Z,N-1)) {
+
+            if (use_dz==false) {
+              m16.get_nucleus(Z,N,nuclei[index]);
+              m16.get_nucleus(Z,N-1,nuc_temp);
+              Sneut[index]=-(nuclei[index].be-nuc_temp.be)*hc_mev_fm;
+              m16.get_nucleus(Z-1,N,nuc_temp);
+              Sprot[index]=-(nuclei[index].be-nuc_temp.be)*hc_mev_fm;
+            } else {
+              dz33.get_nucleus(Z,N,nuclei[index]);
+              dz33.get_nucleus(Z,N-1,nuc_temp);
+              Sneut[index]=-(nuclei[index].be-nuc_temp.be)*hc_mev_fm;
+              dz33.get_nucleus(Z-1,N,nuc_temp);
+              Sprot[index]=-(nuclei[index].be-nuc_temp.be)*hc_mev_fm;
+            }
 
 	  } else if (extend_frdm) {
 	    
@@ -6434,7 +6482,7 @@ int eos_nuclei::fit_frdm(std::vector<std::string> &sv,
   ubvector fit_params(10);
   
   cout << "Fitting nuclear mass formula." << endl;
-  nucdist_set(nm_fit.dist,m95);
+  nucdist_set(nm_fit.dist,m16);
   nm_fit.def_mmin.ntrial*=10;
   double res;
   nm_fit.eval(frdm,res);
@@ -6522,14 +6570,14 @@ void eos_nuclei::write_nuclei_intl(std::string fname) {
 	  line[6]=Sp;
 	  line[7]=2;
 	  
-	} else if (m95.is_included(Z,N) &&
-		   m95.is_included(Z-1,N) &&
-		   m95.is_included(Z,N-1)) {
+	} else if (m16.is_included(Z,N) &&
+		   m16.is_included(Z-1,N) &&
+		   m16.is_included(Z,N-1)) {
 	  
-	  m95.get_nucleus(Z,N,nuc);
-	  m95.get_nucleus(Z,N-1,nuc_temp);
+	  m16.get_nucleus(Z,N,nuc);
+	  m16.get_nucleus(Z,N-1,nuc_temp);
 	  double Sn=-(nuc.be-nuc_temp.be)*hc_mev_fm;
-	  m95.get_nucleus(Z-1,N,nuc_temp);
+	  m16.get_nucleus(Z-1,N,nuc_temp);
 	  double Sp=-(nuc.be-nuc_temp.be)*hc_mev_fm;
 	  
 	  line[0]=nuc.Z;
@@ -11977,6 +12025,13 @@ void eos_nuclei::setup_cli_nuclei(o2scl::cli &cl) {
   p_show_all_nuclei.doc_name="show_all_nuclei";
   p_show_all_nuclei.doc_xml_file="doc/xml/classeos__nuclei.xml";
   cl.par_list.insert(make_pair("show_all_nuclei",&p_show_all_nuclei));
+  
+  p_use_dz.b=&use_dz;
+  p_use_dz.help="";
+  p_use_dz.doc_class="eos_nuclei";
+  p_use_dz.doc_name="use_dz";
+  p_use_dz.doc_xml_file="doc/xml/classeos__nuclei.xml";
+  cl.par_list.insert(make_pair("use_dz",&p_use_dz));
   
   p_extend_frdm.b=&extend_frdm;
   p_extend_frdm.help="";
