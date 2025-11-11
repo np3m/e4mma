@@ -800,7 +800,7 @@ public:
       called \c eos_nuclei.o2 .
 
       Valid keyword arguments are out_file=eos_nuclei.o2, ext_guess="",
-      propagate_points=true, and six_neighbors=0.
+      propagate_points=true, gt_verbose=2, and six_neighbors=0.
       
       The value of ext_guess is the filename of a separate table
       to use as a guess for the generate-table command.

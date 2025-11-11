@@ -11140,19 +11140,23 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	  size_t inB=tasks[i*6+3];
 	  size_t iYe=tasks[i*6+4];
 	  size_t iT=tasks[i*6+5];
-	  af << "eos_nuclei::generate_table(): Computing " 
-             << i << "/" << ntasks << " (" << tasks[i*6] << ","
-             << tasks[i*6+1] << "," 
-             << tasks[i*6+2] << ") -> ("
-             << tasks[i*6+3] << "," 
-             << tasks[i*6+4] << ","
-             << tasks[i*6+5] << ")" << endo;
 
 	  double nB=nB_grid2[inB];
 	  double Ye=Ye_grid2[iYe];
 	  double T=T_grid2[iT]/hc_mev_fm;
-	  af << "  nB,Ye,T[MeV]: " << nB << " " << Ye << " " << T*hc_mev_fm
-             << endo;
+
+          if (gt_verbose>2) {
+            af << "eos_nuclei::generate_table(): Computing " 
+               << i << "/" << ntasks << " (" << tasks[i*6] << ","
+               << tasks[i*6+1] << "," 
+               << tasks[i*6+2] << ") -> " << endo;
+            af << "  (" << tasks[i*6+3] << "," 
+               << tasks[i*6+4] << ","
+               << tasks[i*6+5] << ")";
+            af << "nB,Ye,T[MeV]: " << nB << " " << Ye << " "
+               << T*hc_mev_fm << endo;
+          }               
+          
 	  double log_xn=gtab.get("log_xn",i);
 	  double log_xp=gtab.get("log_xp",i);
 	  size_t nuc_Z1=((size_t)(gtab.get("Z",i)+1.0e-12));
@@ -11218,9 +11222,10 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
             }
 	  }
 	  if (gt_verbose>1) {
-            af.precision(5);
-	    af << "eos_nuclei::generate_table(): Point at (nB,Ye,T[MeV])=("
-               << nB << "," << Ye << "," << T*hc_mev_fm << "), ret="
+            af.precision(4);
+	    af << "eos_nuclei::generate_table(): Point at (nB,Ye,T[MeV]):"
+               << endo;
+            af << "  (" << nB << "," << Ye << "," << T*hc_mev_fm << "), ret="
                << ret << ", " << i << "/" << ntasks << endo;
             af.precision(6);
 	  }
