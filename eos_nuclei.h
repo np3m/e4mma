@@ -797,13 +797,18 @@ public:
       This command is the full MPI calculation of the EOS table,
       given a model and using the current grid. If no output
       file name is specified, the results are placed in a file
-      called \c eos_nuclei.o2 .
+      called \c eos_nuclei.o2 . This function immediately sets
+      \ref derivs_computed and \ref with_leptons to false.
 
       Valid keyword arguments are out_file=eos_nuclei.o2, ext_guess="",
-      propagate_points=true, gt_verbose=2, and six_neighbors=0.
+      propagate_points=true, gt_verbose=2, six_neighbors=0,
+      start_nB=2.0e-2, start_Ye=0.51, start_T=3.65, start_xn=-2.5,
+      and start_xp=-1.64.
       
       The value of ext_guess is the filename of a separate table
-      to use as a guess for the generate-table command.
+      to use as a guess for the generate-table command. This
+      guess is only used if the guess has exactly the same
+      grid as the table currently being computed.
 
       Values of six_neighbors greater than 0 use the point at the next
       smallest density, values greater than 1 use the point at the

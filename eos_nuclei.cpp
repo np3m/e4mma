@@ -7274,6 +7274,10 @@ int eos_nuclei::read_results(std::string fname) {
     hdf_input(hf,tg_omega,"omega");
     if (verbose>2) cout << "Reading ρ." << endl;
     hdf_input(hf,tg_rho,"rho");
+  } else {
+    tg_sigma.clear();
+    tg_omega.clear();
+    tg_rho.clear();
   }
   
   // ----------------------------------------------------------------
@@ -7309,6 +7313,11 @@ int eos_nuclei::read_results(std::string fname) {
     }
     if (verbose>2) cout << "Reading NmZ_max." << endl;
     hdf_input(hf,tg_NmZ_max,"NmZ_max");
+  } else {
+    tg_A_min.clear();
+    tg_A_max.clear();
+    tg_NmZ_min.clear();
+    tg_NmZ_max.clear();
   }
 
   // ----------------------------------------------------------------
@@ -9801,34 +9810,42 @@ int eos_nuclei::edit_data(std::vector<std::string> &sv,
                              ((size_t)iT)};
         vector<size_t> ixp1={((size_t)(inB+1)),((size_t)iYe),
                              ((size_t)iT)};
-        
-	if (inB>0 && inB<((int)n_nB2)-1) {
-          vars["dPdnB"]=(tg_P.get(ixp1)-tg_P.get(ixm1))/
-            (nB_grid2[inB+1]-nB_grid2[inB-1]);
-        } else if (inB==0) {
-          vars["dPdnB"]=(tg_P.get(ixp1)-tg_P.get(ix))/
-            (nB_grid2[inB+1]-nB_grid2[inB]);
-        } else {
-          vars["dPdnB"]=(tg_P.get(ix)-tg_P.get(ixm1))/
-            (nB_grid2[inB]-nB_grid2[inB-1]);
+
+        if (tg_P.total_size()>0) {
+          if (inB>0 && inB<((int)n_nB2)-1) {
+            vars["dPdnB"]=(tg_P.get(ixp1)-tg_P.get(ixm1))/
+              (nB_grid2[inB+1]-nB_grid2[inB-1]);
+          } else if (inB==0) {
+            vars["dPdnB"]=(tg_P.get(ixp1)-tg_P.get(ix))/
+              (nB_grid2[inB+1]-nB_grid2[inB]);
+          } else {
+            vars["dPdnB"]=(tg_P.get(ix)-tg_P.get(ixm1))/
+              (nB_grid2[inB]-nB_grid2[inB-1]);
+          }
         }
- 
-	if (inB>0 && inB<((int)n_nB2)-1) {
-          vars["dAdnB"]=(tg_A.get(ixp1)-tg_A.get(ixm1))/
-            (nB_grid2[inB+1]-nB_grid2[inB-1]);
-        } else if (inB==0) {
-          vars["dAdnB"]=(tg_A.get(ixp1)-tg_A.get(ix))/
-            (nB_grid2[inB+1]-nB_grid2[inB]);
-        } else {
-          vars["dAdnB"]=(tg_A.get(ix)-tg_A.get(ixm1))/
-            (nB_grid2[inB]-nB_grid2[inB-1]);
+        
+        if (tg_A.total_size()>0) {
+          if (inB>0 && inB<((int)n_nB2)-1) {
+            vars["dAdnB"]=(tg_A.get(ixp1)-tg_A.get(ixm1))/
+              (nB_grid2[inB+1]-nB_grid2[inB-1]);
+          } else if (inB==0) {
+            vars["dAdnB"]=(tg_A.get(ixp1)-tg_A.get(ix))/
+              (nB_grid2[inB+1]-nB_grid2[inB]);
+          } else {
+            vars["dAdnB"]=(tg_A.get(ix)-tg_A.get(ixm1))/
+              (nB_grid2[inB]-nB_grid2[inB-1]);
+          }
         }
  
 	if (alg_mode==2 || alg_mode==3 || alg_mode==4) {
-	  vars["A_min"]=tg_A_min.get(ix);
-	  vars["A_max"]=tg_A_max.get(ix);
-	  vars["NmZ_min"]=tg_NmZ_min.get(ix);
-	  vars["NmZ_max"]=tg_NmZ_max.get(ix);
+          if (tg_A_min.total_size()>0) {
+            vars["A_min"]=tg_A_min.get(ix);
+            vars["A_max"]=tg_A_max.get(ix);
+          }
+          if (tg_NmZ_min.total_size()>0) {
+            vars["NmZ_min"]=tg_NmZ_min.get(ix);
+            vars["NmZ_max"]=tg_NmZ_max.get(ix);
+          }
 	}
 
 	if (derivs_computed) {
@@ -9968,6 +9985,12 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
   int gt_verbose=kwa.get_int("gt_verbose",2);
   string ext_guess=kwa.get_string("ext_guess","");
 
+  double start_nB=kwa.get_double("start_nB",2.0e-2);
+  double start_Ye=kwa.get_double("start_Ye",0.51);
+  double start_T=kwa.get_double("start_T",3.65);
+  double start_xn=kwa.get_double("start_xn",-2.5);
+  double start_xp=kwa.get_double("start_xp",-1.64);
+  
   // Eventually, this setting is to create a table with no nuclei,
   // but this isn't really supported yet
   bool no_nuclei_gt=kwa.get_bool("no_nuclei",false);
@@ -10028,7 +10051,8 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
       ext_grid_matches=true;
     }
   }
-  cout << "ext_grid_matches: " << ext_grid_matches << endl;
+  af << "eos_nuclei::generate_table(): ext_grid_matches: "
+     << ext_grid_matches << endo;
   
 #ifndef NO_MPI
   // Send a message to the next MPI rank
@@ -10062,8 +10086,8 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
          << "No data. Creating new table." << endo;
 
       new_table();
-
-      double nB=2.0e-2, Ye=0.51, T=3.65/hc_mev_fm;
+      
+      double nB=start_nB, Ye=start_Ye, T=start_T/hc_mev_fm;
       size_t inB=vector_lookup(n_nB2,nB_grid2,nB);
       nB=nB_grid2[inB];
       size_t iYe=vector_lookup(n_Ye2,Ye_grid2,Ye);
@@ -10071,12 +10095,9 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
       size_t iT=vector_lookup(n_T2,T_grid2,T*hc_mev_fm);
       T=T_grid2[iT]/hc_mev_fm;
       
-      double log_xn=-2.46;
-      double log_xp=-1.64;
-      if (alg_mode==2 || alg_mode==4) {
-	log_xn=-2.5;
-	log_xp=-1.64;
-      }
+      double log_xn=start_xn;
+      double log_xp=start_xp;
+      
       double Zbar, Nbar;
       size_t nuc_Z1=50, nuc_N1=50;
 
@@ -10295,9 +10316,9 @@ int eos_nuclei::generate_table(std::vector<std::string> &sv,
 	sout+=o2scl::szttos(Ye_list_sizet[jk])+" ";
       }
       vector<string> sv2;
-      rewrap(sout,sv2);
+      rewrap(sout,sv2,78);
       for(size_t jk=0;jk<sv2.size();jk++) {
-	af << sv2[jk] << endo;
+	af << " " << sv2[jk] << endo;
       }
 
       // Loop over all points to compute task list
