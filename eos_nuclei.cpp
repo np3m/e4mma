@@ -8166,6 +8166,8 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
     
     cout << "eos_nuclei::point_nuclei(): "
          << "Writing distribution to dist.o2." << endl;
+
+    cout << "Here: " << tg_A_max.total_size() << endl;
     
     table3d t3d;
     A_max=((int)(tg_A_max.get(ix)+1.0e-10));
@@ -8181,25 +8183,39 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
     // Initialize these to zero to avoid warnings, but they
     // are always set in the i=0 case below
     double n_nuc_min=0.0, X_nuc_min=0.0;
+    double n_nuc_max=0.0, X_nuc_max=0.0;
     for(size_t i=0;i<nuclei.size();i++) {
       // Compute minimums
       if (i==0) {
 	n_nuc_min=nuclei[i].n;
 	X_nuc_min=nuclei[i].n*nuclei[i].A/nB;
+	n_nuc_max=nuclei[i].n;
+	X_nuc_max=nuclei[i].n*nuclei[i].A/nB;
       } else {
 	if (nuclei[i].n<n_nuc_min) {
 	  n_nuc_min=nuclei[i].n;
 	}
+	if (nuclei[i].n>n_nuc_max) {
+	  n_nuc_max=nuclei[i].n;
+	}
 	if (nuclei[i].n*nuclei[i].A/nB<X_nuc_min) {
 	  X_nuc_min=nuclei[i].n*nuclei[i].A/nB;
+	}
+	if (nuclei[i].n*nuclei[i].A/nB>X_nuc_max) {
+	  X_nuc_max=nuclei[i].n*nuclei[i].A/nB;
 	}
       }
       // Set n_nuc and X_nuc
       t3d.set(nuclei[i].N,nuclei[i].Z,"n_nuc",nuclei[i].n);
       t3d.set(nuclei[i].N,nuclei[i].Z,"X_nuc",nuclei[i].n*nuclei[i].A/nB);
     }
+    std::cout << "  n_nuc_min, X_nuc_min: "
+              << n_nuc_min << " " << X_nuc_min << std::endl;
+    std::cout << "  n_nuc_max, X_nuc_max: "
+              << n_nuc_max << " " << X_nuc_max << std::endl;
     
     // Now take logs, replacing zeros with the minimum value
+    size_t count=0;
     t3d.new_slice("log10_n_nuc");
     t3d.set_slice_all("log10_n_nuc",log10(n_nuc_min));
     t3d.new_slice("log10_X_nuc");
@@ -8207,6 +8223,21 @@ int eos_nuclei::point_nuclei(std::vector<std::string> &sv,
     for(size_t i=0;i<nuclei.size();i++) {
       t3d.set(nuclei[i].N,nuclei[i].Z,"log10_n_nuc",log10(nuclei[i].n));
       t3d.set(nuclei[i].N,nuclei[i].Z,"log10_X_nuc",log10(nuclei[i].n/nB));
+      if (nuclei[i].n*nuclei[i].A/nB>1.0e-6*X_nuc_max) {
+        count++;
+      }
+    }
+    std::cout << "  count(1.0e-6 of max): " << count << std::endl;
+
+    if (count<10) {
+      std::cout << "  Major nuclei: " << std::endl;
+      for(size_t i=0;i<nuclei.size();i++) {
+        if (nuclei[i].n*nuclei[i].A/nB>1.0e-6*X_nuc_max) {
+          std::cout << "  i,Z,N,X: " << i << " " << nuclei[i].Z << " "
+                    << nuclei[i].N << " "
+                    << nuclei[i].n*nuclei[i].A/nB << std::endl;
+        }
+      }
     }
     
     // Now create a table adding up isotopes
